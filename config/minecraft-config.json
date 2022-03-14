@@ -1,0 +1,16 @@
+{
+  "server_comment": "Options added to 'mineflayer' library. Used for bot instance connection",
+  "server": {
+    "host": "me.hypixel.net",
+    "port": 25565,
+    "version": "1.17.1"
+  },
+  "commands": {
+    "prefix_comment": "change the prefix command in-game commands in guild public chat",
+    "prefix": "/",
+    "facts_comment": "cooldown for FactsCommand in minecraft to prevent spam",
+    "factsCoolDown": 10000,
+    "leave_comment": "Auto leave parties after joining them. To prevent hogging the bot",
+    "autoLeavePartyAfter": 10000
+  }
+}

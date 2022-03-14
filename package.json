@@ -1,0 +1,27 @@
+{
+  "name": "hypixel-guild-discord-bridge",
+  "version": "1.0.0",
+  "description": "A Hypixel guild chat and Discord chat bridge",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "hypixel",
+    "discord",
+    "chat",
+    "bridge"
+  ],
+  "author": "aidn5 (aidn.david3@gmail.com)",
+  "dependencies": {
+    "@discordjs/rest": "^0.3.0",
+    "axios": "^0.26.1",
+    "clean": "^4.0.2",
+    "cooldown": "^0.2.0",
+    "discord.js-light": "^4.6.0",
+    "dotenv": "^16.0.0",
+    "log4js": "^6.4.2",
+    "mineflayer": "^4.1.0",
+    "node-cache": "^5.1.2"
+  }
+}
