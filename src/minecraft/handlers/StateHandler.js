@@ -1,5 +1,4 @@
 const EventHandler = require('../../common/EventHandler')
-const log4js = require("log4js")
 const Status = require("../../common/Status")
 const COLOR = require('../../../config/discord-config.json').events.color
 

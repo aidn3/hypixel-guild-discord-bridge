@@ -1,5 +1,4 @@
 const EventHandler = require('../../common/EventHandler')
-const log4js = require("log4js")
 
 class WarpHandler extends EventHandler {
 

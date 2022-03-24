@@ -57,7 +57,7 @@ class PartyManager extends EventHandler {
 
     #autoLeave(username) {
         logger.debug(`auto leaving party if not confirmed to stay by repartying or typing the code word`)
-        setTimeout((r) => {
+        setTimeout(() => {
             if (!RepartyCache.get(username)) {
                 logger.debug(`Time out. Leaving ${username}'s party...`)
                 this.clientInstance.send(`/party leave`)
