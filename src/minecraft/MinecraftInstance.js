@@ -33,6 +33,7 @@ class MinecraftInstance extends ClientInstance {
     }
 
     connect() {
+        if (this.client) this.client.quit()
         this.client = MineFlayer.createBot(this.#connectionOptions)
         this.#handlers.forEach(handler => handler.registerEvents())
     }

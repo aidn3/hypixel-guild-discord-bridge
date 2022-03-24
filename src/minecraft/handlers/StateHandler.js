@@ -28,9 +28,13 @@ class StateHandler extends EventHandler {
         this.clientInstance.status = Status.CONNECTED
     }
 
-    #onEnd() {
+    #onEnd(reason) {
         if (this.clientInstance.status === Status.FAILED) {
-            this.clientInstance.logger.warn(`Status is ${this.clientInstance.status}. no further retrying.`)
+            this.clientInstance.logger.warn(`Status is ${this.clientInstance.status}. no further retrying to reconnect.`)
+            return
+
+        } else if (reason === 'disconnect.quitting') {
+            this.clientInstance.logger.debug(`Client quit on its own volition. no further retrying to reconnect.`)
             return
         }
 
