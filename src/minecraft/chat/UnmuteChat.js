@@ -7,6 +7,8 @@ module.exports = function (clientInstance, message) {
     if (match != null) {
         let username = match[1]
 
+        clientInstance.bridge.punishedUsers.unmute(username)
+
         clientInstance.bridge.onOfficerEvent(
             clientInstance,
             username,

@@ -19,6 +19,14 @@ class ChatManager extends EventHandler {
         if (content.length === 0) return
 
         if (event.channel.id === DISCORD_PUBLIC_CHANNEL) {
+            if (this.clientInstance.bridge.punishedUsers.muted(event.member.displayName)) {
+                event.reply({
+                    content: `*Looks like you are muted!*`,
+                    ephemeral: true
+                })
+                return
+            }
+
             this.clientInstance.bridge.onPublicChatMessage(
                 this.clientInstance,
                 event.member.displayName,

@@ -1,4 +1,5 @@
 const log4js = require("log4js")
+const PunishedUsers = require("./MutedUsers");
 
 const DISPLAY_INSTANCE_NAME = require('../config/cluster-config.json').displayInstanceName
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
@@ -23,12 +24,14 @@ const escapeDiscord = function (message) {
 }
 
 class Bridge {
+    punishedUsers;
     discordInstance;
     minecraftInstances = [];
     #discordOptions;
 
     constructor(discordOptions) {
         this.#discordOptions = discordOptions
+        this.punishedUsers = new PunishedUsers()
     }
 
     onOfficerEvent(instance, username, message, color, isTemp) {
