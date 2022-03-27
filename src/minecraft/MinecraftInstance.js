@@ -9,6 +9,8 @@ const WarpHandler = require("./handlers/WarpHandler")
 const ChatManager = require("./ChatManager")
 const PartyManager = require("./PartyManager")
 
+const commandsLimiter = new (require('../util/RateLimiter'))(2, 1000)
+
 class MinecraftInstance extends ClientInstance {
     client;
     status;
@@ -48,10 +50,12 @@ class MinecraftInstance extends ClientInstance {
         return uuid
     }
 
-    send(message) {
-        if (this.client.player !== undefined) {
-            this.client.chat(message)
-        }
+    async send(message) {
+        return commandsLimiter.wait().then(() => {
+            if (this.client.player !== undefined) {
+                this.client.chat(message)
+            }
+        })
     }
 }
 
