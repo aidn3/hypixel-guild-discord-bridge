@@ -13,9 +13,22 @@ class ChatManager extends EventHandler {
     }
 
     #onMessage(event) {
-        if (event.author.bot || !event.content || event.content.length === 0) return
+        if (event.author.bot) return
 
-        let content = ChatManager.#stripDiscordContent(event.content).trim()
+        let content = ChatManager.#stripDiscordContent(event?.content || "").trim()
+
+        if (event.attachments) {
+            event.attachments.forEach(e => {
+                let attachment = e
+                if (attachment.contentType.includes("image")) {
+                    content += ` ${attachment.url}`
+
+                } else {
+                    content += ` (ATTACHMENT)`
+                }
+            })
+        }
+
         if (content.length === 0) return
 
         if (event.channel.id === DISCORD_PUBLIC_CHANNEL) {
@@ -30,13 +43,13 @@ class ChatManager extends EventHandler {
             this.clientInstance.bridge.onPublicChatMessage(
                 this.clientInstance,
                 event.member.displayName,
-                event.content)
+                content)
 
         } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
             this.clientInstance.bridge.onOfficerChatMessage(
                 this.clientInstance,
                 event.member.displayName,
-                event.content
+                content
             )
         }
     }
