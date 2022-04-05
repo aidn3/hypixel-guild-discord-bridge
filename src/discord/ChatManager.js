@@ -1,4 +1,5 @@
 const EventHandler = require("../common/EventHandler")
+const emojisMap = require("emoji-name-map");
 
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
 const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
@@ -15,7 +16,10 @@ class ChatManager extends EventHandler {
     #onMessage(event) {
         if (event.author.bot) return
 
-        let content = ChatManager.#stripDiscordContent(event.cleanContent).trim()
+        let content = event.cleanContent
+        content = ChatManager.#cleanGuildEmoji(content)
+        content = ChatManager.#cleanStandardEmoji(content)
+        content = ChatManager.#stripDiscordContent(content).trim()
 
         if (event.attachments) {
             event.attachments.forEach(e => {
@@ -54,9 +58,26 @@ class ChatManager extends EventHandler {
         }
     }
 
+    static #cleanGuildEmoji(message) {
+        return message.replace(/<:(\w+):\d{16,}>/g, match => {
+            let emoji = match
+                .substring(1, match.length - 1)
+                .replace(/\d{16,}/g, "")
+            console.log(emoji)
+            return emoji
+        })
+    }
+
+    static #cleanStandardEmoji(message) {
+        for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
+            message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
+        }
+
+        return message
+    }
+
     static #stripDiscordContent(message) {
         return message
-            .replace(/<:\w+:(\d+){16,}>/g, '\n')
             .replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '\n')
             .split('\n')
             .map(part => {
