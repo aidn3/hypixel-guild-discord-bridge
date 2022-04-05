@@ -15,7 +15,7 @@ class ChatManager extends EventHandler {
     #onMessage(event) {
         if (event.author.bot) return
 
-        let content = ChatManager.#stripDiscordContent(event?.content || "").trim()
+        let content = ChatManager.#stripDiscordContent(event.cleanContent).trim()
 
         if (event.attachments) {
             event.attachments.forEach(e => {
