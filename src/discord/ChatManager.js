@@ -56,7 +56,6 @@ class ChatManager extends EventHandler {
 
     static #stripDiscordContent(message) {
         return message
-            .replace(/<[@|#|!|&]{1,2}(\d+){16,}>/g, '\n')
             .replace(/<:\w+:(\d+){16,}>/g, '\n')
             .replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '\n')
             .split('\n')
