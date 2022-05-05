@@ -5,7 +5,7 @@ const coolDown = new (require("cooldown"))(MINECRAFT_CONFIG.commands.factsCoolDo
 
 module.exports = {
     triggers: ['fact', 'facts', 'f'],
-    handler: function (clientInstance, reply, username, ...args) {
+    handler: function (clientInstance, reply, username, args) {
         if (!coolDown.fire()) return
 
         let randomIndex = Math.floor(Math.random() * facts.length)

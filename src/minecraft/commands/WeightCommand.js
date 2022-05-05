@@ -3,7 +3,7 @@ const fetch = require("axios");
 
 module.exports = {
     triggers: ['weight', 'w'],
-    handler: async function (clientInstance, reply, username, ...args) {
+    handler: async function (clientInstance, reply, username, args) {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
         let uuid = await getUuidByUsername(givenUsername)
