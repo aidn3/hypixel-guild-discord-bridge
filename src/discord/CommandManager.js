@@ -4,6 +4,7 @@ const {REST} = require('@discordjs/rest')
 const {Routes} = require('discord-api-types/v9')
 const {Collection} = require("discord.js")
 const EventHandler = require("../common/EventHandler")
+const {sendMetric, LOCATION, SCOPE, TYPE} = require("../common/PrometheusMetrics")
 
 const commandsJson = []
 const commandsExecutor = new Collection()
@@ -69,6 +70,7 @@ class CommandManager extends EventHandler {
 
             } else {
                 this.clientInstance.logger.debug(`${interaction.member.tag} executed command: ${printCommand(interaction)}`)
+                sendMetric(LOCATION.DISCORD, SCOPE.PUBLIC, TYPE.COMMAND, this.clientInstance.instanceName, interaction.commandName)
 
                 await command.execute(this.clientInstance, interaction)
             }

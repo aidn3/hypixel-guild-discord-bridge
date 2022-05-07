@@ -1,5 +1,6 @@
 const EventHandler = require("../common/EventHandler")
 const emojisMap = require("emoji-name-map");
+const {sendMetric, getLocation, SCOPE, TYPE} = require("../common/PrometheusMetrics");
 
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
 const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
@@ -44,12 +45,14 @@ class ChatManager extends EventHandler {
                 return
             }
 
+            sendMetric(getLocation(this.clientInstance), SCOPE.PUBLIC, TYPE.CHAT, this.clientInstance.instanceName)
             this.clientInstance.bridge.onPublicChatMessage(
                 this.clientInstance,
                 event.member.displayName,
                 content)
 
         } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
+            sendMetric(getLocation(this.clientInstance), SCOPE.OFFICER, TYPE.CHAT, this.clientInstance.instanceName)
             this.clientInstance.bridge.onOfficerChatMessage(
                 this.clientInstance,
                 event.member.displayName,

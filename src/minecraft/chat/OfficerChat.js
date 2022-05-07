@@ -1,3 +1,4 @@
+const {sendMetric, getLocation, SCOPE, TYPE} = require("../../common/PrometheusMetrics");
 module.exports = function (clientInstance, message) {
     // REGEX: Officer > [MVP+] aidn5 [Staff]: hello there.
     let regex = /^Officer > (?:\[[A-Z+]{1,10}\] ){0,3}(\w{3,32})(?: \[\w{1,10}\]){0,3}:(.{1,256})/g
@@ -9,6 +10,7 @@ module.exports = function (clientInstance, message) {
 
         if (clientInstance.bridge.isMinecraftBot(username)) return true
 
+        sendMetric(getLocation(clientInstance), SCOPE.OFFICER, TYPE.CHAT, clientInstance.instanceName)
         clientInstance.bridge.onOfficerChatMessage(
             clientInstance,
             username,

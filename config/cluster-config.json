@@ -1,4 +1,7 @@
 {
   "1_comment": "add prefix to messages indicating its origin e.g. '[DC]'",
-  "displayInstanceName": false
+  "displayInstanceName": false,
+  "prometheus_comment": "enable Prometheus monitoring system to scrap data",
+  "prometheus": true,
+  "prometheus_port": 9095
 }

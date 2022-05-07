@@ -24,6 +24,7 @@
     "emoji-name-map": "^1.2.9",
     "log4js": "^6.4.2",
     "mineflayer": "^4.1.0",
-    "node-cache": "^5.1.2"
+    "node-cache": "^5.1.2",
+    "prom-client": "^14.0.1"
   }
 }
