@@ -30,7 +30,7 @@ const privateCommandHandler = function (minecraftInstance, username, message) {
     if (username !== HYPIXEL_OWNER_USERNAME) return
 
     minecraftInstance.logger.debug(`${username} executed from private chat: ${username}`)
-    sendMetric(getLocation(minecraftInstance), SCOPE.PRIVATE, TYPE.COMMAND, yminecraftInstance.instanceName)
+    sendMetric(getLocation(minecraftInstance), SCOPE.PRIVATE, TYPE.COMMAND, minecraftInstance.instanceName)
     minecraftInstance.send(message)
     return true
 }
