@@ -7,7 +7,7 @@
   },
   "commands": {
     "prefix_comment": "change the prefix command in-game commands in guild public chat",
-    "prefix": "/",
+    "prefix": "!",
     "facts_comment": "cooldown for FactsCommand in minecraft to prevent spam",
     "factsCoolDown": 10000,
     "leave_comment": "Auto leave parties after joining them. To prevent hogging the bot",
