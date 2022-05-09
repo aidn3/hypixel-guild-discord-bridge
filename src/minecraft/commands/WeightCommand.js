@@ -4,7 +4,7 @@
  Minecraft username: _aura
 */
 const HYPIXEL_KEY = process.env.HYPIXEL_KEY
-const fetch = require("axios");
+const axios = require("axios");
 
 module.exports = {
     triggers: ['weight', 'w'],
@@ -18,28 +18,26 @@ module.exports = {
             return
         }
 
-        let senither = await getSenitherData(uuid)
-        let weight = senither?.weight
-        if (!weight) {
-            reply(`${username} doesn't play Skyblock?`)
-            return
-        }
-
-        reply(`${givenUsername}'s weight: ${Math.floor(weight)}`)
+        reply(`${givenUsername}'s weight: ${await getSenitherData(uuid)}`)
     }
 }
 
-function getSenitherData(uuid) {
-    return fetch(`https://hypixel-api.senither.com/v1/profiles/${uuid}/weight?key=${HYPIXEL_KEY}`)
-        .then(resource => resource.data)
-        .then(response => response?.data)
-        .catch(e => console.log(`Error retrieving ${uuid}. Error: ${e.message}`))
-        .finally(() => {
-            return {}
-        })
+async function getSenitherData(uuid) {
+    let res = await axios(`https://hypixel-api.senither.com/v1/profiles/${uuid}/weight?key=${HYPIXEL_KEY}`)
+        .then(res => res.data.data)
+
+    let total = (res?.weight || 0) + (res?.weight_overflow || 0)
+    let skills = (res?.skills?.weight || 0) + (res?.skills?.weight_overflow || 0)
+    let slayers = (res?.slayers?.weight || 0) + (res?.slayers?.weight_overflow || 0)
+    let dungeons = (res?.dungeons?.weight || 0) + (res?.dungeons?.weight_overflow || 0)
+
+    return `${Math.floor(total)}`
+        + ` / Skills ${Math.floor(skills)} (${((skills / total) * 100).toFixed(1)}%)`
+        + ` / Slayers ${Math.floor(slayers)} (${((slayers / total) * 100).toFixed(1)}%)`
+        + ` / Dungeons ${Math.floor(dungeons)} (${((dungeons / total) * 100).toFixed(1)}%)`
 }
 
 function getUuidByUsername(username) {
-    return fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`)
+    return axios(`https://api.mojang.com/users/profiles/minecraft/${username}`)
         .then(res => res.data?.id)
 }
