@@ -1,3 +1,8 @@
+/*
+ CREDIT: Idea by Aura
+ Discord: Aura#5051
+ Minecraft username: _aura
+*/
 const ANSWERS = [
     "As I see it, yes.",
     "Ask again later.",

@@ -1,3 +1,8 @@
+/*
+ CREDIT: Idea by Aura
+ Discord: Aura#5051
+ Minecraft username: _aura
+*/
 const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 const fetch = require("axios");
 

@@ -1,3 +1,8 @@
+/*
+ CREDIT: Idea by Aura
+ Discord: Aura#5051
+ Minecraft username: _aura
+*/
 const fetch = require("axios");
 
 const MARO_ENDPOINT = "https://maro.skybrokers.xyz/api/networth/categories"

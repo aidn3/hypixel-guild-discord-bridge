@@ -1,3 +1,8 @@
+/*
+ CREDIT: Idea by Aura
+ Discord: Aura#5051
+ Minecraft username: _aura
+*/
 const {evalExpression} = require('@hkh12/node-calc');
 
 module.exports = {

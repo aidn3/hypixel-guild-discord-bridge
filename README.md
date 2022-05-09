@@ -1,5 +1,7 @@
 # hypixel-guild-discord-bridge
-Service connects multiple guilds and discord server together
+Service connects multiple guilds and discord server together  
+This project is made to be fully flexible and customizable
+offering quality user experience while keeping it simple
 > **Disclaimer: This project interacts with hypixel in an unintended way by simulating a minecraft client and process packets which might gets you banned if you over-abuse it much.  
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at your own risk"**  
 
@@ -105,6 +107,5 @@ npm start
 ```
 
 ## Credits
-The Project is a duplicate of [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).   
-This project is made to be fully flexible and customizable 
-offering quality user experience while keeping it simple
+- The Project is a duplicate of [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches

@@ -1,3 +1,8 @@
+/*
+ CREDIT: Idea by Aura
+ Discord: Aura#5051
+ Minecraft username: _aura
+*/
 module.exports = {
     triggers: ['bitch', 'bitches', 'b'],
     handler: function (clientInstance, reply, username, args) {
