@@ -56,7 +56,6 @@ function getSelectedProfile(profiles) {
 }
 
 function localizedNetworth(coins) {
-    console.log(`Current coins: ${coins}`)
     let suffix = ""
     if (coins > 1000) {
         coins = coins / 1000
