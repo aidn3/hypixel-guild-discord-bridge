@@ -89,17 +89,21 @@ class Bridge {
             .forEach(inst => inst.send(full))
     }
 
-    #sendDiscordChat(instance, channelId, username, message) {
+    async #sendDiscordChat(instance, channelId, username, message) {
         if (instance !== this.discordInstance) {
-            this.discordInstance.client.channels
-                .fetch(channelId)
-                .then(channel => {
-                    let escaped = `**`
-                    if (DISPLAY_INSTANCE_NAME) escaped += `[${escapeDiscord(instance.instanceName)}] `
-                    escaped += escapeDiscord(username) + `:** ` + escapeDiscord(message)
+            let channel = await this.discordInstance.client.channels.fetch(channelId)
+            let webhooks = await channel.fetchWebhooks()
+            let webhook = webhooks.find(h => h.owner.id === this.discordInstance.client.user.id)
 
-                    channel.send(escaped)
-                })
+            if (!webhook) {
+                webhook = await channel.createWebhook('Hypixel-Guild-Bridge')
+            }
+
+            await webhook.send({
+                content: message,
+                username: username,
+                avatarURL: `https://mc-heads.net/avatar/${username}`
+            })
         }
     }
 
