@@ -1,4 +1,5 @@
-const {sendMetric, getLocation, SCOPE, TYPE} = require("../../common/PrometheusMetrics");
+const EventsMetrics = require("../../metrics/EventsMetrics");
+const {getLocation, SCOPE} = require("../../metrics/Util");
 const COLOR = require('../../../config/discord-config.json').events.color
 
 module.exports = function (clientInstance, message) {
@@ -8,7 +9,7 @@ module.exports = function (clientInstance, message) {
     if (match != null) {
         let username = match[1]
 
-        sendMetric(getLocation(clientInstance), SCOPE.PUBLIC, TYPE.GUILD_EVENT, clientInstance.instanceName,"join")
+        EventsMetrics(getLocation(clientInstance), SCOPE.PUBLIC, clientInstance.instanceName, "join")
         clientInstance.bridge.onPublicEvent(
             clientInstance,
             username,

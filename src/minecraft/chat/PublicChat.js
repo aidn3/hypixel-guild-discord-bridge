@@ -1,5 +1,6 @@
 const {publicCommandHandler} = require('../CommandsManager')
-const {sendMetric, getLocation, SCOPE, TYPE} = require("../../common/PrometheusMetrics");
+const ChatMetrics = require("../../metrics/ChatMetrics");
+const {getLocation, SCOPE} = require("../../metrics/Util");
 
 module.exports = function (clientInstance, message) {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
@@ -13,7 +14,7 @@ module.exports = function (clientInstance, message) {
         if (clientInstance.bridge.isMinecraftBot(username)) return true
         if (publicCommandHandler(clientInstance, username, playerMessage)) return
 
-        sendMetric(getLocation(clientInstance), SCOPE.PUBLIC, TYPE.CHAT, clientInstance.instanceName)
+        ChatMetrics(getLocation(clientInstance), SCOPE.PUBLIC, clientInstance.instanceName)
         clientInstance.bridge.onPublicChatMessage(
             clientInstance,
             username,

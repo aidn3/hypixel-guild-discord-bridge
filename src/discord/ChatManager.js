@@ -1,5 +1,6 @@
 const EventHandler = require("../common/EventHandler")
-const {sendMetric, getLocation, SCOPE, TYPE} = require("../common/PrometheusMetrics");
+const {getLocation, SCOPE} = require("../metrics/Util")
+const ChatMetrics = require("../metrics/ChatMetrics")
 const {cleanMessage} = require("../common/DiscordMessageUtil");
 
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
@@ -29,14 +30,14 @@ class ChatManager extends EventHandler {
                 return
             }
 
-            sendMetric(getLocation(this.clientInstance), SCOPE.PUBLIC, TYPE.CHAT, this.clientInstance.instanceName)
+            ChatMetrics(getLocation(this.clientInstance), SCOPE.PUBLIC, this.clientInstance.instanceName)
             this.clientInstance.bridge.onPublicChatMessage(
                 this.clientInstance,
                 event.member.displayName,
                 content)
 
         } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
-            sendMetric(getLocation(this.clientInstance), SCOPE.OFFICER, TYPE.CHAT, this.clientInstance.instanceName)
+            ChatMetrics(getLocation(this.clientInstance), SCOPE.OFFICER, this.clientInstance.instanceName)
             this.clientInstance.bridge.onOfficerChatMessage(
                 this.clientInstance,
                 event.member.displayName,

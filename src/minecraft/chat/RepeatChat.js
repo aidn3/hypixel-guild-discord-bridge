@@ -1,4 +1,5 @@
-const {sendMetric, getLocation, SCOPE, TYPE} = require("../../common/PrometheusMetrics");
+const EventsMetrics = require("../../metrics/EventsMetrics");
+const {getLocation, SCOPE} = require("../../metrics/Util");
 const COLOR = require('../../../config/discord-config.json').events.color
 
 const MESSAGES = [
@@ -26,7 +27,7 @@ module.exports = function (clientInstance, message) {
     let match = regex.exec(message)
     if (match != null) {
 
-        sendMetric(getLocation(clientInstance), SCOPE.PUBLIC, TYPE.GUILD_EVENT, clientInstance.instanceName, "you_can_not_say_same_message_twice")
+        EventsMetrics(getLocation(clientInstance), SCOPE.PUBLIC, clientInstance.instanceName, "you_can_not_say_same_message_twice")
         clientInstance.bridge.onPublicEvent(
             clientInstance,
             null,

@@ -1,5 +1,6 @@
 const fs = require("fs")
-const {sendMetric, LOCATION, SCOPE, TYPE, getLocation} = require("../common/PrometheusMetrics")
+const CommandMetrics = require("../metrics/CommandMetrics")
+const {LOCATION, SCOPE, getLocation} = require("../metrics/Util");
 const commands = fs.readdirSync('./src/minecraft/commands')
     .filter(file => file.endsWith('Command.js'))
     .map(f => require(`./commands/${f}`))
@@ -20,7 +21,7 @@ const publicCommandHandler = function (minecraftInstance, username, message) {
     let command = commands.find(c => c.triggers.some(t => t === commandName))
     if (command) {
         minecraftInstance.logger.debug(`${username} executed command: ${message}`)
-        sendMetric(LOCATION.MINECRAFT, SCOPE.PUBLIC, TYPE.COMMAND, minecraftInstance.instanceName, command.triggers[0])
+        CommandMetrics(LOCATION.MINECRAFT, SCOPE.PUBLIC, minecraftInstance.instanceName, command.triggers[0])
         command.handler(minecraftInstance, reply, username, args)
         return true
     }
@@ -30,7 +31,7 @@ const privateCommandHandler = function (minecraftInstance, username, message) {
     if (username !== HYPIXEL_OWNER_USERNAME) return
 
     minecraftInstance.logger.debug(`${username} executed from private chat: ${username}`)
-    sendMetric(getLocation(minecraftInstance), SCOPE.PRIVATE, TYPE.COMMAND, minecraftInstance.instanceName)
+    CommandMetrics(getLocation(minecraftInstance), SCOPE.PRIVATE, minecraftInstance.instanceName, null)
     minecraftInstance.send(message)
     return true
 }

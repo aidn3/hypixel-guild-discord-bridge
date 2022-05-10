@@ -1,6 +1,6 @@
 const log4js = require("log4js")
 const PunishedUsers = require("./MutedUsers");
-const {getLocation, LOCATION} = require("./common/PrometheusMetrics");
+const {getLocation, LOCATION} = require("./metrics/Util");
 
 const DISPLAY_INSTANCE_NAME = require('../config/cluster-config.json').displayInstanceName
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL

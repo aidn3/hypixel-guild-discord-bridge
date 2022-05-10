@@ -1,4 +1,5 @@
-const {sendMetric, getLocation, SCOPE, TYPE} = require("../../common/PrometheusMetrics");
+const EventsMetrics = require("../../metrics/EventsMetrics");
+const {getLocation, SCOPE} = require("../../metrics/Util");
 const COLOR = require('../../../config/discord-config.json').events.color
 
 module.exports = function (clientInstance, message) {
@@ -12,7 +13,7 @@ module.exports = function (clientInstance, message) {
 
         clientInstance.bridge.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
 
-        sendMetric(getLocation(clientInstance), SCOPE.OFFICER, TYPE.GUILD_EVENT, clientInstance.instanceName,"mute")
+        EventsMetrics(getLocation(clientInstance), SCOPE.OFFICER, clientInstance.instanceName, "mute")
         clientInstance.bridge.onOfficerEvent(
             clientInstance,
             username,

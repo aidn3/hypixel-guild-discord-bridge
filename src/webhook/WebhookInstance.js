@@ -1,7 +1,8 @@
 const ClientInstance = require("../common/ClientInstance")
 const {cleanMessage} = require("../common/DiscordMessageUtil")
 const {WebhookClient} = require("discord.js-light")
-const {sendMetric, SCOPE, TYPE, LOCATION} = require("../common/PrometheusMetrics");
+const ChatMetrics = require("../metrics/ChatMetrics");
+const {LOCATION, SCOPE} = require("../metrics/Util");
 
 
 class WebhookInstance extends ClientInstance {
@@ -40,7 +41,7 @@ class WebhookInstance extends ClientInstance {
         let content = cleanMessage(event)
         if (content.length === 0) return
 
-        sendMetric(LOCATION.WEBHOOK, SCOPE.PUBLIC, TYPE.CHAT, this.instanceName)
+        ChatMetrics(LOCATION.WEBHOOK, SCOPE.PUBLIC, this.instanceName)
         this.bridge.onPublicChatMessage(this.instanceName, event.author.username, content)
     }
 }
