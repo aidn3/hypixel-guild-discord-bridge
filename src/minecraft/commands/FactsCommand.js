@@ -1,12 +1,9 @@
 let facts = require('../../../config/minecraft-facts.json')
-const MINECRAFT_CONFIG = require("../../../config/minecraft-config.json")
 
-const coolDown = new (require("cooldown"))(MINECRAFT_CONFIG.commands.factsCoolDown)
 
 module.exports = {
     triggers: ['fact', 'facts', 'f'],
     handler: function (clientInstance, reply, username, args) {
-        if (!coolDown.fire()) return
 
         let randomIndex = Math.floor(Math.random() * facts.length)
         let selectedIndex = Math.abs(Math.floor(Number(args[0])))
