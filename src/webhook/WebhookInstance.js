@@ -29,6 +29,7 @@ class WebhookInstance extends ClientInstance {
             this.#client.send({
                 content: message,
                 username: username,
+                avatarURL: `https://mc-heads.net/avatar/${username}`
             })
         }
     }
