@@ -1,6 +1,6 @@
 const EventHandler = require("../common/EventHandler")
-const emojisMap = require("emoji-name-map");
 const {sendMetric, getLocation, SCOPE, TYPE} = require("../common/PrometheusMetrics");
+const {cleanMessage} = require("../common/DiscordMessageUtil");
 
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
 const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
@@ -17,23 +17,7 @@ class ChatManager extends EventHandler {
     #onMessage(event) {
         if (event.author.bot) return
 
-        let content = event.cleanContent
-        content = ChatManager.#cleanGuildEmoji(content)
-        content = ChatManager.#cleanStandardEmoji(content)
-        content = ChatManager.#stripDiscordContent(content).trim()
-
-        if (event.attachments) {
-            event.attachments.forEach(e => {
-                let attachment = e
-                if (attachment.contentType.includes("image")) {
-                    content += ` ${attachment.url}`
-
-                } else {
-                    content += ` (ATTACHMENT)`
-                }
-            })
-        }
-
+        let content = cleanMessage(event)
         if (content.length === 0) return
 
         if (event.channel.id === DISCORD_PUBLIC_CHANNEL) {
@@ -59,35 +43,6 @@ class ChatManager extends EventHandler {
                 content
             )
         }
-    }
-
-    static #cleanGuildEmoji(message) {
-        return message.replace(/<:(\w+):\d{16,}>/g, match => {
-            let emoji = match
-                .substring(1, match.length - 1)
-                .replace(/\d{16,}/g, "")
-            console.log(emoji)
-            return emoji
-        })
-    }
-
-    static #cleanStandardEmoji(message) {
-        for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
-            message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
-        }
-
-        return message
-    }
-
-    static #stripDiscordContent(message) {
-        return message
-            .replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '\n')
-            .split('\n')
-            .map(part => {
-                part = part.trim()
-                return part.length === 0 ? '' : part + ' '
-            })
-            .join('')
     }
 }
 

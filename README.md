@@ -24,6 +24,7 @@ offering quality user experience while keeping it simple
 
 - Connect multiple guilds chats together
 - Bind hypixel guilds chats to discord channels
+- Send and receive Chat from other guilds/discord servers via Webhooks
 - Support Public and Officer Chat
 - Support muting/kicking/inviting/etc. from discord
 - Share events with discord such as online/offline/join/leave/mute notification/etc.
@@ -78,6 +79,27 @@ offering quality user experience while keeping it simple
 **Note: Only the one person who holds administrate permission can execute command!**  
 From In-game: `/msg username /guild party`  
 From Discord: `/override /guild party`
+
+
+## Webhook
+"Webhooks can send messages to a text channel without having to log in as a bot."  
+It is used if the targeted community isn't within the admins' jurisdiction.  
+Used to avoid giving any account login information (e.g. password, tokens, etc) or running the cluster in one server.
+
+### Receive Messages
+To receive messages, you need to 
+- Create a **Discord webhook** in the used **guild public chat channel**
+- Register the **webhook id** in `.env` (messages will be filtered otherwise)
+- Give the FULL **webhook id** to the targeted community to send messages through
+
+### Send Messages
+- Receive the **full webhook url**
+- Register it in `.env` (messages won't be sent over otherwise)
+
+### Webhook Best Practice
+It is best to exchange both send and receive keys and set up a two-way road for both community.  
+`.env` Supports name for each community. You can for example exchange both keys and name the connection "Simple".
+`WEBHOOK_simple="receive-id-here,send-url-here"`
 
 # Installing and Running
 ## Prerequisites

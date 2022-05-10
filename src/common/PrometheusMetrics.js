@@ -4,7 +4,7 @@ const client = require('prom-client');
 
 const CLUSTER_CONFIG = require("../../config/cluster-config.json")
 
-const LOCATION = {DISCORD: "discord", MINECRAFT: "minecraft"}
+const LOCATION = {DISCORD: "discord", MINECRAFT: "minecraft", WEBHOOK: "webhook"}
 const SCOPE = {OFFICER: "officer", PUBLIC: "public", PRIVATE: "private"}
 const TYPE = {COMMAND: "command", CHAT: "chat", GUILD_EVENT: "event"}
 const PREFIX = "guild_bridge_"
@@ -63,7 +63,12 @@ function getLocation(instance) {
     // DiscordInstance itself requires THIS module
     // it gives the error:
     // Warning: Accessing non-existent property 'sendMetric' of module exports inside circular dependency
-    return instance.constructor.name === "DiscordInstance" ? LOCATION.DISCORD : LOCATION.MINECRAFT
+
+    if (instance.constructor.name === "DiscordInstance") return LOCATION.DISCORD
+    if (instance.constructor.name === "MinecraftInstance") return LOCATION.MINECRAFT
+    if (instance.constructor.name === "WebhookInstance") return LOCATION.WEBHOOK
+
+    throw  new Error(`${instance} can't be recognized.`)
 }
 
 module.exports = {sendMetric, getLocation, LOCATION, SCOPE, TYPE}

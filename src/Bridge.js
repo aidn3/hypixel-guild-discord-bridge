@@ -1,5 +1,6 @@
 const log4js = require("log4js")
 const PunishedUsers = require("./MutedUsers");
+const {getLocation, LOCATION} = require("./common/PrometheusMetrics");
 
 const DISPLAY_INSTANCE_NAME = require('../config/cluster-config.json').displayInstanceName
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
@@ -27,6 +28,7 @@ class Bridge {
     punishedUsers;
     discordInstance;
     minecraftInstances = [];
+    webhookInstances = []
     #discordOptions;
 
     constructor(discordOptions) {
@@ -52,7 +54,14 @@ class Bridge {
         publicChatLogger.info(`[${instance.instanceName}] ${username}: ${message}`)
 
         this.#sendMinecraftChat(instance, "gc", username, message)
-        this.#sendDiscordChat(instance, DISCORD_PUBLIC_CHANNEL, username, message)
+
+        if (getLocation(instance) !== LOCATION.WEBHOOK) { // webhooks received in same channel
+            this.#sendDiscordChat(instance, DISCORD_PUBLIC_CHANNEL, username, message)
+        }
+
+        this.webhookInstances
+            .filter(i => i !== instance)
+            .forEach(i => i.send(instance.instanceName, username, message))
     }
 
     onOfficerChatMessage(instance, username, message) {

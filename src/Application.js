@@ -1,6 +1,7 @@
 const Bridge = require("./Bridge")
 const DiscordInstance = require("./discord/DiscordInstance")
 const MinecraftInstance = require("./minecraft/MinecraftInstance")
+const WebhookInstance = require("./webhook/WebhookInstance")
 const HypixelGuild = require("./guild/HypixelGuild")
 
 const DISCORD_CONFIG = require("../config/discord-config.json")
@@ -12,6 +13,16 @@ class Application {
         this.hypixelGuild = new HypixelGuild(this.bridge)
 
         this.bridge.discordInstance = new DiscordInstance("DC", this.bridge, DISCORD_CONFIG.cache)
+
+        for (let envKey in process.env) {
+            if (envKey.startsWith("WEBHOOK_")) {
+                let webhookInfo = process.env[envKey].split(",")
+                let instanceName = envKey.replace("WEBHOOK_", "")
+
+                let instance = new WebhookInstance(instanceName, this.bridge, this.bridge.discordInstance, webhookInfo[1], webhookInfo[0])
+                this.bridge.webhookInstances.push(instance)
+            }
+        }
 
         for (let envKey in process.env) {
             if (envKey.startsWith("MINECRAFT_")) {
