@@ -3,6 +3,7 @@ const DiscordInstance = require("./discord/DiscordInstance")
 const MinecraftInstance = require("./minecraft/MinecraftInstance")
 const WebhookInstance = require("./webhook/WebhookInstance")
 const HypixelGuild = require("./guild/HypixelGuild")
+const GuildApiMetrics = require("./metrics/GuildApiMetrics")
 
 const DISCORD_CONFIG = require("../config/discord-config.json")
 const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
@@ -40,6 +41,8 @@ class Application {
                 this.bridge.minecraftInstances.push(instance)
             }
         }
+
+        GuildApiMetrics(this.bridge)
     }
 
     connect() {
