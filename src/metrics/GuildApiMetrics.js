@@ -30,7 +30,7 @@ register.registerMetric(GUILD_MEMBERS)
 
 async function collectMetrics(uuid) {
     if (!uuid) return
-    console.log(`scrapping data for ${uuid}`)
+    // TODO: add better logger structure
     let guild = await axios.get(`https://api.hypixel.net/guild?key=${HYPIXEL_KEY}&player=${uuid}`)
         .then(res => res.data.guild)
 
