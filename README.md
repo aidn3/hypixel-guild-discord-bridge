@@ -125,6 +125,32 @@ In-game interval commands execution for metrics is **disabled by default**.
 Automatically sending commands non-stop to Hypixel might get the client banned for "botting".
 Although the chance is next to non-existent, it is disabled for safe measures.
 
+### Metrics With Grafana
+Metrics can directly be used from Prometheus server by querying directly. 
+However, to visualise the data, another server is required to do the job.
+[Grafana](https://grafana.com) is one of the most popular and easy to use out there.
+Many tutorials exist on the internet showcasing Grafana setups and settings.
+
+Here are examples of **Prometheus query** and their results displayed using Grafana:
+
+- Guild Chat:
+```prometheus
+sum(increase(guild_bridge_chat[1h])) by (scope,location)
+```
+![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_chat.png)
+
+- Guild Total Experience:
+```prometheus
+increase(guild_bridge_guild_exp_total[10m])
+```
+![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_experience_total.png)
+
+- Guild Current Online Members:
+```
+guild_bridge_guild_members_online
+```
+![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_members_online.png)
+
 
 # Installing and Running
 ## Prerequisites
