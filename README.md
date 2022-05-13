@@ -101,6 +101,31 @@ It is best to exchange both send and receive keys and set up a two-way road for 
 `.env` Supports name for each community. You can for example exchange both keys and name the connection "Simple".
 `WEBHOOK_simple="receive-id-here,send-url-here"`
 
+## Metrics
+hypixel-guild-discord-bridge supports [Prometheus](https://github.com/prometheus/prometheus) metrics and it is **enabled by default** on port `9095`. 
+Many metrics are automatically collected in memory and await prometheus to scrap them.
+
+### Available Metrics
+These are the currently monitored metrics. No usernames or anything personal is monitored. All metrics have the default prefix `guild_bridge_`. It can be changed in `./config/metrics-config.json`.
+
+| Metric                        | Description                  | Source                                                  | metadata                                                                                                                                 |
+|-------------------------------|------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `PREFIX_guild_exp_total`      | Guild total experience       | Hypixel API `/guild` end point                          | `name`: Guild name                                                                                                                       |
+| `PREFIX_guild_exp_game`       | Guild experience per game    | Hypixel API `/guild` end point                          | `name`: Guild name, `type`: game type                                                                                                    |
+| `PREFIX_guild_members`        | Guild members count          | Hypixel API `/guild` end point                          | `name`: Guild name                                                                                                                       |
+| `PREFIX_chat`                 | Messages count of all Chat   | In-game guild chat/discord bot                          | `location`: discord, webhook, in-game.<br>`scope`: private, officer, public chat.<br>`instance`: name of the source registered in `.env` |
+| `PREFIX_command`              | Commands usage count         | Discord commands interactions and in-game chat commands | Same as chat metrics + `command`: command name                                                                                           |
+| `PREFIX_event`                | Events count                 | Discord server events and in-game chat                  | same as chat metrics + `event`: event name (e.g. offline, join, mute, etc.)                                                              |
+| `PREFIX_guild_members_online` | Guild current online members | In-game interval execution of `/guild list`             | `name`: Guild name                                                                                                                       |
+
+### Metrics Config
+All metrics config are in `./config/metrics-config.json`.  
+
+In-game interval commands execution for metrics is **disabled by default**. 
+Automatically sending commands non-stop to Hypixel might get the client banned for "botting".
+Although the chance is next to non-existent, it is disabled for safe measures.
+
+
 # Installing and Running
 ## Prerequisites
 - [Nodejs version 1.16 or later](https://nodejs.dev/download)
