@@ -23,5 +23,9 @@ process.on('uncaughtException', function (e) {
 })
 
 process.title = packageJson.name
+
+const metrics = require('./src/util/ApplicationMetric')
+metrics(packageJson.name, packageJson.version)
+
 const app = require('./src/Application')
 app.connect()
