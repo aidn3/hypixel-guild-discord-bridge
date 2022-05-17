@@ -53,6 +53,7 @@ const escapeDiscord = function (message) {
     if (!message) return ""
 
     message = message.split('_').join('\\_') // Italic
+    message = message.split('\\').join('\\\\') // "\"
     message = message.split('*').join('\\*') // bold
     message = message.split('~').join('\\~') // strikethrough
     message = message.split('`').join('\\`') // code
