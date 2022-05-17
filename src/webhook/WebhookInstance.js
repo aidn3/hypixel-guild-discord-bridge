@@ -1,5 +1,5 @@
 const ClientInstance = require("../common/ClientInstance")
-const {cleanMessage} = require("../common/DiscordMessageUtil")
+const {cleanMessage, escapeDiscord} = require("../common/DiscordMessageUtil")
 const {WebhookClient} = require("discord.js-light")
 const ChatMetrics = require("../metrics/ChatMetrics");
 const {LOCATION, SCOPE} = require("../metrics/Util");
@@ -28,7 +28,7 @@ class WebhookInstance extends ClientInstance {
         // TODO: integrate instanceName into webhook messages
         if (this.#client) {
             this.#client.send({
-                content: message,
+                content: escapeDiscord(message),
                 username: username,
                 avatarURL: `https://mc-heads.net/avatar/${username}`
             })

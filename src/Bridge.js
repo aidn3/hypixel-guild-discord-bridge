@@ -1,6 +1,7 @@
 const log4js = require("log4js")
 const PunishedUsers = require("./MutedUsers");
 const {getLocation, LOCATION} = require("./metrics/Util");
+const {escapeDiscord} = require("./common/DiscordMessageUtil");
 
 const DISPLAY_INSTANCE_NAME = require('../config/cluster-config.json').displayInstanceName
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
@@ -11,18 +12,6 @@ const publicEventLogger = log4js.getLogger("Public-Event")
 const officerChatLogger = log4js.getLogger("Officer-Chat")
 const officerEventLogger = log4js.getLogger("Officer-Event")
 
-
-const escapeDiscord = function (message) {
-    if (!message) return ""
-
-    message = message.split('_').join('\\_') // Italic
-    message = message.split('*').join('\\*') // bold
-    message = message.split('~').join('\\~') // strikethrough
-    message = message.split('`').join('\\`') // code
-    message = message.split('@').join('\\@-') // mentions
-
-    return message
-}
 
 class Bridge {
     punishedUsers;
@@ -100,7 +89,7 @@ class Bridge {
             }
 
             await webhook.send({
-                content: message,
+                content: escapeDiscord(message),
                 username: username,
                 avatarURL: `https://mc-heads.net/avatar/${username}`
             })

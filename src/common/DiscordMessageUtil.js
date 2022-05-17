@@ -49,4 +49,16 @@ function cleanMessage(messageEvent) {
     return content
 }
 
-module.exports = {cleanMessage}
+const escapeDiscord = function (message) {
+    if (!message) return ""
+
+    message = message.split('_').join('\\_') // Italic
+    message = message.split('*').join('\\*') // bold
+    message = message.split('~').join('\\~') // strikethrough
+    message = message.split('`').join('\\`') // code
+    message = message.split('@').join('\\@-') // mentions
+
+    return message
+}
+
+module.exports = {cleanMessage, escapeDiscord}
