@@ -35,7 +35,7 @@ class DiscordInstance extends ClientInstance {
             intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
         })
 
-        this.client.login(DISCORD_KEY)
+        return this.client.login(DISCORD_KEY)
             .then(() => this.#handlers.forEach(handler => handler.registerEvents()))
             .catch(error => {
                 this.logger.fatal(error)

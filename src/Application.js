@@ -8,6 +8,7 @@ const GuildOnlineMetrics = require("./metrics/GuildOnlineMetrics")
 
 const DISCORD_CONFIG = require("../config/discord-config.json")
 const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
+const COLOR = require('../config/discord-config.json').events.color
 
 class Application {
     constructor() {
@@ -47,9 +48,20 @@ class Application {
         GuildOnlineMetrics(this.bridge)
     }
 
-    connect() {
-        this.bridge.discordInstance.connect()
-        this.bridge.minecraftInstances.forEach(instance => instance.connect())
+    async connect() {
+        await this.bridge.discordInstance.connect()
+        for (let instance of this.bridge.minecraftInstances) {
+            //TODO: instance will try to connect but won't be "ready" to receive events
+            // NEED TO CHANGE MinecraftInstance#connect()
+            await instance.connect()
+        }
+
+        this.bridge.onPublicEvent(
+            null,
+            null,
+            "Bridge has started.",
+            COLOR.INFO,
+            false)
     }
 }
 

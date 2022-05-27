@@ -25,6 +25,14 @@ class StateHandler extends EventHandler {
         this.#loginAttempts = 0
         this.#exactDelay = 0
         this.clientInstance.status = Status.CONNECTED
+
+        this.clientInstance.bridge.onPublicEvent(
+            this.clientInstance,
+            null,
+            `Client ${this.clientInstance.instanceName} is connected and ready!`,
+            COLOR.GOOD,
+            false
+        )
     }
 
     #onEnd(reason) {
@@ -49,6 +57,14 @@ class StateHandler extends EventHandler {
         this.clientInstance.logger.error(`Minecraft bot disconnected from server,`
             + `attempting reconnect in ${loginDelay / 1000} seconds`)
 
+        this.clientInstance.bridge.onPublicEvent(
+            this.clientInstance,
+            null,
+            `Client ${this.clientInstance.instanceName} is reconnecting in ${Math.floor(loginDelay / 1000)} second.`,
+            COLOR.INFO,
+            false
+        )
+
         setTimeout(() => this.clientInstance.connect(), loginDelay)
         this.clientInstance.status = Status.RECONNECTING
     }
@@ -65,6 +81,17 @@ class StateHandler extends EventHandler {
                 this.clientInstance,
                 this.clientInstance.username(),
                 "Someone logged in from another place.\nWon't try to re-login.\nRestart to reconnect.",
+                COLOR.ERROR,
+                false
+            )
+
+        } else {
+            this.clientInstance.bridge.onPublicEvent(
+                this.clientInstance,
+                null,
+                `Client ${this.clientInstance.instanceName} has been kicked.\n`
+                + `Attempting to reconnect will be made soon\n`
+                + `Current reconnecting attempts: ${this.#loginAttempts}`,
                 COLOR.ERROR,
                 false
             )

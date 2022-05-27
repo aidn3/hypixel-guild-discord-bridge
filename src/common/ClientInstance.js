@@ -11,7 +11,7 @@ class ClientInstance {
         this.logger = logger.getLogger(instanceName)
     }
 
-    connect() {
+    async connect() {
         throw new Error("method not implemented yet")
     }
 }

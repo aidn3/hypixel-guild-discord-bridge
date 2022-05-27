@@ -26,21 +26,21 @@ class Bridge {
     }
 
     onOfficerEvent(instance, username, message, color, isTemp) {
-        officerEventLogger.info(`[${instance.instanceName}] ${username}: ${message}`)
+        officerEventLogger.info(`[${instance?.instanceName}] ${username}: ${message}`)
 
         this.#sendMinecraftChat(instance, "oc", "", message)
         this.#sendDiscordEvent(instance, DISCORD_OFFICER_CHANNEL, username, message, color, isTemp)
     }
 
     onPublicEvent(instance, username, message, color, isTemp) {
-        publicEventLogger.info(`[${instance.instanceName}] ${username}: ${message}`)
+        publicEventLogger.info(`[${instance?.instanceName}] ${username}: ${message}`)
 
         this.#sendMinecraftChat(instance, "gc", "", message)
         this.#sendDiscordEvent(instance, DISCORD_PUBLIC_CHANNEL, username, message, color, isTemp)
     }
 
     onPublicChatMessage(instance, username, message) {
-        publicChatLogger.info(`[${instance.instanceName}] ${username}: ${message}`)
+        publicChatLogger.info(`[${instance?.instanceName}] ${username}: ${message}`)
 
         this.#sendMinecraftChat(instance, "gc", username, message)
 
@@ -50,11 +50,11 @@ class Bridge {
 
         this.webhookInstances
             .filter(i => i !== instance)
-            .forEach(i => i.send(instance.instanceName, username, message))
+            .forEach(i => i.send(instance?.instanceName, username, message))
     }
 
     onOfficerChatMessage(instance, username, message) {
-        officerChatLogger.info(`[${instance.instanceName}] ${username}: ${message}`)
+        officerChatLogger.info(`[${instance?.instanceName}] ${username}: ${message}`)
 
         this.#sendMinecraftChat(instance, "oc", username, message)
         this.#sendDiscordChat(instance, DISCORD_OFFICER_CHANNEL, username, message)
@@ -70,7 +70,7 @@ class Bridge {
 
     #sendMinecraftChat(instance, prefix, username, message) {
         let full = `/${prefix} `
-        if (DISPLAY_INSTANCE_NAME) full += `[${instance.instanceName}] `
+        if (DISPLAY_INSTANCE_NAME) full += `[${instance?.instanceName}] `
         full += `${username}: ${message}`
 
         this.minecraftInstances
