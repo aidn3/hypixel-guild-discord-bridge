@@ -24,12 +24,15 @@ class WebhookInstance extends ClientInstance {
         }
     }
 
-    async send(instanceName, username, message) {
+    async send(instanceName, username, replyUsername, message) {
         // TODO: integrate instanceName into webhook messages
+
+        let displayUsername = replyUsername ? `${username}▸${replyUsername}` : username
+
         if (this.#client) {
             this.#client.send({
                 content: escapeDiscord(message),
-                username: username,
+                username: displayUsername,
                 avatarURL: `https://mc-heads.net/avatar/${username}`
             })
         }
@@ -42,7 +45,12 @@ class WebhookInstance extends ClientInstance {
         if (content.length === 0) return
 
         ChatMetrics(LOCATION.WEBHOOK, SCOPE.PUBLIC, this.instanceName)
-        this.bridge.onPublicChatMessage(this.instanceName, event.author.username, content)
+        this.bridge.onPublicChatMessage(
+            this.instanceName,
+            event.author.username,
+            null, //TODO: find way to get replyUsername for webhooks (if possible at all)
+            content
+        )
     }
 }
 

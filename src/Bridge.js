@@ -39,25 +39,25 @@ class Bridge {
         this.#sendDiscordEvent(instance, DISCORD_PUBLIC_CHANNEL, username, message, color, isTemp)
     }
 
-    onPublicChatMessage(instance, username, message) {
-        publicChatLogger.info(`[${instance?.instanceName}] ${username}: ${message}`)
+    onPublicChatMessage(instance, username, replyUsername, message) {
+        publicChatLogger.info(`[${instance?.instanceName}] ${username}->${replyUsername}: ${message}`)
 
-        this.#sendMinecraftChat(instance, "gc", username, message)
+        this.#sendMinecraftChat(instance, "gc", username, replyUsername, message)
 
         if (getLocation(instance) !== LOCATION.WEBHOOK) { // webhooks received in same channel
-            this.#sendDiscordChat(instance, DISCORD_PUBLIC_CHANNEL, username, message)
+            this.#sendDiscordChat(instance, DISCORD_PUBLIC_CHANNEL, username, replyUsername, message)
         }
 
         this.webhookInstances
             .filter(i => i !== instance)
-            .forEach(i => i.send(instance?.instanceName, username, message))
+            .forEach(i => i.send(instance?.instanceName, username, replyUsername, message))
     }
 
-    onOfficerChatMessage(instance, username, message) {
-        officerChatLogger.info(`[${instance?.instanceName}] ${username}: ${message}`)
+    onOfficerChatMessage(instance, username, replyUsername, message) {
+        officerChatLogger.info(`[${instance?.instanceName}] ${username}->${replyUsername}: ${message}`)
 
-        this.#sendMinecraftChat(instance, "oc", username, message)
-        this.#sendDiscordChat(instance, DISCORD_OFFICER_CHANNEL, username, message)
+        this.#sendMinecraftChat(instance, "oc", username, replyUsername, message)
+        this.#sendDiscordChat(instance, DISCORD_OFFICER_CHANNEL, username, replyUsername, message)
     }
 
     sendMinecraftCommand(command) {
@@ -68,17 +68,19 @@ class Bridge {
         return this.minecraftInstances.some(inst => inst.username() === username)
     }
 
-    #sendMinecraftChat(instance, prefix, username, message) {
+    #sendMinecraftChat(instance, prefix, username, replyUsername = null, message) {
         let full = `/${prefix} `
         if (DISPLAY_INSTANCE_NAME) full += `[${instance?.instanceName}] `
-        full += `${username}: ${message}`
+        full += username
+        if (replyUsername) full += `⇾${replyUsername}`
+        full += `: ${message}`
 
         this.minecraftInstances
             .filter(inst => inst !== instance)
             .forEach(inst => inst.send(full))
     }
 
-    async #sendDiscordChat(instance, channelId, username, message) {
+    async #sendDiscordChat(instance, channelId, username, replyUsername, message) {
         if (instance !== this.discordInstance) {
             let channel = await this.discordInstance.client.channels.fetch(channelId)
             let webhooks = await channel.fetchWebhooks()
@@ -88,9 +90,12 @@ class Bridge {
                 webhook = await channel.createWebhook('Hypixel-Guild-Bridge')
             }
 
+            let displayUsername = replyUsername ? `${username}⇾${replyUsername}` : username
+
+            //TODO: integrate instanceName
             await webhook.send({
                 content: escapeDiscord(message),
-                username: username,
+                username: displayUsername,
                 avatarURL: `https://mc-heads.net/avatar/${username}`
             })
         }

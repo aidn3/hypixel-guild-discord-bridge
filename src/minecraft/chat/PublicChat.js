@@ -18,6 +18,7 @@ module.exports = function (clientInstance, message) {
         clientInstance.bridge.onPublicChatMessage(
             clientInstance,
             username,
+            null, //TODO: find way to find reply to
             playerMessage
         )
         return true

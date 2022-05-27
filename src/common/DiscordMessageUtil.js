@@ -62,4 +62,14 @@ const escapeDiscord = function (message) {
     return message
 }
 
-module.exports = {cleanMessage, escapeDiscord}
+const getReplyUsername = async function (messageEvent) {
+    if (!messageEvent.reference) return
+
+    let replyMessage = await messageEvent.channel.messages.fetch(messageEvent.reference.messageId)
+    if (replyMessage.webhookId) return replyMessage.author.username
+
+    let guildMember = messageEvent.guild.members.fetch(replyMessage.author.id)
+    return guildMember.displayName
+}
+
+module.exports = {cleanMessage, escapeDiscord, getReplyUsername}
