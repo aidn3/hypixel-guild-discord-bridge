@@ -1,15 +1,18 @@
 const {SlashCommandBuilder} = require('@discordjs/builders')
 const {MessageEmbed} = require("discord.js")
-const axios = require('axios')
+const mojang = require("mojang")
+
+const HYPIXEL_KEY = process.env.HYPIXEL_KEY
+const hypixel = new (require("hypixel-api-reborn").Client)(HYPIXEL_KEY)
 
 const DISCORD_CONFIG = require('../../../config/discord-config.json')
-const HYPIXEL_KEY = process.env.HYPIXEL_KEY
+const {escapeDiscord} = require("../../common/DiscordMessageUtil");
 
-function createEmbed(list, count) {
+function createEmbed(list) {
     return new MessageEmbed()
         .setColor(DISCORD_CONFIG.commands.color)
-        .setTitle(`Guild Online Players (${count}):`)
-        .setDescription(list)
+        .setTitle(`Guild Online Players (${list.length}):`)
+        .setDescription(list.join("\n"))
         .setTimestamp()
         .setFooter(DISCORD_CONFIG.commands.footer)
 }
@@ -24,53 +27,52 @@ module.exports = {
         await interaction.deferReply()
 
         let list = await listMembers(clientInstance.bridge.minecraftInstances)
-        interaction.editReply({embeds: [createEmbed(list, list.trim().split("\n").length)]})
+        interaction.editReply({embeds: [createEmbed(list)]})
     }
 }
 
 const listMembers = async function (minecraftInstances) {
-    let onlineMembers = await getOnlineMembers(minecraftInstances)
-        .then(onlinePlayers => onlinePlayers.filter(function (item, pos) {
-            return onlinePlayers.indexOf(item) === pos
-        }))
+    let onlineProfiles = await getOnlineMembers(minecraftInstances)
+        .then(unique)
+        .then(lookupProfiles)
+        .then(profiles => profiles.sort((a, b) => a.name.localeCompare(b.name)))
 
-    let status = await getUuids(onlineMembers).then(uuids => getHypixelStatus(uuids))
-    return createList(onlineMembers, status)
-}
+    let statuses = await Promise.all(onlineProfiles.map(profile => hypixel.getStatus(profile.id)))
 
-function createList(usernames, statuses) {
-    let list = ""
-    for (let i = 0; i < usernames.length; i++) {
-        let username = usernames[i]
-        let status = statuses[i]
-        list += `- **${username}**`
-
-        if (status.session) {
-            list += "_" // START discord markdown. italic
-
-            if (status.session.online) {
-                // capitalize first letter of gameType, lowercase everything else
-                // e.g. SKYBLOCK -> Skyblock
-                let gameType = status.session.gameType.charAt(0).toUpperCase()
-                    + status.session.gameType.slice(1).toLowerCase()
-                list += ` playing __${gameType}__`
-
-                if (status.session.mode) {
-                    list += " in " + status.session.mode.toLowerCase()
-                }
-
-            } else {
-                list += " is __offline?__ somehow"
-            }
-
-            list += "_" // END discord markdown. italic
-        }
-
-        list += "\n"
+    let list = []
+    for (let i = 0; i < onlineProfiles.length; i++) {
+        list.push(formatLocation(onlineProfiles[i].name, statuses[i]))
     }
     return list
 }
 
+// Mojang only allow up to 10 usernames per lookup
+async function lookupProfiles(usernames) {
+    let mojangRequests = []
+
+    // https://stackoverflow.com/a/8495740
+    let i, j, arr, chunk = 10
+    for (i = 0, j = usernames.length; i < j; i += chunk) {
+        arr = usernames.slice(i, i + chunk)
+        mojangRequests.push(mojang.lookupProfiles(arr))
+    }
+
+    let p = await Promise.all(mojangRequests)
+    return p.flatMap(arr => arr)
+}
+
+function formatLocation(username, session) {
+    let message = `- **${escapeDiscord(username)}** `
+
+    if (!session.online) return message + ` is *__offline?__*`
+
+    message += "*" // START discord markdown. italic
+    message += `playing __${escapeDiscord(session.game.name)}__`
+    if (session.mode) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
+    message += "*" // END discord markdown. italic
+
+    return message
+}
 
 async function getOnlineMembers(minecraftInstances) {
     let resolvedNames = []
@@ -95,32 +97,8 @@ async function getOnlineMembers(minecraftInstances) {
     return resolvedNames
 }
 
-async function getUuids(usernames) {
-    let mojangRequests = []
-    // https://stackoverflow.com/a/8495740
-    let i, j, arr, chunk = 10
-    for (i = 0, j = usernames.length; i < j; i += chunk) {
-        arr = usernames.slice(i, i + chunk)
-
-        let json = axios.post('https://api.mojang.com/profiles/minecraft', arr)
-            .then(res => res.data)
-        mojangRequests.push(json)
-    }
-
-
-    let p = await Promise.all(mojangRequests)
-    return p
-        .flatMap(arr => arr)
-        .map(member => member.id)
-}
-
-async function getHypixelStatus(uuids) {
-    let p = uuids.map(u =>
-        axios.get(`https://api.hypixel.net/status?key=${HYPIXEL_KEY}&uuid=${u}`)
-            .then(res => res.data))
-
-
-    let arr = await Promise.all(p)
-    return arr
-        .flatMap(arr => arr)
+function unique(list) {
+    return list.filter(function (item, pos) {
+        return list.indexOf(item) === pos
+    })
 }
