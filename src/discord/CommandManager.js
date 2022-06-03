@@ -1,6 +1,9 @@
 const fs = require('fs')
 
 const {REST} = require('@discordjs/rest')
+// package can't be installed since it has no exports defined.
+// but can be indirectly used through discord.js package
+// noinspection NpmUsedModulesInstalled
 const {Routes} = require('discord-api-types/v9')
 const {Collection} = require("discord.js")
 const EventHandler = require("../common/EventHandler")
@@ -19,7 +22,8 @@ fs.readdirSync('./src/discord/commands')
     })
 
 const registerDiscordCommand = function (token, clientId, guildId) {
-    let rest = new REST({version: '9'}).setToken(token)
+    // noinspection JSClosureCompilerSyntax
+    let rest = new REST().setToken(token)
     return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
 }
 
