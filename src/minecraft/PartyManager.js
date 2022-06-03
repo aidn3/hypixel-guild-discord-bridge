@@ -68,7 +68,7 @@ class PartyManager extends EventHandler {
         }, MINECRAFT_CONFIG.commands.autoLeavePartyAfter)
     }
 
-    #isPartyDisband(message) {
+    static #isPartyDisband(message) {
         const regex = /^(?:\[[A-Z+]{3,10}\] )?(\w{3,32}) has disbanded the party!$/g
 
         let match = regex.exec(message)
@@ -80,7 +80,7 @@ class PartyManager extends EventHandler {
         }
     }
 
-    #isPartyStayRequest(message) {
+    static #isPartyStayRequest(message) {
         let regex = /^Party > (?:\[[A-Z+]{1,10}\] ){0,3}(\w{3,32})(?: \[[[A-Za-z0-9_]{1,10}\]){0,3}: ALLOW/g
 
         let match = regex.exec(message)
