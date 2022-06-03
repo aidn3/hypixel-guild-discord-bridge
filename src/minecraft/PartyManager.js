@@ -20,9 +20,9 @@ class PartyManager extends EventHandler {
     async #onMessage(event) {
         const message = event.toString().trim()
 
-        if (await this.#isPartyInvite(message)) return
-        if (this.#isPartyDisband(message)) return
-        if (this.#isPartyStayRequest(message)) return
+        await this.#isPartyInvite(message)
+        PartyManager.#isPartyDisband(message)
+        PartyManager.#isPartyStayRequest(message)
     }
 
     async #isPartyInvite(message) {
