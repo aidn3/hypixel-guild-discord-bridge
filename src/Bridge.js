@@ -1,3 +1,5 @@
+// noinspection JSIgnoredPromiseFromCall
+
 const log4js = require("log4js")
 const PunishedUsers = require("./MutedUsers");
 const {getLocation, LOCATION} = require("./metrics/Util");

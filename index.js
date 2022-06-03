@@ -28,4 +28,5 @@ const metrics = require('./src/util/ApplicationMetric')
 metrics(packageJson.name, packageJson.version)
 
 const app = require('./src/Application')
+// noinspection JSIgnoredPromiseFromCall
 app.connect()
