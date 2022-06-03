@@ -5,15 +5,17 @@
 */
 
 const HYPIXEL_KEY = process.env.HYPIXEL_KEY
-const axios = require("axios")
 const moment = require("moment")
+const hypixel = new (require("hypixel-api-reborn").Client)(HYPIXEL_KEY)
+const mojang = require("mojang")
 
 module.exports = {
     triggers: ['guild', 'guildof', 'g'],
     handler: async function (clientInstance, reply, username, args) {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
-        let uuid = await getUuidByUsername(givenUsername)
+        let uuid = await mojang.lookupProfileAt(givenUsername)
+            .then(p => p.id)
 
         if (!uuid) {
             reply(`No such username! (given: ${givenUsername})`)
@@ -25,43 +27,15 @@ module.exports = {
 }
 
 async function fetchGuildInfo(uuid) {
-    let res = await axios.get(`https://api.hypixel.net/guild?key=${HYPIXEL_KEY}&player=${uuid}`)
-        .then(res => res.data)
+    let guild = await hypixel.getGuild("player", uuid, null)
 
-    if (!res.success) throw  new Error(res.message)
-    if (!res.guild) return "No Guild."
+    if (!guild) return "No Guild."
 
-    let member = res.guild.members.find(m => m.uuid === uuid)
-    return `Name: ${res.guild.name}`
-        + ` / Level: ${getGuildLevel(res.guild.exp)}`
-        + ` / Created: ${moment(res.guild.created).format('YYYY-MM-DD')}`
+    let member = guild.members.find(m => m.uuid === uuid)
+    return `Name: ${guild.name}`
+        + ` / Level: ${guild.level}`
+        + ` / Created: ${moment(guild.createdAtTimestamp).format('YYYY-MM-DD')}`
+        + ` / Members: ${guild.members.length}/125`
         + ` / Rank: ${member.rank}`
-        + ` / Joined: ${moment(member.joined).format('YYYY-MM-DD')}`
-}
-
-// https://github.com/Plancke/hypixel-php/blob/master/src/responses/guild/GuildLevelUtil.php
-function getGuildLevel(exp) {
-    const EXP_NEEDED = [
-        100000, 150000, 250000, 500000, 750000,
-        1000000, 1250000, 1500000, 2000000, 2500000,
-        2500000, 2500000, 2500000, 2500000, 3000000
-    ]
-
-    let level = 0
-    let need
-    for (let i = 0; ; i++) {
-        need = i >= EXP_NEEDED.length ? EXP_NEEDED[EXP_NEEDED.length - 1] : EXP_NEEDED[i]
-        exp -= need
-        if (exp < 0) {
-            return level
-
-        } else {
-            level++
-        }
-    }
-}
-
-function getUuidByUsername(username) {
-    return axios(`https://api.mojang.com/users/profiles/minecraft/${username}`)
-        .then(res => res.data?.id)
+        + ` / Joined: ${moment(member.joinedAtTimestamp).format('YYYY-MM-DD')}`
 }
