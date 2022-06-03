@@ -5,7 +5,7 @@
 */
 const fetch = require("axios");
 
-const MARO_ENDPOINT = "https://maro.skybrokers.xyz/api/networth/categories"
+const MARO_ENDPOINT = "https://skyblock.acebot.xyz/api/networth/categories"
 const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 
 module.exports = {
