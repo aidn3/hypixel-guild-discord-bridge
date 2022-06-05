@@ -68,7 +68,7 @@ const getReplyUsername = async function (messageEvent) {
     let replyMessage = await messageEvent.channel.messages.fetch(messageEvent.reference.messageId)
     if (replyMessage.webhookId) return replyMessage.author.username
 
-    let guildMember = messageEvent.guild.members.fetch(replyMessage.author.id)
+    let guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)
     return guildMember.displayName
 }
 
