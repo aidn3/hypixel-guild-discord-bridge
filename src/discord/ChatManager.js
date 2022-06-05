@@ -3,6 +3,10 @@ const {getLocation, SCOPE} = require("../metrics/Util")
 const ChatMetrics = require("../metrics/ChatMetrics")
 const {cleanMessage, getReplyUsername} = require("../common/DiscordMessageUtil");
 
+const PROFANITY_WHITELIST = require("../../config/profane-whitelist.json")
+const profanityFilter = new (require('bad-words'))()
+profanityFilter.removeWords(...PROFANITY_WHITELIST)
+
 const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
 const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
 
@@ -32,12 +36,21 @@ class ChatManager extends EventHandler {
                 return
             }
 
+            let filteredMessage = profanityFilter.clean(content)
+            if (content !== filteredMessage) {
+                console.log(filteredMessage)
+                event.reply({
+                    content: `**Profanity warning, Your message has been edited:**\n` + filteredMessage,
+                    ephemeral: true
+                })
+            }
+
             ChatMetrics(getLocation(this.clientInstance), SCOPE.PUBLIC, this.clientInstance.instanceName)
             this.clientInstance.bridge.onPublicChatMessage(
                 this.clientInstance,
                 event.member.displayName,
                 replyUsername,
-                content)
+                filteredMessage)
 
         } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
             ChatMetrics(getLocation(this.clientInstance), SCOPE.OFFICER, this.clientInstance.instanceName)
