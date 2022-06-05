@@ -10,10 +10,18 @@ logger.debug("Test loading all libraries...")
 require('dotenv').config()
 
 const packageJson = require('./package.json')
+
+// BUG: test loading by "require(main name)" all dependencies
+// break internal (optional) dependencies.
+// They are not meant to load like that.
+// TODO: load all dependecies BUT the internal ones.
+//  mark them or find other solutions
+/*
 for (let dependency in packageJson.dependencies) {
     logger.trace(`Test-loading ${dependency}...`)
     require(dependency)
 }
+*/
 
 
 logger.debug("Loading modules and setting up process...")
