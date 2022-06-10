@@ -1,7 +1,7 @@
 const EventHandler = require("../common/EventHandler")
 const {getLocation, SCOPE} = require("../metrics/Util")
 const ChatMetrics = require("../metrics/ChatMetrics")
-const {cleanMessage, getReplyUsername} = require("../common/DiscordMessageUtil");
+const {cleanMessage, getReplyUsername, escapeDiscord} = require("../common/DiscordMessageUtil");
 
 const PROFANITY_WHITELIST = require("../../config/profane-whitelist.json")
 const profanityFilter = new (require('bad-words'))()
@@ -40,7 +40,7 @@ class ChatManager extends EventHandler {
             if (content !== filteredMessage) {
                 console.log(filteredMessage)
                 event.reply({
-                    content: `**Profanity warning, Your message has been edited:**\n` + filteredMessage,
+                    content: `**Profanity warning, Your message has been edited:**\n` + escapeDiscord(filteredMessage),
                     ephemeral: true
                 })
             }
