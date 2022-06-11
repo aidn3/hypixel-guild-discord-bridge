@@ -17,23 +17,11 @@ function cleanStandardEmoji(message) {
     return message
 }
 
-function stripDiscordContent(message) {
-    return message
-        .replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '\n')
-        .split('\n')
-        .map(part => {
-            part = part.trim()
-            return part.length === 0 ? '' : part + ' '
-        })
-        .join('')
-}
-
 function cleanMessage(messageEvent) {
     let content = messageEvent.cleanContent
 
     content = cleanGuildEmoji(content)
-    content = cleanStandardEmoji(content)
-    content = stripDiscordContent(content).trim()
+    content = cleanStandardEmoji(content).trim()
 
     if (messageEvent.attachments) {
         messageEvent.attachments.forEach(attachment => {
