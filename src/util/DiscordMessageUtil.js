@@ -5,7 +5,6 @@ function cleanGuildEmoji(message) {
         let emoji = match
             .substring(1, match.length - 1)
             .replace(/\d{16,}/g, "")
-        console.log(emoji)
         return emoji
     })
 }

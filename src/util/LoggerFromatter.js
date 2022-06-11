@@ -1,5 +1,6 @@
 const log4js = require("log4js")
 
+const clientLogger = log4js.getLogger("client")
 const commandLogger = log4js.getLogger("command")
 const eventLogger = log4js.getLogger("event")
 const chatLogger = log4js.getLogger("chat")
@@ -25,6 +26,6 @@ module.exports = (app) => {
     // start, connect, conflict(e.g. someone logged in from another location), kick, end, disconnect
     app.on("*.client.*", function ({clientInstance, reason}) {
         let eventName = this.event.split(".").pop()
-        console.log(`${eventName} [${clientInstance?.instanceName}]: ${reason}`)
+        clientLogger.info(`${eventName} [${clientInstance?.instanceName}]: ${reason}`)
     })
 }
