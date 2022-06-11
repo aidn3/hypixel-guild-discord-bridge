@@ -39,3 +39,9 @@ const app = require("./src/Application")
 require("./src/util/LoggerFromatter")(app)
 
 app.connect()
+    .then(() => logger.info("App is connected"))
+    .catch(error => {
+        logger.fatal(error)
+        logger.warn("stopping the process for the controller to restart this node...")
+        process.exitCode = 1
+    })
