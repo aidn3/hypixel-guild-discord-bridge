@@ -10,14 +10,13 @@ const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 
 module.exports = {
     triggers: ['networth', 'net', 'nw'],
-    handler: async function (clientInstance, reply, username, args) {
+    handler: async function (clientInstance, username, args) {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
         let uuid = await getUuidByUsername(givenUsername)
 
         if (!uuid) {
-            reply(`No such username! (given: ${givenUsername})`)
-            return
+            return `No such username! (given: ${givenUsername})`
         }
 
         let localNetworth = await skyblockProfiles(uuid)
@@ -26,7 +25,8 @@ module.exports = {
             .then(networth)
             .then(res => res.data.data.networth)
             .then(localizedNetworth)
-        reply(`${givenUsername}'s networth: ${localNetworth}`)
+
+        return `${givenUsername}'s networth: ${localNetworth}`
     }
 }
 

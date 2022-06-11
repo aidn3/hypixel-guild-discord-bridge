@@ -8,22 +8,20 @@ const {Index} = require("flexsearch");
 
 module.exports = {
     triggers: ['lowestbin', 'lbin', 'lb'],
-    handler: async function (clientInstance, reply, username, args) {
+    handler: async function (clientInstance, username, args) {
 
         if (args.length === 0) {
-            reply(`${username}, at least give an item name.`)
-            return
+            return `${username}, at least give an item name.`
         }
 
         let item = args.join(" ")
         let foundItem = await findItem(item)
 
         if (!foundItem) {
-            reply(`${username}, item does not exists. Try to be more specific maybe?`)
-            return
+            return `${username}, item does not exists. Try to be more specific maybe?`
         }
 
-        reply(`${foundItem.name}'s lbin is ${localizedPrice(foundItem.lowestBin)}`)
+        return `${foundItem.name}'s lbin is ${localizedPrice(foundItem.lowestBin)}`
     }
 }
 

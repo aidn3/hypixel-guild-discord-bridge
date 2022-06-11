@@ -1,6 +1,6 @@
 const fs = require("fs")
 const CommandMetrics = require("../metrics/CommandMetrics")
-const {LOCATION, SCOPE, getLocation} = require("../metrics/Util");
+const {SCOPE, instanceType} = require("../common/ClientInstance")
 const commands = fs.readdirSync('./src/minecraft/commands')
     .filter(file => file.endsWith('Command.js'))
     .map(f => require(`./commands/${f}`))
@@ -9,29 +9,33 @@ const HYPIXEL_COMMAND_PREFIX = require('../../config/minecraft-config.json').com
 const HYPIXEL_OWNER_USERNAME = process.env.HYPIXEL_OWNER_USERNAME
 
 
-const publicCommandHandler = function (minecraftInstance, username, message) {
-    if (!message.startsWith(HYPIXEL_COMMAND_PREFIX)) return
+const publicCommandHandler = async function (minecraftInstance, username, message) {
+    if (!message.startsWith(HYPIXEL_COMMAND_PREFIX)) return false
 
     let commandName = message.substring(HYPIXEL_COMMAND_PREFIX.length).split(" ")[0]
     let args = message.split(" ").slice(1)
-    let reply = function (msg) {
-        minecraftInstance.send(`/gc ${msg}`)
-    }
 
     let command = commands.find(c => c.triggers.some(t => t === commandName))
     if (command) {
-        minecraftInstance.logger.debug(`${username} executed command: ${message}`)
-        CommandMetrics(LOCATION.MINECRAFT, SCOPE.PUBLIC, minecraftInstance.instanceName, command.triggers[0])
-        command.handler(minecraftInstance, reply, username, args)
+        minecraftInstance.app.emit(["command", command.triggers[0]], {
+            clientInstance: minecraftInstance,
+            scope: SCOPE.PUBLIC,
+            username: username,
+            fullCommand: message
+        })
+
+        let reply = await command.handler(minecraftInstance, username, args)
+        minecraftInstance.send(`/gc ${reply}`)
+
         return true
     }
 }
 
 const privateCommandHandler = function (minecraftInstance, username, message) {
-    if (username !== HYPIXEL_OWNER_USERNAME) return
+    if (username !== HYPIXEL_OWNER_USERNAME) return false
 
     minecraftInstance.logger.debug(`${username} executed from private chat: ${username}`)
-    CommandMetrics(getLocation(minecraftInstance), SCOPE.PRIVATE, minecraftInstance.instanceName, null)
+    CommandMetrics(instanceType(minecraftInstance), SCOPE.PRIVATE, minecraftInstance.instanceName, null)
     minecraftInstance.send(message)
     return true
 }
