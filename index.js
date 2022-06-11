@@ -37,6 +37,7 @@ metrics(packageJson.name, packageJson.version)
 
 const app = require("./src/Application")
 require("./src/util/LoggerFromatter")(app)
+require("./src/metrics/MetricsHooker")(app)
 
 app.connect()
     .then(() => logger.info("App is connected"))
