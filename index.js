@@ -35,6 +35,7 @@ process.title = packageJson.name
 const metrics = require('./src/util/ApplicationMetric')
 metrics(packageJson.name, packageJson.version)
 
-const app = require('./src/Application')
-// noinspection JSIgnoredPromiseFromCall
+const app = require("./src/Application")
+require("./src/util/LoggerFromatter")(app)
+
 app.connect()
