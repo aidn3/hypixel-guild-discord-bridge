@@ -1,7 +1,6 @@
 const EventHandler = require("../common/EventHandler")
-const {getLocation, SCOPE} = require("../metrics/Util")
-const ChatMetrics = require("../metrics/ChatMetrics")
-const {cleanMessage, getReplyUsername, escapeDiscord} = require("../common/DiscordMessageUtil");
+const {SCOPE} = require("../common/ClientInstance")
+const {cleanMessage, getReplyUsername, escapeDiscord} = require("../util/DiscordMessageUtil");
 
 const PROFANITY_WHITELIST = require("../../config/profane-whitelist.json")
 const profanityFilter = new (require('bad-words'))()
@@ -28,7 +27,7 @@ class ChatManager extends EventHandler {
         let replyUsername = await getReplyUsername(event)
 
         if (event.channel.id === DISCORD_PUBLIC_CHANNEL) {
-            if (this.clientInstance.bridge.punishedUsers.muted(event.member.displayName)) {
+            if (this.clientInstance.app.punishedUsers.muted(event.member.displayName)) {
                 event.reply({
                     content: `*Looks like you are muted!*`,
                     ephemeral: true
@@ -45,21 +44,22 @@ class ChatManager extends EventHandler {
                 })
             }
 
-            ChatMetrics(getLocation(this.clientInstance), SCOPE.PUBLIC, this.clientInstance.instanceName)
-            this.clientInstance.bridge.onPublicChatMessage(
-                this.clientInstance,
-                event.member.displayName,
-                replyUsername,
-                filteredMessage)
+            this.clientInstance.app.emit("discord.chat", {
+                clientInstance: this.clientInstance,
+                scope: SCOPE.PUBLIC,
+                username: event.member.displayName,
+                replyUsername: replyUsername,
+                message: filteredMessage
+            })
 
         } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
-            ChatMetrics(getLocation(this.clientInstance), SCOPE.OFFICER, this.clientInstance.instanceName)
-            this.clientInstance.bridge.onOfficerChatMessage(
-                this.clientInstance,
-                event.member.displayName,
-                replyUsername,
-                content
-            )
+            this.clientInstance.app.emit("discord.chat", {
+                clientInstance: this.clientInstance,
+                scope: SCOPE.OFFICER,
+                username: event.member.displayName,
+                replyUsername: replyUsername,
+                message: content
+            })
         }
     }
 }

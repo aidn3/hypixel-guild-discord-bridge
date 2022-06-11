@@ -9,7 +9,7 @@ module.exports = function (clientInstance, message) {
         let username = match[1]
         let playerMessage = match[2].trim()
 
-        if (clientInstance.bridge.isMinecraftBot(username)) return true
+        if (clientInstance.app.isMinecraftBot(username)) return true
         privateCommandHandler(clientInstance, username, playerMessage)
         return true
     }

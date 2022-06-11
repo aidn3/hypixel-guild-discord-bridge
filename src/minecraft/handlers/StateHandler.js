@@ -1,6 +1,5 @@
 const EventHandler = require('../../common/EventHandler')
 const Status = require("../../common/Status")
-const COLOR = require('../../../config/discord-config.json').events.color
 
 class StateHandler extends EventHandler {
     #loginAttempts;
@@ -26,22 +25,28 @@ class StateHandler extends EventHandler {
         this.#exactDelay = 0
         this.clientInstance.status = Status.CONNECTED
 
-        this.clientInstance.bridge.onPublicEvent(
-            this.clientInstance,
-            null,
-            `Client ${this.clientInstance.instanceName} is connected and ready!`,
-            COLOR.GOOD,
-            false
-        )
+        this.clientInstance.app.emit("minecraft.client.connect", {clientInstance: this.clientInstance})
     }
 
     #onEnd(reason) {
         if (this.clientInstance.status === Status.FAILED) {
-            this.clientInstance.logger.warn(`Status is ${this.clientInstance.status}. no further retrying to reconnect.`)
+            let reason = `Status is ${this.clientInstance.status}. no further retrying to reconnect.`
+
+            this.clientInstance.logger.warn(reason)
+            this.clientInstance.app.emit("minecraft.client.end", {
+                clientInstance: this.clientInstance,
+                reason: reason
+            })
             return
 
         } else if (reason === 'disconnect.quitting') {
-            this.clientInstance.logger.debug(`Client quit on its own volition. no further retrying to reconnect.`)
+            let reason = `Client quit on its own volition. no further retrying to reconnect.`
+
+            this.clientInstance.logger.debug(reason)
+            this.clientInstance.app.emit("minecraft.client.end", {
+                clientInstance: this.clientInstance,
+                reason: reason
+            })
             return
         }
 
@@ -57,13 +62,11 @@ class StateHandler extends EventHandler {
         this.clientInstance.logger.error(`Minecraft bot disconnected from server,`
             + `attempting reconnect in ${loginDelay / 1000} seconds`)
 
-        this.clientInstance.bridge.onPublicEvent(
-            this.clientInstance,
-            null,
-            `Client ${this.clientInstance.instanceName} is reconnecting in ${Math.floor(loginDelay / 1000)} second.`,
-            COLOR.INFO,
-            false
-        )
+        this.clientInstance.app.emit("minecraft.client.disconnect", {
+            clientInstance: this.clientInstance,
+            reason: `Minecraft bot disconnected from server,`
+                + `attempting reconnect in ${loginDelay / 1000} seconds`
+        })
 
         setTimeout(() => this.clientInstance.connect(), loginDelay)
         this.clientInstance.status = Status.RECONNECTING
@@ -77,26 +80,24 @@ class StateHandler extends EventHandler {
         if (reason.includes("You logged in from another location")) {
             this.clientInstance.logger.fatal("Instance will shut off since someone logged in from another place")
             this.clientInstance.status = Status.FAILED
-            this.clientInstance.bridge.onPublicEvent(
-                this.clientInstance,
-                this.clientInstance.username(),
-                "Someone logged in from another place.\nWon't try to re-login.\nRestart to reconnect.",
-                COLOR.ERROR,
-                false
-            )
+
+            this.clientInstance.app.emit("minecraft.client.conflict", {
+                instanceName: this.clientInstance,
+                reason: "Someone logged in from another place.\n"
+                    + "Won't try to re-login.\n"
+                    + "Restart to reconnect."
+            })
 
         } else {
-            this.clientInstance.bridge.onPublicEvent(
-                this.clientInstance,
-                null,
-                `Client ${this.clientInstance.instanceName} has been kicked.\n`
-                + `Attempting to reconnect will be made soon\n`
-                + `Current reconnecting attempts: ${this.#loginAttempts}`,
-                COLOR.ERROR,
-                false
-            )
+            this.clientInstance.app.emit("minecraft.client.kick", {
+                clientInstance: this.clientInstance,
+                // TODO: add reason into the message
+                reason: `Client ${this.clientInstance.instanceName} has been kicked.\n`
+                    + `Attempting to reconnect will be made soon\n`
+            })
         }
     }
 }
 
-module.exports = StateHandler
+module
+    .exports = StateHandler

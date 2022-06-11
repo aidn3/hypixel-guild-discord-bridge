@@ -19,7 +19,7 @@ module.exports = {
 
         let username = interaction.options.getString("username")
         let time = interaction.options.getString("time")
-        clientInstance.bridge.sendMinecraftCommand(`/g mute ${username} ${time}`)
+        clientInstance.app.sendMinecraftCommand(`/g mute ${username} ${time}`)
 
         interaction.editReply(`Command sent to mute ${username} for ${time}!`)
     }

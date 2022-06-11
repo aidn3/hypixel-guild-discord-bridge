@@ -1,6 +1,6 @@
 {
   "name": "hypixel-guild-discord-bridge",
-  "version": "1.1.1",
+  "version": "2.0.0-alpha",
   "description": "A Hypixel guild chat and Discord chat bridge",
   "main": "index.js",
   "scripts": {
@@ -20,10 +20,12 @@
     "axios": "^0.26.1",
     "bad-words": "^3.0.4",
     "clean": "^4.0.2",
+    "compare-versions": "^4.1.3",
     "discord.js": "^13.7.0",
     "discord.js-light": "^4.6.0",
     "dotenv": "^16.0.0",
     "emoji-name-map": "^1.2.9",
+    "eventemitter2": "^6.4.5",
     "flexsearch": "^0.7.21",
     "hypixel-api-reborn": "^10.0.0",
     "log4js": "^6.4.2",

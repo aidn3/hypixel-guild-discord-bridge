@@ -1,5 +1,4 @@
-const EventsMetrics = require("../../metrics/EventsMetrics");
-const {getLocation, SCOPE} = require("../../metrics/Util");
+const {SCOPE} = require("../../common/ClientInstance")
 const COLOR = require('../../../config/discord-config.json').events.color
 
 const MESSAGES = [
@@ -27,13 +26,14 @@ module.exports = function (clientInstance, message) {
     let match = regex.exec(message)
     if (match != null) {
 
-        EventsMetrics(getLocation(clientInstance), SCOPE.PUBLIC, clientInstance.instanceName, "you_can_not_say_same_message_twice")
-        clientInstance.bridge.onPublicEvent(
-            clientInstance,
-            null,
-            message,
-            COLOR.INFO,
-            true)
+        clientInstance.app.emit("minecraft.event.repeat", {
+            clientInstance: clientInstance,
+            scope: SCOPE.PUBLIC,
+            username: null,
+            severity: COLOR.INFO,
+            message: message,
+            removeLater: true
+        })
 
         if (lastWarning + 5000 < new Date().getTime()) {
             clientInstance.send(`/gc @${MESSAGES[Math.floor(Math.random() * MESSAGES.length)]}`)

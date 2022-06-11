@@ -7,8 +7,7 @@ const {REST} = require('@discordjs/rest')
 const {Routes} = require('discord-api-types/v9')
 const {Collection} = require("discord.js")
 const EventHandler = require("../common/EventHandler")
-const {LOCATION, SCOPE} = require("../metrics/Util")
-const CommandMetrics = require("../metrics/CommandMetrics");
+const {SCOPE} = require("./../common/ClientInstance")
 
 const commandsJson = []
 const commandsExecutor = new Collection()
@@ -48,6 +47,13 @@ class CommandManager extends EventHandler {
         const command = commandsExecutor.get(interaction.commandName)
 
         try {
+            this.clientInstance.app.emit(["command", interaction.commandName], {
+                clientInstance: this.clientInstance,
+                scope: SCOPE.PUBLIC,
+                username: interaction.member.displayName,
+                fullCommand: printCommand(interaction)
+            })
+
             if (!command) {
                 this.clientInstance.logger.debug(`${interaction.member.tag} tried to execute command but it doesn't exist: ${printCommand(interaction)}`)
 
@@ -75,7 +81,6 @@ class CommandManager extends EventHandler {
 
             } else {
                 this.clientInstance.logger.debug(`${interaction.member.tag} executed command: ${printCommand(interaction)}`)
-                CommandMetrics(LOCATION.DISCORD, SCOPE.PUBLIC, this.clientInstance.instanceName, interaction.commandName)
 
                 await command.execute(this.clientInstance, interaction)
             }

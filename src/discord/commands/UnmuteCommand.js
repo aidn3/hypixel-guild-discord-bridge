@@ -14,7 +14,7 @@ module.exports = {
         await interaction.deferReply()
 
         let username = interaction.options.getString("username")
-        clientInstance.bridge.sendMinecraftCommand(`/g unmute ${username}`)
+        clientInstance.app.sendMinecraftCommand(`/g unmute ${username}`)
 
         interaction.editReply(`Command sent to unmute ${username}!`)
     }

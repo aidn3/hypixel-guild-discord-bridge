@@ -14,7 +14,7 @@ module.exports = {
         await interaction.deferReply()
 
         let username = interaction.options.getString("username")
-        clientInstance.bridge.sendMinecraftCommand(`/g promote ${username}`)
+        clientInstance.app.sendMinecraftCommand(`/g promote ${username}`)
 
         interaction.editReply(`Command sent to promote ${username}!`)
     }

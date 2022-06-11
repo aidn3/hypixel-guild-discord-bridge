@@ -8,7 +8,7 @@ module.exports = {
 
     async execute(clientInstance, interaction) {
         await interaction.deferReply()
-        let instances = clientInstance.bridge.minecraftInstances
+        let instances = clientInstance.app.minecraftInstances
         instances.forEach(i => i.connect())
         await interaction.editReply(`Restarted ${instances.length} clients!`)
     }

@@ -14,7 +14,7 @@ module.exports = {
         await interaction.deferReply()
 
         let username = interaction.options.getString("username")
-        clientInstance.bridge.sendMinecraftCommand(`/g invite ${username}`)
+        clientInstance.app.sendMinecraftCommand(`/g invite ${username}`)
 
         interaction.editReply(`Command sent to invite ${username}!`)
     }

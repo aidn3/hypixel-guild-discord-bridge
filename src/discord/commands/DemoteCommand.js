@@ -14,7 +14,7 @@ module.exports = {
         await interaction.deferReply()
 
         let username = interaction.options.getString("username")
-        clientInstance.bridge.sendMinecraftCommand(`/g demote ${username}`)
+        clientInstance.app.sendMinecraftCommand(`/g demote ${username}`)
 
         interaction.editReply(`Command sent to demote ${username}!`)
     }

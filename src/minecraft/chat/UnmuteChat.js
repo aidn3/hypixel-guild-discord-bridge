@@ -1,5 +1,4 @@
-const EventsMetrics = require("../../metrics/EventsMetrics");
-const {getLocation, SCOPE} = require("../../metrics/Util");
+const {SCOPE} = require("../../common/ClientInstance")
 const COLOR = require('../../../config/discord-config.json').events.color
 
 module.exports = function (clientInstance, message) {
@@ -9,15 +8,17 @@ module.exports = function (clientInstance, message) {
     if (match != null) {
         let username = match[1]
 
-        clientInstance.bridge.punishedUsers.unmute(username)
+        clientInstance.app.punishedUsers.unmute(username)
 
-        EventsMetrics(getLocation(clientInstance), SCOPE.OFFICER, clientInstance.instanceName, "unmute")
-        clientInstance.bridge.onOfficerEvent(
-            clientInstance,
-            username,
-            message,
-            COLOR.INFO,
-            false)
+        clientInstance.app.emit("minecraft.event.unmute", {
+            clientInstance: clientInstance,
+            scope: SCOPE.OFFICER,
+            username: username,
+            severity: COLOR.INFO,
+            message: message,
+            removeLater: false
+        })
+
         return true
     }
 }

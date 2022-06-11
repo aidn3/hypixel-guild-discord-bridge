@@ -40,9 +40,9 @@ async function collectMetrics(minecraftInstance) {
     GUILD_MEMBERS_ONLINE.set({name: guild.name}, Number(guild.online))
 }
 
-module.exports = function (bridge) {
+module.exports = function (app) {
     setInterval(
-        () => bridge.minecraftInstances.forEach(collectMetrics),
+        () => app.minecraftInstances.forEach(collectMetrics),
         METRICS_CONFIG.metrics_frequency * 1000
     )
 }

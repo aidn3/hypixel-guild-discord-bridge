@@ -1,5 +1,4 @@
-const EventsMetrics = require("../../metrics/EventsMetrics");
-const {getLocation, SCOPE} = require("../../metrics/Util");
+const {SCOPE} = require("../../common/ClientInstance")
 const COLOR = require('../../../config/discord-config.json').events.color
 
 module.exports = function (clientInstance, message) {
@@ -11,15 +10,17 @@ module.exports = function (clientInstance, message) {
         let muteTime = match[2]
         let muteSuffice = match[3]
 
-        clientInstance.bridge.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
+        clientInstance.app.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
 
-        EventsMetrics(getLocation(clientInstance), SCOPE.OFFICER, clientInstance.instanceName, "mute")
-        clientInstance.bridge.onOfficerEvent(
-            clientInstance,
-            username,
-            message,
-            COLOR.BAD,
-            false)
+        clientInstance.app.emit("minecraft.event.mute", {
+            clientInstance: clientInstance,
+            scope: SCOPE.OFFICER,
+            username: username,
+            severity: COLOR.BAD,
+            message: message,
+            removeLater: false
+        })
+
         return true
     }
 }

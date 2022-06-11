@@ -44,9 +44,9 @@ async function collectMetrics(uuid) {
     GUILD_MEMBERS.set({name: guild["name_lower"]}, guild["members"].length)
 }
 
-module.exports = function (bridge) {
+module.exports = function (app) {
     setInterval(
-        () => bridge.minecraftInstances.forEach(i => collectMetrics(i.uuid())),
+        () => app.minecraftInstances.forEach(i => collectMetrics(i.uuid())),
         METRICS_CONFIG.metrics_frequency * 1000
     )
 }

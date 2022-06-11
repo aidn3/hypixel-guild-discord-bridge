@@ -14,7 +14,7 @@ module.exports = {
         await interaction.deferReply()
 
         let command = interaction.options.getString("command")
-        clientInstance.bridge.sendMinecraftCommand(command)
+        clientInstance.app.sendMinecraftCommand(command)
 
         interaction.editReply(`Command executed: ${command}`)
     }
