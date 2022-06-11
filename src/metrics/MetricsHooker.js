@@ -8,8 +8,8 @@ const EventMetrics = require("./EventMetrics")
 const {instanceType} = require("../common/ClientInstance");
 
 module.exports = function (app) {
-    GuildApiMetrics(this)
-    GuildOnlineMetrics(this)
+    GuildApiMetrics(app)
+    GuildOnlineMetrics(app)
 
     app.on("*.event.*", function ({clientInstance, scope}) {
         let eventName = this.event.split(".").pop()
