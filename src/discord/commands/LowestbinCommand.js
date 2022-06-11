@@ -13,7 +13,7 @@ module.exports = {
         .setDescription('Display basic info about the client.')
         .addStringOption(option =>
             option.setName('item')
-                .setDescription('Item you wanna search the lowest bin of.')
+                .setDescription('Item name')
                 .setRequired(true)),
     permission: 0, // 0 = anyone, 1 = staff, 2 = owner/admin
 
