@@ -50,7 +50,6 @@ async function refreshCache() {
         cache = data
     }
 
-    console.log(`cached ${cache.length}`)
 }
 
 async function findItem(search) {
