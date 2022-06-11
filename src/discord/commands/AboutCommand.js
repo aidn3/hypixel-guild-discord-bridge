@@ -3,7 +3,7 @@ const {SlashCommandBuilder} = require('@discordjs/builders')
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('about')
-        .setDescription('Display basic info about the client.')
+        .setDescription('Display basic info about the client.'),
     permission: 0, // 0 = anyone, 1 = staff, 2 = owner/admin
 
     async execute(clientInstance, interaction) {
