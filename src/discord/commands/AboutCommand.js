@@ -9,6 +9,6 @@ module.exports = {
     async execute(clientInstance, interaction) {
         await interaction.deferReply()
 
-        interaction.editReply(This is a bridge that connects guild's discord server with it's guild chat while offering many features.\nThat way, you can chat with your friends within in-game from the discord.\nThe features of the bot can be viewed with /help.)
+        interaction.editReply(`This is a bridge that connects guild's discord server with it's guild chat while offering many features.\nThat way, you can chat with your friends within in-game from the discord.\nThe features of the bot can be viewed with /help.`)
     }
 }
