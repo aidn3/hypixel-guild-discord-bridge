@@ -31,7 +31,7 @@ let lastRetrieve = 0
 
 async function refreshCache() {
     if (!cache || lastRetrieve + 300 * 1000 < new Date().getTime()) {
-        let data = await fetch('https://maro.skybrokers.xyz/api/auctions/all')
+        let data = await fetch('https://skyblock.acebot.xyz/api/auctions/all')
             .then(res => res.data.data)
 
         for (let i = 0; i < data.length; i++) {
