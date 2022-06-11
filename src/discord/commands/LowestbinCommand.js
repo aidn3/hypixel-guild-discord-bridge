@@ -21,7 +21,6 @@ module.exports = {
         await interaction.deferReply()
 
         let itemname = interaction.options.getString("item")
-        let item = itemname.join(" ")
 
         let foundItem = await findItem(itemname)
 
