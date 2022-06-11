@@ -6,7 +6,7 @@ const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 const hypixel = new (require("hypixel-api-reborn").Client)(HYPIXEL_KEY)
 
 const DISCORD_CONFIG = require('../../../config/discord-config.json')
-const {escapeDiscord} = require("../../common/DiscordMessageUtil");
+const {escapeDiscord} = require("../../util/DiscordMessageUtil");
 
 function createEmbed(list) {
     return new MessageEmbed()
@@ -26,7 +26,7 @@ module.exports = {
     async execute(clientInstance, interaction) {
         await interaction.deferReply()
 
-        let list = await listMembers(clientInstance.bridge.minecraftInstances)
+        let list = await listMembers(clientInstance.app.minecraftInstances)
         interaction.editReply({embeds: [createEmbed(list)]})
     }
 }
