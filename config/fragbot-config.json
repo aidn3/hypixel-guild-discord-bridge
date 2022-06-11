@@ -1,0 +1,11 @@
+{
+  "leave_comment": "Auto leave parties after joining them. To prevent hogging the bot",
+  "autoLeavePartyAfter": 10000,
+  "whitelisted_comment": "players who can party the client in-game without having to be in the guild",
+  "whitelisted": [
+    "Steve",
+    "Notch",
+    "Alex",
+    "aidn5"
+  ]
+}

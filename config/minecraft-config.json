@@ -7,8 +7,6 @@
   },
   "commands": {
     "prefix_comment": "change the prefix command in-game commands in guild public chat",
-    "prefix": "!",
-    "leave_comment": "Auto leave parties after joining them. To prevent hogging the bot",
-    "autoLeavePartyAfter": 10000
+    "prefix": "!"
   }
 }
