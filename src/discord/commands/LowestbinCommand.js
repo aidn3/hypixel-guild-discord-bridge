@@ -10,7 +10,7 @@ const {Index} = require("flexsearch");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('bin')
-        .setDescription('Display basic info about the client.')
+        .setDescription('Search lowest bin of an item.')
         .addStringOption(option =>
             option.setName('item')
                 .setDescription('Item name')
