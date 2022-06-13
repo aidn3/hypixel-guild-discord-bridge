@@ -47,7 +47,7 @@ class CommandManager extends EventHandler {
         const command = commandsExecutor.get(interaction.commandName)
 
         try {
-            this.clientInstance.app.emit(["command", interaction.commandName], {
+            this.clientInstance.app.emit(["discord", "command", interaction.commandName], {
                 clientInstance: this.clientInstance,
                 scope: SCOPE.PUBLIC,
                 username: interaction.member.displayName,
