@@ -16,7 +16,7 @@ class ClientInstance {
     }
 }
 
-const LOCATION = {DISCORD: "discord", MINECRAFT: "minecraft", WEBHOOK: "webhook"}
+const LOCATION = {DISCORD: "discord", MINECRAFT: "minecraft", WEBHOOK: "webhook", GLOBAL: "global"}
 const SCOPE = {OFFICER: "officer", PUBLIC: "public", PRIVATE: "private"}
 
 function instanceType(instance) {
@@ -29,6 +29,7 @@ function instanceType(instance) {
     if (instance.constructor.name === "DiscordInstance") return LOCATION.DISCORD
     if (instance.constructor.name === "MinecraftInstance") return LOCATION.MINECRAFT
     if (instance.constructor.name === "WebhookInstance") return LOCATION.WEBHOOK
+    if (instance.constructor.name === "GlobalChatInstance") return LOCATION.GLOBAL
 
     throw  new Error(`${instance} can't be recognized.`)
 }
