@@ -43,7 +43,7 @@ class WebhookInstance extends ClientInstance {
         if (content.length === 0) return
 
         this.app.emit("webhook.chat", {
-            clientInstance: this.clientInstance,
+            clientInstance: this,
             scope: SCOPE.PUBLIC,
             username: event.author.username,
             replyUsername: null,//TODO: find way to get replyUsername for webhooks (if possible at all)

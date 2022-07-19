@@ -2,6 +2,7 @@ const EventEmitter = require("eventemitter2")
 const Hypixel = require("hypixel-api-reborn")
 const DiscordInstance = require("./discord/DiscordInstance")
 const MinecraftInstance = require("./minecraft/MinecraftInstance")
+const GlobalChatInstance = require("./globalChat/GlobalChatInstance")
 const WebhookInstance = require("./webhook/WebhookInstance")
 const PunishedUsers = require("./util/MutedUsers")
 
@@ -16,6 +17,7 @@ class Application extends EventEmitter {
     plugins
 
     discordInstance
+    globalChatInstance
     minecraftInstances = []
     webhookInstances = []
 
@@ -26,6 +28,7 @@ class Application extends EventEmitter {
         this.punishedUsers = new PunishedUsers()
 
         this.discordInstance = new DiscordInstance(this, "DC", DISCORD_CONFIG)
+        this.globalChatInstance = new GlobalChatInstance(this, "GLOBAL")
         this.#parseWebhooks()
         this.#parseMinecraft()
 
@@ -43,6 +46,7 @@ class Application extends EventEmitter {
 
     async connect() {
         await this.discordInstance.connect()
+        await this.globalChatInstance.connect()
         for (let instance of this.minecraftInstances) {
             //TODO: instance will try to connect but won't be "ready" to receive events
             // NEED TO CHANGE MinecraftInstance#connect()

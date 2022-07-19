@@ -17,7 +17,7 @@ const publicCommandHandler = async function (minecraftInstance, username, messag
 
     let command = commands.find(c => c.triggers.some(t => t === commandName))
     if (command) {
-        minecraftInstance.app.emit(["command", command.triggers[0]], {
+        minecraftInstance.app.emit(["minecraft", "command", command.triggers[0]], {
             clientInstance: minecraftInstance,
             scope: SCOPE.PUBLIC,
             username: username,
