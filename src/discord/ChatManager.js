@@ -39,7 +39,7 @@ class ChatManager extends EventHandler {
                 return
             }
 
-            let filteredMessage = profanityFilter.clean(content)
+            let filteredMessage = this.profanityFilter.clean(content)
             if (content !== filteredMessage) {
                 console.log(filteredMessage)
                 event.reply({
