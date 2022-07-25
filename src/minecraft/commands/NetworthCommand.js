@@ -19,14 +19,18 @@ module.exports = {
             return `No such username! (given: ${givenUsername})`
         }
 
-        let localNetworth = await skyblockProfiles(uuid)
+        let networthRes = await skyblockProfiles(uuid)
             .then(profiles => profiles.map(p => p.members[uuid]))
             .then(getSelectedProfile)
             .then(networth)
-            .then(res => res.data.data.networth)
-            .then(localizedNetworth)
+            .then(res => res.data)
 
-        return `${givenUsername}'s networth: ${localNetworth}`
+        let rawNetworth = (networthRes.data.bank || 0)
+            + (networthRes.data.purse || 0)
+            + (networthRes.data.sacks || 0)
+            + (networthRes.data.networth || 0)
+
+        return `${givenUsername}'s networth: ${localizedNetworth(rawNetworth)}`
     }
 }
 
