@@ -8,6 +8,7 @@ const PunishedUsers = require("./util/MutedUsers")
 
 const DISCORD_CONFIG = require("../config/discord-config.json")
 const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
+const GLOBAL_CHAT_CONFIG = require("../config/global-chat-config.json")
 const fs = require("fs");
 const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 
@@ -28,7 +29,7 @@ class Application extends EventEmitter {
         this.punishedUsers = new PunishedUsers()
 
         this.discordInstance = new DiscordInstance(this, "DC", DISCORD_CONFIG)
-        this.globalChatInstance = new GlobalChatInstance(this, "GLOBAL")
+        this.globalChatInstance = new GlobalChatInstance(this, "GLOBAL", GLOBAL_CHAT_CONFIG)
         this.#parseWebhooks()
         this.#parseMinecraft()
 

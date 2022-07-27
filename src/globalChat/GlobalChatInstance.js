@@ -1,16 +1,19 @@
 const {io} = require("socket.io-client")
 const {SCOPE, ClientInstance} = require("../common/ClientInstance")
 
-const GLOBAL_URL = process.env.GLOBAL_URL
+const GLOBAL_CHAT_KEY = process.env.GLOBAL_CHAT_KEY
 
 class GlobalChatInstance extends ClientInstance {
+    #clientOptions
     client
 
-    constructor(app, instanceName) {
+    constructor(app, instanceName, clientOptions) {
         super(app, instanceName)
+        this.#clientOptions = clientOptions
 
         this.app.on("*.chat", async ({clientInstance, scope, username, replyUsername, message}) => {
             if (clientInstance === this) return
+
 
             if (scope === SCOPE.PUBLIC) {
                 let payload = JSON.stringify({
@@ -19,16 +22,28 @@ class GlobalChatInstance extends ClientInstance {
                     replyUsername: replyUsername,
                     self: true
                 })
-                await this.client?.emit("message", payload)
+                console.log(payload)
+                await this.client?.emit("Message", payload)
             }
         })
     }
 
     async connect() {
-        this.client = io(GLOBAL_URL)
-        this.client.on("message", (payload) => {
+        if (!GLOBAL_CHAT_KEY) {
+            this.logger.info(`GlobalChat disabled since key is given. Contact the developer for a key`)
+            return undefined
+        }
+
+        let authData = {accessKey: GLOBAL_CHAT_KEY}
+        this.client = io(this.#clientOptions.hostname, {auth: authData})
+
+        this.client.on("connect", () => {
+            console.log("Logged in")
+        })
+
+        this.client.on("Message", (payload) => {
             let parsed = JSON.parse(payload)
-            if(parsed.self) return
+            if (parsed.self) return
 
             this.app.emit("global.chat", {
                 clientInstance: this,
@@ -41,4 +56,5 @@ class GlobalChatInstance extends ClientInstance {
     }
 }
 
-module.exports = GlobalChatInstance
+module
+    .exports = GlobalChatInstance
