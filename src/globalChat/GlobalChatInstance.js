@@ -17,7 +17,8 @@ class GlobalChatInstance extends ClientInstance {
 
             if (scope === SCOPE.PUBLIC) {
                 let payload = JSON.stringify({
-                    username: username,
+                    username: null,
+                    displayName: username,
                     message: message,
                     replyUsername: replyUsername,
                     self: true
@@ -48,7 +49,7 @@ class GlobalChatInstance extends ClientInstance {
             this.app.emit("global.chat", {
                 clientInstance: this,
                 scope: SCOPE.PUBLIC,
-                username: parsed.username,
+                username: parsed.displayName ? parsed.displayName : parsed.username,
                 replyUsername: null,//TODO: find way to get replyUsername for webhooks (if possible at all)
                 message: parsed.message
             })
