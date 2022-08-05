@@ -8,5 +8,7 @@
   "commands": {
     "prefix_comment": "change the prefix command in-game commands in guild public chat",
     "prefix": "!"
-  }
+  },
+  "bridge_prefix_comment": "Put in front of every message. Helpful if more than one bridge exists in same guild, so they ignore each other messages",
+  "bridge_prefix": "."
 }

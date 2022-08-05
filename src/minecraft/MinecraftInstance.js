@@ -7,13 +7,14 @@ const StateHandler = require("./handlers/StateHandler")
 
 const ChatManager = require("./ChatManager")
 const {displayInstanceName: DISPLAY_INSTANCE_NAME} = require("../../config/cluster-config.json")
+const {bridge_prefix} = require("../../config/minecraft-config.json")
 const {SCOPE} = require("../common/ClientInstance")
 
 const commandsLimiter = new (require('../util/RateLimiter'))(2, 1000)
 
 
 function formatChatMessage(prefix, instance, username, replyUsername, message) {
-    let full = `/${prefix} `
+    let full = `/${prefix} ${bridge_prefix}`
 
     if (DISPLAY_INSTANCE_NAME) full += `[${instance?.instanceName}] `
 

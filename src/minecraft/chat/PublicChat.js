@@ -1,5 +1,6 @@
 const {publicCommandHandler} = require('../CommandsManager')
 const {SCOPE} = require("../../common/ClientInstance")
+const {bridge_prefix} = require("../../../config/minecraft-config.json")
 
 module.exports = async function (clientInstance, message) {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
@@ -10,6 +11,7 @@ module.exports = async function (clientInstance, message) {
         let username = match[1]
         let playerMessage = match[2].trim()
 
+        if (playerMessage.startsWith(bridge_prefix)) return
         if (clientInstance.app.isMinecraftBot(username)) return true
         if (await publicCommandHandler(clientInstance, username, playerMessage)) return
 
