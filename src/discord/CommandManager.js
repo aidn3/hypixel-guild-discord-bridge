@@ -23,6 +23,7 @@ fs.readdirSync('./src/discord/commands')
 const registerDiscordCommand = function (token, clientId, guildId) {
     // noinspection JSClosureCompilerSyntax
     let rest = new REST().setToken(token)
+    // noinspection JSUnresolvedFunction
     return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
 }
 
