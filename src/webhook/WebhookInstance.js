@@ -16,8 +16,9 @@ class WebhookInstance extends ClientInstance {
         if (webhookSendUrl) this.#client = new WebhookClient({url: webhookSendUrl})
         this.#webhookReceiveId = webhookReceiveId
 
-        this.app.on("*.chat", async ({clientInstance, username, replyUsername, message}) => {
+        this.app.on("*.chat", async ({clientInstance, scope, username, replyUsername, message}) => {
             if (clientInstance === this) return
+            if (scope !== SCOPE.PUBLIC) return
 
             // TODO: integrate instanceName into webhook messages
             let displayUsername = replyUsername ? `${username}▸${replyUsername}` : username
