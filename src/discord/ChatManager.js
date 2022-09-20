@@ -39,7 +39,18 @@ class ChatManager extends EventHandler {
                 return
             }
 
-            let filteredMessage = this.profanityFilter.clean(content)
+            let filteredMessage
+            try {
+                filteredMessage = this.profanityFilter.clean(content)
+            } catch (ignored) {
+                // profanity package has bug.
+                // will throw error if given one special character.
+                // example: clean("?")
+
+                // message is clear if thrown
+                filteredMessage = content
+            }
+
             if (content !== filteredMessage) {
                 console.log(filteredMessage)
                 event.reply({
