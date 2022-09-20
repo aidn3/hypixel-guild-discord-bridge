@@ -9,7 +9,6 @@ const ChatManager = require("./ChatManager")
 const {displayInstanceName: DISPLAY_INSTANCE_NAME} = require("../../config/cluster-config.json")
 const {bridge_prefix} = require("../../config/minecraft-config.json")
 const {SCOPE} = require("../common/ClientInstance")
-
 const commandsLimiter = new (require('../util/RateLimiter'))(2, 1000)
 
 
@@ -56,7 +55,21 @@ class MinecraftInstance extends ClientInstance {
             }
         })
 
-        // TODO: process events
+        let send = this.send
+        this.app.on("*.client.*", async function ({clientInstance, reason}) {
+            if (clientInstance === this) return
+
+            await send(`/gc @[${clientInstance?.instanceName || "Main"}]: ${reason ? reason : this.event}`)
+        })
+
+        this.app.on("*.event.*", async function ({clientInstance, scope, message, removeLater}) {
+            if (clientInstance === this) return
+            if (scope !== SCOPE.PUBLIC) return
+            if (removeLater) return
+
+            await send(`/gc @[${clientInstance?.instanceName || "Main"}]: ${message}`)
+        })
+
     }
 
     connect() {
@@ -79,7 +92,7 @@ class MinecraftInstance extends ClientInstance {
 
     async send(message) {
         return commandsLimiter.wait().then(() => {
-            if (this.client.player !== undefined) {
+            if (this?.client?.player) {
                 this.client.chat(message)
             }
         })
