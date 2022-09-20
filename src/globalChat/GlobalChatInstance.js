@@ -46,6 +46,11 @@ class GlobalChatInstance extends ClientInstance {
             let parsed = JSON.parse(payload)
             if (parsed.self) return
 
+            if (this.app.punishedUsers.muted(event.member.displayName)) {
+                this.logger.debug(`${event.author.username} is muted. ignoring this Global message.`)
+                return
+            }
+
             this.app.emit("global.chat", {
                 clientInstance: this,
                 scope: SCOPE.PUBLIC,
