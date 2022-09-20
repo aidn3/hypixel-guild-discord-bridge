@@ -63,16 +63,15 @@ class CommandManager extends EventHandler {
                     ephemeral: true
                 })
 
-            } else if (!channelAllowed(interaction)) {
+            } else if (!channelAllowed(this.clientInstance, interaction)) {
                 this.clientInstance.logger.debug(`${interaction.member.tag} tried to execute command but denied due to being in wrong channel: ${printCommand(interaction)}`)
 
                 interaction.reply({
-                    content: `You can only use commands in <#${DISCORD_PUBLIC_CHANNEL}>`
-                        + ` or in <#${DISCORD_OFFICER_CHANNEL}>`,
+                    content: `You can only use commands in public/officer bridge channels!`,
                     ephemeral: true
                 })
 
-            } else if (!memberAllowed(interaction, command.permission)) {
+            } else if (!memberAllowed(this.clientInstance, interaction, command.permission)) {
                 this.clientInstance.logger.debug(`${interaction.member.tag} tried to execute command but denied due to permissions: ${printCommand(interaction)}`)
 
                 interaction.reply({
@@ -105,21 +104,22 @@ class CommandManager extends EventHandler {
     }
 }
 
-const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID
-const DISCORD_COMMAND_ROLE = process.env.DISCORD_COMMAND_ROLE
-const memberAllowed = function (interaction, permissionLevel) {
+const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID // owner must be single person
+const memberAllowed = function (clientInstance, interaction, permissionLevel) {
     if (permissionLevel === 0) return true
-    if (permissionLevel === 1
-        && interaction.member.roles.cache.some(role => role.id === DISCORD_COMMAND_ROLE)) return true
+    if (permissionLevel === 1) {
+        let hasOfficerRole = interaction.member.roles.cache
+            .some(role => clientInstance.officerRoles.some(id => role.id === id))
+
+        if (hasOfficerRole) return true
+    }
 
     return interaction.member.id === DISCORD_OWNER_ID
 }
 
-const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
-const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
-const channelAllowed = function (interaction) {
-    return interaction.channel.id === DISCORD_PUBLIC_CHANNEL
-        || interaction.channel.id === DISCORD_OFFICER_CHANNEL
+const channelAllowed = function (clientInstance, interaction) {
+    return clientInstance.publicChannels.some(id => interaction.channel.id === id)
+        || clientInstance.officerChannels.some(id => interaction.channel.id === id)
 }
 
 const printCommand = function (interaction) {

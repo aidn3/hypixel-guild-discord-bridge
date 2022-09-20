@@ -17,6 +17,10 @@ class DiscordInstance extends ClientInstance {
     #clientOptions
     #handlers
 
+    publicChannels = []
+    officerChannels = []
+    officerRoles = []
+
     constructor(app, instanceName, clientOptions) {
         super(app, instanceName)
 
@@ -29,51 +33,67 @@ class DiscordInstance extends ClientInstance {
             new CommandManager(this),
         ]
 
-        this.app.on("*.chat", async ({clientInstance, scope, username, replyUsername, message}) => {
-            if (clientInstance === this) return
+        this.publicChannels = process.env.DISCORD_PUBLIC_CHANNEL
+            .split(",").map(id => id.trim())
+        this.officerChannels = process.env.DISCORD_OFFICER_CHANNEL
+            .split(",").map(id => id.trim())
+        this.officerRoles = process.env.DISCORD_COMMAND_ROLE
+            .split(",").map(id => id.trim())
+
+        this.app.on("*.chat", async ({clientInstance, scope, channelId, username, replyUsername, message}) => {
+            // discord instance now supports different channels using same instance
+            // if (clientInstance === this) return
+
+
             // webhooks received in same channel
             if (instanceType(clientInstance) === LOCATION.WEBHOOK) return
 
 
-            let channelId
-            if (scope === SCOPE.PUBLIC) channelId = process.env.DISCORD_PUBLIC_CHANNEL
-            else if (scope === SCOPE.OFFICER) channelId = process.env.DISCORD_OFFICER_CHANNEL
+            let channels
+            if (scope === SCOPE.PUBLIC) channels = this.publicChannels
+            else if (scope === SCOPE.OFFICER) channels = this.officerChannels
             else return
 
-            let webhook = await this.#getWebhook(channelId)
-            let displayUsername = replyUsername ? `${username}⇾${replyUsername}` : username
+            for (const _channelId of channels) {
+                if (_channelId === channelId) continue
 
-            //TODO: integrate instanceName
-            await webhook.send({
-                content: escapeDiscord(message),
-                username: displayUsername,
-                avatarURL: `https://mc-heads.net/avatar/${username}`
-            })
+                let webhook = await this.#getWebhook(_channelId)
+                let displayUsername = replyUsername ? `${username}⇾${replyUsername}` : username
+
+                //TODO: integrate instanceName
+                await webhook.send({
+                    content: escapeDiscord(message),
+                    username: displayUsername,
+                    avatarURL: `https://mc-heads.net/avatar/${username}`
+                })
+            }
         })
 
         this.app.on("*.event.*", async ({clientInstance, scope, username, severity, message, removeLater}) => {
             if (clientInstance === this) return
 
-            let channelId
-            if (scope === SCOPE.PUBLIC) channelId = process.env.DISCORD_PUBLIC_CHANNEL
-            else if (scope === SCOPE.OFFICER) channelId = process.env.DISCORD_OFFICER_CHANNEL
+            let channels
+            if (scope === SCOPE.PUBLIC) channels = this.publicChannels
+            else if (scope === SCOPE.OFFICER) channels = this.officerChannels
             else return
 
-            let channel = await this.client.channels.fetch(channelId)
+            for (const channelId of channels) {
+                let channel = await this.client.channels.fetch(channelId)
 
-            let resP = channel.send({
-                embeds: [{
-                    title: escapeDiscord(username),
-                    description: escapeDiscord(message),
-                    url: `https:\/\/sky.shiiyu.moe\/stats\/${username}`,
-                    thumbnail: {url: `https://cravatar.eu/helmavatar/${username}.png`},
-                    color: severity
-                }]
-            })
+                let resP = channel.send({
+                    embeds: [{
+                        title: escapeDiscord(username),
+                        description: escapeDiscord(message),
+                        url: `https:\/\/sky.shiiyu.moe\/stats\/${username}`,
+                        thumbnail: {url: `https://cravatar.eu/helmavatar/${username}.png`},
+                        color: severity
+                    }]
+                })
 
-            if (removeLater) {
-                let deleteAfter = this.#clientOptions["events"]["deleteTempEventAfter"]
-                setTimeout(() => resP.then(res => res.delete()), deleteAfter)
+                if (removeLater) {
+                    let deleteAfter = this.#clientOptions["events"]["deleteTempEventAfter"]
+                    setTimeout(() => resP.then(res => res.delete()), deleteAfter)
+                }
             }
         })
     }

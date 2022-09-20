@@ -5,8 +5,6 @@ const {cleanMessage, getReplyUsername, escapeDiscord} = require("../util/Discord
 const BadWords = require("bad-words")
 const PROFANITY_WHITELIST = require("../../config/profane-whitelist.json")
 
-const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
-const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
 
 class ChatManager extends EventHandler {
     profanityFilter
@@ -30,7 +28,7 @@ class ChatManager extends EventHandler {
 
         let replyUsername = await getReplyUsername(event)
 
-        if (event.channel.id === DISCORD_PUBLIC_CHANNEL) {
+        if (this.clientInstance.publicChannels.some(id => id === event.channel.id)) {
             if (this.clientInstance.app.punishedUsers.muted(event.member.displayName)) {
                 event.reply({
                     content: `*Looks like you are muted!*`,
@@ -62,15 +60,19 @@ class ChatManager extends EventHandler {
             this.clientInstance.app.emit("discord.chat", {
                 clientInstance: this.clientInstance,
                 scope: SCOPE.PUBLIC,
+                channelId: event.channel.id,
                 username: event.member.displayName,
                 replyUsername: replyUsername,
                 message: filteredMessage
             })
 
-        } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
+        }
+
+        if (this.clientInstance.officerChannels.some(id => id === event.channel.id)) {
             this.clientInstance.app.emit("discord.chat", {
                 clientInstance: this.clientInstance,
                 scope: SCOPE.OFFICER,
+                channelId: event.channel.id,
                 username: event.member.displayName,
                 replyUsername: replyUsername,
                 message: content
