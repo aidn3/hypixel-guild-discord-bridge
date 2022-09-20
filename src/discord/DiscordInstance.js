@@ -8,6 +8,7 @@ const ChatManager = require("./ChatManager")
 const {CommandManager} = require('./CommandManager')
 const {escapeDiscord} = require("../util/DiscordMessageUtil");
 const {SCOPE, instanceType, LOCATION} = require("../common/ClientInstance")
+const COLOR = require('../../config/discord-config.json').events.color
 
 const DISCORD_KEY = process.env.DISCORD_KEY
 
@@ -94,6 +95,22 @@ class DiscordInstance extends ClientInstance {
                     let deleteAfter = this.#clientOptions["events"]["deleteTempEventAfter"]
                     setTimeout(() => resP.then(res => res.delete()), deleteAfter)
                 }
+            }
+        })
+
+        let self = this
+        this.app.on("*.client.*", async function ({clientInstance, reason}) {
+            if (clientInstance === this) return
+
+            for (const channelId of self.publicChannels) {
+                let channel = await self.client.channels.fetch(channelId)
+                channel.send({
+                    embeds: [{
+                        title: escapeDiscord(clientInstance?.instanceName || "Main"),
+                        description: reason ? escapeDiscord(reason) : escapeDiscord(this.event),
+                        color: COLOR.INFO
+                    }]
+                });
             }
         })
     }
