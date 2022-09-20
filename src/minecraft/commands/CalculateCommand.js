@@ -7,7 +7,7 @@ const {evalExpression} = require('@hkh12/node-calc');
 
 module.exports = {
     triggers: ['calculate', 'calc', 'c'],
-    handler: async function (clientInstance, username, args) {
+    handler: function (clientInstance, username, args) {
         if (args.length === 0) return `${username}, example: /calc 1 + 1`
 
         let expression = args.join(" ")
