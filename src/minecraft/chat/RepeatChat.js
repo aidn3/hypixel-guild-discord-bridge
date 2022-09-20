@@ -32,7 +32,7 @@ module.exports = function (clientInstance, message) {
             username: null,
             severity: COLOR.INFO,
             message: message,
-            removeLater: true
+            removeLater: false
         })
 
         if (lastWarning + 5000 < new Date().getTime()) {
