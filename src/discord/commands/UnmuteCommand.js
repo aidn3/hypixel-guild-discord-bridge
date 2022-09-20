@@ -15,6 +15,7 @@ module.exports = {
 
         let username = interaction.options.getString("username")
         clientInstance.app.sendMinecraftCommand(`/g unmute ${username}`)
+        clientInstance.app.punishedUsers.unmute(username)
 
         interaction.editReply(`Command sent to unmute ${username}!`)
     }
