@@ -41,6 +41,8 @@ class DiscordInstance extends ClientInstance {
         this.officerRoles = process.env.DISCORD_COMMAND_ROLE
             .split(",").map(id => id.trim())
 
+        let self = this
+
         this.app.on("*.chat", async ({clientInstance, scope, channelId, username, replyUsername, message}) => {
             // discord instance now supports different channels using same instance
             // if (clientInstance === this) return
@@ -70,16 +72,33 @@ class DiscordInstance extends ClientInstance {
             }
         })
 
-        this.app.on("*.event.*", async ({clientInstance, scope, username, severity, message, removeLater}) => {
+        let lastRepeatEvent = 0
+        let lastBlockEvent = 0
+        this.app.on("*.event.*", async function ({clientInstance, scope, username, severity, message, removeLater}) {
             if (clientInstance === this) return
 
+            if (this.event === "minecraft.event.repeat") {
+                if (lastRepeatEvent + 5000 < new Date().getTime()) {
+                    lastRepeatEvent = new Date().getTime()
+                } else {
+                    return
+                }
+            }
+            if (this.event === "minecraft.event.block") {
+                if (lastBlockEvent + 5000 < new Date().getTime()) {
+                    lastBlockEvent = new Date().getTime()
+                } else {
+                    return
+                }
+            }
+
             let channels
-            if (scope === SCOPE.PUBLIC) channels = this.publicChannels
-            else if (scope === SCOPE.OFFICER) channels = this.officerChannels
+            if (scope === SCOPE.PUBLIC) channels = self.publicChannels
+            else if (scope === SCOPE.OFFICER) channels = self.officerChannels
             else return
 
             for (const channelId of channels) {
-                let channel = await this.client.channels.fetch(channelId)
+                let channel = await self.client.channels.fetch(channelId)
 
                 let resP = channel.send({
                     embeds: [{
@@ -92,13 +111,12 @@ class DiscordInstance extends ClientInstance {
                 })
 
                 if (removeLater) {
-                    let deleteAfter = this.#clientOptions["events"]["deleteTempEventAfter"]
+                    let deleteAfter = self.#clientOptions["events"]["deleteTempEventAfter"]
                     setTimeout(() => resP.then(res => res.delete()), deleteAfter)
                 }
             }
         })
 
-        let self = this
         this.app.on("*.client.*", async function ({clientInstance, reason}) {
             if (clientInstance === this) return
 
