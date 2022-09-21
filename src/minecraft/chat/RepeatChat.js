@@ -25,18 +25,19 @@ module.exports = function (clientInstance, message) {
 
     let match = regex.exec(message)
     if (match != null) {
+        let randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
 
         clientInstance.app.emit("minecraft.event.repeat", {
             clientInstance: clientInstance,
             scope: SCOPE.PUBLIC,
             username: null,
             severity: COLOR.INFO,
-            message: message,
+            message: randomMessage,
             removeLater: false
         })
 
         if (lastWarning + 5000 < new Date().getTime()) {
-            clientInstance.send(`/gc @${MESSAGES[Math.floor(Math.random() * MESSAGES.length)]}`)
+            clientInstance.send(`/gc @${randomMessage}`)
             lastWarning = new Date().getTime()
         }
 
