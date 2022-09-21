@@ -106,7 +106,8 @@ class DiscordInstance extends ClientInstance {
                         description: escapeDiscord(message),
                         url: `https:\/\/sky.shiiyu.moe\/stats\/${username}`,
                         thumbnail: {url: `https://cravatar.eu/helmavatar/${username}.png`},
-                        color: severity
+                        color: severity,
+                        footer: `${clientInstance.instanceName}`
                     }]
                 })
 
