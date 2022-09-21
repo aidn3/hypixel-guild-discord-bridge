@@ -46,15 +46,17 @@ class GlobalChatInstance extends ClientInstance {
             let parsed = JSON.parse(payload)
             if (parsed.self) return
 
-            if (this.app.punishedUsers.muted(event.member.displayName)) {
-                this.logger.debug(`${event.author.username} is muted. ignoring this Global message.`)
+            let username = parsed.displayName ? parsed.displayName : parsed.username
+
+            if (this.app.punishedUsers.muted(username)) {
+                this.logger.debug(`${username} is muted. ignoring this Global message.`)
                 return
             }
 
             this.app.emit("global.chat", {
                 clientInstance: this,
                 scope: SCOPE.PUBLIC,
-                username: parsed.displayName ? parsed.displayName : parsed.username,
+                username: username,
                 replyUsername: null,//TODO: find way to get replyUsername for webhooks (if possible at all)
                 message: parsed.message
             })
