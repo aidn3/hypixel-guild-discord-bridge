@@ -9,25 +9,10 @@ const {Collection} = require("discord.js")
 const EventHandler = require("../common/EventHandler")
 const {SCOPE} = require("./../common/ClientInstance")
 
-const commandsJson = []
-const commandsExecutor = new Collection()
-
-fs.readdirSync('./src/discord/commands')
-    .filter(file => file.endsWith('Command.js'))
-    .forEach(file => {
-        let command = require(`./commands/${file}`)
-        commandsJson.push(command.data.toJSON())
-        commandsExecutor.set(command.data.name, command)
-    })
-
-const registerDiscordCommand = function (token, clientId, guildId) {
-    // noinspection JSClosureCompilerSyntax
-    let rest = new REST().setToken(token)
-    // noinspection JSUnresolvedFunction
-    return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
-}
 
 class CommandManager extends EventHandler {
+    #commandsExecutor = new Collection()
+
     constructor(clientInstance) {
         super(clientInstance)
     }
@@ -36,8 +21,29 @@ class CommandManager extends EventHandler {
         let token = this.clientInstance.client.token
         let clientId = this.clientInstance.client.application.id
 
+        let commandsJson = []
+        let instanceChoices = this.clientInstance.app.minecraftInstances
+            .map(i => i.instanceName)
+            .map(choice => ({name: choice, value: choice}))
+
+        fs.readdirSync('./src/discord/commands')
+            .filter(file => file.endsWith('Command.js'))
+            .forEach(file => {
+                let command = require(`./commands/${file}`)
+
+                if (command.allowInstance && instanceChoices.length > 0) {
+                    command.data.addStringOption(option =>
+                        option.setName("instance")
+                            .setDescription("Which instance to send this command to")
+                            .setChoices(...instanceChoices))
+                }
+
+                commandsJson.push(command.data.toJSON())
+                this.#commandsExecutor.set(command.data.name, command)
+            })
+
         this.clientInstance.client.guilds.cache
-            .forEach(guild => registerDiscordCommand(token, clientId, guild.id))
+            .forEach(guild => this.#registerDiscordCommand(token, clientId, guild.id, commandsJson))
         this.clientInstance.client.on('interactionCreate', (...args) => this.#interactionCreate(...args))
 
         this.clientInstance.logger.debug("CommandManager is registered")
@@ -45,7 +51,7 @@ class CommandManager extends EventHandler {
 
     async #interactionCreate(interaction) {
         if (!interaction.isCommand()) return
-        const command = commandsExecutor.get(interaction.commandName)
+        const command = this.#commandsExecutor.get(interaction.commandName)
 
         try {
             this.clientInstance.app.emit(["discord", "command", interaction.commandName], {
@@ -102,6 +108,14 @@ class CommandManager extends EventHandler {
             }
         }
     }
+
+    #registerDiscordCommand(token, clientId, guildId, commandsJson) {
+        // noinspection JSClosureCompilerSyntax
+        let rest = new REST().setToken(token)
+        // noinspection JSUnresolvedFunction
+        return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
+    }
+
 }
 
 const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID // owner must be single person
