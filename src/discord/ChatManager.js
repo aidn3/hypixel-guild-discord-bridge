@@ -32,7 +32,9 @@ class ChatManager extends EventHandler {
             let mutedTill = this.clientInstance.app.punishedUsers.mutedTill(event.member.displayName);
             if (mutedTill) {
                 event.reply({
-                    content: `*You will be unmuted <t:${mutedTill}:R>!*`,
+                    content: `*Looks like you are muted on the chat-bridge.*\n`
+                        + `*All messages you send won't reach any guild in-game or any other discord server.*\n`
+                        + `*Your mute will expire <t:${mutedTill}:R>!*`,
                     ephemeral: true
                 })
                 return
