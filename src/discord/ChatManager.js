@@ -29,9 +29,10 @@ class ChatManager extends EventHandler {
         let replyUsername = await getReplyUsername(event)
 
         if (this.clientInstance.publicChannels.some(id => id === event.channel.id)) {
-            if (this.clientInstance.app.punishedUsers.muted(event.member.displayName)) {
+            let mutedTill = this.clientInstance.app.punishedUsers.mutedTill(event.member.displayName);
+            if (mutedTill) {
                 event.reply({
-                    content: `*Looks like you are muted!*`,
+                    content: `*You will be unmuted <t:${mutedTill}:R>!*`,
                     ephemeral: true
                 })
                 return

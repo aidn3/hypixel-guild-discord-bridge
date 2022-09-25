@@ -12,6 +12,7 @@ module.exports = async function (clientInstance, message) {
         let playerMessage = match[2].trim()
 
         if (playerMessage.startsWith(bridge_prefix)) return
+        if (clientInstance.app.punishedUsers.mutedTill(username)) return
         if (clientInstance.app.isMinecraftBot(username)) return true
         if (await publicCommandHandler(clientInstance, username, playerMessage)) return
 

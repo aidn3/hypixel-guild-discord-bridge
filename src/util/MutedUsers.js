@@ -1,7 +1,7 @@
 class PunishedUsers {
     #muted = [];
 
-    muted(name) {
+    mutedTill(name) {
         this.#clean()
 
         let current = new Date().getTime()

@@ -43,7 +43,7 @@ class WebhookInstance extends ClientInstance {
         let content = cleanMessage(event)
         if (content.length === 0) return
 
-        if (this.app.punishedUsers.muted(event.member.displayName)) {
+        if (this.app.punishedUsers.mutedTill(event.member.displayName)) {
             this.logger.debug(`${event.author.username} is muted. ignoring this webhook message.`)
             return
         }

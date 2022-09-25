@@ -48,7 +48,7 @@ class GlobalChatInstance extends ClientInstance {
 
             let username = parsed.displayName ? parsed.displayName : parsed.username
 
-            if (this.app.punishedUsers.muted(username)) {
+            if (this.app.punishedUsers.mutedTill(username)) {
                 this.logger.debug(`${username} is muted. ignoring this Global message.`)
                 return
             }
