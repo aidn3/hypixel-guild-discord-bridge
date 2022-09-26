@@ -12,7 +12,7 @@ const HYPIXEL_OWNER_USERNAME = process.env.HYPIXEL_OWNER_USERNAME
 const publicCommandHandler = async function (minecraftInstance, username, message) {
     if (!message.startsWith(HYPIXEL_COMMAND_PREFIX)) return false
 
-    let commandName = message.substring(HYPIXEL_COMMAND_PREFIX.length).split(" ")[0]
+    let commandName = message.substring(HYPIXEL_COMMAND_PREFIX.length).split(" ")[0].toLowerCase()
     let args = message.split(" ").slice(1)
 
     let command = commands.find(c => c.triggers.some(t => t === commandName))
