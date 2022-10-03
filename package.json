@@ -34,6 +34,7 @@
     "moment": "^2.29.3",
     "node-cache": "^5.1.2",
     "prom-client": "^14.0.1",
+    "skyhelper-networth": "^1.2.0",
     "socket.io-client": "^4.5.1"
   }
 }

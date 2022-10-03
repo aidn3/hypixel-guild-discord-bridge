@@ -3,76 +3,27 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-const fetch = require("axios");
-
-const MARO_ENDPOINT = "https://skyblock.acebot.xyz/api/networth/categories"
-const HYPIXEL_KEY = process.env.HYPIXEL_KEY
+const Mojang = require("mojang")
+const {getNetworth, localizedNetworth} = require("../../util/SkyblockApi")
 
 module.exports = {
     triggers: ['networth', 'net', 'nw'],
     handler: async function (clientInstance, username, args) {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
-        let uuid = await getUuidByUsername(givenUsername)
+        let uuid = await Mojang.lookupProfileAt(givenUsername)
+            .then(mojangProfile => mojangProfile.id)
 
         if (!uuid) {
             return `No such username! (given: ${givenUsername})`
         }
 
-        let networthRes = await skyblockProfiles(uuid)
-            .then(profiles => profiles.map(p => p.members[uuid]))
-            .then(getSelectedProfile)
-            .then(networth)
-            .then(res => res.data)
+        let networthLocalized = await clientInstance.app.hypixelApi.getSkyblockProfiles(uuid, {raw: true})
+            .then(response => response.profiles)
+            .then(profiles => profiles.filter(p => p.selected)[0])
+            .then(res => getNetworth(res.members[uuid], res.banking?.balance || 0))
+            .then(localizedNetworth)
 
-        let rawNetworth = (networthRes.data.bank || 0)
-            + (networthRes.data.purse || 0)
-            + (networthRes.data.sacks || 0)
-            + (networthRes.data.networth || 0)
-
-        return `${givenUsername}'s networth: ${localizedNetworth(rawNetworth)}`
+        return `${givenUsername}'s networth: ${networthLocalized}`
     }
-}
-
-function getUuidByUsername(username) {
-    return fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`)
-        .then(res => res.data?.id)
-}
-
-function skyblockProfiles(uuid) {
-    return fetch(`https://api.hypixel.net/skyblock/profiles?key=${HYPIXEL_KEY}&uuid=${uuid}`)
-        .then(res => res.data?.profiles)
-}
-
-function networth(profile) {
-    return fetch.post(MARO_ENDPOINT, {data: profile})
-}
-
-function getSelectedProfile(profiles) {
-    let selectedProfile = profiles[0]
-    for (let profile of profiles) {
-        if (profile.last_save > selectedProfile.last_save) {
-            selectedProfile = profile
-        }
-    }
-    console.log(`Selected profile death count: ${selectedProfile["death_count"]}`)
-    return selectedProfile
-}
-
-function localizedNetworth(coins) {
-    let suffix = ""
-    if (coins > 1000) {
-        coins = coins / 1000
-        suffix = "k"
-    }
-    if (coins > 1000) {
-        coins = coins / 1000
-        suffix = "m"
-    }
-    if (coins > 1000) {
-        coins = coins / 1000
-        suffix = "b"
-    }
-
-    return coins.toFixed(3) + suffix
 }
