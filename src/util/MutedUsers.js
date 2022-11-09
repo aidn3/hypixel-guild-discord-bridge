@@ -4,7 +4,7 @@ class PunishedUsers {
     mutedTill(name) {
         this.#clean()
 
-        let current = new Date().getTime()
+        let current = new Date().getTime() / 1000
         return this.#muted.find(p => p.name.toLowerCase() === name.toLowerCase() && p.till > current)?.till
     }
 
@@ -12,7 +12,7 @@ class PunishedUsers {
         this.#clean()
         this.unmute(name)
 
-        let current = new Date().getTime()
+        let current = new Date().getTime() / 1000
         this.#muted.push({name: name, till: current + time})
     }
 
@@ -21,7 +21,7 @@ class PunishedUsers {
     }
 
     #clean() {
-        let current = new Date().getTime()
+        let current = new Date().getTime() / 1000
         this.#muted = this.#muted.filter(p => p.till > current)
     }
 }
