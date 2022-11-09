@@ -5,7 +5,7 @@ class PunishedUsers {
         this.#clean()
 
         let current = new Date().getTime()
-        return this.#muted.find(p => p.name.toLowerCase() === name.toLowerCase() && p.till > current)
+        return this.#muted.find(p => p.name.toLowerCase() === name.toLowerCase() && p.till > current)?.till
     }
 
     mute(name, time) {
