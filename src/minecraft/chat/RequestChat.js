@@ -1,4 +1,5 @@
 const {SCOPE} = require("../../common/ClientInstance")
+const {escapeDiscord} = require("../../util/DiscordMessageUtil");
 const COLOR = require('../../../config/discord-config.json').events.color
 
 module.exports = function (clientInstance, message) {
@@ -13,7 +14,7 @@ module.exports = function (clientInstance, message) {
             scope: SCOPE.PUBLIC,
             username: username,
             severity: COLOR.GOOD,
-            message: message,
+            message: `${escapeDiscord(username)} has requested to join the guild!`,
             removeLater: false
         })
 
