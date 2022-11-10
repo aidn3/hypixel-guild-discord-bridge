@@ -108,8 +108,7 @@ class DiscordInstance extends ClientInstance {
                         thumbnail: {url: `https://cravatar.eu/helmavatar/${username}.png`},
                         color: severity,
                         footer: {
-                            text: clientInstance.instanceName,
-                            icon_url: `https://cravatar.eu/helmavatar/${username}.png`
+                            text: clientInstance.instanceName
                         }
                     }]
                 })
