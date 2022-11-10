@@ -107,7 +107,10 @@ class DiscordInstance extends ClientInstance {
                         url: `https:\/\/sky.shiiyu.moe\/stats\/${username}`,
                         thumbnail: {url: `https://cravatar.eu/helmavatar/${username}.png`},
                         color: severity,
-                        footer: `${clientInstance.instanceName}`
+                        footer: {
+                            text: clientInstance.instanceName,
+                            icon_url: `https://cravatar.eu/helmavatar/${username}.png`
+                        }
                     }]
                 })
 
