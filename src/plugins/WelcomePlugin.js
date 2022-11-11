@@ -1,5 +1,4 @@
 const MESSAGES = [
-    "%s has just joined the guild!",
     "Welcome %s to our guild!",
     "%s, What a nice new member :)",
     "Psst %s. You just joined. Do /g discord :D",
