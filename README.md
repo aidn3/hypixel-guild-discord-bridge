@@ -30,11 +30,12 @@ offering quality user experience while keeping it simple
 - Bind hypixel guilds chats to discord channels
 - Send and receive Chat from other guilds/discord servers via Webhooks
 - Support Public and Officer Chat
-- Support muting/kicking/inviting/etc. from discord
+- Support in-game moderation commands from discord
 - Share events with discord such as online/offline/join/leave/mute notification/etc.
 - Allow to execute commands
 - Log all Chats/Events/etc
 - Quality Of Life such as `/list` command listing online members and their current game-mode
+- Provide a detailed metrics for every instance
 
 ### Permissions
 
@@ -46,14 +47,17 @@ offering quality user experience while keeping it simple
 
 ### Supported Discord Commands
 
-| Command                | Description                                         | Permission |
-|------------------------|-----------------------------------------------------|------------|
-| `/ping`                | Show Discord response latency                       | Anyone     |
-| `/list`                | List all online members and their current game-mode | Anyone     |
-| `/promote` & `/demote` | Equivalent to `/guild promote/demote`               | Officer    |
-| `/mute` & `/unmute`    | Equivalent to `/guild mute/unmute`                  | Officer    |
-| `/kick` & `/invite`    | Equivalent to `/guild kick/invite`                  | Officer    |
-| `/override`            | Send direct commands to all minecraft clients       | Admin      |
+| Command                             | Description                                         | Permission |
+|-------------------------------------|-----------------------------------------------------|------------|
+| `/ping`                             | Show Discord response latency                       | Anyone     |
+| `/list`                             | List all online members and their current game-mode | Anyone     |
+| `/about`                            | Display basic info about the client                 | Anyone     |
+| `/bin`                              | Search lowest bin of an item                        | Anyone     |
+| `/promote` & `/demote` & `/setrank` | Equivalent to `/guild promote/demote/setrank`       | Officer    |
+| `/mute` & `/unmute`                 | Equivalent to `/guild mute/unmute`                  | Officer    |
+| `/kick` & `/invite` & `/accept`     | Equivalent to `/guild kick/invite/accept`           | Officer    |
+| `/restart`                          | Restart an in-game instance                         | Officer    |
+| `/override`                         | Send direct commands to all minecraft clients       | Admin      |
 
 ### Supported Events
 
@@ -61,9 +65,12 @@ offering quality user experience while keeping it simple
 |----------------|--------------------------------------------------------------------------|--------------------|
 | Online/Offline | Member logging in/off                                                    | Anyone             |
 | Join/Leave     | Member joins/leaves the guild                                            | Anyone             |
+| Request        | Member requesting to join the guild                                      | Anyone             |
 | Repeat         | Warn about "can't repeat message" <br/>when writing from discord channel | Anyone             |
-| Mute           | Notify when someone gets muted in the guild                              | Officer            |
-| Kick           | Notify when someone is kicked from the guild                             | Officer            |
+| Block          | Warn about discord user saying something that breaks Hypixel rules       | Anyone             |
+| Kick           | Notify when someone is kicked from the guild                             | Public             |
+| Mute / Unmute  | Notify when someone gets muted in the guild                              | Officer            |
+
 
 ### Supported Ingame Commands
 
@@ -76,7 +83,9 @@ offering quality user experience while keeping it simple
 | !iq        | Give a random iq number to the guild member      | Anyone     |
 | !weight    | calculate **Senither Weights** of players        | Anyone     |
 | !networth  | Calculate the in-game networth of players        | Anyone     |
+| !guild     | Give a summary of the guild for a given user     | Anyone     |
 | !bitches   | Give a random number to the guild member         | Anyone     |
+
 
 ### How to execute commands
 
