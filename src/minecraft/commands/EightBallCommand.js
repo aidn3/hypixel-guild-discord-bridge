@@ -28,7 +28,7 @@ const ANSWERS = [
 
 module.exports = {
     triggers: ['8balls', '8ball', '8', 'ball', 'balls', '8b'],
-    handler: function (clientInstance, reply, username, args) {
-        reply(`${username}, ${ANSWERS[Math.floor(Math.random() * ANSWERS.length)]}`)
+    handler: function (clientInstance, username, args) {
+        return `${username}, ${ANSWERS[Math.floor(Math.random() * ANSWERS.length)]}`
     }
 }

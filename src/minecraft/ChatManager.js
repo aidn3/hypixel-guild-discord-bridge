@@ -16,7 +16,10 @@ class ChatManager extends EventHandler {
 
     #onMessage(event) {
         const message = event.toString().trim()
-        chatEvents.some(e => e(this.clientInstance, message))
+
+        // some chat events return promise.
+        // some() is not viable
+        chatEvents.forEach(e => e(this.clientInstance, message))
     }
 }
 

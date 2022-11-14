@@ -1,5 +1,4 @@
-const EventsMetrics = require("../../metrics/EventsMetrics");
-const {getLocation, SCOPE} = require("../../metrics/Util");
+const {SCOPE} = require("../../common/ClientInstance")
 const COLOR = require('../../../config/discord-config.json').events.color
 
 module.exports = function (clientInstance, message) {
@@ -9,13 +8,15 @@ module.exports = function (clientInstance, message) {
     if (match != null) {
         let username = match[1]
 
-        EventsMetrics(getLocation(clientInstance), SCOPE.PUBLIC, clientInstance.instanceName, "join")
-        clientInstance.bridge.onPublicEvent(
-            clientInstance,
-            username,
-            "joined the guild!",
-            COLOR.GOOD,
-            false)
+        clientInstance.app.emit("minecraft.event.join", {
+            clientInstance: clientInstance,
+            scope: SCOPE.PUBLIC,
+            username: username,
+            severity: COLOR.GOOD,
+            message: "joined the guild!",
+            removeLater: false
+        })
+
         return true
     }
 }

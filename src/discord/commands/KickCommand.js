@@ -19,7 +19,7 @@ module.exports = {
 
         let username = interaction.options.getString("username")
         let reason = interaction.options.getString("reason")
-        clientInstance.bridge.sendMinecraftCommand(`/g kick ${username} ${reason}`)
+        clientInstance.app.sendMinecraftCommand(`/g kick ${username} ${reason}`)
 
         interaction.editReply(`Command sent to kick ${username}!`)
     }

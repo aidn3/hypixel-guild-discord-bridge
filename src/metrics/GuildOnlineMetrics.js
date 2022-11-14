@@ -37,12 +37,16 @@ async function getOnlineMembers(minecraftInstance) {
 async function collectMetrics(minecraftInstance) {
     // TODO: add better logger structure
     let guild = await getOnlineMembers(minecraftInstance)
-    GUILD_MEMBERS_ONLINE.set({name: guild.name}, Number(guild.online))
+
+    let onlineMembers = Number(guild.online)
+    if (!guild?.name || !onlineMembers) return
+
+    GUILD_MEMBERS_ONLINE.set({name: guild.name}, onlineMembers)
 }
 
-module.exports = function (bridge) {
+module.exports = function (app) {
     setInterval(
-        () => bridge.minecraftInstances.forEach(collectMetrics),
+        () => app.minecraftInstances.forEach(collectMetrics),
         METRICS_CONFIG.metrics_frequency * 1000
     )
 }

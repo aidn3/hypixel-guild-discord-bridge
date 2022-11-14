@@ -1,32 +1,72 @@
-const Bridge = require("./Bridge")
+const EventEmitter = require("eventemitter2")
+const Hypixel = require("hypixel-api-reborn")
 const DiscordInstance = require("./discord/DiscordInstance")
 const MinecraftInstance = require("./minecraft/MinecraftInstance")
+const GlobalChatInstance = require("./globalChat/GlobalChatInstance")
 const WebhookInstance = require("./webhook/WebhookInstance")
-const HypixelGuild = require("./guild/HypixelGuild")
-const GuildApiMetrics = require("./metrics/GuildApiMetrics")
-const GuildOnlineMetrics = require("./metrics/GuildOnlineMetrics")
+const PunishedUsers = require("./util/MutedUsers")
 
 const DISCORD_CONFIG = require("../config/discord-config.json")
 const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
-const COLOR = require('../config/discord-config.json').events.color
+const GLOBAL_CHAT_CONFIG = require("../config/global-chat-config.json")
+const fs = require("fs");
+const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 
-class Application {
+class Application extends EventEmitter {
+    hypixelApi
+    punishedUsers
+    plugins
+
+    discordInstance
+    globalChatInstance
+    minecraftInstances = []
+    webhookInstances = []
+
     constructor() {
-        this.bridge = new Bridge(DISCORD_CONFIG)
-        this.hypixelGuild = new HypixelGuild(this.bridge)
+        super({wildcard: true})
 
-        this.bridge.discordInstance = new DiscordInstance("DC", this.bridge, DISCORD_CONFIG.cache)
+        this.hypixelApi = new Hypixel.Client(HYPIXEL_KEY, {cache: true, cacheTime: 300})
+        this.punishedUsers = new PunishedUsers()
 
-        for (let envKey in process.env) {
-            if (envKey.startsWith("WEBHOOK_")) {
-                let webhookInfo = process.env[envKey].split(",")
-                let instanceName = envKey.replace("WEBHOOK_", "")
+        this.discordInstance = new DiscordInstance(this, "DC", DISCORD_CONFIG)
+        this.globalChatInstance = new GlobalChatInstance(this, "GLOBAL", GLOBAL_CHAT_CONFIG)
+        this.#parseWebhooks()
+        this.#parseMinecraft()
 
-                let instance = new WebhookInstance(instanceName, this.bridge, this.bridge.discordInstance, webhookInfo[1], webhookInfo[0])
-                this.bridge.webhookInstances.push(instance)
-            }
+        this.#loadPlugins()
+        this.plugins.forEach(p => p.call(null, this))
+    }
+
+    sendMinecraftCommand(command) {
+        this.minecraftInstances.forEach(inst => inst.send(command))
+    }
+
+    isMinecraftBot(username) {
+        return this.minecraftInstances.some(inst => inst.username() === username)
+    }
+
+    async connect() {
+        await this.discordInstance.connect()
+        await this.globalChatInstance.connect()
+        for (let instance of this.minecraftInstances) {
+            //TODO: instance will try to connect but won't be "ready" to receive events
+            // NEED TO CHANGE MinecraftInstance#connect()
+            await instance.connect()
         }
 
+        this.emit("main.client.start", {
+            clientInstance: null,
+            reason: "Bridge has started."
+        })
+    }
+
+    #loadPlugins() {
+        this.plugins = fs.readdirSync('./src/plugins/')
+            .filter(file => file.endsWith('Plugin.js'))
+            .map(f => require(`./plugins/${f}`))
+    }
+
+    #parseMinecraft() {
         for (let envKey in process.env) {
             if (envKey.startsWith("MINECRAFT_")) {
                 let account = process.env[envKey].split(",")
@@ -39,29 +79,35 @@ class Application {
                 Object.assign(options, MINECRAFT_CONFIG.server)
                 let instanceName = envKey.replace("MINECRAFT_", "")
 
-                let instance = new MinecraftInstance(instanceName, this.bridge, options, this.hypixelGuild)
-                this.bridge.minecraftInstances.push(instance)
+                let instance = new MinecraftInstance(
+                    this,
+                    instanceName,
+                    options
+                )
+
+                this.minecraftInstances.push(instance)
             }
         }
-
-        GuildApiMetrics(this.bridge)
-        GuildOnlineMetrics(this.bridge)
     }
 
-    async connect() {
-        await this.bridge.discordInstance.connect()
-        for (let instance of this.bridge.minecraftInstances) {
-            //TODO: instance will try to connect but won't be "ready" to receive events
-            // NEED TO CHANGE MinecraftInstance#connect()
-            await instance.connect()
-        }
+    #parseWebhooks() {
+        for (let envKey in process.env) {
+            if (envKey.startsWith("WEBHOOK_")) {
+                let webhookInfo = process.env[envKey].split(",")
+                let webhookSendUrl = webhookInfo[1], webhookReceiveId = webhookInfo[0]
+                let instanceName = envKey.replace("WEBHOOK_", "")
 
-        this.bridge.onPublicEvent(
-            null,
-            null,
-            "Bridge has started.",
-            COLOR.INFO,
-            false)
+                let instance = new WebhookInstance(
+                    this,
+                    instanceName,
+                    this.discordInstance,
+                    webhookSendUrl,
+                    webhookReceiveId
+                )
+
+                this.webhookInstances.push(instance)
+            }
+        }
     }
 }
 

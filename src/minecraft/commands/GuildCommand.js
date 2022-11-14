@@ -11,18 +11,17 @@ const mojang = require("mojang")
 
 module.exports = {
     triggers: ['guild', 'guildof', 'g'],
-    handler: async function (clientInstance, reply, username, args) {
+    handler: async function (clientInstance, username, args) {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
         let uuid = await mojang.lookupProfileAt(givenUsername)
             .then(p => p.id)
 
         if (!uuid) {
-            reply(`No such username! (given: ${givenUsername})`)
-            return
+            return `No such username! (given: ${givenUsername})`
         }
 
-        reply(`${givenUsername}'s guild: ${await fetchGuildInfo(uuid)}`)
+        return `${givenUsername}'s guild: ${await fetchGuildInfo(uuid)}`
     }
 }
 

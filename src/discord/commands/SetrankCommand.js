@@ -19,7 +19,7 @@ module.exports = {
 
         let username = interaction.options.getString("username")
         let rank = interaction.options.getString("rank")
-        clientInstance.bridge.sendMinecraftCommand(`/g setrank ${username} ${rank}`)
+        clientInstance.app.sendMinecraftCommand(`/g setrank ${username} ${rank}`)
 
         interaction.editReply(`Command sent to setrank ${username} to ${rank}!`)
     }

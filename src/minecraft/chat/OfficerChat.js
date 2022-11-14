@@ -1,5 +1,6 @@
-const ChatMetrics = require("../../metrics/ChatMetrics");
-const {getLocation, SCOPE} = require("../../metrics/Util");
+const {SCOPE} = require("../../common/ClientInstance")
+const {bridge_prefix} = require("../../../config/minecraft-config.json")
+
 module.exports = function (clientInstance, message) {
     // REGEX: Officer > [MVP+] aidn5 [Staff]: hello there.
     let regex = /^Officer > (?:\[[A-Z+]{1,10}\] ){0,3}(\w{3,32})(?: \[\w{1,10}\]){0,3}:(.{1,256})/g
@@ -9,14 +10,17 @@ module.exports = function (clientInstance, message) {
         let username = match[1]
         let playerMessage = match[2].trim()
 
-        if (clientInstance.bridge.isMinecraftBot(username)) return true
+        if (playerMessage.startsWith(bridge_prefix)) return
+        if (clientInstance.app.isMinecraftBot(username)) return true
 
-        ChatMetrics(getLocation(clientInstance), SCOPE.OFFICER, clientInstance.instanceName)
-        clientInstance.bridge.onOfficerChatMessage(
-            clientInstance,
-            username,
-            playerMessage
-        )
+        clientInstance.app.emit("minecraft.chat", {
+            clientInstance: clientInstance,
+            scope: SCOPE.OFFICER,
+            username: username,
+            replyUsername: null,
+            message: playerMessage
+        })
+
         return true
     }
 }

@@ -6,13 +6,26 @@ const HYPIXEL_KEY = process.env.HYPIXEL_KEY
 const hypixel = new (require("hypixel-api-reborn").Client)(HYPIXEL_KEY)
 
 const DISCORD_CONFIG = require('../../../config/discord-config.json')
-const {escapeDiscord} = require("../../common/DiscordMessageUtil");
+const {escapeDiscord} = require("../../util/DiscordMessageUtil");
 
-function createEmbed(list) {
+function createEmbed(instances = [{list: [], instanceName: ""}]) {
+    let fields = ""
+
+    for (let instance of instances) {
+        fields += `**${escapeDiscord(instance.instanceName)} (${instance.list.length})**\n`
+
+        if (instance.list.length > 0) {
+            fields += instance.list.reduce((c, p) => c + "\n" + p)
+        } else {
+            fields += `_Could not fetch information from this instance._`
+        }
+        fields += "\n\n"
+    }
+
     return new MessageEmbed()
         .setColor(DISCORD_CONFIG.commands.color)
-        .setTitle(`Guild Online Players (${list.length}):`)
-        .setDescription(list.join("\n"))
+        .setTitle(`Guild Online Players (${instances.flatMap(i => i.list).length}):`)
+        .setDescription(fields)
         .setTimestamp()
         .setFooter(DISCORD_CONFIG.commands.footer)
 }
@@ -26,13 +39,20 @@ module.exports = {
     async execute(clientInstance, interaction) {
         await interaction.deferReply()
 
-        let list = await listMembers(clientInstance.bridge.minecraftInstances)
-        interaction.editReply({embeds: [createEmbed(list)]})
+        let instances = clientInstance.app.minecraftInstances
+        let lists = await Promise.all(instances.map(i => listMembers(i)))
+
+        let embedPayload = []
+        for (let i = 0; i < instances.length; i++) {
+            embedPayload.push({instanceName: instances[i].instanceName, list: lists[i]})
+        }
+
+        interaction.editReply({embeds: [createEmbed(embedPayload)]})
     }
 }
 
-const listMembers = async function (minecraftInstances) {
-    let onlineProfiles = await getOnlineMembers(minecraftInstances)
+const listMembers = async function (minecraftInstance) {
+    let onlineProfiles = await getOnlineMembers(minecraftInstance)
         .then(unique)
         .then(lookupProfiles)
         .then(profiles => profiles.sort((a, b) => a.name.localeCompare(b.name)))
@@ -74,7 +94,7 @@ function formatLocation(username, session) {
     return message
 }
 
-async function getOnlineMembers(minecraftInstances) {
+async function getOnlineMembers(minecraftInstance) {
     let resolvedNames = []
     const regexOnline = /(\w{3,16}) \u25CF/g
 
@@ -89,10 +109,10 @@ async function getOnlineMembers(minecraftInstances) {
         }
     }
 
-    minecraftInstances.forEach(inst => inst.client.on('message', chatListener))
-    minecraftInstances.forEach(inst => inst.send("/guild list"))
+    minecraftInstance.client.on('message', chatListener)
+    minecraftInstance.send("/guild list")
     await new Promise(r => setTimeout(r, 3000))
-    minecraftInstances.forEach(inst => inst.client.removeListener('message', chatListener))
+    minecraftInstance.client.removeListener('message', chatListener)
 
     return resolvedNames
 }

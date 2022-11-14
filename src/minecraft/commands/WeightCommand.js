@@ -8,17 +8,16 @@ const axios = require("axios");
 
 module.exports = {
     triggers: ['weight', 'w'],
-    handler: async function (clientInstance, reply, username, args) {
+    handler: async function (clientInstance, username, args) {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
         let uuid = await getUuidByUsername(givenUsername)
 
         if (!uuid) {
-            reply(`No such username! (given: ${givenUsername})`)
-            return
+            return `No such username! (given: ${givenUsername})`
         }
 
-        reply(`${givenUsername}'s weight: ${await getSenitherData(uuid)}`)
+        return `${givenUsername}'s weight: ${await getSenitherData(uuid)}`
     }
 }
 

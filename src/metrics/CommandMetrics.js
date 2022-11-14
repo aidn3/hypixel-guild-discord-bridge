@@ -9,6 +9,6 @@ const METRICS_COMMAND = new Counter({
 })
 register.registerMetric(METRICS_COMMAND)
 
-module.exports = module.exports = function (location, scope, instanceName, commandName) {
+module.exports = function (location, scope, instanceName, commandName) {
     METRICS_COMMAND.inc({location: location, scope: scope, instance: instanceName, command: commandName})
 }

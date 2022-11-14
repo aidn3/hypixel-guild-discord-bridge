@@ -14,7 +14,7 @@ const packageJson = require('./package.json')
 // BUG: test loading by "require(main name)" all dependencies
 // break internal (optional) dependencies.
 // They are not meant to load like that.
-// TODO: load all dependecies BUT the internal ones.
+// TODO: load all dependencies BUT the internal ones.
 //  mark them or find other solutions
 /*
 for (let dependency in packageJson.dependencies) {
@@ -35,6 +35,14 @@ process.title = packageJson.name
 const metrics = require('./src/util/ApplicationMetric')
 metrics(packageJson.name, packageJson.version)
 
-const app = require('./src/Application')
-// noinspection JSIgnoredPromiseFromCall
+const app = require("./src/Application")
+require("./src/util/LoggerFromatter")(app)
+require("./src/metrics/MetricsHooker")(app)
+
 app.connect()
+    .then(() => logger.info("App is connected"))
+    .catch(error => {
+        logger.fatal(error)
+        logger.warn("stopping the process for the controller to restart this node...")
+        process.exitCode = 1
+    })

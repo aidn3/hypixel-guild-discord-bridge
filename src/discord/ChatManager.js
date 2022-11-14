@@ -1,18 +1,19 @@
 const EventHandler = require("../common/EventHandler")
-const {getLocation, SCOPE} = require("../metrics/Util")
-const ChatMetrics = require("../metrics/ChatMetrics")
-const {cleanMessage, getReplyUsername, escapeDiscord} = require("../common/DiscordMessageUtil");
+const {SCOPE} = require("../common/ClientInstance")
+const {cleanMessage, getReplyUsername, escapeDiscord} = require("../util/DiscordMessageUtil");
 
+const BadWords = require("bad-words")
 const PROFANITY_WHITELIST = require("../../config/profane-whitelist.json")
-const profanityFilter = new (require('bad-words'))()
-profanityFilter.removeWords(...PROFANITY_WHITELIST)
 
-const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
-const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
 
 class ChatManager extends EventHandler {
+    profanityFilter
+
     constructor(clientInstance) {
         super(clientInstance)
+
+        this.profanityFilter = new BadWords()
+        this.profanityFilter.removeWords(...PROFANITY_WHITELIST)
     }
 
     registerEvents() {
@@ -27,16 +28,30 @@ class ChatManager extends EventHandler {
 
         let replyUsername = await getReplyUsername(event)
 
-        if (event.channel.id === DISCORD_PUBLIC_CHANNEL) {
-            if (this.clientInstance.bridge.punishedUsers.muted(event.member.displayName)) {
+        if (this.clientInstance.publicChannels.some(id => id === event.channel.id)) {
+            let mutedTill = this.clientInstance.app.punishedUsers.mutedTill(event.member.displayName);
+            if (mutedTill) {
                 event.reply({
-                    content: `*Looks like you are muted!*`,
+                    content: `*Looks like you are muted on the chat-bridge.*\n`
+                        + `*All messages you send won't reach any guild in-game or any other discord server.*\n`
+                        + `*Your mute will expire <t:${mutedTill}:R>!*`,
                     ephemeral: true
                 })
                 return
             }
 
-            let filteredMessage = profanityFilter.clean(content)
+            let filteredMessage
+            try {
+                filteredMessage = this.profanityFilter.clean(content)
+            } catch (ignored) {
+                // profanity package has bug.
+                // will throw error if given one special character.
+                // example: clean("?")
+
+                // message is clear if thrown
+                filteredMessage = content
+            }
+
             if (content !== filteredMessage) {
                 console.log(filteredMessage)
                 event.reply({
@@ -45,21 +60,26 @@ class ChatManager extends EventHandler {
                 })
             }
 
-            ChatMetrics(getLocation(this.clientInstance), SCOPE.PUBLIC, this.clientInstance.instanceName)
-            this.clientInstance.bridge.onPublicChatMessage(
-                this.clientInstance,
-                event.member.displayName,
-                replyUsername,
-                filteredMessage)
+            this.clientInstance.app.emit("discord.chat", {
+                clientInstance: this.clientInstance,
+                scope: SCOPE.PUBLIC,
+                channelId: event.channel.id,
+                username: event.member.displayName,
+                replyUsername: replyUsername,
+                message: filteredMessage
+            })
 
-        } else if (event.channel.id === DISCORD_OFFICER_CHANNEL) {
-            ChatMetrics(getLocation(this.clientInstance), SCOPE.OFFICER, this.clientInstance.instanceName)
-            this.clientInstance.bridge.onOfficerChatMessage(
-                this.clientInstance,
-                event.member.displayName,
-                replyUsername,
-                content
-            )
+        }
+
+        if (this.clientInstance.officerChannels.some(id => id === event.channel.id)) {
+            this.clientInstance.app.emit("discord.chat", {
+                clientInstance: this.clientInstance,
+                scope: SCOPE.OFFICER,
+                channelId: event.channel.id,
+                username: event.member.displayName,
+                replyUsername: replyUsername,
+                message: content
+            })
         }
     }
 }

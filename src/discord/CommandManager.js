@@ -7,27 +7,12 @@ const {REST} = require('@discordjs/rest')
 const {Routes} = require('discord-api-types/v9')
 const {Collection} = require("discord.js")
 const EventHandler = require("../common/EventHandler")
-const {LOCATION, SCOPE} = require("../metrics/Util")
-const CommandMetrics = require("../metrics/CommandMetrics");
+const {SCOPE} = require("./../common/ClientInstance")
 
-const commandsJson = []
-const commandsExecutor = new Collection()
-
-fs.readdirSync('./src/discord/commands')
-    .filter(file => file.endsWith('Command.js'))
-    .forEach(file => {
-        let command = require(`./commands/${file}`)
-        commandsJson.push(command.data.toJSON())
-        commandsExecutor.set(command.data.name, command)
-    })
-
-const registerDiscordCommand = function (token, clientId, guildId) {
-    // noinspection JSClosureCompilerSyntax
-    let rest = new REST().setToken(token)
-    return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
-}
 
 class CommandManager extends EventHandler {
+    #commandsExecutor = new Collection()
+
     constructor(clientInstance) {
         super(clientInstance)
     }
@@ -36,8 +21,29 @@ class CommandManager extends EventHandler {
         let token = this.clientInstance.client.token
         let clientId = this.clientInstance.client.application.id
 
+        let commandsJson = []
+        let instanceChoices = this.clientInstance.app.minecraftInstances
+            .map(i => i.instanceName)
+            .map(choice => ({name: choice, value: choice}))
+
+        fs.readdirSync('./src/discord/commands')
+            .filter(file => file.endsWith('Command.js'))
+            .forEach(file => {
+                let command = require(`./commands/${file}`)
+
+                if (command.allowInstance && instanceChoices.length > 0) {
+                    command.data.addStringOption(option =>
+                        option.setName("instance")
+                            .setDescription("Which instance to send this command to")
+                            .setChoices(...instanceChoices))
+                }
+
+                commandsJson.push(command.data.toJSON())
+                this.#commandsExecutor.set(command.data.name, command)
+            })
+
         this.clientInstance.client.guilds.cache
-            .forEach(guild => registerDiscordCommand(token, clientId, guild.id))
+            .forEach(guild => this.#registerDiscordCommand(token, clientId, guild.id, commandsJson))
         this.clientInstance.client.on('interactionCreate', (...args) => this.#interactionCreate(...args))
 
         this.clientInstance.logger.debug("CommandManager is registered")
@@ -45,9 +51,16 @@ class CommandManager extends EventHandler {
 
     async #interactionCreate(interaction) {
         if (!interaction.isCommand()) return
-        const command = commandsExecutor.get(interaction.commandName)
+        const command = this.#commandsExecutor.get(interaction.commandName)
 
         try {
+            this.clientInstance.app.emit(["discord", "command", interaction.commandName], {
+                clientInstance: this.clientInstance,
+                scope: SCOPE.PUBLIC,
+                username: interaction.member.displayName,
+                fullCommand: printCommand(interaction)
+            })
+
             if (!command) {
                 this.clientInstance.logger.debug(`${interaction.member.tag} tried to execute command but it doesn't exist: ${printCommand(interaction)}`)
 
@@ -56,16 +69,15 @@ class CommandManager extends EventHandler {
                     ephemeral: true
                 })
 
-            } else if (!channelAllowed(interaction)) {
+            } else if (!channelAllowed(this.clientInstance, interaction)) {
                 this.clientInstance.logger.debug(`${interaction.member.tag} tried to execute command but denied due to being in wrong channel: ${printCommand(interaction)}`)
 
                 interaction.reply({
-                    content: `You can only use commands in <#${DISCORD_PUBLIC_CHANNEL}>`
-                        + ` or in <#${DISCORD_OFFICER_CHANNEL}>`,
+                    content: `You can only use commands in public/officer bridge channels!`,
                     ephemeral: true
                 })
 
-            } else if (!memberAllowed(interaction, command.permission)) {
+            } else if (!memberAllowed(this.clientInstance, interaction, command.permission)) {
                 this.clientInstance.logger.debug(`${interaction.member.tag} tried to execute command but denied due to permissions: ${printCommand(interaction)}`)
 
                 interaction.reply({
@@ -75,7 +87,6 @@ class CommandManager extends EventHandler {
 
             } else {
                 this.clientInstance.logger.debug(`${interaction.member.tag} executed command: ${printCommand(interaction)}`)
-                CommandMetrics(LOCATION.DISCORD, SCOPE.PUBLIC, this.clientInstance.instanceName, interaction.commandName)
 
                 await command.execute(this.clientInstance, interaction)
             }
@@ -97,23 +108,32 @@ class CommandManager extends EventHandler {
             }
         }
     }
+
+    #registerDiscordCommand(token, clientId, guildId, commandsJson) {
+        // noinspection JSClosureCompilerSyntax
+        let rest = new REST().setToken(token)
+        // noinspection JSUnresolvedFunction
+        return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
+    }
+
 }
 
-const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID
-const DISCORD_COMMAND_ROLE = process.env.DISCORD_COMMAND_ROLE
-const memberAllowed = function (interaction, permissionLevel) {
+const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID // owner must be single person
+const memberAllowed = function (clientInstance, interaction, permissionLevel) {
     if (permissionLevel === 0) return true
-    if (permissionLevel === 1
-        && interaction.member.roles.cache.some(role => role.id === DISCORD_COMMAND_ROLE)) return true
+    if (permissionLevel === 1) {
+        let hasOfficerRole = interaction.member.roles.cache
+            .some(role => clientInstance.officerRoles.some(id => role.id === id))
+
+        if (hasOfficerRole) return true
+    }
 
     return interaction.member.id === DISCORD_OWNER_ID
 }
 
-const DISCORD_PUBLIC_CHANNEL = process.env.DISCORD_PUBLIC_CHANNEL
-const DISCORD_OFFICER_CHANNEL = process.env.DISCORD_OFFICER_CHANNEL
-const channelAllowed = function (interaction) {
-    return interaction.channel.id === DISCORD_PUBLIC_CHANNEL
-        || interaction.channel.id === DISCORD_OFFICER_CHANNEL
+const channelAllowed = function (clientInstance, interaction) {
+    return clientInstance.publicChannels.some(id => interaction.channel.id === id)
+        || clientInstance.officerChannels.some(id => interaction.channel.id === id)
 }
 
 const printCommand = function (interaction) {

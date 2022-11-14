@@ -1,4 +1,5 @@
 const {SlashCommandBuilder} = require('@discordjs/builders')
+const {getDuration} = require("../../util/SharedUtil");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,7 +20,9 @@ module.exports = {
 
         let username = interaction.options.getString("username")
         let time = interaction.options.getString("time")
-        clientInstance.bridge.sendMinecraftCommand(`/g mute ${username} ${time}`)
+
+        clientInstance.app.punishedUsers.mute(username, getDuration(time))
+        clientInstance.app.sendMinecraftCommand(`/g mute ${username} ${time}`)
 
         interaction.editReply(`Command sent to mute ${username} for ${time}!`)
     }
