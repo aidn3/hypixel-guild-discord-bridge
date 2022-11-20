@@ -3,7 +3,7 @@ const {SCOPE} = require("../common/ClientInstance")
 const {cleanMessage, getReplyUsername, escapeDiscord} = require("../util/DiscordMessageUtil");
 
 const BadWords = require("bad-words")
-const PROFANITY_WHITELIST = require("../../config/general-config.json")
+const PROFANITY_CONFIG = require("../../config/general-config.json").profanity
 
 
 class ChatManager extends EventHandler {
@@ -12,8 +12,10 @@ class ChatManager extends EventHandler {
     constructor(clientInstance) {
         super(clientInstance)
 
-        this.profanityFilter = new BadWords()
-        this.profanityFilter.removeWords(...PROFANITY_WHITELIST.profanity.whitelisted)
+        this.profanityFilter = new BadWords({
+            emptyList: !PROFANITY_CONFIG.enabled
+        })
+        this.profanityFilter.removeWords(...PROFANITY_CONFIG.whitelisted)
     }
 
     registerEvents() {

@@ -2,7 +2,7 @@
   "1_comment": "add prefix to messages indicating its origin e.g. '[DC]'",
   "displayInstanceName": false,
   "profanity": {
-    "enable": true,
+    "enabled": true,
     "whitelisted": [
       "sadist",
       "hell",
