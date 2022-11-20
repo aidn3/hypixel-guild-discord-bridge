@@ -31,6 +31,8 @@ function autoLeave(clientInstance, username) {
 }
 
 async function isGuildMember(username, hypixelApi, instances) {
+    if (!CONFIG.whitelistGuild) return false
+
     let uuid = await Mojang.lookupProfileAt(username).then(res => res.id.toString())
 
     let members = await hypixelApi.getGuild("player", uuid, null)
