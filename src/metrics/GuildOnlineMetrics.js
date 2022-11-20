@@ -44,9 +44,4 @@ async function collectMetrics(minecraftInstance) {
     GUILD_MEMBERS_ONLINE.set({name: guild.name}, onlineMembers)
 }
 
-module.exports = function (app) {
-    setInterval(
-        () => app.minecraftInstances.forEach(collectMetrics),
-        METRICS_CONFIG.metrics_frequency * 1000
-    )
-}
+module.exports = (app) => app.minecraftInstances.forEach(collectMetrics)

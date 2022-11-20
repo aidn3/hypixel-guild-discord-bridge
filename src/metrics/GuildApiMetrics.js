@@ -44,9 +44,4 @@ async function collectMetrics(uuid) {
     GUILD_MEMBERS.set({name: guild["name_lower"]}, guild["members"].length)
 }
 
-module.exports = function (app) {
-    setInterval(
-        () => app.minecraftInstances.forEach(i => collectMetrics(i.uuid())),
-        METRICS_CONFIG.metrics_frequency * 1000
-    )
-}
+module.exports = (app) => app.minecraftInstances.forEach(i => collectMetrics(i.uuid()))
