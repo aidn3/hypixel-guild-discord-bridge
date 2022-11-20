@@ -12,7 +12,6 @@ const commands = fs.readdirSync('./src/minecraft/commands')
     .filter(command => !command.triggers.some(trigger => DISABLED_COMMANDS.includes(trigger.toLowerCase())))
 commands.forEach(c => console.log(`Loaded command ${c.triggers[0]}`))
 
-const HYPIXEL_COMMAND_PREFIX = require('../../config/minecraft-config.json').commands.prefix
 const HYPIXEL_OWNER_USERNAME = process.env.HYPIXEL_OWNER_USERNAME
 
 
@@ -22,8 +21,17 @@ const publicCommandHandler = async function (minecraftInstance, username, messag
     let commandName = message.substring(HYPIXEL_COMMAND_PREFIX.length).split(" ")[0].toLowerCase()
     let args = message.split(" ").slice(1)
 
+    if (commandName === "toggle" && username === HYPIXEL_OWNER_USERNAME && args.length > 0) {
+        let command = commands.find(c => c.triggers.some(t => t === args[0]))
+        if (!command) return
+
+        command.disabled = !command.disabled
+        minecraftInstance.send(`/gc @Command ${command.triggers[0]} is now ${command.disabled ? "disabled" : "enabled"}.`)
+        return true
+    }
+
     let command = commands.find(c => c.triggers.some(t => t === commandName))
-    if (command) {
+    if (command && !command.disabled) {
         minecraftInstance.app.emit(["minecraft", "command", command.triggers[0]], {
             clientInstance: minecraftInstance,
             scope: SCOPE.PUBLIC,
