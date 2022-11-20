@@ -6,7 +6,7 @@ const ErrorHandler = require("./handlers/ErrorHandler")
 const StateHandler = require("./handlers/StateHandler")
 
 const ChatManager = require("./ChatManager")
-const {displayInstanceName: DISPLAY_INSTANCE_NAME} = require("../../config/cluster-config.json")
+const {displayInstanceName: DISPLAY_INSTANCE_NAME} = require("../../config/general-config.json")
 const {bridge_prefix} = require("../../config/minecraft-config.json")
 const {SCOPE} = require("../common/ClientInstance")
 const commandsLimiter = new (require('../util/RateLimiter'))(2, 1000)
