@@ -1,9 +1,16 @@
 const fs = require("fs")
 const CommandMetrics = require("../metrics/CommandMetrics")
 const {SCOPE, instanceType} = require("../common/ClientInstance")
+
+const COMMANDS_CONFIG = require('../../config/minecraft-config.json').commands
+const HYPIXEL_COMMAND_PREFIX = COMMANDS_CONFIG.prefix
+const DISABLED_COMMANDS = COMMANDS_CONFIG.disabled.map(commandName => commandName.toLowerCase())
+
 const commands = fs.readdirSync('./src/minecraft/commands')
     .filter(file => file.endsWith('Command.js'))
     .map(f => require(`./commands/${f}`))
+    .filter(command => !command.triggers.some(trigger => DISABLED_COMMANDS.includes(trigger.toLowerCase())))
+commands.forEach(c => console.log(`Loaded command ${c.triggers[0]}`))
 
 const HYPIXEL_COMMAND_PREFIX = require('../../config/minecraft-config.json').commands.prefix
 const HYPIXEL_OWNER_USERNAME = process.env.HYPIXEL_OWNER_USERNAME
