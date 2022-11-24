@@ -26,7 +26,7 @@ class WebhookInstance extends ClientInstance {
             this.#client?.send({
                 content: escapeDiscord(message),
                 username: displayUsername,
-                avatarURL: `https://mc-heads.net/avatar/${username}`
+                avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(username)}`
             })
         })
     }

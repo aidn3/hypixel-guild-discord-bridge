@@ -67,7 +67,7 @@ class DiscordInstance extends ClientInstance {
                 await webhook.send({
                     content: escapeDiscord(message),
                     username: displayUsername,
-                    avatarURL: `https://mc-heads.net/avatar/${username}`
+                    avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(username)}`
                 })
             }
         })
@@ -110,8 +110,8 @@ class DiscordInstance extends ClientInstance {
                 }
                 if (username) {
                     embed["title"] = escapeDiscord(username)
-                    embed["url"] = `https:\/\/sky.shiiyu.moe\/stats\/${username}`
-                    embed["thumbnail"] = {url: `https://cravatar.eu/helmavatar/${username}.png`}
+                    embed["url"] = `https:\/\/sky.shiiyu.moe\/stats\/${encodeURIComponent(username)}`
+                    embed["thumbnail"] = {url: `https://cravatar.eu/helmavatar/${encodeURIComponent(username)}.png`}
                 }
 
                 let resP = channel.send({embeds: [embed]})
