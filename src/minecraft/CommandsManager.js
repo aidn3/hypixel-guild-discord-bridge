@@ -48,7 +48,7 @@ const publicCommandHandler = async function (minecraftInstance, username, messag
             scope: SCOPE.PUBLIC,
             username: null,
             severity: COLOR.INFO,
-            message: message,
+            message: reply,
             removeLater: false
         })
 
