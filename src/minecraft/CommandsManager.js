@@ -1,6 +1,7 @@
 const fs = require("fs")
 const CommandMetrics = require("../metrics/CommandMetrics")
 const {SCOPE, instanceType} = require("../common/ClientInstance")
+const COLOR = require('../../config/discord-config.json').events.color
 
 const COMMANDS_CONFIG = require('../../config/minecraft-config.json').commands
 const HYPIXEL_COMMAND_PREFIX = COMMANDS_CONFIG.prefix
@@ -41,6 +42,15 @@ const publicCommandHandler = async function (minecraftInstance, username, messag
 
         let reply = await command.handler(minecraftInstance, username, args)
         minecraftInstance.send(`/gc ${reply}`)
+
+        minecraftInstance.app.emit("minecraft.event.command", {
+            clientInstance: minecraftInstance,
+            scope: SCOPE.PUBLIC,
+            username: null,
+            severity: COLOR.INFO,
+            message: message,
+            removeLater: false
+        })
 
         return true
     }

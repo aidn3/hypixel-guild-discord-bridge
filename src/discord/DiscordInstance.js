@@ -100,18 +100,21 @@ class DiscordInstance extends ClientInstance {
             for (const channelId of channels) {
                 let channel = await self.client.channels.fetch(channelId)
 
-                let resP = channel.send({
-                    embeds: [{
-                        title: escapeDiscord(username),
-                        description: escapeDiscord(message),
-                        url: `https:\/\/sky.shiiyu.moe\/stats\/${username}`,
-                        thumbnail: {url: `https://cravatar.eu/helmavatar/${username}.png`},
-                        color: severity,
-                        footer: {
-                            text: clientInstance.instanceName
-                        }
-                    }]
-                })
+                let embed = {
+                    description: escapeDiscord(message),
+
+                    color: severity,
+                    footer: {
+                        text: clientInstance.instanceName
+                    }
+                }
+                if (username) {
+                    embed["title"] = escapeDiscord(username)
+                    embed["url"] = `https:\/\/sky.shiiyu.moe\/stats\/${username}`
+                    embed["thumbnail"] = {url: `https://cravatar.eu/helmavatar/${username}.png`}
+                }
+
+                let resP = channel.send({embeds: [embed]})
 
                 if (removeLater) {
                     let deleteAfter = self.#clientOptions["events"]["deleteTempEventAfter"]
