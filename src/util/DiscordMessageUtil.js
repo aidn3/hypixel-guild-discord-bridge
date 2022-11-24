@@ -59,4 +59,13 @@ const getReplyUsername = async function (messageEvent) {
     return guildMember.displayName
 }
 
-module.exports = {cleanMessage, escapeDiscord, getReplyUsername}
+const getReadableName = async function (username, id) {
+    username = username.trim().slice(0, 16)
+
+    if (/^\w+$/.test(username)) return username
+    if (username.includes(" ")) return username.split(" ")[0]
+
+    return id
+}
+
+module.exports = {cleanMessage, escapeDiscord, getReplyUsername, getReadableName}

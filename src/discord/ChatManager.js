@@ -1,6 +1,6 @@
 const EventHandler = require("../common/EventHandler")
 const {SCOPE} = require("../common/ClientInstance")
-const {cleanMessage, getReplyUsername, escapeDiscord} = require("../util/DiscordMessageUtil");
+const {cleanMessage, getReplyUsername, escapeDiscord, getReadableName} = require("../util/DiscordMessageUtil");
 
 const BadWords = require("bad-words")
 const PROFANITY_CONFIG = require("../../config/general-config.json").profanity
@@ -66,7 +66,7 @@ class ChatManager extends EventHandler {
                 clientInstance: this.clientInstance,
                 scope: SCOPE.PUBLIC,
                 channelId: event.channel.id,
-                username: event.member.displayName,
+                username: getReadableName(event.member.displayName, event.member.id),
                 replyUsername: replyUsername,
                 message: filteredMessage
             })
@@ -78,7 +78,7 @@ class ChatManager extends EventHandler {
                 clientInstance: this.clientInstance,
                 scope: SCOPE.OFFICER,
                 channelId: event.channel.id,
-                username: event.member.displayName,
+                username: getReadableName(event.member.displayName, event.member.id),
                 replyUsername: replyUsername,
                 message: content
             })
