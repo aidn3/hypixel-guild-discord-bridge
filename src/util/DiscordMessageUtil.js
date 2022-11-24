@@ -59,7 +59,7 @@ const getReplyUsername = async function (messageEvent) {
     return guildMember.displayName
 }
 
-const getReadableName = async function (username, id) {
+const getReadableName = function (username, id) {
     username = username.trim().slice(0, 16)
 
     if (/^\w+$/.test(username)) return username
