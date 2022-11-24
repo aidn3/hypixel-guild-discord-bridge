@@ -46,9 +46,9 @@ const publicCommandHandler = async function (minecraftInstance, username, messag
         minecraftInstance.app.emit("minecraft.event.command", {
             clientInstance: minecraftInstance,
             scope: SCOPE.PUBLIC,
-            username: null,
-            severity: COLOR.INFO,
-            message: reply,
+            username: username,
+            severity: COLOR.GOOD,
+            message: `${message}\n${reply}`,
             removeLater: false
         })
 

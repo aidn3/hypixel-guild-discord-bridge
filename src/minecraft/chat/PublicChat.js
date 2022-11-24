@@ -14,7 +14,7 @@ module.exports = async function (clientInstance, message) {
         if (bridge_prefix && playerMessage.startsWith(bridge_prefix)) return
         if (clientInstance.app.punishedUsers.mutedTill(username)) return
         if (clientInstance.app.isMinecraftBot(username)) return true
-        await publicCommandHandler(clientInstance, username, playerMessage)
+        if (await publicCommandHandler(clientInstance, username, playerMessage)) return
 
         clientInstance.app.emit("minecraft.chat", {
             clientInstance: clientInstance,
