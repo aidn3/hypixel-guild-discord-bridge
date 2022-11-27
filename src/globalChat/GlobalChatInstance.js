@@ -23,7 +23,6 @@ class GlobalChatInstance extends ClientInstance {
                     replyUsername: replyUsername,
                     self: true
                 })
-                console.log(payload)
                 await this.client?.emit("Message", payload)
             }
         })
