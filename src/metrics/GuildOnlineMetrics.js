@@ -10,20 +10,15 @@ const GUILD_MEMBERS_ONLINE = new Gauge({
 register.registerMetric(GUILD_MEMBERS_ONLINE)
 
 async function getOnlineMembers(minecraftInstance) {
-    let name
-    let online
+    let onlineMembers
     const onlineRegex = /^Online Members: (\d+)$/g
-    const nameRegex = /^Guild Name: (.+)$/g
 
     const chatListener = function (event) {
         let eventMessage = event.toString().trim()
         if (!eventMessage) return
 
         let onlineMatch = onlineRegex.exec(eventMessage)
-        if (onlineMatch) online = onlineMatch[1]
-
-        let nameMatch = nameRegex.exec(eventMessage)
-        if (nameMatch) name = nameMatch[1]
+        if (onlineMatch) onlineMembers = onlineMatch[1]
     }
 
     minecraftInstance.client.on('message', chatListener)
@@ -31,17 +26,14 @@ async function getOnlineMembers(minecraftInstance) {
     await new Promise(r => setTimeout(r, 3000))
     minecraftInstance.client.removeListener('message', chatListener)
 
-    return {name: name, online: online}
+    return Number(onlineMembers)
 }
 
 async function collectMetrics(minecraftInstance) {
     // TODO: add better logger structure
-    let guild = await getOnlineMembers(minecraftInstance)
-
-    let onlineMembers = Number(guild.online)
-    if (!guild?.name || !onlineMembers) return
-
-    GUILD_MEMBERS_ONLINE.set({name: guild.name}, onlineMembers)
+    let onlineMembers = await getOnlineMembers(minecraftInstance)
+    if (!onlineMembers) return
+    GUILD_MEMBERS_ONLINE.set({name: minecraftInstance.instanceName}, onlineMembers)
 }
 
 module.exports = (app) => app.minecraftInstances.forEach(collectMetrics)
