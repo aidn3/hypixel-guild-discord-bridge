@@ -59,7 +59,7 @@ const publicCommandHandler = async function (minecraftInstance, username, messag
 const privateCommandHandler = function (minecraftInstance, username, message) {
     if (username !== HYPIXEL_OWNER_USERNAME) return false
 
-    minecraftInstance.logger.debug(`${username} executed from private chat: ${username}`)
+    minecraftInstance.logger.debug(`${username} executed from private chat: ${message}`)
     CommandMetrics(instanceType(minecraftInstance), SCOPE.PRIVATE, minecraftInstance.instanceName, null)
     minecraftInstance.send(message)
     return true
