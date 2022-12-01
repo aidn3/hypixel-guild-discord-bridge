@@ -74,7 +74,7 @@ class StateHandler extends EventHandler {
 
     #onKicked(reason) {
         this.clientInstance.logger.error(reason)
-        this.clientInstance.logger.error(`Minecraft bot was kicked from server for "${reason}"`)
+        this.clientInstance.logger.error(`Minecraft bot was kicked from server for "${reason.toString()}"`)
 
         this.#loginAttempts++
         if (reason.includes("You logged in from another location")) {
@@ -93,7 +93,8 @@ class StateHandler extends EventHandler {
                 clientInstance: this.clientInstance,
                 // TODO: add reason into the message
                 reason: `Client ${this.clientInstance.instanceName} has been kicked.\n`
-                    + `Attempting to reconnect will be made soon\n`
+                    + `Attempting to reconnect will be made soon\n\n`
+                    + reason.toString()
             })
         }
     }
