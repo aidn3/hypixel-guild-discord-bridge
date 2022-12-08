@@ -1,0 +1,27 @@
+const {SCOPE} = require("../../../common/ClientInstance")
+const {sufficeToTime} = require("../../../util/SharedUtil")
+const COLOR = require('../../../../config/discord-config.json').events.color
+
+module.exports = function (clientInstance, message) {
+    let regex = /^(?:\[[A-Z+]{1,10}\] ){0,3}\w{3,32} has muted (?:\[[A-Z+]{1,10}\] ){0,3}(\w{3,32}) for (\d)([smhd])/g
+
+    let match = regex.exec(message)
+    if (match != null) {
+        let username = match[1]
+        let muteTime = match[2]
+        let muteSuffice = match[3]
+
+        clientInstance.app.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
+
+        clientInstance.app.emit("minecraft.event.mute", {
+            clientInstance: clientInstance,
+            scope: SCOPE.OFFICER,
+            username: username,
+            severity: COLOR.BAD,
+            message: message,
+            removeLater: false
+        })
+
+        return true
+    }
+}

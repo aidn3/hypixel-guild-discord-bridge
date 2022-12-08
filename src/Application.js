@@ -1,9 +1,9 @@
 const EventEmitter = require("eventemitter2")
 const Hypixel = require("hypixel-api-reborn")
-const DiscordInstance = require("./discord/DiscordInstance")
-const MinecraftInstance = require("./minecraft/MinecraftInstance")
-const GlobalChatInstance = require("./globalChat/GlobalChatInstance")
-const WebhookInstance = require("./webhook/WebhookInstance")
+const DiscordInstance = require("./instance/discord/DiscordInstance")
+const MinecraftInstance = require("./instance/minecraft/MinecraftInstance")
+const GlobalChatInstance = require("./instance/globalChat/GlobalChatInstance")
+const WebhookInstance = require("./instance/webhook/WebhookInstance")
 const PunishedUsers = require("./util/MutedUsers")
 
 const DISCORD_CONFIG = require("../config/discord-config.json")
