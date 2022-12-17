@@ -2,8 +2,7 @@ import fs = require("fs")
 import MinecraftInstance from "./MinecraftInstance"
 import {ClientEvent, CommandEvent} from "../../common/ApplicationEvent"
 import {LOCATION, SCOPE} from "../../common/ClientInstance"
-
-const COLOR = require('../../../config/discord-config.json').events.color
+import {ColorScheme} from "../discord/common/DiscordConfig";
 
 const COMMANDS_CONFIG = require('../../../config/minecraft-config.json').commands
 const HYPIXEL_COMMAND_PREFIX = COMMANDS_CONFIG.prefix
@@ -54,7 +53,7 @@ export async function publicCommandHandler(minecraftInstance: MinecraftInstance,
         scope: SCOPE.PUBLIC,
         name: "command",
         username: username,
-        severity: COLOR.GOOD,
+        severity: ColorScheme.GOOD,
         message: `${message}\n${reply}`,
         removeLater: false
     })

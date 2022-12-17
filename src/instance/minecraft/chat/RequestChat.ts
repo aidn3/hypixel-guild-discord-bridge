@@ -2,8 +2,8 @@ import MinecraftInstance from "../MinecraftInstance"
 import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {escapeDiscord} from "../../../util/DiscordMessageUtil"
 import {MinecraftChatMessage} from "../common/ChatInterface"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 export default <MinecraftChatMessage>{
     onChat: function (clientInstance: MinecraftInstance, message: string): void {
@@ -19,7 +19,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "request",
                 username: username,
-                severity: COLOR.GOOD,
+                severity: ColorScheme.GOOD,
                 message: `${escapeDiscord(username)} has requested to join the guild!`,
                 removeLater: false
             })

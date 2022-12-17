@@ -2,8 +2,8 @@ import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import MinecraftInstance from "../MinecraftInstance"
 import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 const MESSAGES = [
     "can't repeat same message...",
@@ -38,7 +38,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "repeat",
                 username: undefined,
-                severity: COLOR.INFO,
+                severity: ColorScheme.INFO,
                 message: randomMessage,
                 removeLater: false
             })

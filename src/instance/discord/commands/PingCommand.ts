@@ -1,18 +1,18 @@
 import DiscordInstance from "../DiscordInstance"
 import {CommandInteraction, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
+import {ColorScheme, DefaultCommandFooter} from "../common/DiscordConfig";
 
-const DISCORD_CONFIG = require('../../../../config/discord-config.json')
 
 function createPing(latency: number, websocket: number, lag: number) {
     return {
-        color: DISCORD_CONFIG.commands.color,
+        color: ColorScheme.DEFAULT,
         title: 'Discord Ping',
         description: `**Latency:** ${latency}ms\n`
             + `**Websocket heartbeat:** ${websocket}ms.\n`
             + `**Server lag:** ${lag}ms`,
         footer: {
-            text: DISCORD_CONFIG.commands.footer
+            text: DefaultCommandFooter
         }
     }
 }

@@ -4,8 +4,8 @@ import {LOCATION} from "../../../common/ClientInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface";
 import {SCOPE} from "../../../common/ClientInstance";
 import {sufficeToTime} from "../../../util/SharedUtil";
+import {ColorScheme} from "../../discord/common/DiscordConfig";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 export default <MinecraftChatMessage>{
     onChat: function (clientInstance: MinecraftInstance, message: string): void {
@@ -25,7 +25,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.OFFICER,
                 name: "mute",
                 username: username,
-                severity: COLOR.BAD,
+                severity: ColorScheme.BAD,
                 message: message,
                 removeLater: false
             })

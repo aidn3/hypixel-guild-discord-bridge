@@ -2,9 +2,9 @@ import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import MinecraftInstance from "../MinecraftInstance"
 import {LOCATION} from "../../../common/ClientInstance"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
 
 const {SCOPE} = require("../../../common/ClientInstance")
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 export default <MinecraftChatMessage>{
     onChat: function (clientInstance: MinecraftInstance, message: string): void {
@@ -20,7 +20,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "leave",
                 username: username,
-                severity: COLOR.BAD,
+                severity: ColorScheme.BAD,
                 message: "left the guild!",
                 removeLater: false
             })

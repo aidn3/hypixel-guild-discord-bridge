@@ -2,8 +2,8 @@ import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import MinecraftInstance from "../MinecraftInstance"
 import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 export default <MinecraftChatMessage>{
     onChat: function (clientInstance: MinecraftInstance, message: string): void {
@@ -19,7 +19,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "promote",
                 username: username,
-                severity: COLOR.GOOD,
+                severity: ColorScheme.GOOD,
                 message: message,
                 removeLater: false
             })
