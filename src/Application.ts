@@ -28,7 +28,7 @@ import {ApplicationConfig, loadApplicationConfig} from "./ApplicationConfig";
 export default class Application extends TypedEmitter<ApplicationEvents> {
 
     private readonly logger: Logger
-    private readonly instances: ClientInstance[] = []
+    private readonly instances: ClientInstance<any>[] = []
     private readonly plugins: PluginInterface[] = []
 
     readonly clusterHelper: ClusterHelper
@@ -81,7 +81,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
         // only shared with plugins to directly modify instances
         // everything else is encapsulated
-        let getLocalInstance = (instanceName: string): ClientInstance | undefined => {
+        let getLocalInstance = (instanceName: string): ClientInstance<any> | undefined => {
             return this.instances.find(i => i.instanceName === instanceName)
         }
 

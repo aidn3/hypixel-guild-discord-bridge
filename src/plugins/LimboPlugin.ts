@@ -14,7 +14,7 @@ import PluginInterface from "../common/PluginInterface"
 import {ClientInstance, LOCATION} from "../common/ClientInstance"
 
 export default <PluginInterface>{
-    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance | undefined): any {
+    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
         app.on("instance", (event) => {
             if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
 
