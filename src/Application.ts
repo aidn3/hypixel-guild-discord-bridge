@@ -47,7 +47,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         this.punishedUsers = new PunishedUsers()
         this.clusterHelper = new ClusterHelper(this)
 
-        if (this.config.discord) {
+        if (this.config.discord.key) {
             let discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
             this.instances.push(discordInstance)
 
