@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2021",
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "outDir": "build"
+  },
+  "exclude": [
+    "node_modules",
+    "build",
+    "node_modules"
+  ],
+  "include": [
+    "src/**/*",
+    "config",
+    ".env",
+    "package.json",
+    "index.ts"
+  ]
+}
