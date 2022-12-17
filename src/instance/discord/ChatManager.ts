@@ -34,7 +34,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
         let replyUsername = await getReplyUsername(event)
 
-        if (this.clientInstance.discordInstanceConfig.publicChannelIds.some(id => id === event.channel.id)) {
+        if (this.clientInstance.config.publicChannelIds.some(id => id === event.channel.id)) {
             if (await this.hasBeenMuted(event)) return
             let filteredMessage = await this.proceedFiltering(event, content)
 
@@ -49,7 +49,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
             })
         }
 
-        if (this.clientInstance.discordInstanceConfig.officerChannelIds.some(id => id === event.channel.id)) {
+        if (this.clientInstance.config.officerChannelIds.some(id => id === event.channel.id)) {
             this.clientInstance.app.emit("chat", <ChatEvent>{
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.DISCORD,

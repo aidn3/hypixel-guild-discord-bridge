@@ -9,19 +9,17 @@ import GuildOnlineMetrics from "./GuildOnlineMetrics"
 import MetricsConfig from "./common/MetricsConfig";
 
 
-export default class MetricsInstance extends ClientInstance {
+export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     private readonly httpServer
     private readonly register
-    private readonly config: MetricsConfig
 
     private readonly applicationMetrics: ApplicationMetrics
     private readonly guildApiMetrics: GuildApiMetrics
     private readonly guildOnlineMetrics: GuildOnlineMetrics
 
     constructor(app: Application, instanceName: string, config: MetricsConfig) {
-        super(app, instanceName, LOCATION.METRICS)
+        super(app, instanceName, LOCATION.METRICS, config)
 
-        this.config = config
         this.register = new Client.Registry()
         this.register.setDefaultLabels({app: 'hypixel-guild-bridge'})
         Client.collectDefaultMetrics({register: this.register})

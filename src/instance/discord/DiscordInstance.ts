@@ -18,17 +18,15 @@ import {ChatEvent, ClientEvent, InstanceEvent, InstanceEventType} from "../../co
 import {ColorScheme, DiscordConfig} from "./common/DiscordConfig";
 
 
-export default class DiscordInstance extends ClientInstance {
+export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     private readonly handlers
 
-    readonly discordInstanceConfig: DiscordConfig
     readonly client: DiscordLight.Client
 
-    constructor(app: Application, instanceName: string, clientOptions: DiscordConfig) {
-        super(app, instanceName, LOCATION.DISCORD)
+    constructor(app: Application, instanceName: string, config: DiscordConfig) {
+        super(app, instanceName, LOCATION.DISCORD,config)
         this.status = Status.FRESH
 
-        this.discordInstanceConfig = clientOptions
         this.client = new DiscordLight.Client({
             makeCache: DiscordLight.Options.cacheEverything(),
             intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
@@ -40,13 +38,13 @@ export default class DiscordInstance extends ClientInstance {
             new CommandManager(this),
         ]
 
-        if (!this.discordInstanceConfig.publicChannelIds)
+        if (!this.config.publicChannelIds)
             this.logger.info("no Discord public channels found")
 
-        if (!this.discordInstanceConfig.officerChannelIds)
+        if (!this.config.officerChannelIds)
             this.logger.info("no Discord officer channels found")
 
-        if (!this.discordInstanceConfig.officerRoleIds)
+        if (!this.config.officerRoleIds)
             this.logger.info("no Discord officer roles found")
 
 
@@ -57,7 +55,7 @@ export default class DiscordInstance extends ClientInstance {
 
     async connect() {
         this.handlers.forEach(handler => handler.registerEvents())
-        await this.client.login(this.discordInstanceConfig.key)
+        await this.client.login(this.config.key)
     }
 
     private async onChat(event: ChatEvent) {
@@ -66,8 +64,8 @@ export default class DiscordInstance extends ClientInstance {
 
 
         let channels
-        if (event.scope === SCOPE.PUBLIC) channels = this.discordInstanceConfig.publicChannelIds
-        else if (event.scope === SCOPE.OFFICER) channels = this.discordInstanceConfig.officerChannelIds
+        if (event.scope === SCOPE.PUBLIC) channels = this.config.publicChannelIds
+        else if (event.scope === SCOPE.OFFICER) channels = this.config.officerChannelIds
         else return
 
         for (const _channelId of channels) {
@@ -107,8 +105,8 @@ export default class DiscordInstance extends ClientInstance {
         }
 
         let channels
-        if (event.scope === SCOPE.PUBLIC) channels = this.discordInstanceConfig.publicChannelIds
-        else if (event.scope === SCOPE.OFFICER) channels = this.discordInstanceConfig.officerChannelIds
+        if (event.scope === SCOPE.PUBLIC) channels = this.config.publicChannelIds
+        else if (event.scope === SCOPE.OFFICER) channels = this.config.officerChannelIds
         else return
 
         for (const channelId of channels) {
@@ -135,7 +133,7 @@ export default class DiscordInstance extends ClientInstance {
             let resP = channel.send({embeds: [<any>embed]})
 
             if (event.removeLater) {
-                let deleteAfter = this.discordInstanceConfig.deleteTempEventAfter
+                let deleteAfter = this.config.deleteTempEventAfter
                 setTimeout(() => resP.then(res => res.delete()), deleteAfter * 60 * 1000)
             }
         }
@@ -144,7 +142,7 @@ export default class DiscordInstance extends ClientInstance {
     private async onInstance(event: InstanceEvent) {
         if (event.instanceName === this.instanceName) return
 
-        for (const channelId of this.discordInstanceConfig.publicChannelIds) {
+        for (const channelId of this.config.publicChannelIds) {
             let channel = <TextChannel><unknown>await this.client.channels.fetch(channelId)
             if (!channel) continue
 

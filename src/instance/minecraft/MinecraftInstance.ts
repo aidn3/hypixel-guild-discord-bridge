@@ -15,15 +15,13 @@ const {SCOPE} = require("../../common/ClientInstance")
 const commandsLimiter = new (require('../../util/RateLimiter').default)(2, 1000)
 
 
-export default class MinecraftInstance extends ClientInstance {
-    readonly config: MinecraftConfig
+export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     private readonly handlers
     client: MineFlayer.Bot | undefined
 
     constructor(app: Application, instanceName: string, config: MinecraftConfig) {
-        super(app, instanceName, LOCATION.MINECRAFT)
+        super(app, instanceName, LOCATION.MINECRAFT, config)
 
-        this.config = config
 
         this.status = Status.FRESH
         this.handlers = [

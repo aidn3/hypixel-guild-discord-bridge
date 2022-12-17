@@ -4,18 +4,16 @@ import Application from "../../Application"
 import {ClientInstance, LOCATION, SCOPE} from "../../common/ClientInstance"
 import {ChatEvent} from "../../common/ApplicationEvent"
 import {cleanMessage, escapeDiscord} from "../../util/DiscordMessageUtil"
-import WebhookConfig from "./common/WebhookConfig";
+import WebhookConfig from "./common/WebhookConfig"
 
-export default class WebhookInstance extends ClientInstance {
+export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     private readonly discordBot: Client
     private readonly client: WebhookClient | undefined
-    private readonly config: WebhookConfig
 
     constructor(app: Application, instanceName: string, discordBot: Client, config: WebhookConfig) {
-        super(app, instanceName, LOCATION.WEBHOOK)
+        super(app, instanceName, LOCATION.WEBHOOK, config)
 
         this.discordBot = discordBot
-        this.config = config
         if (config.sendUrl) this.client = new WebhookClient({url: config.sendUrl})
 
         this.app.on("chat", async (event: ChatEvent) => {

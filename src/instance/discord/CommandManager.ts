@@ -129,17 +129,17 @@ export class CommandManager extends EventHandler<DiscordInstance> {
             let roles = <GuildMemberRoleManager>interaction.member?.roles
             if (roles) {
                 let hasOfficerRole = roles.cache.some((role) => {
-                    return this.clientInstance.discordInstanceConfig.officerRoleIds.some(id => role.id === id)
+                    return this.clientInstance.config.officerRoleIds.some(id => role.id === id)
                 })
                 if (hasOfficerRole) return true
             }
         }
 
-        return interaction.user.id === this.clientInstance.discordInstanceConfig.adminId
+        return interaction.user.id === this.clientInstance.config.adminId
     }
 
     private channelAllowed(interaction: CommandInteraction) {
-        return this.clientInstance.discordInstanceConfig.publicChannelIds.some(id => interaction.channelId === id)
-            || this.clientInstance.discordInstanceConfig.officerChannelIds.some(id => interaction.channelId === id)
+        return this.clientInstance.config.publicChannelIds.some(id => interaction.channelId === id)
+            || this.clientInstance.config.officerChannelIds.some(id => interaction.channelId === id)
     }
 }
