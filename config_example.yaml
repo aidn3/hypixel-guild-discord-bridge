@@ -1,0 +1,91 @@
+general:
+  # Get Hypixel API by logging in-game and do `/api new`
+  hypixelApiKey: "55adcfd6-abcd-477d-1234-12341234123a"
+  # add prefix to messages indicating its origin e.g. '[DC]'
+  displayInstanceName: false
+
+
+discord:
+  instanceName: "Discord"
+  # Create new discord bot from https://discordapp.com/developers and generate a secret key
+  key: "sgasihdgfiasgdiagsidiiagsd.sdfsaedf.aohdfoasfoieofi"
+  # Discord ID of the USER who will have ADMIN permission
+  adminId: "730667783180493755"
+  # Show Chat and public events in this channel id
+  publicChannelIds: ["876718702164050860","another_channel" ]
+  # Show Chat and public events in this channel id
+  officerChannelIds: ["841257267059646432","another_channel" ]
+  # Discord ID of the role who will have OFFICER permission
+  officerRoleIds: [ "803266248652835111","another_role"]
+  # Delete spam events from discord after x minutes
+  deleteTempEventAfter: 15
+
+
+minecraft:
+  # In-game USERNAME of the user who will have ADMIN permission
+  adminUsername: "Steve"
+
+  # Minecraft account details
+  instances:
+    - instanceName: "Good-Name"
+      email: "email@example.com"
+      password: "password1234"
+
+  # Options added to 'mineflayer' library. Used for bot instance connection
+  botOptions:
+    host: "me.hypixel.net"
+    port: 25565
+    version: "1.17.1"
+
+  # change the prefix command in-game commands in guild public chat
+  commandPrefix: "!"
+  disabledCommand: [ "somecommand" ]
+  # Put in front of every message.
+  # Helpful if more than one bridge exists in same guild
+  # So they ignore each other messages
+  bridgePrefix: "."
+
+# Webhook connections to other guilds/discord servers
+# This is used if the guild/community isn't within the admins jurisdiction.
+# Formatted as "receive webhook id,full webhook send url"
+# Keep the field blank if you wish to send/receive and not the other
+webhooks:
+  - instanceName: "useful-webhook"
+    receiveId: "940251356249481432"
+    sendUrl: "https://discord.com/api/webhooks/..."
+
+
+profanity:
+  enabled: true
+  whitelisted:
+    - "sadist"
+    - "hell"
+    - "damn"
+    - "god"
+    - "shit"
+    - "balls"
+
+metrics:
+  instanceName: "prometheus"
+  enabled: false
+  port: 9095
+  # Prefix for prometheus metrics database
+  prefix: "guild_bridge_"
+  useHypixelApi: true
+  # Sending repeated automated commands nonstop can be illegal
+  useIngameCommand: false
+  # Time in seconds to collect metrics from api/ingame commands
+  interval: 60
+
+# GLOBAL CHAT SOCKET
+# Connect client to the global chat chatting with everyone who has this feature enabled
+# Request a key from the developer to connect. currently, the feature is only available on request
+# to prevent abuse
+global:
+  enabled: false
+  instanceName: "Global"
+  key: "KEY-HERE"
+  hostname: "ws://chat.aidn5.com"
+
+plugins:
+  allowSocketInstance: false

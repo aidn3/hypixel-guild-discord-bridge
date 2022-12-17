@@ -3,7 +3,7 @@ import {io, Socket} from "socket.io-client"
 import {ClientInstance, LOCATION, SCOPE} from "../../common/ClientInstance"
 import Application from "../../Application"
 import {ChatEvent} from "../../common/ApplicationEvent"
-import {GlobalConfig} from "./common/GlobalConfig"
+import GlobalConfig from "./common/GlobalConfig"
 
 
 export default class GlobalChatInstance extends ClientInstance {

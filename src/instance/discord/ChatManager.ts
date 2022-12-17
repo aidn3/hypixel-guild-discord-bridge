@@ -7,7 +7,6 @@ import {cleanMessage, escapeDiscord, getReadableName, getReplyUsername} from "..
 
 const BadWords = require("bad-words")
 
-const PROFANITY_CONFIG = require("../../../config/general-config.json").profanity
 
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
@@ -17,9 +16,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         super(clientInstance)
 
         this.profanityFilter = new BadWords({
-            emptyList: !PROFANITY_CONFIG.enabled
+            emptyList: !clientInstance.app.config.profanityFilter.enabled
         })
-        this.profanityFilter.removeWords(...PROFANITY_CONFIG.whitelisted)
+        this.profanityFilter.removeWords(...clientInstance.app.config.profanityFilter.whitelisted)
     }
 
     registerEvents() {
@@ -35,7 +34,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
         let replyUsername = await getReplyUsername(event)
 
-        if (this.clientInstance.publicChannels.some(id => id === event.channel.id)) {
+        if (this.clientInstance.discordInstanceConfig.publicChannelIds.some(id => id === event.channel.id)) {
             if (await this.hasBeenMuted(event)) return
             let filteredMessage = await this.proceedFiltering(event, content)
 
@@ -50,7 +49,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
             })
         }
 
-        if (this.clientInstance.officerChannels.some(id => id === event.channel.id)) {
+        if (this.clientInstance.discordInstanceConfig.officerChannelIds.some(id => id === event.channel.id)) {
             this.clientInstance.app.emit("chat", <ChatEvent>{
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.DISCORD,

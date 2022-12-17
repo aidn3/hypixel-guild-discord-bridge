@@ -1,4 +1,5 @@
-export interface DiscordInstanceConfig {
+export interface DiscordConfig {
+    instanceName: string
     key: string
     adminId: string
 

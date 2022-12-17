@@ -11,22 +11,9 @@ import StateHandler from "./handlers/StateHandler";
 import MinecraftConfig from "./common/MinecraftConfig";
 
 
-const {displayInstanceName: DISPLAY_INSTANCE_NAME} = require("../../../config/general-config.json")
 const {SCOPE} = require("../../common/ClientInstance")
 const commandsLimiter = new (require('../../util/RateLimiter').default)(2, 1000)
 
-
-function formatChatMessage(prefix: string, bridgePrefix: string, instanceName: string, username: string, replyUsername: string | undefined, message: string) {
-    let full = `/${prefix} ${bridgePrefix}`
-
-    if (DISPLAY_INSTANCE_NAME) full += `[${instanceName}] `
-
-    full += username
-    if (replyUsername) full += `⇾${replyUsername}`
-    full += `: ${message}`
-
-    return full
-}
 
 export default class MinecraftInstance extends ClientInstance {
     readonly config: MinecraftConfig
@@ -53,10 +40,10 @@ export default class MinecraftInstance extends ClientInstance {
             if (event.instanceName === this.instanceName) return
 
             if (event.scope === SCOPE.PUBLIC) {
-                return this.send(formatChatMessage("gc", this.config.bridgePrefix, event.instanceName, event.username, event.replyUsername, event.message))
+                return this.send(this.formatChatMessage("gc", event.username, event.replyUsername, event.message))
 
             } else if (event.scope === SCOPE.OFFICER) {
-                return this.send(formatChatMessage("oc", this.config.bridgePrefix, event.instanceName, event.username, event.replyUsername, event.message))
+                return this.send(this.formatChatMessage("oc", event.username, event.replyUsername, event.message))
             }
         })
 
@@ -100,5 +87,17 @@ export default class MinecraftInstance extends ClientInstance {
                 this.client.chat(message)
             }
         })
+    }
+
+    private formatChatMessage(prefix: string, username: string, replyUsername: string | undefined, message: string) {
+        let full = `/${prefix} ${this.config.bridgePrefix}`
+
+        if (this.app.config.general.displayInstanceName) full += `[${this.instanceName}] `
+
+        full += username
+        if (replyUsername) full += `⇾${replyUsername}`
+        full += `: ${message}`
+
+        return full
     }
 }

@@ -1,8 +1,6 @@
 import fs = require("fs")
-import MineFlayer = require('mineflayer')
 import {TypedEmitter} from 'tiny-typed-emitter'
 import {Client as HypixelClient} from 'hypixel-api-reborn'
-import * as Discord from "discord.js-light"
 import DiscordInstance from "./instance/discord/DiscordInstance"
 import MinecraftInstance from "./instance/minecraft/MinecraftInstance"
 import GlobalChatInstance from "./instance/globalChat/GlobalChatInstance"
@@ -24,12 +22,8 @@ import MetricsInstance from "./instance/metrics/MetricsInstance"
 import ClusterHelper from "./ClusterHelper"
 import * as Events from "events";
 import {getLogger, Logger} from "log4js";
+import {ApplicationConfig, loadApplicationConfig} from "./ApplicationConfig";
 
-const DISCORD_CONFIG = require("../config/discord-config.json")
-const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
-const GLOBAL_CHAT_CONFIG = require("../config/global-chat-config.json")
-
-const HYPIXEL_KEY = <string>process.env.HYPIXEL_KEY
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
 
@@ -40,23 +34,39 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     readonly clusterHelper: ClusterHelper
     readonly punishedUsers: PunishedUsers
     readonly hypixelApi: HypixelClient
+    readonly config: ApplicationConfig
 
     constructor() {
         super()
         this.logger = getLogger("Application")
         emitAll(this) // first thing to redirect all events
 
-        this.hypixelApi = new HypixelClient(HYPIXEL_KEY, {cache: true, cacheTime: 300})
+        this.config = loadApplicationConfig()
+
+        this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {cache: true, cacheTime: 300})
         this.punishedUsers = new PunishedUsers()
         this.clusterHelper = new ClusterHelper(this)
 
-        let discordInstance = new DiscordInstance(this, "DC", DISCORD_CONFIG)
-        this.instances.push(discordInstance)
+        if (this.config.discord) {
+            let discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
+            this.instances.push(discordInstance)
 
-        this.instances.push(new GlobalChatInstance(this, "GLOBAL", GLOBAL_CHAT_CONFIG))
-        this.instances.push(...Application.parseWebhooks(this, discordInstance.client))
-        this.instances.push(...Application.parseMinecraft(this))
-        this.instances.push(new MetricsInstance(this, "prometheus"))
+            for (let instanceConfig of this.config.webhooks) {
+                this.instances.push(new WebhookInstance(this, instanceConfig.instanceName, discordInstance.client, instanceConfig))
+            }
+        }
+
+        if (this.config.global.enabled) {
+            this.instances.push(new GlobalChatInstance(this, this.config.global.instanceName, this.config.global))
+        }
+
+        for (let instanceConfig of this.config.minecrafts) {
+            this.instances.push(new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig))
+        }
+
+        if (this.config.metrics.enabled) {
+            this.instances.push(new MetricsInstance(this, this.config.metrics.instanceName, this.config.metrics))
+        }
 
         this.plugins = fs.readdirSync('./src/plugins/')
             .filter(file => file.endsWith('Plugin.ts'))
@@ -93,59 +103,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
                 location: instance.location
             })
         }
-    }
-
-    private static parseMinecraft(app: Application): ClientInstance[] {
-        let instances: ClientInstance[] = []
-
-        for (let [key, value] of Object.entries(process.env)) {
-            if (!key.startsWith("MINECRAFT_")) continue
-
-            let account = (<string>value).split(",")
-            let options = {
-                auth: <string>account.shift(),
-                username: <string>account.shift(),
-                password: <string>account.join(","),
-            }
-
-            Object.assign(options, MINECRAFT_CONFIG.server)
-            let instanceName = key.replace("MINECRAFT_", "")
-
-            let instance = new MinecraftInstance(
-                app,
-                instanceName,
-                <Partial<MineFlayer.BotOptions>>options
-            )
-
-            instances.push(instance)
-        }
-
-        return instances
-    }
-
-    private static parseWebhooks(app: Application, discordClient: Discord.Client): WebhookInstance[] {
-        let webhooks: WebhookInstance[] = []
-
-        for (let [key, value] of Object.entries(process.env)) {
-            if (!key.startsWith("WEBHOOK_")) continue
-
-            let webhookInfo = (<string>value).split(",")
-            let webhookSendUrl = webhookInfo[1]
-            let webhookReceiveId = webhookInfo[0]
-            let instanceName = key.replace("WEBHOOK_", "")
-
-            let instance = new WebhookInstance(
-                app,
-                instanceName,
-                discordClient,
-                webhookSendUrl,
-                webhookReceiveId
-            )
-
-            webhooks.push(instance)
-        }
-
-        return webhooks
     }
 }
 

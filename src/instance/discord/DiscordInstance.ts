@@ -15,16 +15,16 @@ import {CommandManager} from './CommandManager'
 import {escapeDiscord} from "../../util/DiscordMessageUtil"
 import {SCOPE, LOCATION} from "../../common/ClientInstance"
 import {ChatEvent, ClientEvent, InstanceEvent, InstanceEventType} from "../../common/ApplicationEvent"
-import {ColorScheme, DiscordInstanceConfig} from "./common/DiscordConfig";
+import {ColorScheme, DiscordConfig} from "./common/DiscordConfig";
 
 
 export default class DiscordInstance extends ClientInstance {
     private readonly handlers
 
-    readonly discordInstanceConfig: DiscordInstanceConfig
+    readonly discordInstanceConfig: DiscordConfig
     readonly client: DiscordLight.Client
 
-    constructor(app: Application, instanceName: string, clientOptions: DiscordInstanceConfig) {
+    constructor(app: Application, instanceName: string, clientOptions: DiscordConfig) {
         super(app, instanceName, LOCATION.DISCORD)
         this.status = Status.FRESH
 
@@ -136,7 +136,7 @@ export default class DiscordInstance extends ClientInstance {
 
             if (event.removeLater) {
                 let deleteAfter = this.discordInstanceConfig.deleteTempEventAfter
-                setTimeout(() => resP.then(res => res.delete()), deleteAfter)
+                setTimeout(() => resP.then(res => res.delete()), deleteAfter * 60 * 1000)
             }
         }
     }
