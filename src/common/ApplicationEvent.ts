@@ -48,7 +48,7 @@ export enum InstanceEventType {
 
 export interface InstanceEvent extends BaseEvent, InformEvent, LocationEvent {
     type: InstanceEventType
-    reason: string | undefined
+    message: string
 }
 
 

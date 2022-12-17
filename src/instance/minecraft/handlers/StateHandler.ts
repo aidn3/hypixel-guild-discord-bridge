@@ -31,7 +31,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.connect,
-            reason: undefined
+            message: "Minecraft instance has connected"
         })
     }
 
@@ -44,7 +44,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.end,
-                reason: reason
+                message: reason
             })
             return
 
@@ -56,7 +56,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.end,
-                reason: reason
+                message: reason
             })
             return
         }
@@ -77,7 +77,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.disconnect,
-            reason: `Minecraft bot disconnected from server,`
+            message: `Minecraft bot disconnected from server,`
                 + `attempting reconnect in ${loginDelay / 1000} seconds`
         })
 
@@ -98,7 +98,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.conflict,
-                reason: "Someone logged in from another place.\n"
+                message: "Someone logged in from another place.\n"
                     + "Won't try to re-login.\n"
                     + "Restart to reconnect."
             })
@@ -108,7 +108,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.kick,
-                reason: `Client ${this.clientInstance.instanceName} has been kicked.\n`
+                message: `Client ${this.clientInstance.instanceName} has been kicked.\n`
                     + `Attempting to reconnect will be made soon\n\n`
                     + reason.toString()
             })

@@ -165,7 +165,7 @@ export default class DiscordInstance extends ClientInstance {
             channel.send({
                 embeds: [{
                     title: escapeDiscord(event.instanceName),
-                    description: event.reason ? escapeDiscord(event.reason) : escapeDiscord(Object.keys(InstanceEventType)[event.type]),
+                    description: event.message ? escapeDiscord(event.message) : escapeDiscord(Object.keys(InstanceEventType)[event.type]),
                     color: COLOR.INFO
                 }]
             }).then(undefined)

@@ -78,7 +78,7 @@ export default class MinecraftInstance extends ClientInstance {
             instanceName: this.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.create,
-            reason: undefined
+            message: "Minecraft instance has been created"
         })
 
         this.handlers.forEach(handler => handler.registerEvents())
