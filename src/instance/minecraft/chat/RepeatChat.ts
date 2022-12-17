@@ -3,6 +3,7 @@ import MinecraftInstance from "../MinecraftInstance"
 import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
+import {CommandsManager} from "../CommandsManager";
 
 
 const MESSAGES = [
@@ -25,7 +26,7 @@ const MESSAGES = [
 let lastWarning: number = 0
 
 export default <MinecraftChatMessage>{
-    onChat: function (clientInstance: MinecraftInstance, message: string): void {
+    onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
         let regex = /^You cannot say the same message twice!/g
 
         let match = regex.exec(message)

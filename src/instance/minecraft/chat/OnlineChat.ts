@@ -3,12 +3,13 @@ import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
+import {CommandsManager} from "../CommandsManager";
 
 const {SCOPE} = require("../../../common/ClientInstance")
 
 
 export default <MinecraftChatMessage>{
-    onChat: function (clientInstance: MinecraftInstance, message: string): void {
+    onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
         let regex = /^Guild > (\w{3,32}) joined./g
 
         let match = regex.exec(message)
