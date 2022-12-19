@@ -28,7 +28,7 @@ import {getLogger, Logger} from "log4js";
 const DISCORD_CONFIG = require("../config/discord-config.json")
 const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
 const GLOBAL_CHAT_CONFIG = require("../config/global-chat-config.json")
-
+bad#();de.
 const HYPIXEL_KEY = <string>process.env.HYPIXEL_KEY
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
