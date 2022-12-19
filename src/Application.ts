@@ -1,5 +1,5 @@
-import fs = require("fs")
-import MineFlayer = require('mineflayer')
+import fs = require("fs");
+import MineFlayer = require('mineflayer');
 import {TypedEmitter} from 'tiny-typed-emitter'
 import {Client as HypixelClient} from 'hypixel-api-reborn'
 import * as Discord from "discord.js-light"
@@ -12,13 +12,14 @@ import {
     ChatEvent,
     ClientEvent,
     CommandEvent,
-    InstanceEvent, InstanceRestartSignal,
+    InstanceEvent,
+    InstanceRestartSignal,
     InstanceSelfBroadcast,
     MinecraftRawChatEvent,
     MinecraftSelfBroadcast,
     MinecraftSendChat
 } from "./common/ApplicationEvent"
-import {ClientInstance} from "./common/ClientInstance"
+import {ClientInstance, LOCATION} from "./common/ClientInstance"
 import PluginInterface from "./common/PluginInterface"
 import MetricsInstance from "./instance/metrics/MetricsInstance"
 import ClusterHelper from "./ClusterHelper"
@@ -28,8 +29,15 @@ import {getLogger, Logger} from "log4js";
 const DISCORD_CONFIG = require("../config/discord-config.json")
 const MINECRAFT_CONFIG = require("../config/minecraft-config.json")
 const GLOBAL_CHAT_CONFIG = require("../config/global-chat-config.json")
-bad#();de.
+
 const HYPIXEL_KEY = <string>process.env.HYPIXEL_KEY
+
+let d: MinecraftSelfBroadcast = {
+    instanceName:"test",
+    location:LOCATION.DISCORD,
+    username:"test-name"
+};
+
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
 
