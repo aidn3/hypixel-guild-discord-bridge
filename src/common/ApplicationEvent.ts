@@ -1,21 +1,19 @@
 import {LOCATION, SCOPE} from "./ClientInstance"
 
 interface BaseEvent {
+    //localEvent: boolean
 }
 
-interface InformEvent {
+interface InformEvent extends BaseEvent {
     instanceName: string
-}
-
-interface LocationEvent {
     location: LOCATION
 }
 
-interface SignalEvent {
+interface SignalEvent extends BaseEvent {
     targetInstanceName: string | undefined
 }
 
-export interface ChatEvent extends BaseEvent, InformEvent, LocationEvent {
+export interface ChatEvent extends InformEvent {
     scope: SCOPE
     channelId: string | undefined
     username: string
@@ -23,7 +21,7 @@ export interface ChatEvent extends BaseEvent, InformEvent, LocationEvent {
     message: string
 }
 
-export interface ClientEvent extends BaseEvent, InformEvent, LocationEvent {
+export interface ClientEvent extends InformEvent {
     scope: SCOPE
     name: string
     username: string | undefined
@@ -32,7 +30,7 @@ export interface ClientEvent extends BaseEvent, InformEvent, LocationEvent {
     removeLater: boolean
 }
 
-export interface CommandEvent extends BaseEvent, InformEvent, LocationEvent {
+export interface CommandEvent extends InformEvent {
     scope: SCOPE
     username: string
     commandName: string
@@ -46,29 +44,29 @@ export enum InstanceEventType {
     conflict, kick,
 }
 
-export interface InstanceEvent extends BaseEvent, InformEvent, LocationEvent {
+export interface InstanceEvent extends InformEvent {
     type: InstanceEventType
     message: string
 }
 
 
-export interface MinecraftRawChatEvent extends BaseEvent, InformEvent, LocationEvent {
+export interface MinecraftRawChatEvent extends InformEvent {
     message: string
 }
 
-export interface MinecraftSelfBroadcast extends BaseEvent, InformEvent, LocationEvent {
+export interface MinecraftSelfBroadcast extends InformEvent {
     username: string
     uuid: string
 }
 
-export interface InstanceSelfBroadcast extends BaseEvent, InformEvent, LocationEvent {
+export interface InstanceSelfBroadcast extends InformEvent {
 }
 
 
-export interface MinecraftSendChat extends BaseEvent, SignalEvent, LocationEvent {
+export interface MinecraftSendChat extends SignalEvent {
     command: string
 }
 
 
-export interface InstanceRestartSignal extends BaseEvent, SignalEvent {
+export interface InstanceRestartSignal extends SignalEvent {
 }
