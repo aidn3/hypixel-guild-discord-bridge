@@ -22,10 +22,10 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     registerEvents() {
-        this.clientInstance.client.on('messageCreate', (message) => this.#onMessage(message))
+        this.clientInstance.client.on('messageCreate', (message) => this.onMessage(message))
     }
 
-    async #onMessage(event_: any): Promise<void> {
+    private async onMessage(event_: any): Promise<void> {
         const event = <Message>event_
         if (event.author.bot) return
 
