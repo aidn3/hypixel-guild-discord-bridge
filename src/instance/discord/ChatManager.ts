@@ -1,5 +1,4 @@
 import {Message} from "discord.js"
-import {ChatEvent} from "../../common/ApplicationEvent"
 import EventHandler from "../../common/EventHandler"
 import {LOCATION, SCOPE} from "../../common/ClientInstance"
 import DiscordInstance from "./DiscordInstance"
@@ -38,7 +37,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
             if (await this.hasBeenMuted(event)) return
             let filteredMessage = await this.proceedFiltering(event, content)
 
-            this.clientInstance.app.emit("chat", <ChatEvent>{
+            this.clientInstance.app.emit("chat", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.DISCORD,
                 scope: SCOPE.PUBLIC,
@@ -50,7 +49,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         }
 
         if (this.clientInstance.config.officerChannelIds.some(id => id === event.channel.id)) {
-            this.clientInstance.app.emit("chat", <ChatEvent>{
+            this.clientInstance.app.emit("chat", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.DISCORD,
                 scope: SCOPE.OFFICER,

@@ -1,6 +1,5 @@
 import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import MinecraftInstance from "../MinecraftInstance"
-import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
@@ -33,7 +32,7 @@ export default <MinecraftChatMessage>{
         if (match != null) {
             let randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
 
-            clientInstance.app.emit("event", <ClientEvent>{
+            clientInstance.app.emit("event", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

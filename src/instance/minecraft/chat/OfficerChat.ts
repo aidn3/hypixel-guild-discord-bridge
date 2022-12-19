@@ -1,4 +1,3 @@
-import {ChatEvent} from "../../../common/ApplicationEvent"
 import MinecraftInstance from "../MinecraftInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION, SCOPE} from "../../../common/ClientInstance"
@@ -19,7 +18,7 @@ export default <MinecraftChatMessage>{
                 && playerMessage.startsWith(clientInstance.config.bridgePrefix)) return
             if (clientInstance.app.clusterHelper.isMinecraftBot(username)) return
 
-            clientInstance.app.emit("chat", <ChatEvent>{
+            clientInstance.app.emit("chat", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,

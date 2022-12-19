@@ -1,6 +1,6 @@
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from "../MinecraftInstance"
-import {InstanceEvent, InstanceEventType} from "../../../common/ApplicationEvent"
+import {InstanceEventType} from "../../../common/ApplicationEvent"
 import {LOCATION, Status} from "../../../common/ClientInstance"
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
@@ -27,7 +27,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         this.exactDelay = 0
         this.clientInstance.status = Status.CONNECTED
 
-        this.clientInstance.app.emit("instance", <InstanceEvent>{
+        this.clientInstance.app.emit("instance", {
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.connect,
@@ -40,7 +40,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             let reason = `Status is ${this.clientInstance.status}. no further retrying to reconnect.`
 
             this.clientInstance.logger.warn(reason)
-            this.clientInstance.app.emit("instance", <InstanceEvent>{
+            this.clientInstance.app.emit("instance", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.end,
@@ -52,7 +52,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             let reason = `Client quit on its own volition. no further retrying to reconnect.`
 
             this.clientInstance.logger.debug(reason)
-            this.clientInstance.app.emit("instance", <InstanceEvent>{
+            this.clientInstance.app.emit("instance", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.end,
@@ -73,7 +73,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         this.clientInstance.logger.error(`Minecraft bot disconnected from server,`
             + `attempting reconnect in ${loginDelay / 1000} seconds`)
 
-        this.clientInstance.app.emit("instance", <InstanceEvent>{
+        this.clientInstance.app.emit("instance", {
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.disconnect,
@@ -94,7 +94,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             this.clientInstance.logger.fatal("Instance will shut off since someone logged in from another place")
             this.clientInstance.status = Status.FAILED
 
-            this.clientInstance.app.emit("instance", <InstanceEvent>{
+            this.clientInstance.app.emit("instance", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.conflict,
@@ -104,7 +104,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             })
 
         } else {
-            this.clientInstance.app.emit("instance", <InstanceEvent>{
+            this.clientInstance.app.emit("instance", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.kick,

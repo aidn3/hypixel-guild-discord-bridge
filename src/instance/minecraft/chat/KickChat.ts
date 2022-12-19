@@ -1,5 +1,4 @@
 import MinecraftInstance from "../MinecraftInstance"
-import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
@@ -15,7 +14,7 @@ export default <MinecraftChatMessage>{
         if (match != null) {
             let username = match[1]
 
-            clientInstance.app.emit("event", <ClientEvent>{
+            clientInstance.app.emit("event", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

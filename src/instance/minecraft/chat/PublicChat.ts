@@ -1,5 +1,4 @@
 import MinecraftInstance from "../MinecraftInstance"
-import {ChatEvent} from "../../../common/ApplicationEvent"
 import {CommandsManager} from '../CommandsManager'
 import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface"
@@ -21,7 +20,7 @@ export default <MinecraftChatMessage>{
             if (clientInstance.app.clusterHelper.isMinecraftBot(username)) return
             if (await commandsManager.publicCommandHandler(clientInstance, username, playerMessage)) return
 
-            clientInstance.app.emit("chat", <ChatEvent>{
+            clientInstance.app.emit("chat", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

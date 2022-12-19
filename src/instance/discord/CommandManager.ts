@@ -8,7 +8,6 @@ import {
 
 import EventHandler from "../../common/EventHandler"
 import {LOCATION, SCOPE} from "../../common/ClientInstance"
-import {CommandEvent} from "../../common/ApplicationEvent"
 import DiscordInstance from "./DiscordInstance"
 import {DiscordCommandInterface, Permission} from "./common/DiscordCommandInterface"
 
@@ -88,12 +87,12 @@ export class CommandManager extends EventHandler<DiscordInstance> {
             } else {
                 this.clientInstance.logger.debug(`execution granted.`)
 
-                this.clientInstance.app.emit("command", <CommandEvent>{
+                this.clientInstance.app.emit("command", {
                     instanceName: this.clientInstance.instanceName,
                     location: LOCATION.DISCORD,
                     scope: SCOPE.PUBLIC,
                     username: (<GuildMember>interaction?.member)?.displayName || interaction.user.username,
-                    fullCommand: interaction.command?.options.toString(),
+                    fullCommand: interaction.command?.options.toString() || "",
                     commandName: interaction.commandName,
                 })
 

@@ -2,7 +2,7 @@ import MineFlayer = require('mineflayer');
 import ChatManager from "./ChatManager"
 import Application from "../../Application"
 import {ClientInstance, LOCATION, Status} from "../../common/ClientInstance"
-import {ChatEvent, ClientEvent, InstanceEvent, InstanceEventType} from "../../common/ApplicationEvent"
+import {ChatEvent, ClientEvent, InstanceEventType} from "../../common/ApplicationEvent"
 import RawChatHandler from "./handlers/RawChatHandler";
 import SelfBroadcastHandler from "./handlers/SelfBroadcastHandler";
 import SendChatHandler from "./handlers/SendChatHandler";
@@ -59,7 +59,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
         if (this.client) this.client.quit()
 
         this.client = MineFlayer.createBot(this.config.botOptions)
-        this.app.emit("instance", <InstanceEvent>{
+        this.app.emit("instance", {
             instanceName: this.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.create,

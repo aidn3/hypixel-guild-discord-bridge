@@ -1,5 +1,5 @@
 import Application from "./Application"
-import {MinecraftSelfBroadcast, MinecraftSendChat} from "./common/ApplicationEvent"
+import {MinecraftSelfBroadcast} from "./common/ApplicationEvent"
 import {LOCATION} from "./common/ClientInstance"
 
 export default class ClusterHelper {
@@ -16,14 +16,14 @@ export default class ClusterHelper {
     }
 
     sendCommandToMinecraft(instanceName: string, command: string): void {
-        this.app.emit("minecraftSend", <MinecraftSendChat>{
+        this.app.emit("minecraftSend", {
             targetInstanceName: instanceName,
             command: command
         })
     }
 
     sendCommandToAllMinecraft(command: string): void {
-        this.app.emit("minecraftSend", <MinecraftSendChat>{
+        this.app.emit("minecraftSend", {
             targetInstanceName: undefined,
             command: command
         })
