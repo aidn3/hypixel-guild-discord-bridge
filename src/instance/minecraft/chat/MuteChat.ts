@@ -1,5 +1,4 @@
 import MinecraftInstance from "../MinecraftInstance"
-import {ClientEvent} from "../../../common/ApplicationEvent"
 import {LOCATION} from "../../../common/ClientInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface";
 import {SCOPE} from "../../../common/ClientInstance";
@@ -19,7 +18,7 @@ export default <MinecraftChatMessage>{
 
             clientInstance.app.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
 
-            clientInstance.app.emit("event", <ClientEvent>{
+            clientInstance.app.emit("event", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,

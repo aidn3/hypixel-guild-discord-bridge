@@ -88,7 +88,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         this.logger.debug("Informing instances of each other")
 
         for (let instance of this.instances) {
-            this.emit("selfBroadcast", <InstanceSelfBroadcast>{
+            this.emit("selfBroadcast", {
                 instanceName: instance.instanceName,
                 location: instance.location
             })

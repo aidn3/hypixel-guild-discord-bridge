@@ -1,7 +1,6 @@
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from "../MinecraftInstance"
 import {ChatMessage} from "prismarine-chat"
-import {MinecraftRawChatEvent} from "../../../common/ApplicationEvent"
 import {LOCATION} from "../../../common/ClientInstance"
 
 export default class RawChatHandler extends EventHandler<MinecraftInstance> {
@@ -15,7 +14,7 @@ export default class RawChatHandler extends EventHandler<MinecraftInstance> {
     }
 
     private onRawMessage(message: string) {
-        this.clientInstance.app.emit("minecraftChat", <MinecraftRawChatEvent>{
+        this.clientInstance.app.emit("minecraftChat", {
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             message: message

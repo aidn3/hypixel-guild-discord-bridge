@@ -1,7 +1,6 @@
-import {ChatEvent} from "../../../common/ApplicationEvent"
 import MinecraftInstance from "../MinecraftInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface"
-import {LOCATION,SCOPE} from "../../../common/ClientInstance"
+import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 
 const {bridge_prefix} = require("../../../../config/minecraft-config.json")
 
@@ -18,7 +17,7 @@ export default <MinecraftChatMessage>{
             if (bridge_prefix && playerMessage.startsWith(bridge_prefix)) return
             if (clientInstance.app.clusterHelper.isMinecraftBot(username)) return
 
-            clientInstance.app.emit("chat", <ChatEvent>{
+            clientInstance.app.emit("chat", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,

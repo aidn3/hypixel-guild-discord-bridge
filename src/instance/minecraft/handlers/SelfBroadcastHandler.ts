@@ -1,6 +1,5 @@
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from "../MinecraftInstance"
-import {MinecraftSelfBroadcast} from "../../../common/ApplicationEvent"
 import {LOCATION} from "../../../common/ClientInstance"
 
 export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance> {
@@ -18,7 +17,7 @@ export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance
         let uuid = this.clientInstance.uuid()
 
         if (username && uuid) {
-            this.clientInstance.app.emit("minecraftSelfBroadcast", <MinecraftSelfBroadcast>{
+            this.clientInstance.app.emit("minecraftSelfBroadcast", {
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 uuid: uuid,

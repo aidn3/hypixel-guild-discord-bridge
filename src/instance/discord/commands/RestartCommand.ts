@@ -1,7 +1,6 @@
 import {CommandInteraction, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
 import DiscordInstance from "../DiscordInstance"
-import {InstanceRestartSignal} from "../../../common/ApplicationEvent"
 
 export default <DiscordCommandInterface>{
     commandBuilder: new SlashCommandBuilder()
@@ -15,7 +14,7 @@ export default <DiscordCommandInterface>{
 
         // @ts-ignore
         let targetInstance: string | undefined = interaction.options.getString("instance")
-        clientInstance.app.emit("restartSignal", <InstanceRestartSignal>{
+        clientInstance.app.emit("restartSignal", {
             targetInstanceName: targetInstance
         })
         await interaction.editReply(`Restart signal has been sent!`)

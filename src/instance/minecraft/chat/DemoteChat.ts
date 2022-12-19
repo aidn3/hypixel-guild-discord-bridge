@@ -1,4 +1,3 @@
-import {ClientEvent} from "../../../common/ApplicationEvent"
 import MinecraftInstance from "../MinecraftInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION} from "../../../common/ClientInstance"
@@ -14,7 +13,7 @@ export default <MinecraftChatMessage>{
         if (match != null) {
             let username = match[1]
 
-            clientInstance.app.emit("event", <ClientEvent>{
+            clientInstance.app.emit("event", {
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

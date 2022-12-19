@@ -1,6 +1,5 @@
 import fs = require("fs")
 import MinecraftInstance from "./MinecraftInstance"
-import {ClientEvent, CommandEvent} from "../../common/ApplicationEvent"
 import {LOCATION, SCOPE} from "../../common/ClientInstance"
 
 const COLOR = require('../../../config/discord-config.json').events.color
@@ -36,7 +35,7 @@ export async function publicCommandHandler(minecraftInstance: MinecraftInstance,
     let command = commands.find(c => c.triggers.some((t: string) => t === commandName))
     if (!command || command.disabled) return false
 
-    minecraftInstance.app.emit("command", <CommandEvent>{
+    minecraftInstance.app.emit("command", {
         instanceName: minecraftInstance.instanceName,
         location: LOCATION.MINECRAFT,
         scope: SCOPE.PUBLIC,
@@ -48,7 +47,7 @@ export async function publicCommandHandler(minecraftInstance: MinecraftInstance,
     let reply = await command.handler(minecraftInstance, username, args)
     await minecraftInstance.send(`/gc ${reply}`)
 
-    minecraftInstance.app.emit("event", <ClientEvent>{
+    minecraftInstance.app.emit("event", {
         instanceName: minecraftInstance.instanceName,
         location: LOCATION.MINECRAFT,
         scope: SCOPE.PUBLIC,
@@ -67,7 +66,7 @@ export async function privateCommandHandler(minecraftInstance: MinecraftInstance
 
     minecraftInstance.logger.debug(`${username} executed from private chat: ${message}`)
 
-    minecraftInstance.app.emit("command", <CommandEvent>{
+    minecraftInstance.app.emit("command", {
         instanceName: minecraftInstance.instanceName,
         location: LOCATION.MINECRAFT,
         scope: SCOPE.PRIVATE,
