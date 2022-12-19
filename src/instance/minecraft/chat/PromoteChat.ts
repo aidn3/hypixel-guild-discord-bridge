@@ -2,11 +2,12 @@ import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import MinecraftInstance from "../MinecraftInstance"
 import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
+import {CommandsManager} from "../CommandsManager";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 export default <MinecraftChatMessage>{
-    onChat: function (clientInstance: MinecraftInstance, message: string): void {
+    onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
         let regex = /^(?:\[[A-Z+]{1,10}\] )*(\w{3,32}) was promoted from /g
 
         let match = regex.exec(message)
@@ -19,7 +20,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "promote",
                 username: username,
-                severity: COLOR.GOOD,
+                severity: ColorScheme.GOOD,
                 message: message,
                 removeLater: false
             })

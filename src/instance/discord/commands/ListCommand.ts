@@ -6,10 +6,10 @@ import {LOCATION} from "../../../common/ClientInstance"
 import {MinecraftRawChatEvent} from "../../../common/ApplicationEvent"
 import Application from "../../../Application"
 import {Client} from "hypixel-api-reborn"
+import {ColorScheme, DefaultCommandFooter} from "../common/DiscordConfig"
 
 const mojang = require("mojang")
 
-const DISCORD_CONFIG = require('../../../../config/discord-config.json')
 
 function createEmbed(instances: Map<string, string[]>) {
     let fields = ""
@@ -28,11 +28,11 @@ function createEmbed(instances: Map<string, string[]>) {
     }
 
     return {
-        color: DISCORD_CONFIG.commands.color,
+        color: ColorScheme.DEFAULT,
         title: `Guild Online Players (${total}):`,
         description: fields,
         footer: {
-            text: DISCORD_CONFIG.commands.footer
+            text: DefaultCommandFooter
         }
     }
 }

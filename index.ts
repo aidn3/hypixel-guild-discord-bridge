@@ -7,10 +7,7 @@ const logger = require("log4js")
 
 
 logger.debug("Test loading all libraries...")
-require('dotenv').config()
-
 const packageJson = require('./package.json')
-
 for (let dependency in packageJson.dependencies) {
     logger.trace(`Test-loading ${dependency}...`)
     require(dependency)

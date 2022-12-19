@@ -2,8 +2,9 @@ import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import MinecraftInstance from "../MinecraftInstance"
 import {ClientEvent} from "../../../common/ApplicationEvent"
 import {MinecraftChatMessage} from "../common/ChatInterface"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
+import {CommandsManager} from "../CommandsManager";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 const MESSAGES = [
     "can't repeat same message...",
@@ -25,7 +26,7 @@ const MESSAGES = [
 let lastWarning: number = 0
 
 export default <MinecraftChatMessage>{
-    onChat: function (clientInstance: MinecraftInstance, message: string): void {
+    onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
         let regex = /^You cannot say the same message twice!/g
 
         let match = regex.exec(message)
@@ -38,7 +39,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "repeat",
                 username: undefined,
-                severity: COLOR.INFO,
+                severity: ColorScheme.INFO,
                 message: randomMessage,
                 removeLater: false
             })

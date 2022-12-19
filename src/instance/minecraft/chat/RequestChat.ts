@@ -2,11 +2,12 @@ import MinecraftInstance from "../MinecraftInstance"
 import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {escapeDiscord} from "../../../util/DiscordMessageUtil"
 import {MinecraftChatMessage} from "../common/ChatInterface"
+import {ColorScheme} from "../../discord/common/DiscordConfig";
+import {CommandsManager} from "../CommandsManager";
 
-const COLOR = require('../../../../config/discord-config.json').events.color
 
 export default <MinecraftChatMessage>{
-    onChat: function (clientInstance: MinecraftInstance, message: string): void {
+    onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
         let regex = /^-{53}\n\[[A-Za-z+]{3,10}\] {0,3}(\w{3,32}) has requested to join the Guild/g
 
         let match = regex.exec(message)
@@ -19,7 +20,7 @@ export default <MinecraftChatMessage>{
                 scope: SCOPE.PUBLIC,
                 name: "request",
                 username: username,
-                severity: COLOR.GOOD,
+                severity: ColorScheme.GOOD,
                 message: `${escapeDiscord(username)} has requested to join the guild!`,
                 removeLater: false
             })

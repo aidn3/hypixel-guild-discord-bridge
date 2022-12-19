@@ -8,35 +8,20 @@ import SelfBroadcastHandler from "./handlers/SelfBroadcastHandler";
 import SendChatHandler from "./handlers/SendChatHandler";
 import ErrorHandler from "./handlers/ErrorHandler";
 import StateHandler from "./handlers/StateHandler";
+import MinecraftConfig from "./common/MinecraftConfig";
 
 
-const {displayInstanceName: DISPLAY_INSTANCE_NAME} = require("../../../config/general-config.json")
-const {bridge_prefix} = require("../../../config/minecraft-config.json")
 const {SCOPE} = require("../../common/ClientInstance")
 const commandsLimiter = new (require('../../util/RateLimiter').default)(2, 1000)
 
 
-function formatChatMessage(prefix: string, instanceName: string, username: string, replyUsername: string | undefined, message: string) {
-    let full = `/${prefix} ${bridge_prefix}`
-
-    if (DISPLAY_INSTANCE_NAME) full += `[${instanceName}] `
-
-    full += username
-    if (replyUsername) full += `⇾${replyUsername}`
-    full += `: ${message}`
-
-    return full
-}
-
-export default class MinecraftInstance extends ClientInstance {
-    private readonly connectionOptions: Partial<MineFlayer.BotOptions>
+export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     private readonly handlers
     client: MineFlayer.Bot | undefined
 
-    constructor(app: Application, instanceName: string, connectionOptions: Partial<MineFlayer.BotOptions>) {
-        super(app, instanceName, LOCATION.MINECRAFT)
+    constructor(app: Application, instanceName: string, config: MinecraftConfig) {
+        super(app, instanceName, LOCATION.MINECRAFT, config)
 
-        this.connectionOptions = connectionOptions
 
         this.status = Status.FRESH
         this.handlers = [
@@ -53,10 +38,10 @@ export default class MinecraftInstance extends ClientInstance {
             if (event.instanceName === this.instanceName) return
 
             if (event.scope === SCOPE.PUBLIC) {
-                return this.send(formatChatMessage("gc", event.instanceName, event.username, event.replyUsername, event.message))
+                return this.send(this.formatChatMessage("gc", event.username, event.replyUsername, event.message))
 
             } else if (event.scope === SCOPE.OFFICER) {
-                return this.send(formatChatMessage("oc", event.instanceName, event.username, event.replyUsername, event.message))
+                return this.send(this.formatChatMessage("oc", event.username, event.replyUsername, event.message))
             }
         })
 
@@ -73,7 +58,7 @@ export default class MinecraftInstance extends ClientInstance {
     async connect() {
         if (this.client) this.client.quit()
 
-        this.client = MineFlayer.createBot(<any>this.connectionOptions)
+        this.client = MineFlayer.createBot(this.config.botOptions)
         this.app.emit("instance", <InstanceEvent>{
             instanceName: this.instanceName,
             location: LOCATION.MINECRAFT,
@@ -100,5 +85,17 @@ export default class MinecraftInstance extends ClientInstance {
                 this.client.chat(message)
             }
         })
+    }
+
+    private formatChatMessage(prefix: string, username: string, replyUsername: string | undefined, message: string) {
+        let full = `/${prefix} ${this.config.bridgePrefix}`
+
+        if (this.app.config.general.displayInstanceName) full += `[${this.instanceName}] `
+
+        full += username
+        if (replyUsername) full += `⇾${replyUsername}`
+        full += `: ${message}`
+
+        return full
     }
 }

@@ -4,18 +4,17 @@ import Application from "../../Application"
 import {ClientInstance, LOCATION, SCOPE} from "../../common/ClientInstance"
 import {ChatEvent} from "../../common/ApplicationEvent"
 import {cleanMessage, escapeDiscord} from "../../util/DiscordMessageUtil"
+import WebhookConfig from "./common/WebhookConfig"
 
-export default class WebhookInstance extends ClientInstance {
+export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     private readonly discordBot: Client
     private readonly client: WebhookClient | undefined
-    private readonly webhookReceiveId: string
 
-    constructor(app: Application, instanceName: string, discordBot: Client, webhookSendUrl: string, webhookReceiveId: string) {
-        super(app, instanceName, LOCATION.WEBHOOK)
+    constructor(app: Application, instanceName: string, discordBot: Client, config: WebhookConfig) {
+        super(app, instanceName, LOCATION.WEBHOOK, config)
 
         this.discordBot = discordBot
-        if (webhookSendUrl) this.client = new WebhookClient({url: webhookSendUrl})
-        this.webhookReceiveId = webhookReceiveId
+        if (config.sendUrl) this.client = new WebhookClient({url: config.sendUrl})
 
         this.app.on("chat", async (event: ChatEvent) => {
             if (event.instanceName === this.instanceName) return
@@ -33,13 +32,13 @@ export default class WebhookInstance extends ClientInstance {
     }
 
     async connect() {
-        if (this.webhookReceiveId) {
+        if (this.config.receiveId) {
             this.discordBot.on('messageCreate', message => this.onChatMessage(message))
         }
     }
 
     private onChatMessage(event: any) {
-        if (event?.webhookId !== this.webhookReceiveId) return
+        if (event?.webhookId !== this.config.receiveId) return
 
         let content = cleanMessage(event)
         if (content.length === 0) return

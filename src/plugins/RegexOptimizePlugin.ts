@@ -12,7 +12,7 @@ const {getEventListeners} = require("events")
  * Hence removing them will improve client stability
  */
 export default <PluginInterface>{
-    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance | undefined): any {
+    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
         app.on("instance", (event) => {
             if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
 

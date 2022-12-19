@@ -27,7 +27,7 @@ export interface ClientEvent extends BaseEvent, InformEvent, LocationEvent {
     scope: SCOPE
     name: string
     username: string | undefined
-    severity: string
+    severity: number
     message: string
     removeLater: boolean
 }

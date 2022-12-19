@@ -12,7 +12,6 @@ import {CommandEvent} from "../../common/ApplicationEvent"
 import DiscordInstance from "./DiscordInstance"
 import {DiscordCommandInterface, Permission} from "./common/DiscordCommandInterface"
 
-const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID // owner must be single person
 
 export class CommandManager extends EventHandler<DiscordInstance> {
     private readonly commands = new Collection<string, DiscordCommandInterface>()
@@ -129,16 +128,18 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         if (permissionLevel === Permission.STAFF) {
             let roles = <GuildMemberRoleManager>interaction.member?.roles
             if (roles) {
-                let hasOfficerRole = roles.cache.some((role) => this.clientInstance.officerRoles.some(id => role.id === id))
+                let hasOfficerRole = roles.cache.some((role) => {
+                    return this.clientInstance.config.officerRoleIds.some(id => role.id === id)
+                })
                 if (hasOfficerRole) return true
             }
         }
 
-        return interaction.user.id === DISCORD_OWNER_ID
+        return interaction.user.id === this.clientInstance.config.adminId
     }
 
     private channelAllowed(interaction: CommandInteraction) {
-        return this.clientInstance.publicChannels.some(id => interaction.channelId === id)
-            || this.clientInstance.officerChannels.some(id => interaction.channelId === id)
+        return this.clientInstance.config.publicChannelIds.some(id => interaction.channelId === id)
+            || this.clientInstance.config.officerChannelIds.some(id => interaction.channelId === id)
     }
 }

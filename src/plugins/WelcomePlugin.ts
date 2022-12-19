@@ -15,7 +15,7 @@ const MESSAGES = [
 ]
 
 export default <PluginInterface>{
-    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance | undefined): any {
+    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
         app.on("event", event => {
             if (event.name !== "join") return
 

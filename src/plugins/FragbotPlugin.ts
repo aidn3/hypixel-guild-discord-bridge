@@ -80,7 +80,7 @@ async function partyInvite(message: string, sendCommand: (command: string) => vo
 
 
 export default <PluginInterface>{
-    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance | undefined): any {
+    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
         app.on("minecraftChat", async (event: MinecraftRawChatEvent) => {
 
             // only local instances are affected by their local plugins

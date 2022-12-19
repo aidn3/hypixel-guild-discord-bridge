@@ -1,19 +1,21 @@
 import {getLogger, Logger} from "log4js"
 import Application from "../Application"
 
-export abstract class ClientInstance {
+export abstract class ClientInstance<K> {
     readonly instanceName: string
     readonly location: LOCATION
     readonly app: Application
     readonly logger: Logger
+    readonly config: K
 
     status: Status
 
-    protected constructor(app: Application, instanceName: string, location: LOCATION) {
+    protected constructor(app: Application, instanceName: string, location: LOCATION, config: K) {
         this.app = app
         this.instanceName = instanceName
         this.location = location
         this.logger = getLogger(instanceName)
+        this.config = config
         this.status = Status.FRESH
 
         this.app.on("restartSignal", event => this.onRestartSignal(event.targetInstanceName))

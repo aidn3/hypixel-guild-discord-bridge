@@ -1,7 +1,8 @@
 import MinecraftInstance from "../MinecraftInstance"
+import {CommandsManager} from "../CommandsManager"
 
 export interface MinecraftChatMessage {
-    onChat(clientInstance: MinecraftInstance, message: string): void
+    onChat(clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void
 }
 
 export interface MinecraftCommandMessage {
