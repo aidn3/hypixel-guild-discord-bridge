@@ -8,6 +8,7 @@ import {MinecraftCommandMessage} from "../common/ChatInterface"
 
 export default <MinecraftCommandMessage>{
     triggers: ['iq'],
+    enabled: true,
     handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
         let givenUsername = args[0] !== undefined ? args[0] : username
         return `${givenUsername} has an IQ of ${Math.floor(Math.random() * 200)}`

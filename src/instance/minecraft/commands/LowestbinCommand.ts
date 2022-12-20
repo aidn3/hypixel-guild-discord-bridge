@@ -14,6 +14,7 @@ const {Index} = require("flexsearch")
 
 export default <MinecraftCommandMessage>{
     triggers: ['lowestBin', 'LBin', 'lb'],
+    enabled: true,
     handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
 
         if (args.length === 0) {

@@ -47,6 +47,7 @@ let facts = [
 
 export default <MinecraftCommandMessage>{
     triggers: ['fact', 'facts', 'f'],
+    enabled: true,
     handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
 
         let randomIndex = Math.floor(Math.random() * facts.length)

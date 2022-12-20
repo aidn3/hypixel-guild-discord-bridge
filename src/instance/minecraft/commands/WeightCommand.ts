@@ -11,6 +11,7 @@ const axios = require("axios")
 
 export default <MinecraftCommandMessage>{
     triggers: ['weight', 'w'],
+    enabled: true,
     handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
