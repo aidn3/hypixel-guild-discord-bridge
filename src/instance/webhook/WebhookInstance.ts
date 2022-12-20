@@ -7,10 +7,10 @@ import {cleanMessage, escapeDiscord} from "../../util/DiscordMessageUtil"
 import WebhookConfig from "./common/WebhookConfig"
 
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
-    private readonly discordBot: Client
+    private readonly discordBot: Client | null
     private readonly client: WebhookClient | undefined
 
-    constructor(app: Application, instanceName: string, discordBot: Client, config: WebhookConfig) {
+    constructor(app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
         super(app, instanceName, LOCATION.WEBHOOK, config)
 
         this.discordBot = discordBot
@@ -33,7 +33,12 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
 
     async connect() {
         if (this.config.receiveId) {
-            this.discordBot.on('messageCreate', message => this.onChatMessage(message))
+            if (this.discordBot != null) {
+                this.discordBot.on('messageCreate', message => this.onChatMessage(message))
+
+            } else {
+                this.logger.warn("Discord instance is not setup. Webhook can not receive messages. Sending works though")
+            }
         }
     }
 

@@ -49,13 +49,14 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         this.punishedUsers = new PunishedUsers()
         this.clusterHelper = new ClusterHelper(this)
 
+        let discordInstance: DiscordInstance | null = null
         if (this.config.discord.key) {
-            let discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
+            discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
             this.instances.push(discordInstance)
+        }
 
-            for (let instanceConfig of this.config.webhooks) {
-                this.instances.push(new WebhookInstance(this, instanceConfig.instanceName, discordInstance.client, instanceConfig))
-            }
+        for (let instanceConfig of this.config.webhooks) {
+            this.instances.push(new WebhookInstance(this, instanceConfig.instanceName, discordInstance != null ? discordInstance.client : null, instanceConfig))
         }
 
         if (this.config.global.enabled) {
