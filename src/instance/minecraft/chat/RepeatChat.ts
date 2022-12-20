@@ -33,6 +33,7 @@ export default <MinecraftChatMessage>{
             let randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
 
             clientInstance.app.emit("event", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

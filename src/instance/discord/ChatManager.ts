@@ -38,6 +38,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
             let filteredMessage = await this.proceedFiltering(event, content)
 
             this.clientInstance.app.emit("chat", {
+                localEvent: true,
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.DISCORD,
                 scope: SCOPE.PUBLIC,
@@ -50,6 +51,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
         if (this.clientInstance.config.officerChannelIds.some(id => id === event.channel.id)) {
             this.clientInstance.app.emit("chat", {
+                localEvent: true,
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.DISCORD,
                 scope: SCOPE.OFFICER,

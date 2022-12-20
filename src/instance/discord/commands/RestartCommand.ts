@@ -15,6 +15,7 @@ export default <DiscordCommandInterface>{
         // @ts-ignore
         let targetInstance: string | undefined = interaction.options.getString("instance")
         clientInstance.app.emit("restartSignal", {
+            localEvent: true,
             targetInstanceName: targetInstance
         })
         await interaction.editReply(`Restart signal has been sent!`)

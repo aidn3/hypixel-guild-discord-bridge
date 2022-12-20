@@ -25,9 +25,11 @@ process.title = packageJson.name
 //import metrics = require('./src/util/ApplicationMetric')
 //metrics(packageJson.name, packageJson.version)
 
+import {loadApplicationConfig} from "./src/ApplicationConfig";
 import Application from "./src/Application"
 
-let app = new Application()
+let file = process?.argv[2] || "./config.yaml"
+let app = new Application(loadApplicationConfig(file))
 
 
 app.on("*", (name, ...args) => {

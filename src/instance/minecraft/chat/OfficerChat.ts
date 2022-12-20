@@ -19,6 +19,7 @@ export default <MinecraftChatMessage>{
             if (clientInstance.app.clusterHelper.isMinecraftBot(username)) return
 
             clientInstance.app.emit("chat", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,

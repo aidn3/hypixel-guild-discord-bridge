@@ -6,15 +6,17 @@ import {DiscordConfig} from "./instance/discord/common/DiscordConfig"
 import GlobalConfig from "./instance/globalChat/common/GlobalConfig"
 import MetricsConfig from "./instance/metrics/common/MetricsConfig"
 import MinecraftConfig from "./instance/minecraft/common/MinecraftConfig"
+import {SocketConfig} from "./instance/socket/common/SocketConfig";
 
-export function loadApplicationConfig(): ApplicationConfig {
-    let fileString = fs.readFileSync("./config.yaml", 'utf8')
+export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): ApplicationConfig {
+    let fileString = fs.readFileSync(filepath, 'utf8')
     let config = YAML.parse(fileString)
 
     return <ApplicationConfig>{
         general: config.general,
         metrics: config.metrics,
         plugins: config.plugins,
+        socket: config.socket,
         profanityFilter: config.profanity,
 
         discord: config.discord,
@@ -48,6 +50,7 @@ export interface ApplicationConfig {
     general: GeneralConfig
     plugins: PluginsConfig
     metrics: MetricsConfig
+    socket: SocketConfig
 
     discord: DiscordConfig
     global: GlobalConfig
@@ -58,6 +61,7 @@ export interface ApplicationConfig {
 }
 
 export interface PluginsConfig {
+    enabled: boolean
     allowSocketInstance: boolean
 }
 

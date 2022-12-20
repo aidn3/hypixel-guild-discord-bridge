@@ -15,6 +15,7 @@ export default class RawChatHandler extends EventHandler<MinecraftInstance> {
 
     private onRawMessage(message: string) {
         this.clientInstance.app.emit("minecraftChat", {
+            localEvent: true,
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             message: message

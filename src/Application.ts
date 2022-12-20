@@ -1,4 +1,4 @@
-import fs = require("fs")
+import fs = require("fs");
 import {TypedEmitter} from 'tiny-typed-emitter'
 import {Client as HypixelClient} from 'hypixel-api-reborn'
 import DiscordInstance from "./instance/discord/DiscordInstance"
@@ -10,7 +10,8 @@ import {
     ChatEvent,
     ClientEvent,
     CommandEvent,
-    InstanceEvent, InstanceRestartSignal,
+    InstanceEvent,
+    InstanceRestartSignal,
     InstanceSelfBroadcast,
     MinecraftRawChatEvent,
     MinecraftSelfBroadcast,
@@ -22,7 +23,8 @@ import MetricsInstance from "./instance/metrics/MetricsInstance"
 import ClusterHelper from "./ClusterHelper"
 import * as Events from "events";
 import {getLogger, Logger} from "log4js";
-import {ApplicationConfig, loadApplicationConfig} from "./ApplicationConfig";
+import {ApplicationConfig} from "./ApplicationConfig";
+import SocketInstance from "./instance/socket/SocketInstance";
 
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
@@ -36,24 +38,24 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     readonly hypixelApi: HypixelClient
     readonly config: ApplicationConfig
 
-    constructor() {
+    constructor(config: ApplicationConfig) {
         super()
         this.logger = getLogger("Application")
         emitAll(this) // first thing to redirect all events
-
-        this.config = loadApplicationConfig()
+        this.config = config
 
         this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {cache: true, cacheTime: 300})
         this.punishedUsers = new PunishedUsers()
         this.clusterHelper = new ClusterHelper(this)
 
+        let discordInstance: DiscordInstance | null = null
         if (this.config.discord.key) {
-            let discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
+            discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
             this.instances.push(discordInstance)
+        }
 
-            for (let instanceConfig of this.config.webhooks) {
-                this.instances.push(new WebhookInstance(this, instanceConfig.instanceName, discordInstance.client, instanceConfig))
-            }
+        for (let instanceConfig of this.config.webhooks) {
+            this.instances.push(new WebhookInstance(this, instanceConfig.instanceName, discordInstance != null ? discordInstance.client : null, instanceConfig))
         }
 
         if (this.config.global.enabled) {
@@ -68,12 +70,21 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
             this.instances.push(new MetricsInstance(this, this.config.metrics.instanceName, this.config.metrics))
         }
 
-        this.plugins = fs.readdirSync('./src/plugins/')
-            .filter(file => file.endsWith('Plugin.ts'))
-            .map(f => {
-                this.logger.trace(`Loading Plugin ${f}`)
-                return require(`./plugins/${f}`).default
-            })
+        if (this.config.socket.enabled) {
+            this.instances.push(new SocketInstance(this, this.config.socket.instanceName, this.config.socket))
+        }
+
+        if (this.config.plugins.enabled) {
+            this.plugins = fs.readdirSync('./src/plugins/')
+                .filter(file => file.endsWith('Plugin.ts'))
+                .map(f => {
+                    this.logger.trace(`Loading Plugin ${f}`)
+                    return require(`./plugins/${f}`).default
+                })
+
+        } else {
+            this.plugins = []
+        }
     }
 
     async sendConnectSignal() {
@@ -99,6 +110,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
         for (let instance of this.instances) {
             this.emit("selfBroadcast", {
+                localEvent: true,
                 instanceName: instance.instanceName,
                 location: instance.location
             })

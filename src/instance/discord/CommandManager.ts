@@ -88,6 +88,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
                 this.clientInstance.logger.debug(`execution granted.`)
 
                 this.clientInstance.app.emit("command", {
+                    localEvent: true,
                     instanceName: this.clientInstance.instanceName,
                     location: LOCATION.DISCORD,
                     scope: SCOPE.PUBLIC,

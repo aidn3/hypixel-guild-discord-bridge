@@ -14,6 +14,7 @@ export default <MinecraftChatMessage>{
             let username = match[1]
 
             clientInstance.app.emit("event", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,
