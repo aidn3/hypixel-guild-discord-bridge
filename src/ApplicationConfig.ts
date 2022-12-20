@@ -15,6 +15,7 @@ export function loadApplicationConfig(): ApplicationConfig {
         general: config.general,
         metrics: config.metrics,
         plugins: config.plugins,
+        socket: config.socket,
         profanityFilter: config.profanity,
 
         discord: config.discord,
@@ -48,6 +49,7 @@ export interface ApplicationConfig {
     general: GeneralConfig
     plugins: PluginsConfig
     metrics: MetricsConfig
+    socket: SocketConfig
 
     discord: DiscordConfig
     global: GlobalConfig

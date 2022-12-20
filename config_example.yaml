@@ -12,11 +12,11 @@ discord:
   # Discord ID of the USER who will have ADMIN permission
   adminId: "730667783180493755"
   # Show Chat and public events in this channel id
-  publicChannelIds: ["876718702164050860","another_channel" ]
+  publicChannelIds: [ "876718702164050860","another_channel" ]
   # Show Chat and public events in this channel id
-  officerChannelIds: ["841257267059646432","another_channel" ]
+  officerChannelIds: [ "841257267059646432","another_channel" ]
   # Discord ID of the role who will have OFFICER permission
-  officerRoleIds: [ "803266248652835111","another_role"]
+  officerRoleIds: [ "803266248652835111","another_role" ]
   # Delete spam events from discord after x minutes
   deleteTempEventAfter: 15
 
@@ -87,5 +87,21 @@ global:
   key: "KEY-HERE"
   hostname: "ws://chat.aidn5.com"
 
+# Used to connect multiple applications together to share all their events
+socket:
+  enabled: false
+  # Key authorization. required.
+  key: "SECRET-KEY"
+  # IP address or URL to connect to the server as the Client
+  uri: "localhost:6090"
+  # type could either be "client" or "server"
+  # Server: The main application core that runs everything and control other nodes
+  # Client: A node with single connection to main application
+  type: "client"
+  # Port to listen as Server or to connect to as Client
+  port: 6090
+  instanceName: "Socket"
+
 plugins:
+  enabled: true
   allowSocketInstance: false

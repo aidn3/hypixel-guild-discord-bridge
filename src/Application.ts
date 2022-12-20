@@ -1,4 +1,4 @@
-import fs = require("fs")
+import fs = require("fs");
 import {TypedEmitter} from 'tiny-typed-emitter'
 import {Client as HypixelClient} from 'hypixel-api-reborn'
 import DiscordInstance from "./instance/discord/DiscordInstance"
@@ -10,7 +10,8 @@ import {
     ChatEvent,
     ClientEvent,
     CommandEvent,
-    InstanceEvent, InstanceRestartSignal,
+    InstanceEvent,
+    InstanceRestartSignal,
     InstanceSelfBroadcast,
     MinecraftRawChatEvent,
     MinecraftSelfBroadcast,
@@ -22,7 +23,8 @@ import MetricsInstance from "./instance/metrics/MetricsInstance"
 import ClusterHelper from "./ClusterHelper"
 import * as Events from "events";
 import {getLogger, Logger} from "log4js";
-import {ApplicationConfig, loadApplicationConfig} from "./ApplicationConfig";
+import {ApplicationConfig} from "./ApplicationConfig";
+import SocketInstance from "./instance/socket/SocketInstance";
 
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
