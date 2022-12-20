@@ -36,6 +36,7 @@ function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }) {
             config[key] = minecraftYaml[key]
         }
 
+        config.instanceName = instanceYaml.instanceName
         config.botOptions.auth = "microsoft"
         config.botOptions.username = instanceYaml.email
         config.botOptions.password = instanceYaml.password
