@@ -6,6 +6,7 @@ import {DiscordConfig} from "./instance/discord/common/DiscordConfig"
 import GlobalConfig from "./instance/globalChat/common/GlobalConfig"
 import MetricsConfig from "./instance/metrics/common/MetricsConfig"
 import MinecraftConfig from "./instance/minecraft/common/MinecraftConfig"
+import {SocketConfig} from "./instance/socket/common/SocketConfig";
 
 export function loadApplicationConfig(): ApplicationConfig {
     let fileString = fs.readFileSync("./config.yaml", 'utf8')
@@ -60,6 +61,7 @@ export interface ApplicationConfig {
 }
 
 export interface PluginsConfig {
+    enabled: boolean
     allowSocketInstance: boolean
 }
 

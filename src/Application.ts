@@ -70,12 +70,21 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
             this.instances.push(new MetricsInstance(this, this.config.metrics.instanceName, this.config.metrics))
         }
 
-        this.plugins = fs.readdirSync('./src/plugins/')
-            .filter(file => file.endsWith('Plugin.ts'))
-            .map(f => {
-                this.logger.trace(`Loading Plugin ${f}`)
-                return require(`./plugins/${f}`).default
-            })
+        if (this.config.socket.enabled) {
+            this.instances.push(new SocketInstance(this, this.config.socket.instanceName, this.config.socket))
+        }
+
+        if (this.config.plugins.enabled) {
+            this.plugins = fs.readdirSync('./src/plugins/')
+                .filter(file => file.endsWith('Plugin.ts'))
+                .map(f => {
+                    this.logger.trace(`Loading Plugin ${f}`)
+                    return require(`./plugins/${f}`).default
+                })
+
+        } else {
+            this.plugins = []
+        }
     }
 
     async sendConnectSignal() {
