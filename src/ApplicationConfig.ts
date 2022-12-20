@@ -8,8 +8,8 @@ import MetricsConfig from "./instance/metrics/common/MetricsConfig"
 import MinecraftConfig from "./instance/minecraft/common/MinecraftConfig"
 import {SocketConfig} from "./instance/socket/common/SocketConfig";
 
-export function loadApplicationConfig(): ApplicationConfig {
-    let fileString = fs.readFileSync("./config.yaml", 'utf8')
+export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): ApplicationConfig {
+    let fileString = fs.readFileSync(filepath, 'utf8')
     let config = YAML.parse(fileString)
 
     return <ApplicationConfig>{

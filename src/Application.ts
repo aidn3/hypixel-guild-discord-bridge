@@ -38,12 +38,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     readonly hypixelApi: HypixelClient
     readonly config: ApplicationConfig
 
-    constructor() {
+    constructor(config: ApplicationConfig) {
         super()
         this.logger = getLogger("Application")
         emitAll(this) // first thing to redirect all events
-
-        this.config = loadApplicationConfig()
+        this.config = config
 
         this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {cache: true, cacheTime: 300})
         this.punishedUsers = new PunishedUsers()
