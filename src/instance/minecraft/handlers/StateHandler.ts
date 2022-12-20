@@ -28,6 +28,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         this.clientInstance.status = Status.CONNECTED
 
         this.clientInstance.app.emit("instance", {
+            localEvent: true,
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.connect,
@@ -41,6 +42,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
 
             this.clientInstance.logger.warn(reason)
             this.clientInstance.app.emit("instance", {
+                localEvent: true,
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.end,
@@ -53,6 +55,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
 
             this.clientInstance.logger.debug(reason)
             this.clientInstance.app.emit("instance", {
+                localEvent: true,
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.end,
@@ -74,6 +77,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             + `attempting reconnect in ${loginDelay / 1000} seconds`)
 
         this.clientInstance.app.emit("instance", {
+            localEvent: true,
             instanceName: this.clientInstance.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.disconnect,
@@ -95,6 +99,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
             this.clientInstance.status = Status.FAILED
 
             this.clientInstance.app.emit("instance", {
+                localEvent: true,
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.conflict,
@@ -105,6 +110,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
 
         } else {
             this.clientInstance.app.emit("instance", {
+                localEvent: true,
                 instanceName: this.clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 type: InstanceEventType.kick,

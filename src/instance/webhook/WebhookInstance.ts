@@ -49,6 +49,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
         }
 
         this.app.emit("chat", {
+            localEvent: true,
             instanceName: this.instanceName,
             location: LOCATION.WEBHOOK,
             scope: SCOPE.PUBLIC,

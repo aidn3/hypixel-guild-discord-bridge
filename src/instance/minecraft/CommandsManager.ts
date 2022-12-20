@@ -1,4 +1,4 @@
-import fs = require("fs")
+import fs = require("fs");
 import MinecraftInstance from "./MinecraftInstance"
 import {LOCATION, SCOPE} from "../../common/ClientInstance"
 import {ColorScheme} from "../discord/common/DiscordConfig"
@@ -40,28 +40,30 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
         let command = this.commands.find(c => c.triggers.some((t: string) => t === commandName))
         if (!command || !command.enabled) return false
 
-    minecraftInstance.app.emit("command", {
-        instanceName: minecraftInstance.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.PUBLIC,
-        username: username,
-        fullCommand: message,
-        commandName: commandName
-    })
+        minecraftInstance.app.emit("command", {
+            localEvent: true,
+            instanceName: minecraftInstance.instanceName,
+            location: LOCATION.MINECRAFT,
+            scope: SCOPE.PUBLIC,
+            username: username,
+            fullCommand: message,
+            commandName: commandName
+        })
 
         let reply = await command.handler(minecraftInstance, username, args)
         await minecraftInstance.send(`/gc ${reply}`)
 
-    minecraftInstance.app.emit("event", {
-        instanceName: minecraftInstance.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.PUBLIC,
-        name: "command",
-        username: username,
-        severity: ColorScheme.GOOD,
-        message: `${message}\n${reply}`,
-        removeLater: false
-    })
+        minecraftInstance.app.emit("event", {
+            localEvent: true,
+            instanceName: minecraftInstance.instanceName,
+            location: LOCATION.MINECRAFT,
+            scope: SCOPE.PUBLIC,
+            name: "command",
+            username: username,
+            severity: ColorScheme.GOOD,
+            message: `${message}\n${reply}`,
+            removeLater: false
+        })
 
         return true
     }
@@ -71,14 +73,15 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
         minecraftInstance.logger.debug(`${username} executed from private chat: ${message}`)
 
-    minecraftInstance.app.emit("command", {
-        instanceName: minecraftInstance.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.PRIVATE,
-        username: username,
-        fullCommand: message,
-        commandName: "override"
-    })
+        minecraftInstance.app.emit("command", {
+            localEvent: true,
+            instanceName: minecraftInstance.instanceName,
+            location: LOCATION.MINECRAFT,
+            scope: SCOPE.PRIVATE,
+            username: username,
+            fullCommand: message,
+            commandName: "override"
+        })
 
         return await minecraftInstance.send(message)
     }

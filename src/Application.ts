@@ -99,6 +99,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
         for (let instance of this.instances) {
             this.emit("selfBroadcast", {
+                localEvent: true,
                 instanceName: instance.instanceName,
                 location: instance.location
             })

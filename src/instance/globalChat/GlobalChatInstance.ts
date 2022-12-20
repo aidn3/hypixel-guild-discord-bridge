@@ -57,6 +57,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
         }
 
         this.app.emit("chat", {
+            localEvent: true,
             instanceName: this.instanceName,
             location: LOCATION.GLOBAL,
             scope: SCOPE.PUBLIC,

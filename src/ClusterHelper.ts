@@ -17,6 +17,7 @@ export default class ClusterHelper {
 
     sendCommandToMinecraft(instanceName: string, command: string): void {
         this.app.emit("minecraftSend", {
+            localEvent: true,
             targetInstanceName: instanceName,
             command: command
         })
@@ -24,6 +25,7 @@ export default class ClusterHelper {
 
     sendCommandToAllMinecraft(command: string): void {
         this.app.emit("minecraftSend", {
+            localEvent: true,
             targetInstanceName: undefined,
             command: command
         })

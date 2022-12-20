@@ -1,7 +1,6 @@
 import MinecraftInstance from "../MinecraftInstance"
-import {LOCATION} from "../../../common/ClientInstance"
+import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface";
-import {SCOPE} from "../../../common/ClientInstance";
 import {sufficeToTime} from "../../../util/SharedUtil";
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
@@ -20,6 +19,7 @@ export default <MinecraftChatMessage>{
             clientInstance.app.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
 
             clientInstance.app.emit("event", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,

@@ -1,7 +1,7 @@
 import {LOCATION, SCOPE} from "./ClientInstance"
 
-interface BaseEvent {
-    //localEvent: boolean
+export interface BaseEvent {
+    localEvent: boolean
 }
 
 interface InformEvent extends BaseEvent {

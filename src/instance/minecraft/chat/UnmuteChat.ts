@@ -1,8 +1,6 @@
 import MinecraftInstance from "../MinecraftInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface"
-import {LOCATION} from "../../../common/ClientInstance"
-
-import {SCOPE} from "../../../common/ClientInstance"
+import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
 
@@ -18,6 +16,7 @@ export default <MinecraftChatMessage>{
             clientInstance.app.punishedUsers.unmute(username)
 
             clientInstance.app.emit("event", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,

@@ -15,6 +15,7 @@ export default <MinecraftChatMessage>{
         if (match != null) {
 
             clientInstance.app.emit("event", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

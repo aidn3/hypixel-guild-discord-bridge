@@ -21,6 +21,7 @@ export default <MinecraftChatMessage>{
             if (await commandsManager.publicCommandHandler(clientInstance, username, playerMessage)) return
 
             clientInstance.app.emit("chat", {
+                localEvent: true,
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,

@@ -60,6 +60,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
         this.client = MineFlayer.createBot(this.config.botOptions)
         this.app.emit("instance", {
+            localEvent: true,
             instanceName: this.instanceName,
             location: LOCATION.MINECRAFT,
             type: InstanceEventType.create,
