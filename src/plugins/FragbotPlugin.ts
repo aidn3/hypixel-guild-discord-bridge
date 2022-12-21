@@ -93,7 +93,7 @@ export default <PluginInterface>{
 
 
                 partyDisband(event.message)
-                await partyInvite(event.message, sendCommand, app.hypixelApi, app.clusterHelper.getMinecraftBotsUuid)
+                await partyInvite(event.message, sendCommand, app.hypixelApi, () => app.clusterHelper.getMinecraftBotsUuid())
             }
         })
     }
