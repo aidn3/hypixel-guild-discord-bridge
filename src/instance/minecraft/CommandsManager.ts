@@ -47,7 +47,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
             scope: SCOPE.PUBLIC,
             username: username,
             fullCommand: message,
-            commandName: commandName
+            commandName: command.triggers[0]
         })
 
         let reply = await command.handler(minecraftInstance, username, args)
