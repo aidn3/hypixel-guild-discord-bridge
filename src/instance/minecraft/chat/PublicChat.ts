@@ -18,7 +18,7 @@ export default <MinecraftChatMessage>{
                 && playerMessage.startsWith(clientInstance.config.bridgePrefix)) return
             if (clientInstance.app.punishedUsers.mutedTill(username)) return
             if (clientInstance.app.clusterHelper.isMinecraftBot(username)) return
-            if (await commandsManager.publicCommandHandler(clientInstance, username, playerMessage)) return
+            await commandsManager.publicCommandHandler(clientInstance, username, playerMessage)
 
             clientInstance.app.emit("chat", {
                 localEvent: true,
