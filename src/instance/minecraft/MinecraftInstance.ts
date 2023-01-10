@@ -12,7 +12,7 @@ import MinecraftConfig from "./common/MinecraftConfig";
 
 
 const {SCOPE} = require("../../common/ClientInstance")
-const commandsLimiter = new (require('../../util/RateLimiter').default)(2, 1000)
+const commandsLimiter = new (require('../../util/RateLimiter').default)(1, 1000)
 
 
 export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
