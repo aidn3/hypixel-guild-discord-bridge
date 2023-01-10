@@ -49,6 +49,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
             if (event.instanceName === this.instanceName) return
             if (event.scope !== SCOPE.PUBLIC) return
             if (event.removeLater) return
+            if (event.name === "command") return
 
             return this.send(`/gc @[${event.instanceName || "Main"}]: ${event.message}`)
         })
