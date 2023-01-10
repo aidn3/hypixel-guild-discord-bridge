@@ -68,8 +68,9 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
             localEvent: true,
             instanceName: minecraftInstance.instanceName,
             location: LOCATION.MINECRAFT,
-            commandName: command.triggers[0],
             username: username,
+            commandName: command.triggers[0],
+            fullCommand: message,
             commandResponse: reply
         })
 
