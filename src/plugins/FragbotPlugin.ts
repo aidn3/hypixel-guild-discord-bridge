@@ -25,11 +25,11 @@ class FragbotPlugin {
     }
 
     async loop() {
-        // noinspection InfiniteLoopJS
         // meant to always check for new entries in queue
         // thought of using sleep using promise and resolve() it when adding new player
         // idea dropped to avoid race condition
         // opted for just sleep instead of writing complicated code that fixes race condition
+        // noinspection InfiniteLoopJS
         while (true) {
             if (this.queue.length > 0) {
                 let username = this.queue.shift() as string
