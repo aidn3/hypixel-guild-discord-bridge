@@ -18,6 +18,7 @@ export default <PluginInterface>{
     onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
         app.on("event", event => {
             if (event.name !== "join") return
+            if (!app.config.plugins.allowSocketInstance && !getLocalInstance(event.instanceName)) return
 
             let message = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
             message = message.replaceAll("%s", <string>event.username)
