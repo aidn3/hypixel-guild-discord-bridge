@@ -37,7 +37,6 @@ class FragbotPlugin {
 
                 await new Promise(r => setTimeout(r, this.config.autoLeavePartyAfter))
                 this.clusterHelper.sendCommandToMinecraft(this.instanceName, "/p leave")
-                this.clusterHelper.sendCommandToMinecraft(this.instanceName, "/p disband")
 
             } else {
                 await new Promise(r => setTimeout(r, 1000))
