@@ -20,34 +20,25 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
 
     registerEvents() {
-        let token = <string>this.clientInstance.client.token
-        let clientId = <string>this.clientInstance.client.application?.id
-
-        let commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
-        let instanceChoices = []
-            .map((choice: string) => ({name: choice, value: choice}))
-
         let commandPath = './src/instance/discord/commands'
         fs.readdirSync(commandPath)
             .filter((file: string) => file.endsWith('Command.ts'))
             .forEach((file: string) => {
                 let filePath = `./commands/${file}`
-                console.log(filePath)
+                this.clientInstance.logger.debug(`Loading command ${filePath}`)
                 let command = <DiscordCommandInterface>require(filePath).default
 
-                if (command.allowInstance && instanceChoices.length > 0) {
-                    command.commandBuilder.addStringOption((option) =>
-                        option.setName("instance")
-                            .setDescription("Which instance to send this command to")
-                            .setChoices(...instanceChoices))
-                }
-
-                commandsJson.push(command.commandBuilder.toJSON())
                 this.commands.set(command.commandBuilder.name, command)
             })
 
-        this.clientInstance.client.guilds.cache
-            .forEach(guild => CommandManager.registerDiscordCommand(token, clientId, guild.id, commandsJson))
+        let timeoutId: null | NodeJS.Timeout = null
+        this.clientInstance.app.on("selfBroadcast", event => {
+            if (event.location === LOCATION.MINECRAFT) {
+                if (timeoutId) clearTimeout(timeoutId)
+                timeoutId = setTimeout(() => this.registerDiscordCommand(), 5 * 1000)
+            }
+        })
+
         this.clientInstance.client.on('interactionCreate', (interaction) => this.interactionCreate(interaction))
         this.clientInstance.logger.debug("CommandManager is registered")
     }
@@ -117,9 +108,18 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         }
     }
 
-    private static registerDiscordCommand(token: string, clientId: string, guildId: string, commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[]) {
-        let rest = new REST().setToken(token)
-        return rest.put(Routes.applicationGuildCommands(clientId, guildId), {body: commandsJson})
+    private registerDiscordCommand() {
+        this.clientInstance.logger.debug(`Registering commands`)
+        const token = <string>this.clientInstance.client.token
+        const clientId = <string>this.clientInstance.client.application?.id
+        const commandsJson = this.getCommandsJson()
+
+
+        this.clientInstance.client.guilds.cache.forEach(guild => {
+            this.clientInstance.logger.debug(`Informing guild ${guild.id} about commands`)
+            let rest = new REST().setToken(token)
+            return rest.put(Routes.applicationGuildCommands(clientId, guild.id), {body: commandsJson})
+        })
     }
 
     private memberAllowed(interaction: CommandInteraction, permissionLevel: number) {
@@ -141,5 +141,25 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     private channelAllowed(interaction: CommandInteraction) {
         return this.clientInstance.config.publicChannelIds.some(id => interaction.channelId === id)
             || this.clientInstance.config.officerChannelIds.some(id => interaction.channelId === id)
+    }
+
+    private getCommandsJson() {
+        let commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
+        let instanceChoices = this.clientInstance.app
+            .clusterHelper.getInstancesNames(LOCATION.MINECRAFT)
+            .map((choice: string) => ({name: choice, value: choice}))
+
+        for (let command of this.commands.values()) {
+            if (command.allowInstance && instanceChoices.length > 0) {
+                command.commandBuilder.addStringOption((option) =>
+                    option.setName("instance")
+                        .setDescription("Which instance to send this command to")
+                        .setChoices(...instanceChoices))
+            }
+
+            commandsJson.push(command.commandBuilder.toJSON())
+        }
+
+        return commandsJson
     }
 }
