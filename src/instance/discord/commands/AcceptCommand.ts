@@ -18,7 +18,8 @@ export default <DiscordCommandInterface>{
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
 
-        let username = interaction.options.get("username")
+        // @ts-ignore
+        let username = interaction.options.getString("username")
         let command = `/g accept ${username}`
 
         // @ts-ignore
