@@ -62,6 +62,11 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 export interface InstanceSelfBroadcast extends InformEvent {
 }
 
+export interface MinecraftCommandResponse extends InformEvent {
+    commandName: string
+    username: string
+    commandResponse: string
+}
 
 export interface MinecraftSendChat extends SignalEvent {
     command: string

@@ -12,7 +12,7 @@ import {
     CommandEvent,
     InstanceEvent,
     InstanceRestartSignal,
-    InstanceSelfBroadcast,
+    InstanceSelfBroadcast, MinecraftCommandResponse,
     MinecraftRawChatEvent,
     MinecraftSelfBroadcast,
     MinecraftSendChat
@@ -173,4 +173,9 @@ export interface ApplicationEvents {
      * Command used to send a chat message/command through a minecraft instance
      */
     'minecraftSend': (event: MinecraftSendChat) => void
+
+    /**
+     * Response of an executed command from minecraft instance
+     */
+    'minecraftCommandResponse': (event: MinecraftCommandResponse) => void
 }
