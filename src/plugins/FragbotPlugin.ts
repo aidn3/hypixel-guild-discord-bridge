@@ -3,98 +3,99 @@ import {MinecraftRawChatEvent} from "../common/ApplicationEvent"
 import PluginInterface from "../common/PluginInterface"
 import {ClientInstance} from "../common/ClientInstance"
 import {Client} from "hypixel-api-reborn"
+import ClusterHelper from "../ClusterHelper"
 
-const logger = require("log4js").getLogger("FragbotPlugin")
 const Mojang = require("mojang")
-const repartyWhitelist = new (require("node-cache"))({stdTTL: 30}) // 30 second
-const CONFIG = require("../../config/fragbot-config.json")
+const log4js = require("log4js")
 
+class FragbotPlugin {
+    private readonly logger = log4js.getLogger("FragbotPlugin")
+    private readonly config = require("../../config/fragbot-config.json")
 
-function partyDisband(message: string): void {
-    const regex = /^(?:\[[A-Z+]{3,10}\] )?(\w{3,32}) has disbanded the party!$/g
+    private readonly instanceName
+    private readonly hypixelApi: Client
+    private readonly clusterHelper: ClusterHelper
 
-    let match = regex.exec(message)
-    if (match != null) {
-        let username = match[1]
+    private readonly queue: string[] = []
 
-        logger.debug(`${username} has disbanded the party. Adding them to reparty whitelist...`)
-        repartyWhitelist.set(username, true)
+    constructor(instanceName: string, clusterHelper: ClusterHelper, hypixelApi: Client) {
+        this.instanceName = instanceName
+        this.clusterHelper = clusterHelper
+        this.hypixelApi = hypixelApi
     }
-}
 
-function autoLeave(sendCommand: (command: string) => void, username: string) {
-    logger.debug(`auto leaving party if not confirmed to stay by re-partying`)
+    async loop() {
+        // meant to always check for new entries in queue
+        // thought of using sleep using promise and resolve() it when adding new player
+        // idea dropped to avoid race condition
+        // opted for just sleep instead of writing complicated code that fixes race condition
+        // noinspection InfiniteLoopJS
+        while (true) {
+            if (this.queue.length > 0) {
+                let username = this.queue.shift() as string
+                this.clusterHelper.sendCommandToMinecraft(this.instanceName, `/p accept ${username}`)
 
-    setTimeout(() => {
-        if (!repartyWhitelist.get(username)) {
-            logger.debug(`Time out. Leaving ${username}'s party...`)
-            sendCommand("/party leave")
+                await new Promise(r => setTimeout(r, this.config.autoLeavePartyAfter))
+                this.clusterHelper.sendCommandToMinecraft(this.instanceName, "/p leave")
 
-        } else {
-            logger.debug(`Party leaving is aborted for ${username}`)
+            } else {
+                await new Promise(r => setTimeout(r, 1000))
+            }
         }
-    }, CONFIG.autoLeavePartyAfter)
-}
+    }
 
-async function isGuildMember(username: string, hypixelApi: Client, botsUuid: string[]) {
-    if (!CONFIG.whitelistGuild) return false
+    async partyInvite(message: string): Promise<void> {
+        const regex = /^(?:\[[A-Z+]{3,10}\] )?(\w{3,32}) has invited you to join their party!$/gm
 
-    let uuid = await Mojang.lookupProfileAt(username).then((res: any) => res.id.toString())
+        let match = regex.exec(message)
+        if (match != null) {
+            let username = match[1]
+            this.logger.debug(`${username} has sent a party invite`)
 
-    let members = await hypixelApi.getGuild("player", uuid, {})
-        .then(res => res.members)
+            if (this.config.whitelisted.some(((p: string) => p.toLowerCase().trim() === username.toLowerCase().trim()))) {
+                this.logger.debug(`accepting ${username}'s party since they are whitelisted`)
+                this.queue.push(username)
 
-    // bot in same guild
-    return members.some(member => botsUuid.some(botUuid => botUuid === member.uuid))
-}
+            } else if (this.config.whitelistGuild && await this.isGuildMember(username)) {
+                this.logger.debug(`accepting ${username}'s party since they are from the same guild`)
+                this.queue.push(username)
 
-async function partyInvite(message: string, sendCommand: (command: string) => void, hypixelApi: Client, getMinecraftBotsUuid: () => string[]) {
-    const regex = /^(?:\[[A-Z+]{3,10}\] )?(\w{3,32}) has invited you to join their party!$/gm
-
-    let match = regex.exec(message)
-    if (match != null) {
-        let username = match[1]
-        logger.debug(`${username} has sent a party invite`)
-
-        if (repartyWhitelist.get(username)) {
-            logger.debug(`auto accepting ${username}'s party since it is a reparty`)
-            sendCommand(`/party accept ${username}`)
-
-        } else if (CONFIG.whitelisted.some(((p: string) => p.toLowerCase().trim() === username.toLowerCase().trim()))) {
-            logger.debug(`accepting ${username}'s party since they are whitelisted`)
-            sendCommand(`/party accept ${username}`)
-            autoLeave(sendCommand, username)
-
-        } else if (await isGuildMember(username, hypixelApi, getMinecraftBotsUuid())) {
-            logger.debug(`accepting ${username}'s party since they are from the same guild`)
-            sendCommand(`/party accept ${username}`)
-            autoLeave(sendCommand, username)
-
-        } else {
-            logger.debug(`ignoring ${username}'s party...`)
+            } else {
+                this.logger.debug(`ignoring ${username}'s party...`)
+            }
         }
+    }
 
-        return true
+    private async isGuildMember(username: string): Promise<boolean> {
+        let uuid = await Mojang.lookupProfileAt(username).then((res: any) => res.id.toString())
+
+        let members = await this.hypixelApi.getGuild("player", uuid, {})
+            .then(res => res.members)
+
+        // bot in same guild
+        let botsUuid = this.clusterHelper.getMinecraftBotsUuid()
+        return members.some(member => botsUuid.some(botUuid => botUuid === member.uuid))
     }
 }
 
 
 export default <PluginInterface>{
     onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
-        app.on("minecraftChat", async (event: MinecraftRawChatEvent) => {
+        const fragbotMap: Map<string, FragbotPlugin> = new Map()
 
+        app.on("minecraftChat", async (event: MinecraftRawChatEvent) => {
             // only local instances are affected by their local plugins
             let minecraftInstance = getLocalInstance(event.instanceName)
-            if (minecraftInstance) {
+            if (!minecraftInstance) return
 
-                let sendCommand = (command: string): void => {
-                    app.clusterHelper.sendCommandToMinecraft(event.instanceName, command)
-                }
-
-
-                partyDisband(event.message)
-                await partyInvite(event.message, sendCommand, app.hypixelApi, () => app.clusterHelper.getMinecraftBotsUuid())
+            let fragbot = fragbotMap.get(event.instanceName)
+            if (!fragbot) {
+                fragbot = new FragbotPlugin(event.instanceName, app.clusterHelper, app.hypixelApi)
+                fragbotMap.set(event.instanceName, fragbot)
+                fragbot.loop().then()
             }
+
+            await fragbot.partyInvite(event.message)
         })
     }
 }
