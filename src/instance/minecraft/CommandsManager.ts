@@ -51,7 +51,6 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
         })
 
         let reply = await command.handler(minecraftInstance, username, args)
-        await minecraftInstance.send(`/gc ${reply}`)
 
         minecraftInstance.app.emit("event", {
             localEvent: true,
@@ -63,6 +62,16 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
             severity: ColorScheme.GOOD,
             message: `${message}\n${reply}`,
             removeLater: false
+        })
+
+        minecraftInstance.app.emit("minecraftCommandResponse", {
+            localEvent: true,
+            instanceName: minecraftInstance.instanceName,
+            location: LOCATION.MINECRAFT,
+            username: username,
+            commandName: command.triggers[0],
+            fullCommand: message,
+            commandResponse: reply
         })
 
         return true

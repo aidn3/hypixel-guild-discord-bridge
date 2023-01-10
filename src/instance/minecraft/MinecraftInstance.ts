@@ -2,7 +2,7 @@ import MineFlayer = require('mineflayer');
 import ChatManager from "./ChatManager"
 import Application from "../../Application"
 import {ClientInstance, LOCATION, Status} from "../../common/ClientInstance"
-import {ChatEvent, ClientEvent, InstanceEventType} from "../../common/ApplicationEvent"
+import {ChatEvent, ClientEvent, InstanceEventType, MinecraftCommandResponse} from "../../common/ApplicationEvent"
 import RawChatHandler from "./handlers/RawChatHandler";
 import SelfBroadcastHandler from "./handlers/SelfBroadcastHandler";
 import SendChatHandler from "./handlers/SendChatHandler";
@@ -34,6 +34,14 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
             new ChatManager(this),
         ]
 
+        this.app.on("minecraftCommandResponse", async (event: MinecraftCommandResponse) => {
+            if (event.instanceName !== this.instanceName) {
+                await this.send(this.formatChatMessage("gc", event.username, undefined, event.fullCommand))
+            }
+
+            return this.send(`/gc ${event.commandResponse}`)
+        })
+
         this.app.on("chat", (event: ChatEvent) => {
             if (event.instanceName === this.instanceName) return
 
@@ -49,6 +57,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
             if (event.instanceName === this.instanceName) return
             if (event.scope !== SCOPE.PUBLIC) return
             if (event.removeLater) return
+            if (event.name === "command") return
 
             return this.send(`/gc @[${event.instanceName || "Main"}]: ${event.message}`)
         })
