@@ -1,40 +1,60 @@
 import DiscordInstance from "../DiscordInstance"
 import {escapeDiscord} from "../../../util/DiscordMessageUtil"
-import {CommandInteraction, SlashCommandBuilder} from "discord.js"
+import {APIEmbed, CommandInteraction, JSONEncodable, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
 import {LOCATION} from "../../../common/ClientInstance"
 import {MinecraftRawChatEvent} from "../../../common/ApplicationEvent"
 import Application from "../../../Application"
 import {Client} from "hypixel-api-reborn"
 import {ColorScheme, DefaultCommandFooter} from "../common/DiscordConfig"
+import {pageMessage} from "../../../util/DiscordPager"
 
 const mojang = require("mojang")
 
 
-function createEmbed(instances: Map<string, string[]>) {
-    let fields = ""
-
+function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[] {
+    let entries: string[] = []
     let total = 0
+
     for (let [instanceName, list] of instances) {
-        fields += `**${escapeDiscord(instanceName)} (${list.length})**\n`
         total += list.length
 
+        entries.push(`**${escapeDiscord(instanceName)} (${list.length})**\n`)
+
         if (list.length > 0) {
-            fields += list.reduce((c, p) => c + "\n" + p)
+            for (let user of list) {
+                entries.push(user + "\n")
+            }
         } else {
-            fields += `_Could not fetch information from this instance._`
+            entries.push(`_Could not fetch information from this instance._\n`)
         }
-        fields += "\n\n"
+
+        entries[entries.length - 1] += "\n"
     }
 
-    return {
-        color: ColorScheme.DEFAULT,
-        title: `Guild Online Players (${total}):`,
-        description: fields,
-        footer: {
-            text: DefaultCommandFooter
+    let pages = []
+
+    const MAX_LENGTH = 3900;
+    let currentLength = 0;
+    for (let entry of entries) {
+        if (pages.length == 0 || currentLength + entry.length > MAX_LENGTH) {
+            currentLength = 0
+
+            pages.push({
+                color: ColorScheme.DEFAULT,
+                title: `Guild Online Players (${total}):`,
+                description: "",
+                footer: {
+                    text: DefaultCommandFooter
+                }
+            })
         }
+
+        currentLength += entry.length
+        pages[pages.length - 1].description += entry
     }
+
+    return pages as any as JSONEncodable<APIEmbed>[]
 }
 
 export default <DiscordCommandInterface>{
@@ -53,7 +73,7 @@ export default <DiscordCommandInterface>{
             if (!lists.has(instancesName)) lists.set(instancesName, [])
         }
 
-        await interaction.editReply({embeds: [createEmbed(lists)]})
+        await pageMessage(interaction, createEmbed(lists))
     }
 }
 
