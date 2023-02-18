@@ -5,6 +5,7 @@ import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
+import {EventType} from "../../../common/ApplicationEvent";
 
 
 export default <MinecraftChatMessage>{
@@ -19,7 +20,7 @@ export default <MinecraftChatMessage>{
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,
-                name: "block",
+                name: EventType.BLOCK,
                 username: undefined,
                 severity: ColorScheme.INFO,
                 message: message,

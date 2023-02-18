@@ -3,6 +3,7 @@ import MinecraftInstance from "../MinecraftInstance"
 import {LOCATION} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
+import {EventType} from "../../../common/ApplicationEvent";
 
 const {SCOPE} = require("../../../common/ClientInstance")
 
@@ -19,7 +20,7 @@ export default <MinecraftChatMessage>{
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,
-                name: "leave",
+                name: EventType.LEAVE,
                 username: username,
                 severity: ColorScheme.BAD,
                 message: "left the guild!",

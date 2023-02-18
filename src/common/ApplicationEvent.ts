@@ -21,9 +21,30 @@ export interface ChatEvent extends InformEvent {
     message: string
 }
 
+export enum EventType {
+    REQUEST = "request",
+    JOIN = "join",
+    LEAVE = "leave",
+    KICK = "kick",
+
+    PROMOTE = "promote",
+    DEMOTE = "demote",
+    MUTE = "mute",
+    UNMUTE = "unmute",
+
+    OFFLINE = "offline",
+    ONLINE = "online",
+
+
+    REPEAT = "repeat",
+    BLOCK = "block",
+
+    COMMAND = "command",
+}
+
 export interface ClientEvent extends InformEvent {
     scope: SCOPE
-    name: string
+    name: EventType
     username: string | undefined
     severity: number
     message: string

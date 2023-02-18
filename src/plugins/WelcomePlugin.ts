@@ -1,6 +1,7 @@
 import PluginInterface from "../common/PluginInterface"
 import Application from "../Application"
 import {ClientInstance} from "../common/ClientInstance"
+import {EventType} from "../common/ApplicationEvent"
 
 const MESSAGES = [
     "Welcome %s to our guild!",
@@ -17,7 +18,7 @@ const MESSAGES = [
 export default <PluginInterface>{
     onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
         app.on("event", event => {
-            if (event.name !== "join") return
+            if (event.name !== EventType.JOIN) return
             if (!app.config.plugins.allowSocketInstance && !getLocalInstance(event.instanceName)) return
 
             let message = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]

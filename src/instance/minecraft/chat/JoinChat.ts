@@ -3,6 +3,7 @@ import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
+import {EventType} from "../../../common/ApplicationEvent";
 
 const {SCOPE} = require("../../../common/ClientInstance")
 
@@ -19,7 +20,7 @@ export default <MinecraftChatMessage>{
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,
-                name: "join",
+                name: EventType.JOIN,
                 username: username,
                 severity: ColorScheme.GOOD,
                 message: "joined the guild!",

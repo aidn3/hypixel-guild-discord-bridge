@@ -3,6 +3,7 @@ import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
+import {EventType} from "../../../common/ApplicationEvent";
 
 const {SCOPE} = require("../../../common/ClientInstance")
 
@@ -20,7 +21,7 @@ export default <MinecraftChatMessage>{
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,
-                name: "online",
+                name: EventType.ONLINE,
                 username: username,
                 severity: ColorScheme.INFO,
                 message: message,

@@ -4,6 +4,7 @@ import {escapeDiscord} from "../../../util/DiscordMessageUtil"
 import {MinecraftChatMessage} from "../common/ChatInterface"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
+import {EventType} from "../../../common/ApplicationEvent";
 
 
 export default <MinecraftChatMessage>{
@@ -19,7 +20,7 @@ export default <MinecraftChatMessage>{
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.PUBLIC,
-                name: "request",
+                name: EventType.REQUEST,
                 username: username,
                 severity: ColorScheme.GOOD,
                 message: `${escapeDiscord(username)} has requested to join the guild!`,
