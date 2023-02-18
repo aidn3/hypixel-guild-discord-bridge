@@ -6,7 +6,8 @@ import {
     CommandInteraction,
     JSONEncodable,
     Message,
-    TextBasedChannel
+    TextBasedChannel,
+    TextChannel
 } from "discord.js";
 
 enum Button {
@@ -16,7 +17,7 @@ enum Button {
 
 export function pageMessage(interaction: CommandInteraction, pages: JSONEncodable<APIEmbed>[], duration = 60_000): Promise<Message> {
     let currentPage = 0
-    let channel: TextBasedChannel = <TextBasedChannel>interaction.channel
+    let channel: TextBasedChannel = <TextChannel>interaction.channel
 
     const nextInteraction = channel.createMessageComponentCollector({
         filter: i => i.customId === `${interaction.id}-${Button.NEXT}` && i.user.id === interaction.user.id,

@@ -1,4 +1,4 @@
-import {Message} from "discord.js"
+import {Message, TextChannel} from "discord.js"
 
 const emojisMap = require("emoji-name-map")
 
@@ -53,7 +53,8 @@ export const escapeDiscord = function (message: string) {
 export const getReplyUsername = async function (messageEvent: Message) {
     if (!messageEvent.reference || !messageEvent.reference.messageId) return
 
-    let replyMessage = await messageEvent.channel.messages.fetch(messageEvent.reference.messageId)
+    let channel = messageEvent.channel as TextChannel
+    let replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
     if (replyMessage.webhookId) return replyMessage.author.username
 
     if (!messageEvent.guild) return
