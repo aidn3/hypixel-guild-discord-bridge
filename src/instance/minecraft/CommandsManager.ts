@@ -4,6 +4,7 @@ import {LOCATION, SCOPE} from "../../common/ClientInstance"
 import {ColorScheme} from "../discord/common/DiscordConfig"
 import {MinecraftCommandMessage} from "./common/ChatInterface";
 import EventHandler from "../../common/EventHandler";
+import {EventType} from "../../common/ApplicationEvent";
 
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
@@ -57,7 +58,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
             instanceName: minecraftInstance.instanceName,
             location: LOCATION.MINECRAFT,
             scope: SCOPE.PUBLIC,
-            name: "command",
+            name: EventType.COMMAND,
             username: username,
             severity: ColorScheme.GOOD,
             message: `${message}\n${reply}`,

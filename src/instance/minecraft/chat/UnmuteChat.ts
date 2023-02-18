@@ -3,6 +3,7 @@ import {MinecraftChatMessage} from "../common/ChatInterface"
 import {LOCATION, SCOPE} from "../../../common/ClientInstance"
 import {ColorScheme} from "../../discord/common/DiscordConfig";
 import {CommandsManager} from "../CommandsManager";
+import {EventType} from "../../../common/ApplicationEvent";
 
 
 export default <MinecraftChatMessage>{
@@ -20,7 +21,7 @@ export default <MinecraftChatMessage>{
                 instanceName: clientInstance.instanceName,
                 location: LOCATION.MINECRAFT,
                 scope: SCOPE.OFFICER,
-                name: "unmute",
+                name: EventType.UNMUTE,
                 username: username,
                 severity: ColorScheme.INFO,
                 message: message,

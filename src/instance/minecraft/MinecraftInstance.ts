@@ -9,6 +9,7 @@ import SendChatHandler from "./handlers/SendChatHandler";
 import ErrorHandler from "./handlers/ErrorHandler";
 import StateHandler from "./handlers/StateHandler";
 import MinecraftConfig from "./common/MinecraftConfig";
+import {EventType} from "../../common/ApplicationEvent";
 
 
 const {SCOPE} = require("../../common/ClientInstance")
@@ -57,11 +58,10 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
             if (event.instanceName === this.instanceName) return
             if (event.scope !== SCOPE.PUBLIC) return
             if (event.removeLater) return
-            if (event.name === "command") return
+            if (event.name === EventType.COMMAND) return
 
             return this.send(`/gc @[${event.instanceName || "Main"}]: ${event.message}`)
         })
-
     }
 
     async connect() {

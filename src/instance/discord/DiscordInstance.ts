@@ -1,21 +1,15 @@
 import Application from "../../Application"
+import {GatewayIntentBits, TextBasedChannelFields, TextChannel} from 'discord.js'
 
-import DiscordLight = require('discord.js-light')
-import {
-    GatewayIntentBits,
-    TextBasedChannelFields,
-    TextChannel,
-} from 'discord.js'
-
-import {ClientInstance, Status} from "../../common/ClientInstance"
+import {ClientInstance, LOCATION, SCOPE, Status} from "../../common/ClientInstance"
 import StateHandler from "./handlers/StateHandler"
 
 import ChatManager from "./ChatManager"
 import {CommandManager} from './CommandManager'
 import {escapeDiscord} from "../../util/DiscordMessageUtil"
-import {SCOPE, LOCATION} from "../../common/ClientInstance"
-import {ChatEvent, ClientEvent, InstanceEvent, InstanceEventType} from "../../common/ApplicationEvent"
+import {ChatEvent, ClientEvent, EventType, InstanceEvent, InstanceEventType} from "../../common/ApplicationEvent"
 import {ColorScheme, DiscordConfig} from "./common/DiscordConfig";
+import DiscordLight = require('discord.js-light');
 
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
@@ -24,7 +18,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     readonly client: DiscordLight.Client
 
     constructor(app: Application, instanceName: string, config: DiscordConfig) {
-        super(app, instanceName, LOCATION.DISCORD,config)
+        super(app, instanceName, LOCATION.DISCORD, config)
         this.status = Status.FRESH
 
         this.client = new DiscordLight.Client({
@@ -89,14 +83,14 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     private async onEvent(event: ClientEvent) {
         if (event.instanceName === this.instanceName) return
 
-        if (event.name === "repeat") {
+        if (event.name === EventType.REPEAT) {
             if (this.lastRepeatEvent + 5000 < new Date().getTime()) {
                 this.lastRepeatEvent = new Date().getTime()
             } else {
                 return
             }
         }
-        if (event.name === "block") {
+        if (event.name === EventType.BLOCK) {
             if (this.lastBlockEvent + 5000 < new Date().getTime()) {
                 this.lastBlockEvent = new Date().getTime()
             } else {
