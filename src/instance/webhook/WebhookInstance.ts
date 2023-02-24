@@ -24,10 +24,8 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
             let displayUsername = event.replyUsername ? `${event.username}▸${event.replyUsername}` : event.username
 
             this.client?.send({
-                // TODO: Restore to original after bug #34 has been fixed by discord
-                content: `${escapeDiscord(displayUsername)}: ${escapeDiscord(event.message)}`,
-                //content: escapeDiscord(event.message),
-                //username: displayUsername,
+                content: escapeDiscord(event.message),
+                username: displayUsername,
                 avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`
             })
         })
