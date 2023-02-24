@@ -73,7 +73,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
                 // TODO: Restore to original after bug #34 has been fixed by discord
                 content: `${escapeDiscord(displayUsername)}: ${escapeDiscord(event.message)}`,
                 //content: escapeDiscord(event.message),
-                username: displayUsername,
+                //username: displayUsername,
                 avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`
             })
         }
