@@ -23,7 +23,7 @@ export default <MinecraftChatMessage>{
                 name: EventType.BLOCK,
                 username: undefined,
                 severity: ColorScheme.INFO,
-                message: message,
+                message: "The message has been blocked by Hypixel for breaking the rules.",
                 removeLater: false
             })
         }
