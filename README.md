@@ -29,7 +29,9 @@ your own risk"**
     - [Install](#Install)
     - [Run](#Run)
 - [Advanced](#advanced)
-  - 
+    - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
+    - [Node Modes](#node-modes)
+    - [Setup Cluster](#setup-cluster)
 - [Credits](#Credits)
 
 ## Features
