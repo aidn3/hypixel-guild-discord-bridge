@@ -33,7 +33,7 @@ export default class GuildOnlineMetrics {
         }
 
         app.on('minecraftChat', chatListener)
-        app.clusterHelper.sendCommandToAllMinecraft("/guild list")
+        app.clusterHelper.sendCommandToAllMinecraft("/guild online")
         await new Promise(r => setTimeout(r, 3000))
         app.removeListener('minecraftChat', chatListener)
 
