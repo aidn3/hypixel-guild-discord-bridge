@@ -60,6 +60,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
             if (event.removeLater) return
             if (event.name === EventType.COMMAND) return
             if (event.name === EventType.BLOCK) return
+            if (event.name === EventType.REPEAT) return
 
             return this.send(`/gc @[${event.instanceName || "Main"}]: ${event.message}`)
         })
