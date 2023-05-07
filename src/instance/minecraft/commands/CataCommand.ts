@@ -34,6 +34,6 @@ async function getParsedProfile(hypixelApi: Client, uuid: string) {
         .then((response: any) => response.profiles)
         .then((profiles: any[]) => profiles.filter(p => p.selected)[0].cute_name)
 
-    return await api.getSkyblockProfiles(uuid)
+    return await hypixelApi.getSkyblockProfiles(uuid)
         .then(profiles => profiles.filter(profile => profile.profileName === selectedProfile)[0].me)
 }
