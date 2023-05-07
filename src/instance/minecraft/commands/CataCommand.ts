@@ -21,11 +21,11 @@ export default <MinecraftCommandMessage>{
 
         return `${givenUsername}'s Catacombs: ` +
             `Level: ${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
-            `/ Healer: ${parsedProfile.dungeons.classes.healer.level}` +
-            `/ Mage: ${parsedProfile.dungeons.classes.mage.level}` +
-            `/ Berserk: ${parsedProfile.dungeons.classes.berserk.level}` +
-            `/ Archer: ${parsedProfile.dungeons.classes.archer.level}` +
-            `/ Tank: ${parsedProfile.dungeons.classes.tank.level}`
+            ` / Healer: ${parsedProfile.dungeons.classes.healer.level}` +
+            ` / Mage: ${parsedProfile.dungeons.classes.mage.level}` +
+            ` / Berserk: ${parsedProfile.dungeons.classes.berserk.level}` +
+            ` / Archer: ${parsedProfile.dungeons.classes.archer.level}` +
+            ` / Tank: ${parsedProfile.dungeons.classes.tank.level}`
     }
 }
 
