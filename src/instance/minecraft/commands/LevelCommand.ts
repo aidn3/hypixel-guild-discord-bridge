@@ -5,6 +5,7 @@ const Mojang = require("mojang")
 
 export default <MinecraftCommandMessage>{
     triggers: ['level', 'lvl', 'l'],
+    enabled: true,
     handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
 
         let givenUsername = args[0] !== undefined ? args[0] : username
