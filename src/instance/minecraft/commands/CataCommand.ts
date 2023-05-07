@@ -1,5 +1,6 @@
 import MinecraftInstance from "../MinecraftInstance"
 import {MinecraftCommandMessage} from "../common/ChatInterface"
+import {Client} from "hypixel-api-reborn";
 
 const Mojang = require("mojang")
 
@@ -28,7 +29,7 @@ export default <MinecraftCommandMessage>{
     }
 }
 
-async function getParsedProfile(hypixelApi, uuid) {
+async function getParsedProfile(hypixelApi: Client, uuid: string) {
     const selectedProfile = await hypixelApi.getSkyblockProfiles(uuid, {raw: true})
         .then((response: any) => response.profiles)
         .then((profiles: any[]) => profiles.filter(p => p.selected)[0].cute_name)
