@@ -21,11 +21,11 @@ export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftCo
     let connect
     switch (protocol) {
         case ProxyProtocol.HTTP:
-            connect = createHttpConnectFunction(proxyHost, proxyPort, host, port)
+            connect = createHttpConnectFunction(logger, proxyHost, proxyPort, host, port)
             break
 
         case ProxyProtocol.SOCKS5:
-            connect = createSocksConnectFunction(proxyHost, proxyPort, host, port)
+            connect = createSocksConnectFunction(logger, proxyHost, proxyPort, host, port)
             break
         default:
             throw new Error(`Unknown proxy protocol '${protocol}'`)
