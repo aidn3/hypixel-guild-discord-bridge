@@ -30,7 +30,8 @@ function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }) {
     let arr: MinecraftConfig[] = []
 
     for (let instanceYaml of minecraftYaml.instances) {
-        let config: MinecraftConfig = {}
+        // config are parsed dynamically. Can't set type to "MinecraftConfig"
+        let config: any[string] = {}
         for (let key of Object.keys(minecraftYaml)) {
             if (key === "instances") continue
             config[key] = minecraftYaml[key]
