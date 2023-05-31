@@ -1,5 +1,5 @@
 import MinecraftConfig from "./MinecraftConfig"
-import ProxyAgent from "proxy-agent"
+import * as ProxyAgent from "proxy-agent"
 import * as Http from 'http'
 import {SocksClient} from 'socks'
 import type {Client} from 'minecraft-protocol'
