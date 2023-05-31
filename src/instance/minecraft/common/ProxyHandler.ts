@@ -94,7 +94,7 @@ function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort
 }
 
 export interface ClientProxyOptions {
-    agent: ProxyAgent
+    agent: typeof ProxyAgent
     connect: (client: Client) => void
 }
 
