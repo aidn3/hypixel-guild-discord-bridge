@@ -1,6 +1,5 @@
 import MinecraftConfig from "./MinecraftConfig"
 import * as ProxyAgent from "proxy-agent"
-import type {Agent} from 'agent-base'
 import * as Http from 'http'
 import {SocksClient} from 'socks'
 import type {Client} from 'minecraft-protocol'
@@ -95,7 +94,7 @@ function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort
 }
 
 export interface ClientProxyOptions {
-    agent: Agent
+    agent: any // ProxyAgent newer versions can never match current Minecraft bot library
     connect: (client: Client) => void
 }
 
