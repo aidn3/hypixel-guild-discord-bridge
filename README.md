@@ -47,6 +47,7 @@ your own risk"**
 - Quality Of Life such as `/list` command listing online members and their current game-mode
 - Provide a detailed metrics for every instance
 - Supports custom plugins
+- Support Proxies for Minecraft instances
 
 ### Permissions
 
