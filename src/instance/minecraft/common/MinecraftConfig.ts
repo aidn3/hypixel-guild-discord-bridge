@@ -1,4 +1,5 @@
 import MineFlayer = require('mineflayer')
+import {ProxyConfig} from "../../../common/ProxyInterface"
 
 export default interface MinecraftConfig {
     instanceName: string
@@ -10,4 +11,6 @@ export default interface MinecraftConfig {
 
     // @ts-ignore
     botOptions: { client: MineFlayer.Client } & Partial<MineFlayer.BotOptions>
+    proxy: ProxyConfig | null
 }
+
