@@ -30,7 +30,7 @@ function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }) {
     let arr: MinecraftConfig[] = []
 
     for (let instanceYaml of minecraftYaml.instances) {
-        let config: any[string] = {}
+        let config: MinecraftConfig = {}
         for (let key of Object.keys(minecraftYaml)) {
             if (key === "instances") continue
             config[key] = minecraftYaml[key]
@@ -40,6 +40,17 @@ function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }) {
         config.botOptions.auth = "microsoft"
         config.botOptions.username = instanceYaml.email
         config.botOptions.password = instanceYaml.password
+
+        if (instanceYaml.proxy != null) {
+            const proxyArgs = instanceYaml.proxy.split(":")
+            config.proxy = {
+                protocol: proxyArgs[0],
+                proxyHost: proxyArgs[1],
+                proxyPort: proxyArgs[2]
+            }
+        } else {
+            config.proxy = null
+        }
 
         arr.push(config)
     }
