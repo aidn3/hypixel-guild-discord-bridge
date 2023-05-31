@@ -2,14 +2,20 @@ import MineFlayer = require('mineflayer');
 import ChatManager from "./ChatManager"
 import Application from "../../Application"
 import {ClientInstance, LOCATION, Status} from "../../common/ClientInstance"
-import {ChatEvent, ClientEvent, InstanceEventType, MinecraftCommandResponse} from "../../common/ApplicationEvent"
+import {
+    ChatEvent,
+    ClientEvent,
+    EventType,
+    InstanceEventType,
+    MinecraftCommandResponse
+} from "../../common/ApplicationEvent"
 import RawChatHandler from "./handlers/RawChatHandler";
 import SelfBroadcastHandler from "./handlers/SelfBroadcastHandler";
 import SendChatHandler from "./handlers/SendChatHandler";
 import ErrorHandler from "./handlers/ErrorHandler";
 import StateHandler from "./handlers/StateHandler";
 import MinecraftConfig from "./common/MinecraftConfig";
-import {EventType} from "../../common/ApplicationEvent";
+import {resolveProxyIfExist} from "./common/ProxyHandler";
 
 
 const {SCOPE} = require("../../common/ClientInstance")
@@ -69,7 +75,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     async connect() {
         if (this.client) this.client.quit()
 
-        this.client = MineFlayer.createBot(this.config.botOptions)
+        this.client = MineFlayer.createBot({...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config)})
         this.app.emit("instance", {
             localEvent: true,
             instanceName: this.instanceName,

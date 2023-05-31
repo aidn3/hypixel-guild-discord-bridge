@@ -30,6 +30,12 @@ minecraft:
     - instanceName: "Good-Name"
       email: "email@example.com"
       password: "password1234"
+      # This will be used when initiating connection to minecraft server
+      # It will not be used for other purposes.
+      # Leave empty or set it to null to disable
+      # Format: "protocol:host:port"
+      # Example: "HTTP:example.com:8080", "SOCKS5:example.com:8080"
+      proxy: null
 
   # Options added to 'mineflayer' library. Used for bot instance connection
   botOptions:
