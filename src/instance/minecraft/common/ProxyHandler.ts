@@ -17,7 +17,6 @@ export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftCo
     const host = minecraftConfig.botOptions.host as string
     const port = Number(minecraftConfig.botOptions.port)
 
-    const agent = createProxyAgent(protocol, proxyHost, proxyPort)
     let connect
     switch (protocol) {
         case ProxyProtocol.HTTP:
@@ -31,7 +30,9 @@ export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftCo
             throw new Error(`Unknown proxy protocol '${protocol}'`)
     }
 
-    return {agent, connect}
+    // TODO: Enable agent in the future if ever needed
+    // const agent = createProxyAgent(protocol, proxyHost, proxyPort)
+    return {/*agent,*/ connect}
 }
 
 function createProxyAgent(protocol: string = "http", proxyHost: string, proxyPort: number) {
