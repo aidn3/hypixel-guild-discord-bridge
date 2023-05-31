@@ -12,10 +12,10 @@ export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftCo
     logger.debug(`Proxy enabled with params: ${minecraftConfig.proxy}`)
 
     const proxyHost = proxyConfig.proxyHost
-    const proxyPort = proxyConfig.proxyPort
+    const proxyPort = Number(proxyConfig.proxyPort)
     const protocol = proxyConfig.protocol
     const host = minecraftConfig.botOptions.host as string
-    const port = minecraftConfig.botOptions.port as number
+    const port = Number(minecraftConfig.botOptions.port)
 
     const agent = createProxyAgent(protocol, proxyHost, proxyPort)
     let connect
