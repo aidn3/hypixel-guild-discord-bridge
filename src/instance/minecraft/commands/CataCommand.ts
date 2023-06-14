@@ -20,8 +20,8 @@ export default <MinecraftCommandMessage>{
         const parsedProfile = await getParsedProfile(clientInstance.app.hypixelApi, uuid)
 
         return `${givenUsername} is Catacombs ` +
-            `level ${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
-            `, ${formatClass(parsedProfile.dungeons.classes)}.`
+            `${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
+            ` ${formatClass(parsedProfile.dungeons.classes)}.`
     }
 }
 
@@ -58,5 +58,5 @@ function formatClass(classes: any): string {
         level = classes.tank.level
         name = "Tank"
     }
-    return `${name} level ${level}`
+    return `${name} ${level}`
 }
