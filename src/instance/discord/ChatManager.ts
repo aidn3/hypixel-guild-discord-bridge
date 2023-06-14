@@ -64,7 +64,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         }
     }
 
-    async hasBeenMuted(event: Message, discordName: String, readableName: String): Promise<boolean> {
+    async hasBeenMuted(event: Message, discordName: string, readableName: string): Promise<boolean> {
         const punishedUsers = this.clientInstance.app.punishedUsers
         let mutedTill = punishedUsers.mutedTill(discordName) ||
             punishedUsers.mutedTill(readableName) ||
