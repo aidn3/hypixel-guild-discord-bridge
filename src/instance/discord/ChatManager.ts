@@ -7,7 +7,6 @@ import {cleanMessage, escapeDiscord, getReadableName, getReplyUsername} from "..
 const BadWords = require("bad-words")
 
 
-
 export default class ChatManager extends EventHandler<DiscordInstance> {
     private profanityFilter: { clean: (text: string) => string, removeWords: (...args: string[]) => void }
 
@@ -32,9 +31,11 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         if (content.length === 0) return
 
         let replyUsername = await getReplyUsername(event)
+        const discordName = event.member?.displayName || event.author.username
+        const readableName = getReadableName(discordName, event.author?.id)
 
         if (this.clientInstance.config.publicChannelIds.some(id => id === event.channel.id)) {
-            if (await this.hasBeenMuted(event)) return
+            if (await this.hasBeenMuted(event, discordName, readableName)) return
             let filteredMessage = await this.proceedFiltering(event, content)
 
             this.clientInstance.app.emit("chat", {
@@ -43,7 +44,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
                 location: LOCATION.DISCORD,
                 scope: SCOPE.PUBLIC,
                 channelId: event.channel.id,
-                username: getReadableName(event.member?.displayName || event.author.username, event.author?.id),
+                username: readableName,
                 replyUsername: replyUsername,
                 message: filteredMessage
             })
@@ -56,15 +57,19 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
                 location: LOCATION.DISCORD,
                 scope: SCOPE.OFFICER,
                 channelId: event.channel.id,
-                username: getReadableName(event.member?.displayName || event.author.username, event.author?.id),
+                username: readableName,
                 replyUsername: replyUsername,
                 message: content
             })
         }
     }
 
-    async hasBeenMuted(event: Message): Promise<boolean> {
-        let mutedTill = this.clientInstance.app.punishedUsers.mutedTill(event.member?.displayName || event.author.id)
+    async hasBeenMuted(event: Message, discordName: String, readableName: String): Promise<boolean> {
+        const punishedUsers = this.clientInstance.app.punishedUsers
+        let mutedTill = punishedUsers.mutedTill(discordName) ||
+            punishedUsers.mutedTill(readableName) ||
+            punishedUsers.mutedTill(event.author.id)
+
         if (mutedTill) {
             await event.reply({
                 content: `*Looks like you are muted on the chat-bridge.*\n`
