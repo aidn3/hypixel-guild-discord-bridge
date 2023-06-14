@@ -19,13 +19,9 @@ export default <MinecraftCommandMessage>{
 
         const parsedProfile = await getParsedProfile(clientInstance.app.hypixelApi, uuid)
 
-        return `${givenUsername}'s Catacombs: ` +
-            `Level: ${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
-            ` / Healer: ${parsedProfile.dungeons.classes.healer.level}` +
-            ` / Mage: ${parsedProfile.dungeons.classes.mage.level}` +
-            ` / Berserk: ${parsedProfile.dungeons.classes.berserk.level}` +
-            ` / Archer: ${parsedProfile.dungeons.classes.archer.level}` +
-            ` / Tank: ${parsedProfile.dungeons.classes.tank.level}`
+        return `${givenUsername} is Catacombs ` +
+            `level ${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
+            `, ${formatClass(parsedProfile.dungeons.classes)}.`
     }
 }
 
@@ -36,4 +32,31 @@ async function getParsedProfile(hypixelApi: Client, uuid: string) {
 
     return await hypixelApi.getSkyblockProfiles(uuid)
         .then(profiles => profiles.filter(profile => profile.profileName === selectedProfile)[0].me)
+}
+
+function formatClass(classes: any): string {
+    let level = 0
+    let name = "(None)"
+
+    if (classes.healer.level > level) {
+        level = classes.healer.level
+        name = "Healer"
+    }
+    if (classes.mage.level > level) {
+        level = classes.mage.level
+        name = "Mage"
+    }
+    if (classes.berserk.level > level) {
+        level = classes.berserk.level
+        name = "Berserk"
+    }
+    if (classes.archer.level > level) {
+        level = classes.archer.level
+        name = "Archer"
+    }
+    if (classes.tank.level > level) {
+        level = classes.tank.level
+        name = "Tank"
+    }
+    return `${name} level ${level}`
 }
