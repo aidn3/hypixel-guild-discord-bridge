@@ -26,13 +26,5 @@ async function getSenitherData(username: string) {
     let weight = Object.values(profiles)
         .find(profile => profile["current"])["data"]["weight"]["senither"]
 
-    let total = (weight.overall || 0)
-    let skills = (weight.skill.total || 0)
-    let slayers = (weight.slayer.total || 0)
-    let dungeons = (weight.dungeon.total || 0)
-
-    return `${Math.floor(total)}`
-        + ` / Skills ${Math.floor(skills)} (${((skills / total) * 100).toFixed(1)}%)`
-        + ` / Slayers ${Math.floor(slayers)} (${((slayers / total) * 100).toFixed(1)}%)`
-        + ` / Dungeons ${Math.floor(dungeons)} (${((dungeons / total) * 100).toFixed(1)}%)`
+    return Math.floor(weight.overall || 0)
 }
