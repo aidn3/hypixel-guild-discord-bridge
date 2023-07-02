@@ -70,6 +70,7 @@ profanity:
     - "god"
     - "shit"
     - "balls"
+    - "retard"
 
 metrics:
   instanceName: "prometheus"
