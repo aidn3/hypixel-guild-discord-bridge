@@ -31,7 +31,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         if (content.length === 0) return
 
         const replyUsername = await getReplyUsername(event)
-        const readableReplyUsername = getReadableName(replyUsername, replyUsername)
+        const readableReplyUsername = replyUsername ? getReadableName(replyUsername, replyUsername) : undefined
         const discordName = event.member?.displayName || event.author.username
         const readableName = getReadableName(discordName, event.author?.id)
 
