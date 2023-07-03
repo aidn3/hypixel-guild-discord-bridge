@@ -30,7 +30,8 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         let content = cleanMessage(event)
         if (content.length === 0) return
 
-        let replyUsername = await getReplyUsername(event)
+        const replyUsername = await getReplyUsername(event)
+        const readableReplyUsername = getReadableName(replyUsername, replyUsername)
         const discordName = event.member?.displayName || event.author.username
         const readableName = getReadableName(discordName, event.author?.id)
 
@@ -45,7 +46,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
                 scope: SCOPE.PUBLIC,
                 channelId: event.channel.id,
                 username: readableName,
-                replyUsername: replyUsername,
+                replyUsername: readableReplyUsername,
                 message: filteredMessage
             })
         }
@@ -58,7 +59,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
                 scope: SCOPE.OFFICER,
                 channelId: event.channel.id,
                 username: readableName,
-                replyUsername: replyUsername,
+                replyUsername: readableReplyUsername,
                 message: content
             })
         }
