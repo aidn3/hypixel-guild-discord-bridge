@@ -1,9 +1,12 @@
-import fs = require('fs')
+import fs = require('fs');
 import {
-    REST, Routes,
     Collection,
     CommandInteraction,
-    RESTPostAPIChatInputApplicationCommandsJSONBody, GuildMember, GuildMemberRoleManager
+    GuildMember,
+    GuildMemberRoleManager,
+    REST,
+    RESTPostAPIChatInputApplicationCommandsJSONBody,
+    Routes
 } from "discord.js"
 
 import EventHandler from "../../common/EventHandler"
@@ -32,11 +35,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
             })
 
         let timeoutId: null | NodeJS.Timeout = null
-        this.clientInstance.app.on("selfBroadcast", event => {
-            if (event.location === LOCATION.MINECRAFT) {
-                if (timeoutId) clearTimeout(timeoutId)
-                timeoutId = setTimeout(() => this.registerDiscordCommand(), 5 * 1000)
-            }
+        this.clientInstance.app.on("minecraftSelfBroadcast", event => {
+            if (timeoutId) clearTimeout(timeoutId)
+            timeoutId = setTimeout(() => this.registerDiscordCommand(), 5 * 1000)
         })
 
         this.clientInstance.client.on('interactionCreate', (interaction) => this.interactionCreate(interaction))
