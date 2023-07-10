@@ -1,5 +1,5 @@
 import Application from "../../Application"
-import {GatewayIntentBits, TextBasedChannelFields, TextChannel} from 'discord.js'
+import {Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel} from 'discord.js'
 
 import {ClientInstance, LOCATION, SCOPE, Status} from "../../common/ClientInstance"
 import StateHandler from "./handlers/StateHandler"
@@ -9,21 +9,23 @@ import {CommandManager} from './CommandManager'
 import {escapeDiscord} from "../../util/DiscordMessageUtil"
 import {ChatEvent, ClientEvent, EventType, InstanceEvent, InstanceEventType} from "../../common/ApplicationEvent"
 import {ColorScheme, DiscordConfig} from "./common/DiscordConfig";
-import DiscordLight = require('discord.js-light');
 
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     private readonly handlers
 
-    readonly client: DiscordLight.Client
+    readonly client: Client
 
     constructor(app: Application, instanceName: string, config: DiscordConfig) {
         super(app, instanceName, LOCATION.DISCORD, config)
         this.status = Status.FRESH
 
-        this.client = new DiscordLight.Client({
-            makeCache: DiscordLight.Options.cacheEverything(),
-            intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+        this.client = new Client({
+            makeCache: Options.cacheEverything(),
+            intents: [
+                GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.MessageContent
+            ]
         })
 
         this.handlers = [

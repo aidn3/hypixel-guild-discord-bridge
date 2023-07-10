@@ -1,4 +1,4 @@
-import {Client, WebhookClient} from "discord.js-light"
+import {Client, WebhookClient} from "discord.js"
 
 import Application from "../../Application"
 import {ClientInstance, LOCATION, SCOPE} from "../../common/ClientInstance"
