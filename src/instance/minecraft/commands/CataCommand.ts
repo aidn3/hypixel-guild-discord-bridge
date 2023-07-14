@@ -35,28 +35,34 @@ async function getParsedProfile(hypixelApi: Client, uuid: string) {
 }
 
 function formatClass(classes: any): string {
-    let level = 0
-    let name = "(None)"
+    let xp: number = 0
+    let level: number = 0
+    let name: string = "(None)"
 
-    if (classes.healer.level > level) {
-        level = classes.healer.level
+    if (classes.healer.xp > xp) {
+        xp = classes.healer.xp
+        level = Number(classes.healer.level) + (classes.healer.progress / 100)
         name = "Healer"
     }
-    if (classes.mage.level > level) {
-        level = classes.mage.level
+    if (classes.mage.xp > xp) {
+        xp = classes.mage.xp
+        level = Number(classes.mage.level) + (classes.mage.progress / 100)
         name = "Mage"
     }
-    if (classes.berserk.level > level) {
-        level = classes.berserk.level
+    if (classes.berserk.xp > xp) {
+        xp = classes.berserk.xp
+        level = Number(classes.berserk.level) + (classes.berserk.progress / 100)
         name = "Berserk"
     }
-    if (classes.archer.level > level) {
-        level = classes.archer.level
+    if (classes.archer.xp > xp) {
+        xp = classes.archer.xp
+        level = Number(classes.archer.level) + (classes.archer.progress / 100)
         name = "Archer"
     }
-    if (classes.tank.level > level) {
-        level = classes.tank.level
+    if (classes.tank.xp > xp) {
+        xp = classes.tank.xp
+        level = Number(classes.tank.level) + (classes.tank.progress / 100)
         name = "Tank"
     }
-    return `${name} ${level}`
+    return `${name} ${level.toFixed(2)}`
 }
