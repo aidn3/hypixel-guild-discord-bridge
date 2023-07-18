@@ -13,7 +13,7 @@ export default class SendChatHandler extends EventHandler<MinecraftInstance> {
     }
 
     private async onCommand(event: MinecraftSendChat) {
-        if (event.targetInstanceName === undefined
+        if (event.targetInstanceName === null
             || event.targetInstanceName === this.clientInstance.instanceName) {
 
             await this.clientInstance.send(event.command)
