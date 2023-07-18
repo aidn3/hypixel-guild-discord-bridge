@@ -23,8 +23,8 @@ export abstract class ClientInstance<K> {
 
     abstract connect(): Promise<void>
 
-    private async onRestartSignal(targetInstanceName: string | undefined) {
-        if (targetInstanceName === undefined || targetInstanceName === this.instanceName) {
+    private async onRestartSignal(targetInstanceName: string | null) {
+        if (targetInstanceName === null || targetInstanceName === this.instanceName) {
             this.logger.log("instance has received restart signal")
             await this.connect()
         }

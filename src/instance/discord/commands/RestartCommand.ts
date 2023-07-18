@@ -13,10 +13,11 @@ export default <DiscordCommandInterface>{
         await interaction.deferReply()
 
         // @ts-ignore
-        let targetInstance: string | undefined = interaction.options.getString("instance")
+        let targetInstance: string | null = interaction.options.getString("instance")
         clientInstance.app.emit("restartSignal", {
             localEvent: true,
-            targetInstanceName: targetInstance
+            // null set again to ensure "undefined" never come back in case discord library changes it again
+            targetInstanceName: targetInstance ?? null
         })
         await interaction.editReply(`Restart signal has been sent!`)
     }

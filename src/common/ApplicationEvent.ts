@@ -10,7 +10,7 @@ interface InformEvent extends BaseEvent {
 }
 
 interface SignalEvent extends BaseEvent {
-    targetInstanceName: string | undefined
+    targetInstanceName: string | null
 }
 
 export interface ChatEvent extends InformEvent {
