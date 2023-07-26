@@ -28,6 +28,7 @@ export default class ServerSocket {
         })
 
         this.server.on('connection', (socket) => {
+            logger.debug('New Socket connection.')
             app.broadcastLocalInstances()
 
             socket.onAny((name, ...args) => {
