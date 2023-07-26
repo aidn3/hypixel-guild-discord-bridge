@@ -2,14 +2,14 @@ import {CommandInteraction, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
 import DiscordInstance from "../DiscordInstance"
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('override')
         .setDescription('execute command to all clients in-game')
         .addStringOption(option =>
             option.setName('command')
                 .setDescription('command to execute. e.g. "/guild party"')
-                .setRequired(true)),
+                .setRequired(true)) as SlashCommandBuilder,
     allowInstance: true,
     permission: Permission.ADMIN,
 
@@ -30,3 +30,5 @@ export default <DiscordCommandInterface>{
         await interaction.editReply(`Command executed: ${command}`)
     }
 }
+
+export default COMMAND

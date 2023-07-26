@@ -4,11 +4,12 @@ import {CommandInteraction, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
 import DiscordInstance from "../DiscordInstance"
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('about')
         .setDescription('Display basic info about the client.'),
     permission: Permission.ANYONE,
+    allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
@@ -18,3 +19,5 @@ export default <DiscordCommandInterface>{
             + `The features of the bot can be viewed with /help.`)
     }
 }
+
+export default COMMAND

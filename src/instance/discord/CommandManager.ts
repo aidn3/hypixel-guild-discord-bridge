@@ -31,7 +31,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
                 this.clientInstance.logger.debug(`Loading command ${filePath}`)
                 let command = <DiscordCommandInterface>require(filePath).default
 
-                this.commands.set(command.commandBuilder.name, command)
+                this.commands.set(command.getCommandBuilder().name, command)
             })
 
         let timeoutId: null | NodeJS.Timeout = null
@@ -151,14 +151,15 @@ export class CommandManager extends EventHandler<DiscordInstance> {
             .map((choice: string) => ({name: choice, value: choice}))
 
         for (let command of this.commands.values()) {
+            const commandBuilder = command.getCommandBuilder()
             if (command.allowInstance && instanceChoices.length > 0) {
-                command.commandBuilder.addStringOption((option) =>
+                commandBuilder.addStringOption((option) =>
                     option.setName("instance")
                         .setDescription("Which instance to send this command to")
                         .setChoices(...instanceChoices))
             }
 
-            commandsJson.push(command.commandBuilder.toJSON())
+            commandsJson.push(commandBuilder.toJSON())
         }
 
         return commandsJson

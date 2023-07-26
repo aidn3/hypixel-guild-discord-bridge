@@ -57,11 +57,12 @@ function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[
     return pages as any as JSONEncodable<APIEmbed>[]
 }
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('list')
         .setDescription('List Online Players'),
     permission: Permission.ANYONE,
+    allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
@@ -161,3 +162,5 @@ function unique(list: any[]) {
         return list.indexOf(item) === pos
     })
 }
+
+export default COMMAND

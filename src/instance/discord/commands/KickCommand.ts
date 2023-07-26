@@ -2,8 +2,8 @@ import {CommandInteraction, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
 import DiscordInstance from "../DiscordInstance"
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('kick')
         .setDescription('kick player out of the guild in-game')
         .addStringOption(option =>
@@ -13,8 +13,9 @@ export default <DiscordCommandInterface>{
         .addStringOption(option =>
             option.setName('reason')
                 .setDescription('reason to kick the player')
-                .setRequired(true)),
+                .setRequired(true)) as SlashCommandBuilder,
     permission: Permission.STAFF,
+    allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
@@ -28,3 +29,5 @@ export default <DiscordCommandInterface>{
         await interaction.editReply(`Command sent to kick ${username}!`)
     }
 }
+
+export default COMMAND

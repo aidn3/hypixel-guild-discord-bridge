@@ -8,7 +8,7 @@ export enum Permission {
 }
 
 export interface DiscordCommandInterface {
-    commandBuilder: SlashCommandBuilder
+    getCommandBuilder: () => SlashCommandBuilder
     allowInstance: boolean
     permission: Permission
     handler: (discordInstance: DiscordInstance, interaction: CommandInteraction) => Promise<void>

@@ -3,8 +3,8 @@ import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInter
 import DiscordInstance from "../DiscordInstance"
 import {getDuration} from "../../../util/SharedUtil"
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('mute')
         .setDescription('mute guild member in-game')
         .addStringOption(option =>
@@ -14,8 +14,9 @@ export default <DiscordCommandInterface>{
         .addStringOption(option =>
             option.setName('time')
                 .setDescription('duration to mute. Can use 1s, 1m, 1h, 1d')
-                .setRequired(true)),
+                .setRequired(true)) as SlashCommandBuilder,
     permission: Permission.STAFF,
+    allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
@@ -31,3 +32,5 @@ export default <DiscordCommandInterface>{
         await interaction.editReply(`Command sent to mute ${username} for ${time}!`)
     }
 }
+
+export default COMMAND

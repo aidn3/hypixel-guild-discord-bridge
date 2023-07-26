@@ -17,11 +17,12 @@ function createPing(latency: number, websocket: number, lag: number) {
     }
 }
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Discord Ping'),
     permission: Permission.ANYONE,
+    allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         let timestamp = new Date().getTime()
@@ -35,3 +36,5 @@ export default <DiscordCommandInterface>{
         await interaction.editReply({embeds: [createPing(latency, websocket, lag)]})
     }
 }
+
+export default COMMAND

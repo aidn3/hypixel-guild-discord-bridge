@@ -4,8 +4,8 @@ import {CommandInteraction, SlashCommandBuilder} from "discord.js"
 import {DiscordCommandInterface, Permission} from "../common/DiscordCommandInterface"
 import DiscordInstance from "../DiscordInstance"
 
-export default <DiscordCommandInterface>{
-    commandBuilder: new SlashCommandBuilder()
+const COMMAND: DiscordCommandInterface = {
+    getCommandBuilder: () => new SlashCommandBuilder()
         .setName('setrank')
         .setDescription('setrank guild member in-game')
         .addStringOption(option =>
@@ -15,8 +15,9 @@ export default <DiscordCommandInterface>{
         .addStringOption(option =>
             option.setName('rank')
                 .setDescription('rank to change to')
-                .setRequired(true)),
+                .setRequired(true)) as SlashCommandBuilder,
     permission: Permission.STAFF,
+    allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
@@ -30,3 +31,5 @@ export default <DiscordCommandInterface>{
         await interaction.editReply(`Command sent to setrank ${username} to ${rank}!`)
     }
 }
+
+export default COMMAND
