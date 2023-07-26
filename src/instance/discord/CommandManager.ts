@@ -35,9 +35,17 @@ export class CommandManager extends EventHandler<DiscordInstance> {
             })
 
         let timeoutId: null | NodeJS.Timeout = null
-        this.clientInstance.app.on("minecraftSelfBroadcast", event => {
+        const timerReset = () => {
             if (timeoutId) clearTimeout(timeoutId)
             timeoutId = setTimeout(() => this.registerDiscordCommand(), 5 * 1000)
+        }
+        this.clientInstance.app.on("minecraftSelfBroadcast", event => {
+            timerReset()
+        })
+        this.clientInstance.app.on("selfBroadcast", event => {
+            if (event.location === LOCATION.MINECRAFT) {
+                timerReset()
+            }
         })
 
         this.clientInstance.client.on('interactionCreate', (interaction) => this.interactionCreate(interaction))
