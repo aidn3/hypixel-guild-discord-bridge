@@ -47,6 +47,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
                 timerReset()
             }
         })
+        timerReset()
 
         this.clientInstance.client.on('interactionCreate', (interaction) => this.interactionCreate(interaction))
         this.clientInstance.logger.debug("CommandManager is registered")
