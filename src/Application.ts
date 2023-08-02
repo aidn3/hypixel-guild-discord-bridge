@@ -12,10 +12,12 @@ import {
     CommandEvent,
     InstanceEvent,
     InstanceRestartSignal,
-    InstanceSelfBroadcast, MinecraftCommandResponse,
+    InstanceSelfBroadcast,
+    MinecraftCommandResponse,
     MinecraftRawChatEvent,
     MinecraftSelfBroadcast,
-    MinecraftSendChat
+    MinecraftSendChat,
+    ShutdownSignal
 } from "./common/ApplicationEvent"
 import {ClientInstance} from "./common/ClientInstance"
 import PluginInterface from "./common/PluginInterface"
@@ -85,6 +87,16 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         } else {
             this.plugins = []
         }
+
+        this.on('shutdownSignal', async (event) => {
+            if (event.targetInstanceName === null) {
+                this.logger.info('Shutdown signal has been received. Shutting down this node.')
+                this.logger.info('Node should auto restart if a process monitor service is used.')
+                this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
+                await new Promise(r => setTimeout(r, 5000))
+                process.exit(2)
+            }
+        })
     }
 
     async sendConnectSignal() {
@@ -160,6 +172,13 @@ export interface ApplicationEvents {
      * Note: This is currently only registered in Minecraft instances
      */
     'restartSignal': (event: InstanceRestartSignal) => void
+
+    /**
+     * Command used to shut down the bridge.
+     * It will take some time for the bridge to shut down.
+     * Bridge will auto restart if a service monitor is used.
+     */
+    'shutdownSignal': (event: ShutdownSignal) => void
 
     /**
      * Used to broadcast which in-game username/uuid belongs to which bot.

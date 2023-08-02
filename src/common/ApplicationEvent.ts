@@ -97,3 +97,6 @@ export interface MinecraftSendChat extends SignalEvent {
 
 export interface InstanceRestartSignal extends SignalEvent {
 }
+
+export interface ShutdownSignal extends SignalEvent {
+}
