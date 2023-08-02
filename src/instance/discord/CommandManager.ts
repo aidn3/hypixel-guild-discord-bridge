@@ -132,20 +132,17 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         })
     }
 
-    private memberAllowed(interaction: CommandInteraction, permissionLevel: number) {
-        if (permissionLevel === Permission.ANYONE) return true
+    private memberAllowed(interaction: CommandInteraction, permissionLevel: number): boolean {
+        if (permissionLevel === Permission.ANYONE || interaction.user.id === this.clientInstance.config.adminId) return true
 
-        if (permissionLevel === Permission.STAFF) {
-            let roles = <GuildMemberRoleManager>interaction.member?.roles
-            if (roles) {
-                let hasOfficerRole = roles.cache.some((role) => {
-                    return this.clientInstance.config.officerRoleIds.some(id => role.id === id)
-                })
-                if (hasOfficerRole) return true
-            }
-        }
+        const roles = <GuildMemberRoleManager>interaction.member?.roles
+        if (!roles) return false
 
-        return interaction.user.id === this.clientInstance.config.adminId
+        let highestPerm = Permission.ANYONE
+        if (roles.cache.some((role) => this.clientInstance.config?.helperRoleIds?.some(id => role.id === id))) highestPerm = Permission.HELPER
+        if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.some(id => role.id === id))) highestPerm = Permission.OFFICER
+
+        return highestPerm >= permissionLevel
     }
 
     private channelAllowed(interaction: CommandInteraction) {

@@ -14,7 +14,7 @@ const COMMAND: DiscordCommandInterface = {
             option.setName('reason')
                 .setDescription('reason to kick the player')
                 .setRequired(true)) as SlashCommandBuilder,
-    permission: Permission.STAFF,
+    permission: Permission.OFFICER,
     allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {

@@ -51,11 +51,12 @@ your own risk"**
 
 ### Permissions
 
-| Name    | Description                                                                                                       | 
-|---------|-------------------------------------------------------------------------------------------------------------------|
-| Anyone  | Anything that usually can be seen in-game guild chat<br> e.g. Public Chat, Join/Leave Notification, etc           |   
-| Officer | Anything that requires special permission to see in-game guild chat<br> e.g. Officer Chat, Mute notification, etc |    
-| Admin   | Special Permission that is used to administrate the service.<br> Note: Only ONE person can have this permission!  |    
+| Name    | Description                                                                                                        | 
+|---------|--------------------------------------------------------------------------------------------------------------------|
+| Anyone  | Anything that usually can be seen in-game guild chat<br> e.g. Public Chat, Join/Leave Notification, etc            |   
+| Helper  | Anything that requires special permission to see in-game guild chat<br> e.g. Officer Chat, Mute notification, etc. |    
+| Officer | Superset of **Helper** role. Given to trusted members                                                              |    
+| Admin   | Special Permission that is used to administrate the service.<br> Note: Only ONE person can have this permission!   |    
 
 ### Supported Discord Commands
 
@@ -64,10 +65,11 @@ your own risk"**
 | `/ping`                             | Show Discord response latency                       | Anyone     |
 | `/list`                             | List all online members and their current game-mode | Anyone     |
 | `/about`                            | Display basic info about the client                 | Anyone     |
-| `/promote` & `/demote` & `/setrank` | Equivalent to `/guild promote/demote/setrank`       | Officer    |
-| `/mute` & `/unmute`                 | Equivalent to `/guild mute/unmute`                  | Officer    |
-| `/kick` & `/invite` & `/accept`     | Equivalent to `/guild kick/invite/accept`           | Officer    |
-| `/restart`                          | Restart an in-game instance                         | Officer    |
+| `/promote` & `/demote` & `/setrank` | Equivalent to `/guild promote/demote/setrank`       | Helper     |
+| `/mute` & `/unmute`                 | Equivalent to `/guild mute/unmute`                  | Helper     |
+| `/invite` & `/accept`               | Equivalent to `/guild invite/accept`                | Helper     |
+| `/restart`                          | Restart an in-game instance                         | Helper     |
+| `/kick`                             | Equivalent to `/guild kick`                         | Officer    |
 | `/override`                         | Send direct commands to all minecraft clients       | Admin      |
 
 ### Supported Events
@@ -80,7 +82,7 @@ your own risk"**
 | Repeat         | Warn about "can't repeat message" <br/>when writing from discord channel | Anyone             |
 | Block          | Warn about discord user saying something that breaks Hypixel rules       | Anyone             |
 | Kick           | Notify when someone is kicked from the guild                             | Public             |
-| Mute / Unmute  | Notify when someone gets muted in the guild                              | Officer            |
+| Mute / Unmute  | Notify when someone gets muted in the guild                              | Helper             |
 
 ### Supported Ingame Commands
 

@@ -13,7 +13,7 @@ const COMMAND: DiscordCommandInterface = {
                 .setDescription('Username of the player')
                 .setRequired(true)) as SlashCommandBuilder,
     allowInstance: true,
-    permission: Permission.STAFF,
+    permission: Permission.HELPER,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()

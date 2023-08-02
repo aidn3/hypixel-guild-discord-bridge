@@ -15,6 +15,8 @@ discord:
   publicChannelIds: [ "876718702164050860","another_channel" ]
   # Show Chat and public events in this channel id
   officerChannelIds: [ "841257267059646432","another_channel" ]
+  # Discord ID of the role who will have HELPER permission
+  helperRoleIds: [ "803266248652835111","another_role" ]
   # Discord ID of the role who will have OFFICER permission
   officerRoleIds: [ "803266248652835111","another_role" ]
   # Delete spam events from discord after x minutes

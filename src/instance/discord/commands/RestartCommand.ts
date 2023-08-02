@@ -7,7 +7,7 @@ const COMMAND: DiscordCommandInterface = {
         .setName('restart')
         .setDescription('restart minecraft clients'),
     allowInstance: true,
-    permission: Permission.STAFF,
+    permission: Permission.HELPER,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()

@@ -15,7 +15,7 @@ const COMMAND: DiscordCommandInterface = {
             option.setName('time')
                 .setDescription('duration to mute. Can use 1s, 1m, 1h, 1d')
                 .setRequired(true)) as SlashCommandBuilder,
-    permission: Permission.STAFF,
+    permission: Permission.HELPER,
     allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {

@@ -10,7 +10,7 @@ const COMMAND: DiscordCommandInterface = {
             option.setName('username')
                 .setDescription('Username of the player')
                 .setRequired(true)) as SlashCommandBuilder,
-    permission: Permission.STAFF,
+    permission: Permission.HELPER,
     allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {

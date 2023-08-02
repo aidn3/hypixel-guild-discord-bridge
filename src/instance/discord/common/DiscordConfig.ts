@@ -5,6 +5,7 @@ export interface DiscordConfig {
 
     publicChannelIds: string[]
     officerChannelIds: string[]
+    helperRoleIds?: string[]
     officerRoleIds: string[]
 
     deleteTempEventAfter: number

@@ -16,7 +16,7 @@ const COMMAND: DiscordCommandInterface = {
             option.setName('rank')
                 .setDescription('rank to change to')
                 .setRequired(true)) as SlashCommandBuilder,
-    permission: Permission.STAFF,
+    permission: Permission.HELPER,
     allowInstance: false,
 
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {

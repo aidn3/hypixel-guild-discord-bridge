@@ -12,7 +12,7 @@ const COMMAND: DiscordCommandInterface = {
                 .setRequired(true)) as SlashCommandBuilder,
     allowInstance: true,
 
-    permission: Permission.STAFF,
+    permission: Permission.HELPER,
     handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
         await interaction.deferReply()
 

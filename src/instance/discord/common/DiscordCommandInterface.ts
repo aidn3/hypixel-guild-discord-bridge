@@ -3,7 +3,8 @@ import DiscordInstance from "../DiscordInstance"
 
 export enum Permission {
     ANYONE,
-    STAFF,
+    HELPER,
+    OFFICER,
     ADMIN
 }
 
