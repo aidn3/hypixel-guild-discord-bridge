@@ -41,6 +41,13 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
             new ChatManager(this),
         ]
 
+        this.app.on("restartSignal", async event => {
+            if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
+                this.logger.log("instance has received restart signal")
+                await this.connect()
+            }
+        })
+
         this.app.on("minecraftCommandResponse", async (event: MinecraftCommandResponse) => {
             if (event.instanceName !== this.instanceName) {
                 await this.send(this.formatChatMessage("gc", event.username, undefined, event.fullCommand))

@@ -156,7 +156,8 @@ export interface ApplicationEvents {
      */
     'selfBroadcast': (event: InstanceSelfBroadcast) => void
     /**
-     * Command used to restart an instance
+     * Command used to restart an instance.
+     * Note: This is currently only registered in Minecraft instances
      */
     'restartSignal': (event: InstanceRestartSignal) => void
 

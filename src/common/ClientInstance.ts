@@ -17,18 +17,9 @@ export abstract class ClientInstance<K> {
         this.logger = getLogger(instanceName)
         this.config = config
         this.status = Status.FRESH
-
-        this.app.on("restartSignal", event => this.onRestartSignal(event.targetInstanceName))
     }
 
     abstract connect(): Promise<void>
-
-    private async onRestartSignal(targetInstanceName: string | null) {
-        if (targetInstanceName === null || targetInstanceName === this.instanceName) {
-            this.logger.log("instance has received restart signal")
-            await this.connect()
-        }
-    }
 }
 
 export enum Status {
