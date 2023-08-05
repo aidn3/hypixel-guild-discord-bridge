@@ -54,7 +54,7 @@ minecraft:
   bridgePrefix: "."
 
 # Webhook connections to other guilds/discord servers
-# This is used if the guild/community isn't within the admins jurisdiction.
+# This is used if the guild/community isn't within the admins' jurisdiction.
 # Formatted as "receive webhook id,full webhook send url"
 # Keep the field blank if you wish to send/receive and not the other
 webhooks:
