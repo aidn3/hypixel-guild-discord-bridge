@@ -22,6 +22,12 @@ export interface ChatEvent extends InformEvent {
 }
 
 export enum EventType {
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * Indicates an automated response/action.
+     * Used for custom plugins, etc.
+     */
+    AUTOMATED = "automated",
     REQUEST = "request",
     JOIN = "join",
     LEAVE = "leave",
