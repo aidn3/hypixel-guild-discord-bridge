@@ -27,6 +27,7 @@ import * as Events from "events";
 import {getLogger, Logger} from "log4js";
 import {ApplicationConfig} from "./ApplicationConfig";
 import SocketInstance from "./instance/socket/SocketInstance";
+import * as path from "path";
 
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
@@ -43,6 +44,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     constructor(config: ApplicationConfig) {
         super()
         this.logger = getLogger("Application")
+        this.logger.trace("Application initiating")
         emitAll(this) // first thing to redirect all events
         this.config = config
 
@@ -77,13 +79,23 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         }
 
         if (this.config.plugins.enabled) {
-            this.plugins = fs.readdirSync('./src/plugins/')
-                .filter(file => file.endsWith('Plugin.ts'))
-                .map(f => {
-                    this.logger.trace(`Loading Plugin ${f}`)
-                    return require(`./plugins/${f}`).default
-                })
+            const mainPath = require.main?.path ?? process.cwd()
+            this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
+            let paths
 
+            if (this.config.plugins.paths === undefined) {
+                this.logger.warn('Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme')
+                paths = fs.readdirSync('./src/plugins/')
+                    .filter(file => file.endsWith('Plugin.ts'))
+                    .map(f => path.resolve(mainPath, 'src/plugins', f))
+            } else {
+                paths = this.config.plugins.paths.map(p => path.isAbsolute(p) ? p : path.resolve(mainPath, p))
+            }
+
+            this.plugins = paths.map(f => {
+                this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
+                return require(f).default
+            })
         } else {
             this.plugins = []
         }

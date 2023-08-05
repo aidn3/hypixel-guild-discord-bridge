@@ -76,6 +76,7 @@ export interface ApplicationConfig {
 export interface PluginsConfig {
     enabled: boolean
     allowSocketInstance: boolean
+    paths?: string[]
 }
 
 export interface ProfanityFilterConfig {
