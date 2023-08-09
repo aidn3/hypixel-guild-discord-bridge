@@ -105,6 +105,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     }
 
     async send(message: string): Promise<void> {
+        this.logger.debug(`Queuing message to send: ${message}`)
         return commandsLimiter.wait().then(() => {
             if (this?.client?.player) {
                 this.client.chat(message)
