@@ -14,6 +14,7 @@
   ],
   "include": [
     "src/**/*",
+    "src",
     ".env",
     "package.json",
     "index.ts"
