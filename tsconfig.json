@@ -5,7 +5,8 @@
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "node",
-    "outDir": "build"
+    "outDir": "build",
+    "resolveJsonModule": true
   },
   "exclude": [
     "node_modules",
