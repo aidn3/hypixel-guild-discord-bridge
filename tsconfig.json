@@ -10,12 +10,10 @@
   },
   "exclude": [
     "node_modules",
-    "build",
-    "node_modules"
+    "build"
   ],
   "include": [
     "src/**/*",
-    "config",
     ".env",
     "package.json",
     "index.ts"
