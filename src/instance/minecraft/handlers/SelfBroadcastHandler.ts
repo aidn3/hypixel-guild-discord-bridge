@@ -1,29 +1,26 @@
 import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance from "../MinecraftInstance"
-import {LOCATION} from "../../../common/ClientInstance"
+import MinecraftInstance from '../MinecraftInstance'
+import { LOCATION } from '../../../common/ClientInstance'
 
 export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance> {
+  registerEvents (): void {
+    this.clientInstance.client?.on('spawn', () => {
+      this.onSpawn()
+    })
+  }
 
-    constructor(clientInstance: MinecraftInstance) {
-        super(clientInstance)
+  private onSpawn (): void {
+    const username = this.clientInstance.username()
+    const uuid = this.clientInstance.uuid()
+
+    if (username !== undefined && uuid !== undefined) {
+      this.clientInstance.app.emit('minecraftSelfBroadcast', {
+        localEvent: true,
+        instanceName: this.clientInstance.instanceName,
+        location: LOCATION.MINECRAFT,
+        uuid,
+        username
+      })
     }
-
-    registerEvents() {
-        this.clientInstance.client?.on("spawn", () => this.onSpawn())
-    }
-
-    private onSpawn() {
-        let username = this.clientInstance.username()
-        let uuid = this.clientInstance.uuid()
-
-        if (username && uuid) {
-            this.clientInstance.app.emit("minecraftSelfBroadcast", {
-                localEvent: true,
-                instanceName: this.clientInstance.instanceName,
-                location: LOCATION.MINECRAFT,
-                uuid: uuid,
-                username: username
-            })
-        }
-    }
+  }
 }

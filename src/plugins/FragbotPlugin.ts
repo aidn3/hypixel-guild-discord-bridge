@@ -52,7 +52,7 @@ class FragbotPlugin {
   }
 
   async partyInvite (message: string): Promise<void> {
-    const regex = /^(?:\[[A-Z+]{3,10}\] )?(\w{3,32}) has invited you to join their party!$/gm
+    const regex = /^(?:\[[A-Z+]{3,10}] )?(\w{3,32}) has invited you to join their party!$/gm
 
     const match = regex.exec(message)
     if (match != null) {

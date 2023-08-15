@@ -1,4 +1,6 @@
-import {Message, TextChannel} from "discord.js"
+import { Message, TextChannel } from 'discord.js'
+// @ts-expect-error type not exist
+import * as emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji (message: string): string {
   return message.replace(/<:(\w+):\d{16,}>/g, match => {
@@ -22,42 +24,40 @@ export function cleanMessage (messageEvent: Message): string {
   content = cleanGuildEmoji(content)
   content = cleanStandardEmoji(content).trim()
 
-    if (messageEvent.attachments) {
-        messageEvent.attachments.forEach(attachment => {
-            if (attachment.contentType?.includes("image")) {
-                content += ` ${attachment.url}`
-            } else {
-                content += ` (ATTACHMENT)`
-            }
-        })
-    }
+  if (messageEvent.attachments.size > 0) {
+    messageEvent.attachments.forEach(attachment => {
+      if (attachment.contentType?.includes('image') === true) {
+        content += ` ${attachment.url}`
+      } else {
+        content += ' (ATTACHMENT)'
+      }
+    })
+  }
 
   return content
 }
 
-export const escapeDiscord = function (message: string) {
-    if (!message) return ""
-
-    message = message.split('\\').join('\\\\') // "\"
-    message = message.split('_').join('\\_') // Italic
-    message = message.split('*').join('\\*') // bold
-    message = message.split('~').join('\\~') // strikethrough
-    message = message.split('`').join('\\`') // code
-    message = message.split('@').join('\\@-') // mentions
+export const escapeDiscord = function (message: string): string {
+  message = message.split('\\').join('\\\\') // "\"
+  message = message.split('_').join('\\_') // Italic
+  message = message.split('*').join('\\*') // bold
+  message = message.split('~').join('\\~') // strikethrough
+  message = message.split('`').join('\\`') // code
+  message = message.split('@').join('\\@-') // mentions
 
   return message
 }
 
-export const getReplyUsername = async function (messageEvent: Message) {
-    if (!messageEvent.reference || !messageEvent.reference.messageId) return
+export const getReplyUsername = async function (messageEvent: Message): Promise<string | undefined> {
+  if ((messageEvent.reference == null) || messageEvent.reference.messageId === undefined) return
 
-    let channel = messageEvent.channel as TextChannel
-    let replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
-    if (replyMessage.webhookId) return replyMessage.author.username
+  const channel = messageEvent.channel as TextChannel
+  const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
+  if (replyMessage.webhookId !== null) return replyMessage.author.username
 
-    if (!messageEvent.guild) return
-    let guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)
-    return guildMember.displayName
+  if (messageEvent.guild == null) return
+  const guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)
+  return guildMember.displayName
 }
 
 export const getReadableName = function (username: string, id: string): string {
