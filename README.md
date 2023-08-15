@@ -109,7 +109,7 @@ From Discord: `/override /guild party`
 
 "Webhooks can send messages to a text channel without having to log in as a bot."  
 It is used if the targeted community isn't within the admins' jurisdiction.  
-Used to avoid giving any account login information (e.g. password, tokens, etc) or running the cluster in one server.
+Used to avoid giving any account login information (e.g. password, tokens, etc.) or running the cluster in one server.
 
 ### Receive Messages
 
