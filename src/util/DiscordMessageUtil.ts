@@ -1,28 +1,26 @@
 import {Message, TextChannel} from "discord.js"
 
-const emojisMap = require("emoji-name-map")
-
-function cleanGuildEmoji(message: string) {
-    return message.replace(/<:(\w+):\d{16,}>/g, match => {
-        return match
-            .substring(1, match.length - 1)
-            .replace(/\d{16,}/g, "")
-    })
+function cleanGuildEmoji (message: string): string {
+  return message.replace(/<:(\w+):\d{16,}>/g, match => {
+    return match
+      .substring(1, match.length - 1)
+      .replace(/\d{16,}/g, '')
+  })
 }
 
-function cleanStandardEmoji(message: string) {
-    for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
-        message = message.replaceAll(<string>emojiUnicode, `:${emojiReadable}:`)
-    }
+function cleanStandardEmoji (message: string): string {
+  for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
+    message = message.replaceAll(emojiUnicode as string, `:${emojiReadable}:`)
+  }
 
-    return message
+  return message
 }
 
-export function cleanMessage(messageEvent: Message) {
-    let content = messageEvent.cleanContent
+export function cleanMessage (messageEvent: Message): string {
+  let content = messageEvent.cleanContent
 
-    content = cleanGuildEmoji(content)
-    content = cleanStandardEmoji(content).trim()
+  content = cleanGuildEmoji(content)
+  content = cleanStandardEmoji(content).trim()
 
     if (messageEvent.attachments) {
         messageEvent.attachments.forEach(attachment => {
@@ -34,7 +32,7 @@ export function cleanMessage(messageEvent: Message) {
         })
     }
 
-    return content
+  return content
 }
 
 export const escapeDiscord = function (message: string) {
@@ -47,7 +45,7 @@ export const escapeDiscord = function (message: string) {
     message = message.split('`').join('\\`') // code
     message = message.split('@').join('\\@-') // mentions
 
-    return message
+  return message
 }
 
 export const getReplyUsername = async function (messageEvent: Message) {
@@ -62,11 +60,11 @@ export const getReplyUsername = async function (messageEvent: Message) {
     return guildMember.displayName
 }
 
-export const getReadableName = function (username: string, id: string) {
-    username = username.trim().slice(0, 16)
+export const getReadableName = function (username: string, id: string): string {
+  username = username.trim().slice(0, 16)
 
-    if (/^\w+$/.test(username)) return username
-    if (username.includes(" ")) return username.split(" ")[0]
+  if (/^\w+$/.test(username)) return username
+  if (username.includes(' ')) return username.split(' ')[0]
 
-    return id
+  return id
 }
