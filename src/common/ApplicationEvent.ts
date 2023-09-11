@@ -10,6 +10,11 @@ interface InformEvent extends BaseEvent {
 }
 
 interface SignalEvent extends BaseEvent {
+  /**
+   * null is strictly used for global target.
+   * undefined must never be used to make sure
+   * in case of stray undefined being passed due to misconfigured instance name.
+   */
   targetInstanceName: string | null
 }
 
