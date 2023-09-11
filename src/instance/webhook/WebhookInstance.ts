@@ -14,14 +14,14 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     super(app, instanceName, LOCATION.WEBHOOK, config)
 
     this.discordBot = discordBot
-    if (config.sendUrl !== undefined) this.client = new WebhookClient({ url: config.sendUrl })
+    if (config.sendUrl != null) this.client = new WebhookClient({ url: config.sendUrl })
 
     this.app.on('chat', (event: ChatEvent): void => {
       if (event.instanceName === this.instanceName) return
       if (event.scope !== SCOPE.PUBLIC) return
 
       // TODO: integrate instanceName into webhook messages
-      const displayUsername = event.replyUsername !== undefined ? `${event.username}▸${event.replyUsername}` : event.username
+      const displayUsername = event.replyUsername != null ? `${event.username}▸${event.replyUsername}` : event.username
 
       void this.client?.send({
         content: escapeDiscord(event.message),
@@ -32,7 +32,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   }
 
   async connect (): Promise<void> {
-    if (this.config.receiveId !== undefined) {
+    if (this.config.receiveId != null) {
       if (this.discordBot != null) {
         this.discordBot.on('messageCreate', message => {
           this.onChatMessage(message)
@@ -49,7 +49,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     const content = cleanMessage(event)
     if (content.length === 0) return
 
-    if (this.app.punishedUsers.mutedTill(event.member?.displayName ?? event.author.displayName) !== undefined) {
+    if (this.app.punishedUsers.mutedTill(event.member?.displayName ?? event.author.displayName) != null) {
       this.logger.debug(`${event.author.username} is muted. ignoring this webhook message.`)
       return
     }

@@ -53,7 +53,7 @@ export const getReplyUsername = async function (messageEvent: Message): Promise<
 
   const channel = messageEvent.channel as TextChannel
   const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
-  if (replyMessage.webhookId !== null) return replyMessage.author.username
+  if (replyMessage.webhookId != null) return replyMessage.author.username
 
   if (messageEvent.guild == null) return
   const guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)

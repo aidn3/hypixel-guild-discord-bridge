@@ -99,7 +99,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
   uuid (): string | undefined {
     const uuid = this.client?.player?.uuid
-    return uuid !== undefined ? uuid.split('-').join('') : undefined
+    return uuid != null ? uuid.split('-').join('') : undefined
   }
 
   async send (message: string): Promise<void> {
@@ -117,7 +117,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     if (this.app.config.general.displayInstanceName) full += `[${this.instanceName}] `
 
     full += username
-    if (replyUsername !== undefined) full += `⇾${replyUsername}`
+    if (replyUsername != null) full += `⇾${replyUsername}`
     full += `: ${message}`
 
     return full

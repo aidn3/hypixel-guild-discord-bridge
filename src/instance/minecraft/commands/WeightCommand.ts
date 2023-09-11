@@ -11,7 +11,7 @@ export default {
   triggers: ['weight', 'w'],
   enabled: true,
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] !== undefined ? args[0] : username
+    const givenUsername = args[0] != null ? args[0] : username
     return `${givenUsername}'s weight: ${await getSenitherData(givenUsername)}`
   }
 } satisfies MinecraftCommandMessage

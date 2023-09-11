@@ -17,7 +17,7 @@ export default {
         playerMessage.startsWith(clientInstance.config.bridgePrefix)) {
         return
       }
-      if (clientInstance.app.punishedUsers.mutedTill(username) !== undefined) return
+      if (clientInstance.app.punishedUsers.mutedTill(username) != null) return
       if (clientInstance.app.clusterHelper.isMinecraftBot(username)) return
       // NOTE: Changed after ESLINT
       void commandsManager.publicCommandHandler(clientInstance, username, playerMessage)

@@ -128,7 +128,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     if (permissionLevel === Permission.ANYONE || interaction.user.id === this.clientInstance.config.adminId) return true
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
-    if (roles === undefined) return false
+    if (roles == null) return false
 
     let highestPerm = Permission.ANYONE
     if (roles.cache.some((role) => this.clientInstance.config?.helperRoleIds?.some(id => role.id === id))) highestPerm = Permission.HELPER

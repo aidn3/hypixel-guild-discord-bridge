@@ -84,6 +84,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
       let paths
 
+      // check strictly for undefined key
       if (this.config.plugins.paths === undefined) {
         this.logger.warn('Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme')
         paths = fs.readdirSync('./src/plugins/')

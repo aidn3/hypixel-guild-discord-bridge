@@ -80,7 +80,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       if (_channelId === event.channelId) continue
 
       const webhook = await this.getWebhook(_channelId)
-      const displayUsername = event.replyUsername !== undefined ? `${event.username}⇾${event.replyUsername}` : event.username
+      const displayUsername = event.replyUsername != null ? `${event.username}⇾${event.replyUsername}` : event.username
 
       // TODO: integrate instanceName
       await webhook.send({
@@ -123,7 +123,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
     for (const channelId of channels) {
       const channel = await this.client.channels.fetch(channelId) as unknown as TextChannel | null
-      if (channel === null) return
+      if (channel == null) return
 
       const embed = {
         description: escapeDiscord(event.message),
@@ -133,7 +133,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
           text: event.instanceName
         }
       }
-      if (event.username !== undefined) {
+      if (event.username != null) {
         const extra = {
           title: escapeDiscord(event.username),
           url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
@@ -158,7 +158,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
     for (const channelId of this.config.publicChannelIds) {
       const channel: TextChannel | null = await this.client.channels.fetch(channelId) as unknown as TextChannel
-      if (channel === null) continue
+      if (channel == null) continue
 
       await channel.send({
         embeds: [{

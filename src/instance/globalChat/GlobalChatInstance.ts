@@ -17,7 +17,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   }
 
   async connect (): Promise<void> {
-    if (this.config.key === undefined || this.config.key === null) {
+    if (this.config.key == null) {
       this.logger.info('GlobalChat disabled since no key is given. Contact the developer for a key')
       return
     }
@@ -55,7 +55,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
 
     const username: string = parsed.displayName ?? parsed.username
 
-    if (this.app.punishedUsers.mutedTill(username) !== undefined) {
+    if (this.app.punishedUsers.mutedTill(username) != null) {
       this.logger.debug(`${username} is muted. ignoring this Global message.`)
       return
     }

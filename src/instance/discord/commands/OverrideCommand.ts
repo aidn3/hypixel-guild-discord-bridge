@@ -21,7 +21,7 @@ export default {
     // @ts-expect-error "getString" not defined in command interaction for some reason
     const instance: string | null = interaction.options.getString('instance')
 
-    if (instance !== null) {
+    if (instance != null) {
       clientInstance.app.clusterHelper.sendCommandToMinecraft(instance, command)
     } else {
       clientInstance.app.clusterHelper.sendCommandToAllMinecraft(command)

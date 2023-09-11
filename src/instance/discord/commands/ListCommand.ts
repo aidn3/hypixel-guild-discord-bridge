@@ -126,8 +126,8 @@ function formatLocation (username: string, session: Status): string {
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  if (session.game !== undefined) message += `playing __${escapeDiscord(session.game.name)}__`
-  if (session.mode !== undefined) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
+  if (session.game != null) message += `playing __${escapeDiscord(session.game.name)}__`
+  if (session.mode != null) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
   message += '*' // END discord markdown. italic
 
   return message

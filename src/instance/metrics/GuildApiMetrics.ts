@@ -31,14 +31,14 @@ export default class GuildApiMetrics {
 
   async collectMetrics (uuids: string[], hypixelKey: string): Promise<void> {
     for (const uuid of uuids) {
-      if (uuid === undefined || uuid === null) continue
+      if (uuid == null) continue
 
       // TODO: add better logger structure
       const guild = await axios.get(`https://api.hypixel.net/guild?key=${hypixelKey}&player=${uuid}`)
         .then((res: AxiosResponse) => res.data.guild)
         .catch(() => undefined)
 
-      if (guild === undefined) continue
+      if (guild == null) continue
 
       this.guildTotalXp.set({ name: guild.name_lower }, guild.exp)
 

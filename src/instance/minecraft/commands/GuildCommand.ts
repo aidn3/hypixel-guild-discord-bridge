@@ -14,17 +14,17 @@ export default {
   triggers: ['guild', 'guildOf', 'g'],
   enabled: true,
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] !== undefined ? args[0] : username
+    const givenUsername = args[0] != null ? args[0] : username
     const uuid = await mojang.lookupProfileAt(givenUsername)
       .then((p: { id: any }) => p.id)
 
-    if (uuid === undefined) {
+    if (uuid == null) {
       return `No such username! (given: ${givenUsername})`
     }
 
     const guild = await clientInstance.app.hypixelApi.getGuild('player', uuid, {})
     // TODO: make sure no guild works
-    if (guild === undefined) return `${givenUsername} is not in any guild.`
+    if (guild == null) return `${givenUsername} is not in any guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
     return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? 'unknown'}`

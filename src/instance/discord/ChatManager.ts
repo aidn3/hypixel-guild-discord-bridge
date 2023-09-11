@@ -33,7 +33,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (content.length === 0) return
 
     const replyUsername = await getReplyUsername(event)
-    const readableReplyUsername = replyUsername !== undefined ? getReadableName(replyUsername, replyUsername) : undefined
+    const readableReplyUsername = replyUsername != null ? getReadableName(replyUsername, replyUsername) : undefined
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = getReadableName(discordName, event.author?.id)
 
@@ -72,7 +72,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const mutedTill = punishedUsers.mutedTill(discordName) ??
       punishedUsers.mutedTill(readableName) ?? punishedUsers.mutedTill(event.author.id)
 
-    if (mutedTill !== undefined) {
+    if (mutedTill != null) {
       await event.reply({
         content: '*Looks like you are muted on the chat-bridge.*\n' +
           '*All messages you send won\'t reach any guild in-game or any other discord server.*\n' +
