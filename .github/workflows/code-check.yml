@@ -1,0 +1,46 @@
+name: 'Lint And Compile'
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  NODE_VERSION: '16'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install node dependencies
+        run: npm i
+
+      - name: Pretty and Eslint
+        run: npm run format
+
+      - name: Ensure a clean working directory
+        run: git diff --name-status --exit-code
+
+  compile:
+    name: Test Compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm i
+      - name: Test Compile TypeScript
+        run: npx tsc --noEmit
