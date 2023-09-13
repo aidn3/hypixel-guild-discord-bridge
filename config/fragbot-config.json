@@ -3,10 +3,5 @@
   "autoLeavePartyAfter": 10000,
   "whitelistGuild": true,
   "whitelisted_comment": "players who can party the client in-game without having to be in the guild",
-  "whitelisted": [
-    "Steve",
-    "Notch",
-    "Alex",
-    "aidn5"
-  ]
+  "whitelisted": ["Steve", "Notch", "Alex", "aidn5"]
 }
