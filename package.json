@@ -10,7 +10,8 @@
     "prettier": "npx prettier . --check",
     "prettier:fix": "npx prettier . --write",
     "format": "npm run prettier:fix && npm run lint:fix",
-    "test:compile": "npx tsc --noEmit"
+    "test:compile": "npx tsc --noEmit",
+    "validate": "npx prettier . --write --list-different && npx eslint . --fix && npx tsc --noEmit"
   },
   "license": "MIT",
   "keywords": [
