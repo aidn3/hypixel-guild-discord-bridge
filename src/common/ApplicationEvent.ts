@@ -49,6 +49,9 @@ export enum EventType {
   REPEAT = 'repeat',
   BLOCK = 'block',
 
+  /**
+   * @deprecated Command api in "event" event has been depreciated. It will be completely removed and replaced.
+   */
   COMMAND = 'command'
 }
 
@@ -94,6 +97,9 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 
 export interface InstanceSelfBroadcast extends InformEvent {}
 
+/**
+ * @deprecated Command api for a specific instance is deprecated. Use the more broad api events.
+ */
 export interface MinecraftCommandResponse extends InformEvent {
   username: string
   commandName: string
