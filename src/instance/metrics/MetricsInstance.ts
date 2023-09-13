@@ -4,7 +4,6 @@ import * as http from 'http'
 import * as url from 'url'
 import * as Client from 'prom-client'
 import ApplicationMetrics from './ApplicationMetrics'
-import GuildApiMetrics from './GuildApiMetrics'
 import GuildOnlineMetrics from './GuildOnlineMetrics'
 import MetricsConfig from './common/MetricsConfig'
 
@@ -13,7 +12,6 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly register
 
   private readonly applicationMetrics: ApplicationMetrics
-  private readonly guildApiMetrics: GuildApiMetrics
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
   constructor(app: Application, instanceName: string, config: MetricsConfig) {
@@ -24,7 +22,6 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     Client.collectDefaultMetrics({ register: this.register })
 
     this.applicationMetrics = new ApplicationMetrics(this.register, config.prefix)
-    this.guildApiMetrics = new GuildApiMetrics(this.register, config.prefix)
     this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
 
     app.on('event', (event) => {
@@ -59,13 +56,6 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
 
   private async collectMetrics(): Promise<void> {
     this.logger.debug('Collecting metrics')
-
-    if (this.config.useHypixelApi) {
-      await this.guildApiMetrics.collectMetrics(
-        this.app.clusterHelper.getMinecraftBotsUuid(),
-        this.app.clusterHelper.getHypixelApiKey()
-      )
-    }
 
     if (this.config.useIngameCommand) {
       await this.guildOnlineMetrics.collectMetrics(this.app)

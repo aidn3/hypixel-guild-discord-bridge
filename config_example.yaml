@@ -77,7 +77,7 @@ metrics:
   port: 9095
   # Prefix for prometheus metrics database
   prefix: 'guild_bridge_'
-  useHypixelApi: true
+  # Send commands ingame to collect information such as online guild members, etc.
   # Sending repeated automated commands nonstop can be illegal
   useIngameCommand: false
   # Time in seconds to collect metrics from api/ingame commands

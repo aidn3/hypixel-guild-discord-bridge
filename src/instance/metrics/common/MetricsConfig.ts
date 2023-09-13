@@ -3,7 +3,6 @@ export default interface MetricsConfig {
   enabled: boolean
   port: number
   prefix: string
-  useHypixelApi: boolean
   useIngameCommand: boolean
   interval: number
 }
