@@ -16,7 +16,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly guildApiMetrics: GuildApiMetrics
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
-  constructor (app: Application, instanceName: string, config: MetricsConfig) {
+  constructor(app: Application, instanceName: string, config: MetricsConfig) {
     super(app, instanceName, LOCATION.METRICS, config)
 
     this.register = new Client.Registry()
@@ -27,13 +27,13 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     this.guildApiMetrics = new GuildApiMetrics(this.register, config.prefix)
     this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
 
-    app.on('event', event => {
+    app.on('event', (event) => {
       this.applicationMetrics.onClientEvent(event)
     })
-    app.on('chat', event => {
+    app.on('chat', (event) => {
       this.applicationMetrics.onChatEvent(event)
     })
-    app.on('command', event => {
+    app.on('command', (event) => {
       this.applicationMetrics.onCommandEvent(event)
     })
 
@@ -57,7 +57,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     })
   }
 
-  private async collectMetrics (): Promise<void> {
+  private async collectMetrics(): Promise<void> {
     this.logger.debug('Collecting metrics')
 
     if (this.config.useHypixelApi) {
@@ -72,7 +72,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }
   }
 
-  async connect (): Promise<void> {
+  async connect(): Promise<void> {
     if (!this.config.enabled) {
       this.status = Status.FAILED
       return

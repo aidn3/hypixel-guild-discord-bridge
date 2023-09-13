@@ -7,15 +7,19 @@ export default class ClusterHelper {
   private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
   private readonly instancesNames = new Map<LOCATION, Set<string>>()
 
-  constructor (app: Application) {
+  constructor(app: Application) {
     this.app = app
 
-    this.app.on('minecraftSelfBroadcast', event => this.minecraftBots.set(event.instanceName, event))
-    this.app.on('instance', event => { this.instanceBroadcast(event.instanceName, event.location) })
-    this.app.on('selfBroadcast', event => { this.instanceBroadcast(event.instanceName, event.location) })
+    this.app.on('minecraftSelfBroadcast', (event) => this.minecraftBots.set(event.instanceName, event))
+    this.app.on('instance', (event) => {
+      this.instanceBroadcast(event.instanceName, event.location)
+    })
+    this.app.on('selfBroadcast', (event) => {
+      this.instanceBroadcast(event.instanceName, event.location)
+    })
   }
 
-  sendCommandToMinecraft (instanceName: string, command: string): void {
+  sendCommandToMinecraft(instanceName: string, command: string): void {
     this.app.emit('minecraftSend', {
       localEvent: true,
       targetInstanceName: instanceName,
@@ -23,7 +27,7 @@ export default class ClusterHelper {
     })
   }
 
-  sendCommandToAllMinecraft (command: string): void {
+  sendCommandToAllMinecraft(command: string): void {
     this.app.emit('minecraftSend', {
       localEvent: true,
       targetInstanceName: null,
@@ -31,13 +35,13 @@ export default class ClusterHelper {
     })
   }
 
-  getMinecraftBotsUuid (): string[] {
+  getMinecraftBotsUuid(): string[] {
     const uuids: string[] = []
     this.minecraftBots.forEach((v) => uuids.push(v.uuid))
     return uuids
   }
 
-  getInstancesNames (location: LOCATION): string[] {
+  getInstancesNames(location: LOCATION): string[] {
     const instanceNames = this.instancesNames.get(location)
     if (instanceNames == null) return []
 
@@ -48,7 +52,7 @@ export default class ClusterHelper {
     return result
   }
 
-  isMinecraftBot (username: string): boolean {
+  isMinecraftBot(username: string): boolean {
     for (const value of this.minecraftBots.values()) {
       if (username === value.username) return true
     }
@@ -56,7 +60,7 @@ export default class ClusterHelper {
     return false
   }
 
-  private instanceBroadcast (instanceName: string, location: LOCATION): void {
+  private instanceBroadcast(instanceName: string, location: LOCATION): void {
     let collection = this.instancesNames.get(location)
     if (collection == null) {
       collection = new Set<string>()
@@ -66,9 +70,9 @@ export default class ClusterHelper {
   }
 
   /**
-     * @deprecated
-     */
-  getHypixelApiKey (): string {
+   * @deprecated
+   */
+  getHypixelApiKey(): string {
     return this.app.hypixelApi.key
   }
 }

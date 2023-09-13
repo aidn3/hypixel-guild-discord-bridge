@@ -15,21 +15,25 @@ enum Button {
   BACK
 }
 
-export async function pageMessage (interaction: CommandInteraction, pages: Array<JSONEncodable<APIEmbed>>, duration = 60_000): Promise<Message> {
+export async function pageMessage(
+  interaction: CommandInteraction,
+  pages: Array<JSONEncodable<APIEmbed>>,
+  duration = 60_000
+): Promise<Message> {
   let currentPage = 0
   const channel: TextBasedChannel = interaction.channel as TextChannel
 
   const nextInteraction = channel.createMessageComponentCollector({
-    filter: i => i.customId === `${interaction.id}-${Button.NEXT}` && i.user.id === interaction.user.id,
+    filter: (i) => i.customId === `${interaction.id}-${Button.NEXT}` && i.user.id === interaction.user.id,
     time: duration
   })
   const backInteraction = channel.createMessageComponentCollector({
-    filter: i => i.customId === `${interaction.id}-${Button.BACK}` && i.user.id === interaction.user.id,
+    filter: (i) => i.customId === `${interaction.id}-${Button.BACK}` && i.user.id === interaction.user.id,
     time: duration
   })
 
   let lastResponse = pages[currentPage]
-  nextInteraction.on('collect', async i => {
+  nextInteraction.on('collect', async (i) => {
     currentPage++
     lastResponse = pages[currentPage]
 
@@ -38,7 +42,7 @@ export async function pageMessage (interaction: CommandInteraction, pages: Array
       components: [createButtons(interaction.id, currentPage, pages.length)]
     })
   })
-  backInteraction.on('collect', async i => {
+  backInteraction.on('collect', async (i) => {
     currentPage--
     lastResponse = pages[currentPage]
 
@@ -62,7 +66,7 @@ export async function pageMessage (interaction: CommandInteraction, pages: Array
   })
 }
 
-function createButtons (interactionId: string, currentPage: number, totalPages: number): any {
+function createButtons(interactionId: string, currentPage: number, totalPages: number): any {
   return new ActionRowBuilder()
     .addComponents(
       new ButtonBuilder()
@@ -75,5 +79,6 @@ function createButtons (interactionId: string, currentPage: number, totalPages: 
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage + 1 >= totalPages)
-    ).toJSON()
+    )
+    .toJSON()
 }

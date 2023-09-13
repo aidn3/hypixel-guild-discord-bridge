@@ -24,7 +24,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   private readonly handlers
   client: MineFlayer.Bot | undefined
 
-  constructor (app: Application, instanceName: string, config: MinecraftConfig) {
+  constructor(app: Application, instanceName: string, config: MinecraftConfig) {
     super(app, instanceName, LOCATION.MINECRAFT, config)
 
     this.status = Status.FRESH
@@ -38,7 +38,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       new ChatManager(this)
     ]
 
-    this.app.on('restartSignal', event => {
+    this.app.on('restartSignal', (event) => {
       // null is strictly checked due to api specification
       if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
@@ -76,7 +76,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
   }
 
-  async connect (): Promise<void> {
+  async connect(): Promise<void> {
     if (this.client != null) this.client.quit()
 
     this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
@@ -88,30 +88,35 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       message: 'Minecraft instance has been created'
     })
 
-    this.handlers.forEach(handler => {
+    this.handlers.forEach((handler) => {
       handler.registerEvents()
     })
   }
 
-  username (): string | undefined {
+  username(): string | undefined {
     return this.client?.player?.username
   }
 
-  uuid (): string | undefined {
+  uuid(): string | undefined {
     const uuid = this.client?.player?.uuid
     return uuid != null ? uuid.split('-').join('') : undefined
   }
 
-  async send (message: string): Promise<void> {
+  async send(message: string): Promise<void> {
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if ((this?.client?.player) != null) {
+      if (this?.client?.player != null) {
         this.client.chat(message)
       }
     })
   }
 
-  private formatChatMessage (prefix: string, username: string, replyUsername: string | undefined, message: string): string {
+  private formatChatMessage(
+    prefix: string,
+    username: string,
+    replyUsername: string | undefined,
+    message: string
+  ): string {
     let full = `/${prefix} ${this.config.bridgePrefix}`
 
     if (this.app.config.general.displayInstanceName) full += `[${this.instanceName}] `

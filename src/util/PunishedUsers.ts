@@ -1,14 +1,14 @@
 export class PunishedUsers {
-  private muted: Array<{ name: string, till: number }> = []
+  private muted: Array<{ name: string; till: number }> = []
 
-  mutedTill (name: string): number | undefined {
+  mutedTill(name: string): number | undefined {
     this.clean()
 
     const current = this.currentTime()
-    return this.muted.find(p => p.name.toLowerCase() === name.toLowerCase() && p.till > current)?.till
+    return this.muted.find((p) => p.name.toLowerCase() === name.toLowerCase() && p.till > current)?.till
   }
 
-  mute (name: string, time: number): void {
+  mute(name: string, time: number): void {
     this.clean()
     this.unmute(name)
 
@@ -16,16 +16,16 @@ export class PunishedUsers {
     this.muted.push({ name, till: current + time })
   }
 
-  unmute (name: string): void {
-    this.muted = this.muted.filter(p => p.name.toLowerCase() !== name.toLowerCase())
+  unmute(name: string): void {
+    this.muted = this.muted.filter((p) => p.name.toLowerCase() !== name.toLowerCase())
   }
 
-  private clean (): void {
+  private clean(): void {
     const current = this.currentTime()
-    this.muted = this.muted.filter(p => p.till > current)
+    this.muted = this.muted.filter((p) => p.till > current)
   }
 
-  private currentTime (): number {
+  private currentTime(): number {
     return Math.floor(new Date().getTime() / 1000)
   }
 }

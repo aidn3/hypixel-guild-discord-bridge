@@ -5,21 +5,23 @@ let prices = {}
 getPrices().then((data: any): void => {
   prices = data
 })
-setInterval(() => {
-  void (async () => {
-    prices = await getPrices()
-  })()
-}, 1000 * 60 * 5) // 5 minutes
+setInterval(
+  () => {
+    void (async () => {
+      prices = await getPrices()
+    })()
+  },
+  1000 * 60 * 5
+) // 5 minutes
 
-export async function getNetworth (profileData: any, bankBalance: number): Promise<number> {
+export async function getNetworth(profileData: any, bankBalance: number): Promise<number> {
   return calculateNetworth(profileData, bankBalance, {
     prices,
     onlyNetworth: true
-  })
-    .then((res: { networth: number }) => res.networth)
+  }).then((res: { networth: number }) => res.networth)
 }
 
-export function getSelectedProfile (playerUuid: string, profiles: Array<{ members: any[string] }>): any | undefined {
+export function getSelectedProfile(playerUuid: string, profiles: Array<{ members: any[string] }>): any | undefined {
   let selectedProfile = profiles[0]
   for (const profile of profiles) {
     if (profile.members[playerUuid].last_save > selectedProfile.members[playerUuid].last_save) {
@@ -29,7 +31,7 @@ export function getSelectedProfile (playerUuid: string, profiles: Array<{ member
   return selectedProfile
 }
 
-export function localizedNetworth (coins: number): string {
+export function localizedNetworth(coins: number): string {
   let suffix = ''
   if (coins > 1000) {
     coins = coins / 1000

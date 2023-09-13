@@ -8,11 +8,11 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
   private serverSocket: ServerSocket | undefined
   private clientSocket: ClientSocket | undefined
 
-  constructor (app: Application, instanceName: string, socketConfig: SocketConfig) {
+  constructor(app: Application, instanceName: string, socketConfig: SocketConfig) {
     super(app, instanceName, LOCATION.SOCKET, socketConfig)
   }
 
-  async connect (): Promise<void> {
+  async connect(): Promise<void> {
     if (this.serverSocket != null) {
       this.logger.trace('Socket Server exists. Shutting it down...')
       this.serverSocket.shutdown()

@@ -6,7 +6,7 @@ export default class GuildApiMetrics {
   private readonly guildGameXp
   private readonly guildMembersCount
 
-  constructor (register: Registry, prefix: string) {
+  constructor(register: Registry, prefix: string) {
     this.guildTotalXp = new Gauge({
       name: prefix + 'guild_exp_total',
       help: 'Guild experience (or GEXP) a guild accumulated',
@@ -29,12 +29,13 @@ export default class GuildApiMetrics {
     register.registerMetric(this.guildMembersCount)
   }
 
-  async collectMetrics (uuids: string[], hypixelKey: string): Promise<void> {
+  async collectMetrics(uuids: string[], hypixelKey: string): Promise<void> {
     for (const uuid of uuids) {
       if (uuid == null) continue
 
       // TODO: add better logger structure
-      const guild = await axios.get(`https://api.hypixel.net/guild?key=${hypixelKey}&player=${uuid}`)
+      const guild = await axios
+        .get(`https://api.hypixel.net/guild?key=${hypixelKey}&player=${uuid}`)
         .then((res: AxiosResponse) => res.data.guild)
         .catch(() => undefined)
 
@@ -44,10 +45,13 @@ export default class GuildApiMetrics {
 
       for (const gameType of Object.keys(guild.guildExpByGameType)) {
         const exp = guild.guildExpByGameType[gameType]
-        this.guildGameXp.set({
-          name: guild.name_lower,
-          type: gameType
-        }, exp)
+        this.guildGameXp.set(
+          {
+            name: guild.name_lower,
+            type: gameType
+          },
+          exp
+        )
       }
 
       this.guildMembersCount.set({ name: guild.name_lower }, guild.members.length)

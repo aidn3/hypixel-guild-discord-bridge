@@ -2,10 +2,10 @@
 // metrics(packageJson.name, packageJson.version)
 
 import { loadApplicationConfig } from './src/ApplicationConfig'
-import Application from './src/Application'
 import * as logConfig from './config/log4js-config.json'
 import { configure } from 'log4js'
 import * as packageJson from './package.json'
+import Application from './src/Application'
 
 console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
@@ -32,7 +32,8 @@ app.on('*', (name, ...args) => {
   logger.log(`[${name}] ${JSON.stringify(args)}`)
 })
 
-app.sendConnectSignal()
+app
+  .sendConnectSignal()
   .then(() => {
     logger.info('App is connected')
   })

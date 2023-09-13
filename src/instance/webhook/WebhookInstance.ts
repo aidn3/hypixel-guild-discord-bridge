@@ -10,7 +10,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private readonly discordBot: Client | null
   private readonly client: WebhookClient | undefined
 
-  constructor (app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
+  constructor(app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
     super(app, instanceName, LOCATION.WEBHOOK, config)
 
     this.discordBot = discordBot
@@ -31,10 +31,10 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     })
   }
 
-  async connect (): Promise<void> {
+  async connect(): Promise<void> {
     if (this.config.receiveId != null) {
       if (this.discordBot != null) {
-        this.discordBot.on('messageCreate', message => {
+        this.discordBot.on('messageCreate', (message) => {
           this.onChatMessage(message)
         })
       } else {
@@ -43,7 +43,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     }
   }
 
-  private onChatMessage (event: Message<any>): void {
+  private onChatMessage(event: Message<any>): void {
     if (event?.webhookId !== this.config.receiveId) return
 
     const content = cleanMessage(event)

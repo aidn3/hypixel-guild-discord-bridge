@@ -12,7 +12,7 @@ import { getEventListeners } from 'events'
  * Hence removing them will improve client stability
  */
 export default {
-  onRun (app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
+  onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
     app.on('instance', (event) => {
       if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
         const localInstance = getLocalInstance(event.instanceName)

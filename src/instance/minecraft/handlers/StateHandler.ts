@@ -7,14 +7,14 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts
   private exactDelay
 
-  constructor (clientInstance: MinecraftInstance) {
+  constructor(clientInstance: MinecraftInstance) {
     super(clientInstance)
 
     this.loginAttempts = 0
     this.exactDelay = 0
   }
 
-  registerEvents (): void {
+  registerEvents(): void {
     this.clientInstance.client?.on('login', () => {
       this.onLogin()
     })
@@ -26,7 +26,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     })
   }
 
-  private onLogin (): void {
+  private onLogin(): void {
     this.clientInstance.logger.info('Minecraft client ready, logged in')
 
     this.loginAttempts = 0
@@ -42,7 +42,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     })
   }
 
-  private onEnd (reason: string): void {
+  private onEnd(reason: string): void {
     if (this.clientInstance.status === Status.FAILED) {
       const reason = `Status is ${this.clientInstance.status}. no further retrying to reconnect.`
 
@@ -78,16 +78,16 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       }
     }
 
-    this.clientInstance.logger.error('Minecraft bot disconnected from server,' +
-      `attempting reconnect in ${loginDelay / 1000} seconds`)
+    this.clientInstance.logger.error(
+      'Minecraft bot disconnected from server,' + `attempting reconnect in ${loginDelay / 1000} seconds`
+    )
 
     this.clientInstance.app.emit('instance', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       location: LOCATION.MINECRAFT,
       type: InstanceEventType.disconnect,
-      message: 'Minecraft bot disconnected from server,' +
-        `attempting reconnect in ${loginDelay / 1000} seconds`
+      message: 'Minecraft bot disconnected from server,' + `attempting reconnect in ${loginDelay / 1000} seconds`
     })
 
     setTimeout(() => {
@@ -96,7 +96,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.clientInstance.status = Status.CONNECTING
   }
 
-  private onKicked (reason: string): void {
+  private onKicked(reason: string): void {
     this.clientInstance.logger.error(reason)
     this.clientInstance.logger.error(`Minecraft bot was kicked from server for "${reason.toString()}"`)
 
@@ -110,9 +110,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
         type: InstanceEventType.conflict,
-        message: 'Someone logged in from another place.\n' +
-          'Won\'t try to re-login.\n' +
-          'Restart to reconnect.'
+        message: 'Someone logged in from another place.\n' + "Won't try to re-login.\n" + 'Restart to reconnect.'
       })
     } else {
       this.clientInstance.app.emit('instance', {
@@ -120,7 +118,8 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
         type: InstanceEventType.kick,
-        message: `Client ${this.clientInstance.instanceName} has been kicked.\n` +
+        message:
+          `Client ${this.clientInstance.instanceName} has been kicked.\n` +
           'Attempting to reconnect will be made soon\n\n' +
           reason.toString()
       })

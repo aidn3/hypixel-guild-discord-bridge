@@ -2,15 +2,13 @@ import { Message, TextChannel } from 'discord.js'
 // @ts-expect-error type not exist
 import * as emojisMap from 'emoji-name-map'
 
-function cleanGuildEmoji (message: string): string {
-  return message.replace(/<:(\w+):\d{16,}>/g, match => {
-    return match
-      .substring(1, match.length - 1)
-      .replace(/\d{16,}/g, '')
+function cleanGuildEmoji(message: string): string {
+  return message.replace(/<:(\w+):\d{16,}>/g, (match) => {
+    return match.substring(1, match.length - 1).replace(/\d{16,}/g, '')
   })
 }
 
-function cleanStandardEmoji (message: string): string {
+function cleanStandardEmoji(message: string): string {
   for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
     message = message.replaceAll(emojiUnicode as string, `:${emojiReadable}:`)
   }
@@ -18,14 +16,14 @@ function cleanStandardEmoji (message: string): string {
   return message
 }
 
-export function cleanMessage (messageEvent: Message): string {
+export function cleanMessage(messageEvent: Message): string {
   let content = messageEvent.cleanContent
 
   content = cleanGuildEmoji(content)
   content = cleanStandardEmoji(content).trim()
 
   if (messageEvent.attachments.size > 0) {
-    messageEvent.attachments.forEach(attachment => {
+    messageEvent.attachments.forEach((attachment) => {
       if (attachment.contentType?.includes('image') === true) {
         content += ` ${attachment.url}`
       } else {
@@ -49,7 +47,7 @@ export const escapeDiscord = function (message: string): string {
 }
 
 export const getReplyUsername = async function (messageEvent: Message): Promise<string | undefined> {
-  if ((messageEvent.reference == null) || messageEvent.reference.messageId === undefined) return
+  if (messageEvent.reference == null || messageEvent.reference.messageId === undefined) return
 
   const channel = messageEvent.channel as TextChannel
   const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)

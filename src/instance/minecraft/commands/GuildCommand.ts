@@ -15,8 +15,7 @@ export default {
   enabled: true,
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
     const givenUsername = args[0] != null ? args[0] : username
-    const uuid = await mojang.lookupProfileAt(givenUsername)
-      .then((p: { id: any }) => p.id)
+    const uuid = await mojang.lookupProfileAt(givenUsername).then((p: { id: any }) => p.id)
 
     if (uuid == null) {
       return `No such username! (given: ${givenUsername})`

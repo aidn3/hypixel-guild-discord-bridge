@@ -10,7 +10,7 @@ export abstract class ClientInstance<K> {
 
   status: Status
 
-  protected constructor (app: Application, instanceName: string, location: LOCATION, config: K) {
+  protected constructor(app: Application, instanceName: string, location: LOCATION, config: K) {
     this.app = app
     this.instanceName = instanceName
     this.location = location
@@ -19,7 +19,7 @@ export abstract class ClientInstance<K> {
     this.status = Status.FRESH
   }
 
-  abstract connect (): Promise<void>
+  abstract connect(): Promise<void>
 }
 
 export enum Status {
@@ -38,7 +38,7 @@ export enum Status {
   /**
    * Instance has decided to shut down for a critical reason
    */
-  FAILED,
+  FAILED
 }
 
 export enum LOCATION {
@@ -52,4 +52,8 @@ export enum LOCATION {
   GLOBAL = 'global'
 }
 
-export enum SCOPE {OFFICER = 'officer', PUBLIC = 'public', PRIVATE = 'private'}
+export enum SCOPE {
+  OFFICER = 'officer',
+  PUBLIC = 'public',
+  PRIVATE = 'private'
+}

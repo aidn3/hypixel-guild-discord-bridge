@@ -9,36 +9,48 @@ import { EventType } from '../../common/ApplicationEvent'
 export class CommandsManager extends EventHandler<MinecraftInstance> {
   private readonly commands: MinecraftCommandMessage[]
 
-  constructor (clientInstance: MinecraftInstance) {
+  constructor(clientInstance: MinecraftInstance) {
     super(clientInstance)
 
-    this.commands = fs.readdirSync('./src/instance/minecraft/commands')
+    this.commands = fs
+      .readdirSync('./src/instance/minecraft/commands')
       .filter((file: string) => file.endsWith('Command.ts'))
       .map((f: string) => {
         clientInstance.logger.trace(`Loading command ${f}`)
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         return require(`./commands/${f}`).default
       })
-      .filter((command: MinecraftCommandMessage) => !command.triggers.some((trigger: string) => clientInstance.config.disabledCommand.includes(trigger.toLowerCase())))
+      .filter(
+        (command: MinecraftCommandMessage) =>
+          !command.triggers.some((trigger: string) =>
+            clientInstance.config.disabledCommand.includes(trigger.toLowerCase())
+          )
+      )
   }
 
-  async publicCommandHandler (minecraftInstance: MinecraftInstance, username: string, message: string): Promise<boolean> {
+  async publicCommandHandler(
+    minecraftInstance: MinecraftInstance,
+    username: string,
+    message: string
+  ): Promise<boolean> {
     if (!message.startsWith(minecraftInstance.config.commandPrefix)) return false
 
     const commandName = message.substring(minecraftInstance.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const args = message.split(' ').slice(1)
 
     if (commandName === 'toggle' && username === minecraftInstance.config.adminUsername && args.length > 0) {
-      const command = this.commands.find(c => c.triggers.some((t: string) => t === args[0]))
+      const command = this.commands.find((c) => c.triggers.some((t: string) => t === args[0]))
       if (command == null) return false
 
       command.enabled = !command.enabled
-      await minecraftInstance.send(`/gc @Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`)
+      await minecraftInstance.send(
+        `/gc @Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`
+      )
       return true
     }
 
-    const command = this.commands.find(c => c.triggers.some((t: string) => t === commandName))
-    if ((command == null) || !command.enabled) return false
+    const command = this.commands.find((c) => c.triggers.some((t: string) => t === commandName))
+    if (command == null || !command.enabled) return false
 
     minecraftInstance.app.emit('command', {
       localEvent: true,
@@ -77,7 +89,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
     return true
   }
 
-  async privateCommandHandler (minecraftInstance: MinecraftInstance, username: string, message: string): Promise<void> {
+  async privateCommandHandler(minecraftInstance: MinecraftInstance, username: string, message: string): Promise<void> {
     if (username !== minecraftInstance.config.adminUsername) return
 
     minecraftInstance.logger.debug(`${username} executed from private chat: ${message}`)
@@ -95,6 +107,5 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
     await minecraftInstance.send(message)
   }
 
-  registerEvents (): void {
-  }
+  registerEvents(): void {}
 }

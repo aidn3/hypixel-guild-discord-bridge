@@ -16,10 +16,10 @@ const MESSAGES = [
 ]
 
 export default {
-  onRun (app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
-    app.on('event', event => {
+  onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
+    app.on('event', (event) => {
       if (event.name !== EventType.JOIN) return
-      if (!app.config.plugins.allowSocketInstance && (getLocalInstance(event.instanceName) == null)) return
+      if (!app.config.plugins.allowSocketInstance && getLocalInstance(event.instanceName) == null) return
 
       let message = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
       message = message.replaceAll('%s', event.username as string)

@@ -6,7 +6,7 @@ import { Logger } from 'log4js'
 export default class ClientSocket {
   private readonly client: Socket
 
-  constructor (app: Application, logger: Logger, uri: string, key: string) {
+  constructor(app: Application, logger: Logger, uri: string, key: string) {
     this.client = io(uri, {
       transports: ['websocket'],
       auth: { key }
@@ -36,7 +36,7 @@ export default class ClientSocket {
     })
   }
 
-  public shutdown (): void {
+  public shutdown(): void {
     this.client.close()
   }
 }

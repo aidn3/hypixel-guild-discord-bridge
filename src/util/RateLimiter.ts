@@ -6,16 +6,16 @@ export default class RateLimiter {
   private lastRequest = 0
   private lastReset = 0
 
-  constructor (count: number, interval: number) {
+  constructor(count: number, interval: number) {
     this.maxCount = count
     this.interval = interval
   }
 
-  execute (func: ((value: any) => any) | null | undefined): void {
+  execute(func: ((value: any) => any) | null | undefined): void {
     void this.wait().then(func)
   }
 
-  async wait (): Promise<void> {
+  async wait(): Promise<void> {
     let currentTime
     while (true) {
       currentTime = new Date().getTime()
@@ -30,7 +30,7 @@ export default class RateLimiter {
         break
       }
 
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     this.currentCount++

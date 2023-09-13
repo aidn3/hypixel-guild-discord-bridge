@@ -4,14 +4,13 @@ import request = require('https')
 const METRICS_URL = 'https://metrics.aidn5.com/'
 const FREQUENCY = 5 * 60 * 1000 // 5 minutes
 
-function sendIntervalMetrics (name: string | undefined, version: string | undefined): void {
+function sendIntervalMetrics(name: string | undefined, version: string | undefined): void {
   name = name ?? process.title
-  name = name
-    .replaceAll('-', '_')
-    .replaceAll(' ', '_')
+  name = name.replaceAll('-', '_').replaceAll(' ', '_')
   version = version ?? process.env.npm_package_version
 
-  const url = METRICS_URL +
+  const url =
+    METRICS_URL +
     `?name=${name}` +
     `&application_version=${process.version ?? 'null'}` + // for nodejs version range support
     `&client_version=${version ?? 'null'}` + // for long-term support, backward compatibility.

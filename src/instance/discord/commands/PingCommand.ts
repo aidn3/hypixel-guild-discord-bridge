@@ -3,13 +3,12 @@ import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 
-function createPing (latency: number, websocket: number, lag: number): any {
+function createPing(latency: number, websocket: number, lag: number): any {
   return {
     color: ColorScheme.DEFAULT,
     title: 'Discord Ping',
-    description: `**Latency:** ${latency}ms\n` +
-      `**Websocket heartbeat:** ${websocket}ms.\n` +
-      `**Server lag:** ${lag}ms`,
+    description:
+      `**Latency:** ${latency}ms\n` + `**Websocket heartbeat:** ${websocket}ms.\n` + `**Server lag:** ${lag}ms`,
     footer: {
       text: DefaultCommandFooter
     }
@@ -17,9 +16,7 @@ function createPing (latency: number, websocket: number, lag: number): any {
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('ping')
-    .setDescription('Discord Ping'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord Ping'),
   permission: Permission.ANYONE,
   allowInstance: false,
 

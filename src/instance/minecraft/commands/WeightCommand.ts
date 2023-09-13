@@ -16,12 +16,12 @@ export default {
   }
 } satisfies MinecraftCommandMessage
 
-async function getSenitherData (username: string): Promise<number> {
-  const profiles: any[] = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`)
-    .then((res: AxiosResponse) => res.data.profiles)
+async function getSenitherData(username: string): Promise<number> {
+  const profiles: any[] = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
+    (res: AxiosResponse) => res.data.profiles
+  )
 
-  const weight = Object.values(profiles)
-    .find(profile => profile.current).data.weight.senither
+  const weight = Object.values(profiles).find((profile) => profile.current).data.weight.senither
 
   return Math.floor(weight.overall ?? 0)
 }

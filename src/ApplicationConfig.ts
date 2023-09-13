@@ -8,7 +8,7 @@ import MetricsConfig from './instance/metrics/common/MetricsConfig'
 import MinecraftConfig from './instance/minecraft/common/MinecraftConfig'
 import { SocketConfig } from './instance/socket/common/SocketConfig'
 
-export function loadApplicationConfig (filepath: fs.PathOrFileDescriptor): ApplicationConfig {
+export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): ApplicationConfig {
   const fileString = fs.readFileSync(filepath, 'utf8')
   const config = YAML.parse(fileString)
 
@@ -26,7 +26,7 @@ export function loadApplicationConfig (filepath: fs.PathOrFileDescriptor): Appli
   }
 }
 
-function parseMinecraftInstances (minecraftYaml: any & { instances: any[] }): MinecraftConfig[] {
+function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }): MinecraftConfig[] {
   const arr: MinecraftConfig[] = []
 
   for (const instanceYaml of minecraftYaml.instances) {

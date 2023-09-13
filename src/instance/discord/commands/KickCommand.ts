@@ -3,17 +3,16 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('kick')
-    .setDescription('kick player out of the guild in-game')
-    .addStringOption(option =>
-      option.setName('username')
-        .setDescription('Username of the player')
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName('reason')
-        .setDescription('reason to kick the player')
-        .setRequired(true)) as SlashCommandBuilder,
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .setName('kick')
+      .setDescription('kick player out of the guild in-game')
+      .addStringOption((option) =>
+        option.setName('username').setDescription('Username of the player').setRequired(true)
+      )
+      .addStringOption((option) =>
+        option.setName('reason').setDescription('reason to kick the player').setRequired(true)
+      ) as SlashCommandBuilder,
   permission: Permission.OFFICER,
   allowInstance: false,
 

@@ -15,23 +15,21 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
   readonly client: Client
 
-  constructor (app: Application, instanceName: string, config: DiscordConfig) {
+  constructor(app: Application, instanceName: string, config: DiscordConfig) {
     super(app, instanceName, LOCATION.DISCORD, config)
     this.status = Status.FRESH
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),
       intents: [
-        GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
       ]
     })
 
-    this.handlers = [
-      new StateHandler(this),
-      new ChatManager(this),
-      new CommandManager(this)
-    ]
+    this.handlers = [new StateHandler(this), new ChatManager(this), new CommandManager(this)]
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')
@@ -56,14 +54,14 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
   }
 
-  async connect (): Promise<void> {
-    this.handlers.forEach(handler => {
+  async connect(): Promise<void> {
+    this.handlers.forEach((handler) => {
       handler.registerEvents()
     })
     await this.client.login(this.config.key)
   }
 
-  private async onChat (event: ChatEvent): Promise<void> {
+  private async onChat(event: ChatEvent): Promise<void> {
     // webhooks received in same channel
     if (event.location === LOCATION.WEBHOOK) return
 
@@ -94,7 +92,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private lastRepeatEvent = 0
   private lastBlockEvent = 0
 
-  private async onEvent (event: ClientEvent): Promise<void> {
+  private async onEvent(event: ClientEvent): Promise<void> {
     if (event.instanceName === this.instanceName) return
 
     if (event.name === EventType.REPEAT) {
@@ -122,7 +120,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
 
     for (const channelId of channels) {
-      const channel = await this.client.channels.fetch(channelId) as unknown as TextChannel | null
+      const channel = (await this.client.channels.fetch(channelId)) as unknown as TextChannel | null
       if (channel == null) return
 
       const embed = {
@@ -146,36 +144,43 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
       if (event.removeLater) {
         const deleteAfter = this.config.deleteTempEventAfter
-        setTimeout(() => {
-          void resP.then(async res => await res.delete())
-        }, deleteAfter * 60 * 1000)
+        setTimeout(
+          () => {
+            void resP.then(async (res) => await res.delete())
+          },
+          deleteAfter * 60 * 1000
+        )
       }
     }
   }
 
-  private async onInstance (event: InstanceEvent): Promise<void> {
+  private async onInstance(event: InstanceEvent): Promise<void> {
     if (event.instanceName === this.instanceName) return
 
     for (const channelId of this.config.publicChannelIds) {
-      const channel: TextChannel | null = await this.client.channels.fetch(channelId) as unknown as TextChannel
+      const channel: TextChannel | null = (await this.client.channels.fetch(channelId)) as unknown as TextChannel
       if (channel == null) continue
 
-      await channel.send({
-        embeds: [{
-          title: escapeDiscord(event.instanceName),
-          description: escapeDiscord(event.message),
-          color: ColorScheme.INFO
-        }]
-      }).then(undefined)
+      await channel
+        .send({
+          embeds: [
+            {
+              title: escapeDiscord(event.instanceName),
+              description: escapeDiscord(event.message),
+              color: ColorScheme.INFO
+            }
+          ]
+        })
+        .then(undefined)
     }
   }
 
-  private async getWebhook (channelId: string): Promise<Webhook> {
-    const channel = await this.client.channels.fetch(channelId) as unknown as TextBasedChannelFields | null
+  private async getWebhook(channelId: string): Promise<Webhook> {
+    const channel = (await this.client.channels.fetch(channelId)) as unknown as TextBasedChannelFields | null
     if (channel == null) throw new Error(`no access to channel ${channelId}?`)
     const webhooks = await channel.fetchWebhooks()
 
-    let webhook = webhooks.find(h => h.owner?.id === this.client.user?.id)
+    let webhook = webhooks.find((h) => h.owner?.id === this.client.user?.id)
     if (webhook == null) webhook = await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
     return webhook
   }

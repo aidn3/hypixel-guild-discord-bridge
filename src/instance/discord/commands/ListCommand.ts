@@ -12,7 +12,7 @@ import { pageMessage } from '../../../util/DiscordPager'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mojang = require('mojang')
 
-function createEmbed (instances: Map<string, string[]>): Array<JSONEncodable<APIEmbed>> {
+function createEmbed(instances: Map<string, string[]>): Array<JSONEncodable<APIEmbed>> {
   const entries: string[] = []
   let total = 0
 
@@ -58,9 +58,7 @@ function createEmbed (instances: Map<string, string[]>): Array<JSONEncodable<API
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('list')
-    .setDescription('List Online Players'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
   permission: Permission.ANYONE,
   allowInstance: false,
 
@@ -89,11 +87,12 @@ const listMembers = async function (app: Application, hypixelApi: Client): Promi
   return onlineProfiles
 }
 
-async function look (hypixelApi: Client, members: string[]): Promise<string[]> {
-  const onlineProfiles = await lookupProfiles(members)
-    .then(profiles => profiles.sort((a, b) => a.name.localeCompare(b.name)))
+async function look(hypixelApi: Client, members: string[]): Promise<string[]> {
+  const onlineProfiles = await lookupProfiles(members).then((profiles) =>
+    profiles.sort((a, b) => a.name.localeCompare(b.name))
+  )
 
-  const statuses = await Promise.all(onlineProfiles.map(async profile => await hypixelApi.getStatus(profile.id)))
+  const statuses = await Promise.all(onlineProfiles.map(async (profile) => await hypixelApi.getStatus(profile.id)))
 
   const list = []
   for (let i = 0; i < onlineProfiles.length; i++) {
@@ -103,7 +102,7 @@ async function look (hypixelApi: Client, members: string[]): Promise<string[]> {
 }
 
 // Mojang only allow up to 10 usernames per lookup
-async function lookupProfiles (usernames: string[]): Promise<any[]> {
+async function lookupProfiles(usernames: string[]): Promise<any[]> {
   const mojangRequests = []
 
   // https://stackoverflow.com/a/8495740
@@ -117,10 +116,10 @@ async function lookupProfiles (usernames: string[]): Promise<any[]> {
   }
 
   const p = await Promise.all(mojangRequests)
-  return p.flatMap(arr => arr)
+  return p.flatMap((arr) => arr)
 }
 
-function formatLocation (username: string, session: Status): string {
+function formatLocation(username: string, session: Status): string {
   let message = `- **${escapeDiscord(username)}** `
 
   if (!session.online) return message + ' is *__offline?__*'
@@ -133,7 +132,7 @@ function formatLocation (username: string, session: Status): string {
   return message
 }
 
-async function getOnlineMembers (app: Application): Promise<Map<string, string[]>> {
+async function getOnlineMembers(app: Application): Promise<Map<string, string[]>> {
   const resolvedNames = new Map<string, string[]>()
   const regexOnline = /(\w{3,16}) \u25CF/g
 
@@ -154,13 +153,13 @@ async function getOnlineMembers (app: Application): Promise<Map<string, string[]
 
   app.on('minecraftChat', chatListener)
   app.clusterHelper.sendCommandToAllMinecraft('/guild online')
-  await new Promise(resolve => setTimeout(resolve, 3000))
+  await new Promise((resolve) => setTimeout(resolve, 3000))
   app.removeListener('minecraftChat', chatListener)
 
   return resolvedNames
 }
 
-function unique<T> (list: T[]): T[] {
+function unique<T>(list: T[]): T[] {
   return list.filter(function (item, pos) {
     return list.indexOf(item) === pos
   })

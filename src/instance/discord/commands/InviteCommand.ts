@@ -3,13 +3,13 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 const COMMAND: DiscordCommandInterface = {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('invite')
-    .setDescription('invite player to the guild in-game')
-    .addStringOption(option =>
-      option.setName('username')
-        .setDescription('Username of the player')
-        .setRequired(true)) as SlashCommandBuilder,
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .setName('invite')
+      .setDescription('invite player to the guild in-game')
+      .addStringOption((option) =>
+        option.setName('username').setDescription('Username of the player').setRequired(true)
+      ) as SlashCommandBuilder,
   allowInstance: true,
 
   permission: Permission.HELPER,

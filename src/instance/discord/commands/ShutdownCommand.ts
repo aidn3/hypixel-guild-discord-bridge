@@ -3,9 +3,8 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('shutdown')
-    .setDescription('Send signal to shutdown the bridge'),
+  getCommandBuilder: () =>
+    new SlashCommandBuilder().setName('shutdown').setDescription('Send signal to shutdown the bridge'),
   allowInstance: false,
   permission: Permission.ADMIN,
 
@@ -20,8 +19,8 @@ export default {
 
     await interaction.editReply(
       'Shutdown signal has been sent.\n' +
-      'It will take some time for the bridge to shut down.\n' +
-      'Bridge will auto restart if a service monitor is used.'
+        'It will take some time for the bridge to shut down.\n' +
+        'Bridge will auto restart if a service monitor is used.'
     )
   }
 } satisfies DiscordCommandInterface

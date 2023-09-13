@@ -3,13 +3,13 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('override')
-    .setDescription('execute command to all clients in-game')
-    .addStringOption(option =>
-      option.setName('command')
-        .setDescription('command to execute. e.g. "/guild party"')
-        .setRequired(true)) as SlashCommandBuilder,
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .setName('override')
+      .setDescription('execute command to all clients in-game')
+      .addStringOption((option) =>
+        option.setName('command').setDescription('command to execute. e.g. "/guild party"').setRequired(true)
+      ) as SlashCommandBuilder,
   allowInstance: true,
   permission: Permission.ADMIN,
 

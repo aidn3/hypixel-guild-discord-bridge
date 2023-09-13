@@ -1,4 +1,4 @@
-export function sufficeToTime (suffice: string): number {
+export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
 
   if (suffice === 's' || suffice.length === 0) return 1 // default
@@ -9,7 +9,7 @@ export function sufficeToTime (suffice: string): number {
   throw new Error(`Unexpected suffice: ${suffice}. Need a new update to handle the new one`)
 }
 
-export function getDuration (short: string): number {
+export function getDuration(short: string): number {
   const regex = /(\d*)([smhd]*)/g
   const match = regex.exec(short)
 

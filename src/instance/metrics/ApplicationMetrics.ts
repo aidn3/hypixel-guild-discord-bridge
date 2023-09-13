@@ -6,7 +6,7 @@ export default class ApplicationMetrics {
   private readonly commandMetrics
   private readonly eventMetrics
 
-  constructor (register: Registry, prefix: string) {
+  constructor(register: Registry, prefix: string) {
     this.chatMetrics = new Counter({
       name: prefix + 'chat',
       help: 'Chat messages sent in guild-bridge.',
@@ -29,7 +29,7 @@ export default class ApplicationMetrics {
     register.registerMetric(this.eventMetrics)
   }
 
-  onChatEvent (event: ChatEvent): void {
+  onChatEvent(event: ChatEvent): void {
     this.chatMetrics.inc({
       location: event.location,
       scope: event.scope,
@@ -37,7 +37,7 @@ export default class ApplicationMetrics {
     })
   }
 
-  onCommandEvent (event: CommandEvent): void {
+  onCommandEvent(event: CommandEvent): void {
     this.commandMetrics.inc({
       location: event.location,
       scope: event.scope,
@@ -46,7 +46,7 @@ export default class ApplicationMetrics {
     })
   }
 
-  onClientEvent (event: ClientEvent): void {
+  onClientEvent(event: ClientEvent): void {
     this.eventMetrics.inc({
       location: event.location,
       scope: event.scope,

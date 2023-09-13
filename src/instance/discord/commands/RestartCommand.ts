@@ -3,9 +3,7 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('restart')
-    .setDescription('restart minecraft clients'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName('restart').setDescription('restart minecraft clients'),
   allowInstance: true,
   permission: Permission.HELPER,
 

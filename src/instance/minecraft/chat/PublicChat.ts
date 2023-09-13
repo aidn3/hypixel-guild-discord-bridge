@@ -13,8 +13,10 @@ export default {
       const username = match[1]
       const playerMessage = match[2].trim()
 
-      if (clientInstance.config.bridgePrefix.length > 0 &&
-        playerMessage.startsWith(clientInstance.config.bridgePrefix)) {
+      if (
+        clientInstance.config.bridgePrefix.length > 0 &&
+        playerMessage.startsWith(clientInstance.config.bridgePrefix)
+      ) {
         return
       }
       if (clientInstance.app.punishedUsers.mutedTill(username) != null) return

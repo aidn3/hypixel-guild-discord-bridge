@@ -8,7 +8,7 @@ export default class ServerSocket {
   private readonly server: Server
   private readonly key: string
 
-  constructor (app: Application, logger: Logger, port: number, key: string) {
+  constructor(app: Application, logger: Logger, port: number, key: string) {
     this.key = key
     this.server = new Server({ transports: ['websocket'] })
     this.server.listen(port)
@@ -18,8 +18,7 @@ export default class ServerSocket {
         return
       }
 
-      logger.warn('Socket Server has received' +
-        ` an authorized connection request from socket ${socket.id}.`)
+      logger.warn('Socket Server has received' + ` an authorized connection request from socket ${socket.id}.`)
       next(new Error('invalid key'))
     })
 
@@ -46,7 +45,7 @@ export default class ServerSocket {
     })
   }
 
-  public shutdown (): void {
+  public shutdown(): void {
     this.server.close()
   }
 }

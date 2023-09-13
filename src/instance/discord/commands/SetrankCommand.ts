@@ -5,17 +5,16 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder()
-    .setName('setrank')
-    .setDescription('setrank guild member in-game')
-    .addStringOption(option =>
-      option.setName('username')
-        .setDescription('Username of the player')
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName('rank')
-        .setDescription('rank to change to')
-        .setRequired(true)) as SlashCommandBuilder,
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .setName('setrank')
+      .setDescription('setrank guild member in-game')
+      .addStringOption((option) =>
+        option.setName('username').setDescription('Username of the player').setRequired(true)
+      )
+      .addStringOption((option) =>
+        option.setName('rank').setDescription('rank to change to').setRequired(true)
+      ) as SlashCommandBuilder,
   permission: Permission.HELPER,
   allowInstance: false,
 

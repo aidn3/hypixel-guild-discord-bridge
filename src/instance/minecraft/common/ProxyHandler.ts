@@ -5,7 +5,7 @@ import type { Client } from 'minecraft-protocol'
 import { ProxyProtocol } from '../../../common/ProxyInterface'
 import { Logger } from 'log4js'
 
-export function resolveProxyIfExist (logger: Logger, minecraftConfig: MinecraftConfig): Partial<ClientProxyOptions> {
+export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftConfig): Partial<ClientProxyOptions> {
   const proxyConfig = minecraftConfig.proxy
   if (proxyConfig == null) return {}
   logger.debug(`Proxy enabled with params: ${JSON.stringify(minecraftConfig.proxy)}`)
@@ -34,7 +34,7 @@ export function resolveProxyIfExist (logger: Logger, minecraftConfig: MinecraftC
   return { connect }
 }
 
-function createHttpConnectFunction (logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
@@ -65,7 +65,7 @@ function createHttpConnectFunction (logger: Logger, proxyHost: string, proxyPort
   }
 }
 
-function createSocksConnectFunction (logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
@@ -73,18 +73,19 @@ function createSocksConnectFunction (logger: Logger, proxyHost: string, proxyPor
       proxy: { host: proxyHost, port: proxyPort, type: 5 },
       command: 'connect',
       destination: { host, port }
-
-    }).then(connectionEstablished => {
-      logger.debug('connection to proxy established. forwarding proxied connection to minecraft')
-      client.setSocket(connectionEstablished.socket)
-      client.emit('connect')
-    }).catch(e => {
-      logger.error('proxy encountered a problem')
-      console.error(e)
-
-      logger.warn('ending minecraft session if any exist')
-      client.end()
     })
+      .then((connectionEstablished) => {
+        logger.debug('connection to proxy established. forwarding proxied connection to minecraft')
+        client.setSocket(connectionEstablished.socket)
+        client.emit('connect')
+      })
+      .catch((e) => {
+        logger.error('proxy encountered a problem')
+        console.error(e)
+
+        logger.warn('ending minecraft session if any exist')
+        client.end()
+      })
   }
 }
 

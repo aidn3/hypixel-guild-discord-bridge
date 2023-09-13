@@ -8,15 +8,15 @@ import GlobalConfig from './common/GlobalConfig'
 export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   private client: Socket | undefined
 
-  constructor (app: Application, instanceName: string, config: GlobalConfig) {
+  constructor(app: Application, instanceName: string, config: GlobalConfig) {
     super(app, instanceName, LOCATION.GLOBAL, config)
 
-    this.app.on('chat', event => {
+    this.app.on('chat', (event) => {
       void this.onMessageSend(event)
     })
   }
 
-  async connect (): Promise<void> {
+  async connect(): Promise<void> {
     if (this.config.key == null) {
       this.logger.info('GlobalChat disabled since no key is given. Contact the developer for a key')
       return
@@ -34,7 +34,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     })
   }
 
-  private async onMessageSend (event: ChatEvent): Promise<void> {
+  private async onMessageSend(event: ChatEvent): Promise<void> {
     if (event.instanceName === this.instanceName) return
 
     if (event.scope === SCOPE.PUBLIC) {
@@ -49,7 +49,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     }
   }
 
-  private onMessageReceive (payload: string): void {
+  private onMessageReceive(payload: string): void {
     const parsed = JSON.parse(payload)
     if (parsed.self === true) return
 

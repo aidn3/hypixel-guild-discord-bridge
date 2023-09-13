@@ -39,7 +39,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   readonly hypixelApi: HypixelClient
   readonly config: ApplicationConfig
 
-  constructor (config: ApplicationConfig) {
+  constructor(config: ApplicationConfig) {
     super()
     this.logger = getLogger('Application')
     this.logger.trace('Application initiating')
@@ -60,7 +60,14 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     for (const instanceConfig of this.config.webhooks) {
-      this.instances.push(new WebhookInstance(this, instanceConfig.instanceName, discordInstance != null ? discordInstance.client : null, instanceConfig))
+      this.instances.push(
+        new WebhookInstance(
+          this,
+          instanceConfig.instanceName,
+          discordInstance != null ? discordInstance.client : null,
+          instanceConfig
+        )
+      )
     }
 
     if (this.config.global.enabled) {
@@ -86,15 +93,18 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
       // check strictly for undefined key
       if (this.config.plugins.paths === undefined) {
-        this.logger.warn('Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme')
-        paths = fs.readdirSync('./src/plugins/')
-          .filter(file => file.endsWith('Plugin.ts'))
-          .map(f => path.resolve(mainPath, 'src/plugins', f))
+        this.logger.warn(
+          'Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme'
+        )
+        paths = fs
+          .readdirSync('./src/plugins/')
+          .filter((file) => file.endsWith('Plugin.ts'))
+          .map((f) => path.resolve(mainPath, 'src/plugins', f))
       } else {
-        paths = this.config.plugins.paths.map(p => path.isAbsolute(p) ? p : path.resolve(mainPath, p))
+        paths = this.config.plugins.paths.map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
       }
 
-      this.plugins = paths.map(f => {
+      this.plugins = paths.map((f) => {
         this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         return require(f).default
@@ -109,24 +119,24 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         this.logger.info('Node should auto restart if a process monitor service is used.')
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
 
-        void new Promise(resolve => setTimeout(resolve, 5000)).then(() => {
+        void new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {
           process.exit(2)
         })
       }
     })
   }
 
-  async sendConnectSignal (): Promise<void> {
+  async sendConnectSignal(): Promise<void> {
     this.broadcastLocalInstances()
 
     // only shared with plugins to directly modify instances
     // everything else is encapsulated
     const getLocalInstance = (instanceName: string): ClientInstance<any> | undefined => {
-      return this.instances.find(i => i.instanceName === instanceName)
+      return this.instances.find((i) => i.instanceName === instanceName)
     }
 
     this.logger.debug('Sending signal to all plugins')
-    this.plugins.forEach(p => p.onRun(this, getLocalInstance))
+    this.plugins.forEach((p) => p.onRun(this, getLocalInstance))
 
     for (const instance of this.instances) {
       this.logger.debug(`Connecting instance ${instance.instanceName}`)
@@ -134,7 +144,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
   }
 
-  public broadcastLocalInstances (): void {
+  public broadcastLocalInstances(): void {
     this.logger.debug('Informing instances of each other')
 
     for (const instance of this.instances) {
@@ -147,7 +157,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 }
 
-function emitAll (emitter: Events): void {
+function emitAll(emitter: Events): void {
   const old = emitter.emit
   emitter.emit = (event: string, ...args: Parameters<any>): boolean => {
     if (event !== '*') emitter.emit('*', event, ...args)
@@ -166,53 +176,53 @@ export interface ApplicationEvents {
   /**
    * User sending messages
    */
-  'chat': (event: ChatEvent) => void
+  chat: (event: ChatEvent) => void
   /**
    * User join/leave/offline/online/mute/kick/etc
    */
-  'event': (event: ClientEvent) => void
+  event: (event: ClientEvent) => void
   /**
    * User executing a command
    */
-  'command': (event: CommandEvent) => void
+  command: (event: CommandEvent) => void
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  'instance': (event: InstanceEvent) => void
+  instance: (event: InstanceEvent) => void
 
   /**
    * Broadcast instance to inform other applications nodes in cluster about its existence
    */
-  'selfBroadcast': (event: InstanceSelfBroadcast) => void
+  selfBroadcast: (event: InstanceSelfBroadcast) => void
   /**
    * Command used to restart an instance.
    * Note: This is currently only registered in Minecraft instances
    */
-  'restartSignal': (event: InstanceRestartSignal) => void
+  restartSignal: (event: InstanceRestartSignal) => void
 
   /**
    * Command used to shut down the bridge.
    * It will take some time for the bridge to shut down.
    * Bridge will auto restart if a service monitor is used.
    */
-  'shutdownSignal': (event: ShutdownSignal) => void
+  shutdownSignal: (event: ShutdownSignal) => void
 
   /**
    * Used to broadcast which in-game username/uuid belongs to which bot.
    * Useful to distinguish in-game between players and bots
    */
-  'minecraftSelfBroadcast': (event: MinecraftSelfBroadcast) => void
+  minecraftSelfBroadcast: (event: MinecraftSelfBroadcast) => void
   /**
    * Minecraft instance raw chat
    */
-  'minecraftChat': (event: MinecraftRawChatEvent) => void
+  minecraftChat: (event: MinecraftRawChatEvent) => void
   /**
    * Command used to send a chat message/command through a minecraft instance
    */
-  'minecraftSend': (event: MinecraftSendChat) => void
+  minecraftSend: (event: MinecraftSendChat) => void
 
   /**
    * Response of an executed command from minecraft instance
    */
-  'minecraftCommandResponse': (event: MinecraftCommandResponse) => void
+  minecraftCommandResponse: (event: MinecraftCommandResponse) => void
 }

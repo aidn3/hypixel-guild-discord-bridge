@@ -3,13 +3,13 @@ import MinecraftInstance from '../MinecraftInstance'
 import { LOCATION } from '../../../common/ClientInstance'
 
 export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance> {
-  registerEvents (): void {
+  registerEvents(): void {
     this.clientInstance.client?.on('spawn', () => {
       this.onSpawn()
     })
   }
 
-  private onSpawn (): void {
+  private onSpawn(): void {
     const username = this.clientInstance.username()
     const uuid = this.clientInstance.uuid()
 

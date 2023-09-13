@@ -8,9 +8,9 @@ import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '
 const BadWords = require('bad-words')
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
-  private readonly profanityFilter: { clean: (text: string) => string, removeWords: (...args: string[]) => void }
+  private readonly profanityFilter: { clean: (text: string) => string; removeWords: (...args: string[]) => void }
 
-  constructor (clientInstance: DiscordInstance) {
+  constructor(clientInstance: DiscordInstance) {
     super(clientInstance)
 
     this.profanityFilter = new BadWords({
@@ -19,13 +19,13 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     this.profanityFilter.removeWords(...clientInstance.app.config.profanityFilter.whitelisted)
   }
 
-  registerEvents (): void {
+  registerEvents(): void {
     this.clientInstance.client.on('messageCreate', async (message) => {
       await this.onMessage(message)
     })
   }
 
-  private async onMessage (event_: any): Promise<void> {
+  private async onMessage(event_: any): Promise<void> {
     const event = event_ as Message
     if (event.author.bot) return
 
@@ -37,7 +37,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = getReadableName(discordName, event.author?.id)
 
-    if (this.clientInstance.config.publicChannelIds.some(id => id === event.channel.id)) {
+    if (this.clientInstance.config.publicChannelIds.some((id) => id === event.channel.id)) {
       if (await this.hasBeenMuted(event, discordName, readableName)) return
       const filteredMessage = await this.proceedFiltering(event, content)
 
@@ -53,7 +53,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       })
     }
 
-    if (this.clientInstance.config.officerChannelIds.some(id => id === event.channel.id)) {
+    if (this.clientInstance.config.officerChannelIds.some((id) => id === event.channel.id)) {
       this.clientInstance.app.emit('chat', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
@@ -67,15 +67,18 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  async hasBeenMuted (event: Message, discordName: string, readableName: string): Promise<boolean> {
+  async hasBeenMuted(event: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishedUsers = this.clientInstance.app.punishedUsers
-    const mutedTill = punishedUsers.mutedTill(discordName) ??
-      punishedUsers.mutedTill(readableName) ?? punishedUsers.mutedTill(event.author.id)
+    const mutedTill =
+      punishedUsers.mutedTill(discordName) ??
+      punishedUsers.mutedTill(readableName) ??
+      punishedUsers.mutedTill(event.author.id)
 
     if (mutedTill != null) {
       await event.reply({
-        content: '*Looks like you are muted on the chat-bridge.*\n' +
-          '*All messages you send won\'t reach any guild in-game or any other discord server.*\n' +
+        content:
+          '*Looks like you are muted on the chat-bridge.*\n' +
+          "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
           `*Your mute will expire <t:${mutedTill}:R>!*`
       })
       return true
@@ -84,7 +87,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     return false
   }
 
-  async proceedFiltering (message: Message, content: string): Promise<string> {
+  async proceedFiltering(message: Message, content: string): Promise<string> {
     let filteredMessage: string
     try {
       filteredMessage = this.profanityFilter.clean(content)

@@ -26,13 +26,13 @@ class FragbotPlugin {
 
   private readonly queue: string[] = []
 
-  constructor (instanceName: string, clusterHelper: ClusterHelper, hypixelApi: Client) {
+  constructor(instanceName: string, clusterHelper: ClusterHelper, hypixelApi: Client) {
     this.instanceName = instanceName
     this.clusterHelper = clusterHelper
     this.hypixelApi = hypixelApi
   }
 
-  async loop (): Promise<never> {
+  async loop(): Promise<never> {
     // meant to always check for new entries in queue
     // thought of using sleep using promise and resolve() it when adding new player
     // idea dropped to avoid race condition
@@ -43,15 +43,15 @@ class FragbotPlugin {
         const username = this.queue.shift() as string
         this.clusterHelper.sendCommandToMinecraft(this.instanceName, `/p accept ${username}`)
 
-        await new Promise(resolve => setTimeout(resolve, this.config.autoLeavePartyAfter))
+        await new Promise((resolve) => setTimeout(resolve, this.config.autoLeavePartyAfter))
         this.clusterHelper.sendCommandToMinecraft(this.instanceName, '/p leave')
       } else {
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
   }
 
-  async partyInvite (message: string): Promise<void> {
+  async partyInvite(message: string): Promise<void> {
     const regex = /^(?:\[[A-Z+]{3,10}] )?(\w{3,32}) has invited you to join their party!$/gm
 
     const match = regex.exec(message)
@@ -62,7 +62,7 @@ class FragbotPlugin {
       if (this.config.whitelisted.some((p: string) => p.toLowerCase().trim() === username.toLowerCase().trim())) {
         this.logger.debug(`accepting ${username}'s party since they are whitelisted`)
         this.queue.push(username)
-      } else if (this.config.whitelistGuild && await this.isGuildMember(username)) {
+      } else if (this.config.whitelistGuild && (await this.isGuildMember(username))) {
         this.logger.debug(`accepting ${username}'s party since they are from the same guild`)
         this.queue.push(username)
       } else {
@@ -71,20 +71,19 @@ class FragbotPlugin {
     }
   }
 
-  private async isGuildMember (username: string): Promise<boolean> {
+  private async isGuildMember(username: string): Promise<boolean> {
     const uuid = await Mojang.lookupProfileAt(username).then((res: any) => res.id.toString())
 
-    const members = await this.hypixelApi.getGuild('player', uuid, {})
-      .then(res => res.members)
+    const members = await this.hypixelApi.getGuild('player', uuid, {}).then((res) => res.members)
 
     // bot in same guild
     const botsUuid = this.clusterHelper.getMinecraftBotsUuid()
-    return members.some(member => botsUuid.some(botUuid => botUuid === member.uuid))
+    return members.some((member) => botsUuid.some((botUuid) => botUuid === member.uuid))
   }
 }
 
 export default {
-  onRun (app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
+  onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
     const fragbotMap = new Map<string, FragbotPlugin>()
 
     app.on('minecraftChat', (event: MinecraftRawChatEvent) => {

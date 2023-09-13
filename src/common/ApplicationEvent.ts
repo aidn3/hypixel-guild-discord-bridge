@@ -49,7 +49,7 @@ export enum EventType {
   REPEAT = 'repeat',
   BLOCK = 'block',
 
-  COMMAND = 'command',
+  COMMAND = 'command'
 }
 
 export interface ClientEvent extends InformEvent {
@@ -69,9 +69,13 @@ export interface CommandEvent extends InformEvent {
 }
 
 export enum InstanceEventType {
-  create, start, end,
-  connect, disconnect,
-  conflict, kick,
+  create,
+  start,
+  end,
+  connect,
+  disconnect,
+  conflict,
+  kick
 }
 
 export interface InstanceEvent extends InformEvent {
@@ -88,8 +92,7 @@ export interface MinecraftSelfBroadcast extends InformEvent {
   uuid: string
 }
 
-export interface InstanceSelfBroadcast extends InformEvent {
-}
+export interface InstanceSelfBroadcast extends InformEvent {}
 
 export interface MinecraftCommandResponse extends InformEvent {
   username: string
@@ -102,8 +105,6 @@ export interface MinecraftSendChat extends SignalEvent {
   command: string
 }
 
-export interface InstanceRestartSignal extends SignalEvent {
-}
+export interface InstanceRestartSignal extends SignalEvent {}
 
-export interface ShutdownSignal extends SignalEvent {
-}
+export interface ShutdownSignal extends SignalEvent {}
