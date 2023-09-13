@@ -4,19 +4,10 @@
     "target": "es2021",
     "sourceMap": true,
     "strict": true,
+    "noImplicitAny": true,
     "moduleResolution": "node",
     "outDir": "build",
     "resolveJsonModule": true
   },
-  "exclude": [
-    "node_modules",
-    "build"
-  ],
-  "include": [
-    "src/**/*",
-    "src",
-    ".env",
-    "package.json",
-    "index.ts"
-  ]
+  "exclude": ["node_modules", "build"]
 }

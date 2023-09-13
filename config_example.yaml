@@ -1,37 +1,35 @@
 general:
   # Get Hypixel API by logging in-game and do `/api new`
-  hypixelApiKey: "55adcfd6-abcd-477d-1234-12341234123a"
+  hypixelApiKey: '55adcfd6-abcd-477d-1234-12341234123a'
   # add prefix to messages indicating its origin e.g. '[DC]'
   displayInstanceName: false
 
-
 discord:
-  instanceName: "Discord"
+  instanceName: 'Discord'
   # Create new discord bot from https://discordapp.com/developers and generate a secret key
-  key: "sgasihdgfiasgdiagsidiiagsd.sdfsaedf.aohdfoasfoieofi"
+  key: 'sgasihdgfiasgdiagsidiiagsd.sdfsaedf.aohdfoasfoieofi'
   # Discord ID of the USER who will have ADMIN permission
-  adminId: "730667783180493755"
+  adminId: '730667783180493755'
   # Show Chat and public events in this channel id
-  publicChannelIds: [ "876718702164050860","another_channel" ]
+  publicChannelIds: ['876718702164050860', 'another_channel']
   # Show Chat and public events in this channel id
-  officerChannelIds: [ "841257267059646432","another_channel" ]
+  officerChannelIds: ['841257267059646432', 'another_channel']
   # Discord ID of the role who will have HELPER permission
-  helperRoleIds: [ "803266248652835111","another_role" ]
+  helperRoleIds: ['803266248652835111', 'another_role']
   # Discord ID of the role who will have OFFICER permission
-  officerRoleIds: [ "803266248652835111","another_role" ]
+  officerRoleIds: ['803266248652835111', 'another_role']
   # Delete spam events from discord after x minutes
   deleteTempEventAfter: 15
 
-
 minecraft:
   # In-game USERNAME of the user who will have ADMIN permission
-  adminUsername: "Steve"
+  adminUsername: 'Steve'
 
   # Minecraft account details
   instances:
-    - instanceName: "Good-Name"
-      email: "email@example.com"
-      password: "password1234"
+    - instanceName: 'Good-Name'
+      email: 'email@example.com'
+      password: 'password1234'
       # This will be used when initiating connection to minecraft server
       # It will not be used for other purposes.
       # Leave empty or set it to null to disable
@@ -41,45 +39,44 @@ minecraft:
 
   # Options added to 'mineflayer' library. Used for bot instance connection
   botOptions:
-    host: "me.hypixel.net"
+    host: 'me.hypixel.net'
     port: 25565
-    version: "1.17.1"
+    version: '1.17.1'
 
   # change the prefix command in-game commands in guild public chat
-  commandPrefix: "!"
-  disabledCommand: [ "somecommand" ]
+  commandPrefix: '!'
+  disabledCommand: ['somecommand']
   # Put in front of every message.
   # Helpful if more than one bridge exists in same guild
   # So they ignore each other messages
-  bridgePrefix: "."
+  bridgePrefix: '.'
 
 # Webhook connections to other guilds/discord servers
 # This is used if the guild/community isn't within the admins' jurisdiction.
 # Formatted as "receive webhook id,full webhook send url"
 # Keep the field blank if you wish to send/receive and not the other
 webhooks:
-  - instanceName: "useful-webhook"
-    receiveId: "940251356249481432"
-    sendUrl: "https://discord.com/api/webhooks/..."
-
+  - instanceName: 'useful-webhook'
+    receiveId: '940251356249481432'
+    sendUrl: 'https://discord.com/api/webhooks/...'
 
 profanity:
   enabled: true
   whitelisted:
-    - "sadist"
-    - "hell"
-    - "damn"
-    - "god"
-    - "shit"
-    - "balls"
-    - "retard"
+    - 'sadist'
+    - 'hell'
+    - 'damn'
+    - 'god'
+    - 'shit'
+    - 'balls'
+    - 'retard'
 
 metrics:
-  instanceName: "prometheus"
+  instanceName: 'prometheus'
   enabled: false
   port: 9095
   # Prefix for prometheus metrics database
-  prefix: "guild_bridge_"
+  prefix: 'guild_bridge_'
   useHypixelApi: true
   # Sending repeated automated commands nonstop can be illegal
   useIngameCommand: false
@@ -92,31 +89,31 @@ metrics:
 # to prevent abuse
 global:
   enabled: false
-  instanceName: "Global"
-  key: "KEY-HERE"
-  hostname: "ws://chat.aidn5.com"
+  instanceName: 'Global'
+  key: 'KEY-HERE'
+  hostname: 'ws://chat.aidn5.com'
 
 # Used to connect multiple applications together to share all their events
 socket:
   enabled: false
   # Key authorization. required.
-  key: "SECRET-KEY"
+  key: 'SECRET-KEY'
   # IP address or URL to connect to the server as the Client
-  uri: "localhost:6090"
+  uri: 'localhost:6090'
   # type could either be "client" or "server"
   # Server: The main application core that runs everything and control other nodes
   # Client: A node with single connection to main application
-  type: "client"
+  type: 'client'
   # Port to listen as Server or to connect to as Client
   port: 6090
-  instanceName: "Socket"
+  instanceName: 'Socket'
 
 plugins:
   enabled: true
   allowSocketInstance: false
   paths:
-    - "./src/plugins/ExamplePlugin.ts"
-    - "./src/plugins/FragbotPlugin.ts"
-    - "./src/plugins/LimboPlugin.ts"
-    - "./src/plugins/RegexOptimizePlugin.ts"
-    - "./src/plugins/WelcomePlugin.ts"
+    - './src/plugins/ExamplePlugin.ts'
+    - './src/plugins/FragbotPlugin.ts'
+    - './src/plugins/LimboPlugin.ts'
+    - './src/plugins/RegexOptimizePlugin.ts'
+    - './src/plugins/WelcomePlugin.ts'
