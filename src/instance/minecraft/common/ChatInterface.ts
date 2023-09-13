@@ -1,13 +1,13 @@
-import MinecraftInstance from "../MinecraftInstance"
-import {CommandsManager} from "../CommandsManager"
+import MinecraftInstance from '../MinecraftInstance'
+import { CommandsManager } from '../CommandsManager'
 
 export interface MinecraftChatMessage {
-    onChat(clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void
+  onChat: (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string) => void
 }
 
 export interface MinecraftCommandMessage {
-    readonly triggers: string[]
-    enabled: boolean
+  readonly triggers: string[]
+  enabled: boolean
 
-    handler(clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string>
+  handler: (clientInstance: MinecraftInstance, username: string, args: string[]) => Promise<string>
 }

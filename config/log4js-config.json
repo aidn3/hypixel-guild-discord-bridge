@@ -14,10 +14,7 @@
   },
   "categories": {
     "default": {
-      "appenders": [
-        "logs",
-        "out"
-      ],
+      "appenders": ["logs", "out"],
       "level": "trace"
     }
   }

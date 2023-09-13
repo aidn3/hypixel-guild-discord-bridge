@@ -1,6 +1,6 @@
-import Application from "../Application"
-import {ClientInstance} from "./ClientInstance"
+import Application from '../Application'
+import { ClientInstance } from './ClientInstance'
 
 export default interface PluginInterface {
-    onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any
+  onRun: (app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined) => any
 }

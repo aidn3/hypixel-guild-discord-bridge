@@ -1,11 +1,11 @@
-import {ClientInstance} from "./ClientInstance"
+import { ClientInstance } from './ClientInstance'
 
 export default abstract class EventHandler<K extends ClientInstance<any>> {
-    clientInstance: K
+  clientInstance: K
 
-    protected constructor(clientInstance: K) {
-        this.clientInstance = clientInstance
-    }
+  constructor(clientInstance: K) {
+    this.clientInstance = clientInstance
+  }
 
-    abstract registerEvents(): void
+  abstract registerEvents(): void
 }

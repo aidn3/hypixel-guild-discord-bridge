@@ -1,77 +1,89 @@
-import {ClientInstance, LOCATION, Status} from "../../common/ClientInstance"
-import Application from "../../Application"
-import * as http from "http"
-import * as url from "url"
-import * as Client from "prom-client"
-import ApplicationMetrics from "./ApplicationMetrics"
-import GuildApiMetrics from "./GuildApiMetrics"
-import GuildOnlineMetrics from "./GuildOnlineMetrics"
-import MetricsConfig from "./common/MetricsConfig";
-
+import { ClientInstance, LOCATION, Status } from '../../common/ClientInstance'
+import Application from '../../Application'
+import * as http from 'http'
+import * as url from 'url'
+import * as Client from 'prom-client'
+import ApplicationMetrics from './ApplicationMetrics'
+import GuildApiMetrics from './GuildApiMetrics'
+import GuildOnlineMetrics from './GuildOnlineMetrics'
+import MetricsConfig from './common/MetricsConfig'
 
 export default class MetricsInstance extends ClientInstance<MetricsConfig> {
-    private readonly httpServer
-    private readonly register
+  private readonly httpServer
+  private readonly register
 
-    private readonly applicationMetrics: ApplicationMetrics
-    private readonly guildApiMetrics: GuildApiMetrics
-    private readonly guildOnlineMetrics: GuildOnlineMetrics
+  private readonly applicationMetrics: ApplicationMetrics
+  private readonly guildApiMetrics: GuildApiMetrics
+  private readonly guildOnlineMetrics: GuildOnlineMetrics
 
-    constructor(app: Application, instanceName: string, config: MetricsConfig) {
-        super(app, instanceName, LOCATION.METRICS, config)
+  constructor(app: Application, instanceName: string, config: MetricsConfig) {
+    super(app, instanceName, LOCATION.METRICS, config)
 
-        this.register = new Client.Registry()
-        this.register.setDefaultLabels({app: 'hypixel-guild-bridge'})
-        Client.collectDefaultMetrics({register: this.register})
+    this.register = new Client.Registry()
+    this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
+    Client.collectDefaultMetrics({ register: this.register })
 
-        this.applicationMetrics = new ApplicationMetrics(this.register, config.prefix)
-        this.guildApiMetrics = new GuildApiMetrics(this.register, config.prefix)
-        this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
+    this.applicationMetrics = new ApplicationMetrics(this.register, config.prefix)
+    this.guildApiMetrics = new GuildApiMetrics(this.register, config.prefix)
+    this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
 
-        app.on("event", event => this.applicationMetrics.onClientEvent(event))
-        app.on("chat", event => this.applicationMetrics.onChatEvent(event))
-        app.on("command", event => this.applicationMetrics.onCommandEvent(event))
+    app.on('event', (event) => {
+      this.applicationMetrics.onClientEvent(event)
+    })
+    app.on('chat', (event) => {
+      this.applicationMetrics.onChatEvent(event)
+    })
+    app.on('command', (event) => {
+      this.applicationMetrics.onCommandEvent(event)
+    })
 
-        setInterval(() => this.collectMetrics(), config.interval * 1000)
+    setInterval(() => {
+      void this.collectMetrics()
+    }, config.interval * 1000)
 
-        this.httpServer = http.createServer(async (req, res) => {
-            if (!req.url) return
-            const route = url.parse(req.url).pathname
-            if (route === '/metrics') {
-                this.logger.debug("Metrics scrap is called on /metrics")
-                res.setHeader('Content-Type', this.register.contentType)
-                res.end(await this.register.metrics())
-            }
-        })
+    this.httpServer = http.createServer((req, res) => {
+      // TODO: handle other paths and close the connection
+      if (req.url == null) return
+      // eslint-disable-next-line n/no-deprecated-api
+      const route = url.parse(req.url).pathname
+      if (route === '/metrics') {
+        this.logger.debug('Metrics scrap is called on /metrics')
+        res.setHeader('Content-Type', this.register.contentType)
+
+        void (async () => {
+          res.end(await this.register.metrics())
+        })()
+      }
+    })
+  }
+
+  private async collectMetrics(): Promise<void> {
+    this.logger.debug('Collecting metrics')
+
+    if (this.config.useHypixelApi) {
+      await this.guildApiMetrics.collectMetrics(
+        this.app.clusterHelper.getMinecraftBotsUuid(),
+        this.app.clusterHelper.getHypixelApiKey()
+      )
     }
 
-    private async collectMetrics(): Promise<void> {
-        this.logger.debug("Collecting metrics")
+    if (this.config.useIngameCommand) {
+      await this.guildOnlineMetrics.collectMetrics(this.app)
+    }
+  }
 
-        if (this.config.useHypixelApi) {
-            await this.guildApiMetrics.collectMetrics(
-                this.app.clusterHelper.getMinecraftBotsUuid(),
-                this.app.clusterHelper.getHypixelApiKey()
-            )
-        }
-
-        if (this.config.useIngameCommand) {
-            await this.guildOnlineMetrics.collectMetrics(this.app)
-        }
+  async connect(): Promise<void> {
+    if (!this.config.enabled) {
+      this.status = Status.FAILED
+      return
     }
 
-    async connect(): Promise<void> {
-        if (!this.config.enabled) {
-            this.status = Status.FAILED
-            return
-        }
+    this.status = Status.CONNECTING
+    this.logger.debug('prometheus is enabled')
 
-        this.status = Status.CONNECTING
-        this.logger.debug("prometheus is enabled")
+    this.logger.debug(`Listening on port ${this.config.port}`)
+    this.httpServer.listen(this.config.port)
 
-        this.logger.debug(`Listening on port ${this.config.port}`)
-        this.httpServer.listen(this.config.port)
-
-        this.status = Status.CONNECTED
-    }
+    this.status = Status.CONNECTED
+  }
 }
