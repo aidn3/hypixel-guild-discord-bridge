@@ -14,6 +14,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly handlers
 
   readonly client: Client
+  private connected: boolean = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
     super(app, instanceName, LOCATION.DISCORD, config)
@@ -55,6 +56,12 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   }
 
   async connect(): Promise<void> {
+    if (this.connected) {
+      this.logger.error('Instance already connected once. Calling connect() again will bug it. Returning...')
+      return
+    }
+    this.connected = true
+
     this.handlers.forEach((handler) => {
       handler.registerEvents()
     })

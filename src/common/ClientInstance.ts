@@ -19,6 +19,14 @@ export abstract class ClientInstance<K> {
     this.status = Status.FRESH
   }
 
+  /**
+   * Called when trying to connect or reconnecting or resetting connection
+   * The call can be either manually automatically.
+   *
+   * Make sure the inner client can be completely disposed of,
+   * since many listeners will listen to every connection.
+   * Not disposing of the old client may result in double listeners.
+   */
   abstract connect(): Promise<void>
 }
 

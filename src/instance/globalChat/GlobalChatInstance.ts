@@ -17,6 +17,8 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   }
 
   async connect(): Promise<void> {
+    if (this.client != null) this.client.close()
+
     if (this.config.key == null) {
       this.logger.info('GlobalChat disabled since no key is given. Contact the developer for a key')
       return

@@ -3,11 +3,15 @@ import MinecraftInstance from '../MinecraftInstance'
 import { MinecraftSendChat } from '../../../common/ApplicationEvent'
 
 export default class SendChatHandler extends EventHandler<MinecraftInstance> {
-  registerEvents(): void {
-    this.clientInstance.app.on('minecraftSend', (event) => {
+  constructor(minecraftInstance: MinecraftInstance) {
+    super(minecraftInstance)
+
+    minecraftInstance.app.on('minecraftSend', (event) => {
       void this.onCommand(event)
     })
   }
+
+  registerEvents(): void {}
 
   private async onCommand(event: MinecraftSendChat): Promise<void> {
     // null is strictly checked due to api specification

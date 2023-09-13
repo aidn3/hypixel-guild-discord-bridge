@@ -18,18 +18,8 @@ import { DiscordCommandInterface, Permission } from './common/DiscordCommandInte
 export class CommandManager extends EventHandler<DiscordInstance> {
   private readonly commands = new Collection<string, DiscordCommandInterface>()
 
-  registerEvents(): void {
-    const commandPath = './src/instance/discord/commands'
-    fs.readdirSync(commandPath)
-      .filter((file: string) => file.endsWith('Command.ts'))
-      .forEach((file: string) => {
-        const filePath = `./commands/${file}`
-        this.clientInstance.logger.debug(`Loading command ${filePath}`)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const command = require(filePath).default as DiscordCommandInterface
-
-        this.commands.set(command.getCommandBuilder().name, command)
-      })
+  constructor(discordInstance: DiscordInstance) {
+    super(discordInstance)
 
     let timeoutId: null | NodeJS.Timeout = null
     const timerReset = (): void => {
@@ -47,6 +37,20 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       }
     })
     timerReset()
+  }
+
+  registerEvents(): void {
+    const commandPath = './src/instance/discord/commands'
+    fs.readdirSync(commandPath)
+      .filter((file: string) => file.endsWith('Command.ts'))
+      .forEach((file: string) => {
+        const filePath = `./commands/${file}`
+        this.clientInstance.logger.debug(`Loading command ${filePath}`)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const command = require(filePath).default as DiscordCommandInterface
+
+        this.commands.set(command.getCommandBuilder().name, command)
+      })
 
     this.clientInstance.client.on('interactionCreate', async (interaction) => await this.interactionCreate(interaction))
     this.clientInstance.logger.debug('CommandManager is registered')

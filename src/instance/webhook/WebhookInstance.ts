@@ -9,6 +9,7 @@ import WebhookConfig from './common/WebhookConfig'
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private readonly discordBot: Client | null
   private readonly client: WebhookClient | undefined
+  private connected: boolean = false
 
   constructor(app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
     super(app, instanceName, LOCATION.WEBHOOK, config)
@@ -32,13 +33,24 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   }
 
   async connect(): Promise<void> {
+    // Need to redesign to support reconnecting.
+    // Check this commit for further information
+    if (this.connected) {
+      this.logger.error('Already connected once. Trying to reconnect again will bug this webhook. Returning.')
+      return
+    }
+    this.connected = true
+
     if (this.config.receiveId != null) {
       if (this.discordBot != null) {
         this.discordBot.on('messageCreate', (message) => {
           this.onChatMessage(message)
         })
       } else {
-        this.logger.warn('Discord instance is not setup. Webhook can not receive messages. Sending works though')
+        this.logger.warn(
+          'Discord instance is not setup. Webhook can not receive messages. ' +
+            'Sending will still work if a link is given though'
+        )
       }
     }
   }
