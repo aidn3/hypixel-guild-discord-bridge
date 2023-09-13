@@ -113,7 +113,6 @@ plugins:
   allowSocketInstance: false
   paths:
     - './src/plugins/ExamplePlugin.ts'
-    - './src/plugins/FragbotPlugin.ts'
     - './src/plugins/LimboPlugin.ts'
     - './src/plugins/RegexOptimizePlugin.ts'
     - './src/plugins/WelcomePlugin.ts'
