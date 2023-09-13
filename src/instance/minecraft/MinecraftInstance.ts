@@ -123,7 +123,12 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
     full += username
     if (replyUsername != null) full += `⇾${replyUsername}`
-    full += `: ${message}`
+    full += ': '
+    full += message
+      .split('\n')
+      .map((s) => s.trim())
+      .join(' ')
+      .trim()
 
     return full
   }
