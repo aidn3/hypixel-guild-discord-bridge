@@ -12,10 +12,10 @@ const LossMessages = [
 
 const WinMessages = [
   '%s you survived?!',
-  '%s lucky. Do it again!',
-  '%s alive? shame.',
-  "%s I'll get you next time",
-  '%s perhaps i forgot to load it?',
+  '%s, lucky. Do it again!',
+  '%s? Alive? shame.',
+  "%s, I'll get you next time",
+  '%s, perhaps I forgot to load it?',
   "%s you're crazy. Again again again!"
 ]
 
