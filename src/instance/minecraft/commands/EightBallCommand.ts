@@ -12,7 +12,7 @@ const ANSWERS = [
   'Better not tell you now.',
   'Cannot predict now.',
   'Concentrate and ask again.',
-  'Don’t count on it.',
+  "Don't count on it.",
   'It is certain.',
   'It is decidedly so.',
   'Most likely.',

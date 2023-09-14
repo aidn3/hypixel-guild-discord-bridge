@@ -23,7 +23,7 @@ export default {
 
     const guild = await clientInstance.app.hypixelApi.getGuild('player', uuid, {})
     // TODO: make sure no guild works
-    if (guild == null) return `${givenUsername} is not in any guild.`
+    if (guild == null) return `${givenUsername} is not in a guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
     return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? 'unknown'}`

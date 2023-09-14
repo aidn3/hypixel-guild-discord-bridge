@@ -7,10 +7,8 @@ export default {
 
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
     return (
-      `${username}, this is a bridge that connects guild's discord server` +
-      " with guild's chat. Any message you send will will go to the other" +
-      ' side. That way, you can chat with your friends within in-game from' +
-      ' the discord. Have fun while you are away!'
+      `${username}, I am a robot that connects this chat to discord!` +
+      'I have many commands you can use, see them all with !commands'
     )
   }
 } satisfies MinecraftCommandMessage
