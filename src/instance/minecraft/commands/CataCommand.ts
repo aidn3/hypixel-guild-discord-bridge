@@ -6,7 +6,7 @@ import { Client, SkyblockMember } from 'hypixel-api-reborn'
 const Mojang = require('mojang')
 
 export default {
-  triggers: ['catacomb', 'cata', 'c'],
+  triggers: ['catacomb', 'cata'],
   enabled: true,
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
     const givenUsername = args[0] != null ? args[0] : username
