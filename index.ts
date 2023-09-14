@@ -1,6 +1,3 @@
-// import metrics = require('./src/util/ApplicationMetric')
-// metrics(packageJson.name, packageJson.version)
-
 import { loadApplicationConfig } from './src/ApplicationConfig'
 import * as logConfig from './config/log4js-config.json'
 import { configure } from 'log4js'
