@@ -36,9 +36,9 @@ export default {
       await clientInstance.send(`/gc mute ${username} 15m`)
       clientInstance.app.punishedUsers.mute(username, 900)
 
-      return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', username as string)
+      return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', username)
     }
 
-    return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', username as string)
+    return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', username)
   }
 } satisfies MinecraftCommandMessage
