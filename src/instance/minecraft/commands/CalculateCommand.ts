@@ -14,7 +14,7 @@ export default {
   enabled: true,
 
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    if (args.length === 0) return `${username}, example: /calc 1 + 1`
+    if (args.length === 0) return `${username}, example: !calc 1 + 1`
 
     const expression = args.join(' ')
     const result = evalExpression(expression) as string
