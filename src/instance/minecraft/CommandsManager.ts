@@ -127,6 +127,4 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
     await minecraftInstance.send(message)
   }
-
-  registerEvents(): void {}
 }
