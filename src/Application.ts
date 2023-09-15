@@ -109,8 +109,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
       this.plugins = paths.map((f) => {
         this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        return require(f).default
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires
+        return require(f).default as PluginInterface
       })
     } else {
       this.plugins = []
@@ -163,6 +163,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 }
 
 function emitAll(emitter: Events): void {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const old = emitter.emit
   emitter.emit = (event: string, ...args: Parameters<any>): boolean => {
     if (event !== '*') emitter.emit('*', event, ...args)
