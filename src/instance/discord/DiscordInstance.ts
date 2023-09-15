@@ -9,12 +9,13 @@ import { CommandManager } from './CommandManager'
 import { escapeDiscord } from '../../util/DiscordMessageUtil'
 import { ChatEvent, ClientEvent, EventType, InstanceEvent } from '../../common/ApplicationEvent'
 import { ColorScheme, DiscordConfig } from './common/DiscordConfig'
+import * as assert from 'assert'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly handlers
 
   readonly client: Client
-  private connected: boolean = false
+  private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
     super(app, instanceName, LOCATION.DISCORD, config)
@@ -56,6 +57,8 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   }
 
   async connect(): Promise<void> {
+    assert(this.config.key)
+
     if (this.connected) {
       this.logger.error('Instance already connected once. Calling connect() again will bug it. Returning...')
       return
@@ -165,8 +168,8 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     if (event.instanceName === this.instanceName) return
 
     for (const channelId of this.config.publicChannelIds) {
-      const channel: TextChannel | null = (await this.client.channels.fetch(channelId)) as unknown as TextChannel
-      if (channel == null) continue
+      const channel = await this.client.channels.fetch(channelId)
+      if (channel == null || !(channel instanceof TextChannel)) continue
 
       await channel
         .send({

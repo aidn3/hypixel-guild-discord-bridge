@@ -1,5 +1,5 @@
 import DiscordInstance from '../DiscordInstance'
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 
@@ -20,7 +20,7 @@ export default {
   permission: Permission.ANYONE,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     const timestamp = new Date().getTime()
 
     const defer = await interaction.deferReply({ fetchReply: true })

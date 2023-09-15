@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 
@@ -8,7 +8,7 @@ export default {
   allowInstance: false,
   permission: Permission.ADMIN,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
     clientInstance.app.emit('shutdownSignal', {

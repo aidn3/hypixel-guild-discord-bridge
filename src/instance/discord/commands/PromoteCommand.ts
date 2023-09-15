@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 
@@ -13,11 +13,10 @@ export default {
   permission: Permission.HELPER,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const username: string = interaction.options.getString('username')
+    const username: string = interaction.options.getString('username', true)
     clientInstance.app.clusterHelper.sendCommandToAllMinecraft(`/g promote ${username}`)
 
     await interaction.editReply(`Command sent to promote ${username}!`)

@@ -1,6 +1,6 @@
-import fs = require('fs')
 import {
   BaseInteraction,
+  ChatInputCommandInteraction,
   Collection,
   CommandInteraction,
   GuildMember,
@@ -15,11 +15,29 @@ import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import DiscordInstance from './DiscordInstance'
 import { DiscordCommandInterface, Permission } from './common/DiscordCommandInterface'
 
+import AboutCommand from './commands/AboutCommand'
+import AcceptCommand from './commands/AcceptCommand'
+import DemoteCommand from './commands/DemoteCommand'
+import InviteCommand from './commands/InviteCommand'
+import KickCommand from './commands/KickCommand'
+import ListCommand from './commands/ListCommand'
+import MuteCommand from './commands/MuteCommand'
+import OverrideCommand from './commands/OverrideCommand'
+import PingCommand from './commands/PingCommand'
+import PromoteCommand from './commands/PromoteCommand'
+import RestartCommand from './commands/RestartCommand'
+import SetrankCommand from './commands/SetrankCommand'
+import ShutdownCommand from './commands/ShutdownCommand'
+import UnmuteCommand from './commands/UnmuteCommand'
+import * as assert from 'assert'
+
 export class CommandManager extends EventHandler<DiscordInstance> {
   private readonly commands = new Collection<string, DiscordCommandInterface>()
 
   constructor(discordInstance: DiscordInstance) {
     super(discordInstance)
+
+    this.addDefaultCommands()
 
     let timeoutId: null | NodeJS.Timeout = null
     const timerReset = (): void => {
@@ -40,20 +58,33 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   }
 
   registerEvents(): void {
-    const commandPath = './src/instance/discord/commands'
-    fs.readdirSync(commandPath)
-      .filter((file: string) => file.endsWith('Command.ts'))
-      .forEach((file: string) => {
-        const filePath = `./commands/${file}`
-        this.clientInstance.logger.debug(`Loading command ${filePath}`)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const command = require(filePath).default as DiscordCommandInterface
-
-        this.commands.set(command.getCommandBuilder().name, command)
-      })
-
-    this.clientInstance.client.on('interactionCreate', async (interaction) => await this.interactionCreate(interaction))
+    this.clientInstance.client.on('interactionCreate', (interaction) => {
+      void this.interactionCreate(interaction)
+    })
     this.clientInstance.logger.debug('CommandManager is registered')
+  }
+
+  private addDefaultCommands(): void {
+    const toAdd = [
+      AboutCommand,
+      AcceptCommand,
+      DemoteCommand,
+      InviteCommand,
+      KickCommand,
+      ListCommand,
+      MuteCommand,
+      OverrideCommand,
+      PingCommand,
+      PromoteCommand,
+      RestartCommand,
+      SetrankCommand,
+      ShutdownCommand,
+      UnmuteCommand
+    ]
+
+    for (const command of toAdd) {
+      this.commands.set(command.getCommandBuilder().name, command)
+    }
   }
 
   private interactionCreate(interaction: BaseInteraction): Promise<any> | undefined {
@@ -87,17 +118,20 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       } else {
         this.clientInstance.logger.debug('execution granted.')
 
+        const username =
+          interaction.member instanceof GuildMember ? interaction.member.displayName : interaction.user.displayName
+
         this.clientInstance.app.emit('command', {
           localEvent: true,
           instanceName: this.clientInstance.instanceName,
           location: LOCATION.DISCORD,
           scope: SCOPE.PUBLIC,
-          username: (interaction?.member as GuildMember)?.displayName ?? interaction.user.username,
+          username,
           fullCommand: interaction.command?.options.toString() ?? '',
           commandName: interaction.commandName
         })
 
-        return command.handler(this.clientInstance, interaction)
+        return command.handler(this.clientInstance, interaction as ChatInputCommandInteraction)
       }
     } catch (error) {
       this.clientInstance.logger.error(error)
@@ -117,8 +151,11 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
   private registerDiscordCommand(): void {
     this.clientInstance.logger.debug('Registering commands')
-    const token = this.clientInstance.client.token as string
-    const clientId = this.clientInstance.client.application?.id as string
+    assert(this.clientInstance.client.token)
+    assert(this.clientInstance.client.application)
+
+    const token = this.clientInstance.client.token
+    const clientId = this.clientInstance.client.application.id
     const commandsJson = this.getCommandsJson()
 
     this.clientInstance.client.guilds.cache.forEach((guild) => {
@@ -128,17 +165,19 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     })
   }
 
-  private memberAllowed(interaction: CommandInteraction, permissionLevel: number): boolean {
+  private memberAllowed(interaction: CommandInteraction, permissionLevel: Permission): boolean {
     if (permissionLevel === Permission.ANYONE || interaction.user.id === this.clientInstance.config.adminId) return true
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
     if (roles == null) return false
 
     let highestPerm = Permission.ANYONE
-    if (roles.cache.some((role) => this.clientInstance.config?.helperRoleIds?.some((id) => role.id === id)))
+    if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds?.some((id) => role.id === id))) {
       highestPerm = Permission.HELPER
-    if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.some((id) => role.id === id)))
+    }
+    if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.some((id) => role.id === id))) {
       highestPerm = Permission.OFFICER
+    }
 
     return highestPerm >= permissionLevel
   }
@@ -150,7 +189,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     )
   }
 
-  private getCommandsJson(): any {
+  private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
     const instanceChoices = this.clientInstance.app.clusterHelper
       .getInstancesNames(LOCATION.MINECRAFT)

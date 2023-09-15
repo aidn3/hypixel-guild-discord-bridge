@@ -1,10 +1,8 @@
-// noinspection JSUnusedGlobalSymbols
-
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 
-const COMMAND: DiscordCommandInterface = {
+export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('accept')
@@ -15,14 +13,12 @@ const COMMAND: DiscordCommandInterface = {
   allowInstance: true,
   permission: Permission.HELPER,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const username: string = interaction.options.getString('username')
+    const username: string = interaction.options.getString('username', true)
     const command = `/g accept ${username}`
 
-    // @ts-expect-error "getString" not defined in command interaction for some reason
     const instance: string | null = interaction.options.getString('instance')
     if (instance != null) {
       clientInstance.app.clusterHelper.sendCommandToMinecraft(instance, command)
@@ -33,5 +29,3 @@ const COMMAND: DiscordCommandInterface = {
     await interaction.editReply(`Command sent to accept ${username}!`)
   }
 } satisfies DiscordCommandInterface
-
-export default COMMAND

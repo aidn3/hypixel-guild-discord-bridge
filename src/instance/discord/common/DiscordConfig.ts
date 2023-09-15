@@ -1,6 +1,6 @@
 export interface DiscordConfig {
   instanceName: string
-  key: string
+  key: string | null
   adminId: string
 
   publicChannelIds: string[]
@@ -12,10 +12,10 @@ export interface DiscordConfig {
 }
 
 export enum ColorScheme {
-  'GOOD' = 0x008a00,
-  'INFO' = 0x848400,
-  'BAD' = 0x8a2d00,
-  'ERROR' = 0xff0000,
+  GOOD = 0x008a00,
+  INFO = 0x848400,
+  BAD = 0x8a2d00,
+  ERROR = 0xff0000,
   DEFAULT = 0x090a16
 }
 
