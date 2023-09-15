@@ -1,21 +1,17 @@
-// noinspection JSUnusedGlobalSymbols
-
-import MinecraftInstance from '../MinecraftInstance'
 import { LOCATION, SCOPE } from '../../../common/ClientInstance'
-import { MinecraftChatMessage } from '../common/ChatInterface'
+import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { CommandsManager } from '../CommandsManager'
 import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
-  onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
+  onChat: function (context: MinecraftChatContext): void {
     const regex = /^We blocked your comment "[\W\w]+" as it is breaking our rules/g
 
-    const match = regex.exec(message)
+    const match = regex.exec(context.message)
     if (match != null) {
-      clientInstance.app.emit('event', {
+      context.application.emit('event', {
         localEvent: true,
-        instanceName: clientInstance.instanceName,
+        instanceName: context.instanceName,
         location: LOCATION.MINECRAFT,
         scope: SCOPE.PUBLIC,
         name: EventType.BLOCK,
