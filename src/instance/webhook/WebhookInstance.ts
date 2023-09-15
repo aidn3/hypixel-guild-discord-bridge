@@ -9,7 +9,7 @@ import WebhookConfig from './common/WebhookConfig'
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private readonly discordBot: Client | null
   private readonly client: WebhookClient | undefined
-  private connected: boolean = false
+  private connected = false
 
   constructor(app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
     super(app, instanceName, LOCATION.WEBHOOK, config)

@@ -19,7 +19,7 @@ const MESSAGES = [
   "Oni-chan, you are big meanie. Don't block my message even if it's repeated!"
 ]
 
-let lastWarning: number = 0
+let lastWarning = 0
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
