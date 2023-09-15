@@ -46,7 +46,7 @@ export const escapeDiscord = function (message: string): string {
 }
 
 export const getReplyUsername = async function (messageEvent: Message): Promise<string | undefined> {
-  if (messageEvent.reference == null || messageEvent.reference.messageId === undefined) return
+  if (messageEvent.reference?.messageId === undefined) return
 
   const channel = messageEvent.channel as TextChannel
   const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
