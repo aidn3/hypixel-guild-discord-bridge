@@ -1,4 +1,5 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { HypixelSkyblock } from '../../../type/HypixelApiType'
 
 export default {
   triggers: ['level', 'lvl', 'l'],
@@ -17,9 +18,10 @@ export default {
 
     const networthLocalized = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((response: any) => response.profiles)
-      .then((profiles: any[]) => profiles.filter((p) => p.selected)[0])
-      .then((res: any) => res.members[uuid]?.leveling?.experience ?? 0)
+      .then((res) => res as unknown as HypixelSkyblock)
+      .then((response) => response.profiles)
+      .then((profiles) => profiles.filter((p) => p.selected)[0])
+      .then((res) => res.members[uuid].leveling?.experience ?? 0)
       .then((exp) => (exp / 100).toFixed(2))
 
     return `${givenUsername}'s level: ${networthLocalized}`
