@@ -16,7 +16,7 @@ export interface NetworthOptions {
   museumData: unknown
 }
 
-export interface Prices {}
+export type Prices = Record<string, number>
 
 export interface Networth {
   networth: number
