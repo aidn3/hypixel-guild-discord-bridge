@@ -1,5 +1,6 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
+import { HypixelSkyblock } from '../../../type/HypixelApiType'
 
 export default {
   triggers: ['catacomb', 'cata'],
@@ -21,7 +22,7 @@ export default {
     return (
       `${givenUsername} is Catacombs ` +
       `${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
-      ` ${formatClass(parsedProfile.dungeons.classes)}.`
+      ` ${formatClass(parsedProfile)}.`
     )
   }
 } satisfies ChatCommandHandler
@@ -29,18 +30,20 @@ export default {
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((response: any) => response.profiles)
-    .then((profiles: any[]) => profiles.filter((p) => p.selected)[0].cute_name)
+    .then((res) => res as unknown as HypixelSkyblock)
+    .then((res) => res.profiles.filter((p) => p.selected)[0].cute_name)
 
   return await hypixelApi
     .getSkyblockProfiles(uuid)
     .then((profiles) => profiles.filter((profile) => profile.profileName === selectedProfile)[0].me)
 }
 
-function formatClass(classes: any): string {
-  let xp: number = 0
-  let level: number = 0
-  let name: string = '(None)'
+function formatClass(member: SkyblockMember): string {
+  const classes = member.dungeons.classes
+
+  let xp = 0
+  let level = 0
+  let name = '(None)'
 
   if (classes.healer.xp > xp) {
     xp = classes.healer.xp

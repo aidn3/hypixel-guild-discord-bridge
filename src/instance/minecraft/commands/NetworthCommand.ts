@@ -6,7 +6,7 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
-import { HypixelSkyblock } from '../../../type/HypixelType'
+import { HypixelSkyblock } from '../../../type/HypixelApiType'
 
 export default {
   triggers: ['networth', 'net', 'nw'],
@@ -25,9 +25,9 @@ export default {
 
     const networthLocalized = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((response: any) => response.profiles)
-      .then((profiles: any[]) => profiles.filter((p) => p.selected)[0])
-      .then(async (res: any) => await getNetworth(res.members[uuid], res.banking?.balance ?? 0))
+      .then((response: unknown) => response as HypixelSkyblock)
+      .then((res) => res.profiles.filter((p) => p.selected)[0])
+      .then(async (profile) => await getNetworth(profile.members[uuid], profile.banking?.balance ?? 0))
       .then(localizedNetworth)
 
     return `${givenUsername}'s networth: ${networthLocalized}`
