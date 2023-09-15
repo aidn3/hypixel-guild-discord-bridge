@@ -17,6 +17,7 @@ import StateHandler from './handlers/StateHandler'
 import MinecraftConfig from './common/MinecraftConfig'
 import { resolveProxyIfExist } from './common/ProxyHandler'
 import RateLimiter from '../../util/RateLimiter'
+import { antiSpamString } from '../../util/SharedUtil'
 
 const commandsLimiter = new RateLimiter(1, 1000)
 
@@ -47,11 +48,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
 
     this.app.on('minecraftCommandResponse', (event: MinecraftCommandResponse) => {
-      if (event.instanceName !== this.instanceName) {
-        void this.send(this.formatChatMessage('gc', event.username, undefined, event.fullCommand))
-      }
 
-      void this.send(`/gc ${event.commandResponse}`)
+      void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
     })
 
     this.app.on('chat', (event: ChatEvent) => {
