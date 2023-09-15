@@ -1,14 +1,13 @@
-import MinecraftInstance from '../MinecraftInstance'
-import { MinecraftCommandMessage } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
 
 export default {
   triggers: ['catacomb', 'cata'],
   enabled: true,
-  handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] ?? username
+  handler: async function (context: ChatCommandContext): Promise<string> {
+    const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await clientInstance.app.mojangApi
+    const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => null)
@@ -17,7 +16,7 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await getParsedProfile(clientInstance.app.hypixelApi, uuid)
+    const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
 
     return (
       `${givenUsername} is Catacombs ` +

@@ -1,31 +1,48 @@
-import fs = require('fs')
 import MinecraftInstance from './MinecraftInstance'
 import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import { ColorScheme } from '../discord/common/DiscordConfig'
-import { MinecraftCommandMessage } from './common/ChatInterface'
+import { ChatCommandHandler } from './common/ChatInterface'
 import EventHandler from '../../common/EventHandler'
 import { EventType } from '../../common/ApplicationEvent'
+import BitchesCommand from './commands/BitchesCommand'
+import CalculateCommand from './commands/CalculateCommand'
+import CataCommand from './commands/CataCommand'
+import EightBallCommand from './commands/EightBallCommand'
+import ExplainCommand from './commands/ExplainCommand'
+import GuildCommand from './commands/GuildCommand'
+import IqCommand from './commands/IqCommand'
+import LevelCommand from './commands/LevelCommand'
+import NetworthCommand from './commands/NetworthCommand'
+import RouletteCommand from './commands/RouletteCommand'
+import WeightCommand from './commands/WeightCommand'
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
-  private readonly commands: MinecraftCommandMessage[]
+  private readonly commands: ChatCommandHandler[]
 
   constructor(clientInstance: MinecraftInstance) {
     super(clientInstance)
 
-    this.commands = fs
-      .readdirSync('./src/instance/minecraft/commands')
-      .filter((file: string) => file.endsWith('Command.ts'))
-      .map((f: string) => {
-        clientInstance.logger.trace(`Loading command ${f}`)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        return require(`./commands/${f}`).default
-      })
-      .filter(
-        (command: MinecraftCommandMessage) =>
-          !command.triggers.some((trigger: string) =>
-            clientInstance.config.disabledCommand.includes(trigger.toLowerCase())
-          )
-      )
+    this.commands = [
+      BitchesCommand,
+      CalculateCommand,
+      CataCommand,
+      EightBallCommand,
+      ExplainCommand,
+      ExplainCommand,
+      GuildCommand,
+      IqCommand,
+      LevelCommand,
+      NetworthCommand,
+      RouletteCommand,
+      WeightCommand
+    ]
+
+    const disabled = clientInstance.config.disabledCommand
+    for (const command of this.commands) {
+      if (command.triggers.some((trigger: string) => disabled.includes(trigger.toLowerCase()))) {
+        command.enabled = false
+      }
+    }
   }
 
   async publicCommandHandler(
@@ -62,7 +79,11 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       commandName: command.triggers[0]
     })
 
-    const reply = await command.handler(minecraftInstance, username, args)
+    const reply = await command.handler({
+      clientInstance: minecraftInstance,
+      username,
+      args
+    })
 
     minecraftInstance.app.emit('event', {
       localEvent: true,

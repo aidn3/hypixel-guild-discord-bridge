@@ -5,9 +5,15 @@ export interface MinecraftChatMessage {
   onChat: (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string) => void
 }
 
-export interface MinecraftCommandMessage {
+export interface ChatCommandHandler {
   readonly triggers: string[]
   enabled: boolean
 
-  handler: (clientInstance: MinecraftInstance, username: string, args: string[]) => Promise<string>
+  handler: (context: ChatCommandContext) => Promise<string> | string
+}
+
+export interface ChatCommandContext {
+  clientInstance: MinecraftInstance
+  username: string
+  args: string[]
 }
