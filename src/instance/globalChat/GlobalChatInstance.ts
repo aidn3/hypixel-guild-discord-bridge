@@ -12,7 +12,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     super(app, instanceName, LOCATION.GLOBAL, config)
 
     this.app.on('chat', (event) => {
-      void this.onMessageSend(event)
+      this.onMessageSend(event)
     })
   }
 
@@ -36,7 +36,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     })
   }
 
-  private async onMessageSend(event: ChatEvent): Promise<void> {
+  private onMessageSend(event: ChatEvent): void {
     if (event.instanceName === this.instanceName) return
 
     if (event.scope === SCOPE.PUBLIC) {
