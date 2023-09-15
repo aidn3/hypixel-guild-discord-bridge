@@ -1,6 +1,4 @@
-import PluginInterface from '../common/PluginInterface'
-import Application from '../Application'
-import { ClientInstance } from '../common/ClientInstance'
+import { PluginInterface, PluginContext } from '../common/Plugins'
 import { EventType } from '../common/ApplicationEvent'
 
 const MESSAGES = [
@@ -16,14 +14,14 @@ const MESSAGES = [
 ]
 
 export default {
-  onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
-    app.on('event', (event) => {
+  onRun(context: PluginContext): void {
+    context.application.on('event', (event) => {
       if (event.name !== EventType.JOIN) return
-      if (!app.config.plugins.allowSocketInstance && getLocalInstance(event.instanceName) == null) return
+      if (!context.config.allowSocketInstance && context.getLocalInstance(event.instanceName) == null) return
 
       let message = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
       message = message.replaceAll('%s', event.username as string)
-      app.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
+      context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
     })
   }
 } satisfies PluginInterface

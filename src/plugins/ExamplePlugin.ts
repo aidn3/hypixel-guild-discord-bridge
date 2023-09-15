@@ -1,9 +1,7 @@
-import Application from '../Application'
-import PluginInterface from '../common/PluginInterface'
-import { ClientInstance } from '../common/ClientInstance'
+import { PluginInterface, PluginContext } from '../common/Plugins'
 
 export default {
-  onRun(app: Application, getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined): any {
+  onRun(context: PluginContext): void {
     // modify something e.g:
     // app.ClusterHelper.sendCommandToAllMinecraft("hello there!")
   }
