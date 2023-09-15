@@ -7,16 +7,18 @@ import MinecraftInstance from '../MinecraftInstance'
 import { MinecraftCommandMessage } from '../common/ChatInterface'
 
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Mojang = require('mojang')
+import { HypixelSkyblock } from '../../../type/HypixelType'
 
 export default {
   triggers: ['networth', 'net', 'nw'],
   enabled: true,
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] != null ? args[0] : username
-    const uuid = await Mojang.lookupProfileAt(givenUsername).then((mojangProfile: { id: any }) => mojangProfile.id)
+    const givenUsername = args[0] ?? username
+
+    const uuid = await clientInstance.app.mojangApi
+      .profileByUsername(givenUsername)
+      .then((mojangProfile) => mojangProfile.id)
+      .catch(() => null)
 
     if (uuid == null) {
       return `No such username! (given: ${givenUsername})`
