@@ -22,7 +22,7 @@ process.on('uncaughtException', function (e) {
 
 process.title = packageJson.name
 
-const file = process?.argv[2] ?? './config.yaml'
+const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
 app.on('*', (name, ...args) => {

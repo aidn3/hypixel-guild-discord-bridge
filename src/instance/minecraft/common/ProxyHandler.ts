@@ -4,16 +4,18 @@ import { SocksClient } from 'socks'
 import type { Client } from 'minecraft-protocol'
 import { ProxyProtocol } from '../../../common/ProxyInterface'
 import { Logger } from 'log4js'
+import * as assert from 'assert'
 
 export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftConfig): Partial<ClientProxyOptions> {
   const proxyConfig = minecraftConfig.proxy
   if (proxyConfig == null) return {}
   logger.debug(`Proxy enabled with params: ${JSON.stringify(minecraftConfig.proxy)}`)
 
+  assert(minecraftConfig.botOptions.host)
   const proxyHost = proxyConfig.proxyHost
   const proxyPort = Number(proxyConfig.proxyPort)
   const protocol = proxyConfig.protocol
-  const host = minecraftConfig.botOptions.host as string
+  const host = minecraftConfig.botOptions.host
   const port = Number(minecraftConfig.botOptions.port)
 
   let connect

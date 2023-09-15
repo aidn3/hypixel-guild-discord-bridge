@@ -5,6 +5,7 @@
 */
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import Axios, { AxiosResponse } from 'axios'
+import * as assert from 'assert'
 
 export default {
   triggers: ['weight', 'w'],
@@ -16,11 +17,21 @@ export default {
 } satisfies ChatCommandHandler
 
 async function getSenitherData(username: string): Promise<number> {
-  const profiles: any[] = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
-    (res: AxiosResponse) => res.data.profiles
+  const res = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
+    (res: AxiosResponse) => res.data as SkyShiiyuResponse
   )
 
-  const weight = Object.values(profiles).find((profile) => profile.current).data.weight.senither
+  const selected = Object.values(res.profiles).find((profile) => profile.current)
+  assert(selected)
 
-  return Math.floor(weight.overall ?? 0)
+  return Math.floor(selected.data?.weight.senither.overall ?? 0)
+}
+
+interface SkyShiiyuResponse {
+  profiles: Record<string, SkyShiiyuProfile>
+}
+
+interface SkyShiiyuProfile {
+  current: boolean
+  data?: { weight: { senither: { overall: number } } }
 }

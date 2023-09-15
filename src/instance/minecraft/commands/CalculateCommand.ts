@@ -5,7 +5,6 @@
 */
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
-// @ts-expect-error Type not exist. (expr: string) => number
 import { evalExpression } from '@hkh12/node-calc'
 
 export default {
@@ -16,7 +15,7 @@ export default {
     if (context.args.length === 0) return `${context.username}, example: !calc 1 + 1`
 
     const expression = context.args.join(' ')
-    const result = evalExpression(expression) as string
+    const result = evalExpression(expression)
     return `${context.username}, ${expression} = ${result}`
   }
 } satisfies ChatCommandHandler

@@ -21,8 +21,7 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const guild = await context.clientInstance.app.hypixelApi.getGuild('player', uuid, {})
-    // TODO: make sure no guild works
+    const guild = await context.clientInstance.app.hypixelApi.getGuild('player', uuid, {}).catch(() => null)
     if (guild == null) return `${givenUsername} is not in a guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)

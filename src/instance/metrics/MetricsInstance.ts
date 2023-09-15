@@ -41,7 +41,6 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     this.httpServer = http.createServer((req, res) => {
       // TODO: handle other paths and close the connection
       if (req.url == null) return
-      // eslint-disable-next-line n/no-deprecated-api
       const route = url.parse(req.url).pathname
       if (route === '/metrics') {
         this.logger.debug('Metrics scrap is called on /metrics')
@@ -62,7 +61,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.httpServer.listening) {
       this.logger.debug('Server already listening. Returning')
       return

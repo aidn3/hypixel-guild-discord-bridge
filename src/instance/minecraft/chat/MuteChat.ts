@@ -11,7 +11,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != null) {
       const username = match[1]
-      const muteTime = match[2] as any
+      const muteTime = Number(match[2])
       const muteSuffice = match[3]
 
       context.application.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))

@@ -1,3 +1,6 @@
+/* eslint-disable */
+// linter disabled for config parsing
+// since typed linter isn't helpful for volatile file
 import * as fs from 'fs'
 import * as YAML from 'yaml'
 

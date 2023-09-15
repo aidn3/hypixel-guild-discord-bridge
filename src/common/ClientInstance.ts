@@ -27,7 +27,7 @@ export abstract class ClientInstance<K> {
    * since many listeners will listen to every connection.
    * Not disposing of the old client may result in double listeners.
    */
-  abstract connect(): Promise<void>
+  abstract connect(): Promise<void> | void
 }
 
 export enum Status {

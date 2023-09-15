@@ -4,6 +4,7 @@ import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
 import Application from '../../Application'
 import { ChatEvent } from '../../common/ApplicationEvent'
 import GlobalConfig from './common/GlobalConfig'
+import * as assert from 'assert'
 
 export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   private client: Socket | undefined
@@ -12,18 +13,14 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     super(app, instanceName, LOCATION.GLOBAL, config)
 
     this.app.on('chat', (event) => {
-      void this.onMessageSend(event)
+      this.onMessageSend(event)
     })
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.client != null) this.client.close()
 
-    if (this.config.key == null) {
-      this.logger.info('GlobalChat disabled since no key is given. Contact the developer for a key')
-      return
-    }
-
+    assert(this.config.key)
     const authData = { accessKey: this.config.key }
     this.client = io(this.config.hostname, { auth: authData })
 
@@ -36,7 +33,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     })
   }
 
-  private async onMessageSend(event: ChatEvent): Promise<void> {
+  private onMessageSend(event: ChatEvent): void {
     if (event.instanceName === this.instanceName) return
 
     if (event.scope === SCOPE.PUBLIC) {
@@ -52,8 +49,8 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   }
 
   private onMessageReceive(payload: string): void {
-    const parsed = JSON.parse(payload)
-    if (parsed.self === true) return
+    const parsed = JSON.parse(payload) as GlobalChat
+    if (parsed.self) return
 
     const username: string = parsed.displayName ?? parsed.username
 
@@ -73,4 +70,11 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
       message: parsed.message
     })
   }
+}
+
+interface GlobalChat {
+  self: boolean
+  username: string
+  displayName?: string
+  message: string
 }
