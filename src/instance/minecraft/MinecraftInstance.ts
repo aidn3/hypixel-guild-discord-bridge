@@ -94,18 +94,18 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   username(): string | undefined {
-    return this.client?.player?.username
+    return this.client?.player.username
   }
 
   uuid(): string | undefined {
-    const uuid = this.client?.player?.uuid
+    const uuid = this.client?.player.uuid
     return uuid != null ? uuid.split('-').join('') : undefined
   }
 
   async send(message: string): Promise<void> {
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if (this?.client?.player != null) {
+      if (this.client?.player != null) {
         this.client.chat(message)
       }
     })

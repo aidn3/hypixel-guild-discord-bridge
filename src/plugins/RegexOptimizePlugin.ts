@@ -16,7 +16,7 @@ export default {
       if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
         const localInstance = context.getLocalInstance(event.instanceName)
         if (localInstance != null) {
-          const client = (localInstance as MinecraftInstance)?.client
+          const client = (localInstance as MinecraftInstance).client
           client?.on('messagestr', () => {
             console.log('Removing buggy code')
             const listeners = getEventListeners(client, 'messagestr')
