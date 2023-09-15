@@ -12,7 +12,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.clientInstance.logger.error('Minecraft Bot Error: ', error)
     if (error?.code === 'EAI_AGAIN') {
       this.clientInstance.logger.error(
-        'Minecraft Bot disconnected duo to internet problems. restarting client in 30 second...'
+        'Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...'
       )
       setTimeout(() => {
         void this.clientInstance.connect()

@@ -6,8 +6,8 @@ Service connects multiple guilds and discord server together
 This project is made to be fully flexible and customizable
 offering quality user experience while keeping it simple
 
-> **Disclaimer: This project interacts with hypixel in an unintended way by simulating a minecraft client and process
-> packets which might gets you banned if you over-abuse it much.  
+> **Disclaimer: This project interacts with Hypixel in an unintended way by simulating a minecraft client and processes
+> packets which might get you banned if you over-abuse it too much.  
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at
 > your own risk"**
 
@@ -40,15 +40,15 @@ offering quality user experience while keeping it simple
 - Connect multiple guilds chats together
 - Bind hypixel guilds chats to discord channels
 - Send and receive Chat from other guilds/discord servers via Webhooks
-- Support Public and Officer Chat
-- Support in-game moderation commands from discord
+- Supports Public and Officer Chat
+- Supports in-game moderation commands from discord
 - Share events with discord such as online/offline/join/leave/mute notification/etc.
-- Allow to execute commands
-- Log all Chats/Events/etc
+- Allows executing commands
+- Logs all Chats/Events/etc
 - Quality Of Life such as `/list` command listing online members and their current game-mode
-- Provide a detailed metrics for every instance
+- Provides a detailed metrics for every instance
 - Supports custom plugins
-- Support Proxies for Minecraft instances
+- Supports Proxies for Minecraft instances
 
 ### Permissions
 
@@ -102,7 +102,7 @@ offering quality user experience while keeping it simple
 
 ### How to execute commands
 
-**Note: Only the one person who holds administrate permission can execute command!**  
+**Note: Only the one person who holds administrator permission can execute command!**  
 From In-game: `/msg username /guild party`  
 From Discord: `/override /guild party`
 
@@ -130,14 +130,14 @@ To receive messages, you need to
 ### Webhook Best Practice
 
 It is best to exchange both send and receive keys and set up a two-way road for both community.  
-`config.yaml` Supports name for each community.`
+`config.yaml` Supports name for each community.
 
 ---
 
 ## Metrics
 
-hypixel-guild-discord-bridge supports [Prometheus](https://github.com/prometheus/prometheus) metrics, and it is **
-enabled by default** on port `9095`.
+hypixel-guild-discord-bridge supports [Prometheus](https://github.com/prometheus/prometheus) metrics, and it is
+**enabled by default** on port `9095`.
 Many metrics are automatically collected in memory and await prometheus to scrap them.
 
 ### Available Metrics
@@ -159,7 +159,7 @@ prefix `guild_bridge_`. It can be changed in `config.yaml` under `metrics`.
 
 All metrics config are in `./config/metrics-config.json`.
 
-In-game interval commands execution for metrics is **disabled by default**.
+In-game interval commands execution for metrics are **disabled by default**.
 Automatically sending commands non-stop to Hypixel might get the client banned for "botting".
 Although the chance is next to non-existent, it is disabled for safe measures.
 
