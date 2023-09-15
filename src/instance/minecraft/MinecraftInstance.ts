@@ -48,7 +48,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
 
     this.app.on('minecraftCommandResponse', (event: MinecraftCommandResponse) => {
-
       void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
     })
 

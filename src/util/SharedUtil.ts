@@ -23,14 +23,14 @@ export function getDuration(short: string): number {
 }
 
 export function antiSpamString(): string {
-  let randomString = '';
-  let charSet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let length = 6;
+  let randomString = ''
+  const charSet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const length = 6
 
   for (let i = 0; i < length; i++) {
-    let randomIndex = Math.floor(Math.random() * charSet.length);
+    const randomIndex = Math.floor(Math.random() * charSet.length)
     randomString += charSet.charAt(randomIndex)
   }
 
-  return randomString;
+  return randomString
 }
