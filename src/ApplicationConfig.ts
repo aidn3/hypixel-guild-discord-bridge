@@ -7,6 +7,7 @@ import GlobalConfig from './instance/globalChat/common/GlobalConfig'
 import MetricsConfig from './instance/metrics/common/MetricsConfig'
 import MinecraftConfig from './instance/minecraft/common/MinecraftConfig'
 import { SocketConfig } from './instance/socket/common/SocketConfig'
+import { PluginsConfig } from './common/Plugins'
 
 export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): ApplicationConfig {
   const fileString = fs.readFileSync(filepath, 'utf8')
@@ -71,12 +72,6 @@ export interface ApplicationConfig {
   minecrafts: MinecraftConfig[]
   webhooks: WebhookConfig[]
   profanityFilter: ProfanityFilterConfig
-}
-
-export interface PluginsConfig {
-  enabled: boolean
-  allowSocketInstance: boolean
-  paths?: string[]
 }
 
 export interface ProfanityFilterConfig {

@@ -20,7 +20,7 @@ import {
   ShutdownSignal
 } from './common/ApplicationEvent'
 import { ClientInstance } from './common/ClientInstance'
-import PluginInterface from './common/PluginInterface'
+import { PluginInterface } from './common/Plugins'
 import MetricsInstance from './instance/metrics/MetricsInstance'
 import ClusterHelper from './ClusterHelper'
 import * as Events from 'events'
@@ -129,14 +129,16 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   async sendConnectSignal(): Promise<void> {
     this.broadcastLocalInstances()
 
-    // only shared with plugins to directly modify instances
-    // everything else is encapsulated
-    const getLocalInstance = (instanceName: string): ClientInstance<any> | undefined => {
-      return this.instances.find((i) => i.instanceName === instanceName)
-    }
-
     this.logger.debug('Sending signal to all plugins')
-    this.plugins.forEach((p) => p.onRun(this, getLocalInstance))
+    this.plugins.forEach((p) => {
+      p.onRun({
+        application: this,
+        config: this.config.plugins,
+        // only shared with plugins to directly modify instances
+        // everything else is encapsulated
+        getLocalInstance: (instanceName: string) => this.instances.find((i) => i.instanceName === instanceName)
+      })
+    })
 
     for (const instance of this.instances) {
       this.logger.debug(`Connecting instance ${instance.instanceName}`)
