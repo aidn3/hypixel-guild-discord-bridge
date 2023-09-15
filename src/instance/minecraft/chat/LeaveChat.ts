@@ -19,7 +19,7 @@ export default {
         name: EventType.LEAVE,
         username,
         severity: ColorScheme.BAD,
-        message: `${username} left the guild!`,
+        message: 'left the guild!',
         removeLater: false
       })
     }
