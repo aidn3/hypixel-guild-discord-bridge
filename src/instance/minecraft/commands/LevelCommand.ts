@@ -24,4 +24,4 @@ export default {
 
     return `${givenUsername}'s level: ${networthLocalized}`
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler

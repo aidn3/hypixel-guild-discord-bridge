@@ -24,7 +24,7 @@ export default {
       ` ${formatClass(parsedProfile.dungeons.classes)}.`
     )
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler
 
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
