@@ -25,7 +25,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
     if (this.config.type === SocketType.SERVER) {
       this.logger.debug(`Creating socket Server on port ${this.config.port}...`)
       this.serverSocket = new ServerSocket(this.app, this.logger, this.config.port, this.config.key)
-    } else if (this.config.type === SocketType.CLIENT) {
+    } else {
       this.logger.debug(`Creating socket Client and connecting to ${this.config.uri}...`)
       this.clientSocket = new ClientSocket(this.app, this.logger, this.config.uri, this.config.key)
     }
