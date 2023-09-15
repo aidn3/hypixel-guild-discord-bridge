@@ -72,7 +72,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       if (event.name === EventType.BLOCK) return
       if (event.name === EventType.REPEAT) return
 
-      void this.send(`/gc @[${event.instanceName ?? 'Main'}]: ${event.message}`)
+      void this.send(`/gc @[${event.instanceName}]: ${event.message}`)
     })
   }
 
