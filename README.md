@@ -89,15 +89,16 @@ offering quality user experience while keeping it simple
 
 | Command    | Description                                      | Permission |
 | ---------- | ------------------------------------------------ | ---------- |
-| !explain   | Explain what is this client in public guild chat | Anyone     |
+| !explain   | Explain what the bridge does and how it works    | Anyone     |
 | !fact      | Give a random fun fact about the guild members   | Anyone     |
-| !calculate | calculate a math expression: `!calculate 1+2*3`  | Anyone     |
-| !8ball     | replica of **8 ball**.`!8ball Will I win?`       | Anyone     |
-| !iq        | Give a random iq number to the guild member      | Anyone     |
-| !weight    | calculate **Senither Weights** of players        | Anyone     |
+| !calculate | Calculate a math expression: `!calculate 1+2*3`  | Anyone     |
+| !8ball     | Replica of **8 ball**.`!8ball Will I win?`       | Anyone     |
+| !iq        | Give a random IQ number to the guild member      | Anyone     |
+| !weight    | Calculate **Senither Weights** of players        | Anyone     |
 | !networth  | Calculate the in-game networth of players        | Anyone     |
 | !guild     | Give a summary of the guild for a given user     | Anyone     |
 | !bitches   | Give a random number to the guild member         | Anyone     |
+| !roulette  | Has a 1 in 6 chance of muting a member `!rr 4`   | Anyone     |
 
 ### How to execute commands
 
