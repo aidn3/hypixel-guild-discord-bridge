@@ -4,6 +4,7 @@ import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
 import Application from '../../Application'
 import { ChatEvent } from '../../common/ApplicationEvent'
 import GlobalConfig from './common/GlobalConfig'
+import * as assert from 'assert'
 
 export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   private client: Socket | undefined
@@ -19,11 +20,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   connect(): void {
     if (this.client != null) this.client.close()
 
-    if (this.config.key == null) {
-      this.logger.info('GlobalChat disabled since no key is given. Contact the developer for a key')
-      return
-    }
-
+    assert(this.config.key)
     const authData = { accessKey: this.config.key }
     this.client = io(this.config.hostname, { auth: authData })
 
