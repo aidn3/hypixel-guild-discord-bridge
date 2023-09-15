@@ -62,7 +62,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.httpServer.listening) {
       this.logger.debug('Server already listening. Returning')
       return

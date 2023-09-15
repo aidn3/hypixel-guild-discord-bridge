@@ -32,7 +32,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     })
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     // Need to redesign to support reconnecting.
     // Check this commit for further information
     if (this.connected) {

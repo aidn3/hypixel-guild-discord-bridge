@@ -16,7 +16,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
     })
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.client != null) this.client.close()
 
     if (this.config.key == null) {

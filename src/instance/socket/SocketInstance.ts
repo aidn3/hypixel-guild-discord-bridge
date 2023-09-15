@@ -12,7 +12,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
     super(app, instanceName, LOCATION.SOCKET, socketConfig)
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.serverSocket != null) {
       this.logger.trace('Socket Server exists. Shutting it down...')
       this.serverSocket.shutdown()

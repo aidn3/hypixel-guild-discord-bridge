@@ -42,7 +42,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       // null is strictly checked due to api specification
       if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
-        void this.connect()
+        this.connect()
       }
     })
 
@@ -76,7 +76,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.client != null) this.client.quit()
 
     this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
