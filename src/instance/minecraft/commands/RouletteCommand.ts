@@ -32,7 +32,7 @@ export default {
     const random = Math.floor(Math.random() * 6 + 1)
 
     if (choice === random) {
-      await context.clientInstance.send(`/gc mute ${context.username} 15m`)
+      await context.clientInstance.send(`/g mute ${context.username} 15m`)
       context.clientInstance.app.punishedUsers.mute(context.username, 900)
 
       return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)
