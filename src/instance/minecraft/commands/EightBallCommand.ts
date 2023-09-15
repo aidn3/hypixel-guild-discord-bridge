@@ -3,8 +3,7 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { MinecraftCommandMessage } from '../common/ChatInterface'
-import MinecraftInstance from '../MinecraftInstance'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 const ANSWERS = [
   'As I see it, yes.',
@@ -33,7 +32,7 @@ export default {
   triggers: ['8balls', '8ball', '8', 'ball', 'balls', '8b'],
   enabled: true,
 
-  handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    return `${username}, ${ANSWERS[Math.floor(Math.random() * ANSWERS.length)]}`
+  handler: function (context: ChatCommandContext): string {
+    return `${context.username}, ${ANSWERS[Math.floor(Math.random() * ANSWERS.length)]}`
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler

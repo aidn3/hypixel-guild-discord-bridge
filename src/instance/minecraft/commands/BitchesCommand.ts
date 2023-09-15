@@ -3,15 +3,14 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { MinecraftCommandMessage } from '../common/ChatInterface'
-import MinecraftInstance from '../MinecraftInstance'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['bitch', 'bitches', 'b'],
   enabled: true,
 
-  handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] ?? username
+  handler: function (context: ChatCommandContext): string {
+    const givenUsername = context.args[0] ?? context.username
     return `${givenUsername} has ${Math.floor(Math.random() * 10)} b's`
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler

@@ -1,14 +1,13 @@
-import { MinecraftCommandMessage } from '../common/ChatInterface'
-import MinecraftInstance from '../MinecraftInstance'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['explain', 'e'],
   enabled: true,
 
-  handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
+  handler: function (context: ChatCommandContext): string {
     return (
-      `${username}, I am a robot that connects this chat to discord!` +
+      `${context.username}, I am a robot that connects this chat to discord!` +
       'I have many commands you can use, see them all with !commands'
     )
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler

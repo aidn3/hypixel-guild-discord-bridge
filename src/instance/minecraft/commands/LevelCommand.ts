@@ -1,13 +1,12 @@
-import MinecraftInstance from '../MinecraftInstance'
-import { MinecraftCommandMessage } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['level', 'lvl', 'l'],
   enabled: true,
-  handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] ?? username
+  handler: async function (context: ChatCommandContext): Promise<string> {
+    const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await clientInstance.app.mojangApi
+    const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((p) => p.id)
       .catch(() => null)
@@ -16,7 +15,7 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const networthLocalized = await clientInstance.app.hypixelApi
+    const networthLocalized = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response: any) => response.profiles)
       .then((profiles: any[]) => profiles.filter((p) => p.selected)[0])
@@ -25,4 +24,4 @@ export default {
 
     return `${givenUsername}'s level: ${networthLocalized}`
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler

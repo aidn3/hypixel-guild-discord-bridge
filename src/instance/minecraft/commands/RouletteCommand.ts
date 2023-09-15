@@ -1,5 +1,4 @@
-import { MinecraftCommandMessage } from '../common/ChatInterface'
-import MinecraftInstance from '../MinecraftInstance'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 const LossMessages = [
   '%s you got blasted!',
@@ -23,22 +22,22 @@ export default {
   triggers: ['rr', 'roulette'],
   enabled: true,
 
-  handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const choice = Number(args[0])
+  handler: async function (context: ChatCommandContext): Promise<string> {
+    const choice = Number(context.args[0])
 
     if (choice < 1 || choice > 6) {
-      return `${username}, a revolver only has 6 bullets.`
+      return `${context.username}, a revolver only has 6 bullets.`
     }
 
     const random = Math.floor(Math.random() * 6 + 1)
 
     if (choice === random) {
-      await clientInstance.send(`/gc mute ${username} 15m`)
-      clientInstance.app.punishedUsers.mute(username, 900)
+      await context.clientInstance.send(`/gc mute ${context.username} 15m`)
+      context.clientInstance.app.punishedUsers.mute(context.username, 900)
 
-      return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', username)
+      return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)
     }
 
-    return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', username)
+    return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', context.username)
   }
-} satisfies MinecraftCommandMessage
+} satisfies ChatCommandHandler
