@@ -55,8 +55,8 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     }
   }
 
-  private onChatMessage(event: Message<any>): void {
-    if (event?.webhookId !== this.config.receiveId) return
+  private onChatMessage(event: Message): void {
+    if (event.webhookId !== this.config.receiveId) return
 
     const content = cleanMessage(event)
     if (content.length === 0) return
