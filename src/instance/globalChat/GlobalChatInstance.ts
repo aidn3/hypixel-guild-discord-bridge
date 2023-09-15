@@ -49,8 +49,8 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   }
 
   private onMessageReceive(payload: string): void {
-    const parsed = JSON.parse(payload)
-    if (parsed.self === true) return
+    const parsed = JSON.parse(payload) as GlobalChat
+    if (parsed.self) return
 
     const username: string = parsed.displayName ?? parsed.username
 
@@ -70,4 +70,11 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
       message: parsed.message
     })
   }
+}
+
+interface GlobalChat {
+  self: boolean
+  username: string
+  displayName?: string
+  message: string
 }
