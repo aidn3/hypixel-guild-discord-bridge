@@ -1,5 +1,4 @@
 import { Message, TextChannel } from 'discord.js'
-// @ts-expect-error type not exist
 import * as emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji(message: string): string {
@@ -10,7 +9,7 @@ function cleanGuildEmoji(message: string): string {
 
 function cleanStandardEmoji(message: string): string {
   for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
-    message = message.replaceAll(emojiUnicode as string, `:${emojiReadable}:`)
+    message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
   }
 
   return message
