@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 import { getDuration } from '../../../util/SharedUtil'
@@ -17,13 +17,11 @@ export default {
   permission: Permission.HELPER,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const username: string = interaction.options.getString('username')
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const time: string = interaction.options.getString('time')
+    const username: string = interaction.options.getString('username', true)
+    const time: string = interaction.options.getString('time', true)
 
     clientInstance.app.punishedUsers.mute(username, getDuration(time))
     clientInstance.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${username} ${time}`)

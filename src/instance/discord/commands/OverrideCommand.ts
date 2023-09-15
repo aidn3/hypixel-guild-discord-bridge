@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 
@@ -13,12 +13,10 @@ export default {
   allowInstance: true,
   permission: Permission.ADMIN,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const command: string = interaction.options.getString('command')
-    // @ts-expect-error "getString" not defined in command interaction for some reason
+    const command: string = interaction.options.getString('command', true)
     const instance: string | null = interaction.options.getString('instance')
 
     if (instance != null) {

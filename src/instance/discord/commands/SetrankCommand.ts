@@ -1,6 +1,6 @@
 // noinspection SpellCheckingInspection
 
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 
@@ -18,13 +18,11 @@ export default {
   permission: Permission.HELPER,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const username: string = interaction.options.getString('username')
-    // @ts-expect-error "getString" not defined in command interaction for some reason
-    const rank: string = interaction.options.getString('rank')
+    const username: string = interaction.options.getString('username', true)
+    const rank: string = interaction.options.getString('rank', true)
 
     clientInstance.app.clusterHelper.sendCommandToAllMinecraft(`/g setrank ${username} ${rank}`)
     await interaction.editReply(`Command sent to setrank ${username} to ${rank}!`)

@@ -1,16 +1,16 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 
-const COMMAND: DiscordCommandInterface = {
+export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('about').setDescription('Display basic info about the client.'),
   permission: Permission.ANYONE,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
     await interaction.editReply(
@@ -20,5 +20,3 @@ const COMMAND: DiscordCommandInterface = {
     )
   }
 } satisfies DiscordCommandInterface
-
-export default COMMAND

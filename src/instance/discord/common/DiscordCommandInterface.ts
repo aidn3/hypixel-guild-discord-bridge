@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import DiscordInstance from '../DiscordInstance'
 
 export enum Permission {
@@ -12,5 +12,5 @@ export interface DiscordCommandInterface {
   getCommandBuilder: () => SlashCommandBuilder
   allowInstance: boolean
   permission: Permission
-  handler: (discordInstance: DiscordInstance, interaction: CommandInteraction) => Promise<void>
+  handler: (discordInstance: DiscordInstance, interaction: ChatInputCommandInteraction) => Promise<void>
 }

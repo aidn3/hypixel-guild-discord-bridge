@@ -3,12 +3,13 @@ import EventHandler from '../../common/EventHandler'
 import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import DiscordInstance from './DiscordInstance'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
+import BadWordsType from '../../type/BadWords'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const BadWords = require('bad-words')
+const BadWords = require('bad-words') as typeof BadWordsType
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
-  private readonly profanityFilter: { clean: (text: string) => string; removeWords: (...args: string[]) => void }
+  private readonly profanityFilter: BadWordsType
 
   constructor(clientInstance: DiscordInstance) {
     super(clientInstance)
@@ -35,7 +36,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const replyUsername = await getReplyUsername(event)
     const readableReplyUsername = replyUsername != null ? getReadableName(replyUsername, replyUsername) : undefined
     const discordName = event.member?.displayName ?? event.author.username
-    const readableName = getReadableName(discordName, event.author?.id)
+    const readableName = getReadableName(discordName, event.author.id)
 
     if (this.clientInstance.config.publicChannelIds.some((id) => id === event.channel.id)) {
       if (await this.hasBeenMuted(event, discordName, readableName)) return
