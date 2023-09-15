@@ -21,3 +21,16 @@ export function getDuration(short: string): number {
 
   throw new Error('Invalid short time')
 }
+
+export function antiSpamString(): string {
+  let randomString = ''
+  const charSet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const length = 6
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charSet.length)
+    randomString += charSet.charAt(randomIndex)
+  }
+
+  return randomString
+}
