@@ -20,7 +20,8 @@ export default {
           client?.on('messagestr', () => {
             console.log('Removing buggy code')
             const listeners = getEventListeners(client, 'messagestr')
-            listeners.forEach((l: any) => client?.removeListener('messagestr', l))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            listeners.forEach((l: any) => client.removeListener('messagestr', l))
           })
         }
       }
