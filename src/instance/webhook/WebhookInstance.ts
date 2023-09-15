@@ -62,7 +62,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     if (content.length === 0) return
 
     if (this.app.punishedUsers.mutedTill(event.member?.displayName ?? event.author.displayName) != null) {
-      this.logger.debug(`${event.author.username} is muted. ignoring this webhook message.`)
+      this.logger.debug(`${event.author.username} is muted. Ignoring this webhook message.`)
       return
     }
 

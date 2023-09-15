@@ -16,7 +16,7 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const networthLocalized = await context.clientInstance.app.hypixelApi
+    const levelLocalized = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((res) => res as unknown as HypixelSkyblock)
       .then((response) => response.profiles)
@@ -24,6 +24,6 @@ export default {
       .then((res) => res.members[uuid].leveling?.experience ?? 0)
       .then((exp) => (exp / 100).toFixed(2))
 
-    return `${givenUsername}'s level: ${networthLocalized}`
+    return `${givenUsername}'s level: ${levelLocalized}`
   }
 } satisfies ChatCommandHandler
