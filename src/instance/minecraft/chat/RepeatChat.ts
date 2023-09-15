@@ -1,8 +1,6 @@
 import { LOCATION, SCOPE } from '../../../common/ClientInstance'
-import MinecraftInstance from '../MinecraftInstance'
-import { MinecraftChatMessage } from '../common/ChatInterface'
+import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { CommandsManager } from '../CommandsManager'
 import { EventType } from '../../../common/ApplicationEvent'
 
 const MESSAGES = [
@@ -24,16 +22,16 @@ const MESSAGES = [
 let lastWarning: number = 0
 
 export default {
-  onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
+  onChat: function (context: MinecraftChatContext): void {
     const regex = /^You cannot say the same message twice!/g
 
-    const match = regex.exec(message)
+    const match = regex.exec(context.message)
     if (match != null) {
       const randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
 
-      clientInstance.app.emit('event', {
+      context.application.emit('event', {
         localEvent: true,
-        instanceName: clientInstance.instanceName,
+        instanceName: context.instanceName,
         location: LOCATION.MINECRAFT,
         scope: SCOPE.PUBLIC,
         name: EventType.REPEAT,
@@ -44,7 +42,7 @@ export default {
       })
 
       if (lastWarning + 5000 < new Date().getTime()) {
-        void clientInstance.send(`/gc @${randomMessage}`)
+        void context.clientInstance.send(`/gc @${randomMessage}`)
         lastWarning = new Date().getTime()
       }
     }

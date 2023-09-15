@@ -1,27 +1,25 @@
-import MinecraftInstance from '../MinecraftInstance'
-import { MinecraftChatMessage } from '../common/ChatInterface'
+import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { LOCATION, SCOPE } from '../../../common/ClientInstance'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { CommandsManager } from '../CommandsManager'
 import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
-  onChat: function (clientInstance: MinecraftInstance, commandsManager: CommandsManager, message: string): void {
+  onChat: function (context: MinecraftChatContext): void {
     const regex = /^(?:\[[A-Z+]{1,10}\] )*(\w{3,32}) was demoted from /g
 
-    const match = regex.exec(message)
+    const match = regex.exec(context.message)
     if (match != null) {
       const username = match[1]
 
-      clientInstance.app.emit('event', {
+      context.application.emit('event', {
         localEvent: true,
-        instanceName: clientInstance.instanceName,
+        instanceName: context.instanceName,
         location: LOCATION.MINECRAFT,
         scope: SCOPE.PUBLIC,
         name: EventType.DEMOTE,
         username,
         severity: ColorScheme.BAD,
-        message,
+        message: context.message,
         removeLater: false
       })
     }
