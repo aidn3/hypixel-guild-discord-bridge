@@ -7,15 +7,16 @@
 import MinecraftInstance from '../MinecraftInstance'
 import { MinecraftCommandMessage } from '../common/ChatInterface'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const mojang = require('mojang')
-
 export default {
   triggers: ['guild', 'guildOf', 'g'],
   enabled: true,
   handler: async function (clientInstance: MinecraftInstance, username: string, args: string[]): Promise<string> {
-    const givenUsername = args[0] != null ? args[0] : username
-    const uuid = await mojang.lookupProfileAt(givenUsername).then((p: { id: any }) => p.id)
+    const givenUsername = args[0] ?? username
+
+    const uuid = await clientInstance.app.mojangApi
+      .profileByUsername(givenUsername)
+      .then((p) => p.id)
+      .catch(() => null)
 
     if (uuid == null) {
       return `No such username! (given: ${givenUsername})`

@@ -28,6 +28,7 @@ import { getLogger, Logger } from 'log4js'
 import { ApplicationConfig } from './ApplicationConfig'
 import SocketInstance from './instance/socket/SocketInstance'
 import * as path from 'path'
+import { MojangApi } from './util/Mojang'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
@@ -37,6 +38,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   readonly clusterHelper: ClusterHelper
   readonly punishedUsers: PunishedUsers
   readonly hypixelApi: HypixelClient
+  readonly mojangApi: MojangApi
   readonly config: ApplicationConfig
 
   constructor(config: ApplicationConfig) {
@@ -50,6 +52,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       cache: true,
       cacheTime: 300
     })
+    this.mojangApi = new MojangApi()
     this.punishedUsers = new PunishedUsers()
     this.clusterHelper = new ClusterHelper(this)
 

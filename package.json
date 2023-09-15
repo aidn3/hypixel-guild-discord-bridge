@@ -31,7 +31,6 @@
     "hypixel-api-reborn": "^10.0.0",
     "log4js": "^6.4.2",
     "mineflayer": "4.3.0",
-    "mojang": "^2.2.2",
     "moment": "^2.29.4",
     "node-cache": "^5.1.2",
     "prismarine-chat": "^1.9.1",

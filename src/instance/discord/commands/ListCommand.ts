@@ -1,6 +1,6 @@
 import DiscordInstance from '../DiscordInstance'
 import { escapeDiscord } from '../../../util/DiscordMessageUtil'
-import { APIEmbed, CommandInteraction, JSONEncodable, SlashCommandBuilder } from 'discord.js'
+import { APIEmbed, ChatInputCommandInteraction, JSONEncodable, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import { LOCATION } from '../../../common/ClientInstance'
 import { MinecraftRawChatEvent } from '../../../common/ApplicationEvent'
@@ -8,11 +8,9 @@ import Application from '../../../Application'
 import { Client, Status } from 'hypixel-api-reborn'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 import { pageMessage } from '../../../util/DiscordPager'
+import { MojangApi, MojangProfile } from '../../../util/Mojang'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const mojang = require('mojang')
-
-function createEmbed(instances: Map<string, string[]>): Array<JSONEncodable<APIEmbed>> {
+function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[] {
   const entries: string[] = []
   let total = 0
 
@@ -54,7 +52,7 @@ function createEmbed(instances: Map<string, string[]>): Array<JSONEncodable<APIE
     pages[pages.length - 1].description += entry
   }
 
-  return pages as any as Array<JSONEncodable<APIEmbed>>
+  return pages as any as JSONEncodable<APIEmbed>[]
 }
 
 export default {
@@ -62,11 +60,15 @@ export default {
   permission: Permission.ANYONE,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: CommandInteraction) {
+  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
     const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(LOCATION.MINECRAFT)
-    const lists: Map<string, string[]> = await listMembers(clientInstance.app, clientInstance.app.hypixelApi)
+    const lists: Map<string, string[]> = await listMembers(
+      clientInstance.app,
+      clientInstance.app.mojangApi,
+      clientInstance.app.hypixelApi
+    )
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
@@ -76,19 +78,23 @@ export default {
   }
 } satisfies DiscordCommandInterface
 
-const listMembers = async function (app: Application, hypixelApi: Client): Promise<Map<string, string[]>> {
+const listMembers = async function (
+  app: Application,
+  mojangApi: MojangApi,
+  hypixelApi: Client
+): Promise<Map<string, string[]>> {
   const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app)
 
   for (const [instanceName, members] of onlineProfiles) {
-    const fetchedMembers = await look(hypixelApi, unique(members))
+    const fetchedMembers = await look(mojangApi, hypixelApi, unique(members))
     onlineProfiles.set(instanceName, fetchedMembers)
   }
 
   return onlineProfiles
 }
 
-async function look(hypixelApi: Client, members: string[]): Promise<string[]> {
-  const onlineProfiles = await lookupProfiles(members).then((profiles) =>
+async function look(mojangApi: MojangApi, hypixelApi: Client, members: string[]): Promise<string[]> {
+  const onlineProfiles = await lookupProfiles(mojangApi, members).then((profiles) =>
     profiles.sort((a, b) => a.name.localeCompare(b.name))
   )
 
@@ -102,7 +108,7 @@ async function look(hypixelApi: Client, members: string[]): Promise<string[]> {
 }
 
 // Mojang only allow up to 10 usernames per lookup
-async function lookupProfiles(usernames: string[]): Promise<any[]> {
+async function lookupProfiles(mojangApi: MojangApi, usernames: string[]): Promise<MojangProfile[]> {
   const mojangRequests = []
 
   // https://stackoverflow.com/a/8495740
@@ -112,7 +118,7 @@ async function lookupProfiles(usernames: string[]): Promise<any[]> {
   const chunk = 10
   for (i = 0, j = usernames.length; i < j; i += chunk) {
     arr = usernames.slice(i, i + chunk)
-    mojangRequests.push(mojang.lookupProfiles(arr))
+    mojangRequests.push(mojangApi.profilesByUsername(arr))
   }
 
   const p = await Promise.all(mojangRequests)
