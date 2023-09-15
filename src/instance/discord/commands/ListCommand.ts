@@ -10,7 +10,7 @@ import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 import { pageMessage } from '../../../util/DiscordPager'
 import { MojangApi, MojangProfile } from '../../../util/Mojang'
 
-function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[] {
+function createEmbed(instances: Map<string, string[]>): Array<JSONEncodable<APIEmbed>> {
   const entries: string[] = []
   let total = 0
 
@@ -52,7 +52,7 @@ function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[
     pages[pages.length - 1].description += entry
   }
 
-  return pages as any as JSONEncodable<APIEmbed>[]
+  return pages as any as Array<JSONEncodable<APIEmbed>>
 }
 
 export default {
