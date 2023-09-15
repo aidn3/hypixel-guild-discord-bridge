@@ -19,7 +19,7 @@ export default {
         name: EventType.JOIN,
         username,
         severity: ColorScheme.GOOD,
-        message: 'joined the guild!',
+        message: `${username} joined the guild!`,
         removeLater: false
       })
     }
