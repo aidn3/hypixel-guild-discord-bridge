@@ -32,7 +32,7 @@ import { MojangApi } from './util/Mojang'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
-  private readonly instances: Array<ClientInstance<any>> = []
+  private readonly instances: ClientInstance<any>[] = []
   private readonly plugins: PluginInterface[] = []
 
   readonly clusterHelper: ClusterHelper

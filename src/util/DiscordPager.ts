@@ -17,7 +17,7 @@ enum Button {
 
 export async function pageMessage(
   interaction: CommandInteraction,
-  pages: Array<JSONEncodable<APIEmbed>>,
+  pages: JSONEncodable<APIEmbed>[],
   duration = 60_000
 ): Promise<Message> {
   let currentPage = 0
