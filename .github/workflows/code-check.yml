@@ -44,3 +44,22 @@ jobs:
       - run: npm i
       - name: Test Compile TypeScript
         run: npx tsc --noEmit
+
+  run:
+    name: Test Run
+    needs: ['lint', 'compile']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm i
+      - run: touch .test_bridge
+      - name: Test Run Project
+        run: npm run test:run

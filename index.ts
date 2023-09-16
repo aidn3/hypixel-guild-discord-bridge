@@ -22,6 +22,12 @@ process.on('uncaughtException', function (e) {
 
 process.title = packageJson.name
 
+if (process.argv.includes('test-run')) {
+  logger.warn('Argument passed to run in testing mode')
+  logger.warn('Returning from program with exit code 0')
+  process.exit(0)
+}
+
 const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
