@@ -11,10 +11,6 @@ export default class RateLimiter {
     this.interval = interval
   }
 
-  execute(func: ((value: any) => any) | null | undefined): void {
-    void this.wait().then(func)
-  }
-
   async wait(): Promise<void> {
     let currentTime
     for (;;) {
