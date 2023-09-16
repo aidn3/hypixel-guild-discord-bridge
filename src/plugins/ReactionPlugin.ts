@@ -1,5 +1,6 @@
 import { PluginInterface, PluginContext } from '../common/Plugins'
 import { EventType } from '../common/ApplicationEvent'
+import * as assert from 'assert'
 
 const JoinMessages = [
   'Welcome %s to our guild!',
@@ -36,20 +37,23 @@ export default {
       if (!context.config.allowSocketInstance && context.getLocalInstance(event.instanceName) == null) return
 
       if (event.name === EventType.JOIN) {
+        assert(event.username)
         let message = JoinMessages[Math.floor(Math.random() * JoinMessages.length)]
-        message = message.replaceAll('%s', event.username as string)
+        message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
 
       if (event.name === EventType.LEAVE) {
+        assert(event.username)
         let message = LeaveMessages[Math.floor(Math.random() * LeaveMessages.length)]
-        message = message.replaceAll('%s', event.username as string)
+        message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
 
       if (event.name === EventType.KICK) {
+        assert(event.username)
         let message = KickMessages[Math.floor(Math.random() * KickMessages.length)]
-        message = message.replaceAll('%s', event.username as string)
+        message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
     })
