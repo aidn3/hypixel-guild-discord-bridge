@@ -56,7 +56,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       })
       return
     } else if (reason === 'disconnect.quitting') {
-      const reason = "Client quit on its own volition. No further trying to reconnect."
+      const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
       this.clientInstance.logger.debug(reason)
       this.clientInstance.app.emit('instance', {
