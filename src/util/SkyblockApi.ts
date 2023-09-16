@@ -15,9 +15,10 @@ setInterval(
   1000 * 60 * 5
 ) // 5 minutes
 
-export async function getNetworth(profileData: unknown, bankBalance: number): Promise<number> {
+export async function getNetworth(profileData: unknown, bankBalance: number, museumData: unknown): Promise<number> {
   return await calculateNetworth(profileData, bankBalance, {
     prices,
+    museumData: museumData,
     onlyNetworth: true
   }).then((res) => res.networth)
 }
