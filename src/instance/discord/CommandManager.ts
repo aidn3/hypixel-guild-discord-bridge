@@ -87,7 +87,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private interactionCreate(interaction: BaseInteraction): Promise<any> | undefined {
+  private async interactionCreate(interaction: BaseInteraction): Promise<void> {
     if (!interaction.isCommand()) return
 
     this.clientInstance.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
@@ -97,24 +97,27 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       if (command == null) {
         this.clientInstance.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
-        return interaction.reply({
+        await interaction.reply({
           content: 'Command is not implemented somehow. Maybe there is new version?',
           ephemeral: true
         })
+        return
       } else if (!this.channelAllowed(interaction)) {
         this.clientInstance.logger.debug(`can't execute in channel ${interaction.channelId}`)
 
-        return interaction.reply({
+        await interaction.reply({
           content: 'You can only use commands in public/officer bridge channels!',
           ephemeral: true
         })
+        return
       } else if (!this.memberAllowed(interaction, command.permission)) {
         this.clientInstance.logger.debug('No permission to execute this command')
 
-        return interaction.reply({
+        await interaction.reply({
           content: "You don't have permission to execute this command",
           ephemeral: true
         })
+        return
       } else {
         this.clientInstance.logger.debug('execution granted.')
 
@@ -137,14 +140,16 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       this.clientInstance.logger.error(error)
 
       if (interaction.deferred || interaction.replied) {
-        return interaction.editReply({
+        await interaction.editReply({
           content: 'There was an error while executing command'
         })
+        return
       } else {
-        return interaction.reply({
+        await interaction.reply({
           content: 'There was an error while executing command',
           ephemeral: true
         })
+        return
       }
     }
   }

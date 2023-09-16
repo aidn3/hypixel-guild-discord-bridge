@@ -1,9 +1,9 @@
 import DiscordInstance from '../DiscordInstance'
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 
-function createPing(latency: number, websocket: number, lag: number): any {
+function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {
     color: ColorScheme.DEFAULT,
     title: 'Discord Ping',

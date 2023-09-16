@@ -21,7 +21,7 @@ export default class ClientSocket {
     })
     app.on('*', (name, ...args) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-      const event: BaseEvent = args[0]
+      const event: BaseEvent = args[0] as BaseEvent
       if (event.localEvent) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.client.emit(name, ...args)

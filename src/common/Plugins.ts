@@ -8,7 +8,7 @@ export interface PluginInterface {
 export interface PluginContext {
   application: Application
   config: PluginsConfig
-  getLocalInstance: (instanceName: string) => ClientInstance<any> | undefined
+  getLocalInstance: (instanceName: string) => ClientInstance<unknown> | undefined
 }
 
 export interface PluginsConfig {

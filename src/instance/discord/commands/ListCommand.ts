@@ -1,6 +1,6 @@
 import DiscordInstance from '../DiscordInstance'
 import { escapeDiscord } from '../../../util/DiscordMessageUtil'
-import { APIEmbed, ChatInputCommandInteraction, JSONEncodable, SlashCommandBuilder } from 'discord.js'
+import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import { LOCATION } from '../../../common/ClientInstance'
 import { MinecraftRawChatEvent } from '../../../common/ApplicationEvent'
@@ -10,7 +10,7 @@ import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 import { pageMessage } from '../../../util/DiscordPager'
 import { MojangApi, MojangProfile } from '../../../util/Mojang'
 
-function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[] {
+function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   const entries: string[] = []
   let total = 0
 
@@ -52,7 +52,7 @@ function createEmbed(instances: Map<string, string[]>): JSONEncodable<APIEmbed>[
     pages[pages.length - 1].description += entry
   }
 
-  return pages as any as JSONEncodable<APIEmbed>[]
+  return pages as APIEmbed[]
 }
 
 export default {
