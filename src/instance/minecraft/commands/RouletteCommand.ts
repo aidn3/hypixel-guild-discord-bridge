@@ -23,15 +23,9 @@ export default {
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {
-    const choice = Number(context.args[0])
+    const chance = 1 / 6
 
-    if (choice < 1 || choice > 6) {
-      return `${context.username}, a revolver only has 6 bullets.`
-    }
-
-    const random = Math.floor(Math.random() * 6 + 1)
-
-    if (choice === random) {
+    if (Math.random() < chance) {
       await context.clientInstance.send(`/g mute ${context.username} 15m`)
       context.clientInstance.app.punishedUsers.mute(context.username, 900)
 
