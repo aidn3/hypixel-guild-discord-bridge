@@ -1,6 +1,6 @@
 import { ClientInstance } from './ClientInstance'
 
-export default abstract class EventHandler<K extends ClientInstance<any>> {
+export default abstract class EventHandler<K extends ClientInstance<unknown>> {
   clientInstance: K
 
   constructor(clientInstance: K) {

@@ -26,8 +26,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     })
   }
 
-  private async onMessage(event_: any): Promise<void> {
-    const event = event_ as Message
+  private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
     const content = cleanMessage(event)
