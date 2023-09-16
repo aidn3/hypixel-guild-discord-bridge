@@ -15,7 +15,7 @@ for (const dependency in packageJson.dependencies) {
 }
 
 logger.debug('Loading modules and setting up process...')
-process.on('uncaughtException', function(e) {
+process.on('uncaughtException', function (e) {
   logger.fatal(e)
   process.exitCode = 1
 })
