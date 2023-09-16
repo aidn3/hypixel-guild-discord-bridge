@@ -1,5 +1,5 @@
 export class PunishedUsers {
-  private muted: Array<{ name: string; till: number }> = []
+  private muted: { name: string; till: number }[] = []
 
   mutedTill(name: string): number | undefined {
     this.clean()

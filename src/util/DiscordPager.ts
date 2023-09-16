@@ -4,7 +4,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   CommandInteraction,
-  JSONEncodable,
   Message,
   TextBasedChannel,
   TextChannel
@@ -17,7 +16,7 @@ enum Button {
 
 export async function pageMessage(
   interaction: CommandInteraction,
-  pages: Array<JSONEncodable<APIEmbed>>,
+  pages: APIEmbed[],
   duration = 60_000
 ): Promise<Message> {
   let currentPage = 0
@@ -66,6 +65,8 @@ export async function pageMessage(
   })
 }
 
+// discord library api doesn't export correct type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createButtons(interactionId: string, currentPage: number, totalPages: number): any {
   return new ActionRowBuilder()
     .addComponents(

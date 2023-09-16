@@ -11,7 +11,8 @@
     "prettier:fix": "npx prettier . --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "test:compile": "npx tsc --noEmit",
-    "validate": "npx prettier . --write --list-different && npx eslint . --fix && npx tsc --noEmit"
+    "test:run": "node --require ts-node/register index.ts test-run",
+    "validate": "npx prettier . --write --list-different && npx eslint . --fix && npx tsc --noEmit && npm run test:run"
   },
   "license": "MIT",
   "keywords": [
@@ -43,15 +44,15 @@
     "yaml": "^2.2.2"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.48.2",
-    "eslint": "8.22.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-config-standard-with-typescript": "^31.0.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^15.6.1",
-    "eslint-plugin-promise": "^6.1.1",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-jsdoc": "^43.0.1",
+    "eslint-plugin-json": "^2.1.1",
+    "eslint-plugin-prettier": "^3.1.4",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.2.2"
   }
 }

@@ -7,14 +7,7 @@ import Application from './src/Application'
 console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
 
-logger.debug('Test loading all libraries...')
-
-for (const dependency in packageJson.dependencies) {
-  logger.trace(`Test-loading ${dependency}...`)
-  require(dependency)
-}
-
-logger.debug('Loading modules and setting up process...')
+logger.debug('Setting up process...')
 process.on('uncaughtException', function (e) {
   logger.fatal(e)
   process.exitCode = 1
@@ -22,7 +15,14 @@ process.on('uncaughtException', function (e) {
 
 process.title = packageJson.name
 
-const file = process?.argv[2] ?? './config.yaml'
+if (process.argv.includes('test-run')) {
+  logger.warn('Argument passed to run in testing mode')
+  logger.warn('Test Loading finished.')
+  logger.warn('Returning from program with exit code 0')
+  process.exit(0)
+}
+
+const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
 app.on('*', (name, ...args) => {

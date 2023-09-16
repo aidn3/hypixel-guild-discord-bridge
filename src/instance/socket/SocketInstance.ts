@@ -12,7 +12,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
     super(app, instanceName, LOCATION.SOCKET, socketConfig)
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.serverSocket != null) {
       this.logger.trace('Socket Server exists. Shutting it down...')
       this.serverSocket.shutdown()
@@ -25,7 +25,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
     if (this.config.type === SocketType.SERVER) {
       this.logger.debug(`Creating socket Server on port ${this.config.port}...`)
       this.serverSocket = new ServerSocket(this.app, this.logger, this.config.port, this.config.key)
-    } else if (this.config.type === SocketType.CLIENT) {
+    } else {
       this.logger.debug(`Creating socket Client and connecting to ${this.config.uri}...`)
       this.clientSocket = new ClientSocket(this.app, this.logger, this.config.uri, this.config.key)
     }

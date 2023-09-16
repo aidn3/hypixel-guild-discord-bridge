@@ -1,5 +1,4 @@
 import { Message, TextChannel } from 'discord.js'
-// @ts-expect-error type not exist
 import * as emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji(message: string): string {
@@ -10,7 +9,7 @@ function cleanGuildEmoji(message: string): string {
 
 function cleanStandardEmoji(message: string): string {
   for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
-    message = message.replaceAll(emojiUnicode as string, `:${emojiReadable}:`)
+    message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
   }
 
   return message
@@ -47,7 +46,7 @@ export const escapeDiscord = function (message: string): string {
 }
 
 export const getReplyUsername = async function (messageEvent: Message): Promise<string | undefined> {
-  if (messageEvent.reference == null || messageEvent.reference.messageId === undefined) return
+  if (messageEvent.reference?.messageId === undefined) return
 
   const channel = messageEvent.channel as TextChannel
   const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)

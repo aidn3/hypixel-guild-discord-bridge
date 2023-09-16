@@ -43,7 +43,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       // null is strictly checked due to api specification
       if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
-        void this.connect()
+        this.connect()
       }
     })
 
@@ -69,11 +69,11 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       if (event.name === EventType.BLOCK) return
       if (event.name === EventType.REPEAT) return
 
-      void this.send(`/gc @[${event.instanceName ?? 'Main'}]: ${event.message}`)
+      void this.send(`/gc @[${event.instanceName}]: ${event.message}`)
     })
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     if (this.client != null) this.client.quit()
 
     this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
@@ -91,18 +91,18 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   username(): string | undefined {
-    return this.client?.player?.username
+    return this.client?.player.username
   }
 
   uuid(): string | undefined {
-    const uuid = this.client?.player?.uuid
+    const uuid = this.client?.player.uuid
     return uuid != null ? uuid.split('-').join('') : undefined
   }
 
   async send(message: string): Promise<void> {
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if (this?.client?.player != null) {
+      if (this.client?.player != null) {
         this.client.chat(message)
       }
     })

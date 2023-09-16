@@ -4,7 +4,7 @@ import Application from '../../Application'
 
 export default class GuildOnlineMetrics {
   private readonly guildTotalMembersCount
-  private readonly guildOnlineMembersCount: Gauge<string>
+  private readonly guildOnlineMembersCount: Gauge
 
   constructor(register: Registry, prefix: string) {
     this.guildTotalMembersCount = new Gauge({

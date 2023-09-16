@@ -1,5 +1,5 @@
 import Application from '../../Application'
-import { Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
+import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
 
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
 import StateHandler from './handlers/StateHandler'
@@ -140,7 +140,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
         footer: {
           text: event.instanceName
         }
-      }
+      } satisfies APIEmbed
       if (event.username != null) {
         const extra = {
           title: escapeDiscord(event.username),
@@ -150,7 +150,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
         Object.assign(embed, extra)
       }
 
-      const resP = channel.send({ embeds: [embed as any] })
+      const resP = channel.send({ embeds: [embed] })
 
       if (event.removeLater) {
         const deleteAfter = this.config.deleteTempEventAfter

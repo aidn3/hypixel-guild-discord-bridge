@@ -32,7 +32,7 @@ import { MojangApi } from './util/Mojang'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
-  private readonly instances: Array<ClientInstance<any>> = []
+  private readonly instances: ClientInstance<unknown>[] = []
   private readonly plugins: PluginInterface[] = []
 
   readonly clusterHelper: ClusterHelper
@@ -109,8 +109,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
       this.plugins = paths.map((f) => {
         this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        return require(f).default
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires
+        return require(f).default as PluginInterface
       })
     } else {
       this.plugins = []
@@ -163,9 +163,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 }
 
 function emitAll(emitter: Events): void {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const old = emitter.emit
-  emitter.emit = (event: string, ...args: Parameters<any>): boolean => {
+  emitter.emit = (event: string, ...args): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (event !== '*') emitter.emit('*', event, ...args)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return old.call(emitter, event, ...args)
   }
 }
@@ -176,7 +179,7 @@ export interface ApplicationEvents {
    * @param event event name
    * @param args event arguments
    */
-  '*': (event: string, ...args: any) => void
+  '*': (event: string, ...args: unknown[]) => void
 
   /**
    * User sending messages

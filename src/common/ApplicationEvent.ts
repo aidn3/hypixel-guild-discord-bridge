@@ -95,7 +95,7 @@ export interface MinecraftSelfBroadcast extends InformEvent {
   uuid: string
 }
 
-export interface InstanceSelfBroadcast extends InformEvent {}
+export type InstanceSelfBroadcast = InformEvent
 
 /**
  * @deprecated Command api for a specific instance is deprecated. Use the more broad api events.
@@ -111,6 +111,6 @@ export interface MinecraftSendChat extends SignalEvent {
   command: string
 }
 
-export interface InstanceRestartSignal extends SignalEvent {}
+export type InstanceRestartSignal = SignalEvent
 
-export interface ShutdownSignal extends SignalEvent {}
+export type ShutdownSignal = SignalEvent

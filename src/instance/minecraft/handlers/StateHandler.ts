@@ -91,7 +91,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     })
 
     setTimeout(() => {
-      void this.clientInstance.connect()
+      this.clientInstance.connect()
     }, loginDelay)
     this.clientInstance.status = Status.CONNECTING
   }

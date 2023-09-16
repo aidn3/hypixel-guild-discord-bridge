@@ -23,8 +23,10 @@ export default class ServerSocket {
     })
 
     app.on('*', (name, ...args) => {
-      const event: BaseEvent = args[0]
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const event: BaseEvent = args[0] as BaseEvent
       if (event.localEvent) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.server.emit(name, ...args)
       }
     })
@@ -34,12 +36,15 @@ export default class ServerSocket {
       app.broadcastLocalInstances()
 
       socket.onAny((name, ...args) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const event: BaseEvent = args[0]
         event.localEvent = false
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         app.emit(name, ...args)
 
         for (const [id, s] of this.server.sockets.sockets.entries()) {
-          if (id !== socket?.id) s.emit(name, ...args)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          if (id !== socket.id) s.emit(name, ...args)
         }
       })
     })

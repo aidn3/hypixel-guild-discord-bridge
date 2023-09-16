@@ -13,13 +13,17 @@ export default class ClientSocket {
     })
 
     this.client.onAny((name, ...args) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const event: BaseEvent = args[0]
       event.localEvent = false
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       app.emit(name, ...args)
     })
     app.on('*', (name, ...args) => {
-      const event: BaseEvent = args[0]
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+      const event: BaseEvent = args[0] as BaseEvent
       if (event.localEvent) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.client.emit(name, ...args)
       }
     })

@@ -9,7 +9,7 @@ import WebhookConfig from './common/WebhookConfig'
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private readonly discordBot: Client | null
   private readonly client: WebhookClient | undefined
-  private connected: boolean = false
+  private connected = false
 
   constructor(app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
     super(app, instanceName, LOCATION.WEBHOOK, config)
@@ -32,7 +32,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     })
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     // Need to redesign to support reconnecting.
     // Check this commit for further information
     if (this.connected) {
@@ -55,8 +55,8 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     }
   }
 
-  private onChatMessage(event: Message<any>): void {
-    if (event?.webhookId !== this.config.receiveId) return
+  private onChatMessage(event: Message): void {
+    if (event.webhookId !== this.config.receiveId) return
 
     const content = cleanMessage(event)
     if (content.length === 0) return
