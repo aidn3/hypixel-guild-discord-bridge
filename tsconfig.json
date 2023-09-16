@@ -11,5 +11,8 @@
     "typeRoots": ["./src/type", "./node_modules/@types"],
     "skipLibCheck": true
   },
+  "ts-node": {
+    "files": true
+  },
   "exclude": ["node_modules", "build"]
 }
