@@ -44,7 +44,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
 
   private onEnd(reason: string): void {
     if (this.clientInstance.status === Status.FAILED) {
-      const reason = `Status is ${this.clientInstance.status}. no further retrying to reconnect.`
+      const reason = `Status is ${this.clientInstance.status}. No further trying to reconnect.`
 
       this.clientInstance.logger.warn(reason)
       this.clientInstance.app.emit('instance', {
@@ -56,7 +56,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       })
       return
     } else if (reason === 'disconnect.quitting') {
-      const reason = 'Client quit on its own volition. no further retrying to reconnect.'
+      const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
       this.clientInstance.logger.debug(reason)
       this.clientInstance.app.emit('instance', {
@@ -120,7 +120,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         type: InstanceEventType.kick,
         message:
           `Client ${this.clientInstance.instanceName} has been kicked.\n` +
-          'Attempting to reconnect will be made soon\n\n' +
+          'Attempting to reconnect soon\n\n' +
           reason.toString()
       })
     }

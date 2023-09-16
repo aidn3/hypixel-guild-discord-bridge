@@ -19,7 +19,7 @@ export default {
         name: EventType.KICK,
         username,
         severity: ColorScheme.BAD,
-        message: `${username} was kicked!`,
+        message: context.message,
         removeLater: false
       })
     }
