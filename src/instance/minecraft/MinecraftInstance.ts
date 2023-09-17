@@ -35,7 +35,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       new RawChatHandler(this),
       new SelfBroadcastHandler(this),
       new SendChatHandler(this),
-
       new ChatManager(this)
     ]
 
@@ -43,7 +42,9 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       // null is strictly checked due to api specification
       if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
-        this.connect()
+        void this.send(`/gc @Instance restarting...`).then(() => {
+          this.connect()
+        })
       }
     })
 
