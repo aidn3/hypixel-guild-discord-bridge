@@ -1,3 +1,8 @@
+## Official Discord Tags
+
+- `aidn5`
+- `__hx__`
+
 # hypixel-guild-discord-bridge
 
 <img src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
