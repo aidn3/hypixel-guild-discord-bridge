@@ -1,7 +1,9 @@
 # hypixel-guild-discord-bridge
 
-<img src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
-
+<p>
+  <img src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
+  <a href="https://discord.gg/ej7tQHPF8y"><img src="https://img.shields.io/discord/1002575659694043206?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
+</p>
 Service connects multiple guilds and discord server together  
 This project is made to be fully flexible and customizable
 offering quality user experience while keeping it simple
