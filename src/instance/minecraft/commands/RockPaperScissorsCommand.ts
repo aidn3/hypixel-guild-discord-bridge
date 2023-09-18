@@ -17,22 +17,16 @@ export default {
       return `${context.username}, I chose ${computerChoice}, We tied!`
     }
 
-    if (userChoice === 'paper') {
-      if (computerChoice === 'rock') {
-        return `${context.username}, I chose ${computerChoice}, You won!`
-      }
+    if (userChoice === 'paper' && computerChoice === 'rock') {
+      return `${context.username}, I chose ${computerChoice}, You won!`
     }
 
-    if (userChoice === 'scissors') {
-      if (computerChoice === 'paper') {
-        return `${context.username}, I chose ${computerChoice}, You won!`
-      }
+    if (userChoice === 'scissors' && computerChoice === 'paper') {
+      return `${context.username}, I chose ${computerChoice}, You won!`
     }
 
-    if (userChoice === 'rock') {
-      if (computerChoice === 'scissors') {
-        return `${context.username}, I chose ${computerChoice}, You won!`
-      }
+    if (userChoice === 'rock' && computerChoice === 'scissors') {
+      return `${context.username}, I chose ${computerChoice}, You won!`
     }
 
     return `${context.username}, I chose ${computerChoice}, You lost!`
