@@ -21,20 +21,14 @@ export default {
 
     if (userChoice === computerChoice) {
       return `${context.username}, I chose ${computerChoice}, We tied!`
-    }
-
-    if (userChoice === CommandOptions.PAPER && computerChoice === CommandOptions.ROCK) {
+    } else if (
+      (userChoice === CommandOptions.PAPER && computerChoice === CommandOptions.ROCK) ||
+      (userChoice === CommandOptions.SCISSORS && computerChoice === CommandOptions.PAPER) ||
+      (userChoice === CommandOptions.ROCK && computerChoice === CommandOptions.SCISSORS)
+    ) {
       return `${context.username}, I chose ${computerChoice}, You won!`
+    } else {
+      return `${context.username}, I chose ${computerChoice}, You lost!`
     }
-
-    if (userChoice === CommandOptions.SCISSORS && computerChoice === CommandOptions.PAPER) {
-      return `${context.username}, I chose ${computerChoice}, You won!`
-    }
-
-    if (userChoice === CommandOptions.ROCK && computerChoice === CommandOptions.SCISSORS) {
-      return `${context.username}, I chose ${computerChoice}, You won!`
-    }
-
-    return `${context.username}, I chose ${computerChoice}, You lost!`
   }
 } satisfies ChatCommandHandler
