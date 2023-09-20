@@ -4,9 +4,8 @@
  Minecraft username: _aura
 */
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
-import { HypixelSkyblock, HypixelSkyblockMuseum } from '../../../type/HypixelApiType'
+import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import Axios from 'axios'
 
 export default {
@@ -26,13 +25,12 @@ export default {
 
     const selectedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((response: unknown) => response as HypixelSkyblock)
       .then((res) => res.profiles.filter((p) => p.selected)[0])
 
     const museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.clientInstance.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
     )
-      .then((res) => res.data as unknown as HypixelSkyblockMuseum)
+      .then((res) => res.data as unknown as HypixelSkyblockMuseumRaw)
       .then((museum) => museum.members[uuid])
 
     const networthLocalized = await getNetworth(

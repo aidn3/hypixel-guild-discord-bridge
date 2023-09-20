@@ -1,6 +1,5 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
-import { HypixelSkyblock } from '../../../type/HypixelApiType'
 
 export default {
   triggers: ['catacomb', 'cata'],
@@ -30,7 +29,6 @@ export default {
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((res) => res as unknown as HypixelSkyblock)
     .then((res) => res.profiles.filter((p) => p.selected)[0].cute_name)
 
   return await hypixelApi
