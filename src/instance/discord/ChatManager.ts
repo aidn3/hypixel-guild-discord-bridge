@@ -3,13 +3,10 @@ import EventHandler from '../../common/EventHandler'
 import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import DiscordInstance from './DiscordInstance'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
-import BadWordsType from '../../type/BadWords'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const BadWords = require('bad-words') as typeof BadWordsType
+import * as BadWords from 'bad-words'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
-  private readonly profanityFilter: BadWordsType
+  private readonly profanityFilter: BadWords
 
   constructor(clientInstance: DiscordInstance) {
     super(clientInstance)
