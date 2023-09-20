@@ -15,6 +15,7 @@ import LevelCommand from './commands/LevelCommand'
 import NetworthCommand from './commands/NetworthCommand'
 import RockPaperScissorsCommand from './commands/RockPaperScissorsCommand'
 import RouletteCommand from './commands/RouletteCommand'
+import SkillCommand from './commands/SkillCommand'
 import WeightCommand from './commands/WeightCommand'
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
@@ -36,6 +37,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       NetworthCommand,
       RockPaperScissorsCommand,
       RouletteCommand,
+      SkillCommand,
       WeightCommand
     ]
 
