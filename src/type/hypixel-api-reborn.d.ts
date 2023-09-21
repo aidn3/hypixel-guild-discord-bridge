@@ -22,6 +22,33 @@ declare module 'hypixel-api-reborn' {
 
   export interface HypixelSkyblockMemberRaw {
     leveling?: { experience?: number }
+    dungeons: {
+      dungeon_types: {
+        catacombs: {
+          tier_completions: {
+            '0': number
+            '1': number
+            '2': number
+            '3': number
+            '4': number
+            '5': number
+            '6': number
+            '7': number
+          }
+        }
+        master_catacombs: {
+          tier_completions: {
+            '1': number
+            '2': number
+            '3': number
+            '4': number
+            '5': number
+            '6': number
+            '7': number
+          }
+        }
+      }
+    }
   }
 
   export interface HypixelSkyblockMuseumRaw {
