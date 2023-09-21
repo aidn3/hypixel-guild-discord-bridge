@@ -22,6 +22,15 @@ declare module 'hypixel-api-reborn' {
 
   export interface HypixelSkyblockMemberRaw {
     leveling?: { experience?: number }
+    nether_island_player_data: {
+      kuudra_completed_tiers: {
+        none: number
+        hot: number
+        burning: number
+        fiery: number
+        infernal: number
+      }
+    }
   }
 
   export interface HypixelSkyblockMuseumRaw {

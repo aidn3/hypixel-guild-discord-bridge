@@ -11,6 +11,7 @@ import EightBallCommand from './commands/EightBallCommand'
 import ExplainCommand from './commands/ExplainCommand'
 import GuildCommand from './commands/GuildCommand'
 import IqCommand from './commands/IqCommand'
+import KuudraCommand from './commands/KuudraCommand'
 import LevelCommand from './commands/LevelCommand'
 import NetworthCommand from './commands/NetworthCommand'
 import RockPaperScissorsCommand from './commands/RockPaperScissorsCommand'
@@ -32,6 +33,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       ExplainCommand,
       GuildCommand,
       IqCommand,
+      KuudraCommand,
       LevelCommand,
       NetworthCommand,
       RockPaperScissorsCommand,
