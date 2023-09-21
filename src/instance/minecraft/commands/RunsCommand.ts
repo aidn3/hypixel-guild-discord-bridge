@@ -1,5 +1,5 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import { Client, HypixelSkyblockMemberRaw, HypixelSkyblockRaw } from 'hypixel-api-reborn'
+import { Client, HypixelSkyblockMemberRaw } from 'hypixel-api-reborn'
 
 enum Catacombs {
   'entrance' = '0',
@@ -59,7 +59,7 @@ export default {
     if (dungeonType == 'mastermode') {
       amount =
         parsedProfile.dungeons.dungeon_types.master_catacombs.tier_completions[
-        MasterMode[floor as keyof typeof MasterMode]
+          MasterMode[floor as keyof typeof MasterMode]
         ]
     }
 
