@@ -26,8 +26,8 @@ export default {
   triggers: ['runs', 'r'],
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
+    const floor = context.args[0]
     const givenUsername = context.args[1] ?? context.username
-    const floor = context.args[0].toLowerCase()
     let dungeonType = null
 
     if (Object.keys(Catacombs).includes(floor)) {
@@ -59,7 +59,7 @@ export default {
     if (dungeonType == 'mastermode') {
       amount =
         parsedProfile.dungeons.dungeon_types.master_catacombs.tier_completions[
-          MasterMode[floor as keyof typeof MasterMode]
+        MasterMode[floor as keyof typeof MasterMode]
         ]
     }
 
@@ -68,12 +68,7 @@ export default {
 } satisfies ChatCommandHandler
 
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<HypixelSkyblockMemberRaw> {
-  const selectedProfile = await hypixelApi
-    .getSkyblockProfiles(uuid, { raw: true })
-    .then((res) => res as unknown as HypixelSkyblockRaw)
-    .then((res) => res.profiles.filter((p) => p.selected)[0].cute_name)
-
   return await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((profiles) => profiles.profiles.filter((profile) => profile.cute_name === selectedProfile)[0].members[uuid])
+    .then((res) => res.profiles.filter((p) => p.selected)[0].members[uuid])
 }
