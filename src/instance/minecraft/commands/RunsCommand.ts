@@ -1,5 +1,4 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import { Client, HypixelSkyblockMemberRaw } from 'hypixel-api-reborn'
 
 enum Catacombs {
   'entrance' = '0',
@@ -26,7 +25,7 @@ export default {
   triggers: ['runs', 'r'],
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
-    const floor = context.args[0]
+    const floor = context.args[0]?.toLowerCase()
     const givenUsername = context.args[1] ?? context.username
     let dungeonType = null
 
@@ -49,7 +48,9 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
+    const parsedProfile = await context.clientInstance.app.hypixelApi
+      .getSkyblockProfiles(uuid, { raw: true })
+      .then((res) => res.profiles.filter((p) => p.selected)[0].members[uuid])
     let amount = 0
 
     if (dungeonType == 'catacombs') {
@@ -66,9 +67,3 @@ export default {
     return `${givenUsername}: ${floor} - ${amount || 0}`
   }
 } satisfies ChatCommandHandler
-
-async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<HypixelSkyblockMemberRaw> {
-  return await hypixelApi
-    .getSkyblockProfiles(uuid, { raw: true })
-    .then((res) => res.profiles.filter((p) => p.selected)[0].members[uuid])
-}
