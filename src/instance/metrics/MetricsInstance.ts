@@ -50,6 +50,11 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
           res.end(await this.register.metrics())
         })()
       }
+      if (route === '/ping') {
+        this.logger.debug('Ping recieved')
+        res.writeHead(200)
+        res.end()
+      }
     })
   }
 
