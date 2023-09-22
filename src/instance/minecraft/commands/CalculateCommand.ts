@@ -3,9 +3,8 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-
 import { evalExpression } from '@hkh12/node-calc'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['calculate', 'calc', 'c'],

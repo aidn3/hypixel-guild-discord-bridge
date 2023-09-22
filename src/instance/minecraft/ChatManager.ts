@@ -1,6 +1,6 @@
 import { ChatMessage } from 'prismarine-chat'
-import MinecraftInstance from './MinecraftInstance'
 import EventHandler from '../../common/EventHandler'
+import MinecraftInstance from './MinecraftInstance'
 import { MinecraftChatMessage } from './common/ChatInterface'
 import { CommandsManager } from './CommandsManager'
 

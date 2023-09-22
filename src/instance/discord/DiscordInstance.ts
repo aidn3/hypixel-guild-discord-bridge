@@ -1,15 +1,15 @@
-import Application from '../../Application'
+import * as assert from 'assert'
 import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
+import Application from '../../Application'
 
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
+import { escapeDiscord } from '../../util/DiscordMessageUtil'
+import { ChatEvent, ClientEvent, EventType, InstanceEvent } from '../../common/ApplicationEvent'
 import StateHandler from './handlers/StateHandler'
 
 import ChatManager from './ChatManager'
 import { CommandManager } from './CommandManager'
-import { escapeDiscord } from '../../util/DiscordMessageUtil'
-import { ChatEvent, ClientEvent, EventType, InstanceEvent } from '../../common/ApplicationEvent'
 import { ColorScheme, DiscordConfig } from './common/DiscordConfig'
-import * as assert from 'assert'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly handlers

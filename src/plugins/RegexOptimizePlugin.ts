@@ -1,9 +1,8 @@
+import { getEventListeners } from 'events'
 import { PluginInterface, PluginContext } from '../common/Plugins'
 import { LOCATION } from '../common/ClientInstance'
 import { InstanceEventType } from '../common/ApplicationEvent'
 import MinecraftInstance from '../instance/minecraft/MinecraftInstance'
-
-import { getEventListeners } from 'events'
 
 /*
  * Event 'messagestr' is used by some complicated regex that can take MINUTES to resolve

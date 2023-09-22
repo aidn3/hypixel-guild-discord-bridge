@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client'
+import { Logger } from 'log4js'
 import Application from '../../Application'
 import { BaseEvent } from '../../common/ApplicationEvent'
-import { Logger } from 'log4js'
 
 export default class ClientSocket {
   private readonly client: Socket
