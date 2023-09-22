@@ -20,7 +20,6 @@
     "sourceType": "module",
     "project": true
   },
-  "rules": {}
   "rules": {
     "import/order": 2,
     "import/no-unresolved": 0,
