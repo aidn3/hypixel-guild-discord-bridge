@@ -58,6 +58,10 @@ export const getReplyUsername = async function (messageEvent: Message): Promise<
 }
 
 export const getReadableName = function (username: string, id: string): string {
+  // clear all non ASCII characters
+  // eslint-disable-next-line no-control-regex
+  username = username.replace(/[^\x00-\x7F]/g, '')
+
   username = username.trim().slice(0, 16)
 
   if (/^\w+$/.test(username)) return username
