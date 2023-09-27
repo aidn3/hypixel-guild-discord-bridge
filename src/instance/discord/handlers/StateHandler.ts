@@ -1,6 +1,6 @@
+import * as assert from 'assert'
 import EventHandler from '../../../common/EventHandler'
 import DiscordInstance from '../DiscordInstance'
-import * as assert from 'assert'
 
 export default class StateHandler extends EventHandler<DiscordInstance> {
   registerEvents(): void {

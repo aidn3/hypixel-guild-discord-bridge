@@ -1,5 +1,4 @@
 import MineFlayer = require('mineflayer')
-import ChatManager from './ChatManager'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
 import {
@@ -9,6 +8,9 @@ import {
   InstanceEventType,
   MinecraftCommandResponse
 } from '../../common/ApplicationEvent'
+import RateLimiter from '../../util/RateLimiter'
+import { antiSpamString } from '../../util/SharedUtil'
+import ChatManager from './ChatManager'
 import RawChatHandler from './handlers/RawChatHandler'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'
@@ -16,8 +18,6 @@ import ErrorHandler from './handlers/ErrorHandler'
 import StateHandler from './handlers/StateHandler'
 import MinecraftConfig from './common/MinecraftConfig'
 import { resolveProxyIfExist } from './common/ProxyHandler'
-import RateLimiter from '../../util/RateLimiter'
-import { antiSpamString } from '../../util/SharedUtil'
 
 const commandsLimiter = new RateLimiter(1, 1000)
 

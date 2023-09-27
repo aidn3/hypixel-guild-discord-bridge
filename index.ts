@@ -1,6 +1,6 @@
+import { configure } from 'log4js'
 import { loadApplicationConfig } from './src/ApplicationConfig'
 import * as logConfig from './config/log4js-config.json'
-import { configure } from 'log4js'
 import * as packageJson from './package.json'
 import Application from './src/Application'
 

@@ -3,10 +3,10 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
 import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import Axios from 'axios'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
 
 export default {
   triggers: ['networth', 'net', 'nw'],

@@ -1,6 +1,6 @@
+import * as assert from 'assert'
 import { PluginInterface, PluginContext } from '../common/Plugins'
 import { EventType } from '../common/ApplicationEvent'
-import * as assert from 'assert'
 
 const JoinMessages = [
   'Welcome %s to our guild!',

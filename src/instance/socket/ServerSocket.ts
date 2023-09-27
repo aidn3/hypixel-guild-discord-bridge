@@ -1,8 +1,8 @@
 import { Server, Socket } from 'socket.io'
 import { ExtendedError } from 'socket.io/dist/namespace'
+import { Logger } from 'log4js'
 import Application from '../../Application'
 import { BaseEvent } from '../../common/ApplicationEvent'
-import { Logger } from 'log4js'
 
 export default class ServerSocket {
   private readonly server: Server

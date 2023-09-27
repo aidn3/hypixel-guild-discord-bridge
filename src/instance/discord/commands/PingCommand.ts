@@ -1,5 +1,5 @@
-import DiscordInstance from '../DiscordInstance'
 import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import DiscordInstance from '../DiscordInstance'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 

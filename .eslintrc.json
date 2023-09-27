@@ -9,6 +9,7 @@
   "parser": "@typescript-eslint/parser",
   "extends": [
     "prettier",
+    "plugin:import/recommended",
     "eslint:recommended",
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
@@ -19,5 +20,10 @@
     "sourceType": "module",
     "project": true
   },
-  "rules": {}
+  "rules": {
+    "import/order": 2,
+    "import/no-unresolved": 0,
+    "import/no-cycle": 2,
+    "import/newline-after-import": 2
+  }
 }

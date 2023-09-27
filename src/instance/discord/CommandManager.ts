@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import {
   BaseInteraction,
   ChatInputCommandInteraction,
@@ -29,7 +30,6 @@ import RestartCommand from './commands/RestartCommand'
 import SetrankCommand from './commands/SetrankCommand'
 import ShutdownCommand from './commands/ShutdownCommand'
 import UnmuteCommand from './commands/UnmuteCommand'
-import * as assert from 'assert'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
   private readonly commands = new Collection<string, DiscordCommandInterface>()

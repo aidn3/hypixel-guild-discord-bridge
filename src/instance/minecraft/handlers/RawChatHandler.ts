@@ -1,6 +1,6 @@
+import { ChatMessage } from 'prismarine-chat'
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from '../MinecraftInstance'
-import { ChatMessage } from 'prismarine-chat'
 import { LOCATION } from '../../../common/ClientInstance'
 
 export default class RawChatHandler extends EventHandler<MinecraftInstance> {

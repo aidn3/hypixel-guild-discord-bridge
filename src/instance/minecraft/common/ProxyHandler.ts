@@ -1,10 +1,10 @@
-import MinecraftConfig from './MinecraftConfig'
 import * as Http from 'http'
+import * as assert from 'assert'
 import { SocksClient } from 'socks'
 import type { Client } from 'minecraft-protocol'
-import { ProxyProtocol } from '../../../common/ProxyInterface'
 import { Logger } from 'log4js'
-import * as assert from 'assert'
+import { ProxyProtocol } from '../../../common/ProxyInterface'
+import MinecraftConfig from './MinecraftConfig'
 
 export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftConfig): Partial<ClientProxyOptions> {
   const proxyConfig = minecraftConfig.proxy

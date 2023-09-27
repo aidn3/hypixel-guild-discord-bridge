@@ -1,5 +1,5 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['catacomb', 'cata'],

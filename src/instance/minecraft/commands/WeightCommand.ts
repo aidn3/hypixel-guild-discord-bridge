@@ -3,9 +3,9 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import Axios, { AxiosResponse } from 'axios'
 import * as assert from 'assert'
+import Axios, { AxiosResponse } from 'axios'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['weight', 'w'],
