@@ -5,7 +5,7 @@
     "es2021": true,
     "node": true
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "unicorn"],
   "parser": "@typescript-eslint/parser",
   "extends": [
     "prettier",
@@ -13,6 +13,7 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
+    "plugin:unicorn/recommended",
     "prettier/@typescript-eslint"
   ],
   "parserOptions": {
@@ -21,6 +22,7 @@
     "project": true
   },
   "rules": {
+    "no-use-before-define": 0,
     "import/order": 2,
     "import/no-unresolved": 0,
     "import/no-cycle": 2,
