@@ -32,7 +32,7 @@ export default {
     const museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.clientInstance.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
     )
-      .then((res) => res.data as unknown as HypixelSkyblockMuseumRaw)
+      .then((response) => response.data as HypixelSkyblockMuseumRaw)
       .then((museum) => museum.members[uuid])
 
     const networthLocalized = await getNetworth(
