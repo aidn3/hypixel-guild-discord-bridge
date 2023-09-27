@@ -3,7 +3,7 @@ import * as emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji(message: string): string {
   return message.replaceAll(/<:(\w+):\d{16,}>/g, (match) => {
-    return match.substring(1, match.length - 1).replaceAll(/\d{16,}/g, '')
+    return match.slice(1, -1).replaceAll(/\d{16,}/g, '')
   })
 }
 
