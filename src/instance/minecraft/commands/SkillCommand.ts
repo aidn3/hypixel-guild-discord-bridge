@@ -1,5 +1,6 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import { SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
+import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
+import { HypixelSkyblock } from '../../../type/HypixelApiType'
 
 const SKILLS = [
   'farming',
@@ -36,9 +37,7 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await context.clientInstance.app.hypixelApi
-      .getSkyblockProfiles(uuid)
-      .then((res) => res.filter((p) => p.profileName)[0].me)
+    const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
 
     // @ts-expect-error Ignoring impossible to trigger scenario
     const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember['skills']]
@@ -46,6 +45,17 @@ export default {
     return `${givenUsername}: ${skill} - ${formatLevel(skillData.level, skillData.progress)}`
   }
 } satisfies ChatCommandHandler
+
+async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
+  const selectedProfile = await hypixelApi
+    .getSkyblockProfiles(uuid, { raw: true })
+    .then((res) => res as unknown as HypixelSkyblock)
+    .then((res) => res.profiles.filter((p) => p.selected)[0].cute_name)
+
+  return await hypixelApi
+    .getSkyblockProfiles(uuid)
+    .then((profiles) => profiles.filter((profile) => profile.profileName === selectedProfile)[0].me)
+}
 
 function formatLevel(level: number, progress: number): number {
   let formattedLevel = 0
