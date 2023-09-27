@@ -1,3 +1,4 @@
+import * as assert from 'node:assert'
 import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { Client, Status } from 'hypixel-api-reborn'
 import DiscordInstance from '../DiscordInstance'
@@ -49,7 +50,9 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
     }
 
     currentLength += entry.length
-    pages.at(-1).description += entry
+    const lastPage = pages.at(-1)
+    assert(lastPage)
+    lastPage.description += entry
   }
 
   return pages as APIEmbed[]

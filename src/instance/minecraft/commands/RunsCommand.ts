@@ -1,3 +1,4 @@
+import * as assert from 'node:assert'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 enum Catacombs {
@@ -52,7 +53,9 @@ export default {
 
     const parsedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((p) => p.selected).members[uuid])
+      .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
+    assert(parsedProfile)
+
     let amount = 0
 
     if (dungeonType == 'catacombs') {

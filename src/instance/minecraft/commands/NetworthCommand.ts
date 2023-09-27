@@ -3,6 +3,7 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
+import * as assert from 'node:assert'
 import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import Axios from 'axios'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
@@ -28,6 +29,7 @@ export default {
     const selectedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles.find((p) => p.selected))
+    assert(selectedProfile)
 
     const museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.clientInstance.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`

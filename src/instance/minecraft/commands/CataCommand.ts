@@ -1,3 +1,4 @@
+import * as assert from 'node:assert'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
@@ -31,11 +32,14 @@ export default {
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((response) => response.profiles.find((p) => p.selected).cute_name)
+    .then((response) => response.profiles.find((p) => p.selected)?.cute_name)
+  assert(selectedProfile)
 
-  return await hypixelApi
+  const response = await hypixelApi
     .getSkyblockProfiles(uuid)
-    .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile).me)
+    .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile)?.me)
+  assert(response)
+  return response
 }
 
 function formatClass(member: SkyblockMember): string {
