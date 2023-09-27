@@ -20,7 +20,7 @@ export async function getNetworth(profileData: unknown, bankBalance: number, mus
     prices,
     museumData: museumData,
     onlyNetworth: true
-  }).then((res) => res.networth)
+  }).then((response) => response.networth)
 }
 
 export function localizedNetworth(coins: number): string {

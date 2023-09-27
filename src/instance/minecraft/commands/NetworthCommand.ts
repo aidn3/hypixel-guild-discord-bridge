@@ -25,7 +25,7 @@ export default {
 
     const selectedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((res) => res.profiles.find((p) => p.selected))
+      .then((response) => response.profiles.find((p) => p.selected))
 
     const museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.clientInstance.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`

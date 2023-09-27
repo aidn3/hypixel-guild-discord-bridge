@@ -51,18 +51,18 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
     })
     request.end()
 
-    request.on('connect', (res, stream) => {
+    request.on('connect', (response, stream) => {
       logger.debug('connection to proxy established. forwarding proxied connection to minecraft')
       client.setSocket(stream)
       client.emit('connect')
     })
 
-    request.once('error', (e) => {
+    request.once('error', (error) => {
       logger.error('proxy encountered a problem')
-      logger.error(e)
+      logger.error(error)
 
       logger.error('destroying proxy socket')
-      request.destroy(e)
+      request.destroy(error)
 
       logger.warn('ending minecraft session if any exist')
       client.end()

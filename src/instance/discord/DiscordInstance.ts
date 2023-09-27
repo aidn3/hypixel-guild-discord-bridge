@@ -151,13 +151,13 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
         Object.assign(embed, extra)
       }
 
-      const resP = channel.send({ embeds: [embed] })
+      const responsePromise = channel.send({ embeds: [embed] })
 
       if (event.removeLater) {
         const deleteAfter = this.config.deleteTempEventAfter
         setTimeout(
           () => {
-            void resP.then(async (res) => await res.delete())
+            void responsePromise.then(async (response) => await response.delete())
           },
           deleteAfter * 60 * 1000
         )

@@ -38,22 +38,22 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
       void this.collectMetrics()
     }, config.interval * 1000)
 
-    this.httpServer = http.createServer((request, res) => {
+    this.httpServer = http.createServer((request, response) => {
       // TODO: handle other paths and close the connection
       if (request.url == undefined) return
       const route = url.parse(request.url).pathname
       if (route === '/metrics') {
         this.logger.debug('Metrics scrap is called on /metrics')
-        res.setHeader('Content-Type', this.register.contentType)
+        response.setHeader('Content-Type', this.register.contentType)
 
         void (async () => {
-          res.end(await this.register.metrics())
+          response.end(await this.register.metrics())
         })()
       }
       if (route === '/ping') {
         this.logger.debug('Ping recieved')
-        res.writeHead(200)
-        res.end()
+        response.writeHead(200)
+        response.end()
       }
     })
   }

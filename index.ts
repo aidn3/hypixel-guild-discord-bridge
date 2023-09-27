@@ -8,8 +8,8 @@ console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
 
 logger.debug('Setting up process...')
-process.on('uncaughtException', function (e) {
-  logger.fatal(e)
+process.on('uncaughtException', function (error) {
+  logger.fatal(error)
   process.exitCode = 1
 })
 

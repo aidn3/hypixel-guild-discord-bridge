@@ -19,7 +19,7 @@ export default {
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles)
       .then((profiles) => profiles.find((p) => p.selected))
-      .then((res) => res.members[uuid].leveling?.experience ?? 0)
+      .then((response) => response.members[uuid].leveling?.experience ?? 0)
       .then((exp) => (exp / 100).toFixed(2))
 
     return `${givenUsername}'s level: ${levelLocalized}`

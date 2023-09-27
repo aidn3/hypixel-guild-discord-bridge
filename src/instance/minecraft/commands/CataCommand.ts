@@ -29,7 +29,7 @@ export default {
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((res) => res.profiles.find((p) => p.selected).cute_name)
+    .then((response) => response.profiles.find((p) => p.selected).cute_name)
 
   return await hypixelApi
     .getSkyblockProfiles(uuid)

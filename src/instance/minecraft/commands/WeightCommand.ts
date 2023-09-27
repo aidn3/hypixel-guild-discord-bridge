@@ -18,7 +18,7 @@ export default {
 
 async function getSenitherData(username: string): Promise<number> {
   const res = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
-    (res: AxiosResponse) => res.data as SkyShiiyuResponse
+    (response: AxiosResponse) => response.data as SkyShiiyuResponse
   )
 
   const selected = Object.values(res.profiles).find((profile) => profile.current)
