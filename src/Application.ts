@@ -85,6 +85,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     if (this.config.plugins.enabled) {
+      // eslint-disable-next-line unicorn/prefer-module
       const mainPath = require.main?.path ?? process.cwd()
       this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
       let paths
@@ -104,7 +105,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
       this.plugins = paths.map((f) => {
         this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires,unicorn/prefer-module
         return require(f).default as PluginInterface
       })
     } else {
