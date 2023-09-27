@@ -1,10 +1,10 @@
+import * as assert from 'node:assert'
 import { io, Socket } from 'socket.io-client'
 
 import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
 import Application from '../../Application'
 import { ChatEvent } from '../../common/ApplicationEvent'
 import GlobalConfig from './common/GlobalConfig'
-import * as assert from 'assert'
 
 export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   private client: Socket | undefined
@@ -18,7 +18,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   }
 
   connect(): void {
-    if (this.client != null) this.client.close()
+    if (this.client != undefined) this.client.close()
 
     assert(this.config.key)
     const authData = { accessKey: this.config.key }
@@ -38,6 +38,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
 
     if (event.scope === SCOPE.PUBLIC) {
       const payload = JSON.stringify({
+        // eslint-disable-next-line unicorn/no-null
         username: null,
         displayName: event.username,
         message: event.message,
@@ -54,7 +55,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
 
     const username: string = parsed.displayName ?? parsed.username
 
-    if (this.app.punishedUsers.mutedTill(username) != null) {
+    if (this.app.punishedUsers.mutedTill(username) != undefined) {
       this.logger.debug(`${username} is muted. ignoring this Global message.`)
       return
     }

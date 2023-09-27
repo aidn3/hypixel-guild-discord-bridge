@@ -4,10 +4,10 @@ import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterf
 export default {
   onChat: function (context: MinecraftChatContext): void {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
-    const regex = /^Guild > (?:\[[A-Z+]{1,10}\] ){0,3}(\w{3,32})(?: \[\w{1,10}\]){0,3}:(.{1,256})/g
+    const regex = /^Guild > (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})(?: \[\w{1,10}]){0,3}:(.{1,256})/g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const username = match[1]
       const playerMessage = match[2].trim()
 
@@ -17,7 +17,7 @@ export default {
       ) {
         return
       }
-      if (context.application.punishedUsers.mutedTill(username) != null) return
+      if (context.application.punishedUsers.mutedTill(username) != undefined) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
       // NOTE: Changed after ESLINT
       void context.commandsManager.publicCommandHandler(context.clientInstance, username, playerMessage)

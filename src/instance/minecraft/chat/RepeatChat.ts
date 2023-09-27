@@ -26,7 +26,7 @@ export default {
     const regex = /^You cannot say the same message twice!/g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
 
       context.application.emit('event', {
@@ -41,9 +41,9 @@ export default {
         removeLater: false
       })
 
-      if (lastWarning + 5000 < new Date().getTime()) {
+      if (lastWarning + 5000 < Date.now()) {
         void context.clientInstance.send(`/gc @${randomMessage}`)
-        lastWarning = new Date().getTime()
+        lastWarning = Date.now()
       }
     }
   }

@@ -1,15 +1,12 @@
 import { Message } from 'discord.js'
+import * as BadWords from 'bad-words'
 import EventHandler from '../../common/EventHandler'
 import { LOCATION, SCOPE } from '../../common/ClientInstance'
-import DiscordInstance from './DiscordInstance'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
-import BadWordsType from '../../type/BadWords'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const BadWords = require('bad-words') as typeof BadWordsType
+import DiscordInstance from './DiscordInstance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
-  private readonly profanityFilter: BadWordsType
+  private readonly profanityFilter: BadWords.BadWords
 
   constructor(clientInstance: DiscordInstance) {
     super(clientInstance)
@@ -33,11 +30,11 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (content.length === 0) return
 
     const replyUsername = await getReplyUsername(event)
-    const readableReplyUsername = replyUsername != null ? getReadableName(replyUsername, replyUsername) : undefined
+    const readableReplyUsername = replyUsername == undefined ? undefined : getReadableName(replyUsername, replyUsername)
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = getReadableName(discordName, event.author.id)
 
-    if (this.clientInstance.config.publicChannelIds.some((id) => id === event.channel.id)) {
+    if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
       if (await this.hasBeenMuted(event, discordName, readableName)) return
       const filteredMessage = await this.proceedFiltering(event, content)
 
@@ -53,7 +50,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       })
     }
 
-    if (this.clientInstance.config.officerChannelIds.some((id) => id === event.channel.id)) {
+    if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
       this.clientInstance.app.emit('chat', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
@@ -74,7 +71,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       punishedUsers.mutedTill(readableName) ??
       punishedUsers.mutedTill(event.author.id)
 
-    if (mutedTill != null) {
+    if (mutedTill != undefined) {
       await event.reply({
         content:
           '*Looks like you are muted on the chat-bridge.*\n' +
@@ -91,7 +88,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     let filteredMessage: string
     try {
       filteredMessage = this.profanityFilter.clean(content)
-    } catch (ignored) {
+    } catch {
       // profanity package has bug.
       // will throw error if given one special character.
       // example: clean("?")

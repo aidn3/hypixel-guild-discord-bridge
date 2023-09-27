@@ -73,8 +73,8 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     if (loginDelay === 0) {
       loginDelay = (this.loginAttempts + 1) * 5000
 
-      if (loginDelay > 60000) {
-        loginDelay = 60000
+      if (loginDelay > 60_000) {
+        loginDelay = 60_000
       }
     }
 

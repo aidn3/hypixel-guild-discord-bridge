@@ -3,8 +3,8 @@ import MinecraftInstance from '../MinecraftInstance'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {
-    this.clientInstance.client?.on('error', (err: Error) => {
-      this.onError(err)
+    this.clientInstance.client?.on('error', (error: Error) => {
+      this.onError(error)
     })
   }
 
@@ -16,7 +16,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       )
       setTimeout(() => {
         this.clientInstance.connect()
-      }, 30000)
+      }, 30_000)
     }
   }
 }

@@ -1,5 +1,4 @@
 import MineFlayer = require('mineflayer')
-import ChatManager from './ChatManager'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
 import {
@@ -9,6 +8,9 @@ import {
   InstanceEventType,
   MinecraftCommandResponse
 } from '../../common/ApplicationEvent'
+import RateLimiter from '../../util/RateLimiter'
+import { antiSpamString } from '../../util/SharedUtil'
+import ChatManager from './ChatManager'
 import RawChatHandler from './handlers/RawChatHandler'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'
@@ -16,8 +18,6 @@ import ErrorHandler from './handlers/ErrorHandler'
 import StateHandler from './handlers/StateHandler'
 import MinecraftConfig from './common/MinecraftConfig'
 import { resolveProxyIfExist } from './common/ProxyHandler'
-import RateLimiter from '../../util/RateLimiter'
-import { antiSpamString } from '../../util/SharedUtil'
 
 const commandsLimiter = new RateLimiter(1, 1000)
 
@@ -39,8 +39,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     ]
 
     this.app.on('restartSignal', (event) => {
-      // null is strictly checked due to api specification
-      if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
+      // undefined is strictly checked due to api specification
+      if (event.targetInstanceName === undefined || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
         void this.send(`/gc @Instance restarting...`).then(() => {
           this.connect()
@@ -75,7 +75,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   connect(): void {
-    if (this.client != null) this.client.quit()
+    if (this.client != undefined) this.client.quit()
 
     this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
     this.app.emit('instance', {
@@ -86,9 +86,9 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       message: 'Minecraft instance has been created'
     })
 
-    this.handlers.forEach((handler) => {
+    for (const handler of this.handlers) {
       handler.registerEvents()
-    })
+    }
   }
 
   username(): string | undefined {
@@ -97,13 +97,13 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
   uuid(): string | undefined {
     const uuid = this.client?.player.uuid
-    return uuid != null ? uuid.split('-').join('') : undefined
+    return uuid == undefined ? undefined : uuid.split('-').join('')
   }
 
   async send(message: string): Promise<void> {
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if (this.client?.player != null) {
+      if (this.client?.player != undefined) {
         this.client.chat(message)
       }
     })
@@ -120,7 +120,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     if (this.app.config.general.displayInstanceName) full += `[${this.instanceName}] `
 
     full += username
-    if (replyUsername != null) full += `⇾${replyUsername}`
+    if (replyUsername != undefined) full += `⇾${replyUsername}`
     full += ': '
     full += message
       .split('\n')

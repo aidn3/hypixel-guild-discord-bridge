@@ -103,6 +103,7 @@ offering quality user experience while keeping it simple
 | !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
 | !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
 | !skill     | Returns player's skill level `!skill mining`    | Anyone     |
+| !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
 
 ### How to execute commands
 

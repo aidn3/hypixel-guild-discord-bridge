@@ -11,11 +11,9 @@ interface InformEvent extends BaseEvent {
 
 interface SignalEvent extends BaseEvent {
   /**
-   * null is strictly used for global target.
-   * undefined must never be used to make sure
-   * in case of stray undefined being passed due to misconfigured instance name.
+   * undefined is strictly used for global target.
    */
-  targetInstanceName: string | null
+  targetInstanceName: string | undefined
 }
 
 export interface ChatEvent extends InformEvent {

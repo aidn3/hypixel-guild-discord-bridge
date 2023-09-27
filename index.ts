@@ -1,6 +1,6 @@
+import { configure } from 'log4js'
 import { loadApplicationConfig } from './src/ApplicationConfig'
 import * as logConfig from './config/log4js-config.json'
-import { configure } from 'log4js'
 import * as packageJson from './package.json'
 import Application from './src/Application'
 
@@ -8,8 +8,8 @@ console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
 
 logger.debug('Setting up process...')
-process.on('uncaughtException', function (e) {
-  logger.fatal(e)
+process.on('uncaughtException', function (error) {
+  logger.fatal(error)
   process.exitCode = 1
 })
 
@@ -19,14 +19,15 @@ if (process.argv.includes('test-run')) {
   logger.warn('Argument passed to run in testing mode')
   logger.warn('Test Loading finished.')
   logger.warn('Returning from program with exit code 0')
+  // eslint-disable-next-line unicorn/no-process-exit
   process.exit(0)
 }
 
 const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
-app.on('*', (name, ...args) => {
-  logger.log(`[${name}] ${JSON.stringify(args)}`)
+app.on('*', (name, ...arguments_) => {
+  logger.log(`[${name}] ${JSON.stringify(arguments_)}`)
 })
 
 app

@@ -20,10 +20,10 @@ export default {
     const command = `/g invite ${username}`
 
     const instance: string | null = interaction.options.getString('instance')
-    if (instance != null) {
-      clientInstance.app.clusterHelper.sendCommandToMinecraft(instance, command)
-    } else {
+    if (instance == undefined) {
       clientInstance.app.clusterHelper.sendCommandToAllMinecraft(command)
+    } else {
+      clientInstance.app.clusterHelper.sendCommandToMinecraft(instance, command)
     }
 
     await interaction.editReply(`Command sent to invite ${username}!`)
