@@ -19,6 +19,7 @@ if (process.argv.includes('test-run')) {
   logger.warn('Argument passed to run in testing mode')
   logger.warn('Test Loading finished.')
   logger.warn('Returning from program with exit code 0')
+  // eslint-disable-next-line unicorn/no-process-exit
   process.exit(0)
 }
 
