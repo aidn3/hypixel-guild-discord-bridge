@@ -39,7 +39,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
     this.addDefaultCommands()
 
-    let timeoutId: null | NodeJS.Timeout = null
+    let timeoutId: undefined | NodeJS.Timeout
     const timerReset = (): void => {
       if (timeoutId != undefined) clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {

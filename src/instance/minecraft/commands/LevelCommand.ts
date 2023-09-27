@@ -9,7 +9,9 @@ export default {
     const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((p) => p.id)
-      .catch(() => null)
+      .catch(() => {
+        /* return undefined */
+      })
 
     if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`

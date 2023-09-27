@@ -38,6 +38,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
 
     if (event.scope === SCOPE.PUBLIC) {
       const payload = JSON.stringify({
+        // eslint-disable-next-line unicorn/no-null
         username: null,
         displayName: event.username,
         message: event.message,

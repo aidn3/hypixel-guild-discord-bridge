@@ -39,8 +39,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     ]
 
     this.app.on('restartSignal', (event) => {
-      // null is strictly checked due to api specification
-      if (event.targetInstanceName === null || event.targetInstanceName === this.instanceName) {
+      // undefined is strictly checked due to api specification
+      if (event.targetInstanceName === undefined || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
         void this.send(`/gc @Instance restarting...`).then(() => {
           this.connect()

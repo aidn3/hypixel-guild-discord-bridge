@@ -7,11 +7,11 @@ import { cleanMessage, escapeDiscord } from '../../util/DiscordMessageUtil'
 import WebhookConfig from './common/WebhookConfig'
 
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
-  private readonly discordBot: Client | null
+  private readonly discordBot: Client | undefined
   private readonly client: WebhookClient | undefined
   private connected = false
 
-  constructor(app: Application, instanceName: string, discordBot: Client | null, config: WebhookConfig) {
+  constructor(app: Application, instanceName: string, discordBot: Client | undefined, config: WebhookConfig) {
     super(app, instanceName, LOCATION.WEBHOOK, config)
 
     this.discordBot = discordBot

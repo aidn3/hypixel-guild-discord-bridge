@@ -56,7 +56,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.punishedUsers = new PunishedUsers()
     this.clusterHelper = new ClusterHelper(this)
 
-    let discordInstance: DiscordInstance | null = null
+    let discordInstance: DiscordInstance | undefined
     if (this.config.discord.key != undefined) {
       discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
       this.instances.push(discordInstance)
@@ -64,12 +64,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
     for (const instanceConfig of this.config.webhooks) {
       this.instances.push(
-        new WebhookInstance(
-          this,
-          instanceConfig.instanceName,
-          discordInstance == undefined ? null : discordInstance.client,
-          instanceConfig
-        )
+        new WebhookInstance(this, instanceConfig.instanceName, discordInstance?.client, instanceConfig)
       )
     }
 

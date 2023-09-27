@@ -27,7 +27,7 @@ export default {
   handler: async function (context: ChatCommandContext): Promise<string> {
     const floor = context.args[0]?.toLowerCase()
     const givenUsername = context.args[1] ?? context.username
-    let dungeonType = null
+    let dungeonType: string | undefined = undefined
 
     if (Object.keys(Catacombs).includes(floor)) {
       dungeonType = 'catacombs'
@@ -35,14 +35,16 @@ export default {
     if (Object.keys(MasterMode).includes(floor)) {
       dungeonType = 'mastermode'
     }
-    if (dungeonType === null) {
+    if (dungeonType === undefined) {
       return `${context.username}, Invalid floor! (given: ${floor})`
     }
 
     const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
-      .catch(() => null)
+      .catch(() => {
+        /* return undefined */
+      })
 
     if (uuid == undefined) {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
