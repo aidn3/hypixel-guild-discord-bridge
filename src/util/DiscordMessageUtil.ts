@@ -22,7 +22,7 @@ export function cleanMessage(messageEvent: Message): string {
   content = cleanStandardEmoji(content).trim()
 
   if (messageEvent.attachments.size > 0) {
-    for (const attachment of messageEvent.attachments) {
+    for (const [, attachment] of messageEvent.attachments) {
       content += attachment.contentType?.includes('image') === true ? ` ${attachment.url}` : ' (ATTACHMENT)'
     }
   }

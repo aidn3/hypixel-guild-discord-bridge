@@ -37,7 +37,7 @@ export default class ClusterHelper {
 
   getMinecraftBotsUuid(): string[] {
     const uuids: string[] = []
-    for (const v of this.minecraftBots) uuids.push(v.uuid)
+    for (const [, v] of this.minecraftBots) uuids.push(v.uuid)
     return uuids
   }
 
