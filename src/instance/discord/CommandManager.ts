@@ -163,7 +163,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     const clientId = this.clientInstance.client.application.id
     const commandsJson = this.getCommandsJson()
 
-    for (const guild of this.clientInstance.client.guilds.cache) {
+    for (const [, guild] of this.clientInstance.client.guilds.cache) {
       this.clientInstance.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
       void rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
