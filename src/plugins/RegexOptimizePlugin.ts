@@ -20,7 +20,7 @@ export default {
             console.log('Removing buggy code')
             const listeners = getEventListeners(client, 'messagestr')
             for (const l of listeners) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-explicit-any
+              // @ts-expect-error We are just removing all listeners to a specific key. No need to know the specific of the listener
               client.removeListener('messagestr', l)
             }
           })
