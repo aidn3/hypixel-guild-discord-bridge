@@ -54,7 +54,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
   }
 
   private onMessage(message: string): void {
-    this.chatModules.forEach((e) => {
+    for (const e of this.chatModules) {
       e.onChat({
         application: this.clientInstance.app,
         clientInstance: this.clientInstance,
@@ -62,6 +62,6 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
         commandsManager: this.commandsManager,
         message
       })
-    })
+    }
   }
 }

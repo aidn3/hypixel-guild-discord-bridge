@@ -5,10 +5,10 @@ import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
-    const regex = /^(?:\[[A-Z+]{1,10}\] )*(\w{3,32}) was demoted from /g
+    const regex = /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was demoted from /g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const username = match[1]
 
       context.application.emit('event', {

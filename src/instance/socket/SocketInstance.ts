@@ -13,11 +13,11 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
   }
 
   connect(): void {
-    if (this.serverSocket != null) {
+    if (this.serverSocket != undefined) {
       this.logger.trace('Socket Server exists. Shutting it down...')
       this.serverSocket.shutdown()
     }
-    if (this.clientSocket != null) {
+    if (this.clientSocket != undefined) {
       this.logger.trace('Socket Client exists. Shutting it down...')
       this.clientSocket.shutdown()
     }

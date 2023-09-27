@@ -8,7 +8,7 @@ export default {
     const regex = /^Guild > (\w{3,32}) joined./g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const username = match[1]
 
       context.application.emit('event', {

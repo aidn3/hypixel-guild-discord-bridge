@@ -15,7 +15,7 @@ export default {
     const computerChoice = choices[Math.floor(Math.random() * choices.length)]
     const userChoice = context.args[0] as CommandOptions | undefined
 
-    if (userChoice == null || !choices.includes(userChoice)) {
+    if (userChoice == undefined || !choices.includes(userChoice)) {
       return `${context.username}, choose rock, paper or scissors!`
     }
 

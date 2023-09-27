@@ -5,10 +5,10 @@ import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
-    const regex = /^(?:\[[A-Za-z+]{3,10}\] ){0,3}(\w{3,32}) joined the guild!/g
+    const regex = /^(?:\[[+A-Za-z]{3,10}] ){0,3}(\w{3,32}) joined the guild!/g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const username = match[1]
 
       context.application.emit('event', {

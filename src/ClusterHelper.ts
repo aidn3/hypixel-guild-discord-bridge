@@ -37,13 +37,13 @@ export default class ClusterHelper {
 
   getMinecraftBotsUuid(): string[] {
     const uuids: string[] = []
-    this.minecraftBots.forEach((v) => uuids.push(v.uuid))
+    for (const v of this.minecraftBots) uuids.push(v.uuid)
     return uuids
   }
 
   getInstancesNames(location: LOCATION): string[] {
     const instanceNames = this.instancesNames.get(location)
-    if (instanceNames == null) return []
+    if (instanceNames == undefined) return []
 
     const result: string[] = []
     for (const instanceName of instanceNames) {
@@ -62,7 +62,7 @@ export default class ClusterHelper {
 
   private instanceBroadcast(instanceName: string, location: LOCATION): void {
     let collection = this.instancesNames.get(location)
-    if (collection == null) {
+    if (collection == undefined) {
       collection = new Set<string>()
       this.instancesNames.set(location, collection)
     }

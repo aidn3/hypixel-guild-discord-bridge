@@ -17,12 +17,12 @@ export default {
       .then((p) => p.id)
       .catch(() => null)
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
 
     const guild = await context.clientInstance.app.hypixelApi.getGuild('player', uuid, {}).catch(() => null)
-    if (guild == null) return `${givenUsername} is not in a guild.`
+    if (guild == undefined) return `${givenUsername} is not in a guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
     return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? 'unknown'}`

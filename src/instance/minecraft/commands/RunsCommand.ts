@@ -44,13 +44,13 @@ export default {
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => null)
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
     const parsedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((res) => res.profiles.filter((p) => p.selected)[0].members[uuid])
+      .then((res) => res.profiles.find((p) => p.selected).members[uuid])
     let amount = 0
 
     if (dungeonType == 'catacombs') {

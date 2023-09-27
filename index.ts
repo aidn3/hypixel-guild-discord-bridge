@@ -25,8 +25,8 @@ if (process.argv.includes('test-run')) {
 const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
-app.on('*', (name, ...args) => {
-  logger.log(`[${name}] ${JSON.stringify(args)}`)
+app.on('*', (name, ...arguments_) => {
+  logger.log(`[${name}] ${JSON.stringify(arguments_)}`)
 })
 
 app

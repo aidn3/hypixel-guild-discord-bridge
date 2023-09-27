@@ -1,4 +1,4 @@
-import { getEventListeners } from 'events'
+import { getEventListeners } from 'node:events'
 import { PluginInterface, PluginContext } from '../common/Plugins'
 import { LOCATION } from '../common/ClientInstance'
 import { InstanceEventType } from '../common/ApplicationEvent'
@@ -14,7 +14,7 @@ export default {
     context.application.on('instance', (event) => {
       if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
         const localInstance = context.getLocalInstance(event.instanceName)
-        if (localInstance != null) {
+        if (localInstance != undefined) {
           const client = (localInstance as MinecraftInstance).client
           client?.on('messagestr', () => {
             console.log('Removing buggy code')

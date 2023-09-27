@@ -15,14 +15,15 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     super(app, instanceName, LOCATION.WEBHOOK, config)
 
     this.discordBot = discordBot
-    if (config.sendUrl != null) this.client = new WebhookClient({ url: config.sendUrl })
+    if (config.sendUrl != undefined) this.client = new WebhookClient({ url: config.sendUrl })
 
     this.app.on('chat', (event: ChatEvent): void => {
       if (event.instanceName === this.instanceName) return
       if (event.scope !== SCOPE.PUBLIC) return
 
       // TODO: integrate instanceName into webhook messages
-      const displayUsername = event.replyUsername != null ? `${event.username}▸${event.replyUsername}` : event.username
+      const displayUsername =
+        event.replyUsername == undefined ? event.username : `${event.username}▸${event.replyUsername}`
 
       void this.client?.send({
         content: escapeDiscord(event.message),
@@ -41,16 +42,16 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     }
     this.connected = true
 
-    if (this.config.receiveId != null) {
-      if (this.discordBot != null) {
-        this.discordBot.on('messageCreate', (message) => {
-          this.onChatMessage(message)
-        })
-      } else {
+    if (this.config.receiveId != undefined) {
+      if (this.discordBot == undefined) {
         this.logger.warn(
           'Discord instance is not setup. Webhook can not receive messages. ' +
             'Sending will still work if a link is given though'
         )
+      } else {
+        this.discordBot.on('messageCreate', (message) => {
+          this.onChatMessage(message)
+        })
       }
     }
   }
@@ -61,7 +62,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     const content = cleanMessage(event)
     if (content.length === 0) return
 
-    if (this.app.punishedUsers.mutedTill(event.member?.displayName ?? event.author.displayName) != null) {
+    if (this.app.punishedUsers.mutedTill(event.member?.displayName ?? event.author.displayName) != undefined) {
       this.logger.debug(`${event.author.username} is muted. Ignoring this webhook message.`)
       return
     }

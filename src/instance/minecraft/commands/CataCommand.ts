@@ -12,7 +12,7 @@ export default {
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => null)
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
 
@@ -29,11 +29,11 @@ export default {
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((res) => res.profiles.filter((p) => p.selected)[0].cute_name)
+    .then((res) => res.profiles.find((p) => p.selected).cute_name)
 
   return await hypixelApi
     .getSkyblockProfiles(uuid)
-    .then((profiles) => profiles.filter((profile) => profile.profileName === selectedProfile)[0].me)
+    .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile).me)
 }
 
 function formatClass(member: SkyblockMember): string {

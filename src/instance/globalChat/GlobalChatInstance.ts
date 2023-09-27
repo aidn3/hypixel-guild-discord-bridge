@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'node:assert'
 import { io, Socket } from 'socket.io-client'
 
 import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
@@ -18,7 +18,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
   }
 
   connect(): void {
-    if (this.client != null) this.client.close()
+    if (this.client != undefined) this.client.close()
 
     assert(this.config.key)
     const authData = { accessKey: this.config.key }
@@ -54,7 +54,7 @@ export default class GlobalChatInstance extends ClientInstance<GlobalConfig> {
 
     const username: string = parsed.displayName ?? parsed.username
 
-    if (this.app.punishedUsers.mutedTill(username) != null) {
+    if (this.app.punishedUsers.mutedTill(username) != undefined) {
       this.logger.debug(`${username} is muted. ignoring this Global message.`)
       return
     }

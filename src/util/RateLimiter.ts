@@ -14,7 +14,7 @@ export default class RateLimiter {
   async wait(): Promise<void> {
     let currentTime
     for (;;) {
-      currentTime = new Date().getTime()
+      currentTime = Date.now()
 
       if (currentTime > this.lastReset + this.interval) {
         this.lastReset = currentTime

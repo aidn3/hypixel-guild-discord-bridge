@@ -19,13 +19,13 @@ export default {
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => null)
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
 
     const selectedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((res) => res.profiles.filter((p) => p.selected)[0])
+      .then((res) => res.profiles.find((p) => p.selected))
 
     const museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.clientInstance.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`

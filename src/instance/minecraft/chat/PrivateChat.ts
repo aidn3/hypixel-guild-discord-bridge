@@ -3,10 +3,10 @@ import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterf
 export default {
   onChat: function (context: MinecraftChatContext): void {
     // REGEX: From [MVP+] USERNAME: MESSAGE
-    const regex = /^From (?:\[[A-Z+]{3,10}\] ){0,3}(\w{3,32}): (.{1,128})/g
+    const regex = /^From (?:\[[+A-Z]{3,10}] ){0,3}(\w{3,32}): (.{1,128})/g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const username = match[1]
       const playerMessage = match[2].trim()
 

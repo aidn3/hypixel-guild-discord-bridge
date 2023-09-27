@@ -3,7 +3,7 @@ declare module 'bad-words' {
     constructor(options?: BadWordsOptions)
 
     clean: (text: string) => string
-    removeWords: (...args: string[]) => void
+    removeWords: (...arguments_: string[]) => void
   }
 
   export interface BadWordsOptions {

@@ -8,7 +8,7 @@ export default {
     const regex = /^We blocked your comment "[\W\w]+" as it is breaking our rules/g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,

@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'node:assert'
 import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
 import Application from '../../Application'
 
@@ -65,9 +65,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
     this.connected = true
 
-    this.handlers.forEach((handler) => {
+    for (const handler of this.handlers) {
       handler.registerEvents()
-    })
+    }
     await this.client.login(this.config.key)
   }
 
@@ -88,7 +88,8 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       if (_channelId === event.channelId) continue
 
       const webhook = await this.getWebhook(_channelId)
-      const displayUsername = event.replyUsername != null ? `${event.username}⇾${event.replyUsername}` : event.username
+      const displayUsername =
+        event.replyUsername == undefined ? event.username : `${event.username}⇾${event.replyUsername}`
 
       // TODO: integrate instanceName
       await webhook.send({
@@ -106,15 +107,15 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     if (event.instanceName === this.instanceName) return
 
     if (event.name === EventType.REPEAT) {
-      if (this.lastRepeatEvent + 5000 < new Date().getTime()) {
-        this.lastRepeatEvent = new Date().getTime()
+      if (this.lastRepeatEvent + 5000 < Date.now()) {
+        this.lastRepeatEvent = Date.now()
       } else {
         return
       }
     }
     if (event.name === EventType.BLOCK) {
-      if (this.lastBlockEvent + 5000 < new Date().getTime()) {
-        this.lastBlockEvent = new Date().getTime()
+      if (this.lastBlockEvent + 5000 < Date.now()) {
+        this.lastBlockEvent = Date.now()
       } else {
         return
       }
@@ -131,7 +132,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
     for (const channelId of channels) {
       const channel = (await this.client.channels.fetch(channelId)) as unknown as TextChannel | null
-      if (channel == null) return
+      if (channel == undefined) return
 
       const embed = {
         description: escapeDiscord(event.message),
@@ -141,7 +142,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
           text: event.instanceName
         }
       } satisfies APIEmbed
-      if (event.username != null) {
+      if (event.username != undefined) {
         const extra = {
           title: escapeDiscord(event.username),
           url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
@@ -169,7 +170,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
     for (const channelId of this.config.publicChannelIds) {
       const channel = await this.client.channels.fetch(channelId)
-      if (channel == null || !(channel instanceof TextChannel)) continue
+      if (channel == undefined || !(channel instanceof TextChannel)) continue
 
       await channel
         .send({
@@ -181,17 +182,17 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
             }
           ]
         })
-        .then(undefined)
+        .then()
     }
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {
     const channel = (await this.client.channels.fetch(channelId)) as unknown as TextBasedChannelFields | null
-    if (channel == null) throw new Error(`no access to channel ${channelId}?`)
+    if (channel == undefined) throw new Error(`no access to channel ${channelId}?`)
     const webhooks = await channel.fetchWebhooks()
 
     let webhook = webhooks.find((h) => h.owner?.id === this.client.user?.id)
-    if (webhook == null) webhook = await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
+    if (webhook == undefined) webhook = await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
     return webhook
   }
 }

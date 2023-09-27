@@ -21,7 +21,7 @@ export default {
   allowInstance: false,
 
   handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
-    const timestamp = new Date().getTime()
+    const timestamp = Date.now()
 
     const defer = await interaction.deferReply({ fetchReply: true })
 
