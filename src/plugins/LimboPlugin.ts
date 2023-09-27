@@ -16,7 +16,7 @@ export default {
     context.application.on('instance', (event) => {
       if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
         const localInstance = context.getLocalInstance(event.instanceName)
-        if (localInstance != null) {
+        if (localInstance != undefined) {
           const clientInstance = localInstance as MinecraftInstance
           clientInstance.client?.on('spawn', async () => {
             await limbo(clientInstance)

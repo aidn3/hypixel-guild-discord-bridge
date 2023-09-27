@@ -1,5 +1,5 @@
-import { getEventListeners } from 'events'
-import { PluginInterface, PluginContext } from '../common/Plugins'
+import { getEventListeners } from 'node:events'
+import { PluginContext, PluginInterface } from '../common/Plugins'
 import { LOCATION } from '../common/ClientInstance'
 import { InstanceEventType } from '../common/ApplicationEvent'
 import MinecraftInstance from '../instance/minecraft/MinecraftInstance'
@@ -14,13 +14,15 @@ export default {
     context.application.on('instance', (event) => {
       if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
         const localInstance = context.getLocalInstance(event.instanceName)
-        if (localInstance != null) {
+        if (localInstance != undefined) {
           const client = (localInstance as MinecraftInstance).client
           client?.on('messagestr', () => {
             console.log('Removing buggy code')
             const listeners = getEventListeners(client, 'messagestr')
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-explicit-any
-            listeners.forEach((l: any) => client.removeListener('messagestr', l))
+            for (const l of listeners) {
+              // @ts-expect-error We are just removing all listeners to a specific key. No need to know the specific of the listener
+              client.removeListener('messagestr', l)
+            }
           })
         }
       }

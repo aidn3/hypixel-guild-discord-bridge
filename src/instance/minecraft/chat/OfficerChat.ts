@@ -4,10 +4,10 @@ import { LOCATION, SCOPE } from '../../../common/ClientInstance'
 export default {
   onChat: function (context: MinecraftChatContext): void {
     // REGEX: Officer > [MVP+] aidn5 [Staff]: hello there.
-    const regex = /^Officer > (?:\[[A-Z+]{1,10}\] ){0,3}(\w{3,32})(?: \[\w{1,10}\]){0,3}:(.{1,256})/g
+    const regex = /^Officer > (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})(?: \[\w{1,10}]){0,3}:(.{1,256})/g
 
     const match = regex.exec(context.message)
-    if (match != null) {
+    if (match != undefined) {
       const username = match[1]
       const playerMessage = match[2].trim()
 

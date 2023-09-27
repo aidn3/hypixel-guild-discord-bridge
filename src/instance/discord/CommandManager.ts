@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'node:assert'
 import {
   BaseInteraction,
   ChatInputCommandInteraction,
@@ -39,9 +39,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
     this.addDefaultCommands()
 
-    let timeoutId: null | NodeJS.Timeout = null
+    let timeoutId: undefined | NodeJS.Timeout
     const timerReset = (): void => {
-      if (timeoutId != null) clearTimeout(timeoutId)
+      if (timeoutId != undefined) clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
         this.registerDiscordCommand()
       }, 5 * 1000)
@@ -94,7 +94,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     const command = this.commands.get(interaction.commandName)
 
     try {
-      if (command == null) {
+      if (command == undefined) {
         this.clientInstance.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
         await interaction.reply({
@@ -110,15 +110,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           ephemeral: true
         })
         return
-      } else if (!this.memberAllowed(interaction, command.permission)) {
-        this.clientInstance.logger.debug('No permission to execute this command')
-
-        await interaction.reply({
-          content: "You don't have permission to execute this command",
-          ephemeral: true
-        })
-        return
-      } else {
+      } else if (this.memberAllowed(interaction, command.permission)) {
         this.clientInstance.logger.debug('execution granted.')
 
         const username =
@@ -135,6 +127,14 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         })
 
         return command.handler(this.clientInstance, interaction as ChatInputCommandInteraction)
+      } else {
+        this.clientInstance.logger.debug('No permission to execute this command')
+
+        await interaction.reply({
+          content: "You don't have permission to execute this command",
+          ephemeral: true
+        })
+        return
       }
     } catch (error) {
       this.clientInstance.logger.error(error)
@@ -163,24 +163,24 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     const clientId = this.clientInstance.client.application.id
     const commandsJson = this.getCommandsJson()
 
-    this.clientInstance.client.guilds.cache.forEach((guild) => {
+    for (const [, guild] of this.clientInstance.client.guilds.cache) {
       this.clientInstance.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
       void rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
-    })
+    }
   }
 
   private memberAllowed(interaction: CommandInteraction, permissionLevel: Permission): boolean {
     if (permissionLevel === Permission.ANYONE || interaction.user.id === this.clientInstance.config.adminId) return true
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
-    if (roles == null) return false
+    if (roles == undefined) return false
 
     let highestPerm = Permission.ANYONE
     if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds?.some((id) => role.id === id))) {
       highestPerm = Permission.HELPER
     }
-    if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.some((id) => role.id === id))) {
+    if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.includes(role.id))) {
       highestPerm = Permission.OFFICER
     }
 
@@ -189,8 +189,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
   private channelAllowed(interaction: CommandInteraction): boolean {
     return (
-      this.clientInstance.config.publicChannelIds.some((id) => interaction.channelId === id) ||
-      this.clientInstance.config.officerChannelIds.some((id) => interaction.channelId === id)
+      this.clientInstance.config.publicChannelIds.includes(interaction.channelId) ||
+      this.clientInstance.config.officerChannelIds.includes(interaction.channelId)
     )
   }
 

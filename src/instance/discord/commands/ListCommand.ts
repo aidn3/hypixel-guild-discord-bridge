@@ -1,3 +1,4 @@
+import * as assert from 'node:assert'
 import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { Client, Status } from 'hypixel-api-reborn'
 import DiscordInstance from '../DiscordInstance'
@@ -49,7 +50,9 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
     }
 
     currentLength += entry.length
-    pages[pages.length - 1].description += entry
+    const lastPage = pages.at(-1)
+    assert(lastPage)
+    lastPage.description += entry
   }
 
   return pages as APIEmbed[]
@@ -101,8 +104,8 @@ async function look(mojangApi: MojangApi, hypixelApi: Client, members: string[])
   const statuses = await Promise.all(onlineProfiles.map(async (profile) => await hypixelApi.getStatus(profile.id)))
 
   const list = []
-  for (let i = 0; i < onlineProfiles.length; i++) {
-    list.push(formatLocation(onlineProfiles[i].name, statuses[i]))
+  for (const [index, onlineProfile] of onlineProfiles.entries()) {
+    list.push(formatLocation(onlineProfile.name, statuses[index]))
   }
   return list
 }
@@ -112,17 +115,17 @@ async function lookupProfiles(mojangApi: MojangApi, usernames: string[]): Promis
   const mojangRequests = []
 
   // https://stackoverflow.com/a/8495740
-  let i
-  let j
-  let arr
+  let index
+  let index_
+  let array
   const chunk = 10
-  for (i = 0, j = usernames.length; i < j; i += chunk) {
-    arr = usernames.slice(i, i + chunk)
-    mojangRequests.push(mojangApi.profilesByUsername(arr))
+  for (index = 0, index_ = usernames.length; index < index_; index += chunk) {
+    array = usernames.slice(index, index + chunk)
+    mojangRequests.push(mojangApi.profilesByUsername(array))
   }
 
   const p = await Promise.all(mojangRequests)
-  return p.flatMap((arr) => arr)
+  return p.flat()
 }
 
 function formatLocation(username: string, session: Status): string {
@@ -131,8 +134,8 @@ function formatLocation(username: string, session: Status): string {
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  if (session.game != null) message += `playing __${escapeDiscord(session.game.name)}__`
-  if (session.mode != null) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
+  if (session.game != undefined) message += `playing __${escapeDiscord(session.game.name)}__`
+  if (session.mode != undefined) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
   message += '*' // END discord markdown. italic
 
   return message
@@ -146,9 +149,9 @@ async function getOnlineMembers(app: Application): Promise<Map<string, string[]>
     if (event.message.length === 0) return
 
     let match = regexOnline.exec(event.message)
-    while (match != null) {
+    while (match != undefined) {
       let members = resolvedNames.get(event.instanceName)
-      if (members == null) {
+      if (members == undefined) {
         members = []
         resolvedNames.set(event.instanceName, members)
       }

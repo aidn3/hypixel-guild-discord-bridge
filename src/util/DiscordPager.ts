@@ -23,29 +23,29 @@ export async function pageMessage(
   const channel: TextBasedChannel = interaction.channel as TextChannel
 
   const nextInteraction = channel.createMessageComponentCollector({
-    filter: (i) => i.customId === `${interaction.id}-${Button.NEXT}` && i.user.id === interaction.user.id,
+    filter: (index) => index.customId === `${interaction.id}-${Button.NEXT}` && index.user.id === interaction.user.id,
     time: duration
   })
   const backInteraction = channel.createMessageComponentCollector({
-    filter: (i) => i.customId === `${interaction.id}-${Button.BACK}` && i.user.id === interaction.user.id,
+    filter: (index) => index.customId === `${interaction.id}-${Button.BACK}` && index.user.id === interaction.user.id,
     time: duration
   })
 
   let lastResponse = pages[currentPage]
-  nextInteraction.on('collect', async (i) => {
+  nextInteraction.on('collect', async (index) => {
     currentPage++
     lastResponse = pages[currentPage]
 
-    await i.update({
+    await index.update({
       embeds: [lastResponse],
       components: [createButtons(interaction.id, currentPage, pages.length)]
     })
   })
-  backInteraction.on('collect', async (i) => {
+  backInteraction.on('collect', async (index) => {
     currentPage--
     lastResponse = pages[currentPage]
 
-    await i.update({
+    await index.update({
       embeds: [lastResponse],
       components: [createButtons(interaction.id, currentPage, pages.length)]
     })

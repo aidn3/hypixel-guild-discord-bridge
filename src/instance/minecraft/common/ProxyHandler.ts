@@ -1,5 +1,5 @@
-import * as Http from 'http'
-import * as assert from 'assert'
+import * as Http from 'node:http'
+import * as assert from 'node:assert'
 import { SocksClient } from 'socks'
 import type { Client } from 'minecraft-protocol'
 import { Logger } from 'log4js'
@@ -8,7 +8,7 @@ import MinecraftConfig from './MinecraftConfig'
 
 export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftConfig): Partial<ClientProxyOptions> {
   const proxyConfig = minecraftConfig.proxy
-  if (proxyConfig == null) return {}
+  if (proxyConfig == undefined) return {}
   logger.debug(`Proxy enabled with params: ${JSON.stringify(minecraftConfig.proxy)}`)
 
   assert(minecraftConfig.botOptions.host)
@@ -20,16 +20,19 @@ export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftCo
 
   let connect
   switch (protocol) {
-    case ProxyProtocol.HTTP:
+    case ProxyProtocol.HTTP: {
       connect = createHttpConnectFunction(logger, proxyHost, proxyPort, host, port)
       break
+    }
 
-    case ProxyProtocol.SOCKS5:
+    case ProxyProtocol.SOCKS5: {
       connect = createSocksConnectFunction(logger, proxyHost, proxyPort, host, port)
       break
-    default:
+    }
+    default: {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Unknown proxy protocol '${protocol}'`)
+    }
   }
 
   // TODO: Enable agent in the future if ever needed
@@ -40,26 +43,26 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
-    const req = Http.request({
+    const request = Http.request({
       host: proxyHost,
       port: proxyPort,
       method: 'CONNECT',
       path: host + ':' + String(port)
     })
-    req.end()
+    request.end()
 
-    req.on('connect', (res, stream) => {
+    request.on('connect', (response, stream) => {
       logger.debug('connection to proxy established. forwarding proxied connection to minecraft')
       client.setSocket(stream)
       client.emit('connect')
     })
 
-    req.once('error', (e) => {
+    request.once('error', (error) => {
       logger.error('proxy encountered a problem')
-      logger.error(e)
+      logger.error(error)
 
       logger.error('destroying proxy socket')
-      req.destroy(e)
+      request.destroy(error)
 
       logger.warn('ending minecraft session if any exist')
       client.end()
@@ -81,9 +84,9 @@ function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort
         client.setSocket(connectionEstablished.socket)
         client.emit('connect')
       })
-      .catch((e) => {
+      .catch((error) => {
         logger.error('proxy encountered a problem')
-        console.error(e)
+        console.error(error)
 
         logger.warn('ending minecraft session if any exist')
         client.end()

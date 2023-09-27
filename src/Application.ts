@@ -1,6 +1,6 @@
 import fs = require('fs')
-import * as Events from 'events'
-import * as path from 'path'
+import * as Events from 'node:events'
+import * as path from 'node:path'
 import { TypedEmitter } from 'tiny-typed-emitter'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import { getLogger, Logger } from 'log4js'
@@ -56,20 +56,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.punishedUsers = new PunishedUsers()
     this.clusterHelper = new ClusterHelper(this)
 
-    let discordInstance: DiscordInstance | null = null
-    if (this.config.discord.key != null) {
+    let discordInstance: DiscordInstance | undefined
+    if (this.config.discord.key != undefined) {
       discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
       this.instances.push(discordInstance)
     }
 
     for (const instanceConfig of this.config.webhooks) {
       this.instances.push(
-        new WebhookInstance(
-          this,
-          instanceConfig.instanceName,
-          discordInstance != null ? discordInstance.client : null,
-          instanceConfig
-        )
+        new WebhookInstance(this, instanceConfig.instanceName, discordInstance?.client, instanceConfig)
       )
     }
 
@@ -90,6 +85,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     if (this.config.plugins.enabled) {
+      // eslint-disable-next-line unicorn/prefer-module
       const mainPath = require.main?.path ?? process.cwd()
       this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
       let paths
@@ -109,7 +105,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
       this.plugins = paths.map((f) => {
         this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires,unicorn/prefer-module
         return require(f).default as PluginInterface
       })
     } else {
@@ -117,12 +113,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.on('shutdownSignal', (event) => {
-      if (event.targetInstanceName === null) {
+      if (event.targetInstanceName === undefined) {
         this.logger.info('Shutdown signal has been received. Shutting down this node.')
         this.logger.info('Node should auto restart if a process monitor service is used.')
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
 
         void new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {
+          // eslint-disable-next-line unicorn/no-process-exit
           process.exit(2)
         })
       }
@@ -133,15 +130,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.broadcastLocalInstances()
 
     this.logger.debug('Sending signal to all plugins')
-    this.plugins.forEach((p) => {
+    for (const p of this.plugins) {
       p.onRun({
         application: this,
         config: this.config.plugins,
         // only shared with plugins to directly modify instances
         // everything else is encapsulated
-        getLocalInstance: (instanceName: string) => this.instances.find((i) => i.instanceName === instanceName)
+        getLocalInstance: (instanceName: string) => this.instances.find((index) => index.instanceName === instanceName)
       })
-    })
+    }
 
     for (const instance of this.instances) {
       this.logger.debug(`Connecting instance ${instance.instanceName}`)
@@ -165,11 +162,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 function emitAll(emitter: Events): void {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const old = emitter.emit
-  emitter.emit = (event: string, ...args): boolean => {
+  emitter.emit = (event: string, ...arguments_): boolean => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    if (event !== '*') emitter.emit('*', event, ...args)
+    if (event !== '*') emitter.emit('*', event, ...arguments_)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return old.call(emitter, event, ...args)
+    return old.call(emitter, event, ...arguments_)
   }
 }
 
@@ -179,7 +176,7 @@ export interface ApplicationEvents {
    * @param event event name
    * @param args event arguments
    */
-  '*': (event: string, ...args: unknown[]) => void
+  '*': (event: string, ...arguments_: unknown[]) => void
 
   /**
    * User sending messages

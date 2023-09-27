@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'node:assert'
 import { PluginInterface, PluginContext } from '../common/Plugins'
 import { EventType } from '../common/ApplicationEvent'
 
@@ -34,7 +34,7 @@ const KickMessages = [
 export default {
   onRun(context: PluginContext): void {
     context.application.on('event', (event) => {
-      if (!context.config.allowSocketInstance && context.getLocalInstance(event.instanceName) == null) return
+      if (!context.config.allowSocketInstance && context.getLocalInstance(event.instanceName) == undefined) return
 
       if (event.name === EventType.JOIN) {
         assert(event.username)

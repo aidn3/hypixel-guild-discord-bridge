@@ -1,5 +1,5 @@
-import * as http from 'http'
-import * as url from 'url'
+import * as http from 'node:http'
+import * as url from 'node:url'
 import * as Client from 'prom-client'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, Status } from '../../common/ClientInstance'
@@ -38,22 +38,22 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
       void this.collectMetrics()
     }, config.interval * 1000)
 
-    this.httpServer = http.createServer((req, res) => {
+    this.httpServer = http.createServer((request, response) => {
       // TODO: handle other paths and close the connection
-      if (req.url == null) return
-      const route = url.parse(req.url).pathname
+      if (request.url == undefined) return
+      const route = url.parse(request.url).pathname
       if (route === '/metrics') {
         this.logger.debug('Metrics scrap is called on /metrics')
-        res.setHeader('Content-Type', this.register.contentType)
+        response.setHeader('Content-Type', this.register.contentType)
 
         void (async () => {
-          res.end(await this.register.metrics())
+          response.end(await this.register.metrics())
         })()
       }
       if (route === '/ping') {
         this.logger.debug('Ping recieved')
-        res.writeHead(200)
-        res.end()
+        response.writeHead(200)
+        response.end()
       }
     })
   }
