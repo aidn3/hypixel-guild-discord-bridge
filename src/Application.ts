@@ -112,7 +112,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.on('shutdownSignal', (event) => {
-      if (event.targetInstanceName === null) {
+      if (event.targetInstanceName === undefined) {
         this.logger.info('Shutdown signal has been received. Shutting down this node.')
         this.logger.info('Node should auto restart if a process monitor service is used.')
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
