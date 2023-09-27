@@ -1,5 +1,5 @@
 import { getEventListeners } from 'node:events'
-import { PluginInterface, PluginContext } from '../common/Plugins'
+import { PluginContext, PluginInterface } from '../common/Plugins'
 import { LOCATION } from '../common/ClientInstance'
 import { InstanceEventType } from '../common/ApplicationEvent'
 import MinecraftInstance from '../instance/minecraft/MinecraftInstance'
