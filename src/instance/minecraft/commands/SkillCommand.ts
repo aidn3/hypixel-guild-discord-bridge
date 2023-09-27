@@ -1,8 +1,8 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from 'node:assert'
 import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
-import { HypixelSkyblock } from '../../../type/HypixelApiType'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
-const SKILLS = [
+const SKILLS = new Set([
   'farming',
   'mining',
   'combat',
@@ -14,7 +14,7 @@ const SKILLS = [
   'runecrafting',
   'taming',
   'average'
-]
+])
 
 export default {
   triggers: ['skill', 's'],
@@ -24,16 +24,18 @@ export default {
     const skill = context.args[0]
     const givenUsername = context.args[1] ?? context.username
 
-    if (!SKILLS.includes(skill)) {
+    if (!SKILLS.has(skill)) {
       return `${context.username}, Invalid skill! (given: ${skill})`
     }
 
     const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
-      .catch(() => null)
+      .catch(() => {
+        /* return undefined */
+      })
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
@@ -49,12 +51,15 @@ export default {
 async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   const selectedProfile = await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
-    .then((res) => res as unknown as HypixelSkyblock)
-    .then((res) => res.profiles.filter((p) => p.selected)[0].cute_name)
+    .then((response) => response.profiles.find((profile) => profile.selected)?.cute_name)
+  assert(selectedProfile)
 
-  return await hypixelApi
+  const response = await hypixelApi
     .getSkyblockProfiles(uuid)
-    .then((profiles) => profiles.filter((profile) => profile.profileName === selectedProfile)[0].me)
+    .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile)?.me)
+
+  assert(response)
+  return response
 }
 
 function formatLevel(level: number, progress: number): number {
