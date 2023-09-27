@@ -6,7 +6,7 @@ import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '
 import DiscordInstance from './DiscordInstance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
-  private readonly profanityFilter: BadWords
+  private readonly profanityFilter: BadWords.BadWords
 
   constructor(clientInstance: DiscordInstance) {
     super(clientInstance)
