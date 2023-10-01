@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client'
+import { Logger } from 'log4js'
 import Application from '../../Application'
 import { BaseEvent } from '../../common/ApplicationEvent'
-import { Logger } from 'log4js'
 
 export default class ClientSocket {
   private readonly client: Socket
@@ -12,28 +12,28 @@ export default class ClientSocket {
       auth: { key }
     })
 
-    this.client.onAny((name, ...args) => {
+    this.client.onAny((name, ...arguments_) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const event: BaseEvent = args[0]
+      const event: BaseEvent = arguments_[0]
       event.localEvent = false
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      app.emit(name, ...args)
+      app.emit(name, ...arguments_)
     })
-    app.on('*', (name, ...args) => {
+    app.on('*', (name, ...arguments_) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-      const event: BaseEvent = args[0] as BaseEvent
+      const event: BaseEvent = arguments_[0] as BaseEvent
       if (event.localEvent) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.client.emit(name, ...args)
+        this.client.emit(name, ...arguments_)
       }
     })
     this.client.on('connect', () => {
       logger.debug('Client socket connected.')
       app.broadcastLocalInstances()
     })
-    this.client.on('connect_error', (err) => {
+    this.client.on('connect_error', (error) => {
       logger.error('Socket Client encountered an error while connecting to server.')
-      logger.error(err)
+      logger.error(error)
     })
     this.client.on('disconnect', (reason) => {
       logger.warn(`Socket Client has disconnected: ${reason}`)

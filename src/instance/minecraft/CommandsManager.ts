@@ -1,9 +1,9 @@
-import MinecraftInstance from './MinecraftInstance'
 import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import { ColorScheme } from '../discord/common/DiscordConfig'
-import { ChatCommandHandler } from './common/ChatInterface'
 import EventHandler from '../../common/EventHandler'
 import { EventType } from '../../common/ApplicationEvent'
+import { ChatCommandHandler } from './common/ChatInterface'
+import MinecraftInstance from './MinecraftInstance'
 import BitchesCommand from './commands/BitchesCommand'
 import CalculateCommand from './commands/CalculateCommand'
 import CataCommand from './commands/CataCommand'
@@ -16,6 +16,8 @@ import LevelCommand from './commands/LevelCommand'
 import NetworthCommand from './commands/NetworthCommand'
 import RockPaperScissorsCommand from './commands/RockPaperScissorsCommand'
 import RouletteCommand from './commands/RouletteCommand'
+import SkillCommand from './commands/SkillCommand'
+import RunsCommand from './commands/RunsCommand'
 import WeightCommand from './commands/WeightCommand'
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
@@ -38,6 +40,8 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       NetworthCommand,
       RockPaperScissorsCommand,
       RouletteCommand,
+      SkillCommand,
+      RunsCommand,
       WeightCommand
     ]
 
@@ -56,12 +60,12 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
   ): Promise<boolean> {
     if (!message.startsWith(minecraftInstance.config.commandPrefix)) return false
 
-    const commandName = message.substring(minecraftInstance.config.commandPrefix.length).split(' ')[0].toLowerCase()
-    const args = message.split(' ').slice(1)
+    const commandName = message.slice(minecraftInstance.config.commandPrefix.length).split(' ')[0].toLowerCase()
+    const arguments_ = message.split(' ').slice(1)
 
-    if (commandName === 'toggle' && username === minecraftInstance.config.adminUsername && args.length > 0) {
-      const command = this.commands.find((c) => c.triggers.some((t: string) => t === args[0]))
-      if (command == null) return false
+    if (commandName === 'toggle' && username === minecraftInstance.config.adminUsername && arguments_.length > 0) {
+      const command = this.commands.find((c) => c.triggers.includes(arguments_[0]))
+      if (command == undefined) return false
 
       command.enabled = !command.enabled
       await minecraftInstance.send(
@@ -70,8 +74,8 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       return true
     }
 
-    const command = this.commands.find((c) => c.triggers.some((t: string) => t === commandName))
-    if (command == null || !command.enabled) return false
+    const command = this.commands.find((c) => c.triggers.includes(commandName))
+    if (command == undefined || !command.enabled) return false
 
     minecraftInstance.app.emit('command', {
       localEvent: true,
@@ -86,7 +90,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
     const reply = await command.handler({
       clientInstance: minecraftInstance,
       username,
-      args
+      args: arguments_
     })
 
     minecraftInstance.app.emit('event', {

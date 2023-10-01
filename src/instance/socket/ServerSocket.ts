@@ -1,8 +1,8 @@
 import { Server, Socket } from 'socket.io'
 import { ExtendedError } from 'socket.io/dist/namespace'
+import { Logger } from 'log4js'
 import Application from '../../Application'
 import { BaseEvent } from '../../common/ApplicationEvent'
-import { Logger } from 'log4js'
 
 export default class ServerSocket {
   private readonly server: Server
@@ -12,7 +12,7 @@ export default class ServerSocket {
     this.key = key
     this.server = new Server({ transports: ['websocket'] })
     this.server.listen(port)
-    this.server.use((socket: Socket, next: (err?: ExtendedError | undefined) => void) => {
+    this.server.use((socket: Socket, next: (error?: ExtendedError | undefined) => void) => {
       if (socket.handshake.auth.key === this.key) {
         next()
         return
@@ -22,12 +22,12 @@ export default class ServerSocket {
       next(new Error('invalid key'))
     })
 
-    app.on('*', (name, ...args) => {
+    app.on('*', (name, ...arguments_) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const event: BaseEvent = args[0] as BaseEvent
+      const event: BaseEvent = arguments_[0] as BaseEvent
       if (event.localEvent) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.server.emit(name, ...args)
+        this.server.emit(name, ...arguments_)
       }
     })
 
@@ -35,16 +35,16 @@ export default class ServerSocket {
       logger.debug('New Socket connection.')
       app.broadcastLocalInstances()
 
-      socket.onAny((name, ...args) => {
+      socket.onAny((name, ...arguments_) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const event: BaseEvent = args[0]
+        const event: BaseEvent = arguments_[0]
         event.localEvent = false
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        app.emit(name, ...args)
+        app.emit(name, ...arguments_)
 
         for (const [id, s] of this.server.sockets.sockets.entries()) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          if (id !== socket.id) s.emit(name, ...args)
+          if (id !== socket.id) s.emit(name, ...arguments_)
         }
       })
     })

@@ -2,8 +2,8 @@ import { Message, TextChannel } from 'discord.js'
 import * as emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji(message: string): string {
-  return message.replace(/<:(\w+):\d{16,}>/g, (match) => {
-    return match.substring(1, match.length - 1).replace(/\d{16,}/g, '')
+  return message.replaceAll(/<:(\w+):\d{16,}>/g, (match) => {
+    return match.slice(1, -1).replaceAll(/\d{16,}/g, '')
   })
 }
 
@@ -22,13 +22,9 @@ export function cleanMessage(messageEvent: Message): string {
   content = cleanStandardEmoji(content).trim()
 
   if (messageEvent.attachments.size > 0) {
-    messageEvent.attachments.forEach((attachment) => {
-      if (attachment.contentType?.includes('image') === true) {
-        content += ` ${attachment.url}`
-      } else {
-        content += ' (ATTACHMENT)'
-      }
-    })
+    for (const [, attachment] of messageEvent.attachments) {
+      content += attachment.contentType?.includes('image') === true ? ` ${attachment.url}` : ' (ATTACHMENT)'
+    }
   }
 
   return content
@@ -50,14 +46,18 @@ export const getReplyUsername = async function (messageEvent: Message): Promise<
 
   const channel = messageEvent.channel as TextChannel
   const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
-  if (replyMessage.webhookId != null) return replyMessage.author.username
+  if (replyMessage.webhookId != undefined) return replyMessage.author.username
 
-  if (messageEvent.guild == null) return
+  if (messageEvent.guild == undefined) return
   const guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)
   return guildMember.displayName
 }
 
 export const getReadableName = function (username: string, id: string): string {
+  // clear all non ASCII characters
+  // eslint-disable-next-line no-control-regex
+  username = username.replaceAll(/[^\u0000-\u007F]/g, '')
+
   username = username.trim().slice(0, 16)
 
   if (/^\w+$/.test(username)) return username

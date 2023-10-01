@@ -1,9 +1,16 @@
 declare module 'bad-words' {
-  export = class {
-    constructor(options?: BadWordsOptions)
+  interface BadWordsConstructor {
+    new (options?: BadWordsOptions): BadWords
 
+    (options?: BadWordsOptions): BadWords
+  }
+
+  declare const constructor: BadWordsConstructor
+  export = constructor
+
+  export class BadWords {
     clean: (text: string) => string
-    removeWords: (...args: string[]) => void
+    removeWords: (...arguments_: string[]) => void
   }
 
   export interface BadWordsOptions {

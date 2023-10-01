@@ -1,6 +1,6 @@
 import { ChatMessage } from 'prismarine-chat'
-import MinecraftInstance from './MinecraftInstance'
 import EventHandler from '../../common/EventHandler'
+import MinecraftInstance from './MinecraftInstance'
 import { MinecraftChatMessage } from './common/ChatInterface'
 import { CommandsManager } from './CommandsManager'
 
@@ -54,14 +54,14 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
   }
 
   private onMessage(message: string): void {
-    this.chatModules.forEach((e) => {
-      e.onChat({
+    for (const module of this.chatModules) {
+      module.onChat({
         application: this.clientInstance.app,
         clientInstance: this.clientInstance,
         instanceName: this.clientInstance.instanceName,
         commandsManager: this.commandsManager,
         message
       })
-    })
+    }
   }
 }

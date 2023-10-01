@@ -25,11 +25,11 @@ export default class GuildOnlineMetrics {
   async collectMetrics(app: Application): Promise<void> {
     const guilds = await GuildOnlineMetrics.getGuilds(app)
     for (const [instanceName, guild] of guilds) {
-      if (guild.total != null) {
+      if (guild.total != undefined) {
         this.guildTotalMembersCount.set({ name: instanceName }, guild.total)
       }
 
-      if (guild.online != null) {
+      if (guild.online != undefined) {
         this.guildOnlineMembersCount.set({ name: instanceName }, guild.online)
       }
     }
@@ -44,16 +44,16 @@ export default class GuildOnlineMetrics {
       if (event.message.length === 0) return
 
       let guild = guilds.get(event.instanceName)
-      if (guild == null) {
+      if (guild == undefined) {
         guild = {}
         guilds.set(event.instanceName, guild)
       }
 
       const totalMatch = totalRegex.exec(event.message)
-      if (totalMatch != null) guild.total = Number(totalMatch[1])
+      if (totalMatch != undefined) guild.total = Number(totalMatch[1])
 
       const onlineMatch = onlineRegex.exec(event.message)
-      if (onlineMatch != null) guild.online = Number(onlineMatch[1])
+      if (onlineMatch != undefined) guild.online = Number(onlineMatch[1])
     }
 
     app.on('minecraftChat', chatListener)

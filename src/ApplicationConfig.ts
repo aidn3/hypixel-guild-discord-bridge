@@ -1,7 +1,7 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-call,unicorn/prevent-abbreviations,unicorn/no-negated-condition,unicorn/no-null */
 // linter disabled for config parsing
 // since typed linter isn't helpful for volatile file
-import * as fs from 'fs'
+import * as fs from 'node:fs'
 import * as YAML from 'yaml'
 
 import WebhookConfig from './instance/webhook/common/WebhookConfig'

@@ -12,8 +12,8 @@ export default class SendChatHandler extends EventHandler<MinecraftInstance> {
   }
 
   private async onCommand(event: MinecraftSendChat): Promise<void> {
-    // null is strictly checked due to api specification
-    if (event.targetInstanceName === null || event.targetInstanceName === this.clientInstance.instanceName) {
+    // undefined is strictly checked due to api specification
+    if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
       await this.clientInstance.send(event.command)
     }
   }

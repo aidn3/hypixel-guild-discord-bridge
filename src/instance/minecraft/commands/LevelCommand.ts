@@ -9,17 +9,19 @@ export default {
     const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((p) => p.id)
-      .catch(() => null)
+      .catch(() => {
+        /* return undefined */
+      })
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
 
     const levelLocalized = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles)
-      .then((profiles) => profiles.filter((p) => p.selected)[0])
-      .then((res) => res.members[uuid].leveling?.experience ?? 0)
+      .then((profiles) => profiles.find((p) => p.selected))
+      .then((response) => response?.members[uuid].leveling?.experience ?? 0)
       .then((exp) => (exp / 100).toFixed(2))
 
     return `${givenUsername}'s level: ${levelLocalized}`

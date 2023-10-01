@@ -3,9 +3,9 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from 'node:assert'
 import Axios, { AxiosResponse } from 'axios'
-import * as assert from 'assert'
+import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   triggers: ['weight', 'w'],
@@ -17,11 +17,11 @@ export default {
 } satisfies ChatCommandHandler
 
 async function getSenitherData(username: string): Promise<number> {
-  const res = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
-    (res: AxiosResponse) => res.data as SkyShiiyuResponse
+  const skyShiiyuResponse = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
+    (response: AxiosResponse) => response.data as SkyShiiyuResponse
   )
 
-  const selected = Object.values(res.profiles).find((profile) => profile.current)
+  const selected = Object.values(skyShiiyuResponse.profiles).find((profile) => profile.current)
   assert(selected)
 
   return Math.floor(selected.data?.weight.senither.overall ?? 0)

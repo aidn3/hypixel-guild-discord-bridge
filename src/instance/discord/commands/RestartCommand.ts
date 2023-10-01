@@ -13,8 +13,7 @@ export default {
     const targetInstance: string | null = interaction.options.getString('instance')
     clientInstance.app.emit('restartSignal', {
       localEvent: true,
-      // null set again to ensure "undefined" never come back in case discord library changes it again
-      targetInstanceName: targetInstance ?? null
+      targetInstanceName: targetInstance ?? undefined
     })
     await interaction.editReply('Restart signal has been sent!')
   }

@@ -13,8 +13,8 @@ export default {
 
     clientInstance.app.emit('shutdownSignal', {
       localEvent: true,
-      // null is used to set the command globally
-      targetInstanceName: null
+      // undefined is used to set the command globally
+      targetInstanceName: undefined
     })
 
     await interaction.editReply(
