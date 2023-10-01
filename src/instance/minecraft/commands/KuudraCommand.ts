@@ -1,27 +1,29 @@
+import { KuudraTier } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
-enum Kuudra {
-  'basic' = 'none',
-  'hot' = 'hot',
-  'burning' = 'burning',
-  'fiery' = 'fiery',
-  'infernal' = 'infernal',
-  't1' = 'none',
-  't2' = 'hot',
-  't3' = 'burning',
-  't4' = 'fiery',
-  't5' = 'infernal'
+const Kuudra: Record<KuudraTier, string[]> = {
+  none: ['basic', 't1', '1'],
+  hot: ['hot', 't2', '2'],
+  burning: ['burning', 't3', '3'],
+  fiery: ['fiery', 't4', '4'],
+  infernal: ['infernal', 't5', '5']
 }
 
 export default {
   triggers: ['kuudra', 'k'],
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
-    const tier = context.args[0]?.toLowerCase() as keyof typeof Kuudra
+    let chosenTier: KuudraTier | undefined
+    const givenTier = context.args[0]?.toLowerCase()
     const givenUsername = context.args[1] ?? context.username
 
-    if (!Object.keys(Kuudra).includes(tier)) {
-      return `${context.username}, Invalid tier! (given: ${tier})`
+    for (const [key, names] of Object.entries(Kuudra)) {
+      if (names.includes(givenTier.toLowerCase())) {
+        chosenTier = key as KuudraTier
+      }
+    }
+    if (chosenTier === undefined) {
+      return `${context.username}, Invalid Tier! (given: ${givenTier})`
     }
 
     const uuid = await context.clientInstance.app.mojangApi
@@ -37,8 +39,8 @@ export default {
       .getSkyblockProfiles(uuid, { raw: true })
       .then((res) => res.profiles.filter((p) => p.selected)[0].members[uuid])
 
-    const completions = parsedProfile.nether_island_player_data.kuudra_completed_tiers[Kuudra[tier]]
+    const completions = parsedProfile.nether_island_player_data.kuudra_completed_tiers[chosenTier] || 0
 
-    return `${givenUsername}: ${tier} - ${completions || 0}`
+    return `${givenUsername}: ${givenTier} - ${completions}`
   }
 } satisfies ChatCommandHandler

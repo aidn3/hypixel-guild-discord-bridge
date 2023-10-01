@@ -20,6 +20,8 @@ declare module 'hypixel-api-reborn' {
     banking?: { balance?: number }
   }
 
+  export type KuudraTier = 'none' | 'hot' | 'burning' | 'fiery' | 'infernal'
+
   export interface HypixelSkyblockMemberRaw {
     leveling?: { experience?: number }
     nether_island_player_data: {
