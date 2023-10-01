@@ -26,9 +26,9 @@ import MuteCommand from './commands/MuteCommand'
 import OverrideCommand from './commands/OverrideCommand'
 import PingCommand from './commands/PingCommand'
 import PromoteCommand from './commands/PromoteCommand'
-import RestartCommand from './commands/RestartCommand'
+import RestartCommand from './commands/ReconnectCommand'
 import SetrankCommand from './commands/SetrankCommand'
-import ShutdownCommand from './commands/ShutdownCommand'
+import ShutdownCommand from './commands/RestartCommand'
 import UnmuteCommand from './commands/UnmuteCommand'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
