@@ -13,10 +13,10 @@ export default {
   triggers: ['kuudra', 'k'],
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
-    let chosenTier: KuudraTier | undefined
     const givenTier = context.args[0]?.toLowerCase()
     const givenUsername = context.args[1] ?? context.username
 
+    let chosenTier: KuudraTier | undefined
     for (const [key, names] of Object.entries(Kuudra)) {
       if (names.includes(givenTier.toLowerCase())) {
         chosenTier = key as KuudraTier
