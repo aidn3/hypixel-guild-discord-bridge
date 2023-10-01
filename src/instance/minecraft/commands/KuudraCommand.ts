@@ -1,3 +1,4 @@
+import * as assert from 'node:assert'
 import { KuudraTier } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
@@ -29,15 +30,18 @@ export default {
     const uuid = await context.clientInstance.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
-      .catch(() => null)
+      .catch(() => {
+        /* return undefined */
+      })
 
-    if (uuid == null) {
+    if (uuid == undefined) {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
     const parsedProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((res) => res.profiles.filter((p) => p.selected)[0].members[uuid])
+      .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
+    assert(parsedProfile)
 
     const completions = parsedProfile.nether_island_player_data.kuudra_completed_tiers[chosenTier] || 0
 
