@@ -20,8 +20,19 @@ declare module 'hypixel-api-reborn' {
     banking?: { balance?: number }
   }
 
+  export type KuudraTier = 'none' | 'hot' | 'burning' | 'fiery' | 'infernal'
+
   export interface HypixelSkyblockMemberRaw {
     leveling?: { experience?: number }
+    nether_island_player_data: {
+      kuudra_completed_tiers: {
+        none: number
+        hot: number
+        burning: number
+        fiery: number
+        infernal: number
+      }
+    }
     dungeons: {
       dungeon_types: {
         catacombs: {

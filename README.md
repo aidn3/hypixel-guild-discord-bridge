@@ -102,6 +102,7 @@ offering quality user experience while keeping it simple
 | !bitches   | Give a random number to the guild member        | Anyone     |
 | !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
 | !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
+| !kuudra    | Get a player's kuudra completions `!kuudra hot` | Anyone     |
 | !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
 
