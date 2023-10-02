@@ -23,7 +23,7 @@ export default {
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {
-    const chance = 1 / 6
+    const chance = 4 / 9 // why 4/9? No idea, but it works
 
     if (Math.random() < chance) {
       await context.clientInstance.send(`/g mute ${context.username} 15m`)
