@@ -1,6 +1,7 @@
 import * as assert from 'node:assert'
 import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { formatLevel } from '../../../util/SkyblockApi'
 
 const SKILLS = new Set([
   'farming',
@@ -60,20 +61,4 @@ async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<Skybl
 
   assert(response)
   return response
-}
-
-function formatLevel(level: number, progress: number): number {
-  let formattedLevel = 0
-
-  formattedLevel += level
-
-  const decimal = progress / 100
-
-  if (decimal === 1) {
-    return formattedLevel
-  }
-
-  formattedLevel += decimal
-
-  return formattedLevel
 }
