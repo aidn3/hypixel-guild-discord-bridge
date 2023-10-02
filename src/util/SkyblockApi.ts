@@ -40,3 +40,19 @@ export function localizedNetworth(coins: number): string {
 
   return coins.toFixed(3) + suffix
 }
+
+export function formatLevel(level: number, progress: number): number {
+  let formattedLevel = 0
+
+  formattedLevel += level
+
+  const decimal = progress / 100
+
+  if (decimal === 1) {
+    return formattedLevel
+  }
+
+  formattedLevel += decimal
+
+  return formattedLevel
+}

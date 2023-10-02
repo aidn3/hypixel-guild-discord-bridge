@@ -1,6 +1,7 @@
 import * as assert from 'node:assert'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { formatLevel } from '../../../util/SkyblockApi'
 
 export default {
   triggers: ['catacomb', 'cata'],
@@ -23,7 +24,7 @@ export default {
 
     return (
       `${givenUsername} is Catacombs ` +
-      `${parsedProfile.dungeons.types.catacombs.level}.${parsedProfile.dungeons.types.catacombs.progress}` +
+      `${formatLevel(parsedProfile.dungeons.types.catacombs.level, parsedProfile.dungeons.types.catacombs.progress)}` +
       ` ${formatClass(parsedProfile)}.`
     )
   }
