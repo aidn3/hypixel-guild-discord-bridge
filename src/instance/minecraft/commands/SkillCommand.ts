@@ -17,7 +17,7 @@ const SKILLS = new Set([
 ])
 
 export default {
-  triggers: ['skill', 's'],
+  triggers: ['skill', 'skills'],
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {
