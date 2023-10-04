@@ -105,6 +105,7 @@ offering quality user experience while keeping it simple
 | !kuudra    | Get a player's kuudra completions `!kuudra hot` | Anyone     |
 | !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
+| !secrets   | Returns a player's total dungeon secrets        | Anyone     |
 
 ### How to execute commands
 
