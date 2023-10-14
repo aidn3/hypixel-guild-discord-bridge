@@ -23,7 +23,9 @@ export default {
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {
-    const chance = 4 / 9 // Since command is not affected by args, increased base chance
+    // chance upped from 1/6 to 2/11.
+    // Losing was too rare. Some even managed to reach 18 win streak.
+    const chance = 2 / 11
 
     if (Math.random() < chance) {
       await context.clientInstance.send(`/g mute ${context.username} 15m`)
