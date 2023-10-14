@@ -3,18 +3,25 @@ import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInt
 import DiscordInstance from '../DiscordInstance'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('restart').setDescription('restart minecraft clients'),
-  allowInstance: true,
-  permission: Permission.HELPER,
+  getCommandBuilder: () =>
+    new SlashCommandBuilder().setName('restart').setDescription('Send signal to restart the bridge'),
+  allowInstance: false,
+  permission: Permission.ADMIN,
 
   handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    const targetInstance: string | null = interaction.options.getString('instance')
-    clientInstance.app.emit('restartSignal', {
+    clientInstance.app.emit('shutdownSignal', {
       localEvent: true,
-      targetInstanceName: targetInstance ?? undefined
+      // undefined is used to set the command globally
+      targetInstanceName: undefined,
+      restart: true
     })
-    await interaction.editReply('Restart signal has been sent!')
+    clientInstance.logger.info(
+      'Client will shutdown. It may not restart if process monitor is not used to auto restart it.'
+    )
+    await interaction.editReply(
+      'Restart signal has been sent.\n' + 'It will take some time for the bridge to restart.\n'
+    )
   }
 } satisfies DiscordCommandInterface

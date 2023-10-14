@@ -71,8 +71,9 @@ offering quality user experience while keeping it simple
 | `/promote` & `/demote` & `/setrank` | Equivalent to `/guild promote/demote/setrank`       | Helper     |
 | `/mute` & `/unmute`                 | Equivalent to `/guild mute/unmute`                  | Helper     |
 | `/invite` & `/accept`               | Equivalent to `/guild invite/accept`                | Helper     |
-| `/restart`                          | Restart an in-game instance                         | Helper     |
+| `/reconnect`                        | Reconnect an in-game instance                       | Helper     |
 | `/kick`                             | Equivalent to `/guild kick`                         | Officer    |
+| `/restart`                          | Restart the entire bridge service                   | Admin      |
 | `/override`                         | Send direct commands to all minecraft clients       | Admin      |
 
 ### Supported Events

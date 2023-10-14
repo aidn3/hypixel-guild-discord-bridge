@@ -14,7 +14,7 @@ import {
   ClientEvent,
   CommandEvent,
   InstanceEvent,
-  InstanceRestartSignal,
+  ReconnectSignal,
   InstanceSelfBroadcast,
   MinecraftCommandResponse,
   MinecraftRawChatEvent,
@@ -115,7 +115,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.on('shutdownSignal', (event) => {
       if (event.targetInstanceName === undefined) {
         this.logger.info('Shutdown signal has been received. Shutting down this node.')
-        this.logger.info('Node should auto restart if a process monitor service is used.')
+        if (event.restart) {
+          this.logger.info('Node should auto restart if a process monitor service is used.')
+        }
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
 
         void new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {
@@ -203,7 +205,7 @@ export interface ApplicationEvents {
    * Command used to restart an instance.
    * Note: This is currently only registered in Minecraft instances
    */
-  restartSignal: (event: InstanceRestartSignal) => void
+  reconnectSignal: (event: ReconnectSignal) => void
 
   /**
    * Command used to shut down the bridge.
