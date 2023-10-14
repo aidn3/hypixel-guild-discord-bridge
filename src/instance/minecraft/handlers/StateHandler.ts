@@ -112,6 +112,17 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         type: InstanceEventType.conflict,
         message: 'Someone logged in from another place.\n' + "Won't try to re-login.\n" + 'Restart to reconnect.'
       })
+    } else if (reason.includes('banned')) {
+      this.clientInstance.logger.fatal('Instance will shut off since the account has been banned')
+      this.clientInstance.status = Status.FAILED
+
+      this.clientInstance.app.emit('instance', {
+        localEvent: true,
+        instanceName: this.clientInstance.instanceName,
+        location: LOCATION.MINECRAFT,
+        type: InstanceEventType.end,
+        message: 'Account has been banned.\n' + "Won't try to re-login.\n"
+      })
     } else {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
