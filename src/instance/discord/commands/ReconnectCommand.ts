@@ -11,7 +11,7 @@ export default {
     await interaction.deferReply()
 
     const targetInstance: string | null = interaction.options.getString('instance')
-    clientInstance.app.emit('restartSignal', {
+    clientInstance.app.emit('reconnectSignal', {
       localEvent: true,
       targetInstanceName: targetInstance ?? undefined
     })

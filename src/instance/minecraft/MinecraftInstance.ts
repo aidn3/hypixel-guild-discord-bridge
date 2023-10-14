@@ -38,7 +38,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       new ChatManager(this)
     ]
 
-    this.app.on('restartSignal', (event) => {
+    this.app.on('reconnectSignal', (event) => {
       // undefined is strictly checked due to api specification
       if (event.targetInstanceName === undefined || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')

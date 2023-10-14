@@ -14,9 +14,12 @@ export default {
     clientInstance.app.emit('shutdownSignal', {
       localEvent: true,
       // undefined is used to set the command globally
-      targetInstanceName: undefined
+      targetInstanceName: undefined,
+      restart: true
     })
-
+    clientInstance.logger.info(
+      'Client will shutdown. It may not restart if process monitor is not used to auto restart it.'
+    )
     await interaction.editReply(
       'Restart signal has been sent.\n' + 'It will take some time for the bridge to restart.\n'
     )

@@ -109,6 +109,8 @@ export interface MinecraftSendChat extends SignalEvent {
   command: string
 }
 
-export type InstanceRestartSignal = SignalEvent
+export type ReconnectSignal = SignalEvent
 
-export type ShutdownSignal = SignalEvent
+export interface ShutdownSignal extends SignalEvent {
+  restart: boolean
+}
