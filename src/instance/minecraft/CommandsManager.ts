@@ -84,7 +84,8 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       if (command == undefined) return false
 
       await minecraftInstance.send(
-        `/gc ${command.name}: ${command.description}` + `(${minecraftInstance.config.commandPrefix}${command.example})`
+        `/gc ${command.name}: ${command.description} ` +
+          `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
       )
       return true
     }
