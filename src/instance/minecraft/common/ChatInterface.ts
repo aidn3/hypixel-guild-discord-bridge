@@ -15,7 +15,10 @@ export interface MinecraftChatContext {
 }
 
 export interface ChatCommandHandler {
+  readonly name: string
   readonly triggers: string[]
+  readonly description: string
+  readonly example: string
   enabled: boolean
 
   handler: (context: ChatCommandContext) => Promise<string> | string
