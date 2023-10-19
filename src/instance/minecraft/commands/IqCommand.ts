@@ -6,7 +6,10 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
+  name: 'IQ',
   triggers: ['iq'],
+  description: "Returns a player's IQ (0-200)",
+  example: `iq Hxqz`,
   enabled: true,
   handler: function (context: ChatCommandContext): string {
     const givenUsername = context.args[0] ?? context.username

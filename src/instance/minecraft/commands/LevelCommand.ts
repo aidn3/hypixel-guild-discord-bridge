@@ -1,7 +1,10 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
+  name: 'Level',
   triggers: ['level', 'lvl', 'l'],
+  description: "Returns a player's skyblock level",
+  example: `lvl Hxqz`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username

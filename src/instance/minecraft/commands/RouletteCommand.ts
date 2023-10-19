@@ -19,7 +19,10 @@ const WinMessages = [
 ]
 
 export default {
+  name: 'Roulette',
   triggers: ['rr', 'roulette'],
+  description: 'Try your luck for a 15 minute mute',
+  example: `rr`,
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {

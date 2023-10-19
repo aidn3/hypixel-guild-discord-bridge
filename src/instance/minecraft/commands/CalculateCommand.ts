@@ -7,7 +7,10 @@ import { evalExpression } from '@hkh12/node-calc'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
+  name: 'Calculate',
   triggers: ['calculate', 'calc', 'c'],
+  description: 'A basic calculator',
+  example: `calc 1+1`,
   enabled: true,
 
   handler: function (context: ChatCommandContext): string {

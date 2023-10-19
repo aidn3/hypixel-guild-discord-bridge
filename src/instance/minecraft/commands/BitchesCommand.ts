@@ -6,7 +6,10 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
+  name: 'Bitches',
   triggers: ['bitch', 'bitches', 'b'],
+  description: 'Returns how many "b\'s" a user has',
+  example: `b Hxqz`,
   enabled: true,
 
   handler: function (context: ChatCommandContext): string {

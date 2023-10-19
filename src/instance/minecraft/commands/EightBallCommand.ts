@@ -29,7 +29,10 @@ const ANSWERS = [
 ]
 
 export default {
+  name: '8Ball',
   triggers: ['8balls', '8ball', '8', 'ball', 'balls', '8b'],
+  description: 'Returns a basic 8 ball response',
+  example: `8b am I cool?`,
   enabled: true,
 
   handler: function (context: ChatCommandContext): string {

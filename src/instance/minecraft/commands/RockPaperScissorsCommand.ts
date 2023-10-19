@@ -7,7 +7,10 @@ enum CommandOptions {
 }
 
 export default {
+  name: 'RPS',
   triggers: ['rps'],
+  description: 'Play rock, paper, scissors against the bot',
+  example: `rps rock`,
   enabled: true,
 
   handler: function (context: ChatCommandContext): string {

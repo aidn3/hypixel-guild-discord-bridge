@@ -23,7 +23,10 @@ enum MasterMode {
 }
 
 export default {
+  name: 'Runs',
   triggers: ['runs', 'r'],
+  description: 'Returns how many dungeon runs a player has done',
+  example: `runs m7 Hxqz`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const floor = context.args[0]?.toLowerCase()
