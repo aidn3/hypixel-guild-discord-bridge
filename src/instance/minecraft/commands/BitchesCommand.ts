@@ -9,7 +9,7 @@ export default {
   name: 'Bitches',
   triggers: ['bitch', 'bitches', 'b'],
   description: 'Returns how many "b\'s" a user has',
-  example: `b Hxqz`,
+  example: `b %s`,
   enabled: true,
 
   handler: function (context: ChatCommandContext): string {

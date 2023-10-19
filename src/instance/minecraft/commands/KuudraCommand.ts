@@ -14,7 +14,7 @@ export default {
   name: 'Kuudra',
   triggers: ['kuudra', 'k'],
   description: "Returns a player's kuudra runs",
-  example: `kuudra Hxqz t5`,
+  example: `kuudra t5 %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenTier = context.args[0]?.toLowerCase()

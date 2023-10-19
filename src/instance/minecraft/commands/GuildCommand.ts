@@ -10,7 +10,7 @@ export default {
   name: 'Guild',
   triggers: ['guild', 'guildOf', 'g'],
   description: "Returns a player's guild, if they're in one",
-  example: `g Hxqz`,
+  example: `g %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username

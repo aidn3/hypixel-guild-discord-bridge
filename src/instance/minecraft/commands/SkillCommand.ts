@@ -21,7 +21,7 @@ export default {
   name: 'Skills',
   triggers: ['skill', 'skills'],
   description: "Returns a player's skill level",
-  example: `skill foraging Hxqz`,
+  example: `skill foraging %s`,
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {

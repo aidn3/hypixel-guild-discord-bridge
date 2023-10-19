@@ -5,7 +5,7 @@ export default {
   name: 'Secrets',
   triggers: ['secrets', 's'],
   description: 'Returns how many secrets a player has done',
-  example: `secrets Hxqz`,
+  example: `secrets %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username

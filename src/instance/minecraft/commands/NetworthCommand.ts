@@ -13,7 +13,7 @@ export default {
   name: 'Networth',
   triggers: ['networth', 'net', 'nw'],
   description: "Returns a calculation of a player's networth",
-  example: `nw Hxqz`,
+  example: `nw %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
