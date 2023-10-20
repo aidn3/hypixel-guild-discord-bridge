@@ -5,11 +5,10 @@ import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
-    const regex = /^(?:GUILD QUEST TIER [1-9] COMPLETED!)/g
+    const regex = /^GUILD QUEST TIER [1-9] COMPLETED!/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
