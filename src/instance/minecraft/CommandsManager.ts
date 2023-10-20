@@ -75,17 +75,22 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       return true
     }
 
-    if (commandName === 'help' || commandName === 'command') {
+    if (['help', 'command', 'commands'].includes(commandName)) {
       if (arguments_.length <= 0) {
         await minecraftInstance.send(`/gc Commands: ${this.commands.map((command) => command.name).join(', ')}`)
-        return false
+        return true
       }
       const command = this.commands.find((c) => c.triggers.includes(arguments_[0]))
-      if (command == undefined) return false
+      if (command == undefined) {
+        await minecraftInstance.send(
+          `/gc That command does not exist, use ${minecraftInstance.config.commandPrefix}help`
+        )
+        return true
+      }
 
       await minecraftInstance.send(
-        `/gc ${command.name}: ${command.description} ` +
-          `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
+        `/gc ${command.name}: ${command.description} 
+        (${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
       )
       return true
     }
