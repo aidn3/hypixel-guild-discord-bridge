@@ -20,7 +20,7 @@ const WinMessages = [
 
 export default {
   name: 'Roulette',
-  triggers: ['rr', 'roulette'],
+  triggers: ['roulette', 'rr'],
   description: 'Try your luck for a 15 minute mute',
   example: `rr`,
   enabled: true,
