@@ -4,7 +4,10 @@ import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { formatLevel } from '../../../util/SkyblockApi'
 
 export default {
+  name: 'Catacombs',
   triggers: ['catacomb', 'cata'],
+  description: "Returns a player's catacombs level",
+  example: `cata %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username

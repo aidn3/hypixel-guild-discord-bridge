@@ -11,7 +11,10 @@ const Kuudra: Record<KuudraTier, string[]> = {
 }
 
 export default {
+  name: 'Kuudra',
   triggers: ['kuudra', 'k'],
+  description: "Returns a player's kuudra runs",
+  example: `kuudra t5 %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
     const givenTier = context.args[0]?.toLowerCase()

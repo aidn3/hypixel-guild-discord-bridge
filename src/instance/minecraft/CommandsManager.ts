@@ -33,7 +33,6 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       CataCommand,
       EightBallCommand,
       ExplainCommand,
-      ExplainCommand,
       GuildCommand,
       IqCommand,
       KuudraCommand,
@@ -41,9 +40,9 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       NetworthCommand,
       RockPaperScissorsCommand,
       RouletteCommand,
+      RunsCommand,
       SecretsCommand,
       SkillCommand,
-      RunsCommand,
       WeightCommand
     ]
 
@@ -72,6 +71,26 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       command.enabled = !command.enabled
       await minecraftInstance.send(
         `/gc @Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`
+      )
+      return true
+    }
+
+    if (['help', 'command', 'commands'].includes(commandName)) {
+      if (arguments_.length <= 0) {
+        await minecraftInstance.send(`/gc Commands: ${this.commands.map((command) => command.name).join(', ')}`)
+        return true
+      }
+      const command = this.commands.find((c) => c.triggers.includes(arguments_[0]))
+      if (command == undefined) {
+        await minecraftInstance.send(
+          `/gc That command does not exist, use ${minecraftInstance.config.commandPrefix}help`
+        )
+        return true
+      }
+
+      await minecraftInstance.send(
+        `/gc ${command.name}: ${command.description} 
+        (${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
       )
       return true
     }
