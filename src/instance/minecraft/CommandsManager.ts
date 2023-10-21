@@ -75,7 +75,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       return true
     }
 
-    if (['help', 'command', 'commands'].includes(commandName)) {
+    if (['help', 'command', 'commands', 'cmd', 'cmds'].includes(commandName)) {
       if (arguments_.length <= 0) {
         await minecraftInstance.send(`/gc Commands: ${this.commands.map((command) => command.name).join(', ')}`)
         return true
@@ -89,8 +89,8 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       }
 
       await minecraftInstance.send(
-        `/gc ${command.name}: ${command.description} 
-        (${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
+        `/gc ${command.name}: ${command.description}` +
+          `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
       )
       return true
     }
