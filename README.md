@@ -100,7 +100,6 @@ offering quality user experience while keeping it simple
 | !weight    | Calculate **Senither Weights** of players       | Anyone     |
 | !networth  | Calculate the in-game networth of players       | Anyone     |
 | !guild     | Give a summary of the guild for a given user    | Anyone     |
-| !bitches   | Give a random number to the guild member        | Anyone     |
 | !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
 | !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
 | !kuudra    | Get a player's kuudra completions `!kuudra hot` | Anyone     |

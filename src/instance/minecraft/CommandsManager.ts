@@ -4,7 +4,6 @@ import EventHandler from '../../common/EventHandler'
 import { EventType } from '../../common/ApplicationEvent'
 import { ChatCommandHandler } from './common/ChatInterface'
 import MinecraftInstance from './MinecraftInstance'
-import BitchesCommand from './commands/BitchesCommand'
 import CalculateCommand from './commands/CalculateCommand'
 import CataCommand from './commands/CataCommand'
 import EightBallCommand from './commands/EightBallCommand'
@@ -28,7 +27,6 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
     super(clientInstance)
 
     this.commands = [
-      BitchesCommand,
       CalculateCommand,
       CataCommand,
       EightBallCommand,
