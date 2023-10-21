@@ -36,6 +36,9 @@ export enum EventType {
   LEAVE = 'leave',
   KICK = 'kick',
 
+  // Guild quest completion
+  QUEST = 'quest',
+
   PROMOTE = 'promote',
   DEMOTE = 'demote',
   MUTE = 'mute',

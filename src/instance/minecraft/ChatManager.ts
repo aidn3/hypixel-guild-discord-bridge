@@ -16,6 +16,7 @@ import OnlineChat from './chat/OnlineChat'
 import PrivateChat from './chat/PrivateChat'
 import PromoteChat from './chat/PromoteChat'
 import PublicChat from './chat/PublicChat'
+import QuestChat from './chat/QuestChat'
 import RepeatChat from './chat/RepeatChat'
 import RequestChat from './chat/RequestChat'
 import UnmuteChat from './chat/UnmuteChat'
@@ -39,6 +40,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       OnlineChat,
       PrivateChat,
       PromoteChat,
+      QuestChat,
       PublicChat,
       RepeatChat,
       RequestChat,
