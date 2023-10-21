@@ -88,7 +88,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
       await minecraftInstance.send(
         `/gc ${command.name}: ${command.description} ` +
-        `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
+          `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
       )
       return true
     }
