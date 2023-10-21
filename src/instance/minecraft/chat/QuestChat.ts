@@ -7,7 +7,7 @@ export default {
   onChat: function (context: MinecraftChatContext): void {
     const regex = /^GUILD QUEST TIER [1-9] COMPLETED!/g
 
-    const match = regex.exec(context.message)
+    const match = regex.exec(context.message.trim())
     if (match != undefined) {
       context.application.emit('event', {
         localEvent: true,
@@ -17,7 +17,7 @@ export default {
         name: EventType.QUEST,
         username: undefined,
         severity: ColorScheme.GOOD,
-        message: context.message,
+        message: context.message.trim(),
         removeLater: false
       })
     }
