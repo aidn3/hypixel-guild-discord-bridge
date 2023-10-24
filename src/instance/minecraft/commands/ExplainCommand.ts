@@ -9,8 +9,8 @@ export default {
 
   handler: function (context: ChatCommandContext): string {
     return (
-      `${context.username}, I am a robot that connects this chat to discord!` +
-      'I have many commands you can use, see them all with !help'
+      `${context.username}, I am a robot that connects this chat to discord! ` +
+      'I have many commands you can use, see them all with !commands'
     )
   }
 } satisfies ChatCommandHandler
