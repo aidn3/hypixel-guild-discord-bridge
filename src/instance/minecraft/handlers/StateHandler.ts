@@ -6,27 +6,34 @@ import { LOCATION, Status } from '../../../common/ClientInstance'
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts
   private exactDelay
+  public loggedIn
 
   constructor(clientInstance: MinecraftInstance) {
     super(clientInstance)
 
     this.loginAttempts = 0
     this.exactDelay = 0
+    this.loggedIn = false
   }
 
   registerEvents(): void {
     this.clientInstance.client?.on('login', () => {
       this.onLogin()
+      this.loggedIn = true
     })
     this.clientInstance.client?.on('end', (reason: string) => {
       this.onEnd(reason)
+      this.loggedIn = false
     })
     this.clientInstance.client?.on('kicked', (reason: string) => {
       this.onKicked(reason)
+      this.loggedIn = false
     })
   }
 
   private onLogin(): void {
+    if (this.loggedIn) return
+
     this.clientInstance.logger.info('Minecraft client ready, logged in')
 
     this.loginAttempts = 0
