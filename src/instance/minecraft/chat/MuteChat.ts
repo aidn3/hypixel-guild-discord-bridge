@@ -6,13 +6,13 @@ import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
-    const regex = /^(?:\[[+A-Z]{1,10}] ){0,3}\w{3,32} has muted (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) for (\d)([dhms])/g
+    const regex = /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) has muted (the guild chat|(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})) for (\d)([dhms])/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      const username = match[1]
-      const muteTime = Number(match[2])
-      const muteSuffice = match[3]
+      const username = match[2]
+      const muteTime = Number(match[4])
+      const muteSuffice = match[5]
 
       context.application.punishedUsers.mute(username, muteTime * sufficeToTime(muteSuffice))
 
@@ -22,7 +22,7 @@ export default {
         location: LOCATION.MINECRAFT,
         scope: SCOPE.OFFICER,
         name: EventType.MUTE,
-        username,
+        username: match[1],
         severity: ColorScheme.BAD,
         message: context.message,
         removeLater: false
