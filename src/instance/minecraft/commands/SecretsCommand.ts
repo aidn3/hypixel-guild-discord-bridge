@@ -3,7 +3,7 @@ import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
   name: 'Secrets',
-  triggers: ['secrets', 's'],
+  triggers: ['secrets', 's', 'sec'],
   description: 'Returns how many secrets a player has done',
   example: `secrets %s`,
   enabled: true,
@@ -26,6 +26,6 @@ export default {
 
     const secrets = parsedProfile.achievements.skyblockTreasureHunter as number
 
-    return `${givenUsername}: ${secrets.toLocaleString() || 0}`
+    return `${givenUsername}: ${secrets.toLocaleString() || 0} secrets`
   }
 } satisfies ChatCommandHandler
