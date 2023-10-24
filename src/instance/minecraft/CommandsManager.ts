@@ -3,6 +3,7 @@ import { ColorScheme } from '../discord/common/DiscordConfig'
 import EventHandler from '../../common/EventHandler'
 import { EventType } from '../../common/ApplicationEvent'
 import { ChatCommandHandler } from './common/ChatInterface'
+
 import MinecraftInstance from './MinecraftInstance'
 import CalculateCommand from './commands/CalculateCommand'
 import CataCommand from './commands/CataCommand'
@@ -75,21 +76,57 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
     if (['help', 'command', 'commands', 'cmd', 'cmds'].includes(commandName)) {
       if (arguments_.length <= 0) {
-        await minecraftInstance.send(`/gc Commands: ${this.commands.map((command) => command.name).join(', ')}`)
+        const reply = `Commands: ${this.commands.map((command) => command.name).join(', ')}`
+        await minecraftInstance.send(`/gc ${reply}`)
+
+        minecraftInstance.app.emit('event', {
+          localEvent: true,
+          instanceName: minecraftInstance.instanceName,
+          location: LOCATION.MINECRAFT,
+          scope: SCOPE.PUBLIC,
+          name: EventType.COMMAND,
+          username,
+          severity: ColorScheme.GOOD,
+          message: `${message}\n${reply}`,
+          removeLater: false
+        })
         return true
       }
-      const command = this.commands.find((c) => c.triggers.includes(arguments_[0]))
+      const command = this.commands.find((c) => c.triggers.includes(arguments_[0]?.toLowerCase()))
       if (command == undefined) {
-        await minecraftInstance.send(
-          `/gc That command does not exist, use ${minecraftInstance.config.commandPrefix}help`
-        )
+        const reply = `That command does not exist, use ${minecraftInstance.config.commandPrefix}help`
+        await minecraftInstance.send(`/gc ${reply}`)
+
+        minecraftInstance.app.emit('event', {
+          localEvent: true,
+          instanceName: minecraftInstance.instanceName,
+          location: LOCATION.MINECRAFT,
+          scope: SCOPE.PUBLIC,
+          name: EventType.COMMAND,
+          username,
+          severity: ColorScheme.GOOD,
+          message: `${message}\n${reply}`,
+          removeLater: false
+        })
         return true
       }
 
-      await minecraftInstance.send(
-        `/gc ${command.name}: ${command.description} ` +
-          `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
-      )
+      const reply =
+        `${command.name}: ${command.description} ` +
+        `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
+      await minecraftInstance.send(`/gc ${reply}`)
+
+      minecraftInstance.app.emit('event', {
+        localEvent: true,
+        instanceName: minecraftInstance.instanceName,
+        location: LOCATION.MINECRAFT,
+        scope: SCOPE.PUBLIC,
+        name: EventType.COMMAND,
+        username,
+        severity: ColorScheme.GOOD,
+        message: `${message}\n${reply}`,
+        removeLater: false
+      })
       return true
     }
 
