@@ -6,7 +6,8 @@ import { EventType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
-    const regex = /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) has muted (the guild chat|(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})) for (\d)([dhms])/g
+    const regex =
+      /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) has muted (the guild chat|(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})) for (\d)([dhms])/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
