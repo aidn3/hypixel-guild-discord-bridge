@@ -1,7 +1,6 @@
 import * as assert from 'node:assert'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import { formatLevel } from '../../../util/SkyblockApi'
 
 export default {
   name: 'Catacombs',
@@ -25,11 +24,10 @@ export default {
 
     const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
 
-    return (
-      `${givenUsername} is Catacombs ` +
-      `${formatLevel(parsedProfile.dungeons.types.catacombs.level, parsedProfile.dungeons.types.catacombs.progress)}` +
-      ` ${formatClass(parsedProfile)}.`
-    )
+    const catacombs = parsedProfile.dungeons.types.catacombs
+    const skillLevel = getLevelWithOverflow(catacombs.xp, catacombs.level, catacombs.progress)
+
+    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${formatClass(parsedProfile)}.`
   }
 } satisfies ChatCommandHandler
 
@@ -46,6 +44,22 @@ async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<Skybl
   return response
 }
 
+function getLevelWithOverflow(totalExperience: number, level: number, progress: number): number {
+  const PER_LEVEL = 200_000_000
+  const MAX_50_XP = 569_809_640
+
+  if (totalExperience > MAX_50_XP) {
+    // account for overflow
+    const remainingExperience = totalExperience - MAX_50_XP
+    const extraLevels = Math.floor(remainingExperience / PER_LEVEL)
+    const fractionLevel = (remainingExperience % PER_LEVEL) / PER_LEVEL
+
+    return 50 + extraLevels + fractionLevel
+  } else {
+    return Number(level) + progress / 100
+  }
+}
+
 function formatClass(member: SkyblockMember): string {
   const classes = member.dungeons.classes
 
@@ -55,26 +69,26 @@ function formatClass(member: SkyblockMember): string {
 
   if (classes.healer.xp > xp) {
     xp = classes.healer.xp
-    level = Number(classes.healer.level) + classes.healer.progress / 100
+    level = getLevelWithOverflow(classes.healer.xp, classes.healer.level, classes.healer.progress)
     name = 'Healer'
   }
   if (classes.mage.xp > xp) {
     xp = classes.mage.xp
-    level = Number(classes.mage.level) + classes.mage.progress / 100
+    level = getLevelWithOverflow(classes.mage.xp, classes.mage.level, classes.mage.progress)
     name = 'Mage'
   }
   if (classes.berserk.xp > xp) {
     xp = classes.berserk.xp
-    level = Number(classes.berserk.level) + classes.berserk.progress / 100
+    level = getLevelWithOverflow(classes.berserk.xp, classes.berserk.level, classes.berserk.progress)
     name = 'Berserk'
   }
   if (classes.archer.xp > xp) {
     xp = classes.archer.xp
-    level = Number(classes.archer.level) + classes.archer.progress / 100
+    level = getLevelWithOverflow(classes.archer.xp, classes.archer.level, classes.archer.progress)
     name = 'Archer'
   }
   if (classes.tank.xp > xp) {
-    level = Number(classes.tank.level) + classes.tank.progress / 100
+    level = getLevelWithOverflow(classes.tank.xp, classes.tank.level, classes.tank.progress)
     name = 'Tank'
   }
   return `${name} ${level.toFixed(2)}`
