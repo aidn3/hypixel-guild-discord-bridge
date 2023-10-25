@@ -11,13 +11,12 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      console.log(match)
       const responsible = match[1]
-      const victim = match[2]
+      const target = match[2]
       const muteTime = Number(match[3])
       const muteSuffice = match[4]
 
-      context.application.punishedUsers.mute(victim, muteTime * sufficeToTime(muteSuffice))
+      context.application.punishedUsers.mute(target, muteTime * sufficeToTime(muteSuffice))
 
       context.application.emit('event', {
         localEvent: true,

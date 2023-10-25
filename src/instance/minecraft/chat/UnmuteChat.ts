@@ -10,11 +10,10 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      console.log(match)
       const responsible = match[1]
-      const victim = match[2]
+      const target = match[2]
 
-      context.application.punishedUsers.unmute(victim)
+      context.application.punishedUsers.unmute(target)
 
       context.application.emit('event', {
         localEvent: true,
