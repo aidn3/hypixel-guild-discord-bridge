@@ -21,11 +21,28 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await context.clientInstance.app.hypixelApi.getPlayer(uuid)
-    assert(parsedProfile)
+    const hypixelProfile = await context.clientInstance.app.hypixelApi.getPlayer(uuid)
+    assert(hypixelProfile)
 
-    const secrets = parsedProfile.achievements.skyblockTreasureHunter as number
+    const dungeons = await context.clientInstance.app.hypixelApi
+      .getSkyblockProfiles(uuid, { raw: true })
+      .then((response) => response.profiles)
+      .then((profiles) => profiles.find((p) => p.selected))
+      .then((response) => response?.members[uuid].dungeons)
+    assert(dungeons)
 
-    return `${givenUsername}: ${secrets.toLocaleString() || 0} secrets`
+    const catacombRuns = dungeons?.dungeon_types.catacombs.tier_completions as Object
+    const mastermodeRuns = dungeons?.dungeon_types.master_catacombs.tier_completions as Object
+
+    const totalCatacombs = Object.values(catacombRuns).reduce((sum, c) => sum + c, 0)
+    const totalMastermode = Object.values(mastermodeRuns).reduce((sum, c) => sum + c, 0)
+
+    const totalRuns = totalCatacombs + totalMastermode
+
+    const secrets = hypixelProfile.achievements.skyblockTreasureHunter as number
+
+    const averageSecrets = (secrets / totalRuns).toFixed(2)
+
+    return `${givenUsername}: ${secrets.toLocaleString() || 0} total | ${averageSecrets} average`
   }
 } satisfies ChatCommandHandler
