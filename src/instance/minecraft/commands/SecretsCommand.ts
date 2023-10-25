@@ -43,6 +43,6 @@ export default {
 
     const averageSecrets = (secrets / totalRuns).toFixed(2)
 
-    return `${givenUsername}: ${secrets.toLocaleString() || 0} total | ${averageSecrets} average`
+    return `${givenUsername}'s secrets: ${secrets.toLocaleString() || 0} Total ${averageSecrets} Average`
   }
 } satisfies ChatCommandHandler
