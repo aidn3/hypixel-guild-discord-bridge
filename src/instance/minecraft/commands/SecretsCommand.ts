@@ -31,8 +31,8 @@ export default {
       .then((response) => response?.members[uuid].dungeons)
     assert(dungeons)
 
-    const catacombRuns = dungeons?.dungeon_types.catacombs.tier_completions as Object
-    const mastermodeRuns = dungeons?.dungeon_types.master_catacombs.tier_completions as Object
+    const catacombRuns = dungeons.dungeon_types.catacombs.tier_completions
+    const mastermodeRuns = dungeons.dungeon_types.master_catacombs.tier_completions
 
     const totalCatacombs = Object.values(catacombRuns).reduce((sum, c) => sum + c, 0)
     const totalMastermode = Object.values(mastermodeRuns).reduce((sum, c) => sum + c, 0)
