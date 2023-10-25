@@ -28,6 +28,10 @@ export default {
     const skill = context.args[0]
     const givenUsername = context.args[1] ?? context.username
 
+    if (skill === undefined) {
+      return `Skills: ${Array.from(SKILLS).join(', ')}`
+    }
+
     if (!SKILLS.has(skill)) {
       return `${context.username}, Invalid skill! (given: ${skill})`
     }
@@ -45,10 +49,23 @@ export default {
 
     const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
 
-    // @ts-expect-error Ignoring impossible to trigger scenario
-    const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember['skills']]
+    const skills = parsedProfile.skills
 
-    return `${givenUsername}: ${skill} - ${formatLevel(skillData.level, skillData.progress)}`
+
+    if (skill === 'average') {
+      const skillAverage = Object.values(skills)
+        .map(skill => {
+          // @ts-expect-error Ignoring impossible to trigger scenario
+          return formatLevel(skill.level, skill.progress)
+        })
+        .reduce((sum, c) => sum + c, 0) / SKILLS.size
+      return `${givenUsername}: ${skill} - ${skillAverage}`
+    }
+    else {
+      // @ts-expect-error Ignoring impossible to trigger scenario
+      const skillData: SKYBLOCK_SKILL_DATA = skills[skill as keyof SkyblockMember['skills']]
+      return `${givenUsername}: ${skill} - ${formatLevel(skillData.level, skillData.progress)}`
+    }
   }
 } satisfies ChatCommandHandler
 
