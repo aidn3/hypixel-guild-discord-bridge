@@ -104,7 +104,11 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
       if (this.client?.player != undefined) {
+        if (message.length > 250) {
+          message = message.slice(0, 250) + '...'
+        }
         this.client.chat(message)
+        this.logger.debug(`Long message truncated: ${message}`)
       }
     })
   }
