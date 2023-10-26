@@ -4,10 +4,10 @@ import { EventType } from '../common/ApplicationEvent'
 
 const JoinMessages = [
   'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',
-  '%s, what a nice new member. Why don\'t you run /g discord & !help here while you\'re at it :P',
+  "%s, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",
   'Psst %s. You just joined. Do /g discord and !help here :D',
   '%s since you are a member now, do !e and /g discord',
-  'Can we take a moment to applaud %s for joining us. Don\'t forget to do /g discord :3',
+  "Can we take a moment to applaud %s for joining us. Don't forget to do /g discord :3",
   '%s joined the guild. What a legend. Do /g discord',
   'Hey %s and welcome to the guild! Run /g discord',
   '%s nice, new member! Do /g discord to join our community (*・‿・)ノ⌒*:･ﾟ✧'
