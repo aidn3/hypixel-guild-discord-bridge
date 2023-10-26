@@ -101,6 +101,11 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   async send(message: string): Promise<void> {
+    message = message
+      .split('\n')
+      .map((chunk) => chunk.trim())
+      .join(' ')
+
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
       if (this.client?.player != undefined) {
