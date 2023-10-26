@@ -74,7 +74,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       content: `Message too long! It has been shortened to ${length} characters.`
     })
 
-    return content.slice(0, Math.max(0, length)) + '...'
+    return content.slice(0, length) + '...'
   }
 
   async hasBeenMuted(message: Message, discordName: string, readableName: string): Promise<boolean> {
