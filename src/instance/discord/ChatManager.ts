@@ -65,7 +65,12 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   async truncateText(message: Message, content: string): Promise<string> {
-    const length = 250
+    /*
+      minecraft has a limit of 256 chars per message
+      256 - 232 = 24
+      we reserve these 24 spare chars for username, prefix and ...
+    */
+    const length = 232
     if (content.length <= length) {
       return content
     }
@@ -102,11 +107,12 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     try {
       filteredMessage = this.profanityFilter.clean(content)
     } catch {
-      // profanity package has bug.
-      // will throw error if given one special character.
-      // example: clean("?")
-
-      // message is clear if thrown
+      /* 
+        profanity package has bug.
+        will throw error if given one special character.
+        example: clean("?")
+        message is clear if thrown
+      */
       filteredMessage = content
     }
 
