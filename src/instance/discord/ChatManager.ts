@@ -26,7 +26,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    const content = cleanMessage(event)
+    const content = await this.truncateText(event, cleanMessage(event))
     if (content.length === 0) return
 
     const replyUsername = await getReplyUsername(event)
@@ -64,15 +64,28 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  async hasBeenMuted(event: Message, discordName: string, readableName: string): Promise<boolean> {
+  async truncateText(message: Message, content: string): Promise<string> {
+    const length = 250
+    if (content.length <= length) {
+      return content
+    }
+
+    await message.reply({
+      content: `Message too long! It has been shortened to ${length} characters.`
+    })
+
+    return content.slice(0, length) + '...'
+  }
+
+  async hasBeenMuted(message: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishedUsers = this.clientInstance.app.punishedUsers
     const mutedTill =
       punishedUsers.mutedTill(discordName) ??
       punishedUsers.mutedTill(readableName) ??
-      punishedUsers.mutedTill(event.author.id)
+      punishedUsers.mutedTill(message.author.id)
 
     if (mutedTill != undefined) {
-      await event.reply({
+      await message.reply({
         content:
           '*Looks like you are muted on the chat-bridge.*\n' +
           "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
