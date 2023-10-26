@@ -106,9 +106,10 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       if (this.client?.player != undefined) {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'
+          this.logger.warn(`Long message truncated: ${message}`)
         }
+
         this.client.chat(message)
-        this.logger.debug(`Long message truncated: ${message}`)
       }
     })
   }
