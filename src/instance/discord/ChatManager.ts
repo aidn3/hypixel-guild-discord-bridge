@@ -26,7 +26,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    const content = await this.truncateText(event, cleanMessage(event))
+    const content = cleanMessage(event)
     if (content.length === 0) return
 
     const replyUsername = await getReplyUsername(event)
@@ -36,7 +36,8 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
     if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
       if (await this.hasBeenMuted(event, discordName, readableName)) return
-      const filteredMessage = await this.proceedFiltering(event, content)
+      const truncatedContent = await this.truncateText(event, content)
+      const filteredMessage = await this.proceedFiltering(event, truncatedContent)
 
       this.clientInstance.app.emit('chat', {
         localEvent: true,
@@ -51,6 +52,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
+      const truncatedContent = await this.truncateText(event, content)
+      const filteredMessage = await this.proceedFiltering(event, truncatedContent)
+
       this.clientInstance.app.emit('chat', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
@@ -59,7 +63,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         channelId: event.channel.id,
         username: readableName,
         replyUsername: readableReplyUsername,
-        message: content
+        message: filteredMessage
       })
     }
   }
@@ -107,7 +111,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     try {
       filteredMessage = this.profanityFilter.clean(content)
     } catch {
-      /* 
+      /*
         profanity package has bug.
         will throw error if given one special character.
         example: clean("?")
