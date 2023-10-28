@@ -56,8 +56,7 @@ export enum LOCATION {
 
   DISCORD = 'discord',
   MINECRAFT = 'minecraft',
-  WEBHOOK = 'webhook',
-  GLOBAL = 'global'
+  WEBHOOK = 'webhook'
 }
 
 export enum SCOPE {

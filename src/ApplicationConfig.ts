@@ -6,7 +6,6 @@ import * as YAML from 'yaml'
 
 import WebhookConfig from './instance/webhook/common/WebhookConfig'
 import { DiscordConfig } from './instance/discord/common/DiscordConfig'
-import GlobalConfig from './instance/globalChat/common/GlobalConfig'
 import MetricsConfig from './instance/metrics/common/MetricsConfig'
 import MinecraftConfig from './instance/minecraft/common/MinecraftConfig'
 import { SocketConfig } from './instance/socket/common/SocketConfig'
@@ -25,8 +24,7 @@ export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): Applic
 
     discord: config.discord,
     minecrafts: parseMinecraftInstances(config.minecraft),
-    webhooks: config.webhooks,
-    global: config.global
+    webhooks: config.webhooks
   }
 }
 
@@ -70,7 +68,6 @@ export interface ApplicationConfig {
   socket: SocketConfig
 
   discord: DiscordConfig
-  global: GlobalConfig
 
   minecrafts: MinecraftConfig[]
   webhooks: WebhookConfig[]

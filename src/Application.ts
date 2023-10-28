@@ -6,7 +6,6 @@ import { Client as HypixelClient } from 'hypixel-api-reborn'
 import { getLogger, Logger } from 'log4js'
 import DiscordInstance from './instance/discord/DiscordInstance'
 import MinecraftInstance from './instance/minecraft/MinecraftInstance'
-import GlobalChatInstance from './instance/globalChat/GlobalChatInstance'
 import WebhookInstance from './instance/webhook/WebhookInstance'
 import { PunishedUsers } from './util/PunishedUsers'
 import {
@@ -66,10 +65,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.instances.push(
         new WebhookInstance(this, instanceConfig.instanceName, discordInstance?.client, instanceConfig)
       )
-    }
-
-    if (this.config.global.enabled) {
-      this.instances.push(new GlobalChatInstance(this, this.config.global.instanceName, this.config.global))
     }
 
     for (const instanceConfig of this.config.minecrafts) {
