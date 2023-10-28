@@ -23,7 +23,13 @@ export function cleanMessage(messageEvent: Message): string {
 
   if (messageEvent.attachments.size > 0) {
     for (const [, attachment] of messageEvent.attachments) {
-      content += attachment.contentType?.includes('image') === true ? ` ${attachment.url}` : ' (ATTACHMENT)'
+      if (attachment.contentType?.includes('image') === true) {
+        const link = attachment.url
+        const linkWithoutTracking = link.split('?')[0]
+        content += ` ${linkWithoutTracking}`
+      } else {
+        content += ' (ATTACHMENT)'
+      }
     }
   }
 
