@@ -26,46 +26,37 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    const content = cleanMessage(event)
-    if (content.length === 0) return
+    let scope: SCOPE
+    if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
+      scope = SCOPE.PUBLIC
+    } else if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
+      scope = SCOPE.OFFICER
+    } else {
+      return
+    }
+
+    const discordName = event.member?.displayName ?? event.author.username
+    const readableName = getReadableName(discordName, event.author.id)
+    if (scope !== SCOPE.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
 
     const replyUsername = await getReplyUsername(event)
     const readableReplyUsername = replyUsername == undefined ? undefined : getReadableName(replyUsername, replyUsername)
-    const discordName = event.member?.displayName ?? event.author.username
-    const readableName = getReadableName(discordName, event.author.id)
 
-    if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
-      if (await this.hasBeenMuted(event, discordName, readableName)) return
-      const truncatedContent = await this.truncateText(event, content)
-      const filteredMessage = await this.proceedFiltering(event, truncatedContent)
+    const content = cleanMessage(event)
+    if (content.length === 0) return
+    const truncatedContent = await this.truncateText(event, content)
+    const filteredMessage = await this.proceedFiltering(event, truncatedContent)
 
-      this.clientInstance.app.emit('chat', {
-        localEvent: true,
-        instanceName: this.clientInstance.instanceName,
-        location: LOCATION.DISCORD,
-        scope: SCOPE.PUBLIC,
-        channelId: event.channel.id,
-        username: readableName,
-        replyUsername: readableReplyUsername,
-        message: filteredMessage
-      })
-    }
-
-    if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
-      const truncatedContent = await this.truncateText(event, content)
-      const filteredMessage = await this.proceedFiltering(event, truncatedContent)
-
-      this.clientInstance.app.emit('chat', {
-        localEvent: true,
-        instanceName: this.clientInstance.instanceName,
-        location: LOCATION.DISCORD,
-        scope: SCOPE.OFFICER,
-        channelId: event.channel.id,
-        username: readableName,
-        replyUsername: readableReplyUsername,
-        message: filteredMessage
-      })
-    }
+    this.clientInstance.app.emit('chat', {
+      localEvent: true,
+      instanceName: this.clientInstance.instanceName,
+      location: LOCATION.DISCORD,
+      scope: scope,
+      channelId: event.channel.id,
+      username: readableName,
+      replyUsername: readableReplyUsername,
+      message: filteredMessage
+    })
   }
 
   async truncateText(message: Message, content: string): Promise<string> {
