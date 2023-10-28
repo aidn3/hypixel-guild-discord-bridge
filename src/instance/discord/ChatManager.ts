@@ -52,6 +52,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
+      const truncatedContent = await this.truncateText(event, content)
+      const filteredMessage = await this.proceedFiltering(event, truncatedContent)
+
       this.clientInstance.app.emit('chat', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
@@ -60,7 +63,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         channelId: event.channel.id,
         username: readableName,
         replyUsername: readableReplyUsername,
-        message: content
+        message: filteredMessage
       })
     }
   }
