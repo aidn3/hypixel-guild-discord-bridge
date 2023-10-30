@@ -19,6 +19,7 @@ import RouletteCommand from './commands/RouletteCommand'
 import SecretsCommand from './commands/SecretsCommand'
 import SkillCommand from './commands/SkillCommand'
 import RunsCommand from './commands/RunsCommand'
+import SlayerCommand from './commands/SlayerCommand'
 import WeightCommand from './commands/WeightCommand'
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
@@ -42,6 +43,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       RunsCommand,
       SecretsCommand,
       SkillCommand,
+      SlayerCommand,
       WeightCommand
     ]
 

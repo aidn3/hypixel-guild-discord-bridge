@@ -106,6 +106,7 @@ offering quality user experience while keeping it simple
 | !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
 | !secrets   | Returns a player's total dungeon secrets        | Anyone     |
+| !slayer    | Returns a player's slayer stats `!slayer wolf`  | Anyone     |
 
 ### How to execute commands
 
