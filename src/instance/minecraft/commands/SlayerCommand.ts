@@ -4,7 +4,7 @@ import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],
-  spider: ['tarantula', 'tara', 'spider'],
+  spider: ['tarantula', 'tara', 'spider', 'tar'],
   wolf: ['sven', 'wolf'],
   enderman: ['voidgloom', 'eman', 'enderman'],
   blaze: ['inferno', 'demonlord', 'blaze'],
@@ -15,7 +15,7 @@ const Slayers: Record<string, string[]> = {
 export default {
   name: 'Slayers',
   triggers: ['slayer', 'sl', 'slyr'],
-  description: "Returns a player's slayer levels",
+  description: "Returns a player's slayer level",
   example: `slayer eman %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
@@ -33,15 +33,12 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const hypixelProfile = await context.clientInstance.app.hypixelApi.getPlayer(uuid)
-    assert(hypixelProfile)
-
-    const slayers = await context.clientInstance.app.hypixelApi
+    const slayersProfile = await context.clientInstance.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles)
       .then((profiles) => profiles.find((p) => p.selected))
       .then((response) => response?.members[uuid].slayer_bosses)
-    assert(slayers)
+    assert(slayersProfile)
 
     let chosenSlayer: string | undefined
     for (const [key, names] of Object.entries(Slayers)) {
@@ -50,27 +47,21 @@ export default {
       }
     }
 
-    if (chosenSlayer === 'overview') {
-      let output = '/'
-      for (const [name, slayer] of Object.entries(slayers)) {
-        output += getSlayerLevel(slayer.xp, name) + '/'
-      }
-      return `${givenUsername}'s slayers: ${output}`
-    }
-
-    for (const [name, slayer] of Object.entries(slayers)) {
+    for (const [name, slayer] of Object.entries(slayersProfile)) {
       if (name === chosenSlayer) {
-        const slayerData = slayer
-        const slayerName = name
         return (
           `${givenUsername}'s ${chosenSlayer} slayer: ` +
-          `Level ${getSlayerLevel(slayerData.xp, slayerName)} (${slayerData.xp.toLocaleString()}) ` +
-          `Highest tier kills: ${getHighestTierKills(slayerData, slayerName).toLocaleString()}`
+          `Level ${getSlayerLevel(slayer.xp, name)} (${slayer.xp.toLocaleString()}) ` +
+          `Highest tier kills: ${getHighestTierKills(slayer, name).toLocaleString()}`
         )
       }
     }
 
-    return 'Something went seriously wrong if you see this.'
+    let output = '/'
+    for (const [name, slayer] of Object.entries(slayersProfile)) {
+      output += getSlayerLevel(slayer.xp, name) + '/'
+    }
+    return `${givenUsername}'s slayers: ${output}`
   }
 } satisfies ChatCommandHandler
 
