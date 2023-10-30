@@ -13,7 +13,7 @@ const Slayers: Record<string, string[]> = {
 }
 
 export default {
-  name: 'Secrets',
+  name: 'Slayers',
   triggers: ['slayer', 'sl', 'slyr'],
   description: "Returns a player's slayer levels",
   example: `slayer eman %s`,
