@@ -22,6 +22,15 @@ declare module 'hypixel-api-reborn' {
 
   export type KuudraTier = 'none' | 'hot' | 'burning' | 'fiery' | 'infernal'
 
+  export interface Slayer {
+    xp: number
+    boss_kills_tier_0?: number
+    boss_kills_tier_1?: number
+    boss_kills_tier_2?: number
+    boss_kills_tier_3?: number
+    boss_kills_tier_4?: number
+  }
+
   export interface HypixelSkyblockMemberRaw {
     leveling?: { experience?: number }
     nether_island_player_data: {
@@ -59,6 +68,14 @@ declare module 'hypixel-api-reborn' {
           }
         }
       }
+    }
+    slayer_bosses: {
+      zombie: Slayer
+      spider: Slayer
+      wolf: Slayer
+      enderman: Slayer
+      blaze: Slayer
+      vampire: Slayer
     }
   }
 
