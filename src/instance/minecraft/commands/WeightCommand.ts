@@ -4,7 +4,7 @@
  Minecraft username: _aura
 */
 import * as assert from 'node:assert'
-import Axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 
 export default {
@@ -20,8 +20,8 @@ export default {
 } satisfies ChatCommandHandler
 
 async function getSenitherData(username: string): Promise<number> {
-  const skyShiiyuResponse = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
-    (response: AxiosResponse) => response.data as SkyShiiyuResponse
+  const skyShiiyuResponse = await axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
+    (response) => response.data as SkyShiiyuResponse
   )
 
   const selected = Object.values(skyShiiyuResponse.profiles).find((profile) => profile.current)
