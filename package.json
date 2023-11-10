@@ -24,7 +24,7 @@
   "author": "aidn5 (aidn.david3@gmail.com)",
   "dependencies": {
     "@hkh12/node-calc": "^4.2.1",
-    "axios": "^0.26.1",
+    "axios": "^1.6.0",
     "bad-words": "^3.0.4",
     "clean": "^4.0.2",
     "discord.js": "^14.7.1",
