@@ -1,7 +1,6 @@
 import { getNetworth as calculateNetworth, getPrices } from 'skyhelper-networth'
-import { type Prices } from '../type/skyhelper-networth'
 
-let prices: Prices
+let prices: object
 void updatePrices()
 
 setInterval(
@@ -15,7 +14,7 @@ async function updatePrices(): Promise<void> {
   prices = await getPrices()
 }
 
-export async function getNetworth(profileData: unknown, bankBalance: number, museumData: unknown): Promise<number> {
+export async function getNetworth(profileData: object, bankBalance: number, museumData: object): Promise<number> {
   return await calculateNetworth(profileData, bankBalance, {
     prices,
     museumData: museumData,
