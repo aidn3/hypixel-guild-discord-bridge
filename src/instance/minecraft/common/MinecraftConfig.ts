@@ -13,4 +13,10 @@ export default interface MinecraftConfig {
   // @ts-expect-error "MineFlayer.Client" not exist
   botOptions: { client: MineFlayer.Client } & Partial<MineFlayer.BotOptions>
   proxy: ProxyConfig | null
+  customAuthOptions?: {
+    identifier: string
+    clientId: string
+    redirectUri: string
+    initialRefreshToken: string // This is invalidated immediately after first launch
+  }
 }

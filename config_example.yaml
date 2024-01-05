@@ -30,6 +30,26 @@ minecraft:
     - instanceName: 'Good-Name'
       email: 'email@example.com'
       password: 'password1234'
+      # ---------------------------------
+      # Advanced Login Method
+      # ---------------------------------
+      # When using this `email` and `password` CAN be commented out (although it is not necessary)
+      # Whether to enable custom auth, when enabled the `email` and `password` fields will be completely ignored
+      # and below credentials will instead be used to obtain a session (from cache).
+      #useCustomAuth: true
+      # Identifier for this account, only used to determine the session cache file name. (Cache folder is at ~/.minecraft/hypixel-guild-discord-bridge-cache)
+      # I recommend you set this to a username, uuid or email address. You're free to put whatever you want here though.
+      #identifier: 'Notch'
+      # Your Microsoft Azure PUBLIC clientId (application id)
+      #clientId: 'your-dashed-client-uuid'
+      # MUST be specified EXPLICITLY in your Microsoft Azure application;
+      # For the bridge, it doesn't matter what the redirect uri is. It has to be specified for some authentication requests;
+      # No data is ever "redirected" to this URL however.
+      #redirectUri: 'http://localhost:12345/'
+      # https://wiki.vg/Microsoft_Authentication_Scheme#Microsoft_OAuth2_Flow
+      # REQUIRED Scopes are `XboxLive.signin XboxLive.offline_access`
+      #initialRefreshToken: 'Rather Long Microsoft Access Token, obtained as the final step of ANY Microsoft Auth flow.'
+
       # This will be used when initiating connection to minecraft server
       # It will not be used for other purposes.
       # Leave empty or set it to null to disable
