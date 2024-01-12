@@ -97,40 +97,55 @@ const listMembers = async function (
 }
 
 async function look(mojangApi: MojangApi, hypixelApi: Client, members: string[]): Promise<string[]> {
-  const onlineProfiles = await lookupProfiles(mojangApi, members).then((profiles) =>
-    profiles.sort((a, b) => a.name.localeCompare(b.name))
-  )
+  const onlineProfiles = await lookupProfiles(mojangApi, members)
 
-  const statuses = await Promise.all(onlineProfiles.map(async (profile) => await hypixelApi.getStatus(profile.id)))
+  onlineProfiles.resolved.sort((a, b) => a.name.localeCompare(b.name))
+  onlineProfiles.failed.sort((a, b) => a.localeCompare(b))
+
+  const statuses = await Promise.all(onlineProfiles.resolved.map((profile) => hypixelApi.getStatus(profile.id)))
 
   const list = []
-  for (const [index, onlineProfile] of onlineProfiles.entries()) {
+  for (const [index, onlineProfile] of onlineProfiles.resolved.entries()) {
     list.push(formatLocation(onlineProfile.name, statuses[index]))
   }
+  for (const failedToResolveUsername of onlineProfiles.failed) {
+    list.push(formatLocation(failedToResolveUsername, undefined))
+  }
+
   return list
 }
 
 // Mojang only allow up to 10 usernames per lookup
-async function lookupProfiles(mojangApi: MojangApi, usernames: string[]): Promise<MojangProfile[]> {
-  const mojangRequests = []
+async function lookupProfiles(
+  mojangApi: MojangApi,
+  usernames: string[]
+): Promise<{ resolved: MojangProfile[]; failed: string[] }> {
+  const mojangRequests: Promise<MojangProfile[]>[] = []
+  const failedRequests: string[] = []
 
   // https://stackoverflow.com/a/8495740
-  let index
-  let index_
-  let array
   const chunk = 10
-  for (index = 0, index_ = usernames.length; index < index_; index += chunk) {
-    array = usernames.slice(index, index + chunk)
-    mojangRequests.push(mojangApi.profilesByUsername(array))
+  for (let index = 0, index_ = usernames.length; index < index_; index += chunk) {
+    const array = usernames.slice(index, index + chunk)
+    mojangRequests.push(
+      mojangApi.profilesByUsername(array).catch(() => {
+        failedRequests.push(...array)
+        return []
+      })
+    )
   }
 
   const p = await Promise.all(mojangRequests)
-  return p.flat()
+  return {
+    resolved: p.flat(),
+    failed: failedRequests
+  }
 }
 
-function formatLocation(username: string, session: Status): string {
+function formatLocation(username: string, session: Status | undefined): string {
   let message = `- **${escapeDiscord(username)}** `
 
+  if (session === undefined) return message + ' is *__unknown?__*'
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
