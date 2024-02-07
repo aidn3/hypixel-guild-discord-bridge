@@ -40,9 +40,17 @@ function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }): Min
     }
 
     config.instanceName = instanceYaml.instanceName
-    config.botOptions.auth = 'microsoft'
-    config.botOptions.username = instanceYaml.email
-    config.botOptions.password = instanceYaml.password
+    if (instanceYaml.useCustomAuth) {
+      config.customAuthOptions = {}
+      config.customAuthOptions.identifier = instanceYaml.identifier
+      config.customAuthOptions.clientId = instanceYaml.clientId
+      config.customAuthOptions.redirectUri = instanceYaml.redirectUri
+      config.customAuthOptions.initialRefreshToken = instanceYaml.initialRefreshToken
+    } else {
+      config.botOptions.auth = 'microsoft'
+      config.botOptions.username = instanceYaml.email
+      config.botOptions.password = instanceYaml.password
+    }
 
     if (instanceYaml.proxy != null) {
       const proxyArgs = instanceYaml.proxy.split(':')

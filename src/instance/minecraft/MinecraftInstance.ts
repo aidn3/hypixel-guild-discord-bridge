@@ -10,6 +10,8 @@ import {
 } from '../../common/ApplicationEvent'
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
+import { createCustomAuthBot } from '../../util/MineFlayerCustomAuth'
+import { CacheCustomAuthProvider } from '../../common/CacheCustomAuthProvider'
 import ChatManager from './ChatManager'
 import RawChatHandler from './handlers/RawChatHandler'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
@@ -43,7 +45,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       if (event.targetInstanceName === undefined || event.targetInstanceName === this.instanceName) {
         this.logger.log('instance has received restart signal')
         void this.send(`/gc @Instance restarting...`).then(() => {
-          this.connect()
+          void this.connect()
         })
       }
     })
@@ -74,10 +76,21 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
   }
 
-  connect(): void {
+  async connect(): Promise<void> {
     if (this.client != undefined) this.client.quit()
 
-    this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
+    this.client = this.config.customAuthOptions
+      ? await createCustomAuthBot(
+          { ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) },
+          new CacheCustomAuthProvider(
+            this.config.customAuthOptions.identifier,
+            this.config.customAuthOptions.clientId,
+            this.config.customAuthOptions.redirectUri,
+            this.config.customAuthOptions.initialRefreshToken
+          )
+        )
+      : MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
+
     this.app.emit('instance', {
       localEvent: true,
       instanceName: this.instanceName,

@@ -15,7 +15,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         'Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...'
       )
       setTimeout(() => {
-        this.clientInstance.connect()
+        void this.clientInstance.connect()
       }, 30_000)
     }
   }
