@@ -18,6 +18,8 @@ const WinMessages = [
   "%s you're crazy. Again again again!"
 ]
 
+let countSinceLastLose = 0
+
 export default {
   name: 'Roulette',
   triggers: ['roulette', 'rr'],
@@ -26,15 +28,34 @@ export default {
   enabled: true,
 
   handler: async function (context: ChatCommandContext): Promise<string> {
-    // chance upped from 1/6 to 2/11.
-    // Losing was too rare. Some even managed to reach 18 win streak.
-    const chance = 2 / 11
+    // Default behaviour which is just "1/6 chance" is too unreliable
+    // Some even managed to reach 24 win streak.
+    // This will increase the chance of losing and cap the win streak as well
 
-    if (Math.random() < chance) {
+    const chance = 1 / 6
+    const increasedLoseChanceAfter = 6
+    const guaranteedLoseOn = 12
+
+    let currentChance = chance
+
+    if (countSinceLastLose > increasedLoseChanceAfter) {
+      // This function has a starting point of (0,0) and goes to (inf,1)
+      // with an increasingly faster slope with every step
+      currentChance += -(1 / ((countSinceLastLose - increasedLoseChanceAfter) / 24 + 1)) + 1
+    }
+    if (countSinceLastLose >= guaranteedLoseOn) {
+      currentChance = 1
+    }
+
+    if (Math.random() < currentChance) {
+      countSinceLastLose = 0
+
       await context.clientInstance.send(`/g mute ${context.username} 15m`)
       context.clientInstance.app.punishedUsers.mute(context.username, 900)
 
       return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)
+    } else {
+      countSinceLastLose++
     }
 
     return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', context.username)
