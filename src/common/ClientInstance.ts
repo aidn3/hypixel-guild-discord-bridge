@@ -34,19 +34,19 @@ export enum Status {
   /**
    * Freshly created instance
    */
-  FRESH,
+  FRESH = 'FRESH',
   /**
    * Instance is connecting for first time
    */
-  CONNECTING,
+  CONNECTING = 'CONNECTING',
   /**
    * Instance is trying to connect with its own private client
    */
-  CONNECTED,
+  CONNECTED = 'CONNECTED',
   /**
    * Instance has decided to shut down for a critical reason
    */
-  FAILED
+  FAILED = 'FAILED'
 }
 
 export enum LOCATION {
