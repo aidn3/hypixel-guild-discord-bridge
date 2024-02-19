@@ -103,6 +103,29 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     }
   }
 
+  /*
+   * Used to create special minecraft data.
+   * Main purpose is to receive signed chat messages
+   * and be able to format them based on how the server deems it
+   */
+  private listenForRegistry(client: Client): void {
+    // 1.20.2+
+    client.on('registry_data', (packet: { codec: NBT }) => {
+      this.registry.loadDimensionCodec(packet.codec)
+    })
+    // older versions
+    client.on('login', (packet: { dimensionCodec?: NBT }) => {
+      if (packet.dimensionCodec) {
+        this.registry.loadDimensionCodec(packet.dimensionCodec)
+      }
+    })
+    client.on('respawn', (packet: { dimensionCodec?: NBT }) => {
+      if (packet.dimensionCodec) {
+        this.registry.loadDimensionCodec(packet.dimensionCodec)
+      }
+    })
+  }
+
   username(): string | undefined {
     return this.client?.username
   }
