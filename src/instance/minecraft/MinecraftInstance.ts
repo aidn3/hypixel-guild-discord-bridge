@@ -22,6 +22,7 @@ import StateHandler from './handlers/StateHandler'
 import MinecraftConfig from './common/MinecraftConfig'
 import { resolveProxyIfExist } from './common/ProxyHandler'
 
+export const QUIT_OWN_VOLITION = 'disconnect.quitting'
 const commandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
@@ -83,7 +84,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   connect(): void {
-    if (this.client != undefined) this.client.end()
+    this.client?.end(QUIT_OWN_VOLITION)
 
     this.client = createClient({
       ...this.config.botOptions,

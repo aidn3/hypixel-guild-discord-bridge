@@ -1,5 +1,5 @@
 import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance from '../MinecraftInstance'
+import MinecraftInstance, { QUIT_OWN_VOLITION } from '../MinecraftInstance'
 import { InstanceEventType } from '../../../common/ApplicationEvent'
 import { LOCATION, Status } from '../../../common/ClientInstance'
 
@@ -62,7 +62,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         message: reason
       })
       return
-    } else if (reason === 'disconnect.quitting') {
+    } else if (reason === QUIT_OWN_VOLITION) {
       const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
       this.clientInstance.logger.debug(reason)
