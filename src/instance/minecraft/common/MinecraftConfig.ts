@@ -1,4 +1,4 @@
-import MineFlayer = require('mineflayer')
+import { Client, ClientOptions } from 'minecraft-protocol'
 import { ProxyConfig } from '../../../common/ProxyInterface'
 
 export default interface MinecraftConfig {
@@ -9,8 +9,6 @@ export default interface MinecraftConfig {
   commandPrefix: string
   disabledCommand: string[]
 
-  // TODO: fix Client not exist
-  // @ts-expect-error "MineFlayer.Client" not exist
-  botOptions: { client: MineFlayer.Client } & Partial<MineFlayer.BotOptions>
+  botOptions: { client: Client } & ClientOptions
   proxy: ProxyConfig | null
 }

@@ -1,4 +1,7 @@
-import MineFlayer = require('mineflayer')
+import * as assert from 'node:assert'
+import PrismarineRegistry = require('prismarine-registry')
+import { NBT } from 'prismarine-nbt'
+import { Client, createClient, States } from 'minecraft-protocol'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
 import {
@@ -23,7 +26,8 @@ const commandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   private readonly handlers
-  client: MineFlayer.Bot | undefined
+  client: Client | undefined
+  readonly registry
 
   constructor(app: Application, instanceName: string, config: MinecraftConfig) {
     super(app, instanceName, LOCATION.MINECRAFT, config)
@@ -37,6 +41,9 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       new SendChatHandler(this),
       new ChatManager(this)
     ]
+
+    assert(config.botOptions.version)
+    this.registry = PrismarineRegistry(config.botOptions.version)
 
     this.app.on('reconnectSignal', (event) => {
       // undefined is strictly checked due to api specification
@@ -75,9 +82,17 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   connect(): void {
-    if (this.client != undefined) this.client.quit()
+    if (this.client != undefined) this.client.end()
 
-    this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
+    this.client = createClient({
+      ...this.config.botOptions,
+      ...resolveProxyIfExist(this.logger, this.config)
+      // username: 'aidn5Bot',
+      // auth: 'offline',
+      //version: '1.19.4'
+    })
+    this.listenForRegistry(this.client)
+
     this.app.emit('instance', {
       localEvent: true,
       instanceName: this.instanceName,
@@ -92,11 +107,11 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   username(): string | undefined {
-    return this.client?.player.username
+    return this.client?.username
   }
 
   uuid(): string | undefined {
-    const uuid = this.client?.player.uuid
+    const uuid = this.client?.uuid
     return uuid == undefined ? undefined : uuid.split('-').join('')
   }
 
@@ -108,7 +123,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if (this.client?.player != undefined) {
+      if (this.client?.state === States.PLAY) {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'
           this.logger.warn(`Long message truncated: ${message}`)
