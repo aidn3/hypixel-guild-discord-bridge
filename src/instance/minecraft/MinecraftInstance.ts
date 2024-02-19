@@ -14,7 +14,6 @@ import {
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
 import ChatManager from './ChatManager'
-import RawChatHandler from './handlers/RawChatHandler'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'
 import ErrorHandler from './handlers/ErrorHandler'
@@ -36,7 +35,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.handlers = [
       new ErrorHandler(this),
       new StateHandler(this),
-      new RawChatHandler(this),
       new SelfBroadcastHandler(this),
       new SendChatHandler(this),
       new ChatManager(this)

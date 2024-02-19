@@ -3,6 +3,7 @@ import * as PrismarineChat from 'prismarine-chat'
 import * as getMinecraftData from 'minecraft-data'
 import { ChatMessage } from 'prismarine-chat'
 import EventHandler from '../../common/EventHandler'
+import { LOCATION } from '../../common/ClientInstance'
 import MinecraftInstance from './MinecraftInstance'
 import { MinecraftChatMessage } from './common/ChatInterface'
 import { CommandsManager } from './CommandsManager'
@@ -118,5 +119,12 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
         message
       })
     }
+
+    this.clientInstance.app.emit('minecraftChat', {
+      localEvent: true,
+      instanceName: this.clientInstance.instanceName,
+      location: LOCATION.MINECRAFT,
+      message
+    })
   }
 }
