@@ -1,7 +1,7 @@
 import * as assert from 'node:assert'
 import PrismarineRegistry = require('prismarine-registry')
 import { NBT } from 'prismarine-nbt'
-import { Client, createClient, States } from 'minecraft-protocol'
+import { Client, createClient, states } from 'minecraft-protocol'
 import * as PrismarineChat from 'prismarine-chat'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
@@ -145,7 +145,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if (this.client?.state === States.PLAY) {
+      if (this.client?.state === states.PLAY) {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'
           this.logger.warn(`Long message truncated: ${message}`)
