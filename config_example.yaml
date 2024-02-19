@@ -104,5 +104,4 @@ plugins:
   paths:
     - './src/plugins/ExamplePlugin.ts'
     - './src/plugins/LimboPlugin.ts'
-    - './src/plugins/RegexOptimizePlugin.ts'
     - './src/plugins/ReactionPlugin.ts'
