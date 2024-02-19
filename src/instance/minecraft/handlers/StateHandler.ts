@@ -17,16 +17,27 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   registerEvents(): void {
+    // this will only be called after the player receives spawn packet
     this.clientInstance.client?.on('login', () => {
       this.onLogin()
       this.loggedIn = true
     })
+
+    // this will always be called when connection closes
     this.clientInstance.client?.on('end', (reason: string) => {
       this.onEnd(reason)
       this.loggedIn = false
     })
-    this.clientInstance.client?.on('kicked', (reason: string) => {
-      this.onKicked(reason)
+
+    // depends on protocol version. One of these will be called
+    this.clientInstance.client?.on('kick_disconnect', (packet: { reason: string }) => {
+      const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
+      this.onKicked(formattedReason.toString())
+      this.loggedIn = false
+    })
+    this.clientInstance.client?.on('disconnect', (packet: { reason: string }) => {
+      const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
+      this.onKicked(formattedReason.toString())
       this.loggedIn = false
     })
   }
