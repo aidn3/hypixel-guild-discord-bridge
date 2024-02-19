@@ -18,7 +18,8 @@ export default {
         const localInstance = context.getLocalInstance(event.instanceName)
         if (localInstance != undefined) {
           const clientInstance = localInstance as MinecraftInstance
-          clientInstance.client?.on('spawn', async () => {
+          // "login" packet is also first spawn packet containing world metadata
+          clientInstance.client?.on('login', async () => {
             await limbo(clientInstance)
           })
           clientInstance.client?.on('respawn', async () => {
