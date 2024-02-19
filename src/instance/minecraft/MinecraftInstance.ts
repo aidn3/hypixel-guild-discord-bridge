@@ -87,9 +87,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.client = createClient({
       ...this.config.botOptions,
       ...resolveProxyIfExist(this.logger, this.config)
-      // username: 'aidn5Bot',
-      // auth: 'offline',
-      //version: '1.19.4'
     })
     this.listenForRegistry(this.client)
 
