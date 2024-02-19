@@ -115,7 +115,6 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   private onKicked(reason: string): void {
-    this.clientInstance.logger.error(reason)
     this.clientInstance.logger.error(`Minecraft bot was kicked from server for "${reason.toString()}"`)
 
     this.loginAttempts++
