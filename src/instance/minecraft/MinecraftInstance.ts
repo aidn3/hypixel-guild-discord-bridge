@@ -2,6 +2,7 @@ import * as assert from 'node:assert'
 import PrismarineRegistry = require('prismarine-registry')
 import { NBT } from 'prismarine-nbt'
 import { Client, createClient, States } from 'minecraft-protocol'
+import * as PrismarineChat from 'prismarine-chat'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
 import {
@@ -25,8 +26,9 @@ const commandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   private readonly handlers
-  client: Client | undefined
   readonly registry
+  readonly prismChat
+  client: Client | undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftConfig) {
     super(app, instanceName, LOCATION.MINECRAFT, config)
@@ -42,6 +44,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
     assert(config.botOptions.version)
     this.registry = PrismarineRegistry(config.botOptions.version)
+    this.prismChat = PrismarineChat(this.registry)
 
     this.app.on('reconnectSignal', (event) => {
       // undefined is strictly checked due to api specification

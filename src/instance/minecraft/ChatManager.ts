@@ -1,5 +1,4 @@
 import * as assert from 'node:assert'
-import * as PrismarineChat from 'prismarine-chat'
 import * as getMinecraftData from 'minecraft-data'
 import { ChatMessage } from 'prismarine-chat'
 import EventHandler from '../../common/EventHandler'
@@ -56,9 +55,8 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
     assert(this.clientInstance.client)
     assert(this.clientInstance.registry)
 
+    const prismChat = this.clientInstance.prismChat
     const minecraftData = getMinecraftData(this.clientInstance.client.version)
-
-    const prismChat = PrismarineChat(this.clientInstance.registry)
 
     this.clientInstance.client.on('systemChat', (data) => {
       const chatMessage = prismChat.fromNotch(data.formattedMessage)
