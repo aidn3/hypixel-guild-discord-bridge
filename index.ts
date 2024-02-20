@@ -1,8 +1,9 @@
-import { configure, shutdown as flushLogger } from 'log4js'
+import { configure } from 'log4js'
 import { loadApplicationConfig } from './src/ApplicationConfig'
 import * as logConfig from './config/log4js-config.json'
 import * as packageJson from './package.json'
 import Application from './src/Application'
+import { shutdownApplication } from './src/util/SharedUtil'
 
 console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
@@ -19,10 +20,7 @@ if (process.argv.includes('test-run')) {
   logger.warn('Argument passed to run in testing mode')
   logger.warn('Test Loading finished.')
   logger.warn('Returning from program with exit code 0')
-  flushLogger(() => {
-    // eslint-disable-next-line unicorn/no-process-exit
-    process.exit(0)
-  })
+  shutdownApplication(0)
 }
 
 const file = process.argv[2] ?? './config.yaml'

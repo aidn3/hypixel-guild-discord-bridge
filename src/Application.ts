@@ -3,7 +3,7 @@ import * as Events from 'node:events'
 import * as path from 'node:path'
 import { TypedEmitter } from 'tiny-typed-emitter'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
-import { getLogger, Logger, shutdown as flushLogger } from 'log4js'
+import { getLogger, Logger } from 'log4js'
 import DiscordInstance from './instance/discord/DiscordInstance'
 import MinecraftInstance from './instance/minecraft/MinecraftInstance'
 import WebhookInstance from './instance/webhook/WebhookInstance'
@@ -28,6 +28,7 @@ import ClusterHelper from './ClusterHelper'
 import { ApplicationConfig } from './ApplicationConfig'
 import SocketInstance from './instance/socket/SocketInstance'
 import { MojangApi } from './util/Mojang'
+import { shutdownApplication, sleep } from './util/SharedUtil'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
@@ -113,19 +114,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         if (event.restart) {
           this.logger.info('Node should auto restart if a process monitor service is used.')
         }
+
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-
-        void new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {
-          void new Promise((resolve) => setTimeout(resolve, 30_000)).then(() => {
-            console.warn('Logger flush timed out. Exiting...')
-            // eslint-disable-next-line unicorn/no-process-exit
-            process.exit(2)
-          })
-
-          flushLogger(() => {
-            // eslint-disable-next-line unicorn/no-process-exit
-            process.exit(2)
-          })
+        void sleep(5000).then(() => {
+          shutdownApplication(2)
         })
       }
     })

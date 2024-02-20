@@ -1,3 +1,5 @@
+import { shutdown as flushLogger } from 'log4js'
+
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
 
@@ -33,4 +35,21 @@ export function antiSpamString(): string {
   }
 
   return randomString
+}
+
+export async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function shutdownApplication(exitCode: number): void {
+  void sleep(30_000).then(() => {
+    console.warn('Logger flush timed out. Exiting...')
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(exitCode)
+  })
+
+  flushLogger(() => {
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(exitCode)
+  })
 }
