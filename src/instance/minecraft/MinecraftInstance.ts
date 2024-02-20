@@ -1,4 +1,8 @@
-import MineFlayer = require('mineflayer')
+import * as assert from 'node:assert'
+import PrismarineRegistry = require('prismarine-registry')
+import { NBT } from 'prismarine-nbt'
+import { Client, createClient, states } from 'minecraft-protocol'
+import * as PrismarineChat from 'prismarine-chat'
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
 import {
@@ -11,7 +15,6 @@ import {
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
 import ChatManager from './ChatManager'
-import RawChatHandler from './handlers/RawChatHandler'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'
 import ErrorHandler from './handlers/ErrorHandler'
@@ -19,11 +22,14 @@ import StateHandler from './handlers/StateHandler'
 import MinecraftConfig from './common/MinecraftConfig'
 import { resolveProxyIfExist } from './common/ProxyHandler'
 
+export const QUIT_OWN_VOLITION = 'disconnect.quitting'
 const commandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   private readonly handlers
-  client: MineFlayer.Bot | undefined
+  readonly registry
+  readonly prismChat
+  client: Client | undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftConfig) {
     super(app, instanceName, LOCATION.MINECRAFT, config)
@@ -32,11 +38,14 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.handlers = [
       new ErrorHandler(this),
       new StateHandler(this),
-      new RawChatHandler(this),
       new SelfBroadcastHandler(this),
       new SendChatHandler(this),
       new ChatManager(this)
     ]
+
+    assert(config.botOptions.version)
+    this.registry = PrismarineRegistry(config.botOptions.version)
+    this.prismChat = PrismarineChat(this.registry)
 
     this.app.on('reconnectSignal', (event) => {
       // undefined is strictly checked due to api specification
@@ -75,9 +84,14 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   }
 
   connect(): void {
-    if (this.client != undefined) this.client.quit()
+    this.client?.end(QUIT_OWN_VOLITION)
 
-    this.client = MineFlayer.createBot({ ...this.config.botOptions, ...resolveProxyIfExist(this.logger, this.config) })
+    this.client = createClient({
+      ...this.config.botOptions,
+      ...resolveProxyIfExist(this.logger, this.config)
+    })
+    this.listenForRegistry(this.client)
+
     this.app.emit('instance', {
       localEvent: true,
       instanceName: this.instanceName,
@@ -91,12 +105,35 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     }
   }
 
+  /*
+   * Used to create special minecraft data.
+   * Main purpose is to receive signed chat messages
+   * and be able to format them based on how the server deems it
+   */
+  private listenForRegistry(client: Client): void {
+    // 1.20.2+
+    client.on('registry_data', (packet: { codec: NBT }) => {
+      this.registry.loadDimensionCodec(packet.codec)
+    })
+    // older versions
+    client.on('login', (packet: { dimensionCodec?: NBT }) => {
+      if (packet.dimensionCodec) {
+        this.registry.loadDimensionCodec(packet.dimensionCodec)
+      }
+    })
+    client.on('respawn', (packet: { dimensionCodec?: NBT }) => {
+      if (packet.dimensionCodec) {
+        this.registry.loadDimensionCodec(packet.dimensionCodec)
+      }
+    })
+  }
+
   username(): string | undefined {
-    return this.client?.player.username
+    return this.client?.username
   }
 
   uuid(): string | undefined {
-    const uuid = this.client?.player.uuid
+    const uuid = this.client?.uuid
     return uuid == undefined ? undefined : uuid.split('-').join('')
   }
 
@@ -108,7 +145,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
-      if (this.client?.player != undefined) {
+      if (this.client?.state === states.PLAY) {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'
           this.logger.warn(`Long message truncated: ${message}`)

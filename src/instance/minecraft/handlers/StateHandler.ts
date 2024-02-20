@@ -1,5 +1,5 @@
 import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance from '../MinecraftInstance'
+import MinecraftInstance, { QUIT_OWN_VOLITION } from '../MinecraftInstance'
 import { InstanceEventType } from '../../../common/ApplicationEvent'
 import { LOCATION, Status } from '../../../common/ClientInstance'
 
@@ -17,16 +17,27 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   registerEvents(): void {
+    // this will only be called after the player receives spawn packet
     this.clientInstance.client?.on('login', () => {
       this.onLogin()
       this.loggedIn = true
     })
+
+    // this will always be called when connection closes
     this.clientInstance.client?.on('end', (reason: string) => {
       this.onEnd(reason)
       this.loggedIn = false
     })
-    this.clientInstance.client?.on('kicked', (reason: string) => {
-      this.onKicked(reason)
+
+    // depends on protocol version. One of these will be called
+    this.clientInstance.client?.on('kick_disconnect', (packet: { reason: string }) => {
+      const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
+      this.onKicked(formattedReason.toString())
+      this.loggedIn = false
+    })
+    this.clientInstance.client?.on('disconnect', (packet: { reason: string }) => {
+      const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
+      this.onKicked(formattedReason.toString())
       this.loggedIn = false
     })
   }
@@ -62,7 +73,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         message: reason
       })
       return
-    } else if (reason === 'disconnect.quitting') {
+    } else if (reason === QUIT_OWN_VOLITION) {
       const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
       this.clientInstance.logger.debug(reason)
@@ -104,7 +115,6 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   private onKicked(reason: string): void {
-    this.clientInstance.logger.error(reason)
     this.clientInstance.logger.error(`Minecraft bot was kicked from server for "${reason.toString()}"`)
 
     this.loginAttempts++

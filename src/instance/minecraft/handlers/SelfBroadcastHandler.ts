@@ -1,10 +1,18 @@
+import * as assert from 'node:assert'
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from '../MinecraftInstance'
 import { LOCATION } from '../../../common/ClientInstance'
 
 export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {
-    this.clientInstance.client?.on('spawn', () => {
+    assert(this.clientInstance.client)
+
+    // first spawn packet
+    this.clientInstance.client.on('login', () => {
+      this.onSpawn()
+    })
+    // change world packet
+    this.clientInstance.client.on('respawn', () => {
       this.onSpawn()
     })
   }
