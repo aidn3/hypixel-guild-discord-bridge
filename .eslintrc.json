@@ -8,13 +8,12 @@
   "plugins": ["@typescript-eslint", "unicorn"],
   "parser": "@typescript-eslint/parser",
   "extends": [
-    "prettier",
     "plugin:import/recommended",
     "eslint:recommended",
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:unicorn/recommended",
-    "prettier/@typescript-eslint"
+    "plugin:prettier/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
