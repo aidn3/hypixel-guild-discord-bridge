@@ -28,6 +28,7 @@ import ClusterHelper from './ClusterHelper'
 import { ApplicationConfig } from './ApplicationConfig'
 import SocketInstance from './instance/socket/SocketInstance'
 import { MojangApi } from './util/Mojang'
+import { shutdownApplication, sleep } from './util/SharedUtil'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
@@ -113,11 +114,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         if (event.restart) {
           this.logger.info('Node should auto restart if a process monitor service is used.')
         }
-        this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
 
-        void new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {
-          // eslint-disable-next-line unicorn/no-process-exit
-          process.exit(2)
+        this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
+        void sleep(5000).then(() => {
+          shutdownApplication(2)
         })
       }
     })
