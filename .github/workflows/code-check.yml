@@ -23,7 +23,7 @@ jobs:
         run: npm i
 
       - name: Pretty and Eslint
-        run: npm run format
+        run: npm run lint:fix
 
       - name: Ensure a clean working directory
         run: git diff --name-status --exit-code

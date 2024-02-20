@@ -5,14 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "start": "node --require ts-node/register index.ts",
-    "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "prettier": "npx prettier . --check",
-    "prettier:fix": "npx prettier . --write",
-    "format": "npm run prettier:fix && npm run lint:fix",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --require ts-node/register index.ts test-run",
-    "validate": "npx prettier . --write --list-different && npx eslint . --fix && npx tsc --noEmit && npm run test:run"
+    "validate": "npm run lint:fix && npm run test:compile && npm run test:run"
   },
   "license": "MIT",
   "keywords": [
