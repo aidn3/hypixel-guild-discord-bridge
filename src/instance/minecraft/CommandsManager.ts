@@ -57,6 +57,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
   async publicCommandHandler(
     minecraftInstance: MinecraftInstance,
+    scope: SCOPE,
     username: string,
     message: string
   ): Promise<boolean> {

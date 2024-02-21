@@ -1,4 +1,5 @@
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
+import { SCOPE } from '../../../common/ClientInstance'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -11,7 +12,7 @@ export default {
       const playerMessage = match[2].trim()
 
       if (context.application.clusterHelper.isMinecraftBot(username)) return
-      void context.commandsManager.privateCommandHandler(context.clientInstance, username, playerMessage)
+      void context.commandsManager.handle(context.clientInstance, SCOPE.PRIVATE, username, playerMessage)
     }
   }
 } satisfies MinecraftChatMessage
