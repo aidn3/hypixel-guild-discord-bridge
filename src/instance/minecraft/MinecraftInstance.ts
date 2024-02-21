@@ -1,17 +1,11 @@
 import * as assert from 'node:assert'
-import PrismarineRegistry = require('prismarine-registry')
 import { NBT } from 'prismarine-nbt'
 import { Client, createClient, states } from 'minecraft-protocol'
 import * as PrismarineChat from 'prismarine-chat'
+import PrismarineRegistry = require('prismarine-registry')
 import Application from '../../Application'
 import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
-import {
-  ChatEvent,
-  ClientEvent,
-  EventType,
-  InstanceEventType,
-  MinecraftCommandResponse
-} from '../../common/ApplicationEvent'
+import { ChatEvent, ClientEvent, CommandEvent, EventType, InstanceEventType } from '../../common/ApplicationEvent'
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
 import ChatManager from './ChatManager'
@@ -57,8 +51,26 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       }
     })
 
-    this.app.on('minecraftCommandResponse', (event: MinecraftCommandResponse) => {
-      void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
+    this.app.on('command', (event: CommandEvent) => {
+      if (event.location !== LOCATION.MINECRAFT) return
+
+      switch (event.scope) {
+        case SCOPE.PUBLIC: {
+          void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
+          break
+        }
+        case SCOPE.OFFICER: {
+          void this.send(`/oc ${event.commandResponse} @${antiSpamString()}`)
+          break
+        }
+        case SCOPE.PRIVATE: {
+          // already replied privately
+          break
+        }
+        default: {
+          break
+        }
+      }
     })
 
     this.app.on('chat', (event: ChatEvent) => {
@@ -75,7 +87,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       if (event.instanceName === this.instanceName) return
       if (event.scope !== SCOPE.PUBLIC) return
       if (event.removeLater) return
-      if (event.name === EventType.COMMAND) return
       if (event.name === EventType.BLOCK) return
       if (event.name === EventType.REPEAT) return
 
