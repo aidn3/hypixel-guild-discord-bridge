@@ -34,8 +34,6 @@ const KickMessages = [
 export default {
   onRun(context: PluginContext): void {
     context.application.on('event', (event) => {
-      if (!context.config.allowSocketInstance && context.getLocalInstance(event.instanceName) == undefined) return
-
       if (event.name === EventType.JOIN) {
         assert(event.username)
         let message = JoinMessages[Math.floor(Math.random() * JoinMessages.length)]
