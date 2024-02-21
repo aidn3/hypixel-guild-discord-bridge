@@ -49,3 +49,5 @@ export enum Status {
    */
   FAILED = 'FAILED'
 }
+
+export const INTERNAL_INSTANCE_PREFIX = 'internal/'
