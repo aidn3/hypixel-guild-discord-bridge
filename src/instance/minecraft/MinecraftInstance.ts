@@ -113,6 +113,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     this.client = createClient({
       ...this.defaultBotConfig,
       username: this.config.email,
+      auth: 'microsoft',
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig)
     })
     this.listenForRegistry(this.client)
