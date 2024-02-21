@@ -207,7 +207,7 @@ directly without any revisions. (Updating the service will be difficult)
 
 - Explore the project files and duplicate `.config_example.yaml` file into `config.yaml`
 - Open `config.yaml` and fill the information (Security: `config.yaml` file is like a password. Keep it safe!)
-- In `config.yaml` fill out `general/hypixelApiKey` and `discord` and `minecraft/instances`
+- In `config.yaml` fill out `general.hypixelApiKey` and `discord` and `minecraft.instances`
 - (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
 
 ### Install
