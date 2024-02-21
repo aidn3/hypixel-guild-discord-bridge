@@ -187,7 +187,7 @@ guild_bridge_guild_members_online
 
 ### Prerequisites
 
-- [Nodejs version 1.16 or later](https://nodejs.dev/download)
+- [Nodejs version 1.18 or later](https://nodejs.dev/download)
 - [npm](https://nodejs.org/en/download/) (usually installed by default with `Nodejs`)
 - Minecraft Alt Account
 - (Optional) [Git](https://git-scm.com/downloads)
