@@ -123,7 +123,10 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           scope: SCOPE.PUBLIC,
           username,
           fullCommand: interaction.command?.options.toString() ?? '',
-          commandName: interaction.commandName
+          commandName: interaction.commandName,
+           // discord commands response are long
+           // and not useful for others across platform to read
+          commandResponse: '[Redacted]'
         })
 
         return command.handler(this.clientInstance, interaction as ChatInputCommandInteraction)
