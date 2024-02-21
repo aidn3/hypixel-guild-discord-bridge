@@ -30,6 +30,7 @@ import ReconnectCommand from './commands/ReconnectCommand'
 import SetrankCommand from './commands/SetrankCommand'
 import RestartCommand from './commands/RestartCommand'
 import UnmuteCommand from './commands/UnmuteCommand'
+import ConnectivityCommand from './commands/ConnectivityCommand'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
   private readonly commands = new Collection<string, DiscordCommandInterface>()
@@ -68,6 +69,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     const toAdd = [
       AboutCommand,
       AcceptCommand,
+      ConnectivityCommand,
       DemoteCommand,
       InviteCommand,
       KickCommand,

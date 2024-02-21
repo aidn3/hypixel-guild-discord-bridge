@@ -59,6 +59,10 @@ export default class ClusterHelper {
     return false
   }
 
+  getMinecraftBots(): MinecraftSelfBroadcast[] {
+    return Array.from(this.minecraftBots, ([, value]) => value)
+  }
+
   private instanceBroadcast(instanceName: string, location: InstanceType): void {
     let collection = this.instancesNames.get(location)
     if (collection == undefined) {
