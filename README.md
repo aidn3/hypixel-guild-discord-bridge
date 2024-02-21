@@ -95,21 +95,21 @@ This includes Guild/Officer chat as well as private `/msg` and Direct Messaging 
 
 | Command    | Description                                     | Permission |
 | ---------- | ----------------------------------------------- | ---------- |
-| !explain   | Explain what the bridge does and how it works   | Anyone     |
-| !fact      | Give a random fun fact about the guild members  | Anyone     |
 | !calculate | Calculate a math expression: `!calculate 1+2*3` | Anyone     |
 | !8ball     | Replica of **8 ball**.`!8ball Will I win?`      | Anyone     |
-| !iq        | Give a random IQ number to the guild member     | Anyone     |
-| !weight    | Calculate **Senither Weights** of players       | Anyone     |
-| !networth  | Calculate the in-game networth of players       | Anyone     |
+| !explain   | Explain what the bridge does and how it works   | Anyone     |
 | !guild     | Give a summary of the guild for a given user    | Anyone     |
-| !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
-| !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
+| !iq        | Give a random IQ number to the guild member     | Anyone     |
 | !kuudra    | Get a player's kuudra completions `!kuudra hot` | Anyone     |
-| !skill     | Returns player's skill level `!skill mining`    | Anyone     |
+| !networth  | Calculate the in-game networth of players       | Anyone     |
+| !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
+| !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
 | !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
 | !secrets   | Returns a player's total dungeon secrets        | Anyone     |
+| !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !slayer    | Returns a player's slayer stats `!slayer wolf`  | Anyone     |
+| !weight    | Calculate **Senither Weights** of players       | Anyone     |
+| !fact      | Give a random fun fact about the guild members  | Anyone     |
 
 ### How to execute commands
 
