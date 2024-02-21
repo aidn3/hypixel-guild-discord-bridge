@@ -15,8 +15,8 @@ export default class HelpCommand extends ChatCommandHandler {
       return `Commands: ${context.allCommands.map((command) => command.name).join(', ')}`
     }
 
-    const query = context.args[0]
-    const command = context.allCommands.find((c) => c.triggers.includes(query[0].toLowerCase()))
+    const query = context.args[0].toLowerCase()
+    const command = context.allCommands.find((c) => c.triggers.includes(query))
     if (command == undefined) {
       return `That command does not exist, use ${context.commandPrefix}${this.triggers[0]}`
     }

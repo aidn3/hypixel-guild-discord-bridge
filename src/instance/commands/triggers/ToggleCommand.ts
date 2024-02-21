@@ -20,8 +20,8 @@ export default class ToggleCommand extends ChatCommandHandler {
       return this.getExample(context.commandPrefix)
     }
 
-    const query = context.args[0]
-    const command = context.allCommands.find((c) => c.triggers.includes(query[0].toLowerCase()))
+    const query = context.args[0].toLowerCase()
+    const command = context.allCommands.find((c) => c.triggers.includes(query))
     if (command == undefined) {
       return `Command does not exist`
     }
