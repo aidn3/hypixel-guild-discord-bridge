@@ -124,8 +124,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           username,
           fullCommand: interaction.command?.options.toString() ?? '',
           commandName: interaction.commandName,
-           // discord commands response are long
-           // and not useful for others across platform to read
+          // discord commands response are long
+          // and not useful for others across platform to read
           commandResponse: '[Redacted]'
         })
 
