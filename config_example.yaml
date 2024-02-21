@@ -32,13 +32,12 @@ minecraft:
       # Example: proxy: {protocol: "socks5", host: "example.com", port: 123}
       proxy: null
 
-# Webhook connections to other guilds/discord servers
-# This is used if the guild/community isn't within the admins' jurisdiction.
-# set the field to null if you wish to send/receive without the other one
-webhooks:
-  - instanceName: 'useful-webhook'
-    receiveId: '940251356249481432' # to disable this field: "null"
-    sendUrl: 'https://discord.com/api/webhooks/...'
+# Webhooks to log all internal events and metadata of the app
+# for staff to preserve and inspect at later date
+# This is an alternative to the log files
+# since sometimes staff don't have access to system files
+loggers:
+  - 'https://discord.com/api/webhooks/...'
 
 commands:
   # Enable chat commands such as !cata, etc.

@@ -6,7 +6,7 @@ export enum InstanceType {
 
   DISCORD = 'discord',
   MINECRAFT = 'minecraft',
-  WEBHOOK = 'webhook'
+  Logger = 'webhook'
 }
 
 export enum ChannelType {

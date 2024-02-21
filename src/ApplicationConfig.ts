@@ -26,12 +26,6 @@ export interface MinecraftInstanceConfig {
   proxy: ProxyConfig | null
 }
 
-export interface WebhookConfig {
-  instanceName: string
-  receiveId: string | null
-  sendUrl: string | null
-}
-
 export interface CommandsConfig {
   enabled: boolean
 
@@ -77,7 +71,7 @@ export interface ApplicationConfig {
 
   discord: DiscordConfig
   minecraft: MinecraftConfig
-  webhooks: WebhookConfig[]
+  loggers: string[]
 
   commands: CommandsConfig
   profanity: ProfanityFilterConfig
