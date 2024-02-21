@@ -82,6 +82,7 @@ export interface CommandEvent extends InformEvent {
    * Used to reply to the message
    */
   discordChannelId?: string
+  alreadyReplied: boolean
   username: string
   commandName: string
   fullCommand: string

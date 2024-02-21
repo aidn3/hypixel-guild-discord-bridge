@@ -128,7 +128,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           commandName: interaction.commandName,
           // discord commands response are long
           // and not useful for others across platform to read
-          commandResponse: `[${interaction.user.username}] /${interaction.commandName}`
+          commandResponse: `[${interaction.user.username}] /${interaction.commandName}`,
+          alreadyReplied: true
         })
 
         return command.handler(this.clientInstance, interaction as ChatInputCommandInteraction)

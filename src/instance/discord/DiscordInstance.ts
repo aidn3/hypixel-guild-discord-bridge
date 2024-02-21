@@ -232,6 +232,11 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       }
     }
 
+    if (event.instanceName === this.instanceName && event.discordChannelId && event.alreadyReplied) {
+      channels = channels.filter((id) => id !== event.discordChannelId)
+    }
+    if (channels.length === 0) return
+
     const embed = {
       title: escapeDiscord(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,

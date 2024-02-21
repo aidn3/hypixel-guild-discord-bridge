@@ -124,7 +124,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       username: event.username,
       fullCommand: event.message,
       commandName: command.triggers[0],
-      commandResponse: commandResponse
+      commandResponse: commandResponse,
+      alreadyReplied: false
     })
   }
 }

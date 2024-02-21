@@ -5,13 +5,13 @@ import PrismarineRegistry = require('prismarine-registry')
 import Application from '../../Application'
 import { ClientInstance, Status } from '../../common/ClientInstance'
 import {
+  ChannelType,
   ChatEvent,
   ClientEvent,
   CommandEvent,
   EventType,
   InstanceEventType,
-  InstanceType,
-  ChannelType
+  InstanceType
 } from '../../common/ApplicationEvent'
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
@@ -65,6 +65,14 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     })
 
     this.app.on('command', (event: CommandEvent) => {
+      if (
+        event.instanceType === InstanceType.MINECRAFT &&
+        event.instanceName === this.instanceName &&
+        event.alreadyReplied
+      ) {
+        return
+      }
+
       const finalResponse = `${event.commandResponse} @${antiSpamString()}`
       switch (event.channelType) {
         case ChannelType.PUBLIC: {
