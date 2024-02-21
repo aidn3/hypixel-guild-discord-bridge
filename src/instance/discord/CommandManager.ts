@@ -126,7 +126,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           commandName: interaction.commandName,
           // discord commands response are long
           // and not useful for others across platform to read
-          commandResponse: '[Redacted]'
+          commandResponse: `[${interaction.user.username}] /${interaction.commandName}`
         })
 
         return command.handler(this.clientInstance, interaction as ChatInputCommandInteraction)
@@ -201,7 +201,10 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
     const instanceChoices = this.clientInstance.app.clusterHelper
       .getInstancesNames(InstanceType.MINECRAFT)
-      .map((choice: string) => ({ name: choice, value: choice }))
+      .map((choice: string) => ({
+        name: choice,
+        value: choice
+      }))
 
     for (const command of this.commands.values()) {
       const commandBuilder = command.getCommandBuilder()
