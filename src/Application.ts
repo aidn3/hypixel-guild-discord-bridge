@@ -5,7 +5,7 @@ import { Client as HypixelClient } from 'hypixel-api-reborn'
 import { getLogger, Logger } from 'log4js'
 import DiscordInstance from './instance/discord/DiscordInstance'
 import MinecraftInstance from './instance/minecraft/MinecraftInstance'
-import WebhookInstance from './instance/webhook/WebhookInstance'
+import LoggerInstance from './instance/logger/LoggerInstance'
 import { PunishedUsers } from './util/PunishedUsers'
 import {
   ChatEvent,
@@ -62,9 +62,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.instances.push(discordInstance)
     }
 
-    for (const instanceConfig of this.config.webhooks) {
+    for (let index = 0; index < this.config.loggers.length; index++) {
       this.instances.push(
-        new WebhookInstance(this, instanceConfig.instanceName, discordInstance?.client, instanceConfig)
+        new LoggerInstance(
+          this,
+          INTERNAL_INSTANCE_PREFIX + InstanceType.Logger + '-' + (index + 1),
+          this.config.loggers[index]
+        )
       )
     }
 

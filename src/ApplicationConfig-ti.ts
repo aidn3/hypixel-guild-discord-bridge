@@ -30,12 +30,6 @@ export const MinecraftInstanceConfig = t.iface([], {
   "proxy": t.union("ProxyConfig", "null"),
 });
 
-export const WebhookConfig = t.iface([], {
-  "instanceName": "string",
-  "receiveId": t.union("string", "null"),
-  "sendUrl": t.union("string", "null"),
-});
-
 export const CommandsConfig = t.iface([], {
   "enabled": "boolean",
   "adminUsername": "string",
@@ -79,7 +73,7 @@ export const ApplicationConfig = t.iface([], {
   "general": "GeneralConfig",
   "discord": "DiscordConfig",
   "minecraft": "MinecraftConfig",
-  "webhooks": t.array("WebhookConfig"),
+  "loggers": t.array("string"),
   "commands": "CommandsConfig",
   "profanity": "ProfanityFilterConfig",
   "metrics": "MetricsConfig",
@@ -92,7 +86,6 @@ const exportedTypeSuite: t.ITypeSuite = {
   DiscordConfig,
   MinecraftConfig,
   MinecraftInstanceConfig,
-  WebhookConfig,
   CommandsConfig,
   ProfanityFilterConfig,
   MetricsConfig,

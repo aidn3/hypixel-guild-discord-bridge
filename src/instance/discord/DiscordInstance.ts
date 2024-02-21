@@ -95,9 +95,6 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   }
 
   private async onChat(event: ChatEvent): Promise<void> {
-    // webhooks received in same channel
-    if (event.instanceType === InstanceType.WEBHOOK) return
-
     let channels
     if (event.channelType === ChannelType.PUBLIC) {
       channels = this.config.publicChannelIds
