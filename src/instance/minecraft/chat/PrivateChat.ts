@@ -1,5 +1,5 @@
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
-import { SCOPE } from '../../../common/ClientInstance'
+import { LOCATION, SCOPE } from '../../../common/ClientInstance'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -12,7 +12,17 @@ export default {
       const playerMessage = match[2].trim()
 
       if (context.application.clusterHelper.isMinecraftBot(username)) return
-      void context.commandsManager.handle(context.clientInstance, SCOPE.PRIVATE, username, playerMessage)
+
+      context.application.emit('chat', {
+        localEvent: true,
+        instanceName: context.instanceName,
+        location: LOCATION.MINECRAFT,
+        scope: SCOPE.PRIVATE,
+        channelId: undefined,
+        username,
+        replyUsername: undefined,
+        message: playerMessage
+      })
     }
   }
 } satisfies MinecraftChatMessage
