@@ -111,7 +111,7 @@ offering quality user experience while keeping it simple
 ### How to execute commands
 
 **Note: Only the one person who holds administrator permission can execute command!**  
-From In-game: `/msg username /guild party`  
+From In-game: `/gc !override /guild party`  
 From Discord: `/override /guild party`
 
 ---
