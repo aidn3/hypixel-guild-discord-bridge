@@ -103,22 +103,4 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
     return true
   }
-
-  async privateCommandHandler(minecraftInstance: MinecraftInstance, username: string, message: string): Promise<void> {
-    if (username !== minecraftInstance.config.adminUsername) return
-
-    minecraftInstance.logger.debug(`${username} executed from private chat: ${message}`)
-
-    minecraftInstance.app.emit('command', {
-      localEvent: true,
-      instanceName: minecraftInstance.instanceName,
-      location: LOCATION.MINECRAFT,
-      scope: SCOPE.PRIVATE,
-      username,
-      fullCommand: message,
-      commandName: 'override'
-    })
-
-    await minecraftInstance.send(message)
-  }
 }
