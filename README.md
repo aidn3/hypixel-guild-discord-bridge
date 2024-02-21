@@ -78,12 +78,12 @@ offering quality user experience while keeping it simple
 ### Supported Events
 
 | **Event**      | **Description**                                                          | **Who can see it** |
-| -------------- | ------------------------------------------------------------------------ | ------------------ |
+|----------------|--------------------------------------------------------------------------| ------------------ |
 | Online/Offline | Member logging in/off                                                    | Anyone             |
 | Join/Leave     | Member joins/leaves the guild                                            | Anyone             |
 | Promote/Demote | Member promoted/demoted in the guild                                     | Anyone             |
 | Request        | Member requesting to join the guild                                      | Anyone             |
-| Quest          | Guild Quest milestone reached                                   | Anyone             |
+| Quest          | Guild Quest milestone reached                                            | Anyone             |
 | Repeat         | Warn about "can't repeat message" <br/>when writing from discord channel | Anyone             |
 | Block          | Warn about discord user saying something that breaks Hypixel rules       | Anyone             |
 | Kick           | Notify when someone is kicked from the guild                             | Public             |
