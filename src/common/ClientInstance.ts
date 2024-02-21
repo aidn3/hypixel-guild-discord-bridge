@@ -53,6 +53,7 @@ export enum LOCATION {
   MAIN = 'main',
   METRICS = 'metrics',
   SOCKET = 'socket',
+  COMMANDS = 'commands',
 
   DISCORD = 'discord',
   MINECRAFT = 'minecraft',
