@@ -109,7 +109,6 @@ This includes Guild/Officer chat as well as private `/msg` and Direct Messaging 
 | !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !slayer    | Returns a player's slayer stats `!slayer wolf`  | Anyone     |
 | !weight    | Calculate **Senither Weights** of players       | Anyone     |
-| !fact      | Give a random fun fact about the guild members  | Anyone     |
 
 ### How to execute commands
 
