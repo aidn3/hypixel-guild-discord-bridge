@@ -1,5 +1,5 @@
 import { ClientInstance } from '../../common/ClientInstance'
-import { ChatEvent, InstanceType, ChannelType } from '../../common/ApplicationEvent'
+import { ChannelType, ChatEvent, InstanceType } from '../../common/ApplicationEvent'
 import Application from '../../Application'
 import { CommandsConfig } from '../../ApplicationConfig'
 import CalculateCommand from './triggers/CalculateCommand'
@@ -87,6 +87,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   async handle(event: ChatEvent): Promise<void> {
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
+    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.MINECRAFT
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
@@ -94,8 +95,9 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     if (command == undefined) return
 
     // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && this.config.adminUsername !== event.username && event.channelType !== ChannelType.OFFICER)
+    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.OFFICER) {
       return
+    }
 
     const commandResponse = await command.handler({
       app: this.app,
@@ -107,7 +109,9 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       instanceName: event.instanceName,
       instanceType: event.instanceType,
       channelType: event.channelType,
+
       username: event.username,
+      isAdmin: isAdmin,
       args: commandsArguments
     })
 

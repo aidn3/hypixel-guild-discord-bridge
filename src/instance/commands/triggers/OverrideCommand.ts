@@ -19,6 +19,9 @@ export default class OverrideCommand extends ChatCommandHandler {
     if (context.username !== context.adminUsername) {
       return `You are not ${context.adminUsername}.`
     }
+    if (!context.isAdmin) {
+      return 'You are not a Bridge Admin!'
+    }
     if (context.args.length <= 0) {
       return this.getExample(context.commandPrefix)
     }

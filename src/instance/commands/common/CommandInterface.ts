@@ -32,6 +32,8 @@ export interface ChatCommandContext {
   instanceName: string
   instanceType: InstanceType
   channelType: ChannelType
+
   username: string
+  isAdmin: boolean
   args: string[]
 }
