@@ -65,19 +65,19 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     })
 
     this.app.on('command', (event: CommandEvent) => {
-      if (event.instanceType !== InstanceType.MINECRAFT) return
-
+      const finalResponse = `${event.commandResponse} @${antiSpamString()}`
       switch (event.channelType) {
         case ChannelType.PUBLIC: {
-          void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
+          void this.send(`/gc ${finalResponse}`)
           break
         }
         case ChannelType.OFFICER: {
-          void this.send(`/oc ${event.commandResponse} @${antiSpamString()}`)
+          void this.send(`/oc ${finalResponse}`)
           break
         }
         case ChannelType.PRIVATE: {
-          // already replied privately
+          if (event.instanceType !== InstanceType.MINECRAFT || event.instanceName !== this.instanceName) return
+          void this.send(`/msg ${event.username} ${finalResponse}`)
           break
         }
         default: {

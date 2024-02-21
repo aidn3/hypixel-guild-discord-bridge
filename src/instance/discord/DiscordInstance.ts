@@ -10,7 +10,8 @@ import {
   EventType,
   InstanceEvent,
   InstanceType,
-  ChannelType
+  ChannelType,
+  CommandEvent
 } from '../../common/ApplicationEvent'
 import { DiscordConfig } from '../../ApplicationConfig'
 import StateHandler from './handlers/StateHandler'
@@ -61,6 +62,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
     this.app.on('instance', (event: InstanceEvent) => {
       void this.onInstance(event)
+    })
+    this.app.on('command', (event: CommandEvent) => {
+      void this.onCommand(event)
     })
   }
 
@@ -137,31 +141,34 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     } else {
       return
     }
+    const embed = {
+      description: escapeDiscord(event.message),
 
+      color: event.severity,
+      footer: {
+        text: event.instanceName
+      }
+    } satisfies APIEmbed
+    if (event.username != undefined) {
+      const extra = {
+        title: escapeDiscord(event.username),
+        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
+      }
+      Object.assign(embed, extra)
+    }
+
+    await this.sendEmbed(channels, event.removeLater, embed)
+  }
+
+  private async sendEmbed(channels: string[], removeLater: boolean, embed: APIEmbed): Promise<void> {
     for (const channelId of channels) {
       const channel = (await this.client.channels.fetch(channelId)) as unknown as TextChannel | null
       if (channel == undefined) return
 
-      const embed = {
-        description: escapeDiscord(event.message),
-
-        color: event.severity,
-        footer: {
-          text: event.instanceName
-        }
-      } satisfies APIEmbed
-      if (event.username != undefined) {
-        const extra = {
-          title: escapeDiscord(event.username),
-          url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
-          thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
-        }
-        Object.assign(embed, extra)
-      }
-
       const responsePromise = channel.send({ embeds: [embed] })
 
-      if (event.removeLater) {
+      if (removeLater) {
         const deleteAfter = this.config.deleteTempEventAfter
         setTimeout(
           () => {
@@ -192,6 +199,40 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
         })
         .then()
     }
+  }
+
+  private async onCommand(event: CommandEvent): Promise<void> {
+    let channels: string[] = []
+
+    switch (event.channelType) {
+      case ChannelType.PUBLIC: {
+        channels = this.config.publicChannelIds
+        break
+      }
+      case ChannelType.OFFICER: {
+        channels = this.config.officerChannelIds
+        break
+      }
+      case ChannelType.PRIVATE: {
+        if (event.discordChannelId) {
+          channels = [event.discordChannelId]
+        }
+        break
+      }
+    }
+
+    const embed = {
+      title: escapeDiscord(event.username),
+      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+      thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
+      color: ColorScheme.GOOD,
+      description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
+      footer: {
+        text: event.instanceName
+      }
+    } satisfies APIEmbed
+
+    await this.sendEmbed(channels, false, embed)
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {

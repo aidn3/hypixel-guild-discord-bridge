@@ -77,6 +77,11 @@ export interface ClientEvent extends InformEvent {
 
 export interface CommandEvent extends InformEvent {
   channelType: ChannelType
+  /**
+   * Only available if the message comes from a DM.
+   * Used to reply to the message
+   */
+  discordChannelId?: string
   username: string
   commandName: string
   fullCommand: string

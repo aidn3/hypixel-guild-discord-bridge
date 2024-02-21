@@ -115,15 +115,12 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       args: commandsArguments
     })
 
-    if (event.channelType === ChannelType.PRIVATE) {
-      //TODO: await minecraftInstance.send(`/msg ${username} ${commandResponse}`)
-    }
-
     this.app.emit('command', {
       localEvent: true,
       instanceName: event.instanceName,
       instanceType: event.instanceType,
       channelType: event.channelType,
+      discordChannelId: event.channelId,
       username: event.username,
       fullCommand: event.message,
       commandName: command.triggers[0],
