@@ -94,20 +94,25 @@ Those commands can be executed from any chat channel the bridge can see.
 This includes Guild/Officer chat as well as private `/msg` and Direct Messaging channels.
 
 | Command    | Description                                     | Permission |
-| ---------- | ----------------------------------------------- | ---------- |
+|------------|-------------------------------------------------|------------|
 | !calculate | Calculate a math expression: `!calculate 1+2*3` | Anyone     |
+| !catacomb  | Get a player's Catacomb and class level         | Anyone     |
 | !8ball     | Replica of **8 ball**.`!8ball Will I win?`      | Anyone     |
 | !explain   | Explain what the bridge does and how it works   | Anyone     |
 | !guild     | Give a summary of the guild for a given user    | Anyone     |
+| !help      | Shows a command usage `help runs`               | Anyone     |
 | !iq        | Give a random IQ number to the guild member     | Anyone     |
 | !kuudra    | Get a player's kuudra completions `!kuudra hot` | Anyone     |
+| !level     | Get a player's skyblock level                   | Anyone     |
 | !networth  | Calculate the in-game networth of players       | Anyone     |
+| !override  | Runs a command directly `!overide /guild party` | Anyone     |
 | !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
 | !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
 | !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
 | !secrets   | Returns a player's total dungeon secrets        | Anyone     |
 | !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !slayer    | Returns a player's slayer stats `!slayer wolf`  | Anyone     |
+| !toggle    | Enable/disable commands `!toggle 8balls`        | Anyone     |
 | !weight    | Calculate **Senither Weights** of players       | Anyone     |
 
 ### How to execute commands
