@@ -1,5 +1,5 @@
-import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
-import { ChatEvent } from '../../common/ApplicationEvent'
+import { ClientInstance } from '../../common/ClientInstance'
+import { ChatEvent, InstanceType, ChannelType } from '../../common/ApplicationEvent'
 import Application from '../../Application'
 import CalculateCommand from './triggers/CalculateCommand'
 import CataCommand from './triggers/CataCommand'
@@ -26,7 +26,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   private readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, LOCATION.COMMANDS, config)
+    super(app, instanceName, InstanceType.COMMANDS, config)
 
     this.commands = [
       new CalculateCommand(),
@@ -87,13 +87,14 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
-    const arguments_ = event.message.split(' ').slice(1)
+    const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
     if (command == undefined) return
 
     // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && this.config.adminUsername !== event.username && event.scope !== SCOPE.OFFICER) return
+    if (!command.enabled && this.config.adminUsername !== event.username && event.channelType !== ChannelType.OFFICER)
+      return
 
     const commandResponse = await command.handler({
       app: this.app,
@@ -103,21 +104,21 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       adminUsername: this.config.adminUsername,
 
       instanceName: event.instanceName,
-      location: event.location,
-      scope: event.scope,
+      instanceType: event.instanceType,
+      channelType: event.channelType,
       username: event.username,
-      args: arguments_
+      args: commandsArguments
     })
 
-    if (event.scope === SCOPE.PRIVATE) {
+    if (event.channelType === ChannelType.PRIVATE) {
       //TODO: await minecraftInstance.send(`/msg ${username} ${commandResponse}`)
     }
 
     this.app.emit('command', {
       localEvent: true,
       instanceName: event.instanceName,
-      location: event.location,
-      scope: event.scope,
+      instanceType: event.instanceType,
+      channelType: event.channelType,
       username: event.username,
       fullCommand: event.message,
       commandName: command.triggers[0],

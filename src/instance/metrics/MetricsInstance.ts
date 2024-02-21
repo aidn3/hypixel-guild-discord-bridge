@@ -2,7 +2,8 @@ import * as http from 'node:http'
 import * as url from 'node:url'
 import * as Client from 'prom-client'
 import Application from '../../Application'
-import { ClientInstance, LOCATION, Status } from '../../common/ClientInstance'
+import { ClientInstance, Status } from '../../common/ClientInstance'
+import { InstanceType } from '../../common/ApplicationEvent'
 import ApplicationMetrics from './ApplicationMetrics'
 import GuildOnlineMetrics from './GuildOnlineMetrics'
 import MetricsConfig from './common/MetricsConfig'
@@ -15,7 +16,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
   constructor(app: Application, instanceName: string, config: MetricsConfig) {
-    super(app, instanceName, LOCATION.METRICS, config)
+    super(app, instanceName, InstanceType.METRICS, config)
 
     this.register = new Client.Registry()
     this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })

@@ -1,19 +1,20 @@
 import { getLogger, Logger } from 'log4js'
 import Application from '../Application'
+import { InstanceType } from './ApplicationEvent'
 
 export abstract class ClientInstance<K> {
   readonly instanceName: string
-  readonly location: LOCATION
+  readonly instanceType: InstanceType
   readonly app: Application
   readonly logger: Logger
   readonly config: K
 
   status: Status
 
-  protected constructor(app: Application, instanceName: string, location: LOCATION, config: K) {
+  protected constructor(app: Application, instanceName: string, instanceType: InstanceType, config: K) {
     this.app = app
     this.instanceName = instanceName
-    this.location = location
+    this.instanceType = instanceType
     this.logger = getLogger(instanceName)
     this.config = config
     this.status = Status.FRESH
@@ -47,21 +48,4 @@ export enum Status {
    * Instance has decided to shut down for a critical reason
    */
   FAILED = 'FAILED'
-}
-
-export enum LOCATION {
-  MAIN = 'main',
-  METRICS = 'metrics',
-  SOCKET = 'socket',
-  COMMANDS = 'commands',
-
-  DISCORD = 'discord',
-  MINECRAFT = 'minecraft',
-  WEBHOOK = 'webhook'
-}
-
-export enum SCOPE {
-  OFFICER = 'officer',
-  PUBLIC = 'public',
-  PRIVATE = 'private'
 }

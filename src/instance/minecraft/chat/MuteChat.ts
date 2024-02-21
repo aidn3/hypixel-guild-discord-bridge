@@ -1,8 +1,7 @@
-import { LOCATION, SCOPE } from '../../../common/ClientInstance'
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { sufficeToTime } from '../../../util/SharedUtil'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { EventType } from '../../../common/ApplicationEvent'
+import { EventType, InstanceType, ChannelType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -21,8 +20,8 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.OFFICER,
+        instanceType: InstanceType.MINECRAFT,
+        channelType: ChannelType.OFFICER,
         name: EventType.MUTE,
         username: responsible,
         severity: ColorScheme.BAD,

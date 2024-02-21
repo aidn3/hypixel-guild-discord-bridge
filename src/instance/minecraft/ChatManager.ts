@@ -2,7 +2,7 @@ import * as assert from 'node:assert'
 import * as getMinecraftData from 'minecraft-data'
 import { ChatMessage } from 'prismarine-chat'
 import EventHandler from '../../common/EventHandler'
-import { LOCATION } from '../../common/ClientInstance'
+import { InstanceType } from '../../common/ApplicationEvent'
 import MinecraftInstance from './MinecraftInstance'
 import { MinecraftChatMessage } from './common/ChatInterface'
 
@@ -115,7 +115,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
     this.clientInstance.app.emit('minecraftChat', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      location: LOCATION.MINECRAFT,
+      instanceType: InstanceType.MINECRAFT,
       message
     })
   }

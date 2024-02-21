@@ -154,7 +154,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.emit('selfBroadcast', {
         localEvent: true,
         instanceName: instance.instanceName,
-        location: instance.location
+        instanceType: instance.instanceType
       })
     }
   }

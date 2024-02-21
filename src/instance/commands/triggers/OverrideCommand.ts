@@ -1,5 +1,6 @@
 import { ChatCommandContext, ChatCommandHandler } from '../Common'
-import { LOCATION } from '../../../common/ClientInstance'
+
+import { InstanceType } from '../../../common/ApplicationEvent'
 
 export default class OverrideCommand extends ChatCommandHandler {
   constructor() {
@@ -12,7 +13,7 @@ export default class OverrideCommand extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.location !== LOCATION.MINECRAFT) {
+    if (context.instanceType !== InstanceType.MINECRAFT) {
       return 'Can only be executed from Minecraft'
     }
     if (context.username !== context.adminUsername) {

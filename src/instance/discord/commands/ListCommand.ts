@@ -4,8 +4,7 @@ import { Client, Status } from 'hypixel-api-reborn'
 import DiscordInstance from '../DiscordInstance'
 import { escapeDiscord } from '../../../util/DiscordMessageUtil'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
-import { LOCATION } from '../../../common/ClientInstance'
-import { MinecraftRawChatEvent } from '../../../common/ApplicationEvent'
+import { InstanceType, MinecraftRawChatEvent } from '../../../common/ApplicationEvent'
 import Application from '../../../Application'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 import { pageMessage } from '../../../util/DiscordPager'
@@ -66,7 +65,7 @@ export default {
   handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(LOCATION.MINECRAFT)
+    const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
     const lists: Map<string, string[]> = await listMembers(
       clientInstance.app,
       clientInstance.app.mojangApi,

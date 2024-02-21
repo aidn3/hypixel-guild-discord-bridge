@@ -1,4 +1,19 @@
-import { LOCATION, SCOPE } from './ClientInstance'
+export enum InstanceType {
+  MAIN = 'main',
+  METRICS = 'metrics',
+  SOCKET = 'socket',
+  COMMANDS = 'commands',
+
+  DISCORD = 'discord',
+  MINECRAFT = 'minecraft',
+  WEBHOOK = 'webhook'
+}
+
+export enum ChannelType {
+  OFFICER = 'officer',
+  PUBLIC = 'public',
+  PRIVATE = 'private'
+}
 
 export interface BaseEvent {
   localEvent: boolean
@@ -6,7 +21,7 @@ export interface BaseEvent {
 
 interface InformEvent extends BaseEvent {
   instanceName: string
-  location: LOCATION
+  instanceType: InstanceType
 }
 
 interface SignalEvent extends BaseEvent {
@@ -17,7 +32,7 @@ interface SignalEvent extends BaseEvent {
 }
 
 export interface ChatEvent extends InformEvent {
-  scope: SCOPE
+  channelType: ChannelType
   channelId: string | undefined
   username: string
   replyUsername: string | undefined
@@ -52,7 +67,7 @@ export enum EventType {
 }
 
 export interface ClientEvent extends InformEvent {
-  scope: SCOPE
+  channelType: ChannelType
   name: EventType
   username: string | undefined
   severity: number
@@ -61,7 +76,7 @@ export interface ClientEvent extends InformEvent {
 }
 
 export interface CommandEvent extends InformEvent {
-  scope: SCOPE
+  channelType: ChannelType
   username: string
   commandName: string
   fullCommand: string

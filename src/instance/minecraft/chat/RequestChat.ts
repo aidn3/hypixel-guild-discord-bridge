@@ -1,8 +1,7 @@
-import { LOCATION, SCOPE } from '../../../common/ClientInstance'
 import { escapeDiscord } from '../../../util/DiscordMessageUtil'
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { EventType } from '../../../common/ApplicationEvent'
+import { EventType, InstanceType, ChannelType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -15,8 +14,8 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.PUBLIC,
+        instanceType: InstanceType.MINECRAFT,
+        channelType: ChannelType.PUBLIC,
         name: EventType.REQUEST,
         username,
         severity: ColorScheme.GOOD,

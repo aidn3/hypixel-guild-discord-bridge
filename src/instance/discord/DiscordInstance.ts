@@ -2,9 +2,16 @@ import * as assert from 'node:assert'
 import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
 import Application from '../../Application'
 
-import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
+import { ClientInstance, Status } from '../../common/ClientInstance'
 import { escapeDiscord } from '../../util/DiscordMessageUtil'
-import { ChatEvent, ClientEvent, EventType, InstanceEvent } from '../../common/ApplicationEvent'
+import {
+  ChatEvent,
+  ClientEvent,
+  EventType,
+  InstanceEvent,
+  InstanceType,
+  ChannelType
+} from '../../common/ApplicationEvent'
 import StateHandler from './handlers/StateHandler'
 
 import ChatManager from './ChatManager'
@@ -18,7 +25,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
-    super(app, instanceName, LOCATION.DISCORD, config)
+    super(app, instanceName, InstanceType.DISCORD, config)
     this.status = Status.FRESH
 
     this.client = new Client({
@@ -73,12 +80,12 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
   private async onChat(event: ChatEvent): Promise<void> {
     // webhooks received in same channel
-    if (event.location === LOCATION.WEBHOOK) return
+    if (event.instanceType === InstanceType.WEBHOOK) return
 
     let channels
-    if (event.scope === SCOPE.PUBLIC) {
+    if (event.channelType === ChannelType.PUBLIC) {
       channels = this.config.publicChannelIds
-    } else if (event.scope === SCOPE.OFFICER) {
+    } else if (event.channelType === ChannelType.OFFICER) {
       channels = this.config.officerChannelIds
     } else {
       return
@@ -122,9 +129,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
 
     let channels
-    if (event.scope === SCOPE.PUBLIC) {
+    if (event.channelType === ChannelType.PUBLIC) {
       channels = this.config.publicChannelIds
-    } else if (event.scope === SCOPE.OFFICER) {
+    } else if (event.channelType === ChannelType.OFFICER) {
       channels = this.config.officerChannelIds
     } else {
       return

@@ -1,7 +1,7 @@
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance, { QUIT_OWN_VOLITION } from '../MinecraftInstance'
-import { InstanceEventType } from '../../../common/ApplicationEvent'
-import { LOCATION, Status } from '../../../common/ClientInstance'
+import { InstanceEventType, InstanceType } from '../../../common/ApplicationEvent'
+import { Status } from '../../../common/ClientInstance'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts
@@ -54,7 +54,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.clientInstance.app.emit('instance', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      location: LOCATION.MINECRAFT,
+      instanceType: InstanceType.MINECRAFT,
       type: InstanceEventType.connect,
       message: 'Minecraft instance has connected'
     })
@@ -68,7 +68,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        location: LOCATION.MINECRAFT,
+        instanceType: InstanceType.MINECRAFT,
         type: InstanceEventType.end,
         message: reason
       })
@@ -80,7 +80,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        location: LOCATION.MINECRAFT,
+        instanceType: InstanceType.MINECRAFT,
         type: InstanceEventType.end,
         message: reason
       })
@@ -103,7 +103,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.clientInstance.app.emit('instance', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      location: LOCATION.MINECRAFT,
+      instanceType: InstanceType.MINECRAFT,
       type: InstanceEventType.disconnect,
       message: 'Minecraft bot disconnected from server,' + `attempting reconnect in ${loginDelay / 1000} seconds`
     })
@@ -125,7 +125,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        location: LOCATION.MINECRAFT,
+        instanceType: InstanceType.MINECRAFT,
         type: InstanceEventType.conflict,
         message: 'Someone logged in from another place.\n' + "Won't try to re-login.\n" + 'Restart to reconnect.'
       })
@@ -136,7 +136,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        location: LOCATION.MINECRAFT,
+        instanceType: InstanceType.MINECRAFT,
         type: InstanceEventType.end,
         message: 'Account has been banned.\n' + "Won't try to re-login.\n"
       })
@@ -144,7 +144,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        location: LOCATION.MINECRAFT,
+        instanceType: InstanceType.MINECRAFT,
         type: InstanceEventType.kick,
         message:
           `Client ${this.clientInstance.instanceName} has been kicked.\n` +

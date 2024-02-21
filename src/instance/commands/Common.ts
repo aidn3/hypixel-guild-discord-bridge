@@ -1,5 +1,5 @@
-import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import Application from '../../Application'
+import { InstanceType, ChannelType } from '../../common/ApplicationEvent'
 
 export abstract class ChatCommandHandler {
   readonly name: string
@@ -30,8 +30,8 @@ export interface ChatCommandContext {
   adminUsername: string
 
   instanceName: string
-  location: LOCATION
-  scope: SCOPE
+  instanceType: InstanceType
+  channelType: ChannelType
   username: string
   args: string[]
 }

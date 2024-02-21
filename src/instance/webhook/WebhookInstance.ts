@@ -1,8 +1,8 @@
 import { Client, Message, WebhookClient } from 'discord.js'
 
 import Application from '../../Application'
-import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
-import { ChatEvent } from '../../common/ApplicationEvent'
+import { ClientInstance } from '../../common/ClientInstance'
+import { ChatEvent, InstanceType, ChannelType } from '../../common/ApplicationEvent'
 import { cleanMessage, escapeDiscord } from '../../util/DiscordMessageUtil'
 import WebhookConfig from './common/WebhookConfig'
 
@@ -12,14 +12,14 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private connected = false
 
   constructor(app: Application, instanceName: string, discordBot: Client | undefined, config: WebhookConfig) {
-    super(app, instanceName, LOCATION.WEBHOOK, config)
+    super(app, instanceName, InstanceType.WEBHOOK, config)
 
     this.discordBot = discordBot
     if (config.sendUrl != undefined) this.client = new WebhookClient({ url: config.sendUrl })
 
     this.app.on('chat', (event: ChatEvent): void => {
       if (event.instanceName === this.instanceName) return
-      if (event.scope !== SCOPE.PUBLIC) return
+      if (event.channelType !== ChannelType.PUBLIC) return
 
       // TODO: integrate instanceName into webhook messages
       const displayUsername =
@@ -70,8 +70,8 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     this.app.emit('chat', {
       localEvent: true,
       instanceName: this.instanceName,
-      location: LOCATION.WEBHOOK,
-      scope: SCOPE.PUBLIC,
+      instanceType: InstanceType.WEBHOOK,
+      channelType: ChannelType.PUBLIC,
       channelId: undefined,
       username: event.author.username,
       replyUsername: undefined, // TODO: find way to get replyUsername for webhooks (if possible at all)

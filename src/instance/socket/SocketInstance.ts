@@ -1,5 +1,6 @@
-import { ClientInstance, LOCATION } from '../../common/ClientInstance'
+import { ClientInstance } from '../../common/ClientInstance'
 import Application from '../../Application'
+import { InstanceType } from '../../common/ApplicationEvent'
 import ServerSocket from './ServerSocket'
 import ClientSocket from './ClientSocket'
 import { SocketConfig, SocketType } from './common/SocketConfig'
@@ -9,7 +10,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
   private clientSocket: ClientSocket | undefined
 
   constructor(app: Application, instanceName: string, socketConfig: SocketConfig) {
-    super(app, instanceName, LOCATION.SOCKET, socketConfig)
+    super(app, instanceName, InstanceType.SOCKET, socketConfig)
   }
 
   connect(): void {

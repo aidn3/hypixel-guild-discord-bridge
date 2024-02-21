@@ -12,7 +12,7 @@ import {
 } from 'discord.js'
 
 import EventHandler from '../../common/EventHandler'
-import { LOCATION, SCOPE } from '../../common/ClientInstance'
+import { InstanceType, ChannelType } from '../../common/ApplicationEvent'
 import DiscordInstance from './DiscordInstance'
 import { DiscordCommandInterface, Permission } from './common/DiscordCommandInterface'
 
@@ -50,7 +50,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       timerReset()
     })
     this.clientInstance.app.on('selfBroadcast', (event): void => {
-      if (event.location === LOCATION.MINECRAFT) {
+      if (event.instanceType === InstanceType.MINECRAFT) {
         timerReset()
       }
     })
@@ -119,8 +119,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         this.clientInstance.app.emit('command', {
           localEvent: true,
           instanceName: this.clientInstance.instanceName,
-          location: LOCATION.DISCORD,
-          scope: SCOPE.PUBLIC,
+          instanceType: InstanceType.DISCORD,
+          channelType: ChannelType.PUBLIC,
           username,
           fullCommand: interaction.command?.options.toString() ?? '',
           commandName: interaction.commandName,
@@ -200,7 +200,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
     const instanceChoices = this.clientInstance.app.clusterHelper
-      .getInstancesNames(LOCATION.MINECRAFT)
+      .getInstancesNames(InstanceType.MINECRAFT)
       .map((choice: string) => ({ name: choice, value: choice }))
 
     for (const command of this.commands.values()) {

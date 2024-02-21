@@ -4,8 +4,16 @@ import { Client, createClient, states } from 'minecraft-protocol'
 import * as PrismarineChat from 'prismarine-chat'
 import PrismarineRegistry = require('prismarine-registry')
 import Application from '../../Application'
-import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
-import { ChatEvent, ClientEvent, CommandEvent, EventType, InstanceEventType } from '../../common/ApplicationEvent'
+import { ClientInstance, Status } from '../../common/ClientInstance'
+import {
+  ChatEvent,
+  ClientEvent,
+  CommandEvent,
+  EventType,
+  InstanceEventType,
+  InstanceType,
+  ChannelType
+} from '../../common/ApplicationEvent'
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
 import ChatManager from './ChatManager'
@@ -26,7 +34,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
   client: Client | undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftConfig) {
-    super(app, instanceName, LOCATION.MINECRAFT, config)
+    super(app, instanceName, InstanceType.MINECRAFT, config)
 
     this.status = Status.FRESH
     this.handlers = [
@@ -52,18 +60,18 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
 
     this.app.on('command', (event: CommandEvent) => {
-      if (event.location !== LOCATION.MINECRAFT) return
+      if (event.instanceType !== InstanceType.MINECRAFT) return
 
-      switch (event.scope) {
-        case SCOPE.PUBLIC: {
+      switch (event.channelType) {
+        case ChannelType.PUBLIC: {
           void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
           break
         }
-        case SCOPE.OFFICER: {
+        case ChannelType.OFFICER: {
           void this.send(`/oc ${event.commandResponse} @${antiSpamString()}`)
           break
         }
-        case SCOPE.PRIVATE: {
+        case ChannelType.PRIVATE: {
           // already replied privately
           break
         }
@@ -76,16 +84,16 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.app.on('chat', (event: ChatEvent) => {
       if (event.instanceName === this.instanceName) return
 
-      if (event.scope === SCOPE.PUBLIC) {
+      if (event.channelType === ChannelType.PUBLIC) {
         void this.send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
-      } else if (event.scope === SCOPE.OFFICER) {
+      } else if (event.channelType === ChannelType.OFFICER) {
         void this.send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
       }
     })
 
     this.app.on('event', (event: ClientEvent) => {
       if (event.instanceName === this.instanceName) return
-      if (event.scope !== SCOPE.PUBLIC) return
+      if (event.channelType !== ChannelType.PUBLIC) return
       if (event.removeLater) return
       if (event.name === EventType.BLOCK) return
       if (event.name === EventType.REPEAT) return
@@ -106,7 +114,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.app.emit('instance', {
       localEvent: true,
       instanceName: this.instanceName,
-      location: LOCATION.MINECRAFT,
+      instanceType: InstanceType.MINECRAFT,
       type: InstanceEventType.create,
       message: 'Minecraft instance has been created'
     })

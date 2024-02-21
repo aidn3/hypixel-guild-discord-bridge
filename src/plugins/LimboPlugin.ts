@@ -1,7 +1,6 @@
 import MinecraftInstance from '../instance/minecraft/MinecraftInstance'
-import { InstanceEventType } from '../common/ApplicationEvent'
+import { InstanceEventType, InstanceType } from '../common/ApplicationEvent'
 import { PluginInterface, PluginContext } from '../common/Plugins'
-import { LOCATION } from '../common/ClientInstance'
 
 async function limbo(clientInstance: MinecraftInstance): Promise<void> {
   clientInstance.logger.debug('Spawn event triggered. sending to limbo...')
@@ -14,7 +13,7 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
 export default {
   onRun(context: PluginContext): void {
     context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.create && event.location === LOCATION.MINECRAFT) {
+      if (event.type === InstanceEventType.create && event.instanceType === InstanceType.MINECRAFT) {
         const localInstance = context.getLocalInstance(event.instanceName)
         if (localInstance != undefined) {
           const clientInstance = localInstance as MinecraftInstance

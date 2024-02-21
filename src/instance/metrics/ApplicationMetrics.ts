@@ -1,6 +1,7 @@
 import { Counter, Registry } from 'prom-client'
 import { ChatEvent, ClientEvent, CommandEvent } from '../../common/ApplicationEvent'
 
+// location and scope keys are preserved and not renamed like the rest for backward compatibility
 export default class ApplicationMetrics {
   private readonly chatMetrics
   private readonly commandMetrics
@@ -31,16 +32,16 @@ export default class ApplicationMetrics {
 
   onChatEvent(event: ChatEvent): void {
     this.chatMetrics.inc({
-      location: event.location,
-      scope: event.scope,
+      location: event.instanceType,
+      scope: event.channelType,
       instance: event.instanceName
     })
   }
 
   onCommandEvent(event: CommandEvent): void {
     this.commandMetrics.inc({
-      location: event.location,
-      scope: event.scope,
+      location: event.instanceType,
+      scope: event.channelType,
       instance: event.instanceName,
       command: event.commandName
     })
@@ -48,8 +49,8 @@ export default class ApplicationMetrics {
 
   onClientEvent(event: ClientEvent): void {
     this.eventMetrics.inc({
-      location: event.location,
-      scope: event.scope,
+      location: event.instanceType,
+      scope: event.channelType,
       instance: event.instanceName,
       event: event.name
     })

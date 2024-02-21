@@ -1,7 +1,8 @@
 import * as assert from 'node:assert'
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from '../MinecraftInstance'
-import { LOCATION } from '../../../common/ClientInstance'
+
+import { InstanceType } from '../../../common/ApplicationEvent'
 
 export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {
@@ -25,7 +26,7 @@ export default class SelfBroadcastHandler extends EventHandler<MinecraftInstance
       this.clientInstance.app.emit('minecraftSelfBroadcast', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        location: LOCATION.MINECRAFT,
+        instanceType: InstanceType.MINECRAFT,
         uuid,
         username
       })

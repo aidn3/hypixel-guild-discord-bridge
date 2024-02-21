@@ -1,8 +1,8 @@
 import { Message } from 'discord.js'
 import * as BadWords from 'bad-words'
 import EventHandler from '../../common/EventHandler'
-import { LOCATION, SCOPE } from '../../common/ClientInstance'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
+import { InstanceType, ChannelType } from '../../common/ApplicationEvent'
 import DiscordInstance from './DiscordInstance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
@@ -26,18 +26,18 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    let scope: SCOPE
+    let scope: ChannelType
     if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
-      scope = SCOPE.PUBLIC
+      scope = ChannelType.PUBLIC
     } else if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
-      scope = SCOPE.OFFICER
+      scope = ChannelType.OFFICER
     } else {
       return
     }
 
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = getReadableName(discordName, event.author.id)
-    if (scope !== SCOPE.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
+    if (scope !== ChannelType.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
 
     const replyUsername = await getReplyUsername(event)
     const readableReplyUsername = replyUsername == undefined ? undefined : getReadableName(replyUsername, replyUsername)
@@ -50,8 +50,8 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     this.clientInstance.app.emit('chat', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      location: LOCATION.DISCORD,
-      scope: scope,
+      instanceType: InstanceType.DISCORD,
+      channelType: scope,
       channelId: event.channel.id,
       username: readableName,
       replyUsername: readableReplyUsername,

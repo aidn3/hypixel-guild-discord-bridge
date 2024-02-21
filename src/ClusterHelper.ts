@@ -1,21 +1,20 @@
 import Application from './Application'
-import { MinecraftSelfBroadcast } from './common/ApplicationEvent'
-import { LOCATION } from './common/ClientInstance'
+import { InstanceType, MinecraftSelfBroadcast } from './common/ApplicationEvent'
 
 export default class ClusterHelper {
   private readonly app: Application
   private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
-  private readonly instancesNames = new Map<LOCATION, Set<string>>()
+  private readonly instancesNames = new Map<InstanceType, Set<string>>()
 
   constructor(app: Application) {
     this.app = app
 
     this.app.on('minecraftSelfBroadcast', (event) => this.minecraftBots.set(event.instanceName, event))
     this.app.on('instance', (event) => {
-      this.instanceBroadcast(event.instanceName, event.location)
+      this.instanceBroadcast(event.instanceName, event.instanceType)
     })
     this.app.on('selfBroadcast', (event) => {
-      this.instanceBroadcast(event.instanceName, event.location)
+      this.instanceBroadcast(event.instanceName, event.instanceType)
     })
   }
 
@@ -41,7 +40,7 @@ export default class ClusterHelper {
     return uuids
   }
 
-  getInstancesNames(location: LOCATION): string[] {
+  getInstancesNames(location: InstanceType): string[] {
     const instanceNames = this.instancesNames.get(location)
     if (instanceNames == undefined) return []
 
@@ -60,7 +59,7 @@ export default class ClusterHelper {
     return false
   }
 
-  private instanceBroadcast(instanceName: string, location: LOCATION): void {
+  private instanceBroadcast(instanceName: string, location: InstanceType): void {
     let collection = this.instancesNames.get(location)
     if (collection == undefined) {
       collection = new Set<string>()

@@ -1,5 +1,5 @@
-import { SCOPE } from '../../../common/ClientInstance'
 import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChannelType } from '../../../common/ApplicationEvent'
 
 export default class ToggleCommand extends ChatCommandHandler {
   constructor() {
@@ -12,7 +12,7 @@ export default class ToggleCommand extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.scope !== SCOPE.OFFICER || context.username !== context.adminUsername) {
+    if (context.channelType !== ChannelType.OFFICER || context.username !== context.adminUsername) {
       return `${context.username}, Command can only be executed in officer chat or by the bridge admin`
     }
 

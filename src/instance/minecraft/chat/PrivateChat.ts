@@ -1,5 +1,5 @@
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
-import { LOCATION, SCOPE } from '../../../common/ClientInstance'
+import { InstanceType, ChannelType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -16,8 +16,8 @@ export default {
       context.application.emit('chat', {
         localEvent: true,
         instanceName: context.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.PRIVATE,
+        instanceType: InstanceType.MINECRAFT,
+        channelType: ChannelType.PRIVATE,
         channelId: undefined,
         username,
         replyUsername: undefined,
