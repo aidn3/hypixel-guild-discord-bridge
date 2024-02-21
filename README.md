@@ -116,32 +116,6 @@ From Discord: `/override /guild party`
 
 ---
 
-## Webhook
-
-"Webhooks can send messages to a text channel without having to log in as a bot."  
-It is used if the targeted community isn't within the admins' jurisdiction.  
-Used to avoid giving any account login information (e.g. password, tokens, etc.) or running the cluster in one server.
-
-### Receive Messages
-
-To receive messages, you need to
-
-- Create a **Discord webhook** in the used **guild public chat channel**
-- Register the **webhook id** in `config.yaml` (messages will be filtered otherwise)
-- Give the FULL **webhook id** to the targeted community to send messages through
-
-### Send Messages
-
-- Receive the **full webhook url**
-- Register it in `config.yaml` (messages won't be sent over otherwise)
-
-### Webhook Best Practice
-
-It is best to exchange both send and receive keys and set up a two-way road for both community.  
-`config.yaml` Supports name for each community.
-
----
-
 ## Metrics
 
 hypixel-guild-discord-bridge supports [Prometheus](https://github.com/prometheus/prometheus) metrics, and it is
