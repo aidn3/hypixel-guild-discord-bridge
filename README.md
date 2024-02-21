@@ -263,8 +263,6 @@ All configurations will be in `config.yaml` under `socket` section.
 - Choose a secure password in config and set it under `key`. (Security: Anyone can hijack the bridge if not set to a
   secure one)
 - Choose which node to become the "Server" and set it under config `type`
-- Name each node under config `instanceName` (Warning: Duplicate names might result in race condition or other odd
-  behaviors)
 - Set the config `uri` to the server node socket to connect to
 - Start all nodes
 
