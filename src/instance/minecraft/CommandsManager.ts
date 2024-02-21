@@ -1,7 +1,5 @@
 import { LOCATION, SCOPE } from '../../common/ClientInstance'
-import { ColorScheme } from '../discord/common/DiscordConfig'
 import EventHandler from '../../common/EventHandler'
-import { EventType } from '../../common/ApplicationEvent'
 import { ChatCommandHandler } from './common/ChatInterface'
 
 import MinecraftInstance from './MinecraftInstance'
@@ -88,26 +86,19 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       args: arguments_
     })
 
-    minecraftInstance.app.emit('event', {
-      localEvent: true,
-      instanceName: minecraftInstance.instanceName,
-      location: LOCATION.MINECRAFT,
-      scope: SCOPE.PUBLIC,
-      name: EventType.COMMAND,
-      username,
-      severity: ColorScheme.GOOD,
-      message: `${message}\n${reply}`,
-      removeLater: false
-    })
+    if (scope === SCOPE.PRIVATE) {
+      await minecraftInstance.send(`/msg ${username} ${commandResponse}`)
+    }
 
-    minecraftInstance.app.emit('minecraftCommandResponse', {
+    minecraftInstance.app.emit('command', {
       localEvent: true,
       instanceName: minecraftInstance.instanceName,
       location: LOCATION.MINECRAFT,
+      scope: scope,
       username,
-      commandName: command.triggers[0],
       fullCommand: message,
-      commandResponse: reply
+      commandName: command.triggers[0],
+      commandResponse: commandResponse
     })
 
     return true
