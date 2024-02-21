@@ -89,7 +89,9 @@ offering quality user experience while keeping it simple
 | Kick           | Notify when someone is kicked from the guild                             | Public             |
 | Mute / Unmute  | Notify when someone gets muted in the guild                              | Helper             |
 
-### Supported Ingame Commands
+### Supported Chat Commands
+Those commands can be executed from any chat channel the bridge can see. 
+This includes Guild/Officer chat as well as private `/msg` and Direct Messaging channels.
 
 | Command    | Description                                     | Permission |
 | ---------- | ----------------------------------------------- | ---------- |
