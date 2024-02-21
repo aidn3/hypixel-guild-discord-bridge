@@ -1,6 +1,7 @@
 import MinecraftInstance from '../MinecraftInstance'
 import { CommandsManager } from '../CommandsManager'
 import Application from '../../../Application'
+import { SCOPE } from '../../../common/ClientInstance'
 
 export interface MinecraftChatMessage {
   onChat: (context: MinecraftChatContext) => void
@@ -26,6 +27,8 @@ export interface ChatCommandHandler {
 
 export interface ChatCommandContext {
   clientInstance: MinecraftInstance
+  allCommands: ChatCommandHandler[]
+  scope: SCOPE
   username: string
   args: string[]
 }

@@ -21,6 +21,9 @@ import SkillCommand from './commands/SkillCommand'
 import RunsCommand from './commands/RunsCommand'
 import SlayerCommand from './commands/SlayerCommand'
 import WeightCommand from './commands/WeightCommand'
+import HelpCommand from './commands/HelpCommand'
+import OverrideCommand from './commands/OverrideCommand'
+import ToggleCommand from './commands/ToggleCommand'
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
   private readonly commands: ChatCommandHandler[]
@@ -34,16 +37,19 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       EightBallCommand,
       ExplainCommand,
       GuildCommand,
+      HelpCommand,
       IqCommand,
       KuudraCommand,
       LevelCommand,
       NetworthCommand,
+      OverrideCommand,
       RockPaperScissorsCommand,
       RouletteCommand,
       RunsCommand,
       SecretsCommand,
       SkillCommand,
       SlayerCommand,
+      ToggleCommand,
       WeightCommand
     ]
 
@@ -66,88 +72,18 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
     const commandName = message.slice(minecraftInstance.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const arguments_ = message.split(' ').slice(1)
 
-    if (commandName === 'toggle' && username === minecraftInstance.config.adminUsername && arguments_.length > 0) {
-      const command = this.commands.find((c) => c.triggers.includes(arguments_[0]))
-      if (command == undefined) return false
-
-      command.enabled = !command.enabled
-      await minecraftInstance.send(
-        `/gc @Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`
-      )
-      return true
-    }
-
-    if (['help', 'command', 'commands', 'cmd', 'cmds'].includes(commandName)) {
-      if (arguments_.length <= 0) {
-        const reply = `Commands: ${this.commands.map((command) => command.name).join(', ')}`
-        await minecraftInstance.send(`/gc ${reply}`)
-
-        minecraftInstance.app.emit('event', {
-          localEvent: true,
-          instanceName: minecraftInstance.instanceName,
-          location: LOCATION.MINECRAFT,
-          scope: SCOPE.PUBLIC,
-          name: EventType.COMMAND,
-          username,
-          severity: ColorScheme.GOOD,
-          message: `${message}\n${reply}`,
-          removeLater: false
-        })
-        return true
-      }
-      const command = this.commands.find((c) => c.triggers.includes(arguments_[0]?.toLowerCase()))
-      if (command == undefined) {
-        const reply = `That command does not exist, use ${minecraftInstance.config.commandPrefix}help`
-        await minecraftInstance.send(`/gc ${reply}`)
-
-        minecraftInstance.app.emit('event', {
-          localEvent: true,
-          instanceName: minecraftInstance.instanceName,
-          location: LOCATION.MINECRAFT,
-          scope: SCOPE.PUBLIC,
-          name: EventType.COMMAND,
-          username,
-          severity: ColorScheme.GOOD,
-          message: `${message}\n${reply}`,
-          removeLater: false
-        })
-        return true
-      }
-
-      const reply =
-        `${command.name}: ${command.description} ` +
-        `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
-      await minecraftInstance.send(`/gc ${reply}`)
-
-      minecraftInstance.app.emit('event', {
-        localEvent: true,
-        instanceName: minecraftInstance.instanceName,
-        location: LOCATION.MINECRAFT,
-        scope: SCOPE.PUBLIC,
-        name: EventType.COMMAND,
-        username,
-        severity: ColorScheme.GOOD,
-        message: `${message}\n${reply}`,
-        removeLater: false
-      })
-      return true
-    }
-
     const command = this.commands.find((c) => c.triggers.includes(commandName))
-    if (command == undefined || !command.enabled) return false
+    if (command == undefined) return false
 
-    minecraftInstance.app.emit('command', {
-      localEvent: true,
-      instanceName: minecraftInstance.instanceName,
-      location: LOCATION.MINECRAFT,
-      scope: SCOPE.PUBLIC,
-      username,
-      fullCommand: message,
-      commandName: command.triggers[0]
-    })
+    if (!command.enabled && this.clientInstance.config.adminUsername !== username && scope !== SCOPE.OFFICER) {
+      // officer chat and bot owner can bypass enabled flag
+      return true
+    }
 
-    const reply = await command.handler({
+    const commandResponse = await command.handler({
       clientInstance: minecraftInstance,
+      allCommands: this.commands,
+      scope: scope,
       username,
       args: arguments_
     })
