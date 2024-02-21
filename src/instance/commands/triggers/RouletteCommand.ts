@@ -1,4 +1,4 @@
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 const LossMessages = [
   '%s you got blasted!',

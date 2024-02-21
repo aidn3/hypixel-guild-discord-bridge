@@ -1,5 +1,5 @@
 import * as assert from 'node:assert'
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 enum Catacombs {
   'entrance' = '0',

@@ -7,7 +7,7 @@ import * as assert from 'node:assert'
 import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import axios from 'axios'
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 export default class NetworthCommand extends ChatCommandHandler {
   constructor() {

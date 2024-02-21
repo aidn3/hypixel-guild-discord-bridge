@@ -4,7 +4,7 @@
  Minecraft username: _aura
 */
 
-import { ChatCommandContext, ChatCommandHandler } from '../../commands/Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 export default class IqCommand extends ChatCommandHandler {
   constructor() {

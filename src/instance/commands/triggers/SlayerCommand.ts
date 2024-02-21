@@ -1,6 +1,6 @@
 import * as assert from 'node:assert'
 import { Slayer } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],

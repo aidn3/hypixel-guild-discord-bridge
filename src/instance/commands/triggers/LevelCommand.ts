@@ -1,4 +1,4 @@
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 export default class LevelCommand extends ChatCommandHandler {
   constructor() {

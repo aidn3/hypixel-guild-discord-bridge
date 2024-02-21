@@ -1,5 +1,5 @@
 import * as assert from 'node:assert'
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 export default class SecretsCommand extends ChatCommandHandler {
   constructor() {

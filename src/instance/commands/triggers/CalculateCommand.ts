@@ -4,7 +4,7 @@
  Minecraft username: _aura
 */
 import { evalExpression } from '@hkh12/node-calc'
-import { ChatCommandContext, ChatCommandHandler } from '../Common'
+import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 export default class CalculateCommand extends ChatCommandHandler {
   constructor() {
