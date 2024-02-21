@@ -121,6 +121,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           instanceName: this.clientInstance.instanceName,
           instanceType: InstanceType.DISCORD,
           channelType: ChannelType.PUBLIC,
+          discordChannelId: interaction.channelId,
           username,
           fullCommand: interaction.command?.options.toString() ?? '',
           commandName: interaction.commandName,
