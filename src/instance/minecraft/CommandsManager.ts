@@ -57,9 +57,26 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
         command.enabled = false
       }
     }
+    this.checkCommandsIntegrity()
   }
 
-  async publicCommandHandler(
+  private checkCommandsIntegrity(): void {
+    const allTriggers = new Map<string, string>()
+    for (const command of this.commands) {
+      for (const trigger of command.triggers) {
+        if (allTriggers.has(trigger)) {
+          const alreadyDefinedCommandName = allTriggers.get(trigger)
+          throw new Error(
+            `Trigger already defined in ${alreadyDefinedCommandName} when trying to add it to ${command.name}`
+          )
+        } else {
+          allTriggers.set(trigger, command.name)
+        }
+      }
+    }
+  }
+
+  async handle(
     minecraftInstance: MinecraftInstance,
     scope: SCOPE,
     username: string,
