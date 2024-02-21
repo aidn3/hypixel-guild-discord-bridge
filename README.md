@@ -146,8 +146,6 @@ prefix `guild_bridge_`. It can be changed in `config.yaml` under `metrics`.
 
 ### Metrics Config
 
-All metrics config are in `./config/metrics-config.json`.
-
 In-game interval commands execution for metrics are **disabled by default**.
 Automatically sending commands non-stop to Hypixel might get the client banned for "botting".
 Although the chance is next to non-existent, it is disabled for safe measures.
