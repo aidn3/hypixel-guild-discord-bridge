@@ -41,8 +41,7 @@ offering quality user experience while keeping it simple
 
 - Connect multiple guilds chats together
 - Bind hypixel guilds chats to discord channels
-- Send and receive Chat from other guilds/discord servers via Webhooks
-- Supports Public and Officer Chat
+- Supports Public and Officer and Private Chat
 - Supports in-game moderation commands from discord
 - Share events with discord such as online/offline/join/leave/mute notification/etc.
 - Allows executing commands
