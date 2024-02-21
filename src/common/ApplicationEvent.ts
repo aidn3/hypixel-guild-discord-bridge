@@ -48,12 +48,7 @@ export enum EventType {
   ONLINE = 'online',
 
   REPEAT = 'repeat',
-  BLOCK = 'block',
-
-  /**
-   * @deprecated Command api in "event" event has been depreciated. It will be completely removed and replaced.
-   */
-  COMMAND = 'command'
+  BLOCK = 'block'
 }
 
 export interface ClientEvent extends InformEvent {
@@ -70,6 +65,7 @@ export interface CommandEvent extends InformEvent {
   username: string
   commandName: string
   fullCommand: string
+  commandResponse: string
 }
 
 export enum InstanceEventType {
@@ -97,16 +93,6 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 }
 
 export type InstanceSelfBroadcast = InformEvent
-
-/**
- * @deprecated Command api for a specific instance is deprecated. Use the more broad api events.
- */
-export interface MinecraftCommandResponse extends InformEvent {
-  username: string
-  commandName: string
-  fullCommand: string
-  commandResponse: string
-}
 
 export interface MinecraftSendChat extends SignalEvent {
   command: string
