@@ -2,7 +2,7 @@ import { Message } from 'discord.js'
 import * as BadWords from 'bad-words'
 import EventHandler from '../../common/EventHandler'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
-import { InstanceType, ChannelType } from '../../common/ApplicationEvent'
+import { ChannelType, InstanceType } from '../../common/ApplicationEvent'
 import DiscordInstance from './DiscordInstance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
@@ -26,18 +26,20 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    let scope: ChannelType
+    let channelType: ChannelType
     if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
-      scope = ChannelType.PUBLIC
+      channelType = ChannelType.PUBLIC
     } else if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
-      scope = ChannelType.OFFICER
-    } else {
+      channelType = ChannelType.OFFICER
+    } else if (event.guildId) {
       return
+    } else {
+      channelType = ChannelType.PRIVATE
     }
 
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = getReadableName(discordName, event.author.id)
-    if (scope !== ChannelType.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
+    if (channelType !== ChannelType.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
 
     const replyUsername = await getReplyUsername(event)
     const readableReplyUsername = replyUsername == undefined ? undefined : getReadableName(replyUsername, replyUsername)
@@ -51,7 +53,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       instanceType: InstanceType.DISCORD,
-      channelType: scope,
+      channelType: channelType,
       channelId: event.channel.id,
       username: readableName,
       replyUsername: readableReplyUsername,

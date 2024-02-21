@@ -1,5 +1,14 @@
 import * as assert from 'node:assert'
-import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
+import {
+  APIEmbed,
+  Client,
+  GatewayIntentBits,
+  Options,
+  Partials,
+  TextBasedChannelFields,
+  TextChannel,
+  Webhook
+} from 'discord.js'
 import Application from '../../Application'
 
 import { ClientInstance, Status } from '../../common/ClientInstance'
@@ -36,8 +45,10 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-      ]
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages
+      ],
+      partials: [Partials.Channel, Partials.Message]
     })
 
     this.handlers = [new StateHandler(this), new ChatManager(this), new CommandManager(this)]
