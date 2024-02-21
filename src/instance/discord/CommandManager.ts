@@ -12,7 +12,7 @@ import {
 } from 'discord.js'
 
 import EventHandler from '../../common/EventHandler'
-import { InstanceType, ChannelType } from '../../common/ApplicationEvent'
+import { ChannelType, InstanceType } from '../../common/ApplicationEvent'
 import DiscordInstance from './DiscordInstance'
 import { DiscordCommandInterface, Permission } from './common/DiscordCommandInterface'
 
@@ -94,6 +94,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     const command = this.commands.get(interaction.commandName)
 
     try {
+      const channelType = this.getChannelType(interaction.channelId)
       if (command == undefined) {
         this.clientInstance.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
@@ -102,7 +103,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           ephemeral: true
         })
         return
-      } else if (!this.channelAllowed(interaction)) {
+      } else if (!channelType) {
         this.clientInstance.logger.debug(`can't execute in channel ${interaction.channelId}`)
 
         await interaction.reply({
@@ -120,7 +121,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           localEvent: true,
           instanceName: this.clientInstance.instanceName,
           instanceType: InstanceType.DISCORD,
-          channelType: ChannelType.PUBLIC,
+          channelType: channelType,
           discordChannelId: interaction.channelId,
           username,
           fullCommand: interaction.command?.options.toString() ?? '',
@@ -191,11 +192,10 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     return highestPerm >= permissionLevel
   }
 
-  private channelAllowed(interaction: CommandInteraction): boolean {
-    return (
-      this.clientInstance.config.publicChannelIds.includes(interaction.channelId) ||
-      this.clientInstance.config.officerChannelIds.includes(interaction.channelId)
-    )
+  private getChannelType(channelId: string): ChannelType | undefined {
+    if (this.clientInstance.config.publicChannelIds.includes(channelId)) return ChannelType.PUBLIC
+    if (this.clientInstance.config.officerChannelIds.includes(channelId)) return ChannelType.OFFICER
+    return undefined
   }
 
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
