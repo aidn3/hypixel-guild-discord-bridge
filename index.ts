@@ -1,9 +1,9 @@
 import { configure } from 'log4js'
-import { loadApplicationConfig } from './src/ApplicationConfig'
 import * as logConfig from './config/log4js-config.json'
 import * as packageJson from './package.json'
 import Application from './src/Application'
 import { shutdownApplication } from './src/util/SharedUtil'
+import { loadApplicationConfig } from './src/ConfigurationParser'
 
 console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
