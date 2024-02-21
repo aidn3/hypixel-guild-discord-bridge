@@ -1,22 +1,25 @@
 import * as Http from 'node:http'
-import * as assert from 'node:assert'
 import { SocksClient } from 'socks'
 import type { Client } from 'minecraft-protocol'
 import { Logger } from 'log4js'
-import { ProxyProtocol } from '../../../common/ProxyInterface'
-import MinecraftConfig from './MinecraftConfig'
+import { ProxyConfig, ProxyProtocol } from '../../../ApplicationConfig'
 
-export function resolveProxyIfExist(logger: Logger, minecraftConfig: MinecraftConfig): Partial<ClientProxyOptions> {
-  const proxyConfig = minecraftConfig.proxy
-  if (proxyConfig == undefined) return {}
-  logger.debug(`Proxy enabled with params: ${JSON.stringify(minecraftConfig.proxy)}`)
+export function resolveProxyIfExist(
+  logger: Logger,
+  proxyConfig: ProxyConfig | null,
+  defaultBotOptions: {
+    host: string
+    port: number
+  }
+): Partial<ClientProxyOptions> {
+  if (!proxyConfig) return {}
+  logger.debug(`Proxy enabled with params: ${JSON.stringify(proxyConfig)}`)
 
-  assert(minecraftConfig.botOptions.host)
-  const proxyHost = proxyConfig.proxyHost
-  const proxyPort = Number(proxyConfig.proxyPort)
+  const proxyHost = proxyConfig.host
+  const proxyPort = Number(proxyConfig.port)
   const protocol = proxyConfig.protocol
-  const host = minecraftConfig.botOptions.host
-  const port = Number(minecraftConfig.botOptions.port)
+  const host = defaultBotOptions.host
+  const port = defaultBotOptions.port
 
   let connect
   switch (protocol) {
@@ -75,9 +78,16 @@ function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort
     logger.debug('connecting to proxy...')
 
     SocksClient.createConnection({
-      proxy: { host: proxyHost, port: proxyPort, type: 5 },
+      proxy: {
+        host: proxyHost,
+        port: proxyPort,
+        type: 5
+      },
       command: 'connect',
-      destination: { host, port }
+      destination: {
+        host,
+        port
+      }
     })
       .then((connectionEstablished) => {
         logger.debug('connection to proxy established. forwarding proxied connection to minecraft')

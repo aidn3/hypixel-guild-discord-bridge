@@ -1,9 +1,9 @@
 import { ClientInstance } from '../../common/ClientInstance'
 import Application from '../../Application'
 import { InstanceType } from '../../common/ApplicationEvent'
+import { SocketConfig } from '../../ApplicationConfig'
 import ServerSocket from './ServerSocket'
 import ClientSocket from './ClientSocket'
-import { SocketConfig, SocketType } from './common/SocketConfig'
 
 export default class SocketInstance extends ClientInstance<SocketConfig> {
   private serverSocket: ServerSocket | undefined
@@ -23,7 +23,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
       this.clientSocket.shutdown()
     }
 
-    if (this.config.type === SocketType.SERVER) {
+    if (this.config.type === 'server') {
       this.logger.debug(`Creating socket Server on port ${this.config.port}...`)
       this.serverSocket = new ServerSocket(this.app, this.logger, this.config.port, this.config.key)
     } else {

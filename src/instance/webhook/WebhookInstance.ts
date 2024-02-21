@@ -4,7 +4,7 @@ import Application from '../../Application'
 import { ClientInstance } from '../../common/ClientInstance'
 import { ChatEvent, InstanceType, ChannelType } from '../../common/ApplicationEvent'
 import { cleanMessage, escapeDiscord } from '../../util/DiscordMessageUtil'
-import WebhookConfig from './common/WebhookConfig'
+import { WebhookConfig } from '../../ApplicationConfig'
 
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private readonly discordBot: Client | undefined

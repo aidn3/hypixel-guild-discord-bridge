@@ -1,4 +1,3 @@
-import * as assert from 'node:assert'
 import { NBT } from 'prismarine-nbt'
 import { Client, createClient, states } from 'minecraft-protocol'
 import * as PrismarineChat from 'prismarine-chat'
@@ -16,26 +15,33 @@ import {
 } from '../../common/ApplicationEvent'
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
+import { MinecraftInstanceConfig } from '../../ApplicationConfig'
 import ChatManager from './ChatManager'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'
 import ErrorHandler from './handlers/ErrorHandler'
 import StateHandler from './handlers/StateHandler'
-import MinecraftConfig from './common/MinecraftConfig'
 import { resolveProxyIfExist } from './common/ProxyHandler'
 
 export const QUIT_OWN_VOLITION = 'disconnect.quitting'
 const commandsLimiter = new RateLimiter(1, 1000)
 
-export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
+export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
+  defaultBotConfig = {
+    host: 'me.hypixel.net',
+    port: 25_565,
+    version: '1.17.1'
+  }
+  readonly bridgePrefix: string
   private readonly handlers
   readonly registry
   readonly prismChat
   client: Client | undefined
 
-  constructor(app: Application, instanceName: string, config: MinecraftConfig) {
+  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.MINECRAFT, config)
 
+    this.bridgePrefix = bridgePrefix
     this.status = Status.FRESH
     this.handlers = [
       new ErrorHandler(this),
@@ -45,8 +51,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
       new ChatManager(this)
     ]
 
-    assert(config.botOptions.version)
-    this.registry = PrismarineRegistry(config.botOptions.version)
+    this.registry = PrismarineRegistry(this.defaultBotConfig.version)
     this.prismChat = PrismarineChat(this.registry)
 
     this.app.on('reconnectSignal', (event) => {
@@ -106,8 +111,9 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.client?.end(QUIT_OWN_VOLITION)
 
     this.client = createClient({
-      ...this.config.botOptions,
-      ...resolveProxyIfExist(this.logger, this.config)
+      ...this.defaultBotConfig,
+      username: this.config.email,
+      ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig)
     })
     this.listenForRegistry(this.client)
 
@@ -181,9 +187,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     replyUsername: string | undefined,
     message: string
   ): string {
-    let full = `/${prefix} ${this.config.bridgePrefix}`
-
-    if (this.app.config.general.displayInstanceName) full += `[${this.instanceName}] `
+    let full = `/${prefix} ${this.bridgePrefix}`
 
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`

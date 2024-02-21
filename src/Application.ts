@@ -1,4 +1,3 @@
-import fs = require('fs')
 import * as Events from 'node:events'
 import * as path from 'node:path'
 import { TypedEmitter } from 'tiny-typed-emitter'
@@ -18,9 +17,10 @@ import {
   MinecraftRawChatEvent,
   MinecraftSelfBroadcast,
   MinecraftSendChat,
-  ShutdownSignal
+  ShutdownSignal,
+  InstanceType
 } from './common/ApplicationEvent'
-import { ClientInstance } from './common/ClientInstance'
+import { ClientInstance, INTERNAL_INSTANCE_PREFIX } from './common/ClientInstance'
 import { PluginInterface } from './common/Plugins'
 import MetricsInstance from './instance/metrics/MetricsInstance'
 import ClusterHelper from './ClusterHelper'
@@ -68,49 +68,29 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       )
     }
 
-    for (const instanceConfig of this.config.minecrafts) {
-      this.instances.push(new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig))
+    for (const instanceConfig of this.config.minecraft.instances) {
+      this.instances.push(
+        new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig, this.config.minecraft.bridgePrefix)
+      )
     }
 
     if (this.config.metrics.enabled) {
-      this.instances.push(new MetricsInstance(this, this.config.metrics.instanceName, this.config.metrics))
+      this.instances.push(
+        new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
+      )
     }
 
     if (this.config.socket.enabled) {
-      this.instances.push(new SocketInstance(this, this.config.socket.instanceName, this.config.socket))
+      this.instances.push(new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket))
     }
 
     if (this.config.commands.enabled) {
-      this.instances.push(new CommandsInstance(this, 'COMMANDS', this.config.commands))
+      this.instances.push(
+        new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
+      )
     }
 
-    if (this.config.plugins.enabled) {
-      // eslint-disable-next-line unicorn/prefer-module
-      const mainPath = require.main?.path ?? process.cwd()
-      this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
-      let paths
-
-      // check strictly for undefined key
-      if (this.config.plugins.paths === undefined) {
-        this.logger.warn(
-          'Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme'
-        )
-        paths = fs
-          .readdirSync('./src/plugins/')
-          .filter((file) => file.endsWith('Plugin.ts'))
-          .map((f) => path.resolve(mainPath, 'src/plugins', f))
-      } else {
-        paths = this.config.plugins.paths.map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
-      }
-
-      this.plugins = paths.map((f) => {
-        this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires,unicorn/prefer-module
-        return require(f).default as PluginInterface
-      })
-    } else {
-      this.plugins = []
-    }
+    this.plugins = this.loadPlugins()
 
     this.on('shutdownSignal', (event) => {
       if (event.targetInstanceName === undefined) {
@@ -127,6 +107,19 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     })
   }
 
+  private loadPlugins(): PluginInterface[] {
+    // eslint-disable-next-line unicorn/prefer-module
+    const mainPath = require.main?.path ?? process.cwd()
+    this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
+    return this.config.plugins
+      .map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
+      .map((f) => {
+        this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires,unicorn/prefer-module
+        return require(f).default as PluginInterface
+      })
+  }
+
   async sendConnectSignal(): Promise<void> {
     this.broadcastLocalInstances()
 
@@ -134,7 +127,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     for (const p of this.plugins) {
       p.onRun({
         application: this,
-        config: this.config.plugins,
         // only shared with plugins to directly modify instances
         // everything else is encapsulated
         getLocalInstance: (instanceName: string) => this.instances.find((index) => index.instanceName === instanceName)
