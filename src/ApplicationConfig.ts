@@ -10,6 +10,7 @@ import MetricsConfig from './instance/metrics/common/MetricsConfig'
 import MinecraftConfig from './instance/minecraft/common/MinecraftConfig'
 import { SocketConfig } from './instance/socket/common/SocketConfig'
 import { PluginsConfig } from './common/Plugins'
+import { CommandsConfig } from './instance/commands/Common'
 
 export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): ApplicationConfig {
   const fileString = fs.readFileSync(filepath, 'utf8')
@@ -20,6 +21,7 @@ export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): Applic
     metrics: config.metrics,
     plugins: config.plugins,
     socket: config.socket,
+    commands: config.commands,
     profanityFilter: config.profanity,
 
     discord: config.discord,
@@ -66,6 +68,7 @@ export interface ApplicationConfig {
   plugins: PluginsConfig
   metrics: MetricsConfig
   socket: SocketConfig
+  commands: CommandsConfig
 
   discord: DiscordConfig
 

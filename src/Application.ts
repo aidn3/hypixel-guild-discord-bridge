@@ -28,6 +28,7 @@ import { ApplicationConfig } from './ApplicationConfig'
 import SocketInstance from './instance/socket/SocketInstance'
 import { MojangApi } from './util/Mojang'
 import { shutdownApplication, sleep } from './util/SharedUtil'
+import { CommandsInstance } from './instance/commands/CommandsInstance'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
@@ -77,6 +78,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
     if (this.config.socket.enabled) {
       this.instances.push(new SocketInstance(this, this.config.socket.instanceName, this.config.socket))
+    }
+
+    if (this.config.commands.enabled) {
+      this.instances.push(new CommandsInstance(this, 'COMMANDS', this.config.commands))
     }
 
     if (this.config.plugins.enabled) {
