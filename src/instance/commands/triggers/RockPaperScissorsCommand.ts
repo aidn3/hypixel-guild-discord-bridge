@@ -1,4 +1,4 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
 enum CommandOptions {
   ROCK = 'rock',
@@ -6,14 +6,17 @@ enum CommandOptions {
   SCISSORS = 'scissors'
 }
 
-export default {
-  name: 'RPS',
-  triggers: ['rps'],
-  description: 'Play rock, paper, scissors against the bot',
-  example: `rps rock`,
-  enabled: true,
+export default class RockPaperScissorsCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'RPS',
+      triggers: ['rps'],
+      description: 'Play rock, paper, scissors against the bot',
+      example: `rps rock`
+    })
+  }
 
-  handler: function (context: ChatCommandContext): string {
+  handler(context: ChatCommandContext): string {
     const choices = Object.values(CommandOptions)
     const computerChoice = choices[Math.floor(Math.random() * choices.length)]
     const userChoice = context.args[0] as CommandOptions | undefined
@@ -34,4 +37,4 @@ export default {
       return `${context.username}, I chose ${computerChoice}, You lost!`
     }
   }
-} satisfies ChatCommandHandler
+}

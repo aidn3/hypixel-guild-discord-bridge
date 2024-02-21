@@ -1,5 +1,5 @@
 import * as assert from 'node:assert'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
 enum Catacombs {
   'entrance' = '0',
@@ -22,13 +22,17 @@ enum MasterMode {
   'm7' = '7'
 }
 
-export default {
-  name: 'Runs',
-  triggers: ['runs', 'r'],
-  description: 'Returns how many dungeon runs a player has done',
-  example: `runs m7 %s`,
-  enabled: true,
-  handler: async function (context: ChatCommandContext): Promise<string> {
+export default class RunsCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Runs',
+      triggers: ['runs', 'r'],
+      description: 'Returns how many dungeon runs a player has done',
+      example: `runs m7 %s`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
     const floor = context.args[0]?.toLowerCase()
     const givenUsername = context.args[1] ?? context.username
     let dungeonType: string | undefined = undefined
@@ -43,7 +47,7 @@ export default {
       return `${context.username}, Invalid floor! (given: ${floor})`
     }
 
-    const uuid = await context.clientInstance.app.mojangApi
+    const uuid = await context.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => {
@@ -54,7 +58,7 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await context.clientInstance.app.hypixelApi
+    const parsedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
     assert(parsedProfile)
@@ -74,4 +78,4 @@ export default {
 
     return `${givenUsername}: ${floor} - ${amount || 0}`
   }
-} satisfies ChatCommandHandler
+}

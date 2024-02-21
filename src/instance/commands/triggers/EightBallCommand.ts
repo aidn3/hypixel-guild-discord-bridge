@@ -3,7 +3,8 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
 const ANSWERS = [
   'As I see it, yes.',
@@ -28,14 +29,17 @@ const ANSWERS = [
   'You may rely on it.'
 ]
 
-export default {
-  name: '8Ball',
-  triggers: ['8ball', '8balls', '8', 'ball', 'balls', '8b'],
-  description: 'Returns a basic 8 ball response',
-  example: `8b am I cool?`,
-  enabled: true,
+export default class EightBallCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: '8Ball',
+      triggers: ['8ball', '8balls', '8', 'ball', 'balls', '8b'],
+      description: 'Returns a basic 8 ball response',
+      example: `8b am I cool?`
+    })
+  }
 
-  handler: function (context: ChatCommandContext): string {
+  handler(context: ChatCommandContext): string {
     return `${context.username}, ${ANSWERS[Math.floor(Math.random() * ANSWERS.length)]}`
   }
-} satisfies ChatCommandHandler
+}

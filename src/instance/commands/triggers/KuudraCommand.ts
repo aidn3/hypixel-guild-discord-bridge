@@ -1,6 +1,6 @@
 import * as assert from 'node:assert'
 import { KuudraTier } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
 const Kuudra: Record<KuudraTier, string[]> = {
   none: ['basic', 't1', '1'],
@@ -10,13 +10,17 @@ const Kuudra: Record<KuudraTier, string[]> = {
   infernal: ['infernal', 't5', '5']
 }
 
-export default {
-  name: 'Kuudra',
-  triggers: ['kuudra', 'k'],
-  description: "Returns a player's kuudra runs",
-  example: `kuudra t5 %s`,
-  enabled: true,
-  handler: async function (context: ChatCommandContext): Promise<string> {
+export default class KuudraCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Kuudra',
+      triggers: ['kuudra', 'k'],
+      description: "Returns a player's kuudra runs",
+      example: `kuudra t5 %s`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
     const givenTier = context.args[0]?.toLowerCase()
     const givenUsername = context.args[1] ?? context.username
 
@@ -30,7 +34,7 @@ export default {
       return `${context.username}, Invalid Tier! (given: ${givenTier})`
     }
 
-    const uuid = await context.clientInstance.app.mojangApi
+    const uuid = await context.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => {
@@ -41,7 +45,7 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await context.clientInstance.app.hypixelApi
+    const parsedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
     assert(parsedProfile)
@@ -50,4 +54,4 @@ export default {
 
     return `${givenUsername}: ${givenTier} - ${completions}`
   }
-} satisfies ChatCommandHandler
+}

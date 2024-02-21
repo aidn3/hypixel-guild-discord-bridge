@@ -1,6 +1,6 @@
 import * as assert from 'node:assert'
 import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 import { formatLevel } from '../../../util/SkyblockApi'
 
 const SKILLS = new Set([
@@ -17,14 +17,17 @@ const SKILLS = new Set([
   'average'
 ])
 
-export default {
-  name: 'Skills',
-  triggers: ['skill', 'skills'],
-  description: "Returns a player's skill level",
-  example: `skill foraging %s`,
-  enabled: true,
+export default class SkillCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Skills',
+      triggers: ['skill', 'skills'],
+      description: "Returns a player's skill level",
+      example: `skill foraging %s`
+    })
+  }
 
-  handler: async function (context: ChatCommandContext): Promise<string> {
+  async handler(context: ChatCommandContext): Promise<string> {
     const skill = context.args[0]
     const givenUsername = context.args[1] ?? context.username
 
@@ -32,7 +35,7 @@ export default {
       return `${context.username}, Invalid skill! (given: ${skill})`
     }
 
-    const uuid = await context.clientInstance.app.mojangApi
+    const uuid = await context.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => {
@@ -43,25 +46,25 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
+    const parsedProfile = await this.getParsedProfile(context.app.hypixelApi, uuid)
 
     // @ts-expect-error Ignoring impossible to trigger scenario
     const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember['skills']]
 
     return `${givenUsername}: ${skill} - ${formatLevel(skillData.level, skillData.progress)}`
   }
-} satisfies ChatCommandHandler
 
-async function getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
-  const selectedProfile = await hypixelApi
-    .getSkyblockProfiles(uuid, { raw: true })
-    .then((response) => response.profiles.find((profile) => profile.selected)?.cute_name)
-  assert(selectedProfile)
+  async getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
+    const selectedProfile = await hypixelApi
+      .getSkyblockProfiles(uuid, { raw: true })
+      .then((response) => response.profiles.find((profile) => profile.selected)?.cute_name)
+    assert(selectedProfile)
 
-  const response = await hypixelApi
-    .getSkyblockProfiles(uuid)
-    .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile)?.me)
+    const response = await hypixelApi
+      .getSkyblockProfiles(uuid)
+      .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile)?.me)
 
-  assert(response)
-  return response
+    assert(response)
+    return response
+  }
 }

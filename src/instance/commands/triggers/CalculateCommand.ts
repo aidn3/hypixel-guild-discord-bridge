@@ -4,16 +4,19 @@
  Minecraft username: _aura
 */
 import { evalExpression } from '@hkh12/node-calc'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
-export default {
-  name: 'Calculate',
-  triggers: ['calculate', 'calc', 'c'],
-  description: 'A basic calculator',
-  example: `calc 1+1`,
-  enabled: true,
+export default class CalculateCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Calculate',
+      triggers: ['calculate', 'calc', 'c'],
+      description: 'A basic calculator',
+      example: `calc 1+1`
+    })
+  }
 
-  handler: function (context: ChatCommandContext): string {
+  handler(context: ChatCommandContext): string {
     if (context.args.length === 0) return `${context.username}, example: !calc 1 + 1`
 
     const expression = context.args
@@ -25,4 +28,4 @@ export default {
     const result = evalExpression(expression)
     return `${context.username}, answer: ${result.toLocaleString()}`
   }
-} satisfies ChatCommandHandler
+}

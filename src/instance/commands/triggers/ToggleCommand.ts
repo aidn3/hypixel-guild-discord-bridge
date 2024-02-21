@@ -1,20 +1,23 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { SCOPE } from '../../../common/ClientInstance'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
-export default {
-  name: 'Toggle',
-  triggers: ['toggle'],
-  description: 'Enable/disable commands',
-  example: `toggle 8balls`,
-  enabled: true,
+export default class ToggleCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Toggle',
+      triggers: ['toggle'],
+      description: 'Enable/disable commands',
+      example: `toggle 8balls`
+    })
+  }
 
-  handler: function (context: ChatCommandContext): string {
-    if (context.scope !== SCOPE.OFFICER || context.username !== context.clientInstance.config.adminUsername) {
+  handler(context: ChatCommandContext): string {
+    if (context.scope !== SCOPE.OFFICER || context.username !== context.adminUsername) {
       return `${context.username}, Command can only be executed in officer chat or by the bridge admin`
     }
 
     if (context.args.length <= 0) {
-      return `Example: ${context.clientInstance.config.commandPrefix}${this.example}`
+      return this.getExample(context.commandPrefix)
     }
 
     const query = context.args[0]
@@ -26,4 +29,4 @@ export default {
     command.enabled = !command.enabled
     return `Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`
   }
-} satisfies ChatCommandHandler
+}

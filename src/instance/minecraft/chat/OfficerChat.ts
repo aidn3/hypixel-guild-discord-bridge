@@ -18,8 +18,6 @@ export default {
         return
       if (context.clientInstance.app.clusterHelper.isMinecraftBot(username)) return
 
-      void context.commandsManager.handle(context.clientInstance, SCOPE.OFFICER, username, playerMessage)
-
       context.application.emit('chat', {
         localEvent: true,
         instanceName: context.instanceName,

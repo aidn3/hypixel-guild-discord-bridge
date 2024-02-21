@@ -6,19 +6,23 @@
 import * as assert from 'node:assert'
 import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import axios from 'axios'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
-export default {
-  name: 'Networth',
-  triggers: ['networth', 'net', 'nw'],
-  description: "Returns a calculation of a player's networth",
-  example: `nw %s`,
-  enabled: true,
-  handler: async function (context: ChatCommandContext): Promise<string> {
+export default class NetworthCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Networth',
+      triggers: ['networth', 'net', 'nw'],
+      description: "Returns a calculation of a player's networth",
+      example: `nw %s`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await context.clientInstance.app.mojangApi
+    const uuid = await context.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => {
@@ -29,14 +33,14 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const selectedProfile = await context.clientInstance.app.hypixelApi
+    const selectedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles.find((p) => p.selected))
     assert(selectedProfile)
 
     const museumData = await axios
       .get(
-        `https://api.hypixel.net/skyblock/museum?key=${context.clientInstance.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
+        `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
       )
       .then((response) => response.data as HypixelSkyblockMuseumRaw)
       .then((museum) => museum.members[uuid] as object)
@@ -49,4 +53,4 @@ export default {
 
     return `${givenUsername}'s networth: ${networthLocalized}`
   }
-} satisfies ChatCommandHandler
+}

@@ -19,8 +19,6 @@ export default {
       }
       if (context.application.punishedUsers.mutedTill(username) != undefined) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
-      // NOTE: Changed after ESLINT
-      void context.commandsManager.handle(context.clientInstance, SCOPE.PUBLIC, username, playerMessage)
 
       context.application.emit('chat', {
         localEvent: true,

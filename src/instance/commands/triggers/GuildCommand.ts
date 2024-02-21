@@ -4,18 +4,22 @@
  Minecraft username: _aura
 */
 
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
-export default {
-  name: 'Guild',
-  triggers: ['guild', 'guildOf', 'g'],
-  description: "Returns a player's guild, if they're in one",
-  example: `g %s`,
-  enabled: true,
-  handler: async function (context: ChatCommandContext): Promise<string> {
+export default class GuildCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Guild',
+      triggers: ['guild', 'guildOf', 'g'],
+      description: "Returns a player's guild, if they're in one",
+      example: `g %s`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await context.clientInstance.app.mojangApi
+    const uuid = await context.app.mojangApi
       .profileByUsername(givenUsername)
       .then((p) => p.id)
       .catch(() => {
@@ -26,7 +30,7 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const guild = await context.clientInstance.app.hypixelApi.getGuild('player', uuid, {}).catch(() => {
+    const guild = await context.app.hypixelApi.getGuild('player', uuid, {}).catch(() => {
       /* return undefined */
     })
     if (guild == undefined) return `${givenUsername} is not in a guild.`
@@ -34,4 +38,4 @@ export default {
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
     return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? 'unknown'}`
   }
-} satisfies ChatCommandHandler
+}

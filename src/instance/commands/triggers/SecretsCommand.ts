@@ -1,16 +1,20 @@
 import * as assert from 'node:assert'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
-export default {
-  name: 'Secrets',
-  triggers: ['secrets', 's', 'sec'],
-  description: 'Returns how many secrets a player has done',
-  example: `secrets %s`,
-  enabled: true,
-  handler: async function (context: ChatCommandContext): Promise<string> {
+export default class SecretsCommand extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Secrets',
+      triggers: ['secrets', 's', 'sec'],
+      description: 'Returns how many secrets a player has done',
+      example: `secrets %s`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await context.clientInstance.app.mojangApi
+    const uuid = await context.app.mojangApi
       .profileByUsername(givenUsername)
       .then((mojangProfile) => mojangProfile.id)
       .catch(() => {
@@ -21,10 +25,10 @@ export default {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const hypixelProfile = await context.clientInstance.app.hypixelApi.getPlayer(uuid)
+    const hypixelProfile = await context.app.hypixelApi.getPlayer(uuid)
     assert(hypixelProfile)
 
-    const dungeons = await context.clientInstance.app.hypixelApi
+    const dungeons = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles)
       .then((profiles) => profiles.find((p) => p.selected))
@@ -45,4 +49,4 @@ export default {
 
     return `${givenUsername}'s secrets: ${secrets.toLocaleString() || 0} Total ${averageSecrets} Average`
   }
-} satisfies ChatCommandHandler
+}

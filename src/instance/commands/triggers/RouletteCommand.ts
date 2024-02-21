@@ -1,4 +1,4 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from '../Common'
 
 const LossMessages = [
   '%s you got blasted!',
@@ -18,16 +18,19 @@ const WinMessages = [
   "%s you're crazy. Again again again!"
 ]
 
-let countSinceLastLose = 0
+export default class RouletteCommand extends ChatCommandHandler {
+  private countSinceLastLose = 0
 
-export default {
-  name: 'Roulette',
-  triggers: ['roulette', 'rr'],
-  description: 'Try your luck for a 15 minute mute',
-  example: `rr`,
-  enabled: true,
+  constructor() {
+    super({
+      name: 'Roulette',
+      triggers: ['roulette', 'rr'],
+      description: 'Try your luck for a 15 minute mute',
+      example: `rr`
+    })
+  }
 
-  handler: async function (context: ChatCommandContext): Promise<string> {
+  handler(context: ChatCommandContext): string {
     // Default behaviour which is just "1/6 chance" is too unreliable
     // Some even managed to reach 24 win streak.
     // This will increase the chance of losing and cap the win streak as well
@@ -38,26 +41,26 @@ export default {
 
     let currentChance = chance
 
-    if (countSinceLastLose > increasedLoseChanceAfter) {
+    if (this.countSinceLastLose > increasedLoseChanceAfter) {
       // This function has a starting point of (0,0) and goes to (inf,1)
       // with an increasingly faster slope with every step
-      currentChance += -(1 / ((countSinceLastLose - increasedLoseChanceAfter) / 24 + 1)) + 1
+      currentChance += -(1 / ((this.countSinceLastLose - increasedLoseChanceAfter) / 24 + 1)) + 1
     }
-    if (countSinceLastLose >= guaranteedLoseOn) {
+    if (this.countSinceLastLose >= guaranteedLoseOn) {
       currentChance = 1
     }
 
     if (Math.random() < currentChance) {
-      countSinceLastLose = 0
+      this.countSinceLastLose = 0
 
-      await context.clientInstance.send(`/g mute ${context.username} 15m`)
-      context.clientInstance.app.punishedUsers.mute(context.username, 900)
+      context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
+      context.app.punishedUsers.mute(context.username, 900)
 
       return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)
     } else {
-      countSinceLastLose++
+      this.countSinceLastLose++
     }
 
     return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', context.username)
   }
-} satisfies ChatCommandHandler
+}

@@ -5,7 +5,6 @@ import EventHandler from '../../common/EventHandler'
 import { LOCATION } from '../../common/ClientInstance'
 import MinecraftInstance from './MinecraftInstance'
 import { MinecraftChatMessage } from './common/ChatInterface'
-import { CommandsManager } from './CommandsManager'
 
 import BlockChat from './chat/BlockChat'
 import DemoteChat from './chat/DemoteChat'
@@ -25,12 +24,10 @@ import RequestChat from './chat/RequestChat'
 import UnmuteChat from './chat/UnmuteChat'
 
 export default class ChatManager extends EventHandler<MinecraftInstance> {
-  private readonly commandsManager: CommandsManager
   private readonly chatModules: MinecraftChatMessage[]
 
   constructor(clientInstance: MinecraftInstance) {
     super(clientInstance)
-    this.commandsManager = new CommandsManager(clientInstance)
     this.chatModules = [
       BlockChat,
       DemoteChat,
@@ -103,8 +100,6 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
 
       this.onMessage(resultMessage.toString())
     })
-
-    this.commandsManager.registerEvents()
   }
 
   private onMessage(message: string): void {
@@ -113,7 +108,6 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
         application: this.clientInstance.app,
         clientInstance: this.clientInstance,
         instanceName: this.clientInstance.instanceName,
-        commandsManager: this.commandsManager,
         message
       })
     }
