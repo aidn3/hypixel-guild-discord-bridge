@@ -1,5 +1,5 @@
-import Application from '../../Application'
-import { InstanceType, ChannelType } from '../../common/ApplicationEvent'
+import Application from '../../../Application'
+import { ChannelType, InstanceType } from '../../../common/ApplicationEvent'
 
 export abstract class ChatCommandHandler {
   readonly name: string
@@ -34,12 +34,4 @@ export interface ChatCommandContext {
   channelType: ChannelType
   username: string
   args: string[]
-}
-
-export interface CommandsConfig {
-  enabled: boolean
-
-  adminUsername: string
-  commandPrefix: string
-  disabledCommand: string[]
 }

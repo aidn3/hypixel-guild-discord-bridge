@@ -180,7 +180,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     if (roles == undefined) return false
 
     let highestPerm = Permission.ANYONE
-    if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds?.some((id) => role.id === id))) {
+    if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds.includes(role.id))) {
       highestPerm = Permission.HELPER
     }
     if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.includes(role.id))) {

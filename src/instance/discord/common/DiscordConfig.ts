@@ -1,16 +1,3 @@
-export interface DiscordConfig {
-  instanceName: string
-  key: string | null
-  adminId: string
-
-  publicChannelIds: string[]
-  officerChannelIds: string[]
-  helperRoleIds?: string[]
-  officerRoleIds: string[]
-
-  deleteTempEventAfter: number
-}
-
 export enum ColorScheme {
   GOOD = 0x00_8a_00,
   INFO = 0x84_84_00,

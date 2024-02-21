@@ -12,8 +12,8 @@ export default {
       const playerMessage = match[2].trim()
 
       if (
-        context.clientInstance.config.bridgePrefix.length > 0 &&
-        playerMessage.startsWith(context.clientInstance.config.bridgePrefix)
+        context.clientInstance.bridgePrefix.length > 0 &&
+        playerMessage.startsWith(context.clientInstance.bridgePrefix)
       ) {
         return
       }

@@ -12,9 +12,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     super(clientInstance)
 
     this.profanityFilter = new BadWords({
-      emptyList: !clientInstance.app.config.profanityFilter.enabled
+      emptyList: !clientInstance.app.config.profanity.enabled
     })
-    this.profanityFilter.removeWords(...clientInstance.app.config.profanityFilter.whitelisted)
+    this.profanityFilter.removeWords(...clientInstance.app.config.profanity.whitelisted)
   }
 
   registerEvents(): void {

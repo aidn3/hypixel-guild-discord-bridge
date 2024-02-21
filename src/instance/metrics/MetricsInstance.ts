@@ -4,9 +4,9 @@ import * as Client from 'prom-client'
 import Application from '../../Application'
 import { ClientInstance, Status } from '../../common/ClientInstance'
 import { InstanceType } from '../../common/ApplicationEvent'
+import { MetricsConfig } from '../../ApplicationConfig'
 import ApplicationMetrics from './ApplicationMetrics'
 import GuildOnlineMetrics from './GuildOnlineMetrics'
-import MetricsConfig from './common/MetricsConfig'
 
 export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly httpServer

@@ -12,11 +12,12 @@ import {
   InstanceType,
   ChannelType
 } from '../../common/ApplicationEvent'
+import { DiscordConfig } from '../../ApplicationConfig'
 import StateHandler from './handlers/StateHandler'
 
 import ChatManager from './ChatManager'
 import { CommandManager } from './CommandManager'
-import { ColorScheme, DiscordConfig } from './common/DiscordConfig'
+import { ColorScheme } from './common/DiscordConfig'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly handlers
