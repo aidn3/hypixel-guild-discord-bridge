@@ -1,56 +1,91 @@
-import { Server, Socket } from 'socket.io'
-import { ExtendedError } from 'socket.io/dist/namespace'
+import { createServer, Server, IncomingMessage } from 'node:http'
+import { Duplex } from 'node:stream'
+import { WebSocketServer } from 'ws'
 import { Logger } from 'log4js'
-import Application from '../../Application'
+import WebSocket = require('ws')
+import Application, { ApplicationEvents } from '../../Application'
 import { BaseEvent } from '../../common/ApplicationEvent'
 
 export default class ServerSocket {
-  private readonly server: Server
+  private readonly app: Application
+  private readonly logger
   private readonly key: string
 
+  private readonly socketServer: WebSocketServer
+  private readonly httpServer: Server
+
   constructor(app: Application, logger: Logger, port: number, key: string) {
+    this.app = app
+    this.logger = logger
     this.key = key
-    this.server = new Server({ transports: ['websocket'] })
-    this.server.listen(port)
-    this.server.use((socket: Socket, next: (error?: ExtendedError | undefined) => void) => {
-      if (socket.handshake.auth.key === this.key) {
-        next()
-        return
-      }
 
-      logger.warn('Socket Server has received' + ` an authorized connection request from socket ${socket.id}.`)
-      next(new Error('invalid key'))
+    this.socketServer = new WebSocketServer({ noServer: true })
+    this.socketServer.on('connection', (socket) => {
+      this.handleConnection(socket)
     })
 
-    app.on('*', (name, ...arguments_) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const event: BaseEvent = arguments_[0] as BaseEvent
+    this.httpServer = createServer()
+    this.httpServer.on('upgrade', (request, socket, head) => {
+      this.handleConnection1(request, socket, head)
+    })
+    this.httpServer.listen(port)
+
+    app.on('*', (name, event) => {
       if (event.localEvent) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.server.emit(name, ...arguments_)
+        for (const client of this.socketServer.clients) {
+          client.send(
+            JSON.stringify({
+              name: name,
+              data: event
+            } satisfies WebsocketPacket)
+          )
+        }
       }
     })
+  }
 
-    this.server.on('connection', (socket) => {
-      logger.debug('New Socket connection.')
-      app.broadcastLocalInstances()
+  private handleConnection1(request: IncomingMessage, socket: Duplex, head: Buffer): void {
+    if (request.headers[AuthenticationHeader] !== this.key) {
+      this.logger.warn('Socket Server has received' + ` an unauthorized connection request`)
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+      socket.destroy()
+      return
+    }
 
-      socket.onAny((name, ...arguments_) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const event: BaseEvent = arguments_[0]
-        event.localEvent = false
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        app.emit(name, ...arguments_)
+    this.socketServer.handleUpgrade(request, socket, head, (ws) => {
+      this.socketServer.emit('connection', ws, request)
+    })
+  }
 
-        for (const [id, s] of this.server.sockets.sockets.entries()) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          if (id !== socket.id) s.emit(name, ...arguments_)
-        }
-      })
+  private handleConnection(socket: WebSocket): void {
+    socket.on('error', (error) => {
+      this.logger.error(error)
+    })
+
+    this.logger.debug('New Socket connection.')
+    this.app.broadcastLocalInstances()
+
+    socket.on('message', (rawData) => {
+      const packet = JSON.parse(rawData as unknown as string) as WebsocketPacket
+      packet.data.localEvent = false
+      // @ts-expect-error packet.data is a safe type here
+      this.app.emit(packet.name as keyof ApplicationEvents, packet.data)
+
+      for (const clientEntry of this.socketServer.clients) {
+        if (clientEntry !== socket) clientEntry.send(rawData)
+      }
     })
   }
 
   public shutdown(): void {
-    this.server.close()
+    this.httpServer.close()
+    this.socketServer.close()
   }
 }
+
+export interface WebsocketPacket {
+  name: string
+  data: BaseEvent
+}
+
+export const AuthenticationHeader = 'authentication-header'

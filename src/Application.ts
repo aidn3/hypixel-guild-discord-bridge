@@ -18,7 +18,8 @@ import {
   MinecraftSelfBroadcast,
   MinecraftSendChat,
   ShutdownSignal,
-  InstanceType
+  InstanceType,
+  BaseEvent
 } from './common/ApplicationEvent'
 import { ClientInstance, INTERNAL_INSTANCE_PREFIX } from './common/ClientInstance'
 import { PluginInterface } from './common/Plugins'
@@ -170,10 +171,10 @@ function emitAll(emitter: Events): void {
 export interface ApplicationEvents {
   /**
    * Receive all events
-   * @param event event name
-   * @param args event arguments
+   * @param name event name
+   * @param event event object
    */
-  '*': (event: string, ...arguments_: unknown[]) => void
+  '*': <T extends BaseEvent>(name: string, event: T) => void
 
   /**
    * User sending messages

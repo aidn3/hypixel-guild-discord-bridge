@@ -4,6 +4,8 @@ import * as packageJson from './package.json'
 import Application from './src/Application'
 import { shutdownApplication } from './src/util/SharedUtil'
 import { loadApplicationConfig } from './src/ConfigurationParser'
+import { ChannelType, InstanceType } from './src/common/ApplicationEvent'
+import { INTERNAL_INSTANCE_PREFIX } from './src/common/ClientInstance'
 
 console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
@@ -26,14 +28,26 @@ if (process.argv.includes('test-run')) {
 const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
-app.on('*', (name, ...arguments_) => {
-  logger.log(`[${name}] ${JSON.stringify(arguments_)}`)
+app.on('*', (name, event) => {
+  logger.log(`[${name}] ${JSON.stringify(event)}`)
 })
 
 app
   .sendConnectSignal()
   .then(() => {
     logger.info('App is connected')
+    setInterval(() => {
+      app.emit('chat', {
+        channelType: ChannelType.OFFICER,
+        channelId: undefined,
+        instanceName: INTERNAL_INSTANCE_PREFIX + InstanceType.DISCORD,
+        instanceType: InstanceType.DISCORD,
+        localEvent: true,
+        message: `hi there ${Math.random()}`,
+        username: 'aidn5',
+        replyUsername: undefined
+      })
+    }, 5000)
   })
   .catch((error): void => {
     logger.fatal(error)
