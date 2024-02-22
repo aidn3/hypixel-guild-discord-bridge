@@ -71,11 +71,4 @@ export default class ClusterHelper {
     }
     collection.add(instanceName)
   }
-
-  /**
-   * @deprecated
-   */
-  getHypixelApiKey(): string {
-    return this.app.hypixelApi.key
-  }
 }
