@@ -45,7 +45,7 @@ commands:
   enabled: true
   # In-game USERNAME of the user who will have ADMIN permission
   adminUsername: 'Steve'
-  # change the prefix command in-game commands in guild public chat
+  # change the prefix for chat command
   commandPrefix: '!'
   disabledCommand: ['somecommand']
 
