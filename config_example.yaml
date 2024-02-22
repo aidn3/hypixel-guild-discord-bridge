@@ -77,7 +77,7 @@ socket:
   # Key used like a password.
   key: 'SECRET-KEY'
   # IP address or URL to connect to the server as the Client
-  uri: 'localhost:6090'
+  uri: 'ws://localhost:6090'
   # type could either be "client" or "server"
   # Server: The main application core that runs everything and control other nodes
   # Client: A node with single connection to main application
