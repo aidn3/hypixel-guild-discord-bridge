@@ -1,6 +1,7 @@
 import * as http from 'node:http'
 import * as url from 'node:url'
 import * as Client from 'prom-client'
+import { HttpStatusCode } from 'axios'
 import Application from '../../Application'
 import { ClientInstance, Status } from '../../common/ClientInstance'
 import { InstanceType } from '../../common/ApplicationEvent'
@@ -40,8 +41,12 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }, config.interval * 1000)
 
     this.httpServer = http.createServer((request, response) => {
-      // TODO: handle other paths and close the connection
-      if (request.url == undefined) return
+      if (request.url == undefined) {
+        response.writeHead(HttpStatusCode.NotFound)
+        response.end()
+        return
+      }
+
       const route = url.parse(request.url).pathname
       if (route === '/metrics') {
         this.logger.debug('Metrics scrap is called on /metrics')
@@ -49,11 +54,15 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
 
         void (async () => {
           response.end(await this.register.metrics())
-        })()
-      }
-      if (route === '/ping') {
+        })().catch(() => {
+          response.end()
+        })
+      } else if (route === '/ping') {
         this.logger.debug('Ping recieved')
-        response.writeHead(200)
+        response.writeHead(HttpStatusCode.Ok)
+        response.end()
+      } else {
+        response.writeHead(HttpStatusCode.NotFound)
         response.end()
       }
     })
