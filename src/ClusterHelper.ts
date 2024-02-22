@@ -34,12 +34,6 @@ export default class ClusterHelper {
     })
   }
 
-  getMinecraftBotsUuid(): string[] {
-    const uuids: string[] = []
-    for (const [, v] of this.minecraftBots) uuids.push(v.uuid)
-    return uuids
-  }
-
   getInstancesNames(location: InstanceType): string[] {
     const instanceNames = this.instancesNames.get(location)
     if (instanceNames == undefined) return []
