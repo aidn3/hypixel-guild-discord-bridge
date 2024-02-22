@@ -1,5 +1,5 @@
 general:
-  # Get Hypixel API by logging in-game and do `/api new`
+  # Get Hypixel API key by creating one via dashboard.hypixel.net
   hypixelApiKey: '55adcfd6-abcd-477d-1234-12341234123a'
 
 discord:
