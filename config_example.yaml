@@ -10,7 +10,7 @@ discord:
   adminId: '730667783180493755'
   # Show Chat and public events in this channel id
   publicChannelIds: ['876718702164050860', 'another_channel']
-  # Show Chat and public events in this channel id
+  # Show Officer Chat and events in this channel id
   officerChannelIds: ['841257267059646432', 'another_channel']
   # Discord ID of the role who will have HELPER permission
   helperRoleIds: ['803266248652835111', 'another_role']
