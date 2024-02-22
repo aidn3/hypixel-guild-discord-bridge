@@ -1,7 +1,7 @@
 # hypixel-guild-discord-bridge
 
 <p>
-  <img src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
+  <img alt="A badge displaying the number of messages being sent via the project" src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
   <a href="https://discord.gg/ej7tQHPF8y"><img src="https://img.shields.io/discord/1002575659694043206?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 </p>
 Service connects multiple guilds and discord server together  
@@ -19,7 +19,7 @@ offering quality user experience while keeping it simple
   - [Permissions](#Permissions)
   - [Supported Discord Commands](#supported-discord-commands)
   - [Supported Events](#supported-events)
-  - [Supported In-game Commands](#supported-ingame-commands)
+  - [Supported Chat Commands](#supported-chat-commands)
   - [How to execute commands](#how-to-execute-commands)
 - [Metrics](#metrics)
   - [Available Metrics](#available-metrics)
@@ -41,8 +41,7 @@ offering quality user experience while keeping it simple
 
 - Connect multiple guilds chats together
 - Bind hypixel guilds chats to discord channels
-- Send and receive Chat from other guilds/discord servers via Webhooks
-- Supports Public and Officer Chat
+- Supports Public and Officer and Private Chat
 - Supports in-game moderation commands from discord
 - Share events with discord such as online/offline/join/leave/mute notification/etc.
 - Allows executing commands
@@ -83,63 +82,46 @@ offering quality user experience while keeping it simple
 | -------------- | ------------------------------------------------------------------------ | ------------------ |
 | Online/Offline | Member logging in/off                                                    | Anyone             |
 | Join/Leave     | Member joins/leaves the guild                                            | Anyone             |
+| Promote/Demote | Member promoted/demoted in the guild                                     | Anyone             |
 | Request        | Member requesting to join the guild                                      | Anyone             |
+| Quest          | Guild Quest milestone reached                                            | Anyone             |
 | Repeat         | Warn about "can't repeat message" <br/>when writing from discord channel | Anyone             |
 | Block          | Warn about discord user saying something that breaks Hypixel rules       | Anyone             |
 | Kick           | Notify when someone is kicked from the guild                             | Public             |
 | Mute / Unmute  | Notify when someone gets muted in the guild                              | Helper             |
 
-### Supported Ingame Commands
+### Supported Chat Commands
+
+Those commands can be executed from any chat channel the bridge can see.
+This includes Guild/Officer chat as well as private `/msg` and Direct Messaging channels.
 
 | Command    | Description                                     | Permission |
 | ---------- | ----------------------------------------------- | ---------- |
-| !explain   | Explain what the bridge does and how it works   | Anyone     |
-| !fact      | Give a random fun fact about the guild members  | Anyone     |
 | !calculate | Calculate a math expression: `!calculate 1+2*3` | Anyone     |
+| !catacomb  | Get a player's Catacomb and class level         | Anyone     |
 | !8ball     | Replica of **8 ball**.`!8ball Will I win?`      | Anyone     |
-| !iq        | Give a random IQ number to the guild member     | Anyone     |
-| !weight    | Calculate **Senither Weights** of players       | Anyone     |
-| !networth  | Calculate the in-game networth of players       | Anyone     |
+| !explain   | Explain what the bridge does and how it works   | Anyone     |
 | !guild     | Give a summary of the guild for a given user    | Anyone     |
-| !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
-| !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
+| !help      | Shows a command usage `help runs`               | Anyone     |
+| !iq        | Give a random IQ number to the guild member     | Anyone     |
 | !kuudra    | Get a player's kuudra completions `!kuudra hot` | Anyone     |
-| !skill     | Returns player's skill level `!skill mining`    | Anyone     |
+| !level     | Get a player's skyblock level                   | Anyone     |
+| !networth  | Calculate the in-game networth of players       | Anyone     |
+| !override  | Runs a command directly `!overide /guild party` | Anyone     |
+| !rps       | Play rock paper scissors `!rps rock`            | Anyone     |
+| !roulette  | Has a 1 in 6 chance of muting a member          | Anyone     |
 | !runs      | Returns dungeon floor completions `!runs m7`    | Anyone     |
 | !secrets   | Returns a player's total dungeon secrets        | Anyone     |
+| !skill     | Returns player's skill level `!skill mining`    | Anyone     |
 | !slayer    | Returns a player's slayer stats `!slayer wolf`  | Anyone     |
+| !toggle    | Enable/disable commands `!toggle 8balls`        | Anyone     |
+| !weight    | Calculate **Senither Weights** of players       | Anyone     |
 
 ### How to execute commands
 
 **Note: Only the one person who holds administrator permission can execute command!**  
-From In-game: `/msg username /guild party`  
+From In-game: `/gc !override /guild party`  
 From Discord: `/override /guild party`
-
----
-
-## Webhook
-
-"Webhooks can send messages to a text channel without having to log in as a bot."  
-It is used if the targeted community isn't within the admins' jurisdiction.  
-Used to avoid giving any account login information (e.g. password, tokens, etc.) or running the cluster in one server.
-
-### Receive Messages
-
-To receive messages, you need to
-
-- Create a **Discord webhook** in the used **guild public chat channel**
-- Register the **webhook id** in `config.yaml` (messages will be filtered otherwise)
-- Give the FULL **webhook id** to the targeted community to send messages through
-
-### Send Messages
-
-- Receive the **full webhook url**
-- Register it in `config.yaml` (messages won't be sent over otherwise)
-
-### Webhook Best Practice
-
-It is best to exchange both send and receive keys and set up a two-way road for both community.  
-`config.yaml` Supports name for each community.
 
 ---
 
@@ -165,8 +147,6 @@ prefix `guild_bridge_`. It can be changed in `config.yaml` under `metrics`.
 | `PREFIX_guild_members_online` | Guild current online members | In-game interval execution of `/guild list`             | `name`: Guild name                                                                                                                              |
 
 ### Metrics Config
-
-All metrics config are in `./config/metrics-config.json`.
 
 In-game interval commands execution for metrics are **disabled by default**.
 Automatically sending commands non-stop to Hypixel might get the client banned for "botting".
@@ -209,7 +189,7 @@ guild_bridge_guild_members_online
 
 ### Prerequisites
 
-- [Nodejs version 1.16 or later](https://nodejs.dev/download)
+- [Nodejs version 1.18 or later](https://nodejs.dev/download)
 - [npm](https://nodejs.org/en/download/) (usually installed by default with `Nodejs`)
 - Minecraft Alt Account
 - (Optional) [Git](https://git-scm.com/downloads)
@@ -229,7 +209,7 @@ directly without any revisions. (Updating the service will be difficult)
 
 - Explore the project files and duplicate `.config_example.yaml` file into `config.yaml`
 - Open `config.yaml` and fill the information (Security: `config.yaml` file is like a password. Keep it safe!)
-- In `config.yaml` fill out `general/hypixelApiKey` and `discord` and `minecraft/instances`
+- In `config.yaml` fill out `general.hypixelApiKey` and `discord` and `minecraft.instances`
 - (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
 
 ### Install
@@ -285,8 +265,6 @@ All configurations will be in `config.yaml` under `socket` section.
 - Choose a secure password in config and set it under `key`. (Security: Anyone can hijack the bridge if not set to a
   secure one)
 - Choose which node to become the "Server" and set it under config `type`
-- Name each node under config `instanceName` (Warning: Duplicate names might result in race condition or other odd
-  behaviors)
 - Set the config `uri` to the server node socket to connect to
 - Start all nodes
 
@@ -294,6 +272,6 @@ All configurations will be in `config.yaml` under `socket` section.
 
 ## Credits
 
-- The Project is a duplicate
-  of [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- The Project is inspired
+  by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
 - Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches
