@@ -1,46 +1,73 @@
-import { io, Socket } from 'socket.io-client'
 import { Logger } from 'log4js'
-import Application from '../../Application'
-import { BaseEvent } from '../../common/ApplicationEvent'
+import WebSocket = require('ws')
+import Application, { ApplicationEvents } from '../../Application'
+import { AuthenticationHeader, WebsocketPacket } from './ServerSocket'
 
 export default class ClientSocket {
-  private readonly client: Socket
+  private readonly app: Application
+  private readonly logger
+  private readonly uri: string
+  private readonly key: string
+
+  private client: WebSocket | undefined
+  private stopped = false
 
   constructor(app: Application, logger: Logger, uri: string, key: string) {
-    this.client = io(uri, {
-      transports: ['websocket'],
-      auth: { key }
-    })
+    this.app = app
+    this.logger = logger
+    this.uri = uri
+    this.key = key
 
-    this.client.onAny((name, ...arguments_) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const event: BaseEvent = arguments_[0]
-      event.localEvent = false
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      app.emit(name, ...arguments_)
-    })
-    app.on('*', (name, ...arguments_) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-      const event: BaseEvent = arguments_[0] as BaseEvent
-      if (event.localEvent) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.client.emit(name, ...arguments_)
+    app.on('*', (name, event) => {
+      if (event.localEvent && this.client) {
+        this.client.send(
+          JSON.stringify({
+            name: name,
+            data: event
+          } satisfies WebsocketPacket)
+        )
       }
     })
-    this.client.on('connect', () => {
-      logger.debug('Client socket connected.')
-      app.broadcastLocalInstances()
+
+    this.createClient()
+  }
+
+  private createClient(): void {
+    if (this.stopped) {
+      this.logger.warn('Trying to create a socket client when the stopped flag is set. Returning')
+      return
+    }
+
+    const headers: Record<string, string> = {}
+    headers[AuthenticationHeader] = this.key
+    const client = new WebSocket(this.uri, { headers: headers })
+    this.client = client
+
+    client.on('open', () => {
+      this.logger.debug('Client socket connected.')
+      this.app.broadcastLocalInstances()
     })
-    this.client.on('connect_error', (error) => {
-      logger.error('Socket Client encountered an error while connecting to server.')
-      logger.error(error)
+    client.on('error', (error) => {
+      this.logger.error('Socket encountered error: ', error.message, 'Closing socket')
+      client.close()
     })
-    this.client.on('disconnect', (reason) => {
-      logger.warn(`Socket Client has disconnected: ${reason}`)
+    client.on('close', (code, reason) => {
+      this.logger.warn(`Socket Client has disconnected: ${code}, ${reason.toString()}`)
+      this.logger.log('Socket is closed. Reconnect will be attempted in 10 second.')
+      setTimeout(() => {
+        this.createClient()
+      }, 10_000)
+    })
+
+    client.on('message', (rawData) => {
+      const packet = JSON.parse(rawData as unknown as string) as WebsocketPacket
+      packet.data.localEvent = false
+      // @ts-expect-error packet.data is a safe type here
+      this.app.emit(packet.name as keyof ApplicationEvents, packet.data)
     })
   }
 
   public shutdown(): void {
-    this.client.close()
+    this.client?.close()
   }
 }
