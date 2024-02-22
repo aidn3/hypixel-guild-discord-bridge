@@ -19,7 +19,7 @@ offering quality user experience while keeping it simple
   - [Permissions](#Permissions)
   - [Supported Discord Commands](#supported-discord-commands)
   - [Supported Events](#supported-events)
-  - [Supported In-game Commands](#supported-ingame-commands)
+  - [Supported Chat Commands](#supported-chat-commands)
   - [How to execute commands](#how-to-execute-commands)
 - [Metrics](#metrics)
   - [Available Metrics](#available-metrics)
