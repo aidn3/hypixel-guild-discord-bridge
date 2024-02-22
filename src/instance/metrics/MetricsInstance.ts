@@ -58,7 +58,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
           response.end()
         })
       } else if (route === '/ping') {
-        this.logger.debug('Ping recieved')
+        this.logger.debug('Ping received')
         response.writeHead(HttpStatusCode.Ok)
         response.end()
       } else {
