@@ -26,6 +26,7 @@ minecraft:
   bridgePrefix: '.'
   # Minecraft account details
   instances:
+    # instanceName displayed on discord side
     - instanceName: 'Good-Name'
       email: 'email@example.com'
       # This will only be used when initiating connection to minecraft server
