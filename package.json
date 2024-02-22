@@ -36,11 +36,10 @@
     "prismarine-registry": "^1.7.0",
     "prom-client": "^15.1.0",
     "skyhelper-networth": "^1.18.4",
-    "socket.io": "^4.5.4",
-    "socket.io-client": "^4.5.1",
     "socks": "^2.7.1",
     "tiny-typed-emitter": "^2.1.0",
     "ts-interface-checker": "^1.0.2",
+    "ws": "^8.16.0",
     "yaml": "^2.2.2"
   },
   "devDependencies": {
@@ -55,8 +54,11 @@
     "eslint-plugin-unicorn": "^51.0.1",
     "prettier": "^3.0.3",
     "prismarine-nbt": "^2.5.0",
+    "ts-interface-builder": "^0.3.3",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2",
-    "ts-interface-builder": "^0.3.3"
+    "typescript": "^5.2.2"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8"
   }
 }
