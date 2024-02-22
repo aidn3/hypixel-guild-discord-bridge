@@ -63,7 +63,7 @@ offering quality user experience while keeping it simple
 ### Supported Discord Commands
 
 | Command                             | Description                                                | Permission |
-|-------------------------------------|------------------------------------------------------------|------------|
+| ----------------------------------- | ---------------------------------------------------------- | ---------- |
 | `/ping`                             | Show Discord response latency                              | Anyone     |
 | `/list`                             | List all online members and their current game-mode        | Anyone     |
 | `/connectivity`                     | Send an echo to all Minecraft instances checking if online | Anyone     |
