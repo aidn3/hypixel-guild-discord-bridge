@@ -78,7 +78,7 @@ offering quality user experience while keeping it simple
 ### Supported Events
 
 | **Event**      | **Description**                                                          | **Who can see it** |
-|----------------|--------------------------------------------------------------------------| ------------------ |
+| -------------- | ------------------------------------------------------------------------ | ------------------ |
 | Online/Offline | Member logging in/off                                                    | Anyone             |
 | Join/Leave     | Member joins/leaves the guild                                            | Anyone             |
 | Promote/Demote | Member promoted/demoted in the guild                                     | Anyone             |
@@ -90,11 +90,12 @@ offering quality user experience while keeping it simple
 | Mute / Unmute  | Notify when someone gets muted in the guild                              | Helper             |
 
 ### Supported Chat Commands
-Those commands can be executed from any chat channel the bridge can see. 
+
+Those commands can be executed from any chat channel the bridge can see.
 This includes Guild/Officer chat as well as private `/msg` and Direct Messaging channels.
 
 | Command    | Description                                     | Permission |
-|------------|-------------------------------------------------|------------|
+| ---------- | ----------------------------------------------- | ---------- |
 | !calculate | Calculate a math expression: `!calculate 1+2*3` | Anyone     |
 | !catacomb  | Get a player's Catacomb and class level         | Anyone     |
 | !8ball     | Replica of **8 ball**.`!8ball Will I win?`      | Anyone     |
