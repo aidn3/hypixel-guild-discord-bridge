@@ -74,7 +74,7 @@ metrics:
 # Used to connect multiple applications together to share all their events
 socket:
   enabled: false
-  # Key authorization. required.
+  # Key used like a password.
   key: 'SECRET-KEY'
   # IP address or URL to connect to the server as the Client
   uri: 'localhost:6090'
