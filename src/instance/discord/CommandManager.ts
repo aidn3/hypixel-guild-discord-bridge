@@ -31,6 +31,7 @@ import SetrankCommand from './commands/SetrankCommand'
 import RestartCommand from './commands/RestartCommand'
 import UnmuteCommand from './commands/UnmuteCommand'
 import ConnectivityCommand from './commands/ConnectivityCommand'
+import LogCommand from './commands/LogCommand'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
   private readonly commands = new Collection<string, DiscordCommandInterface>()
@@ -74,6 +75,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       InviteCommand,
       KickCommand,
       ListCommand,
+      LogCommand,
       MuteCommand,
       OverrideCommand,
       PingCommand,
