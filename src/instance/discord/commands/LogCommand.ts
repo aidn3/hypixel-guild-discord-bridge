@@ -49,7 +49,7 @@ export default {
     const currentPage: number = interaction.options.getNumber('page') ?? 1
     const chosenInstance: string | null = interaction.options.getString('instance')
     const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
-    const soleInstance = instancesNames.length === 0 || !!chosenInstance
+    const soleInstance = instancesNames.length <= 1 || !!chosenInstance
     const targetInstanceName = chosenInstance ?? (instancesNames.length > 0 ? instancesNames[0] : undefined)
 
     if (!targetInstanceName) {
