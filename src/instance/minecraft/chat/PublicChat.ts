@@ -1,5 +1,5 @@
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
-import { InstanceType, ChannelType } from '../../../common/ApplicationEvent'
+import { ChannelType, InstanceType, PunishmentType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -17,7 +17,7 @@ export default {
       ) {
         return
       }
-      if (context.application.punishedUsers.mutedTill(username) != undefined) return
+      if (context.application.punishedUsers.punished(username, PunishmentType.MUTE) != undefined) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
       context.application.emit('chat', {

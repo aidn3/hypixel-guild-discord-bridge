@@ -1,7 +1,7 @@
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { sufficeToTime } from '../../../util/SharedUtil'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { EventType, InstanceType, ChannelType } from '../../../common/ApplicationEvent'
+import { EventType, InstanceType, ChannelType, PunishmentType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -15,7 +15,16 @@ export default {
       const muteTime = Number(match[3])
       const muteSuffice = match[4]
 
-      context.application.punishedUsers.mute(target, muteTime * sufficeToTime(muteSuffice))
+      context.application.emit('punish', {
+        localEvent: true,
+        instanceType: InstanceType.MINECRAFT,
+        instanceName: context.instanceName,
+
+        name: target,
+        type: PunishmentType.MUTE,
+        till: Date.now() + muteTime * sufficeToTime(muteSuffice),
+        forgive: false
+      })
 
       context.application.emit('event', {
         localEvent: true,

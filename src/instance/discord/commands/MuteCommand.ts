@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
 import DiscordInstance from '../DiscordInstance'
 import { getDuration } from '../../../util/SharedUtil'
+import { InstanceType, PunishmentType } from '../../../common/ApplicationEvent'
 
 export default {
   getCommandBuilder: () =>
@@ -23,8 +24,17 @@ export default {
     const username: string = interaction.options.getString('username', true)
     const time: string = interaction.options.getString('time', true)
 
-    clientInstance.app.punishedUsers.mute(username, getDuration(time))
     clientInstance.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${username} ${time}`)
+    clientInstance.app.emit('punish', {
+      localEvent: true,
+      instanceType: InstanceType.DISCORD,
+      instanceName: clientInstance.instanceName,
+
+      name: username,
+      type: PunishmentType.MUTE,
+      till: Date.now() + getDuration(time),
+      forgive: false
+    })
 
     await interaction.editReply(`Command sent to mute ${username} for ${time}!`)
   }

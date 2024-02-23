@@ -2,7 +2,7 @@ import { Message } from 'discord.js'
 import * as BadWords from 'bad-words'
 import EventHandler from '../../common/EventHandler'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
-import { ChannelType, InstanceType } from '../../common/ApplicationEvent'
+import { ChannelType, InstanceType, PunishmentType } from '../../common/ApplicationEvent'
 import DiscordInstance from './DiscordInstance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
@@ -82,9 +82,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   async hasBeenMuted(message: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishedUsers = this.clientInstance.app.punishedUsers
     const mutedTill =
-      punishedUsers.mutedTill(discordName) ??
-      punishedUsers.mutedTill(readableName) ??
-      punishedUsers.mutedTill(message.author.id)
+      punishedUsers.punished(discordName, PunishmentType.MUTE) ??
+      punishedUsers.punished(readableName, PunishmentType.MUTE) ??
+      punishedUsers.punished(message.author.id, PunishmentType.MUTE)
 
     if (mutedTill != undefined) {
       await message.reply({
