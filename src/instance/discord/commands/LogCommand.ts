@@ -13,8 +13,8 @@ function formatEmbed(guildLog: GuildLog | undefined, targetInstance: string, sol
 
   if (!soleInstance) {
     result +=
-      `_Warning: More than one Minecraft instance detected._` +
-      `_Since no particular instance has been selected, ${targetInstance} will be used._` +
+      `_Warning: More than one Minecraft instance detected._\n` +
+      `_Since no particular instance has been selected, ${targetInstance} will be used._\n` +
       `_You can select an instance via the optional command argument._\n\n`
   }
 
@@ -58,8 +58,8 @@ export default {
           {
             title: 'Guild Log Audit',
             description:
-              `No Minecraft instance exist.` +
-              'This is a Minecraft command that displays ingame logs of a guild.' +
+              `No Minecraft instance exist.\n` +
+              'This is a Minecraft command that displays ingame logs of a guild.\n' +
               `Check the tutorial on how to add a Minecraft account.`,
             color: ColorScheme.INFO,
             footer: {
