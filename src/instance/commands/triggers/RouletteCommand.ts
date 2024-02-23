@@ -1,4 +1,5 @@
 import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import { InstanceType, PunishmentType } from '../../../common/ApplicationEvent'
 
 const LossMessages = [
   '%s you got blasted!',
@@ -54,7 +55,16 @@ export default class RouletteCommand extends ChatCommandHandler {
       this.countSinceLastLose = 0
 
       context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
-      context.app.punishedUsers.mute(context.username, 900)
+      context.app.emit('punish', {
+        localEvent: true,
+        instanceType: InstanceType.MINECRAFT,
+        instanceName: context.instanceName,
+
+        name: context.username,
+        type: PunishmentType.MUTE,
+        till: Date.now() + 900_000,
+        forgive: false
+      })
 
       return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)
     } else {

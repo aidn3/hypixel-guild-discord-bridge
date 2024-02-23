@@ -115,6 +115,18 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 
 export type InstanceSelfBroadcast = InformEvent
 
+export interface PunishmentEvent extends InformEvent {
+  type: PunishmentType
+  name: string
+  till: number
+  forgive: boolean
+}
+
+export enum PunishmentType {
+  MUTE,
+  BAN
+}
+
 export interface MinecraftSendChat extends SignalEvent {
   command: string
 }

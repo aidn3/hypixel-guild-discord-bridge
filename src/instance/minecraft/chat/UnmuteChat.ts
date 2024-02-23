@@ -1,6 +1,6 @@
 import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { EventType, InstanceType, ChannelType } from '../../../common/ApplicationEvent'
+import { EventType, InstanceType, ChannelType, PunishmentType } from '../../../common/ApplicationEvent'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -12,7 +12,16 @@ export default {
       const responsible = match[1]
       const target = match[2]
 
-      context.application.punishedUsers.unmute(target)
+      context.application.emit('punish', {
+        localEvent: true,
+        instanceType: InstanceType.MINECRAFT,
+        instanceName: context.instanceName,
+
+        name: target,
+        type: PunishmentType.MUTE,
+        till: 0,
+        forgive: true
+      })
 
       context.application.emit('event', {
         localEvent: true,

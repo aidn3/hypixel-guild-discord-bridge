@@ -19,7 +19,8 @@ import {
   MinecraftSendChat,
   ShutdownSignal,
   InstanceType,
-  BaseEvent
+  BaseEvent,
+  PunishmentEvent
 } from './common/ApplicationEvent'
 import { ClientInstance, INTERNAL_INSTANCE_PREFIX } from './common/ClientInstance'
 import { PluginInterface } from './common/Plugins'
@@ -54,7 +55,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       cacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishedUsers = new PunishedUsers()
+    this.punishedUsers = new PunishedUsers(this)
     this.clusterHelper = new ClusterHelper(this)
 
     let discordInstance: DiscordInstance | undefined
@@ -126,7 +127,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 
   async sendConnectSignal(): Promise<void> {
-    this.broadcastLocalInstances()
+    this.syncBroadcast()
 
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
@@ -144,15 +145,26 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
   }
 
-  public broadcastLocalInstances(): void {
+  public syncBroadcast(): void {
     this.logger.debug('Informing instances of each other')
-
     for (const instance of this.instances) {
       this.emit('selfBroadcast', {
         localEvent: true,
         instanceName: instance.instanceName,
         instanceType: instance.instanceType
       })
+    }
+
+    this.logger.debug('Broadcasting all Minecraft bots')
+    for (const minecraftBot of this.clusterHelper.getMinecraftBots()) {
+      minecraftBot.localEvent = true
+      this.emit('minecraftSelfBroadcast', minecraftBot)
+    }
+
+    this.logger.debug('Broadcasting all punishments')
+    for (const punishment of this.punishedUsers.allPunishments()) {
+      punishment.localEvent = true
+      this.emit('punish', punishment)
     }
   }
 }
@@ -188,21 +200,25 @@ export interface ApplicationEvents {
    * User executing a command
    */
   command: (event: CommandEvent) => void
+
   /**
    * Internal instance start/connect/disconnect/etc
    */
   instance: (event: InstanceEvent) => void
-
   /**
    * Broadcast instance to inform other applications nodes in cluster about its existence
    */
   selfBroadcast: (event: InstanceSelfBroadcast) => void
   /**
+   *  Broadcast any punishment to other instances. Such as mute, ban, etc.
+   */
+  punish: (event: PunishmentEvent) => void
+
+  /**
    * Command used to restart an instance.
    * Note: This is currently only registered in Minecraft instances
    */
   reconnectSignal: (event: ReconnectSignal) => void
-
   /**
    * Command used to shut down the bridge.
    * It will take some time for the bridge to shut down.
