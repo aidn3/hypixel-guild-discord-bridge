@@ -43,7 +43,13 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('log').setDescription('View guild activity logs'),
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .setName('log')
+      .setDescription('View guild activity logs')
+      .addNumberOption((option) =>
+        option.setName('page').setDescription('Page to view').setMinValue(1)
+      ) as SlashCommandBuilder,
   permission: Permission.HELPER,
   allowInstance: true,
 
