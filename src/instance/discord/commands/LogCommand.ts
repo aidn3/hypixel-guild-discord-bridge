@@ -7,7 +7,8 @@ import Application from '../../../Application'
 import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 import { DEFAULT_TIMEOUT, interactivePaging } from '../../../util/DiscordPager'
 
-function formatEmbed(guildLog: GuildLog | undefined, targetInstance: string, soleInstance: boolean): APIEmbed {
+const TITLE = 'Guild Log Audit'
+function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstance: boolean): APIEmbed {
   let result = ''
   let pageTitle = ''
 
@@ -19,18 +20,21 @@ function formatEmbed(guildLog: GuildLog | undefined, targetInstance: string, sol
   }
 
   result += `**${escapeDiscord(targetInstance)}**\n`
-  if (guildLog) {
-    pageTitle = ` (Page ${guildLog.page} of ${guildLog.total})`
-    for (const entry of guildLog.entries) {
+  if (chatResult.guildLog) {
+    pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
+    for (const entry of chatResult.guildLog.entries) {
       result += `- <t:${entry.time}>: ${entry.line}\n`
     }
   } else {
     result += `_Could not fetch information for ${targetInstance}._`
+    if (chatResult.error) {
+      result += `\n${escapeDiscord(chatResult.error)}`
+    }
   }
 
   return {
-    color: ColorScheme.DEFAULT,
-    title: `Guild Log Audit${pageTitle}`,
+    color: chatResult.guildLog ? ColorScheme.DEFAULT : ColorScheme.INFO,
+    title: `${TITLE}${pageTitle}`,
     description: result,
     footer: {
       text: DefaultCommandFooter
@@ -56,7 +60,7 @@ export default {
       await interaction.editReply({
         embeds: [
           {
-            title: 'Guild Log Audit',
+            title: TITLE,
             description:
               `No Minecraft instance exist.\n` +
               'This is a Minecraft command that displays ingame logs of a guild.\n' +
@@ -72,19 +76,25 @@ export default {
     }
 
     await interactivePaging(interaction, currentPage - 1, DEFAULT_TIMEOUT, async (requestedPage) => {
-      const guildLog = await getGuildLog(clientInstance.app, targetInstanceName, requestedPage + 1)
-      return { totalPages: guildLog?.total ?? 0, embed: formatEmbed(guildLog, targetInstanceName, soleInstance) }
+      const chatResult = await getGuildLog(clientInstance.app, targetInstanceName, requestedPage + 1)
+      return {
+        totalPages: chatResult.guildLog?.total ?? 0,
+        embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+      }
     })
   }
 } satisfies DiscordCommandInterface
 
-async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<GuildLog | undefined> {
-  let guildLog: GuildLog | undefined
+async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
+  const result: ChatResult = {}
   const regexLog = /-+\n\s+ (?:<<|) Guild Log \(Page (\d+) of (\d+)\) (?:>>|)\n\n([\W\w]+)\n-+/g
 
   const chatListener = function (event: MinecraftRawChatEvent): void {
     if (event.instanceName !== targetInstance || event.message.length === 0) return
 
+    if (event.message.startsWith('Your guild rank does not have permission to use this')) {
+      result.error = event.message.trim()
+    }
     const match = regexLog.exec(event.message)
     if (match != undefined) {
       const entries: GuildLogEntry[] = []
@@ -96,7 +106,7 @@ async function getGuildLog(app: Application, targetInstance: string, page: numbe
         })
       }
 
-      guildLog = {
+      result.guildLog = {
         page: Number(match[1]),
         total: Number(match[2]),
         entries: entries
@@ -109,9 +119,13 @@ async function getGuildLog(app: Application, targetInstance: string, page: numbe
   await new Promise((resolve) => setTimeout(resolve, 5000))
   app.removeListener('minecraftChat', chatListener)
 
-  return guildLog
+  return result
 }
 
+interface ChatResult {
+  error?: string
+  guildLog?: GuildLog
+}
 interface GuildLog {
   page: number
   total: number
