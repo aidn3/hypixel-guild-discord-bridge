@@ -127,7 +127,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 
   async sendConnectSignal(): Promise<void> {
-    this.broadcastLocalInstances()
+    this.syncBroadcast()
 
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
@@ -145,9 +145,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
   }
 
-  public broadcastLocalInstances(): void {
+  public syncBroadcast(): void {
     this.logger.debug('Informing instances of each other')
-
     for (const instance of this.instances) {
       this.emit('selfBroadcast', {
         localEvent: true,

@@ -63,7 +63,7 @@ export default class ServerSocket {
     })
 
     this.logger.debug('New Socket connection.')
-    this.app.broadcastLocalInstances()
+    this.app.syncBroadcast()
 
     socket.on('message', (rawData) => {
       const packet = JSON.parse(rawData as unknown as string) as WebsocketPacket

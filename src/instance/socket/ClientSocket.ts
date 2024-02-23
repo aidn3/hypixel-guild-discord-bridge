@@ -45,7 +45,7 @@ export default class ClientSocket {
 
     client.on('open', () => {
       this.logger.debug('Client socket connected.')
-      this.app.broadcastLocalInstances()
+      this.app.syncBroadcast()
     })
     client.on('error', (error) => {
       this.logger.error('Socket encountered error: ', error.message, 'Closing socket')
