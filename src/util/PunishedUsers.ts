@@ -1,31 +1,48 @@
+import { PunishmentEvent, PunishmentType } from '../common/ApplicationEvent'
+import Application from '../Application'
+
 export class PunishedUsers {
-  private muted: { name: string; till: number }[] = []
+  private punishments = new Map<PunishmentType, PunishmentEvent[]>()
 
-  mutedTill(name: string): number | undefined {
-    this.clean()
+  constructor(app: Application) {
+    app.on('punish', (event) => {
+      let allPunishments = this.punishments.get(event.type)
+      if (allPunishments === undefined) {
+        allPunishments = []
+        this.punishments.set(event.type, allPunishments)
+      }
 
-    const current = this.currentTime()
-    return this.muted.find((p) => p.name.toLowerCase() === name.toLowerCase() && p.till > current)?.till
+      this.handlePunishment(allPunishments, event)
+    })
   }
 
-  mute(name: string, time: number): void {
-    this.clean()
-    this.unmute(name)
+  punished(name: string, type: PunishmentType): number | undefined {
+    let allPunishments = this.punishments.get(type)
+    if (allPunishments === undefined) {
+      allPunishments = []
+      this.punishments.set(type, allPunishments)
+    }
 
-    const current = this.currentTime()
-    this.muted.push({ name, till: current + time })
+    const current = Date.now()
+    const punishment = allPunishments.find((p) => p.name.toLowerCase() === name.toLowerCase())
+
+    if (punishment && punishment.till > current) {
+      return punishment.till
+    }
+    return undefined
   }
 
-  unmute(name: string): void {
-    this.muted = this.muted.filter((p) => p.name.toLowerCase() !== name.toLowerCase())
-  }
+  private handlePunishment(allPunishments: PunishmentEvent[], newPunishment: PunishmentEvent): PunishmentEvent[] {
+    const current = Date.now()
 
-  private clean(): void {
-    const current = this.currentTime()
-    this.muted = this.muted.filter((p) => p.till > current)
-  }
+    allPunishments = allPunishments.filter(
+      (punishment) => punishment.name.toLowerCase() !== newPunishment.name.toLowerCase() && punishment.till < current
+    )
 
-  private currentTime(): number {
-    return Math.floor(Date.now() / 1000)
+    if (!newPunishment.forgive) {
+      allPunishments.push(newPunishment)
+    }
+
+    return allPunishments
   }
 }

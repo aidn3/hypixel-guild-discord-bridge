@@ -55,7 +55,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       cacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishedUsers = new PunishedUsers()
+    this.punishedUsers = new PunishedUsers(this)
     this.clusterHelper = new ClusterHelper(this)
 
     let discordInstance: DiscordInstance | undefined
