@@ -19,7 +19,8 @@ import {
   MinecraftSendChat,
   ShutdownSignal,
   InstanceType,
-  BaseEvent
+  BaseEvent,
+  PunishmentEvent
 } from './common/ApplicationEvent'
 import { ClientInstance, INTERNAL_INSTANCE_PREFIX } from './common/ClientInstance'
 import { PluginInterface } from './common/Plugins'
@@ -188,21 +189,25 @@ export interface ApplicationEvents {
    * User executing a command
    */
   command: (event: CommandEvent) => void
+
   /**
    * Internal instance start/connect/disconnect/etc
    */
   instance: (event: InstanceEvent) => void
-
   /**
    * Broadcast instance to inform other applications nodes in cluster about its existence
    */
   selfBroadcast: (event: InstanceSelfBroadcast) => void
   /**
+   *  Broadcast any punishment to other instances. Such as mute, ban, etc.
+   */
+  punish: (event: PunishmentEvent) => void
+
+  /**
    * Command used to restart an instance.
    * Note: This is currently only registered in Minecraft instances
    */
   reconnectSignal: (event: ReconnectSignal) => void
-
   /**
    * Command used to shut down the bridge.
    * It will take some time for the bridge to shut down.
