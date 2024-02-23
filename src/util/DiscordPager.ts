@@ -2,6 +2,7 @@ import {
   ActionRowBuilder,
   APIEmbed,
   ButtonBuilder,
+  ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
   Message,
@@ -14,13 +15,16 @@ enum Button {
   BACK
 }
 
-export async function pageMessage(
+export const DEFAULT_TIMEOUT = 60_000
+
+export async function interactivePaging(
   interaction: CommandInteraction,
-  pages: APIEmbed[],
-  duration = 60_000
+  currentPage = 0,
+  duration = DEFAULT_TIMEOUT,
+  fetch: (page: number) => Promise<FetchPageResult> | FetchPageResult
 ): Promise<Message> {
-  let currentPage = 0
   const channel: TextBasedChannel = interaction.channel as TextChannel
+  let lastUpdate = await fetch(currentPage)
 
   const nextInteraction = channel.createMessageComponentCollector({
     filter: (index) => index.customId === `${interaction.id}-${Button.NEXT}` && index.user.id === interaction.user.id,
@@ -31,37 +35,42 @@ export async function pageMessage(
     time: duration
   })
 
-  let lastResponse = pages[currentPage]
-  nextInteraction.on('collect', async (index) => {
-    currentPage++
-    lastResponse = pages[currentPage]
-
+  nextInteraction.on('collect', async (index: ButtonInteraction) => {
+    lastUpdate = await fetch(++currentPage)
     await index.update({
-      embeds: [lastResponse],
-      components: [createButtons(interaction.id, currentPage, pages.length)]
+      embeds: [lastUpdate.embed],
+      components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
     })
   })
-  backInteraction.on('collect', async (index) => {
-    currentPage--
-    lastResponse = pages[currentPage]
-
+  backInteraction.on('collect', async (index: ButtonInteraction) => {
+    lastUpdate = await fetch(--currentPage)
     await index.update({
-      embeds: [lastResponse],
-      components: [createButtons(interaction.id, currentPage, pages.length)]
+      embeds: [lastUpdate.embed],
+      components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
     })
   })
 
   nextInteraction.on('end', async () => {
     console.log('done collecting')
     await interaction.editReply({
-      embeds: [lastResponse],
+      embeds: [lastUpdate.embed],
       components: []
     })
   })
 
   return await interaction.editReply({
-    embeds: [lastResponse],
-    components: [createButtons(interaction.id, currentPage, pages.length)]
+    embeds: [lastUpdate.embed],
+    components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+  })
+}
+
+export async function pageMessage(
+  interaction: CommandInteraction,
+  pages: APIEmbed[],
+  duration = DEFAULT_TIMEOUT
+): Promise<Message> {
+  return await interactivePaging(interaction, 0, duration, (page) => {
+    return { embed: pages[page], totalPages: pages.length }
   })
 }
 
@@ -82,4 +91,9 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
         .setDisabled(currentPage + 1 >= totalPages)
     )
     .toJSON()
+}
+
+export interface FetchPageResult {
+  embed: APIEmbed
+  totalPages: number
 }
