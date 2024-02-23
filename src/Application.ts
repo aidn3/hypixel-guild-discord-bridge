@@ -154,6 +154,18 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         instanceType: instance.instanceType
       })
     }
+
+    this.logger.debug('Broadcasting all Minecraft bots')
+    for (const minecraftBot of this.clusterHelper.getMinecraftBots()) {
+      minecraftBot.localEvent = true
+      this.emit('minecraftSelfBroadcast', minecraftBot)
+    }
+
+    this.logger.debug('Broadcasting all punishments')
+    for (const punishment of this.punishedUsers.allPunishments()) {
+      punishment.localEvent = true
+      this.emit('punish', punishment)
+    }
   }
 }
 

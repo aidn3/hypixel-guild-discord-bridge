@@ -32,6 +32,17 @@ export class PunishedUsers {
     return undefined
   }
 
+  allPunishments(): PunishmentEvent[] {
+    const current = Date.now()
+    const result: PunishmentEvent[] = []
+
+    for (const [, events] of this.punishments) {
+      result.push(...events.filter((event) => event.till > current))
+    }
+
+    return result
+  }
+
   private handlePunishment(allPunishments: PunishmentEvent[], newPunishment: PunishmentEvent): PunishmentEvent[] {
     const current = Date.now()
 
