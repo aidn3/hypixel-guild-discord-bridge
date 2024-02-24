@@ -36,7 +36,7 @@ export async function interactivePaging(
   })
 
   nextInteraction.on('collect', async (index: ButtonInteraction) => {
-    await index.deferUpdate()
+    await index.deferReply()
     lastUpdate = await fetch(++currentPage)
     await index.editReply({
       embeds: [lastUpdate.embed],
@@ -44,7 +44,7 @@ export async function interactivePaging(
     })
   })
   backInteraction.on('collect', async (index: ButtonInteraction) => {
-    await index.deferUpdate()
+    await index.deferReply()
     lastUpdate = await fetch(--currentPage)
     await index.editReply({
       embeds: [lastUpdate.embed],
