@@ -93,40 +93,47 @@ export default {
 } satisfies DiscordCommandInterface
 
 async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
-  const result: ChatResult = {}
   const regexLog = /-+\n\s+ (?:<<|) Guild Log \(Page (\d+) of (\d+)\) (?:>>|)\n\n([\W\w]+)\n-+/g
+  return await new Promise((resolve) => {
+    const result: ChatResult = {}
 
-  const chatListener = function (event: MinecraftRawChatEvent): void {
-    if (event.instanceName !== targetInstance || event.message.length === 0) return
+    const timeoutId = setTimeout(() => {
+      app.removeListener('minecraftChat', chatListener)
+      resolve({})
+    }, 5000)
 
-    if (event.message.startsWith('Your guild rank does not have permission to use this')) {
-      result.error = event.message.trim()
-    }
-    const match = regexLog.exec(event.message)
-    if (match != undefined) {
-      const entries: GuildLogEntry[] = []
-      for (const entryRaw of match[3].trim().split('\n')) {
-        const entry = entryRaw.split(':')
-        entries.push({
-          time: Date.parse(entry[0] + ':' + entry[1]),
-          line: entry[2].trim()
-        })
+    const chatListener = function (event: MinecraftRawChatEvent): void {
+      if (event.instanceName !== targetInstance || event.message.length === 0) return
+
+      if (event.message.startsWith('Your guild rank does not have permission to use this')) {
+        result.error = event.message.trim()
       }
+      const match = regexLog.exec(event.message)
+      if (match != undefined) {
+        const entries: GuildLogEntry[] = []
+        for (const entryRaw of match[3].trim().split('\n')) {
+          const entry = entryRaw.split(':')
+          entries.push({
+            time: Date.parse(entry[0] + ':' + entry[1]),
+            line: entry[2].trim()
+          })
+        }
 
-      result.guildLog = {
-        page: Number(match[1]),
-        total: Number(match[2]),
-        entries: entries
-      } satisfies GuildLog
+        result.guildLog = {
+          page: Number(match[1]),
+          total: Number(match[2]),
+          entries: entries
+        } satisfies GuildLog
+
+        clearTimeout(timeoutId)
+        app.removeListener('minecraftChat', chatListener)
+        resolve(result)
+      }
     }
-  }
 
-  app.on('minecraftChat', chatListener)
-  app.clusterHelper.sendCommandToMinecraft(targetInstance, `/guild log ${page}`)
-  await new Promise((resolve) => setTimeout(resolve, 5000))
-  app.removeListener('minecraftChat', chatListener)
-
-  return result
+    app.on('minecraftChat', chatListener)
+    app.clusterHelper.sendCommandToMinecraft(targetInstance, `/guild log ${page}`)
+  })
 }
 
 interface ChatResult {
