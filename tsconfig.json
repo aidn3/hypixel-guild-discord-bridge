@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "outDir": "build",
     "resolveJsonModule": true,
-    "typeRoots": ["./src/type", "./node_modules/@types"],
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "skipLibCheck": true
   },
   "ts-node": {
