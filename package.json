@@ -23,7 +23,6 @@
     "@hkh12/node-calc": "^4.2.1",
     "axios": "^1.6.0",
     "bad-words": "^3.0.4",
-    "clean": "^4.0.2",
     "discord.js": "^14.7.1",
     "emoji-name-map": "^1.2.9",
     "hypixel-api-reborn": "^10.0.0",
