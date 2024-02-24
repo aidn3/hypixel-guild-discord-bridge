@@ -1,4 +1,4 @@
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import { Slayer } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 

@@ -1,4 +1,4 @@
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { Client, Status } from 'hypixel-api-reborn'
 import DiscordInstance from '../DiscordInstance'

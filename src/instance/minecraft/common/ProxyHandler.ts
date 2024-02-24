@@ -1,4 +1,4 @@
-import * as Http from 'node:http'
+import Http from 'node:http'
 import { SocksClient } from 'socks'
 import type { Client } from 'minecraft-protocol'
 import { Logger } from 'log4js'

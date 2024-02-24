@@ -1,5 +1,5 @@
-import * as assert from 'node:assert'
-import * as getMinecraftData from 'minecraft-data'
+import assert from 'node:assert'
+import getMinecraftData from 'minecraft-data'
 import { ChatMessage } from 'prismarine-chat'
 import EventHandler from '../../common/EventHandler'
 import { InstanceType } from '../../common/ApplicationEvent'

@@ -1,4 +1,4 @@
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import EventHandler from '../../../common/EventHandler'
 import MinecraftInstance from '../MinecraftInstance'
 

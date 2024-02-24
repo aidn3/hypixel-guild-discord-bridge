@@ -1,6 +1,6 @@
 import { configure } from 'log4js'
-import * as logConfig from './config/log4js-config.json'
-import * as packageJson from './package.json'
+import logConfig from './config/log4js-config.json'
+import packageJson from './package.json'
 import Application from './src/Application'
 import { shutdownApplication } from './src/util/SharedUtil'
 import { loadApplicationConfig } from './src/ConfigurationParser'

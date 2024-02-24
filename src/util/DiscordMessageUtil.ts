@@ -1,5 +1,5 @@
 import { Message, TextChannel } from 'discord.js'
-import * as emojisMap from 'emoji-name-map'
+import emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji(message: string): string {
   return message.replaceAll(/<:(\w+):\d{16,}>/g, (match) => {

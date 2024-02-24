@@ -3,7 +3,7 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import axios from 'axios'
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'

@@ -1,5 +1,5 @@
 import { Message } from 'discord.js'
-import * as BadWords from 'bad-words'
+import BadWords from 'bad-words'
 import EventHandler from '../../common/EventHandler'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
 import { ChannelType, InstanceType, PunishmentType } from '../../common/ApplicationEvent'

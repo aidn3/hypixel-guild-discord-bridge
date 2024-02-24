@@ -1,4 +1,4 @@
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 
 enum Catacombs {

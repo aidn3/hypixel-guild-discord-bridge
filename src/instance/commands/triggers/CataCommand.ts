@@ -1,4 +1,4 @@
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import { Client, SkyblockMember } from 'hypixel-api-reborn'
 import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 

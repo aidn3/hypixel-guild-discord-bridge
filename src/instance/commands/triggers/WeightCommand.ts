@@ -3,7 +3,7 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import * as assert from 'node:assert'
+import assert from 'node:assert'
 import axios from 'axios'
 import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
 

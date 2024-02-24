@@ -1,5 +1,5 @@
-import * as Events from 'node:events'
-import * as path from 'node:path'
+import Events from 'node:events'
+import path from 'node:path'
 import { TypedEmitter } from 'tiny-typed-emitter'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import { getLogger, Logger } from 'log4js'
