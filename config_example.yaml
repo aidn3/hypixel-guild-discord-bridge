@@ -86,6 +86,6 @@ socket:
   port: 6090
 
 plugins:
-  - './src/plugins/ExamplePlugin.ts'
-  - './src/plugins/LimboPlugin.ts'
-  - './src/plugins/ReactionPlugin.ts'
+  - './src/plugins/example-plugin.ts'
+  - './src/plugins/limbo-plugin.ts'
+  - './src/plugins/reaction-plugin.ts'
