@@ -1,7 +1,9 @@
-import { Logger } from 'log4js'
+import type { Logger } from 'log4js'
 import { WebSocket } from 'ws'
-import Application, { ApplicationEvents } from '../../Application'
-import { AuthenticationHeader, WebsocketPacket } from './ServerSocket'
+import type Application from '../../Application'
+import type { ApplicationEvents } from '../../Application'
+import type { WebsocketPacket } from './common'
+import { AuthenticationHeader } from './common'
 
 export default class ClientSocket {
   private readonly app: Application

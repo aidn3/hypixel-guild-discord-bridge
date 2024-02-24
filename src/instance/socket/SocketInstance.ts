@@ -1,7 +1,7 @@
 import { ClientInstance } from '../../common/ClientInstance'
-import Application from '../../Application'
+import type Application from '../../Application'
 import { InstanceType } from '../../common/ApplicationEvent'
-import { SocketConfig } from '../../ApplicationConfig'
+import type { SocketConfig } from '../../ApplicationConfig'
 import ServerSocket from './ServerSocket'
 import ClientSocket from './ClientSocket'
 

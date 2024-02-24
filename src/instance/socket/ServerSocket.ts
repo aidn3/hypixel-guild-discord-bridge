@@ -1,10 +1,14 @@
-import { createServer, Server, IncomingMessage } from 'node:http'
-import { Duplex } from 'node:stream'
-import { WebSocketServer, WebSocket } from 'ws'
-import { Logger } from 'log4js'
+import type { IncomingMessage, Server } from 'node:http'
+import { createServer } from 'node:http'
+import type { Duplex } from 'node:stream'
+import type { WebSocket } from 'ws'
+import { WebSocketServer } from 'ws'
+import type { Logger } from 'log4js'
 
-import Application, { ApplicationEvents } from '../../Application'
-import { BaseEvent } from '../../common/ApplicationEvent'
+import type Application from '../../Application'
+import type { ApplicationEvents } from '../../Application'
+import type { WebsocketPacket } from './common'
+import { AuthenticationHeader } from './common'
 
 export default class ServerSocket {
   private readonly app: Application
@@ -82,10 +86,3 @@ export default class ServerSocket {
     this.socketServer.close()
   }
 }
-
-export interface WebsocketPacket {
-  name: string
-  data: BaseEvent
-}
-
-export const AuthenticationHeader = 'authentication-header'
