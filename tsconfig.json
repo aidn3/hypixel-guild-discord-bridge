@@ -6,6 +6,7 @@
     "strict": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "outDir": "build",
     "resolveJsonModule": true,
     "typeRoots": ["./src/type", "./node_modules/@types"],
