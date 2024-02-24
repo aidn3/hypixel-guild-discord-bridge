@@ -93,7 +93,7 @@ export default {
 } satisfies DiscordCommandInterface
 
 async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
-  const regexLog = /-+\n\s+ (?:<<|) Guild Log \(Page (\d+) of (\d+)\) (?:>>|)\n\n([\W\w]+)\n-+/g
+  const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g
   return await new Promise((resolve) => {
     const result: ChatResult = {}
 
