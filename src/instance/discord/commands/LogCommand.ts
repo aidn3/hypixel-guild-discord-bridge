@@ -49,7 +49,7 @@ export default {
       .setName('log')
       .setDescription('View guild activity logs')
       .addNumberOption((option) =>
-        option.setName('page').setDescription('Page to view').setMinValue(1)
+        option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75)
       ) as SlashCommandBuilder,
   permission: Permission.HELPER,
   allowInstance: true,
