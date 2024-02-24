@@ -1,5 +1,5 @@
 import { Logger } from 'log4js'
-import WebSocket = require('ws')
+import { WebSocket } from 'ws'
 import Application, { ApplicationEvents } from '../../Application'
 import { AuthenticationHeader, WebsocketPacket } from './ServerSocket'
 

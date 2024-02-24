@@ -1,8 +1,8 @@
 import { createServer, Server, IncomingMessage } from 'node:http'
 import { Duplex } from 'node:stream'
-import { WebSocketServer } from 'ws'
+import { WebSocketServer, WebSocket } from 'ws'
 import { Logger } from 'log4js'
-import WebSocket = require('ws')
+
 import Application, { ApplicationEvents } from '../../Application'
 import { BaseEvent } from '../../common/ApplicationEvent'
 
