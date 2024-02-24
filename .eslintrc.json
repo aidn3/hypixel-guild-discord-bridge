@@ -26,7 +26,7 @@
     "unicorn/filename-case": 2,
     "no-use-before-define": 0,
     "import/order": 2,
-    "import/no-unresolved": 0,
+    "import/no-unresolved": 2,
     "import/no-cycle": 2,
     "import/newline-after-import": 2,
     "@typescript-eslint/consistent-type-imports": 2,
