@@ -8,10 +8,11 @@
   "plugins": ["@typescript-eslint", "unicorn"],
   "parser": "@typescript-eslint/parser",
   "extends": [
-    "plugin:import/recommended",
     "eslint:recommended",
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
     "plugin:unicorn/recommended",
     "plugin:prettier/recommended"
   ],
@@ -28,6 +29,7 @@
     "import/no-unresolved": 0,
     "import/no-cycle": 2,
     "import/newline-after-import": 2,
+    "@typescript-eslint/consistent-type-imports": 2,
     "unicorn/no-useless-undefined": [
       "error",
       {
