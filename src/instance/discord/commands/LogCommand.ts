@@ -8,6 +8,7 @@ import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
 import { DEFAULT_TIMEOUT, interactivePaging } from '../../../util/DiscordPager'
 
 const TITLE = 'Guild Log Audit'
+
 function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstance: boolean): APIEmbed {
   let result = ''
   let pageTitle = ''
@@ -23,7 +24,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
-      result += `- <t:${entry.time}>: ${entry.line}\n`
+      result += `- <t:${entry.time / 1000}>: ${entry.line}\n`
     }
   } else {
     result += `_Could not fetch information for ${targetInstance}._`
@@ -132,6 +133,7 @@ interface ChatResult {
   error?: string
   guildLog?: GuildLog
 }
+
 interface GuildLog {
   page: number
   total: number
