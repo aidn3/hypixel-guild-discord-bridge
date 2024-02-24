@@ -1,7 +1,9 @@
 import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance, { QUIT_OWN_VOLITION } from '../MinecraftInstance'
+import MinecraftInstance from '../MinecraftInstance'
 import { InstanceEventType, InstanceType } from '../../../common/ApplicationEvent'
 import { Status } from '../../../common/ClientInstance'
+
+export const QUIT_OWN_VOLITION = 'disconnect.quitting'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts

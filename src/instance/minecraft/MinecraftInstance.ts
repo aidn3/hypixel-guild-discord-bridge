@@ -1,7 +1,7 @@
 import { NBT } from 'prismarine-nbt'
 import { Client, createClient, states } from 'minecraft-protocol'
-import * as PrismarineChat from 'prismarine-chat'
-import PrismarineRegistry = require('prismarine-registry')
+import PrismarineChat from 'prismarine-chat'
+import PrismarineRegistry from 'prismarine-registry'
 import Application from '../../Application'
 import { ClientInstance, Status } from '../../common/ClientInstance'
 import {
@@ -20,10 +20,9 @@ import ChatManager from './ChatManager'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'
 import ErrorHandler from './handlers/ErrorHandler'
-import StateHandler from './handlers/StateHandler'
+import StateHandler, { QUIT_OWN_VOLITION } from './handlers/StateHandler'
 import { resolveProxyIfExist } from './common/ProxyHandler'
 
-export const QUIT_OWN_VOLITION = 'disconnect.quitting'
 const commandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
