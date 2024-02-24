@@ -1,5 +1,5 @@
-import Application from '../../../Application'
-import { ChannelType, InstanceType } from '../../../common/ApplicationEvent'
+import type Application from '../../../Application'
+import type { ChannelType, InstanceType } from '../../../common/ApplicationEvent'
 
 export abstract class ChatCommandHandler {
   readonly name: string

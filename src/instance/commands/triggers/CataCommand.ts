@@ -1,6 +1,7 @@
 import assert from 'node:assert'
-import { Client, SkyblockMember } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { Client, SkyblockMember } from 'hypixel-api-reborn'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 
 export default class CataCommand extends ChatCommandHandler {
   constructor() {

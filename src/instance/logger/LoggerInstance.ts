@@ -1,6 +1,6 @@
 import { WebhookClient } from 'discord.js'
 
-import Application from '../../Application'
+import type Application from '../../Application'
 import { ClientInstance } from '../../common/ClientInstance'
 import { InstanceType } from '../../common/ApplicationEvent'
 import { escapeDiscord } from '../../util/DiscordMessageUtil'

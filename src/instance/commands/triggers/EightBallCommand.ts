@@ -4,7 +4,8 @@
  Minecraft username: _aura
 */
 
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 
 const ANSWERS = [
   'As I see it, yes.',

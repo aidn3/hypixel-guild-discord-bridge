@@ -1,14 +1,12 @@
-import {
-  ActionRowBuilder,
+import type {
   APIEmbed,
-  ButtonBuilder,
   ButtonInteraction,
-  ButtonStyle,
   CommandInteraction,
   Message,
   TextBasedChannel,
   TextChannel
 } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 enum Button {
   NEXT,

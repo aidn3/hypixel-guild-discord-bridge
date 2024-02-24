@@ -1,7 +1,8 @@
 import { ClientInstance } from '../../common/ClientInstance'
-import { ChannelType, ChatEvent, InstanceType } from '../../common/ApplicationEvent'
-import Application from '../../Application'
-import { CommandsConfig } from '../../ApplicationConfig'
+import type { ChatEvent } from '../../common/ApplicationEvent'
+import { ChannelType, InstanceType } from '../../common/ApplicationEvent'
+import type Application from '../../Application'
+import type { CommandsConfig } from '../../ApplicationConfig'
 import CalculateCommand from './triggers/CalculateCommand'
 import CataCommand from './triggers/CataCommand'
 import EightBallCommand from './triggers/EightBallCommand'
@@ -21,7 +22,7 @@ import WeightCommand from './triggers/WeightCommand'
 import HelpCommand from './triggers/HelpCommand'
 import OverrideCommand from './triggers/OverrideCommand'
 import ToggleCommand from './triggers/ToggleCommand'
-import { ChatCommandHandler } from './common/CommandInterface'
+import type { ChatCommandHandler } from './common/CommandInterface'
 
 export class CommandsInstance extends ClientInstance<CommandsConfig> {
   private readonly commands: ChatCommandHandler[]

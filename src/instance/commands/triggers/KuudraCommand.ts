@@ -1,6 +1,7 @@
 import assert from 'node:assert'
-import { KuudraTier } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { KuudraTier } from 'hypixel-api-reborn'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 
 const Kuudra: Record<KuudraTier, string[]> = {
   none: ['basic', 't1', '1'],

@@ -1,4 +1,5 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 import { InstanceType, PunishmentType } from '../../../common/ApplicationEvent'
 
 const LossMessages = [

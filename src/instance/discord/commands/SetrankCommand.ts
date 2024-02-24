@@ -1,8 +1,10 @@
 // noinspection SpellCheckingInspection
 
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
-import DiscordInstance from '../DiscordInstance'
+import type { ChatInputCommandInteraction } from 'discord.js'
+import { SlashCommandBuilder } from 'discord.js'
+import type { DiscordCommandInterface } from '../common/DiscordCommandInterface'
+import { Permission } from '../common/DiscordCommandInterface'
+import type DiscordInstance from '../DiscordInstance'
 
 export default {
   getCommandBuilder: () =>

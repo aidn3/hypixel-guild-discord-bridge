@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance from '../MinecraftInstance'
+import type MinecraftInstance from '../MinecraftInstance'
 
 import { InstanceType } from '../../../common/ApplicationEvent'
 

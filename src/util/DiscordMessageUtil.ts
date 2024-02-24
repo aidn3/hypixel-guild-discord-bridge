@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js'
+import type { Message, TextChannel } from 'discord.js'
 import emojisMap from 'emoji-name-map'
 
 function cleanGuildEmoji(message: string): string {

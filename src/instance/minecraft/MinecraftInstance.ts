@@ -1,21 +1,15 @@
-import { NBT } from 'prismarine-nbt'
-import { Client, createClient, states } from 'minecraft-protocol'
+import type { NBT } from 'prismarine-nbt'
+import type { Client } from 'minecraft-protocol'
+import { createClient, states } from 'minecraft-protocol'
 import PrismarineChat from 'prismarine-chat'
 import PrismarineRegistry from 'prismarine-registry'
-import Application from '../../Application'
+import type Application from '../../Application'
 import { ClientInstance, Status } from '../../common/ClientInstance'
-import {
-  ChannelType,
-  ChatEvent,
-  ClientEvent,
-  CommandEvent,
-  EventType,
-  InstanceEventType,
-  InstanceType
-} from '../../common/ApplicationEvent'
+import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/ApplicationEvent'
+import { ChannelType, EventType, InstanceEventType, InstanceType } from '../../common/ApplicationEvent'
 import RateLimiter from '../../util/RateLimiter'
 import { antiSpamString } from '../../util/SharedUtil'
-import { MinecraftInstanceConfig } from '../../ApplicationConfig'
+import type { MinecraftInstanceConfig } from '../../ApplicationConfig'
 import ChatManager from './ChatManager'
 import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
 import SendChatHandler from './handlers/SendChatHandler'

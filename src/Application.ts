@@ -1,13 +1,14 @@
-import Events from 'node:events'
+import type Events from 'node:events'
 import path from 'node:path'
 import { TypedEmitter } from 'tiny-typed-emitter'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
-import { getLogger, Logger } from 'log4js'
+import type { Logger } from 'log4js'
+import { getLogger } from 'log4js'
 import DiscordInstance from './instance/discord/DiscordInstance'
 import MinecraftInstance from './instance/minecraft/MinecraftInstance'
 import LoggerInstance from './instance/logger/LoggerInstance'
 import { PunishedUsers } from './util/PunishedUsers'
-import {
+import type {
   ChatEvent,
   ClientEvent,
   CommandEvent,
@@ -18,15 +19,16 @@ import {
   MinecraftSelfBroadcast,
   MinecraftSendChat,
   ShutdownSignal,
-  InstanceType,
   BaseEvent,
   PunishmentEvent
 } from './common/ApplicationEvent'
-import { ClientInstance, INTERNAL_INSTANCE_PREFIX } from './common/ClientInstance'
-import { PluginInterface } from './common/Plugins'
+import { InstanceType } from './common/ApplicationEvent'
+import type { ClientInstance } from './common/ClientInstance'
+import { INTERNAL_INSTANCE_PREFIX } from './common/ClientInstance'
+import type { PluginInterface } from './common/Plugins'
 import MetricsInstance from './instance/metrics/MetricsInstance'
 import ClusterHelper from './ClusterHelper'
-import { ApplicationConfig } from './ApplicationConfig'
+import type { ApplicationConfig } from './ApplicationConfig'
 import SocketInstance from './instance/socket/SocketInstance'
 import { MojangApi } from './util/Mojang'
 import { shutdownApplication, sleep } from './util/SharedUtil'

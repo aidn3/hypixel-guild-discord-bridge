@@ -1,6 +1,7 @@
 import assert from 'node:assert'
-import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 import { formatLevel } from '../../../util/SkyblockApi'
 
 const SKILLS = new Set([

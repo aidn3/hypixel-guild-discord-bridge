@@ -5,7 +5,8 @@
 */
 import assert from 'node:assert'
 import axios from 'axios'
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 
 export default class WeightCommand extends ChatCommandHandler {
   constructor() {

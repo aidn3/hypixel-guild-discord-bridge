@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import YAML from 'yaml'
 import { createCheckers } from 'ts-interface-checker'
-import { ApplicationConfig } from './ApplicationConfig'
+import type { ApplicationConfig } from './ApplicationConfig'
 import ApplicationConfigTi from './ApplicationConfig-ti'
 
 const applicationConfigChecker = createCheckers(ApplicationConfigTi)

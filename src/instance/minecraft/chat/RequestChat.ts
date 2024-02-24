@@ -1,5 +1,5 @@
 import { escapeDiscord } from '../../../util/DiscordMessageUtil'
-import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { ColorScheme } from '../../discord/common/DiscordConfig'
 import { EventType, InstanceType, ChannelType } from '../../../common/ApplicationEvent'
 

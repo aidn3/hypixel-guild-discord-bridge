@@ -1,20 +1,18 @@
 import assert from 'node:assert'
-import {
+import type {
   BaseInteraction,
   ChatInputCommandInteraction,
-  Collection,
   CommandInteraction,
-  GuildMember,
   GuildMemberRoleManager,
-  REST,
-  RESTPostAPIChatInputApplicationCommandsJSONBody,
-  Routes
+  RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
+import { Collection, GuildMember, REST, Routes } from 'discord.js'
 
 import EventHandler from '../../common/EventHandler'
 import { ChannelType, InstanceType } from '../../common/ApplicationEvent'
-import DiscordInstance from './DiscordInstance'
-import { DiscordCommandInterface, Permission } from './common/DiscordCommandInterface'
+import type DiscordInstance from './DiscordInstance'
+import type { DiscordCommandInterface } from './common/DiscordCommandInterface'
+import { Permission } from './common/DiscordCommandInterface'
 
 import AboutCommand from './commands/AboutCommand'
 import AcceptCommand from './commands/AcceptCommand'

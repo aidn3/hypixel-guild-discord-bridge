@@ -1,8 +1,9 @@
 import Http from 'node:http'
 import { SocksClient } from 'socks'
 import type { Client } from 'minecraft-protocol'
-import { Logger } from 'log4js'
-import { ProxyConfig, ProxyProtocol } from '../../../ApplicationConfig'
+import type { Logger } from 'log4js'
+import type { ProxyConfig } from '../../../ApplicationConfig'
+import { ProxyProtocol } from '../../../ApplicationConfig'
 
 export function resolveProxyIfExist(
   logger: Logger,

@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { PluginInterface, PluginContext } from '../common/Plugins'
+import type { PluginInterface, PluginContext } from '../common/Plugins'
 import { EventType } from '../common/ApplicationEvent'
 
 const JoinMessages = [

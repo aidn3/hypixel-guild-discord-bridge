@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import DiscordInstance from '../DiscordInstance'
+import type { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import type DiscordInstance from '../DiscordInstance'
 
 export enum Permission {
   ANYONE,

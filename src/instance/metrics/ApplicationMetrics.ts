@@ -1,5 +1,6 @@
-import { Counter, Registry } from 'prom-client'
-import { ChatEvent, ClientEvent, CommandEvent } from '../../common/ApplicationEvent'
+import type { Registry } from 'prom-client'
+import { Counter } from 'prom-client'
+import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/ApplicationEvent'
 
 // location and scope keys are preserved and not renamed like the rest for backward compatibility
 export default class ApplicationMetrics {

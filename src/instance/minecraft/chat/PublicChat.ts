@@ -1,4 +1,4 @@
-import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
 import { ChannelType, InstanceType, PunishmentType } from '../../../common/ApplicationEvent'
 
 export default {

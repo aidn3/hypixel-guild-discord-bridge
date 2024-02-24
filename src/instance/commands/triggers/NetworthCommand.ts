@@ -4,10 +4,11 @@
  Minecraft username: _aura
 */
 import assert from 'node:assert'
-import { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
+import type { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
 import axios from 'axios'
 import { getNetworth, localizedNetworth } from '../../../util/SkyblockApi'
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 
 export default class NetworthCommand extends ChatCommandHandler {
   constructor() {

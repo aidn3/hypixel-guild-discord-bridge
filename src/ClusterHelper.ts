@@ -1,5 +1,5 @@
-import Application from './Application'
-import { InstanceType, MinecraftSelfBroadcast } from './common/ApplicationEvent'
+import type Application from './Application'
+import type { InstanceType, MinecraftSelfBroadcast } from './common/ApplicationEvent'
 
 export default class ClusterHelper {
   private readonly app: Application

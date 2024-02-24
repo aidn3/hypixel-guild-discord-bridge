@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 import getMinecraftData from 'minecraft-data'
-import { ChatMessage } from 'prismarine-chat'
+import type { ChatMessage } from 'prismarine-chat'
 import EventHandler from '../../common/EventHandler'
 import { InstanceType } from '../../common/ApplicationEvent'
-import MinecraftInstance from './MinecraftInstance'
-import { MinecraftChatMessage } from './common/ChatInterface'
+import type MinecraftInstance from './MinecraftInstance'
+import type { MinecraftChatMessage } from './common/ChatInterface'
 
 import BlockChat from './chat/BlockChat'
 import DemoteChat from './chat/DemoteChat'

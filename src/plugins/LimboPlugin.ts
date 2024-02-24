@@ -1,6 +1,6 @@
-import MinecraftInstance from '../instance/minecraft/MinecraftInstance'
+import type MinecraftInstance from '../instance/minecraft/MinecraftInstance'
 import { InstanceEventType, InstanceType } from '../common/ApplicationEvent'
-import { PluginInterface, PluginContext } from '../common/Plugins'
+import type { PluginInterface, PluginContext } from '../common/Plugins'
 
 async function limbo(clientInstance: MinecraftInstance): Promise<void> {
   clientInstance.logger.debug('Spawn event triggered. sending to limbo...')

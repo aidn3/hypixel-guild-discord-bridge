@@ -1,28 +1,13 @@
 import assert from 'node:assert'
-import {
-  APIEmbed,
-  Client,
-  GatewayIntentBits,
-  Options,
-  Partials,
-  TextBasedChannelFields,
-  TextChannel,
-  Webhook
-} from 'discord.js'
-import Application from '../../Application'
+import type { APIEmbed, TextBasedChannelFields, Webhook } from 'discord.js'
+import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'discord.js'
+import type Application from '../../Application'
 
 import { ClientInstance, Status } from '../../common/ClientInstance'
 import { escapeDiscord } from '../../util/DiscordMessageUtil'
-import {
-  ChatEvent,
-  ClientEvent,
-  EventType,
-  InstanceEvent,
-  InstanceType,
-  ChannelType,
-  CommandEvent
-} from '../../common/ApplicationEvent'
-import { DiscordConfig } from '../../ApplicationConfig'
+import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/ApplicationEvent'
+import { EventType, InstanceType, ChannelType } from '../../common/ApplicationEvent'
+import type { DiscordConfig } from '../../ApplicationConfig'
 import StateHandler from './handlers/StateHandler'
 
 import ChatManager from './ChatManager'

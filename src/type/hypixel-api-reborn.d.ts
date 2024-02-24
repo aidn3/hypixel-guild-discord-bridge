@@ -1,4 +1,4 @@
-import { skyblockMemberOptions } from 'hypixel-api-reborn'
+import type { skyblockMemberOptions } from 'hypixel-api-reborn'
 
 declare module 'hypixel-api-reborn' {
   interface Client {

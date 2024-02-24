@@ -1,9 +1,9 @@
-import { Message } from 'discord.js'
+import type { Message } from 'discord.js'
 import BadWords from 'bad-words'
 import EventHandler from '../../common/EventHandler'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
 import { ChannelType, InstanceType, PunishmentType } from '../../common/ApplicationEvent'
-import DiscordInstance from './DiscordInstance'
+import type DiscordInstance from './DiscordInstance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
   private readonly profanityFilter: BadWords.BadWords

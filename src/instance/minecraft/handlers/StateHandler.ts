@@ -1,5 +1,5 @@
 import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance from '../MinecraftInstance'
+import type MinecraftInstance from '../MinecraftInstance'
 import { InstanceEventType, InstanceType } from '../../../common/ApplicationEvent'
 import { Status } from '../../../common/ClientInstance'
 

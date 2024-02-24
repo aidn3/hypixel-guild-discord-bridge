@@ -1,4 +1,5 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/CommandInterface'
+import type { ChatCommandContext } from '../common/CommandInterface'
+import { ChatCommandHandler } from '../common/CommandInterface'
 
 export default class HelpCommand extends ChatCommandHandler {
   constructor() {

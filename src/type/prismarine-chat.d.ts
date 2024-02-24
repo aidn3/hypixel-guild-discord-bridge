@@ -1,7 +1,7 @@
 // Package official index.d.ts is incorrect.
 // This fixes some of those mistakes
 declare module 'prismarine-chat' {
-  import { ChatMessage } from 'prismarine-chat'
+  import type { ChatMessage } from 'prismarine-chat'
 
   // Functions are not static.
   // They require an object created via the default function

@@ -1,5 +1,5 @@
-import { PunishmentEvent, PunishmentType } from '../common/ApplicationEvent'
-import Application from '../Application'
+import type { PunishmentEvent, PunishmentType } from '../common/ApplicationEvent'
+import type Application from '../Application'
 
 export class PunishedUsers {
   private punishments = new Map<PunishmentType, PunishmentEvent[]>()
