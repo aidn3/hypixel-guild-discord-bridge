@@ -107,8 +107,8 @@ async function getGuildLog(app: Application, targetInstance: string, page: numbe
       for (const entryRaw of match[3].trim().split('\n')) {
         const entry = entryRaw.split(':')
         entries.push({
-          time: Date.parse(entry[0].trim()),
-          line: entry[1].trim()
+          time: Date.parse(entry[0] + ':' + entry[1]),
+          line: entry[2].trim()
         })
       }
 
