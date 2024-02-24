@@ -36,15 +36,17 @@ export async function interactivePaging(
   })
 
   nextInteraction.on('collect', async (index: ButtonInteraction) => {
+    await index.deferUpdate()
     lastUpdate = await fetch(++currentPage)
-    await index.update({
+    await index.editReply({
       embeds: [lastUpdate.embed],
       components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
     })
   })
   backInteraction.on('collect', async (index: ButtonInteraction) => {
+    await index.deferUpdate()
     lastUpdate = await fetch(--currentPage)
-    await index.update({
+    await index.editReply({
       embeds: [lastUpdate.embed],
       components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
     })
