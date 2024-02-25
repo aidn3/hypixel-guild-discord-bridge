@@ -1,5 +1,4 @@
 import { EventType, InstanceType, ChannelType } from '../../../common/application-event'
-import { escapeDiscord } from '../../../util/discord-message-util'
 import { ColorScheme } from '../../discord/common/discord-config'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
