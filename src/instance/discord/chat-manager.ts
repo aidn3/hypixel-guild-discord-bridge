@@ -206,7 +206,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         return (response.data as ImgurResponse).data.link
       })
       .catch((error) => {
-        console.error(error)
+        this.clientInstance.logger.error(error)
       })
 
     return result || undefined
