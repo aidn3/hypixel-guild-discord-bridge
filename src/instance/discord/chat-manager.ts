@@ -177,7 +177,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         if (attachment.contentType?.includes('image') === true) {
           const link = attachment.url
           const linkWithoutTracking = await this.uploadToImgur(link)
-          content += ` ${linkWithoutTracking ?? linkWithoutTracking}`
+          content += ` ${linkWithoutTracking ?? link}`
         } else {
           content += ' (ATTACHMENT)'
         }
