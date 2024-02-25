@@ -1,7 +1,6 @@
+import { InstanceType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
-
-import { InstanceType } from '../../../common/application-event'
 
 export default class Override extends ChatCommandHandler {
   constructor() {

@@ -1,11 +1,14 @@
 import http from 'node:http'
 import url from 'node:url'
-import Client from 'prom-client'
+
 import { HttpStatusCode } from 'axios'
+import Client from 'prom-client'
+
 import type Application from '../../application'
-import { ClientInstance, Status } from '../../common/client-instance'
-import { InstanceType } from '../../common/application-event'
 import type { MetricsConfig } from '../../application-config'
+import { InstanceType } from '../../common/application-event'
+import { ClientInstance, Status } from '../../common/client-instance'
+
 import ApplicationMetrics from './application-metrics'
 import GuildOnlineMetrics from './guild-online-metrics'
 

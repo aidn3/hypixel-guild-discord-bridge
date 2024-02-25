@@ -1,7 +1,9 @@
 import Http from 'node:http'
-import { SocksClient } from 'socks'
-import type { Client } from 'minecraft-protocol'
+
 import type { Logger } from 'log4js'
+import type { Client } from 'minecraft-protocol'
+import { SocksClient } from 'socks'
+
 import type { ProxyConfig } from '../../../application-config'
 import { ProxyProtocol } from '../../../application-config'
 

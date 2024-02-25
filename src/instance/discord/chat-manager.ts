@@ -1,8 +1,10 @@
-import type { Message } from 'discord.js'
 import BadWords from 'bad-words'
+import type { Message } from 'discord.js'
+
+import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event'
 import EventHandler from '../../common/event-handler'
 import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/discord-message-util'
-import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event'
+
 import type DiscordInstance from './discord-instance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {

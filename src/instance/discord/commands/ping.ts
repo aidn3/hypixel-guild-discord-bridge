@@ -1,9 +1,10 @@
 import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
-import type DiscordInstance from '../discord-instance'
+
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
 import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import type DiscordInstance from '../discord-instance'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {

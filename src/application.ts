@@ -1,13 +1,13 @@
 import type Events from 'node:events'
 import path from 'node:path'
-import { TypedEmitter } from 'tiny-typed-emitter'
+
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 import { getLogger } from 'log4js'
-import DiscordInstance from './instance/discord/discord-instance'
-import MinecraftInstance from './instance/minecraft/minecraft-instance'
-import LoggerInstance from './instance/logger/logger-instance'
-import { PunishedUsers } from './util/punished-users'
+import { TypedEmitter } from 'tiny-typed-emitter'
+
+import type { ApplicationConfig } from './application-config'
+import ClusterHelper from './cluster-helper'
 import type {
   ChatEvent,
   ClientEvent,
@@ -26,13 +26,15 @@ import { InstanceType } from './common/application-event'
 import type { ClientInstance } from './common/client-instance'
 import { INTERNAL_INSTANCE_PREFIX } from './common/client-instance'
 import type { PluginInterface } from './common/plugins'
+import { CommandsInstance } from './instance/commands/commands-instance'
+import DiscordInstance from './instance/discord/discord-instance'
+import LoggerInstance from './instance/logger/logger-instance'
 import MetricsInstance from './instance/metrics/metrics-instance'
-import ClusterHelper from './cluster-helper'
-import type { ApplicationConfig } from './application-config'
+import MinecraftInstance from './instance/minecraft/minecraft-instance'
 import SocketInstance from './instance/socket/socket-instance'
 import { MojangApi } from './util/mojang'
+import { PunishedUsers } from './util/punished-users'
 import { shutdownApplication, sleep } from './util/shared-util'
-import { CommandsInstance } from './instance/commands/commands-instance'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger

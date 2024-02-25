@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+
 import EventHandler from '../../../common/event-handler'
 import type DiscordInstance from '../discord-instance'
 

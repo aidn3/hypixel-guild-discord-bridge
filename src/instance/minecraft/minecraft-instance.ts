@@ -1,21 +1,23 @@
-import type { NBT } from 'prismarine-nbt'
 import type { Client } from 'minecraft-protocol'
 import { createClient, states } from 'minecraft-protocol'
 import PrismarineChat from 'prismarine-chat'
+import type { NBT } from 'prismarine-nbt'
 import PrismarineRegistry from 'prismarine-registry'
+
 import type Application from '../../application'
-import { ClientInstance, Status } from '../../common/client-instance'
+import type { MinecraftInstanceConfig } from '../../application-config'
 import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event'
 import { ChannelType, EventType, InstanceEventType, InstanceType } from '../../common/application-event'
+import { ClientInstance, Status } from '../../common/client-instance'
 import RateLimiter from '../../util/rate-limiter'
 import { antiSpamString } from '../../util/shared-util'
-import type { MinecraftInstanceConfig } from '../../application-config'
+
 import ChatManager from './chat-manager'
+import { resolveProxyIfExist } from './common/proxy-handler'
+import ErrorHandler from './handlers/error-handler'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler'
 import SendchatHandler from './handlers/sendchat-handler'
-import ErrorHandler from './handlers/error-handler'
 import StateHandler, { QUIT_OWN_VOLITION } from './handlers/state-handler'
-import { resolveProxyIfExist } from './common/proxy-handler'
 
 const commandsLimiter = new RateLimiter(1, 1000)
 

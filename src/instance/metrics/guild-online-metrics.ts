@@ -1,7 +1,8 @@
 import type { Registry } from 'prom-client'
 import { Gauge } from 'prom-client'
-import type { MinecraftRawChatEvent } from '../../common/application-event'
+
 import type Application from '../../application'
+import type { MinecraftRawChatEvent } from '../../common/application-event'
 
 export default class GuildOnlineMetrics {
   private readonly guildTotalMembersCount

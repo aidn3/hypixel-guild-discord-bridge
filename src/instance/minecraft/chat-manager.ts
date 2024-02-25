@@ -1,10 +1,10 @@
 import assert from 'node:assert'
+
 import getMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
-import EventHandler from '../../common/event-handler'
+
 import { InstanceType } from '../../common/application-event'
-import type MinecraftInstance from './minecraft-instance'
-import type { MinecraftChatMessage } from './common/chat-interface'
+import EventHandler from '../../common/event-handler'
 
 import BlockChat from './chat/block'
 import DemoteChat from './chat/demote'
@@ -22,6 +22,8 @@ import QuestChat from './chat/quest'
 import RepeatChat from './chat/repeat'
 import RequestChat from './chat/request'
 import UnmuteChat from './chat/unmute'
+import type { MinecraftChatMessage } from './common/chat-interface'
+import type MinecraftInstance from './minecraft-instance'
 
 export default class ChatManager extends EventHandler<MinecraftInstance> {
   private readonly chatModules: MinecraftChatMessage[]

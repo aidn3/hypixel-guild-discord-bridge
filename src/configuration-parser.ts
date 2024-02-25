@@ -1,6 +1,8 @@
 import fs from 'node:fs'
-import YAML from 'yaml'
+
 import { createCheckers } from 'ts-interface-checker'
+import YAML from 'yaml'
+
 import type { ApplicationConfig } from './application-config'
 import ApplicationConfigTi from './application-config-ti'
 

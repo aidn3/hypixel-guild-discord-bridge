@@ -4,8 +4,10 @@
  Minecraft username: _aura
 */
 import assert from 'node:assert'
-import type { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
+
 import axios from 'axios'
+import type { HypixelSkyblockMuseumRaw } from 'hypixel-api-reborn'
+
 import { getNetworth, localizedNetworth } from '../../../util/skyblock-api'
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'

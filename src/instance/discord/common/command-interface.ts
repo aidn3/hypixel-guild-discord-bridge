@@ -1,4 +1,5 @@
 import type { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+
 import type DiscordInstance from '../discord-instance'
 
 export enum Permission {

@@ -1,5 +1,5 @@
-import type MinecraftInstance from '../minecraft-instance'
 import type Application from '../../../application'
+import type MinecraftInstance from '../minecraft-instance'
 
 export interface MinecraftChatMessage {
   onChat: (context: MinecraftChatContext) => void

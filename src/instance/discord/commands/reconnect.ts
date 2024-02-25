@@ -1,5 +1,6 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
+
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
 import type DiscordInstance from '../discord-instance'

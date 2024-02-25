@@ -25,7 +25,16 @@
     "unicorn/prefer-top-level-await": 0,
     "unicorn/filename-case": 2,
     "no-use-before-define": 0,
-    "import/order": 2,
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
     "import/no-unresolved": 2,
     "import/no-cycle": 2,
     "import/newline-after-import": 2,

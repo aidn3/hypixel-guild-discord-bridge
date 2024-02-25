@@ -4,7 +4,9 @@
  Minecraft username: _aura
 */
 import assert from 'node:assert'
+
 import axios from 'axios'
+
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
 

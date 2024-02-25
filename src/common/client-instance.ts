@@ -1,6 +1,8 @@
 import type { Logger } from 'log4js'
 import { getLogger } from 'log4js'
+
 import type Application from '../application'
+
 import type { InstanceType } from './application-event'
 
 export abstract class ClientInstance<K> {

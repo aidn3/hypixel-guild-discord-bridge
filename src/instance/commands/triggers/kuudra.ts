@@ -1,5 +1,7 @@
 import assert from 'node:assert'
+
 import type { KuudraTier } from 'hypixel-api-reborn'
+
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
 

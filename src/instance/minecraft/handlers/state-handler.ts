@@ -1,7 +1,7 @@
-import EventHandler from '../../../common/event-handler'
-import type MinecraftInstance from '../minecraft-instance'
 import { InstanceEventType, InstanceType } from '../../../common/application-event'
 import { Status } from '../../../common/client-instance'
+import EventHandler from '../../../common/event-handler'
+import type MinecraftInstance from '../minecraft-instance'
 
 export const QUIT_OWN_VOLITION = 'disconnect.quitting'
 

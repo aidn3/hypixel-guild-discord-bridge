@@ -1,4 +1,5 @@
 import type Application from '../application'
+
 import type { ClientInstance } from './client-instance'
 
 export interface PluginInterface {

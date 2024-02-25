@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
 

@@ -1,9 +1,10 @@
-import { ClientInstance } from '../../common/client-instance'
 import type Application from '../../application'
-import { InstanceType } from '../../common/application-event'
 import type { SocketConfig } from '../../application-config'
-import ServerSocket from './server-socket'
+import { InstanceType } from '../../common/application-event'
+import { ClientInstance } from '../../common/client-instance'
+
 import ClientSocket from './client-socket'
+import ServerSocket from './server-socket'
 
 export default class SocketInstance extends ClientInstance<SocketConfig> {
   private serverSocket: ServerSocket | undefined

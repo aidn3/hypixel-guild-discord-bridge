@@ -1,5 +1,5 @@
-import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {

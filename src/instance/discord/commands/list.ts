@@ -1,17 +1,19 @@
 import assert from 'node:assert'
+
 import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
-import type DiscordInstance from '../discord-instance'
-import { escapeDiscord } from '../../../util/discord-message-util'
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
+
+import type Application from '../../../application'
 import type { MinecraftRawChatEvent } from '../../../common/application-event'
 import { InstanceType } from '../../../common/application-event'
-import type Application from '../../../application'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import { escapeDiscord } from '../../../util/discord-message-util'
 import { pageMessage } from '../../../util/discord-pager'
 import type { MojangApi, MojangProfile } from '../../../util/mojang'
+import type { CommandInterface } from '../common/command-interface'
+import { Permission } from '../common/command-interface'
+import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import type DiscordInstance from '../discord-instance'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   const entries: string[] = []

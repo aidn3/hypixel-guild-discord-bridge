@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+
 import type {
   BaseInteraction,
   ChatInputCommandInteraction,
@@ -8,28 +9,28 @@ import type {
 } from 'discord.js'
 import { Collection, GuildMember, REST, Routes } from 'discord.js'
 
-import EventHandler from '../../common/event-handler'
 import { ChannelType, InstanceType } from '../../common/application-event'
-import type DiscordInstance from './discord-instance'
-import type { CommandInterface } from './common/command-interface'
-import { Permission } from './common/command-interface'
+import EventHandler from '../../common/event-handler'
 
 import AboutCommand from './commands/about'
 import AcceptCommand from './commands/accept'
+import ConnectivityCommand from './commands/connectivity'
 import DemoteCommand from './commands/demote'
 import InviteCommand from './commands/invite'
 import KickCommand from './commands/kick'
 import ListCommand from './commands/list'
+import LogCommand from './commands/log'
 import MuteCommand from './commands/mute'
 import OverrideCommand from './commands/override'
 import PingCommand from './commands/ping'
 import PromoteCommand from './commands/promote'
 import ReconnectCommand from './commands/reconnect'
-import SetrankCommand from './commands/setrank'
 import RestartCommand from './commands/restart'
+import SetrankCommand from './commands/setrank'
 import UnmuteCommand from './commands/unmute'
-import ConnectivityCommand from './commands/connectivity'
-import LogCommand from './commands/log'
+import { Permission } from './common/command-interface'
+import type { CommandInterface } from './common/command-interface'
+import type DiscordInstance from './discord-instance'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
   private readonly commands = new Collection<string, CommandInterface>()

@@ -1,12 +1,14 @@
 import type { IncomingMessage, Server } from 'node:http'
 import { createServer } from 'node:http'
 import type { Duplex } from 'node:stream'
+
+import type { Logger } from 'log4js'
 import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
-import type { Logger } from 'log4js'
 
 import type Application from '../../application'
 import type { ApplicationEvents } from '../../application'
+
 import type { WebsocketPacket } from './common'
 import { AuthenticationHeader } from './common'
 

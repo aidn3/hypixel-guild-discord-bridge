@@ -1,7 +1,7 @@
-import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
+import { EventType, InstanceType, ChannelType, PunishmentType } from '../../../common/application-event'
 import { sufficeToTime } from '../../../util/shared-util'
 import { ColorScheme } from '../../discord/common/discord-config'
-import { EventType, InstanceType, ChannelType, PunishmentType } from '../../../common/application-event'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {

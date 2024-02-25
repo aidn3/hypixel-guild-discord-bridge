@@ -1,6 +1,6 @@
+import { InstanceType, PunishmentType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
-import { InstanceType, PunishmentType } from '../../../common/application-event'
 
 const LossMessages = [
   '%s you got blasted!',
