@@ -5,11 +5,11 @@ import type Application from '../../../application'
 import type { MinecraftRawChatEvent } from '../../../common/application-event'
 import { InstanceType } from '../../../common/application-event'
 import { escapeDiscord } from '../../../util/discord-message-util'
-import { DEFAULT_TIMEOUT, interactivePaging } from '../../../util/discord-pager'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
 import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance'
+import { DEFAULT_TIMEOUT, interactivePaging } from '../discord-pager'
 
 const TITLE = 'Guild Log Audit'
 
