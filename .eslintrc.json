@@ -38,6 +38,7 @@
     "import/no-unresolved": 2,
     "import/no-cycle": 2,
     "import/newline-after-import": 2,
+    "import/no-extraneous-dependencies": 2,
     "@typescript-eslint/consistent-type-imports": 2,
     "unicorn/no-useless-undefined": [
       "error",
