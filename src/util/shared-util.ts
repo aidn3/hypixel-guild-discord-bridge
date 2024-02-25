@@ -53,3 +53,14 @@ export function shutdownApplication(exitCode: number): void {
     process.exit(exitCode)
   })
 }
+
+export const escapeDiscord = function (message: string): string {
+  message = message.split('\\').join('\\\\') // "\"
+  message = message.split('_').join('\\_') // Italic
+  message = message.split('*').join('\\*') // bold
+  message = message.split('~').join('\\~') // strikethrough
+  message = message.split('`').join('\\`') // code
+  message = message.split('@').join('\\@-') // mentions
+
+  return message
+}

@@ -8,7 +8,7 @@ import type { DiscordConfig } from '../../application-config'
 import { EventType, InstanceType, ChannelType } from '../../common/application-event'
 import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event'
 import { ClientInstance, Status } from '../../common/client-instance'
-import { escapeDiscord } from '../../util/discord-message-util'
+import { escapeDiscord } from '../../util/shared-util'
 
 import ChatManager from './chat-manager'
 import { CommandManager } from './command-manager'

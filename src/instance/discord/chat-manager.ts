@@ -1,9 +1,10 @@
 import BadWords from 'bad-words'
-import type { Message } from 'discord.js'
+import type { Message, TextChannel } from 'discord.js'
+import emojisMap from 'emoji-name-map'
 
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event'
 import EventHandler from '../../common/event-handler'
-import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/discord-message-util'
+import { escapeDiscord } from '../../util/shared-util'
 
 import type DiscordInstance from './discord-instance'
 
@@ -40,13 +41,14 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     const discordName = event.member?.displayName ?? event.author.username
-    const readableName = getReadableName(discordName, event.author.id)
+    const readableName = this.getReadableName(discordName, event.author.id)
     if (channelType !== ChannelType.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
 
-    const replyUsername = await getReplyUsername(event)
-    const readableReplyUsername = replyUsername == undefined ? undefined : getReadableName(replyUsername, replyUsername)
+    const replyUsername = await this.getReplyUsername(event)
+    const readableReplyUsername =
+      replyUsername == undefined ? undefined : this.getReadableName(replyUsername, replyUsername)
 
-    const content = cleanMessage(event)
+    const content = this.cleanMessage(event)
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
     const filteredMessage = await this.proceedFiltering(event, truncatedContent)
@@ -122,5 +124,65 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     return filteredMessage
+  }
+
+  private async getReplyUsername(messageEvent: Message): Promise<string | undefined> {
+    if (messageEvent.reference?.messageId === undefined) return
+
+    const channel = messageEvent.channel as TextChannel
+    const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
+    if (replyMessage.webhookId != undefined) return replyMessage.author.username
+
+    if (messageEvent.guild == undefined) return
+    const guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)
+    return guildMember.displayName
+  }
+
+  private getReadableName(username: string, id: string): string {
+    // clear all non ASCII characters
+    // eslint-disable-next-line no-control-regex
+    username = username.replaceAll(/[^\u0000-\u007F]/g, '')
+
+    username = username.trim().slice(0, 16)
+
+    if (/^\w+$/.test(username)) return username
+    if (username.includes(' ')) return username.split(' ')[0]
+
+    return id
+  }
+
+  private cleanGuildEmoji(message: string): string {
+    return message.replaceAll(/<:(\w+):\d{16,}>/g, (match) => {
+      return match.slice(1, -1).replaceAll(/\d{16,}/g, '')
+    })
+  }
+
+  private cleanStandardEmoji(message: string): string {
+    for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
+      message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
+    }
+
+    return message
+  }
+
+  private cleanMessage(messageEvent: Message): string {
+    let content = messageEvent.cleanContent
+
+    content = this.cleanGuildEmoji(content)
+    content = this.cleanStandardEmoji(content).trim()
+
+    if (messageEvent.attachments.size > 0) {
+      for (const [, attachment] of messageEvent.attachments) {
+        if (attachment.contentType?.includes('image') === true) {
+          const link = attachment.url
+          const linkWithoutTracking = link.split('?')[0]
+          content += ` ${linkWithoutTracking}`
+        } else {
+          content += ' (ATTACHMENT)'
+        }
+      }
+    }
+
+    return content
   }
 }
