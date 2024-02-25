@@ -33,6 +33,10 @@ export default class Roulette extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
+    if (context.instanceType !== InstanceType.MINECRAFT) {
+      return `${context.username}, Command can only be executed in-game!`
+    }
+
     // Default behaviour which is just "1/6 chance" is too unreliable
     // Some even managed to reach 24 win streak.
     // This will increase the chance of losing and cap the win streak as well
