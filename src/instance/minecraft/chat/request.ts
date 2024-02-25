@@ -19,7 +19,7 @@ export default {
         name: EventType.REQUEST,
         username,
         severity: ColorScheme.GOOD,
-        message: `${escapeDiscord(username)} has requested to join the guild!`,
+        message: `${username} has requested to join the guild!`,
         removeLater: false
       })
     }
