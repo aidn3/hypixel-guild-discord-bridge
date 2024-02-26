@@ -26,7 +26,7 @@ import Toggle from './triggers/toggle'
 import Weight from './triggers/weight'
 
 export class CommandsInstance extends ClientInstance<CommandsConfig> {
-  private readonly commands: ChatCommandHandler[]
+  public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {
     super(app, instanceName, InstanceType.COMMANDS, config)
