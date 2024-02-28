@@ -8,6 +8,7 @@ import type { ChatCommandHandler } from './common/command-interface'
 import EightBallCommand from './triggers/8ball'
 import Calculate from './triggers/calculate'
 import Catacomb from './triggers/catacomb'
+import DarkAuction from './triggers/darkauction'
 import Explain from './triggers/explain'
 import Guild from './triggers/guild'
 import Help from './triggers/help'
@@ -32,9 +33,10 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     super(app, instanceName, InstanceType.COMMANDS, config)
 
     this.commands = [
+      new EightBallCommand(),
       new Calculate(),
       new Catacomb(),
-      new EightBallCommand(),
+      new DarkAuction(),
       new Explain(),
       new Guild(),
       new Help(),
