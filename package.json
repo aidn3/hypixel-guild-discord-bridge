@@ -9,7 +9,7 @@
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --require ts-node/register index.ts test-run",
-    "validate": "npm install && npm run lint:fix && npm run generate && npm run test:compile && npm run test:run"
+    "validate": "npm install && npm run lint:fix && npm run generate && npm run test:compile && npx type-coverage --detail true --update true && npm run test:run"
   },
   "license": "MIT",
   "keywords": [
@@ -19,6 +19,9 @@
     "bridge"
   ],
   "author": "aidn5 (aidn.david3@gmail.com)",
+  "typeCoverage": {
+    "atLeast": 100
+  },
   "dependencies": {
     "@hkh12/node-calc": "^4.2.1",
     "axios": "^1.6.0",
@@ -42,6 +45,7 @@
     "yaml": "^2.2.2"
   },
   "devDependencies": {
+    "type-coverage": "^2.27.1",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "eslint": "^8.49.0",
