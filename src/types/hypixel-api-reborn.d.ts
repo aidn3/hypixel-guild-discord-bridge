@@ -5,34 +5,25 @@ declare module 'hypixel-api-reborn' {
     getSkyblockProfiles(
       query: string,
       options: Partial<skyblockMemberOptions> & { raw: true }
-    ): Promise<HypixelSkyblockRaw>
+    ): Promise<SkyblockV2ProfilesRaw>
   }
 
-  export interface HypixelSkyblockRaw {
-    profiles: HypixelSkyblockProfileRaw[]
+  export interface SkyblockV2ProfilesRaw {
+    profiles: SkyblockV2Profile[]
   }
 
-  export interface HypixelSkyblockProfileRaw {
-    selected: boolean
-    cute_name: string
+  export interface SkyblockV2Profile {
     profile_id: string
-    members: Record<string, HypixelSkyblockMemberRaw>
-    banking?: { balance?: number }
+    community_upgrades: SkyblockV2CommunityUpgrades
+    members: Record<string, SkyblockV2Member>
+    banking?: { balance: number }
+    cute_name: string
+    selected: boolean
   }
 
-  export type KuudraTier = 'none' | 'hot' | 'burning' | 'fiery' | 'infernal'
-
-  export interface Slayer {
-    xp: number
-    boss_kills_tier_0?: number
-    boss_kills_tier_1?: number
-    boss_kills_tier_2?: number
-    boss_kills_tier_3?: number
-    boss_kills_tier_4?: number
-  }
-
-  export interface HypixelSkyblockMemberRaw {
-    leveling?: { experience?: number }
+  export interface SkyblockV2Member {
+    leveling?: { experience: number }
+    dungeons: SkyblockV2Dungeons
     nether_island_player_data: {
       kuudra_completed_tiers: {
         none: number
@@ -42,33 +33,28 @@ declare module 'hypixel-api-reborn' {
         infernal: number
       }
     }
-    dungeons: {
-      dungeon_types: {
-        catacombs: {
-          tier_completions: {
-            '0': number
-            '1': number
-            '2': number
-            '3': number
-            '4': number
-            '5': number
-            '6': number
-            '7': number
-          }
-        }
-        master_catacombs: {
-          tier_completions: {
-            '1': number
-            '2': number
-            '3': number
-            '4': number
-            '5': number
-            '6': number
-            '7': number
-          }
-        }
-      }
-    }
+    slayer: SlayerProfile
+  }
+
+  export interface SkyblockV2Dungeons {
+    dungeon_types: SkyblockV2DungeonsTypes
+  }
+
+  export interface SkyblockV2DungeonsTypes {
+    catacombs: SkyblockV2DungeonsCatacombs
+    master_catacombs: SkyblockV2DungeonsMasterCatacombs
+  }
+
+  export interface SkyblockV2DungeonsCatacombs {
+    experience: number
+    tier_completions: Record<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+  }
+
+  export interface SkyblockV2DungeonsMasterCatacombs {
+    tier_completions: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+  }
+
+  export interface SlayerProfile {
     slayer_bosses: {
       zombie: Slayer
       spider: Slayer
@@ -79,7 +65,12 @@ declare module 'hypixel-api-reborn' {
     }
   }
 
-  export interface HypixelSkyblockMuseumRaw {
-    members: Record<string, unknown>
+  export interface Slayer {
+    xp: number
+    boss_kills_tier_0?: number
+    boss_kills_tier_1?: number
+    boss_kills_tier_2?: number
+    boss_kills_tier_3?: number
+    boss_kills_tier_4?: number
   }
 }
