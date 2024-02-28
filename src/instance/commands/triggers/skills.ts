@@ -2,7 +2,6 @@ import assert from 'node:assert'
 
 import type { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
 
-import { formatLevel } from '../../../util/skyblock-api'
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
 
@@ -54,7 +53,7 @@ export default class Skills extends ChatCommandHandler {
     // @ts-expect-error Ignoring impossible to trigger scenario
     const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember['skills']]
 
-    return `${givenUsername}: ${skill} - ${formatLevel(skillData.level, skillData.progress)}`
+    return `${givenUsername}: ${skill} - ${this.formatLevel(skillData.level, skillData.progress)}`
   }
 
   async getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
@@ -69,5 +68,21 @@ export default class Skills extends ChatCommandHandler {
 
     assert(response)
     return response
+  }
+
+  private formatLevel(level: number, progress: number): number {
+    let formattedLevel = 0
+
+    formattedLevel += level
+
+    const decimal = progress / 100
+
+    if (decimal === 1) {
+      return formattedLevel
+    }
+
+    formattedLevel += decimal
+
+    return formattedLevel
   }
 }

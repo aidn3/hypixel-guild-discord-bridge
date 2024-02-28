@@ -1,9 +1,9 @@
-import assert from 'node:assert'
-
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
+import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util'
 
 enum Catacombs {
+  // noinspection JSUnusedGlobalSymbols
   'entrance' = '0',
   'f1' = '1',
   'f2' = '2',
@@ -15,6 +15,7 @@ enum Catacombs {
 }
 
 enum MasterMode {
+  // noinspection JSUnusedGlobalSymbols
   'm1' = '1',
   'm2' = '2',
   'm3' = '3',
@@ -49,21 +50,12 @@ export default class Runs extends ChatCommandHandler {
       return `${context.username}, Invalid floor! (given: ${floor})`
     }
 
-    const uuid = await context.app.mojangApi
-      .profileByUsername(givenUsername)
-      .then((mojangProfile) => mojangProfile.id)
-      .catch(() => {
-        /* return undefined */
-      })
-
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
-    assert(parsedProfile)
+    const parsedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
 
     let amount = 0
 

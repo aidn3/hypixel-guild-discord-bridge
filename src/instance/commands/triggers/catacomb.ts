@@ -1,9 +1,8 @@
-import assert from 'node:assert'
-
-import type { Client, SkyblockMember } from 'hypixel-api-reborn'
+import type { SkyblockMember } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
+import { getSelectedSkyblockProfile, getUuidIfExists } from '../common/util'
 
 export default class Catacomb extends ChatCommandHandler {
   constructor() {
@@ -18,36 +17,16 @@ export default class Catacomb extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await context.app.mojangApi
-      .profileByUsername(givenUsername)
-      .then((mojangProfile) => mojangProfile.id)
-      .catch(() => {
-        /* return undefined */
-      })
-
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const parsedProfile = await this.getParsedProfile(context.app.hypixelApi, uuid)
-
+    const parsedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     const catacombs = parsedProfile.dungeons.types.catacombs
     const skillLevel = this.getLevelWithOverflow(catacombs.xp, catacombs.level, catacombs.progress)
 
     return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${this.formatClass(parsedProfile)}.`
-  }
-
-  private async getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
-    const selectedProfile = await hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((p) => p.selected)?.cute_name)
-    assert(selectedProfile)
-
-    const response = await hypixelApi
-      .getSkyblockProfiles(uuid)
-      .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile)?.me)
-    assert(response)
-    return response
   }
 
   private getLevelWithOverflow(totalExperience: number, level: number, progress: number): number {

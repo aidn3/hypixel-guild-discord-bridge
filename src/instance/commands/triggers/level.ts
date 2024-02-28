@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
+import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util'
 
 export default class Level extends ChatCommandHandler {
   constructor() {
@@ -14,24 +15,13 @@ export default class Level extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await context.app.mojangApi
-      .profileByUsername(givenUsername)
-      .then((p) => p.id)
-      .catch(() => {
-        /* return undefined */
-      })
-
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const levelLocalized = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles)
-      .then((profiles) => profiles.find((p) => p.selected))
-      .then((response) => response?.members[uuid].leveling?.experience ?? 0)
-      .then((exp) => (exp / 100).toFixed(2))
-
-    return `${givenUsername}'s level: ${levelLocalized}`
+    const profile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const exp = profile.leveling?.experience ?? 0
+    return `${givenUsername}'s level: ${(exp / 100).toFixed(2)}`
   }
 }

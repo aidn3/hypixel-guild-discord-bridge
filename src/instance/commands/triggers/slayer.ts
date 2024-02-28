@@ -1,9 +1,8 @@
-import assert from 'node:assert'
-
 import type { Slayer as SlayerType } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
+import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],
@@ -57,23 +56,13 @@ export default class Slayer extends ChatCommandHandler {
     const givenSlayer = context.args[0] ?? 'overview'
     const givenUsername = context.args[1] ?? context.username
 
-    const uuid = await context.app.mojangApi
-      .profileByUsername(givenUsername)
-      .then((mojangProfile) => mojangProfile.id)
-      .catch(() => {
-        /* return undefined */
-      })
-
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
       return `${context.username}, Invalid username! (given: ${givenUsername})`
     }
 
-    const slayersProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles)
-      .then((profiles) => profiles.find((p) => p.selected))
-      .then((response) => response?.members[uuid].slayer_bosses)
-    assert(slayersProfile)
+    const profile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const slayerBosses = profile.slayer.slayer_bosses
 
     let chosenSlayer: string | undefined
     for (const [key, names] of Object.entries(Slayers)) {
@@ -82,7 +71,7 @@ export default class Slayer extends ChatCommandHandler {
       }
     }
 
-    for (const [name, slayer] of Object.entries(slayersProfile)) {
+    for (const [name, slayer] of Object.entries(slayerBosses)) {
       if (name === chosenSlayer) {
         return (
           `${givenUsername}'s ${chosenSlayer} slayer: ` +
@@ -93,7 +82,7 @@ export default class Slayer extends ChatCommandHandler {
     }
 
     let output = '/'
-    for (const [name, slayer] of Object.entries(slayersProfile)) {
+    for (const [name, slayer] of Object.entries(slayerBosses)) {
       output += this.getSlayerLevel(slayer.xp, name) + '/'
     }
     return `${givenUsername}'s slayers: ${output}`
