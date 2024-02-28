@@ -2,52 +2,27 @@ import type { ChatCommandContext } from '../common/command-interface'
 import { ChatCommandHandler } from '../common/command-interface'
 import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util'
 
-enum Catacombs {
-  // noinspection JSUnusedGlobalSymbols
-  'entrance' = '0',
-  'f1' = '1',
-  'f2' = '2',
-  'f3' = '3',
-  'f4' = '4',
-  'f5' = '5',
-  'f6' = '6',
-  'f7' = '7'
-}
-
-enum MasterMode {
-  // noinspection JSUnusedGlobalSymbols
-  'm1' = '1',
-  'm2' = '2',
-  'm3' = '3',
-  'm4' = '4',
-  'm5' = '5',
-  'm6' = '6',
-  'm7' = '7'
-}
-
 export default class Runs extends ChatCommandHandler {
   constructor() {
     super({
       name: 'Runs',
       triggers: ['runs', 'r'],
       description: 'Returns how many dungeon runs a player has done',
-      example: `runs m7 %s`
+      example: `runs mm %s`
     })
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const floor = context.args[0]?.toLowerCase()
+    const givenType = context.args[0]?.toLowerCase() ?? 'cata'
     const givenUsername = context.args[1] ?? context.username
-    let dungeonType: string | undefined = undefined
 
-    if (Object.keys(Catacombs).includes(floor)) {
-      dungeonType = 'catacombs'
-    }
-    if (Object.keys(MasterMode).includes(floor)) {
-      dungeonType = 'mastermode'
-    }
-    if (dungeonType === undefined) {
-      return `${context.username}, Invalid floor! (given: ${floor})`
+    let masterMode = false
+    if (givenType == 'cata' || givenType === 'catacombs') {
+      masterMode = false
+    } else if (givenType === 'mm' || givenType === 'mastermode') {
+      masterMode = true
+    } else {
+      return `${context.username}, invalid type. can be 'cata'/'mm' but not '${givenType}'`
     }
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
@@ -56,20 +31,17 @@ export default class Runs extends ChatCommandHandler {
     }
 
     const parsedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const dungeon = parsedProfile.dungeons.dungeon_types
 
-    let amount = 0
+    const runs = masterMode
+      ? this.getTotalRuns(dungeon.master_catacombs.tier_completions)
+      : this.getTotalRuns(dungeon.catacombs.tier_completions)
+    return `${givenUsername}: ${givenType} - ${runs.join('/')}`
+  }
 
-    if (dungeonType == 'catacombs') {
-      amount =
-        parsedProfile.dungeons.dungeon_types.catacombs.tier_completions[Catacombs[floor as keyof typeof Catacombs]]
-    }
-    if (dungeonType == 'mastermode') {
-      amount =
-        parsedProfile.dungeons.dungeon_types.master_catacombs.tier_completions[
-          MasterMode[floor as keyof typeof MasterMode]
-        ]
-    }
-
-    return `${givenUsername}: ${floor} - ${amount || 0}`
+  private getTotalRuns(runs: Record<string, number>): number[] {
+    return Object.entries(runs)
+      .filter(([key]) => key !== 'total')
+      .map(([, value]) => value)
   }
 }
