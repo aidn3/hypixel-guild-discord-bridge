@@ -36,7 +36,7 @@ app
   .then(() => {
     logger.info('App is connected')
   })
-  .catch((error): void => {
+  .catch((error: unknown): void => {
     logger.fatal(error)
     logger.warn('stopping the process for the controller to restart this node...')
     process.exitCode = 1

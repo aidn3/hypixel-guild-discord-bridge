@@ -24,7 +24,7 @@ export function resolveProxyIfExist(
   const host = defaultBotOptions.host
   const port = defaultBotOptions.port
 
-  let connect
+  let connect: (client: Client) => void
   switch (protocol) {
     case ProxyProtocol.HTTP: {
       connect = createHttpConnectFunction(logger, proxyHost, proxyPort, host, port)
@@ -97,7 +97,7 @@ function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort
         client.setSocket(connectionEstablished.socket)
         client.emit('connect')
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         logger.error('proxy encountered a problem')
         console.error(error)
 

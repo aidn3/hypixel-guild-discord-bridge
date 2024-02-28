@@ -89,8 +89,8 @@ export default class Slayer extends ChatCommandHandler {
   }
 
   private getSlayerLevel(exp: number, slayer: string): number {
-    let maxLevel
-    let expTable
+    let maxLevel: number
+    let expTable: Record<number, number>
 
     if (slayer === 'vampire') {
       maxLevel = 5 // vampire slayer only goes to level 5
@@ -101,7 +101,7 @@ export default class Slayer extends ChatCommandHandler {
     }
 
     let level = 0
-    for (let x = 1; x <= maxLevel && expTable[x as keyof typeof expTable] <= exp; x++) {
+    for (let x = 1; x <= maxLevel && expTable[x] <= exp; x++) {
       level = x
     }
     return level

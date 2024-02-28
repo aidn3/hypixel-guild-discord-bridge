@@ -81,7 +81,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   }
 
   private async onChat(event: ChatEvent): Promise<void> {
-    let channels
+    let channels: string[]
     if (event.channelType === ChannelType.PUBLIC) {
       channels = this.config.publicChannelIds
     } else if (event.channelType === ChannelType.OFFICER) {
@@ -127,7 +127,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       }
     }
 
-    let channels
+    let channels: string[]
     if (event.channelType === ChannelType.PUBLIC) {
       channels = this.config.publicChannelIds
     } else if (event.channelType === ChannelType.OFFICER) {

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosResponse } from 'axios'
 import BadWords from 'bad-words'
 import type { Message, TextChannel } from 'discord.js'
 import emojisMap from 'emoji-name-map'
@@ -202,10 +202,10 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         },
         { headers: { Authorization: decoded } }
       )
-      .then((response) => {
-        return (response.data as ImgurResponse).data.link
+      .then((response: AxiosResponse<ImgurResponse, unknown>) => {
+        return response.data.data.link
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         this.clientInstance.logger.error(error)
       })
 

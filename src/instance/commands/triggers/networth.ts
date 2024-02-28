@@ -5,7 +5,7 @@
 */
 import assert from 'node:assert'
 
-import axios from 'axios'
+import axios, { type AxiosResponse } from 'axios'
 import { getNetworth, getPrices } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../common/command-interface'
@@ -48,7 +48,7 @@ export default class Networth extends ChatCommandHandler {
       .get(
         `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
       )
-      .then((response) => response.data as HypixelSkyblockMuseumRaw)
+      .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
       .then((museum) => museum.members[uuid] as object)
 
     const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {

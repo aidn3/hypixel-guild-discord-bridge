@@ -125,8 +125,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       .map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
       .map((f) => {
         this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-var-requires,unicorn/prefer-module
-        return require(f).default as PluginInterface
+        // eslint-disable-next-line @typescript-eslint/no-var-requires,unicorn/prefer-module
+        const importedPlugin: { default: PluginInterface } = require(f) as { default: PluginInterface }
+        return importedPlugin.default
       })
   }
 

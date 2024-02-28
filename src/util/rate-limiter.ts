@@ -12,7 +12,7 @@ export default class RateLimiter {
   }
 
   async wait(): Promise<void> {
-    let currentTime
+    let currentTime: number
     for (;;) {
       currentTime = Date.now()
 
