@@ -89,3 +89,5 @@ plugins:
   - './src/plugins/example-plugin.ts'
   - './src/plugins/limbo-plugin.ts'
   - './src/plugins/reaction-plugin.ts'
+  - './src/plugins/dark-auction-plugin.ts'
+  - './src/plugins/starfall-cult-plugin.ts'
