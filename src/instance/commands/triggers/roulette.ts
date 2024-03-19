@@ -60,15 +60,19 @@ export default class Roulette extends ChatCommandHandler {
       this.countSinceLastLose = 0
 
       context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
-      context.app.emit('punish', {
+      context.app.punishedUsers.punish({
         localEvent: true,
         instanceType: InstanceType.MINECRAFT,
         instanceName: context.instanceName,
 
-        name: context.username,
+        userName: context.username,
+        // not really that important to resolve uuid since it ends fast and the punishment is just a game
+        userUuid: undefined,
+        userDiscordId: undefined,
+
         type: PunishmentType.MUTE,
         till: Date.now() + 900_000,
-        forgive: false
+        reason: 'Lost in RussianRoulette game'
       })
 
       return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)

@@ -106,7 +106,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
 
   private onMessage(message: string): void {
     for (const module of this.chatModules) {
-      module.onChat({
+      void module.onChat({
         application: this.clientInstance.app,
         clientInstance: this.clientInstance,
         instanceName: this.clientInstance.instanceName,

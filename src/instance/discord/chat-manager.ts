@@ -43,7 +43,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = this.getReadableName(discordName, event.author.id)
-    if (channelType !== ChannelType.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
+    if (channelType !== ChannelType.OFFICER && (await this.hasBeenPunished(event, discordName, readableName))) return
 
     const replyUsername = await this.getReplyUsername(event)
     const readableReplyUsername =
@@ -84,12 +84,10 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     return content.slice(0, length) + '...'
   }
 
-  async hasBeenMuted(message: Message, discordName: string, readableName: string): Promise<boolean> {
+  async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishedUsers = this.clientInstance.app.punishedUsers
-    const mutedTill =
-      punishedUsers.punished(discordName, PunishmentType.MUTE) ??
-      punishedUsers.punished(readableName, PunishmentType.MUTE) ??
-      punishedUsers.punished(message.author.id, PunishmentType.MUTE)
+    const userIdentifiers = [discordName, readableName, message.author.id]
+    const mutedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.MUTE)
 
     if (mutedTill != undefined) {
       await message.reply({

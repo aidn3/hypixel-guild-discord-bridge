@@ -1,8 +1,8 @@
-import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event'
+import { ChannelType, InstanceType } from '../../../common/application-event'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
     const regex = /^Guild > (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})(?: \[\w{1,10}]){0,3}:(.{1,256})/g
 
@@ -17,7 +17,12 @@ export default {
       ) {
         return
       }
-      if (context.application.punishedUsers.punished(username, PunishmentType.MUTE) != undefined) return
+
+      const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
+      const identifiers = [username]
+      if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
+
+      if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
       context.application.emit('chat', {
