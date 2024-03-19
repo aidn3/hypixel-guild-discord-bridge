@@ -40,6 +40,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
   private readonly instances: ClientInstance<unknown>[] = []
   private readonly plugins: PluginInterface[] = []
+  private readonly configsDirectory
 
   readonly clusterHelper: ClusterHelper
   readonly punishedUsers: PunishedUsers
@@ -47,12 +48,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   readonly mojangApi: MojangApi
   readonly config: ApplicationConfig
 
-  constructor(config: ApplicationConfig) {
+  constructor(config: ApplicationConfig, configsDirectory: string) {
     super()
     this.logger = getLogger('Application')
     this.logger.trace('Application initiating')
     emitAll(this) // first thing to redirect all events
     this.config = config
+    this.configsDirectory = configsDirectory
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
@@ -115,6 +117,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         })
       }
     })
+  }
+
+  public getConfigFilePath(filename: string): string {
+    return path.resolve(this.configsDirectory, path.basename(filename))
   }
 
   private loadPlugins(): PluginInterface[] {
