@@ -20,7 +20,8 @@ import type {
   MinecraftSendChat,
   ShutdownSignal,
   BaseEvent,
-  PunishmentEvent
+  PunishmentAddEvent,
+  PunishmentForgiveEvent
 } from './common/application-event'
 import { InstanceType } from './common/application-event'
 import type { ClientInstance } from './common/client-instance'
@@ -173,9 +174,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.punishedUsers.allPunishments()) {
+    for (const punishment of this.punishedUsers.getAllPunishments()) {
       punishment.localEvent = true
-      this.emit('punish', punishment)
+      this.emit('punishmentAdd', punishment)
     }
   }
 }
@@ -220,10 +221,19 @@ export interface ApplicationEvents {
    * Broadcast instance to inform other applications nodes in cluster about its existence
    */
   selfBroadcast: (event: InstanceSelfBroadcast) => void
+
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
+   *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
+   *  @internal
    */
-  punish: (event: PunishmentEvent) => void
+  punishmentAdd: (event: PunishmentAddEvent) => void
+  /**
+   *  Broadcast any punishment forgiveness to other instances. Such as mute, ban, etc.
+   *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
+   *  @internal
+   */
+  punishmentForgive: (event: PunishmentForgiveEvent) => void
 
   /**
    * Command used to restart an instance.
