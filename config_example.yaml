@@ -91,3 +91,4 @@ plugins:
   - './src/plugins/reaction-plugin.ts'
   - './src/plugins/dark-auction-plugin.ts'
   - './src/plugins/starfall-cult-plugin.ts'
+  - './src/plugins/punishment-plugin.ts'
