@@ -1,4 +1,4 @@
-import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
+import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application'
@@ -8,7 +8,6 @@ import { escapeDiscord } from '../../../util/shared-util'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
 import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
-import type DiscordInstance from '../discord-instance'
 import { DEFAULT_TIMEOUT, interactivePaging } from '../discord-pager'
 
 const TITLE = 'Guild Log Audit'
@@ -58,17 +57,17 @@ export default {
   permission: Permission.HELPER,
   allowInstance: true,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply()
+  handler: async function (context) {
+    await context.interaction.deferReply()
 
-    const currentPage: number = interaction.options.getNumber('page') ?? 1
-    const chosenInstance: string | null = interaction.options.getString('instance')
-    const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const currentPage: number = context.interaction.options.getNumber('page') ?? 1
+    const chosenInstance: string | null = context.interaction.options.getString('instance')
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
     const soleInstance = instancesNames.length <= 1 || !!chosenInstance
     const targetInstanceName = chosenInstance ?? (instancesNames.length > 0 ? instancesNames[0] : undefined)
 
     if (!targetInstanceName) {
-      await interaction.editReply({
+      await context.interaction.editReply({
         embeds: [
           {
             title: TITLE,
@@ -86,8 +85,8 @@ export default {
       return
     }
 
-    await interactivePaging(interaction, currentPage - 1, DEFAULT_TIMEOUT, async (requestedPage) => {
-      const chatResult = await getGuildLog(clientInstance.app, targetInstanceName, requestedPage + 1)
+    await interactivePaging(context.interaction, currentPage - 1, DEFAULT_TIMEOUT, async (requestedPage) => {
+      const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
       return {
         totalPages: chatResult.guildLog?.total ?? 0,
         embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
