@@ -3,11 +3,12 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application'
 
+// values must be numbers to be comparable
 export enum Permission {
-  ANYONE = 'anyone',
-  HELPER = 'helper',
-  OFFICER = 'officer',
-  ADMIN = 'admin'
+  ANYONE,
+  HELPER,
+  OFFICER,
+  ADMIN
 }
 
 export interface CommandInterface {
