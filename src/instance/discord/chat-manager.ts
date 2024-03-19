@@ -94,7 +94,18 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         content:
           '*Looks like you are muted on the chat-bridge.*\n' +
           "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your mute will expire <t:${mutedTill}:R>!*`
+          `*Your mute expires <t:${mutedTill}:R>!*`
+      })
+      return true
+    }
+
+    const bannedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.BAN)
+    if (bannedTill != undefined) {
+      await message.reply({
+        content:
+          '*Looks like you are banned on the chat-bridge.*\n' +
+          "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
+          `*Your ban expires <t:${bannedTill}:R>!*`
       })
       return true
     }
