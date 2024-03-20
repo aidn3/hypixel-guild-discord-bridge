@@ -1,17 +1,18 @@
 {
   "root": true,
   "env": {
-    "browser": true,
-    "es2021": true,
+    "browser": false,
+    "es2021": false,
     "node": true
   },
   "plugins": ["@typescript-eslint", "unicorn"],
   "parser": "@typescript-eslint/parser",
   "extends": [
-    "plugin:import/recommended",
     "eslint:recommended",
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
     "plugin:unicorn/recommended",
     "plugin:prettier/recommended"
   ],
@@ -22,12 +23,23 @@
   },
   "rules": {
     "unicorn/prefer-top-level-await": 0,
-    "unicorn/filename-case": 0,
+    "unicorn/filename-case": 2,
     "no-use-before-define": 0,
-    "import/order": 2,
-    "import/no-unresolved": 0,
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+    "import/no-unresolved": 2,
     "import/no-cycle": 2,
     "import/newline-after-import": 2,
+    "import/no-extraneous-dependencies": 2,
+    "@typescript-eslint/consistent-type-imports": 2,
     "unicorn/no-useless-undefined": [
       "error",
       {

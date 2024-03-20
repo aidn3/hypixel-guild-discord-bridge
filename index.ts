@@ -1,9 +1,10 @@
 import { configure } from 'log4js'
-import { loadApplicationConfig } from './src/ApplicationConfig'
-import * as logConfig from './config/log4js-config.json'
-import * as packageJson from './package.json'
-import Application from './src/Application'
-import { shutdownApplication } from './src/util/SharedUtil'
+
+import logConfig from './config/log4js-config.json'
+import packageJson from './package.json'
+import Application from './src/application'
+import { loadApplicationConfig } from './src/configuration-parser'
+import { shutdownApplication } from './src/util/shared-util'
 
 console.log('Loading Logger...')
 const logger = configure(logConfig).getLogger('Main')
@@ -26,8 +27,8 @@ if (process.argv.includes('test-run')) {
 const file = process.argv[2] ?? './config.yaml'
 const app = new Application(loadApplicationConfig(file))
 
-app.on('*', (name, ...arguments_) => {
-  logger.log(`[${name}] ${JSON.stringify(arguments_)}`)
+app.on('*', (name, event) => {
+  logger.log(`[${name}] ${JSON.stringify(event)}`)
 })
 
 app
@@ -35,7 +36,7 @@ app
   .then(() => {
     logger.info('App is connected')
   })
-  .catch((error): void => {
+  .catch((error: unknown): void => {
     logger.fatal(error)
     logger.warn('stopping the process for the controller to restart this node...')
     process.exitCode = 1

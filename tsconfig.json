@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2021",
+    "target": "ES2022",
     "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "outDir": "build",
     "resolveJsonModule": true,
-    "typeRoots": ["./src/type", "./node_modules/@types"],
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "skipLibCheck": true
   },
   "ts-node": {
