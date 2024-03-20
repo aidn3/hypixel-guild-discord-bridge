@@ -30,7 +30,7 @@ export default {
         channelType: ChannelType.OFFICER,
         name: EventType.UNMUTE,
         username: responsible,
-        severity: ColorScheme.INFO,
+        severity: ColorScheme.GOOD,
         message: context.message,
         removeLater: false
       })

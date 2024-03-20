@@ -17,7 +17,7 @@ export default {
         channelType: ChannelType.PUBLIC,
         name: EventType.ONLINE,
         username,
-        severity: ColorScheme.INFO,
+        severity: ColorScheme.GOOD,
         message: context.message,
         removeLater: true
       })
