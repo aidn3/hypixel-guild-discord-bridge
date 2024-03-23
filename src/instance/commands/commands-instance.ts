@@ -108,6 +108,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     const commandResponse = await command.handler({
       app: this.app,
 
+      logger: this.logger,
       allCommands: this.commands,
       commandPrefix: this.config.commandPrefix,
       adminUsername: this.config.adminUsername,

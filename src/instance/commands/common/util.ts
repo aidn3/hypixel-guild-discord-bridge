@@ -15,32 +15,6 @@ export async function getUuidIfExists(mojangApi: MojangApi, username: string): P
   return result || undefined
 }
 
-export async function fetchBitItemPrice(item: string): Promise<number | undefined> {
-  let price: number | undefined
-  try {
-    const response = await fetch(`https://sky.coflnet.com/api/item/price/${item}/current?count=1`)
-
-    if (!response.ok) {
-      // If response status is not OK, log it and return undefined
-      console.error(`API request failed with status ${response.status} for item ${item}`)
-      console.error(response)
-      return undefined
-    }
-
-    if (!response.headers.get('Content-Type')?.includes('application/json')) {
-      // If response is not JSON, log it and return undefined
-      console.error(`Expected JSON response for item ${item}, got '${response.headers.get('Content-Type')}'`)
-      return undefined
-    }
-
-    const data = (await response.json()) as { buy?: number }
-    price = data.buy
-  } catch (error) {
-    console.error(`Failed to fetch price for ${item}`, error)
-  }
-  return price
-}
-
 export async function getSelectedSkyblockProfileRaw(hypixelApi: Client, uuid: string): Promise<SkyblockV2Member> {
   return await hypixelApi
     .getSkyblockProfiles(uuid, { raw: true })
