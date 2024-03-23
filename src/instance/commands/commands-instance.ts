@@ -6,6 +6,7 @@ import { ClientInstance } from '../../common/client-instance'
 
 import type { ChatCommandHandler } from './common/command-interface'
 import EightBallCommand from './triggers/8ball'
+import Bits from './triggers/bits'
 import Calculate from './triggers/calculate'
 import Catacomb from './triggers/catacomb'
 import DarkAuction from './triggers/darkauction'
@@ -52,7 +53,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Skills(),
       new Slayer(),
       new Toggle(),
-      new Weight()
+      new Weight(),
+      new Bits()
     ]
 
     const disabled = config.disabledCommand
