@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+
 import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
 
 import type { MojangApi } from '../../../util/mojang'
@@ -15,29 +16,29 @@ export async function getUuidIfExists(mojangApi: MojangApi, username: string): P
 }
 
 export async function fetchBitItemPrice(item: string): Promise<number | undefined> {
-  let price: number | undefined;
+  let price: number | undefined
   try {
-    const response = await fetch(`https://sky.coflnet.com/api/item/price/${item}/current?count=1`);
+    const response = await fetch(`https://sky.coflnet.com/api/item/price/${item}/current?count=1`)
 
     if (!response.ok) {
       // If response status is not OK, log it and return undefined
-      console.error(`API request failed with status ${response.status} for item ${item}`);
+      console.error(`API request failed with status ${response.status} for item ${item}`)
       console.error(response)
-      return undefined;
+      return undefined
     }
 
     if (!response.headers.get('Content-Type')?.includes('application/json')) {
       // If response is not JSON, log it and return undefined
-      console.error(`Expected JSON response for item ${item}, got '${response.headers.get('Content-Type')}'`);
-      return undefined;
+      console.error(`Expected JSON response for item ${item}, got '${response.headers.get('Content-Type')}'`)
+      return undefined
     }
 
-    const data = await response.json() as { buy?: number };
-    price = data.buy;
+    const data = (await response.json()) as { buy?: number }
+    price = data.buy
   } catch (error) {
-    console.error(`Failed to fetch price for ${item}`, error);
+    console.error(`Failed to fetch price for ${item}`, error)
   }
-  return price;
+  return price
 }
 
 export async function getSelectedSkyblockProfileRaw(hypixelApi: Client, uuid: string): Promise<SkyblockV2Member> {
