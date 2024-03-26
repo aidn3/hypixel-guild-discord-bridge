@@ -1,3 +1,5 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../../../application'
 import type { ChannelType, InstanceType } from '../../../common/application-event'
 
@@ -25,6 +27,7 @@ export abstract class ChatCommandHandler {
 export interface ChatCommandContext {
   app: Application
 
+  logger: Logger
   allCommands: ChatCommandHandler[]
   commandPrefix: string
   adminUsername: string
