@@ -94,7 +94,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         content:
           '*Looks like you are muted on the chat-bridge.*\n' +
           "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your mute expires <t:${mutedTill}:R>!*`
+          `*Your mute expires <t:${Math.floor(mutedTill / 1000)}:R>!*`
       })
       return true
     }
@@ -105,7 +105,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         content:
           '*Looks like you are banned on the chat-bridge.*\n' +
           "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your ban expires <t:${bannedTill}:R>!*`
+          `*Your ban expires <t:${Math.floor(bannedTill / 1000)}:R>!*`
       })
       return true
     }
