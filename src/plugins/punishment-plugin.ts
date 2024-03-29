@@ -1,6 +1,8 @@
+import type Application from '../application'
 import type ClusterHelper from '../cluster-helper'
-import { EventType, InstanceType, PunishmentType } from '../common/application-event'
+import { ChannelType, EventType, InstanceType, PunishmentType } from '../common/application-event'
 import type { PluginContext, PluginInterface } from '../common/plugins'
+import { ColorScheme } from '../instance/discord/common/discord-config'
 import { PunishedUsers } from '../util/punished-users'
 
 // noinspection JSUnusedGlobalSymbols
@@ -14,8 +16,20 @@ export default {
         case EventType.UNMUTE:
         case EventType.JOIN: {
           const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
-          checkBanned(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
-          checkBanned(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
+          checkBanned(
+            context.application,
+            context.application.punishedUsers,
+            context.application.clusterHelper,
+            event.username,
+            identifiers
+          )
+          checkBanned(
+            context.application,
+            context.application.punishedUsers,
+            context.application.clusterHelper,
+            event.username,
+            identifiers
+          )
           break
         }
         case EventType.MUTE:
@@ -24,7 +38,13 @@ export default {
         case EventType.OFFLINE:
         case EventType.ONLINE: {
           const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
-          checkBanned(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
+          checkBanned(
+            context.application,
+            context.application.punishedUsers,
+            context.application.clusterHelper,
+            event.username,
+            identifiers
+          )
         }
       }
     })
@@ -33,7 +53,13 @@ export default {
     context.application.on('chat', async (event) => {
       if (event.instanceType !== InstanceType.MINECRAFT) return
       const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
-      checkBanned(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
+      checkBanned(
+        context.application,
+        context.application.punishedUsers,
+        context.application.clusterHelper,
+        event.username,
+        identifiers
+      )
       checkMuted(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
     })
   }
@@ -55,6 +81,7 @@ function checkMuted(
 }
 
 function checkBanned(
+  application: Application,
   punishedUsers: PunishedUsers,
   clusterHelper: ClusterHelper,
   username: string,
@@ -63,6 +90,20 @@ function checkBanned(
   const bannedTill = punishedUsers.getPunishedTill(identifiers, PunishmentType.BAN)
 
   if (bannedTill) {
-    clusterHelper.sendCommandToAllMinecraft(`/guild kick ${username} Banned till ${new Date(bannedTill).toUTCString()}`)
+    // TODO: Enable auto kicking after ensuring the changes are safe
+    clusterHelper.sendCommandToAllMinecraft(
+      `/guild NOT_KICK ${username} Banned till ${new Date(bannedTill).toUTCString()}`
+    )
+    application.emit('event', {
+      localEvent: true,
+      instanceType: InstanceType.MAIN,
+      username: username,
+      message: `Punishments System tried to kick ${username}`,
+      instanceName: InstanceType.MAIN,
+      name: EventType.AUTOMATED,
+      channelType: ChannelType.OFFICER,
+      severity: ColorScheme.BAD,
+      removeLater: false
+    })
   }
 }

@@ -5,7 +5,7 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcomm
 
 import type Application from '../../../application'
 import type { PunishmentAddEvent } from '../../../common/application-event'
-import { InstanceType, PunishmentType } from '../../../common/application-event'
+import { ChannelType, EventType, InstanceType, PunishmentType } from '../../../common/application-event'
 import type { MojangApi } from '../../../util/mojang'
 import { PunishedUsers } from '../../../util/punished-users'
 import { escapeDiscord, getDuration } from '../../../util/shared-util'
@@ -209,9 +209,21 @@ async function handleBanAddInteraction(
   }
 
   application.punishedUsers.punish(event)
+  // TODO: Enable auto kicking after ensuring the changes are safe
   application.clusterHelper.sendCommandToAllMinecraft(
-    `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
+    `/guild NOT_kick ${username} Banned for ${duration}. Reason: ${reason}`
   )
+  application.emit('event', {
+    localEvent: true,
+    instanceType: InstanceType.MAIN,
+    username: username,
+    message: `Punishments System tried to kick ${username}`,
+    instanceName: InstanceType.MAIN,
+    name: EventType.AUTOMATED,
+    channelType: ChannelType.OFFICER,
+    severity: ColorScheme.BAD,
+    removeLater: false
+  })
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck)] })
 }
