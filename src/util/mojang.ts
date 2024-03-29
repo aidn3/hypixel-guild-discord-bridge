@@ -1,6 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import axios from 'axios'
-`import NodeCache from 'node-cache'
+import NodeCache from 'node-cache'
 
 export class MojangApi {
   private readonly cache = new NodeCache({ maxKeys: 10_000, stdTTL: 24 * 60 * 60 })
