@@ -53,8 +53,8 @@ export default class Slayer extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const givenSlayer = context.args[0] ?? 'overview'
-    const givenUsername = context.args[1] ?? context.username
+    const givenUsername = context.args[0] ?? context.username
+    const givenSlayer = context.args[1] ?? 'overview'
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
