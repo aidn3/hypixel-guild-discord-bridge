@@ -1,31 +1,26 @@
 import type { AxiosResponse } from 'axios'
 import axios from 'axios'
+`import NodeCache from 'node-cache'
 
 export class MojangApi {
-  private static readonly CACHE_MAX_LIFE = 24 * 60 * 60 * 1000 // 1 day
-  private static readonly CACHE_CLEAN_EVERY = 60 * 60 * 1000 // 1 hour
-  private cache = new Map<string, CachedMojangProfile>()
-  private lastCacheCleanAt = 0
+  private readonly cache = new NodeCache({ maxKeys: 10_000, stdTTL: 24 * 60 * 60 })
 
   async profileByUsername(username: string): Promise<MojangProfile> {
-    this.cleanCache()
-    const cachedResult = this.cache.get(username.toLowerCase())
+    const cachedResult = this.cache.get<MojangProfile>(username.toLowerCase())
     if (cachedResult) return cachedResult
 
     const result = await axios
       .get(`https://api.mojang.com/users/profiles/minecraft/${username}`)
       .then((response: AxiosResponse<MojangProfile, unknown>) => response.data)
 
-    this.cache.set(result.name.toLowerCase(), { ...result, fetchedAt: Date.now() })
+    this.cache.set<MojangProfile>(result.name.toLowerCase(), result)
     return result
   }
 
   async profilesByUsername(usernames: string[]): Promise<MojangProfile[]> {
-    this.cleanCache()
-
     const partialResult = usernames
-      .map((username) => this.cache.get(username.toLowerCase()))
-      .filter((entry) => entry !== undefined) as CachedMojangProfile[]
+      .map((username) => this.cache.get<MojangProfile>(username.toLowerCase()))
+      .filter((entry) => entry !== undefined) as MojangProfile[]
 
     const leftUsernames = usernames.filter(
       (username) => !partialResult.some((result) => username.toLowerCase() === result.name.toLowerCase())
@@ -37,24 +32,11 @@ export class MojangApi {
       .post(`https://api.mojang.com/profiles/minecraft`, leftUsernames)
       .then((response: AxiosResponse<MojangProfile[], unknown>) => response.data)
 
-    const currentTime = Date.now()
     for (const mojangProfile of result) {
-      this.cache.set(mojangProfile.name.toLowerCase(), { ...mojangProfile, fetchedAt: currentTime })
+      this.cache.set<MojangProfile>(mojangProfile.name.toLowerCase(), mojangProfile)
     }
 
     return [...result, ...partialResult]
-  }
-
-  private cleanCache(): void {
-    const currentTime = Date.now()
-
-    for (const key of Object.keys(this.cache.keys())) {
-      const cachedResult = this.cache.get(key)!
-      const valid = cachedResult.fetchedAt + MojangApi.CACHE_MAX_LIFE > currentTime
-      if (!valid) {
-        this.cache.delete(key)
-      }
-    }
   }
 }
 
@@ -62,5 +44,3 @@ export interface MojangProfile {
   id: string
   name: string
 }
-
-type CachedMojangProfile = MojangProfile & { fetchedAt: number }
