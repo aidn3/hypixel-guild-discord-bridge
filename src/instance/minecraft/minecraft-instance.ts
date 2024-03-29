@@ -112,7 +112,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
 
   connect(): void {
     this.client?.end(QUIT_OWN_VOLITION)
-
+    this.logger.log(`Attempting login to instance ${this.instanceName}`);
     this.client = createClient({
       ...this.defaultBotConfig,
       username: this.config.email,
