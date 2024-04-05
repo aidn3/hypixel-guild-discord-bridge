@@ -22,6 +22,7 @@ export const ApplicationEvents = t.iface([], {
 
 export const InstanceType = t.enumtype({
   "MAIN": "main",
+  "PLUGIN": "plugin",
   "METRICS": "metrics",
   "SOCKET": "socket",
   "COMMANDS": "commands",

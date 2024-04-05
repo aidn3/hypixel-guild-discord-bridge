@@ -12,6 +12,7 @@ export interface PluginInterface {
 
 export interface PluginContext {
   logger: Logger
+  pluginName: string
   application: Application
   localInstances: ClientInstance<unknown>[]
 

@@ -70,6 +70,8 @@ export interface ApplicationEvents {
 
 export enum InstanceType {
   MAIN = 'main',
+  PLUGIN = 'plugin',
+
   METRICS = 'metrics',
   SOCKET = 'socket',
   COMMANDS = 'commands',

@@ -142,6 +142,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     for (const p of this.plugins) {
       p.plugin.onRun({
         logger: getLogger(`plugin-${p.name}`),
+        pluginName: p.name,
         application: this,
         // only shared with plugins to directly modify instances
         // everything else is encapsulated
