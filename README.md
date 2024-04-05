@@ -35,6 +35,7 @@ offering quality user experience while keeping it simple
   - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
   - [Node Modes](#node-modes)
   - [Setup Cluster](#setup-cluster)
+- [Documentation and Tutorials](#documentation-and-tutorials)
 - [Credits](#Credits)
 
 ## Features
@@ -269,6 +270,10 @@ All configurations will be in `config.yaml` under `socket` section.
 - Start all nodes
 
 ---
+
+## Documentation And Tutorials
+
+- [How to create plugins](./PLUGIN-TUTORIAL.md)
 
 ## Credits
 
