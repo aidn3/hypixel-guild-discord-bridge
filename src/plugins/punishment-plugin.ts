@@ -70,15 +70,11 @@ function checkBanned(
   const bannedTill = punishedUsers.getPunishedTill(identifiers, PunishmentType.BAN)
 
   if (bannedTill) {
-    // TODO: Enable auto kicking after ensuring the changes are safe
-    clusterHelper.sendCommandToAllMinecraft(
-      `/guild NOT_KICK ${username} Banned till ${new Date(bannedTill).toUTCString()}`
-    )
     application.emit('event', {
       localEvent: true,
       instanceType: InstanceType.MAIN,
       username: username,
-      message: `Punishments System tried to kick ${username}`,
+      message: `Punishments-System tried to kick ${username} since they are banned.`,
       instanceName: InstanceType.MAIN,
       name: EventType.AUTOMATED,
       channelType: ChannelType.OFFICER,

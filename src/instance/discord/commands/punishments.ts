@@ -209,9 +209,8 @@ async function handleBanAddInteraction(
   }
 
   application.punishedUsers.punish(event)
-  // TODO: Enable auto kicking after ensuring the changes are safe
   application.clusterHelper.sendCommandToAllMinecraft(
-    `/guild NOT_kick ${username} Banned for ${duration}. Reason: ${reason}`
+    `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
   )
   application.emit('event', {
     localEvent: true,
