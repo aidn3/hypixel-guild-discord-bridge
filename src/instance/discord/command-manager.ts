@@ -17,19 +17,17 @@ import AcceptCommand from './commands/accept'
 import ConnectivityCommand from './commands/connectivity'
 import DemoteCommand from './commands/demote'
 import InviteCommand from './commands/invite'
-import KickCommand from './commands/kick'
 import ListCommand from './commands/list'
 import LogCommand from './commands/log'
-import MuteCommand from './commands/mute'
 import OverrideCommand from './commands/override'
 import PingCommand from './commands/ping'
 import PromoteCommand from './commands/promote'
+import PunishmentsCommand from './commands/punishments'
 import ReconnectCommand from './commands/reconnect'
 import RestartCommand from './commands/restart'
 import SetrankCommand from './commands/setrank'
-import UnmuteCommand from './commands/unmute'
+import type { CommandInterface, DiscordCommandContext } from './common/command-interface'
 import { Permission } from './common/command-interface'
-import type { CommandInterface } from './common/command-interface'
 import type DiscordInstance from './discord-instance'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
@@ -72,17 +70,15 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       ConnectivityCommand,
       DemoteCommand,
       InviteCommand,
-      KickCommand,
       ListCommand,
       LogCommand,
-      MuteCommand,
       OverrideCommand,
       PingCommand,
       PromoteCommand,
+      PunishmentsCommand,
       ReconnectCommand,
       SetrankCommand,
-      RestartCommand,
-      UnmuteCommand
+      RestartCommand
     ]
 
     for (const command of toAdd) {
@@ -135,7 +131,30 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           alreadyReplied: true
         })
 
-        return command.handler(this.clientInstance, interaction as ChatInputCommandInteraction)
+        const commandContext: DiscordCommandContext = {
+          application: this.clientInstance.app,
+          logger: this.clientInstance.logger,
+          instanceName: this.clientInstance.instanceName,
+          privilege: this.resolvePrivilegeLevel(interaction),
+          interaction: interaction as ChatInputCommandInteraction,
+
+          showPermissionDenied: async () => {
+            if (interaction.deferred || interaction.replied) {
+              await interaction.editReply({
+                content: "You don't have permission to execute this command"
+              })
+              return
+            } else {
+              await interaction.reply({
+                content: "You don't have permission to execute this command",
+                ephemeral: true
+              })
+              return
+            }
+          }
+        }
+
+        return command.handler(commandContext)
       } else {
         this.clientInstance.logger.debug('No permission to execute this command')
 
@@ -180,20 +199,26 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   }
 
   private memberAllowed(interaction: CommandInteraction, permissionLevel: Permission): boolean {
-    if (permissionLevel === Permission.ANYONE || interaction.user.id === this.clientInstance.config.adminId) return true
+    if (permissionLevel === Permission.ANYONE) return true
+
+    return this.resolvePrivilegeLevel(interaction) >= permissionLevel
+  }
+
+  private resolvePrivilegeLevel(interaction: CommandInteraction): Permission {
+    if (interaction.user.id === this.clientInstance.config.adminId) return Permission.ADMIN
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
-    if (roles == undefined) return false
+    if (roles == undefined) return Permission.ANYONE
 
-    let highestPerm = Permission.ANYONE
-    if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds.includes(role.id))) {
-      highestPerm = Permission.HELPER
-    }
     if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.includes(role.id))) {
-      highestPerm = Permission.OFFICER
+      return Permission.OFFICER
     }
 
-    return highestPerm >= permissionLevel
+    if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds.includes(role.id))) {
+      return Permission.HELPER
+    }
+
+    return Permission.ANYONE
   }
 
   private getChannelType(channelId: string): ChannelType | undefined {

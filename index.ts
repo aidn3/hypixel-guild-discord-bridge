@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import { configure } from 'log4js'
 
 import logConfig from './config/log4js-config.json'
@@ -25,7 +27,10 @@ if (process.argv.includes('test-run')) {
 }
 
 const file = process.argv[2] ?? './config.yaml'
-const app = new Application(loadApplicationConfig(file))
+
+// eslint-disable-next-line unicorn/prefer-module
+const configsDirectory = path.resolve(__dirname, 'config')
+const app = new Application(loadApplicationConfig(file), configsDirectory)
 
 app.on('*', (name, event) => {
   logger.log(`[${name}] ${JSON.stringify(event)}`)

@@ -43,7 +43,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = this.getReadableName(discordName, event.author.id)
-    if (channelType !== ChannelType.OFFICER && (await this.hasBeenMuted(event, discordName, readableName))) return
+    if (channelType !== ChannelType.OFFICER && (await this.hasBeenPunished(event, discordName, readableName))) return
 
     const replyUsername = await this.getReplyUsername(event)
     const readableReplyUsername =
@@ -84,19 +84,28 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     return content.slice(0, length) + '...'
   }
 
-  async hasBeenMuted(message: Message, discordName: string, readableName: string): Promise<boolean> {
+  async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishedUsers = this.clientInstance.app.punishedUsers
-    const mutedTill =
-      punishedUsers.punished(discordName, PunishmentType.MUTE) ??
-      punishedUsers.punished(readableName, PunishmentType.MUTE) ??
-      punishedUsers.punished(message.author.id, PunishmentType.MUTE)
+    const userIdentifiers = [discordName, readableName, message.author.id]
+    const mutedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.MUTE)
 
     if (mutedTill != undefined) {
       await message.reply({
         content:
           '*Looks like you are muted on the chat-bridge.*\n' +
           "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your mute will expire <t:${mutedTill}:R>!*`
+          `*Your mute expires <t:${Math.floor(mutedTill / 1000)}:R>!*`
+      })
+      return true
+    }
+
+    const bannedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.BAN)
+    if (bannedTill != undefined) {
+      await message.reply({
+        content:
+          '*Looks like you are banned on the chat-bridge.*\n' +
+          "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
+          `*Your ban expires <t:${Math.floor(bannedTill / 1000)}:R>!*`
       })
       return true
     }

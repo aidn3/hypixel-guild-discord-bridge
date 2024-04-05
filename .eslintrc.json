@@ -43,7 +43,8 @@
     "unicorn/no-useless-undefined": [
       "error",
       {
-        "checkArguments": false
+        "checkArguments": false,
+        "checkArrowFunctionBody": false
       }
     ]
   }

@@ -115,16 +115,26 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 
 export type InstanceSelfBroadcast = InformEvent
 
-export interface PunishmentEvent extends InformEvent {
+export interface PunishmentAddEvent extends InformEvent {
   type: PunishmentType
-  name: string
+  userName: string
+  userUuid: string | undefined
+  userDiscordId: string | undefined
+
+  reason: string
   till: number
-  forgive: boolean
+}
+
+export interface PunishmentForgiveEvent extends InformEvent {
+  /**
+   * Any identifiable data about the userIdentifiers. Be it the userName or the userUuid
+   */
+  userIdentifiers: string[]
 }
 
 export enum PunishmentType {
-  MUTE,
-  BAN
+  MUTE = 'mute',
+  BAN = 'ban'
 }
 
 export interface MinecraftSendChat extends SignalEvent {
