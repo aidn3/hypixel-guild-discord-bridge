@@ -309,6 +309,8 @@ async function handleForgiveInteraction(
     userIdentifiers: userIdentifiers
   })
 
+  application.clusterHelper.sendCommandToAllMinecraft(`/guild unmute ${userResolvedData.userName}`)
+
   const pages: APIEmbed[] = []
   for (let index = 0; index < forgivenPunishments.length; index++) {
     const description = `__**Page ${index + 1} out of ${forgivenPunishments.length}**__\nPunishment(s) forgiven.`
