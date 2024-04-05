@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js'
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application'
 import type { PunishmentAddEvent } from '../../../common/application-event'
@@ -19,63 +19,46 @@ export default {
     new SlashCommandBuilder()
       .setName('punishments')
       .setDescription('Manage active punishments')
-      .addSubcommandGroup(
-        new SlashCommandSubcommandGroupBuilder()
+
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
           .setName('ban')
-          .setDescription('Manage banned members')
-          .addSubcommand(
-            new SlashCommandSubcommandBuilder()
-              .setName('add')
-              .setDescription('Add a member to banned list')
-              .addStringOption((option) =>
-                option.setName('username').setDescription('username of the player to ban').setRequired(true)
-              )
-              .addStringOption((option) =>
-                option.setName('reason').setDescription('reason to ban the player').setRequired(true)
-              )
-              .addStringOption((option) =>
-                option
-                  .setName('duration')
-                  .setDescription('duration of the ban. Can use 1s, 1m, 1h, 1d')
-                  .setRequired(true)
-              )
-              .addBooleanOption((option) =>
-                option.setName('no-discord').setDescription('Do not check with Discord for similar names')
-              )
-              .addBooleanOption((option) =>
-                option.setName('no-uuid').setDescription('Do not check with Mojang for user UUID')
-              )
+          .setDescription('Add a member to banned list')
+          .addStringOption((option) =>
+            option.setName('username').setDescription('username of the player to ban').setRequired(true)
           )
-          .addSubcommand(new SlashCommandSubcommandBuilder().setName('list').setDescription('list all banned members'))
+          .addStringOption((option) =>
+            option.setName('reason').setDescription('reason to ban the player').setRequired(true)
+          )
+          .addStringOption((option) =>
+            option.setName('duration').setDescription('duration of the ban. Can use 1s, 1m, 1h, 1d').setRequired(true)
+          )
+          .addBooleanOption((option) =>
+            option.setName('no-discord').setDescription('Do not check with Discord for similar names')
+          )
+          .addBooleanOption((option) =>
+            option.setName('no-uuid').setDescription('Do not check with Mojang for user UUID')
+          )
       )
-      .addSubcommandGroup(
-        new SlashCommandSubcommandGroupBuilder()
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
           .setName('mute')
-          .setDescription('Manage muted members')
-          .addSubcommand(
-            new SlashCommandSubcommandBuilder()
-              .setName('add')
-              .setDescription('Add a member to muted list')
-              .addStringOption((option) =>
-                option.setName('username').setDescription('username of the player to mute').setRequired(true)
-              )
-              .addStringOption((option) =>
-                option.setName('reason').setDescription('reason to mute the player').setRequired(true)
-              )
-              .addStringOption((option) =>
-                option
-                  .setName('duration')
-                  .setDescription('duration of the mute. Can use 1s, 1m, 1h, 1d')
-                  .setRequired(true)
-              )
-              .addBooleanOption((option) =>
-                option.setName('no-discord').setDescription('Do not check with Discord for similar names')
-              )
-              .addBooleanOption((option) =>
-                option.setName('no-uuid').setDescription('Do not check with Mojang for user UUID')
-              )
+          .setDescription('Add a member to muted list')
+          .addStringOption((option) =>
+            option.setName('username').setDescription('username of the player to mute').setRequired(true)
           )
-          .addSubcommand(new SlashCommandSubcommandBuilder().setName('list').setDescription('list all muted members'))
+          .addStringOption((option) =>
+            option.setName('reason').setDescription('reason to mute the player').setRequired(true)
+          )
+          .addStringOption((option) =>
+            option.setName('duration').setDescription('duration of the mute. Can use 1s, 1m, 1h, 1d').setRequired(true)
+          )
+          .addBooleanOption((option) =>
+            option.setName('no-discord').setDescription('Do not check with Discord for similar names')
+          )
+          .addBooleanOption((option) =>
+            option.setName('no-uuid').setDescription('Do not check with Mojang for user UUID')
+          )
       )
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
@@ -125,47 +108,20 @@ export default {
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    console.log(JSON.stringify(context.interaction.options))
-
-    switch (context.interaction.options.getSubcommandGroup()) {
+    switch (context.interaction.options.getSubcommand()) {
       case 'ban': {
-        switch (context.interaction.options.getSubcommand(true)) {
-          case 'add': {
-            if (context.privilege < Permission.OFFICER) {
-              await context.showPermissionDenied()
-              return
-            }
-
-            await handleBanAddInteraction(context.application, context.instanceName, context.interaction)
-            return
-          }
-          case 'list': {
-            await handleBanListInteraction(context.application, context.interaction)
-            return
-          }
-          default: {
-            throw new Error('New sub command found?')
-          }
+        if (context.privilege < Permission.OFFICER) {
+          await context.showPermissionDenied()
+          return
         }
+
+        await handleBanAddInteraction(context.application, context.instanceName, context.interaction)
+        return
       }
       case 'mute': {
-        switch (context.interaction.options.getSubcommand(true)) {
-          case 'add': {
-            await handleMuteAddInteraction(context.application, context.instanceName, context.interaction)
-            return
-          }
-          case 'list': {
-            await handleMuteListInteraction(context.application, context.interaction)
-            return
-          }
-          default: {
-            throw new Error('New sub command found?')
-          }
-        }
+        await handleMuteAddInteraction(context.application, context.instanceName, context.interaction)
+        return
       }
-    }
-
-    switch (context.interaction.options.getSubcommand()) {
       case 'kick': {
         if (context.privilege < Permission.OFFICER) {
           await context.showPermissionDenied()
@@ -236,14 +192,6 @@ async function handleBanAddInteraction(
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck)] })
 }
 
-async function handleBanListInteraction(
-  application: Application,
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
-  const list = application.punishedUsers.getPunishmentsByType(PunishmentType.BAN)
-  await pageMessage(interaction, formatList(list))
-}
-
 async function handleMuteAddInteraction(
   application: Application,
   instanceName: string,
@@ -282,14 +230,6 @@ async function handleMuteAddInteraction(
   )
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck)] })
-}
-
-async function handleMuteListInteraction(
-  application: Application,
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
-  const list = application.punishedUsers.getPunishmentsByType(PunishmentType.MUTE)
-  await pageMessage(interaction, formatList(list))
 }
 
 async function handleKickInteraction(
