@@ -33,6 +33,10 @@ export default class LoggerInstance extends ClientInstance<undefined> {
     this.app.on('selfBroadcast', (event) => {
       void this.send(`[selfBroadcast][${event.instanceName}] Instance broadcasting its existence.`)
     })
+    this.app.on('statusMessage', (event) => {
+      void this.send(`[statusMessage][${event.instanceName}] ${event.message}`)
+    })
+
     this.app.on('reconnectSignal', (event) => {
       void this.send(`[reconnectSignal][target=${event.targetInstanceName}] Reconnect signal has been sent.`)
     })

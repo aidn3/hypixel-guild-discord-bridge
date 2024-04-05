@@ -69,6 +69,10 @@ export interface ApplicationEvents {
    * Command used to send a chat message/command through a minecraft instance
    */
   minecraftSend: (event: MinecraftSendChat) => void
+  /**
+   * Display a useful message coming from the internal components
+   */
+  statusMessage: (event: StatusMessageEvent) => void
 }
 
 /**
@@ -444,6 +448,17 @@ export interface PunishmentForgiveEvent extends InformEvent {
 export enum PunishmentType {
   MUTE = 'mute',
   BAN = 'ban'
+}
+
+/**
+ * Event that contains information that might prove useful.
+ * Used to display internal status of the application internal components to the user outside the console.
+ */
+export interface StatusMessageEvent extends InformEvent {
+  /**
+   * The message content that explains the status
+   */
+  readonly message: string
 }
 
 /**

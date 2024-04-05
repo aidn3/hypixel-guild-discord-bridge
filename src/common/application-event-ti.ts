@@ -18,6 +18,7 @@ export const ApplicationEvents = t.iface([], {
   "minecraftSelfBroadcast": t.func("void", t.param("event", "MinecraftSelfBroadcast")),
   "minecraftChat": t.func("void", t.param("event", "MinecraftRawChatEvent")),
   "minecraftSend": t.func("void", t.param("event", "MinecraftSendChat")),
+  "statusMessage": t.func("void", t.param("event", "StatusMessageEvent")),
 });
 
 export const InstanceType = t.enumtype({
@@ -146,6 +147,10 @@ export const PunishmentType = t.enumtype({
   "BAN": "ban",
 });
 
+export const StatusMessageEvent = t.iface(["InformEvent"], {
+  "message": "string",
+});
+
 export const MinecraftSendChat = t.iface(["SignalEvent"], {
   "command": "string",
 });
@@ -176,6 +181,7 @@ const exportedTypeSuite: t.ITypeSuite = {
   PunishmentAddEvent,
   PunishmentForgiveEvent,
   PunishmentType,
+  StatusMessageEvent,
   MinecraftSendChat,
   ReconnectSignal,
   ShutdownSignal,

@@ -117,7 +117,15 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       ...this.defaultBotConfig,
       username: this.config.email,
       auth: 'microsoft',
-      ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig)
+      ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
+      onMsaCode: (code) => {
+        this.app.emit('statusMessage', {
+          localEvent: true,
+          instanceName: this.instanceName,
+          instanceType: InstanceType.MINECRAFT,
+          message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
+        })
+      }
     })
     this.listenForRegistry(this.client)
 
