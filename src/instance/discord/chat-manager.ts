@@ -1,5 +1,4 @@
 import axios, { type AxiosResponse } from 'axios'
-import BadWords from 'bad-words'
 import type { Message, TextChannel } from 'discord.js'
 import emojisMap from 'emoji-name-map'
 
@@ -10,17 +9,6 @@ import { escapeDiscord } from '../../util/shared-util'
 import type DiscordInstance from './discord-instance'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
-  private readonly profanityFilter: BadWords.BadWords
-
-  constructor(clientInstance: DiscordInstance) {
-    super(clientInstance)
-
-    this.profanityFilter = new BadWords({
-      emptyList: !clientInstance.app.config.profanity.enabled
-    })
-    this.profanityFilter.removeWords(...clientInstance.app.config.profanity.whitelisted)
-  }
-
   registerEvents(): void {
     this.clientInstance.client.on('messageCreate', async (message) => {
       await this.onMessage(message)
@@ -116,7 +104,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   async proceedFiltering(message: Message, content: string): Promise<string> {
     let filteredMessage: string
     try {
-      filteredMessage = this.profanityFilter.clean(content)
+      filteredMessage = this.clientInstance.app.profanityFilter.clean(content)
     } catch {
       /*
         profanity package has bug.
