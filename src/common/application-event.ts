@@ -1,3 +1,73 @@
+export interface ApplicationEvents {
+  /**
+   * Receive all events
+   * @param name event name
+   * @param event event object
+   */
+  '*': <T extends BaseEvent>(name: string, event: T) => void
+
+  /**
+   * User sending messages
+   */
+  chat: (event: ChatEvent) => void
+  /**
+   * User join/leave/offline/online/mute/kick/etc
+   */
+  event: (event: ClientEvent) => void
+  /**
+   * User executing a command
+   */
+  command: (event: CommandEvent) => void
+
+  /**
+   * Internal instance start/connect/disconnect/etc
+   */
+  instance: (event: InstanceEvent) => void
+  /**
+   * Broadcast instance to inform other applications nodes in cluster about its existence
+   */
+  selfBroadcast: (event: InstanceSelfBroadcast) => void
+
+  /**
+   *  Broadcast any punishment to other instances. Such as mute, ban, etc.
+   *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
+   *  @internal
+   */
+  punishmentAdd: (event: PunishmentAddEvent) => void
+  /**
+   *  Broadcast any punishment forgiveness to other instances. Such as mute, ban, etc.
+   *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
+   *  @internal
+   */
+  punishmentForgive: (event: PunishmentForgiveEvent) => void
+
+  /**
+   * Command used to restart an instance.
+   * Note: This is currently only registered in Minecraft instances
+   */
+  reconnectSignal: (event: ReconnectSignal) => void
+  /**
+   * Command used to shut down the bridge.
+   * It will take some time for the bridge to shut down.
+   * Bridge will auto restart if a service monitor is used.
+   */
+  shutdownSignal: (event: ShutdownSignal) => void
+
+  /**
+   * Used to broadcast which in-game username/uuid belongs to which bot.
+   * Useful to distinguish in-game between players and bots
+   */
+  minecraftSelfBroadcast: (event: MinecraftSelfBroadcast) => void
+  /**
+   * Minecraft instance raw chat
+   */
+  minecraftChat: (event: MinecraftRawChatEvent) => void
+  /**
+   * Command used to send a chat message/command through a minecraft instance
+   */
+  minecraftSend: (event: MinecraftSendChat) => void
+}
+
 export enum InstanceType {
   MAIN = 'main',
   METRICS = 'metrics',

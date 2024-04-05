@@ -7,7 +7,7 @@ import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
 
 import type Application from '../../application'
-import type { ApplicationEvents } from '../../application'
+import type { ApplicationEvents } from '../../common/application-event'
 
 import type { WebsocketPacket } from './common'
 import { AuthenticationHeader } from './common'

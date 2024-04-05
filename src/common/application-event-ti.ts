@@ -4,6 +4,22 @@
 import * as t from "ts-interface-checker";
 // tslint:disable:object-literal-key-quotes
 
+export const ApplicationEvents = t.iface([], {
+  "*": t.func("void", t.param("name", "string"), t.param("event", "T")),
+  "chat": t.func("void", t.param("event", "ChatEvent")),
+  "event": t.func("void", t.param("event", "ClientEvent")),
+  "command": t.func("void", t.param("event", "CommandEvent")),
+  "instance": t.func("void", t.param("event", "InstanceEvent")),
+  "selfBroadcast": t.func("void", t.param("event", "InstanceSelfBroadcast")),
+  "punishmentAdd": t.func("void", t.param("event", "PunishmentAddEvent")),
+  "punishmentForgive": t.func("void", t.param("event", "PunishmentForgiveEvent")),
+  "reconnectSignal": t.func("void", t.param("event", "ReconnectSignal")),
+  "shutdownSignal": t.func("void", t.param("event", "ShutdownSignal")),
+  "minecraftSelfBroadcast": t.func("void", t.param("event", "MinecraftSelfBroadcast")),
+  "minecraftChat": t.func("void", t.param("event", "MinecraftRawChatEvent")),
+  "minecraftSend": t.func("void", t.param("event", "MinecraftSendChat")),
+});
+
 export const InstanceType = t.enumtype({
   "MAIN": "main",
   "METRICS": "metrics",

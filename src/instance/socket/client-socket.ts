@@ -2,7 +2,7 @@ import type { Logger } from 'log4js'
 import { WebSocket } from 'ws'
 
 import type Application from '../../application'
-import type { ApplicationEvents } from '../../application'
+import type { ApplicationEvents } from '../../common/application-event'
 
 import type { WebsocketPacket } from './common'
 import { AuthenticationHeader } from './common'
