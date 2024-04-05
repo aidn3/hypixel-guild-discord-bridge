@@ -92,23 +92,23 @@ export interface BaseEvent {
 }
 
 interface InformEvent extends BaseEvent {
-  instanceName: string
-  instanceType: InstanceType
+  readonly instanceName: string
+  readonly instanceType: InstanceType
 }
 
 interface SignalEvent extends BaseEvent {
   /**
    * undefined is strictly used for global target.
    */
-  targetInstanceName: string | undefined
+  readonly targetInstanceName: string | undefined
 }
 
 export interface ChatEvent extends InformEvent {
-  channelType: ChannelType
-  channelId: string | undefined
-  username: string
-  replyUsername: string | undefined
-  message: string
+  readonly channelType: ChannelType
+  readonly channelId: string | undefined
+  readonly username: string
+  readonly replyUsername: string | undefined
+  readonly message: string
 }
 
 export enum EventType {
@@ -147,26 +147,26 @@ export enum Severity {
 }
 
 export interface ClientEvent extends InformEvent {
-  channelType: ChannelType
-  eventType: EventType
-  username: string | undefined
-  severity: Severity
-  message: string
-  removeLater: boolean
+  readonly channelType: ChannelType
+  readonly eventType: EventType
+  readonly username: string | undefined
+  readonly severity: Severity
+  readonly message: string
+  readonly removeLater: boolean
 }
 
 export interface CommandEvent extends InformEvent {
-  channelType: ChannelType
+  readonly channelType: ChannelType
   /**
    * Only available if the message comes from a DM.
    * Used to reply to the message
    */
-  discordChannelId?: string
-  alreadyReplied: boolean
-  username: string
-  commandName: string
-  fullCommand: string
-  commandResponse: string
+  readonly discordChannelId?: string
+  readonly alreadyReplied: boolean
+  readonly username: string
+  readonly commandName: string
+  readonly fullCommand: string
+  readonly commandResponse: string
 }
 
 export enum InstanceEventType {
@@ -180,36 +180,36 @@ export enum InstanceEventType {
 }
 
 export interface InstanceEvent extends InformEvent {
-  type: InstanceEventType
-  message: string
+  readonly type: InstanceEventType
+  readonly message: string
 }
 
 export interface MinecraftRawChatEvent extends InformEvent {
-  message: string
+  readonly message: string
 }
 
 export interface MinecraftSelfBroadcast extends InformEvent {
-  username: string
-  uuid: string
+  readonly username: string
+  readonly uuid: string
 }
 
 export type InstanceSelfBroadcast = InformEvent
 
 export interface PunishmentAddEvent extends InformEvent {
-  type: PunishmentType
-  userName: string
-  userUuid: string | undefined
-  userDiscordId: string | undefined
+  readonly type: PunishmentType
+  readonly userName: string
+  readonly userUuid: string | undefined
+  readonly userDiscordId: string | undefined
 
-  reason: string
-  till: number
+  readonly reason: string
+  readonly till: number
 }
 
 export interface PunishmentForgiveEvent extends InformEvent {
   /**
    * Any identifiable data about the userIdentifiers. Be it the userName or the userUuid
    */
-  userIdentifiers: string[]
+  readonly userIdentifiers: string[]
 }
 
 export enum PunishmentType {
@@ -218,11 +218,11 @@ export enum PunishmentType {
 }
 
 export interface MinecraftSendChat extends SignalEvent {
-  command: string
+  readonly command: string
 }
 
 export type ReconnectSignal = SignalEvent
 
 export interface ShutdownSignal extends SignalEvent {
-  restart: boolean
+  readonly restart: boolean
 }

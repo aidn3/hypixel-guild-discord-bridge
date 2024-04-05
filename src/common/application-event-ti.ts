@@ -75,7 +75,7 @@ export const EventType = t.enumtype({
   "BLOCK": "block",
 });
 
-export const ColorScheme = t.enumtype({
+export const Severity = t.enumtype({
   "GOOD": 35328,
   "INFO": 8684544,
   "BAD": 9055488,
@@ -87,7 +87,7 @@ export const ClientEvent = t.iface(["InformEvent"], {
   "channelType": "ChannelType",
   "eventType": "EventType",
   "username": t.union("string", "undefined"),
-  "severity": "ColorScheme",
+  "severity": "Severity",
   "message": "string",
   "removeLater": "boolean",
 });
@@ -165,7 +165,7 @@ const exportedTypeSuite: t.ITypeSuite = {
   SignalEvent,
   ChatEvent,
   EventType,
-  ColorScheme,
+  Severity,
   ClientEvent,
   CommandEvent,
   InstanceEventType,
