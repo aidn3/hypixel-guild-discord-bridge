@@ -212,17 +212,6 @@ async function handleBanAddInteraction(
   application.clusterHelper.sendCommandToAllMinecraft(
     `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
   )
-  application.emit('event', {
-    localEvent: true,
-    instanceType: InstanceType.MAIN,
-    username: username,
-    message: `Punishments System tried to kick ${username}`,
-    instanceName: InstanceType.MAIN,
-    name: EventType.AUTOMATED,
-    channelType: ChannelType.OFFICER,
-    severity: ColorScheme.BAD,
-    removeLater: false
-  })
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck)] })
 }
