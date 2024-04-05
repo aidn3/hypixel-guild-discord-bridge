@@ -31,7 +31,7 @@ import { Permission } from './common/command-interface'
 import type DiscordInstance from './discord-instance'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
-  private readonly commands = new Collection<string, CommandInterface>()
+  readonly commands = new Collection<string, CommandInterface>()
 
   constructor(discordInstance: DiscordInstance) {
     super(discordInstance)

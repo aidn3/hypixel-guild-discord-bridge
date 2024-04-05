@@ -16,8 +16,9 @@ import { ColorScheme } from './common/discord-config'
 import StateHandler from './handlers/state-handler'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
-  private readonly handlers
-
+  private readonly stateHandler: StateHandler
+  private readonly chatManager: ChatManager
+  readonly commandsManager: CommandManager
   readonly client: Client
   private connected = false
 
@@ -37,7 +38,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       partials: [Partials.Channel, Partials.Message]
     })
 
-    this.handlers = [new StateHandler(this), new ChatManager(this), new CommandManager(this)]
+    this.stateHandler = new StateHandler(this)
+    this.chatManager = new ChatManager(this)
+    this.commandsManager = new CommandManager(this)
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')
@@ -74,9 +77,10 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
     this.connected = true
 
-    for (const handler of this.handlers) {
-      handler.registerEvents()
-    }
+    this.stateHandler.registerEvents()
+    this.chatManager.registerEvents()
+    this.commandsManager.registerEvents()
+
     await this.client.login(this.config.key)
   }
 
