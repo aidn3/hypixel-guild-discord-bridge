@@ -23,13 +23,7 @@ export default {
             event.username,
             identifiers
           )
-          checkBanned(
-            context.application,
-            context.application.punishedUsers,
-            context.application.clusterHelper,
-            event.username,
-            identifiers
-          )
+          checkMuted(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
           break
         }
         case EventType.MUTE:
