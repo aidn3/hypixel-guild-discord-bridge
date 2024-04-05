@@ -17,7 +17,6 @@ import AcceptCommand from './commands/accept'
 import ConnectivityCommand from './commands/connectivity'
 import DemoteCommand from './commands/demote'
 import InviteCommand from './commands/invite'
-import KickCommand from './commands/kick'
 import ListCommand from './commands/list'
 import LogCommand from './commands/log'
 import OverrideCommand from './commands/override'
@@ -71,7 +70,6 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       ConnectivityCommand,
       DemoteCommand,
       InviteCommand,
-      KickCommand,
       ListCommand,
       LogCommand,
       OverrideCommand,

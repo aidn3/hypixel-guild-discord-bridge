@@ -5,7 +5,7 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcomm
 
 import type Application from '../../../application'
 import type { PunishmentAddEvent } from '../../../common/application-event'
-import { ChannelType, EventType, InstanceType, PunishmentType } from '../../../common/application-event'
+import { InstanceType, PunishmentType } from '../../../common/application-event'
 import type { MojangApi } from '../../../util/mojang'
 import { PunishedUsers } from '../../../util/punished-users'
 import { escapeDiscord, getDuration } from '../../../util/shared-util'
@@ -76,6 +76,17 @@ export default {
               )
           )
           .addSubcommand(new SlashCommandSubcommandBuilder().setName('list').setDescription('list all muted members'))
+      )
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('kick')
+          .setDescription('kick a member from all Minecraft instances')
+          .addStringOption((option) =>
+            option.setName('user').setDescription('username or userUuid of the player to kick').setRequired(true)
+          )
+          .addStringOption((option) =>
+            option.setName('reason').setDescription('reason to kick the player').setRequired(true)
+          )
       )
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
@@ -155,6 +166,15 @@ export default {
     }
 
     switch (context.interaction.options.getSubcommand()) {
+      case 'kick': {
+        if (context.privilege < Permission.OFFICER) {
+          await context.showPermissionDenied()
+          return
+        }
+
+        await handleKickInteraction(context.application, context.interaction)
+        return
+      }
       case 'list': {
         await handleAllListInteraction(context.application, context.interaction)
         return
@@ -270,6 +290,30 @@ async function handleMuteListInteraction(
 ): Promise<void> {
   const list = application.punishedUsers.getPunishmentsByType(PunishmentType.MUTE)
   await pageMessage(interaction, formatList(list))
+}
+
+async function handleKickInteraction(
+  application: Application,
+  interaction: ChatInputCommandInteraction
+): Promise<void> {
+  const username: string = interaction.options.getString('username', true)
+  const reason: string = interaction.options.getString('reason', true)
+  application.clusterHelper.sendCommandToAllMinecraft(`/g kick ${username} ${reason}`)
+
+  await interaction.editReply({
+    embeds: [
+      {
+        color: ColorScheme.GOOD,
+        title: 'Punishment Status',
+        description: `Kick command has been sent.\nPlease, ensure the player has been kicked.`,
+        fields: [
+          { name: 'Username', value: escapeDiscord(username) },
+          { name: 'reason', value: escapeDiscord(reason) }
+        ],
+        footer: { text: DefaultCommandFooter }
+      }
+    ]
+  })
 }
 
 async function handleForgiveInteraction(
