@@ -1,13 +1,14 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Severity } from '../../../common/application-event'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import { DefaultCommandFooter } from '../common/discord-config'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {
-    color: ColorScheme.DEFAULT,
+    color: Severity.DEFAULT,
     title: 'Discord Ping',
     description:
       `**Latency:** ${latency}ms\n` + `**Websocket heartbeat:** ${websocket}ms.\n` + `**Server lag:** ${lag}ms`,

@@ -3,11 +3,11 @@ import { SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application'
 import type { MinecraftRawChatEvent } from '../../../common/application-event'
-import { InstanceType } from '../../../common/application-event'
+import { Severity, InstanceType } from '../../../common/application-event'
 import { escapeDiscord } from '../../../util/shared-util'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import { DefaultCommandFooter } from '../common/discord-config'
 import { DEFAULT_TIMEOUT, interactivePaging } from '../discord-pager'
 
 const TITLE = 'Guild Log Audit'
@@ -37,7 +37,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
   }
 
   return {
-    color: chatResult.guildLog ? ColorScheme.DEFAULT : ColorScheme.INFO,
+    color: chatResult.guildLog ? Severity.DEFAULT : Severity.INFO,
     title: `${TITLE}${pageTitle}`,
     description: result,
     footer: {
@@ -75,7 +75,7 @@ export default {
               `No Minecraft instance exist.\n` +
               'This is a Minecraft command that displays ingame logs of a guild.\n' +
               `Check the tutorial on how to add a Minecraft account.`,
-            color: ColorScheme.INFO,
+            color: Severity.INFO,
             footer: {
               text: DefaultCommandFooter
             }

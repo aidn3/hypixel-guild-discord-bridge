@@ -54,7 +54,7 @@ export default class ApplicationMetrics {
       location: event.instanceType,
       scope: event.channelType,
       instance: event.instanceName,
-      event: event.name
+      event: event.eventType
     })
   }
 }

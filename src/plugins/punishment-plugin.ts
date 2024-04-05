@@ -1,8 +1,7 @@
 import type Application from '../application'
 import type ClusterHelper from '../cluster-helper'
-import { ChannelType, EventType, InstanceType, PunishmentType } from '../common/application-event'
+import { ChannelType, Severity, EventType, InstanceType, PunishmentType } from '../common/application-event'
 import type { PluginContext, PluginInterface } from '../common/plugins'
-import { ColorScheme } from '../instance/discord/common/discord-config'
 import { PunishedUsers } from '../util/punished-users'
 
 // noinspection JSUnusedGlobalSymbols
@@ -12,7 +11,7 @@ export default {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     context.application.on('event', async (event) => {
       if (event.username == undefined) return
-      switch (event.name) {
+      switch (event.eventType) {
         case EventType.UNMUTE:
         case EventType.JOIN: {
           const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
@@ -76,9 +75,9 @@ function checkBanned(
       username: username,
       message: `Punishments-System tried to kick ${username} since they are banned.`,
       instanceName: InstanceType.MAIN,
-      name: EventType.AUTOMATED,
+      eventType: EventType.AUTOMATED,
       channelType: ChannelType.OFFICER,
-      severity: ColorScheme.BAD,
+      severity: Severity.BAD,
       removeLater: false
     })
   }

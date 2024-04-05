@@ -35,21 +35,21 @@ const KickMessages = [
 export default {
   onRun(context: PluginContext): void {
     context.application.on('event', (event) => {
-      if (event.name === EventType.JOIN) {
+      if (event.eventType === EventType.JOIN) {
         assert(event.username)
         let message = JoinMessages[Math.floor(Math.random() * JoinMessages.length)]
         message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
 
-      if (event.name === EventType.LEAVE) {
+      if (event.eventType === EventType.LEAVE) {
         assert(event.username)
         let message = LeaveMessages[Math.floor(Math.random() * LeaveMessages.length)]
         message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
 
-      if (event.name === EventType.KICK) {
+      if (event.eventType === EventType.KICK) {
         assert(event.username)
         let message = KickMessages[Math.floor(Math.random() * KickMessages.length)]
         message = message.replaceAll('%s', event.username)

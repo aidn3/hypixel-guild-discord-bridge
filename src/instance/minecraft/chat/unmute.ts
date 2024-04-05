@@ -1,5 +1,4 @@
-import { EventType, InstanceType, ChannelType } from '../../../common/application-event'
-import { ColorScheme } from '../../discord/common/discord-config'
+import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
 export default {
@@ -28,9 +27,9 @@ export default {
         instanceName: context.instanceName,
         instanceType: InstanceType.MINECRAFT,
         channelType: ChannelType.OFFICER,
-        name: EventType.UNMUTE,
+        eventType: EventType.UNMUTE,
         username: responsible,
-        severity: ColorScheme.GOOD,
+        severity: Severity.GOOD,
         message: context.message,
         removeLater: false
       })

@@ -3,11 +3,11 @@ import { SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application'
 import type { MinecraftRawChatEvent } from '../../../common/application-event'
-import { InstanceType } from '../../../common/application-event'
+import { Severity, InstanceType } from '../../../common/application-event'
 import { antiSpamString, escapeDiscord } from '../../../util/shared-util'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import { DefaultCommandFooter } from '../common/discord-config'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed {
   let content =
@@ -35,7 +35,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
   }
 
   return {
-    color: ColorScheme.DEFAULT,
+    color: Severity.DEFAULT,
     title: `Mute/Connectivity Check`,
     description: content,
     footer: {

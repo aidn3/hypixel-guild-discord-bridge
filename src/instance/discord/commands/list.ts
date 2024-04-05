@@ -6,12 +6,12 @@ import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application'
 import type { MinecraftRawChatEvent } from '../../../common/application-event'
-import { InstanceType } from '../../../common/application-event'
+import { Severity, InstanceType } from '../../../common/application-event'
 import type { MojangApi, MojangProfile } from '../../../util/mojang'
 import { escapeDiscord } from '../../../util/shared-util'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import { DefaultCommandFooter } from '../common/discord-config'
 import { pageMessage } from '../discord-pager'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
@@ -43,7 +43,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
       currentLength = 0
 
       pages.push({
-        color: ColorScheme.DEFAULT,
+        color: Severity.DEFAULT,
         title: `Guild Online Players (${total}):`,
         description: '',
         footer: {

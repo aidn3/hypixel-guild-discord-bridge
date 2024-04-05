@@ -1,6 +1,5 @@
-import { ChannelType, EventType, InstanceType } from '../common/application-event'
+import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event'
 import type { PluginContext, PluginInterface } from '../common/plugins'
-import { ColorScheme } from '../instance/discord/common/discord-config'
 import { antiSpamString } from '../util/shared-util'
 
 export default {
@@ -22,8 +21,8 @@ export default {
           localEvent: true,
           instanceType: InstanceType.MAIN,
           instanceName: InstanceType.MAIN,
-          name: EventType.AUTOMATED,
-          severity: ColorScheme.GOOD,
+          eventType: EventType.AUTOMATED,
+          severity: Severity.GOOD,
           channelType: ChannelType.PUBLIC,
           username: undefined,
           message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`,

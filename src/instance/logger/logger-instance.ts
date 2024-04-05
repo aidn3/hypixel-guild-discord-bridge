@@ -19,7 +19,7 @@ export default class LoggerInstance extends ClientInstance<undefined> {
       void this.send(`[chat][${event.instanceName}][type=${event.channelType}] ${displayUsername}: ${event.message}`)
     })
     this.app.on('event', (event) => {
-      void this.send(`[event][${event.name}][${event.instanceName}] ${event.username}: ${event.message}`)
+      void this.send(`[event][${event.eventType}][${event.instanceName}] ${event.username}: ${event.message}`)
     })
     this.app.on('command', (event) => {
       void this.send(

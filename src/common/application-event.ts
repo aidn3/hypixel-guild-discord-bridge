@@ -138,11 +138,19 @@ export enum EventType {
   BLOCK = 'block'
 }
 
+export enum Severity {
+  GOOD = 0x00_8a_00,
+  INFO = 0x84_84_00,
+  BAD = 0x8a_2d_00,
+  ERROR = 0xff_00_00,
+  DEFAULT = 0x09_0a_16
+}
+
 export interface ClientEvent extends InformEvent {
   channelType: ChannelType
-  name: EventType
+  eventType: EventType
   username: string | undefined
-  severity: number
+  severity: Severity
   message: string
   removeLater: boolean
 }

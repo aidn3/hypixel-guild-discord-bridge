@@ -1,6 +1,5 @@
-import { EventType, InstanceType, ChannelType, PunishmentType } from '../../../common/application-event'
+import { EventType, InstanceType, ChannelType, PunishmentType, Severity } from '../../../common/application-event'
 import { sufficeToTime } from '../../../util/shared-util'
-import { ColorScheme } from '../../discord/common/discord-config'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
 export default {
@@ -38,9 +37,9 @@ export default {
         instanceName: context.instanceName,
         instanceType: InstanceType.MINECRAFT,
         channelType: ChannelType.OFFICER,
-        name: EventType.MUTE,
+        eventType: EventType.MUTE,
         username: responsible,
-        severity: ColorScheme.BAD,
+        severity: Severity.BAD,
         message: context.message,
         removeLater: false
       })

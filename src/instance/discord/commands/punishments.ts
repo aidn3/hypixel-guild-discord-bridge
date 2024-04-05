@@ -5,13 +5,13 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application'
 import type { PunishmentAddEvent } from '../../../common/application-event'
-import { InstanceType, PunishmentType } from '../../../common/application-event'
+import { Severity, InstanceType, PunishmentType } from '../../../common/application-event'
 import type { MojangApi } from '../../../util/mojang'
 import { PunishedUsers } from '../../../util/punished-users'
 import { escapeDiscord, getDuration } from '../../../util/shared-util'
 import type { CommandInterface } from '../common/command-interface'
 import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
+import { DefaultCommandFooter } from '../common/discord-config'
 import { pageMessage } from '../discord-pager'
 
 export default {
@@ -243,7 +243,7 @@ async function handleKickInteraction(
   await interaction.editReply({
     embeds: [
       {
-        color: ColorScheme.GOOD,
+        color: Severity.GOOD,
         title: 'Punishment Status',
         description: `Kick command has been sent.\nPlease, ensure the player has been kicked.`,
         fields: [
@@ -335,7 +335,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
   if (list.length === 0) {
     return [
       {
-        color: ColorScheme.INFO,
+        color: Severity.INFO,
         title: `Active Punishments`,
         description: '_There are no active punishments._',
         footer: {
@@ -368,7 +368,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
       entriesCount = 0
 
       pages.push({
-        color: ColorScheme.DEFAULT,
+        color: Severity.DEFAULT,
         title: `Active Punishments (${list.length}):`,
         description: '',
         footer: {
@@ -408,7 +408,7 @@ function formatPunishmentAdd(event: PunishmentAddEvent, noUuidCheck: boolean): A
 
 function formatPunishmentStatus(event: PunishmentAddEvent, description: string): APIEmbed {
   return {
-    color: ColorScheme.GOOD,
+    color: Severity.GOOD,
     title: 'Punishment Status',
     description: description,
     fields: [
@@ -432,7 +432,7 @@ function formatNoPunishmentStatus(
   discordUserId: string | undefined
 ): APIEmbed {
   return {
-    color: ColorScheme.GOOD,
+    color: Severity.GOOD,
     title: 'Punishment Status',
     description: 'There is no active punishments for that user.',
     fields: [

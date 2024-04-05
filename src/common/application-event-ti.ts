@@ -75,11 +75,19 @@ export const EventType = t.enumtype({
   "BLOCK": "block",
 });
 
+export const ColorScheme = t.enumtype({
+  "GOOD": 35328,
+  "INFO": 8684544,
+  "BAD": 9055488,
+  "ERROR": 16711680,
+  "DEFAULT": 592406,
+});
+
 export const ClientEvent = t.iface(["InformEvent"], {
   "channelType": "ChannelType",
-  "name": "EventType",
+  "eventType": "EventType",
   "username": t.union("string", "undefined"),
-  "severity": "number",
+  "severity": "ColorScheme",
   "message": "string",
   "removeLater": "boolean",
 });
@@ -149,6 +157,7 @@ export const ShutdownSignal = t.iface(["SignalEvent"], {
 });
 
 const exportedTypeSuite: t.ITypeSuite = {
+  ApplicationEvents,
   InstanceType,
   ChannelType,
   BaseEvent,
@@ -156,6 +165,7 @@ const exportedTypeSuite: t.ITypeSuite = {
   SignalEvent,
   ChatEvent,
   EventType,
+  ColorScheme,
   ClientEvent,
   CommandEvent,
   InstanceEventType,

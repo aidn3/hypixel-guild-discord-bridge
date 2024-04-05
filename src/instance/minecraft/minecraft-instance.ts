@@ -103,8 +103,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       if (event.instanceName === this.instanceName) return
       if (event.channelType !== ChannelType.PUBLIC) return
       if (event.removeLater) return
-      if (event.name === EventType.BLOCK) return
-      if (event.name === EventType.REPEAT) return
+      if (event.eventType === EventType.BLOCK) return
+      if (event.eventType === EventType.REPEAT) return
 
       void this.send(`/gc @[${event.instanceName}]: ${event.message}`)
     })

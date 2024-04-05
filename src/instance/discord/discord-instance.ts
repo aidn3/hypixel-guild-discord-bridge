@@ -5,14 +5,13 @@ import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'disco
 
 import type Application from '../../application'
 import type { DiscordConfig } from '../../application-config'
-import { EventType, InstanceType, ChannelType } from '../../common/application-event'
+import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event'
 import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event'
 import { ClientInstance, Status } from '../../common/client-instance'
 import { escapeDiscord } from '../../util/shared-util'
 
 import ChatManager from './chat-manager'
 import { CommandManager } from './command-manager'
-import { ColorScheme } from './common/discord-config'
 import StateHandler from './handlers/state-handler'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
@@ -116,14 +115,14 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private async onEvent(event: ClientEvent): Promise<void> {
     if (event.instanceName === this.instanceName) return
 
-    if (event.name === EventType.REPEAT) {
+    if (event.eventType === EventType.REPEAT) {
       if (this.lastRepeatEvent + 5000 < Date.now()) {
         this.lastRepeatEvent = Date.now()
       } else {
         return
       }
     }
-    if (event.name === EventType.BLOCK) {
+    if (event.eventType === EventType.BLOCK) {
       if (this.lastBlockEvent + 5000 < Date.now()) {
         this.lastBlockEvent = Date.now()
       } else {
@@ -191,7 +190,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
             {
               title: escapeDiscord(event.instanceName),
               description: escapeDiscord(event.message),
-              color: ColorScheme.INFO
+              color: Severity.INFO
             }
           ]
         })
@@ -228,7 +227,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       title: escapeDiscord(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      color: ColorScheme.GOOD,
+      color: Severity.GOOD,
       description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
       footer: {
         text: event.instanceName
