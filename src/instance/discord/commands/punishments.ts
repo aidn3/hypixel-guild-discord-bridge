@@ -315,7 +315,13 @@ async function handleForgiveInteraction(
     pages.push(formatPunishmentStatus(forgivenPunishments[index], description))
   }
 
-  await pageMessage(interaction, pages)
+  await (pages.length > 0
+    ? pageMessage(interaction, pages)
+    : interaction.editReply({
+        embeds: [
+          formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId)
+        ]
+      }))
 }
 
 async function handleAllListInteraction(
@@ -342,7 +348,13 @@ async function handleCheckInteraction(
     pages.push(formatPunishmentStatus(activePunishments[index], description))
   }
 
-  await pageMessage(interaction, pages)
+  await (pages.length > 0
+    ? pageMessage(interaction, pages)
+    : interaction.editReply({
+        embeds: [
+          formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId)
+        ]
+      }))
 }
 
 function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
@@ -437,6 +449,24 @@ function formatPunishmentStatus(event: PunishmentAddEvent, description: string):
     footer: {
       text: DefaultCommandFooter
     }
+  }
+}
+
+function formatNoPunishmentStatus(
+  userName: string,
+  userUuid: string | undefined,
+  discordUserId: string | undefined
+): APIEmbed {
+  return {
+    color: ColorScheme.GOOD,
+    title: 'Punishment Status',
+    description: 'There is no active punishments for that user.',
+    fields: [
+      { name: 'Username', value: userName, inline: true },
+      { name: 'UUID', value: userUuid ? `\`${userUuid}\`` : 'None', inline: true },
+      { name: 'Discord', value: discordUserId ? `<@${discordUserId}>` : 'None', inline: true }
+    ],
+    footer: { text: DefaultCommandFooter }
   }
 }
 
