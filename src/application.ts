@@ -42,7 +42,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
-  private readonly plugins: PluginInterface[] = []
+  private readonly plugins: { plugin: PluginInterface; name: string }[] = []
 
   readonly commandsInstance: CommandsInstance | undefined
   readonly discordInstance: DiscordInstance | undefined
@@ -127,17 +127,18 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
 
-  private loadPlugins(): PluginInterface[] {
+  private loadPlugins(): { plugin: PluginInterface; name: string }[] {
     // eslint-disable-next-line unicorn/prefer-module
     const mainPath = require.main?.path ?? process.cwd()
     this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
     return this.config.plugins
       .map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
       .map((f) => {
-        this.logger.debug(`Loading Plugin ${path.relative(mainPath, f)}`)
+        const relativePath = path.relative(mainPath, f)
+        this.logger.debug(`Loading Plugin ${relativePath}`)
         // eslint-disable-next-line @typescript-eslint/no-var-requires,unicorn/prefer-module
         const importedPlugin: { default: PluginInterface } = require(f) as { default: PluginInterface }
-        return importedPlugin.default
+        return { plugin: importedPlugin.default, name: relativePath }
       })
   }
 
@@ -146,12 +147,17 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
-      p.onRun({
+      p.plugin.onRun({
+        logger: getLogger(`plugin-${p.name}`),
         application: this,
         // only shared with plugins to directly modify instances
         // everything else is encapsulated
-        getLocalInstance: (instanceName: string) =>
-          this.getAllInstances().find((index) => index.instanceName === instanceName)
+        localInstances: this.getAllInstances(),
+
+        addChatCommand: this.commandsInstance ? (command) => this.commandsInstance?.commands.push(command) : undefined,
+        addDiscordCommand: this.discordInstance
+          ? (command) => this.discordInstance?.commandsManager.commands.set(command.getCommandBuilder().name, command)
+          : undefined
       })
     }
 

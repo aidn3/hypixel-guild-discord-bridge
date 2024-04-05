@@ -1,4 +1,8 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../application'
+import type { ChatCommandHandler } from '../instance/commands/common/command-interface'
+import type { CommandInterface } from '../instance/discord/common/command-interface'
 
 import type { ClientInstance } from './client-instance'
 
@@ -7,6 +11,10 @@ export interface PluginInterface {
 }
 
 export interface PluginContext {
+  logger: Logger
   application: Application
-  getLocalInstance: (instanceName: string) => ClientInstance<unknown> | undefined
+  localInstances: ClientInstance<unknown>[]
+
+  addChatCommand?: (command: ChatCommandHandler) => void
+  addDiscordCommand?: (command: CommandInterface) => void
 }
