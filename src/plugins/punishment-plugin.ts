@@ -48,20 +48,6 @@ export default {
         }
       }
     })
-
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    context.application.on('chat', async (event) => {
-      if (event.instanceType !== InstanceType.MINECRAFT) return
-      const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
-      checkBanned(
-        context.application,
-        context.application.punishedUsers,
-        context.application.clusterHelper,
-        event.username,
-        identifiers
-      )
-      checkMuted(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
-    })
   }
 } satisfies PluginInterface
 

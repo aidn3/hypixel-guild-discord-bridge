@@ -22,6 +22,14 @@ export default {
       const identifiers = [username]
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
 
+      const mutedTill = context.application.punishedUsers.getPunishedTill(identifiers, PunishmentType.MUTE)
+      if (mutedTill) {
+        context.application.clusterHelper.sendCommandToAllMinecraft(
+          `/guild mute ${username} ${PunishedUsers.tillTimeToMinecraftDuration(mutedTill)}`
+        )
+      }
+
+      // if any other punishments active
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
