@@ -9,19 +9,19 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import type { ApplicationConfig } from './application-config'
 import ClusterHelper from './cluster-helper'
 import type {
+  BaseEvent,
   ChatEvent,
   ClientEvent,
   CommandEvent,
   InstanceEvent,
-  ReconnectSignal,
   InstanceSelfBroadcast,
   MinecraftRawChatEvent,
   MinecraftSelfBroadcast,
   MinecraftSendChat,
-  ShutdownSignal,
-  BaseEvent,
   PunishmentAddEvent,
-  PunishmentForgiveEvent
+  PunishmentForgiveEvent,
+  ReconnectSignal,
+  ShutdownSignal
 } from './common/application-event'
 import { InstanceType } from './common/application-event'
 import type { ClientInstance } from './common/client-instance'
@@ -39,15 +39,23 @@ import { shutdownApplication, sleep } from './util/shared-util'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
-  private readonly instances: ClientInstance<unknown>[] = []
-  private readonly plugins: PluginInterface[] = []
   private readonly configsDirectory
+  private readonly config: ApplicationConfig
+
+  private readonly plugins: PluginInterface[] = []
+
+  readonly commandsInstance: CommandsInstance | undefined
+  readonly discordInstance: DiscordInstance | undefined
+  private readonly loggerInstances: LoggerInstance[] = []
+  private readonly metricsInstance: MetricsInstance | undefined
+  private readonly minecraftInstances: MinecraftInstance[] = []
+  private readonly socketInstance: SocketInstance | undefined
 
   readonly clusterHelper: ClusterHelper
   readonly punishedUsers: PunishedUsers
+
   readonly hypixelApi: HypixelClient
   readonly mojangApi: MojangApi
-  readonly config: ApplicationConfig
 
   constructor(config: ApplicationConfig, configsDirectory: string) {
     super()
@@ -65,14 +73,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.punishedUsers = new PunishedUsers(this)
     this.clusterHelper = new ClusterHelper(this)
 
-    let discordInstance: DiscordInstance | undefined
-    if (this.config.discord.key != undefined) {
-      discordInstance = new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
-      this.instances.push(discordInstance)
-    }
+    this.discordInstance =
+      this.config.discord.key == undefined
+        ? undefined
+        : new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
 
     for (let index = 0; index < this.config.loggers.length; index++) {
-      this.instances.push(
+      this.loggerInstances.push(
         new LoggerInstance(
           this,
           INTERNAL_INSTANCE_PREFIX + InstanceType.Logger + '-' + (index + 1),
@@ -82,26 +89,22 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     for (const instanceConfig of this.config.minecraft.instances) {
-      this.instances.push(
+      this.minecraftInstances.push(
         new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig, this.config.minecraft.bridgePrefix)
       )
     }
 
-    if (this.config.metrics.enabled) {
-      this.instances.push(
-        new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
-      )
-    }
+    this.metricsInstance = this.config.metrics.enabled
+      ? new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
+      : undefined
 
-    if (this.config.socket.enabled) {
-      this.instances.push(new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket))
-    }
+    this.socketInstance = this.config.socket.enabled
+      ? new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket)
+      : undefined
 
-    if (this.config.commands.enabled) {
-      this.instances.push(
-        new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
-      )
-    }
+    this.commandsInstance = this.config.commands.enabled
+      ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
+      : undefined
 
     this.plugins = this.loadPlugins()
 
@@ -147,11 +150,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         application: this,
         // only shared with plugins to directly modify instances
         // everything else is encapsulated
-        getLocalInstance: (instanceName: string) => this.instances.find((index) => index.instanceName === instanceName)
+        getLocalInstance: (instanceName: string) =>
+          this.getAllInstances().find((index) => index.instanceName === instanceName)
       })
     }
 
-    for (const instance of this.instances) {
+    for (const instance of this.getAllInstances()) {
       this.logger.debug(`Connecting instance ${instance.instanceName}`)
       await instance.connect()
     }
@@ -159,7 +163,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   public syncBroadcast(): void {
     this.logger.debug('Informing instances of each other')
-    for (const instance of this.instances) {
+    for (const instance of this.getAllInstances()) {
       this.emit('selfBroadcast', {
         localEvent: true,
         instanceName: instance.instanceName,
@@ -178,6 +182,19 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       punishment.localEvent = true
       this.emit('punishmentAdd', punishment)
     }
+  }
+
+  private getAllInstances(): ClientInstance<unknown>[] {
+    return [
+      ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
+      this.discordInstance, // discord second to send any notification about connecting
+
+      this.metricsInstance,
+      this.commandsInstance,
+      ...this.minecraftInstances,
+
+      this.socketInstance // socket last. so other instances are ready when connecting to other clients
+    ].filter((instance) => instance != undefined) as ClientInstance<unknown>[]
   }
 }
 
