@@ -1,4 +1,5 @@
-import { ChannelType, InstanceType } from '../../../common/application-event'
+import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event'
+import { PunishedUsers } from '../../../util/punished-users'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
 
 export default {
