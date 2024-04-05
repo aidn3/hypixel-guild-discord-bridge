@@ -296,7 +296,7 @@ async function handleKickInteraction(
   application: Application,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  const username: string = interaction.options.getString('username', true)
+  const username: string = interaction.options.getString('user', true)
   const reason: string = interaction.options.getString('reason', true)
   application.clusterHelper.sendCommandToAllMinecraft(`/g kick ${username} ${reason}`)
 
