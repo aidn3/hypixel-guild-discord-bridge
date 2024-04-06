@@ -83,7 +83,7 @@ export default class Slayer extends ChatCommandHandler {
 
     let output = '/'
     for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output += this.getSlayerLevel(slayer.xp, name) + '/'
+      output += `${this.getSlayerLevel(slayer.xp, name)}/`
     }
     return `${givenUsername}'s slayers: ${output}`
   }
@@ -109,7 +109,7 @@ export default class Slayer extends ChatCommandHandler {
 
   private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
     const highestTier = highestTierTable[slayerName as keyof typeof highestTierTable]
-    const index = 'boss_kills_tier_' + highestTier
+    const index = `boss_kills_tier_${highestTier}`
     return slayerData[index as keyof SlayerType] ?? 0
   }
 }

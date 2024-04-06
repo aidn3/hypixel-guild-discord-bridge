@@ -131,7 +131,7 @@ export class PunishedUsers {
 
     const currentTime = Date.now()
     const remainingTime = till - currentTime
-    return Math.min(MAX_DURATION, Math.floor(remainingTime / 1000)) + PREFIX
+    return `${Math.min(MAX_DURATION, Math.floor(remainingTime / 1000))}${PREFIX}`
   }
   private loadFromConfig(): void {
     if (!fs.existsSync(this.configFilePath)) return

@@ -75,7 +75,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.loggerInstances.push(
         new LoggerInstance(
           this,
-          INTERNAL_INSTANCE_PREFIX + InstanceType.Logger + '-' + (index + 1),
+          `${INTERNAL_INSTANCE_PREFIX}${InstanceType.Logger}-${index + 1}`,
           this.config.loggers[index]
         )
       )
