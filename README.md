@@ -13,6 +13,16 @@ offering quality user experience while keeping it simple
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at
 > your own risk"**
 
+## Migrating To 3.x.x
+Breaking changes:
+- `config.yaml` options has been moved around. Check the new `config_example.yaml` and compare it with the old config file
+- Version 3.x websocket is incompatible with older versions. Cannot connect the new version with the old one
+- Chat Commands have been moved to their own instance in `config.yaml`. Only enable one instance when using websocket
+- Project have moved to ESM. Old plugins that still use commonjs will not work anymore
+- Minecraft bot and websocket have been stripped down to bare metal. Any plugin that use those features must update their code.
+- Punishment system has been revised and now uses `./configs/` to save its state as a file. Directory is now git-ignored.
+- any unexpected error during the launching phase will result in a shutdown with an exit code instead of sending a notification
+
 ## Table Of Contents
 
 - [Features](#Features)
