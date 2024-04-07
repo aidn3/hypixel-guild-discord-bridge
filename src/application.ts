@@ -1,5 +1,6 @@
 import type Events from 'node:events'
 import path from 'node:path'
+import * as process from 'node:process'
 
 import BadWords from 'bad-words'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
@@ -29,7 +30,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
-  private readonly plugins: { plugin: PluginInterface; name: string }[] = []
+  private readonly plugins: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
 
   readonly commandsInstance: CommandsInstance | undefined
   readonly discordInstance: DiscordInstance | undefined
@@ -45,7 +46,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   readonly hypixelApi: HypixelClient
   readonly mojangApi: MojangApi
 
-  constructor(config: ApplicationConfig, configsDirectory: string) {
+  constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = log4js.getLogger('Application')
@@ -100,7 +101,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
       : undefined
 
-    this.plugins = this.loadPlugins()
+    this.plugins = this.loadPlugins(rootDirectory)
 
     this.on('shutdownSignal', (event) => {
       if (event.targetInstanceName === undefined) {
@@ -121,19 +122,27 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
 
-  private loadPlugins(): { plugin: PluginInterface; name: string }[] {
-    // eslint-disable-next-line unicorn/prefer-module
-    const mainPath = require.main?.path ?? process.cwd()
-    this.logger.debug(`Loading plugins with main path as: ${mainPath}`)
-    return this.config.plugins
-      .map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
-      .map((f) => {
-        const relativePath = path.relative(mainPath, f)
-        this.logger.debug(`Loading Plugin ${relativePath}`)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires,unicorn/prefer-module
-        const importedPlugin: { default: PluginInterface } = require(f) as { default: PluginInterface }
-        return { plugin: importedPlugin.default, name: relativePath }
+  private loadPlugins(
+    rootDirectory: string
+  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
+    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+
+    for (const pluginPath of this.config.plugins) {
+      let newPath: string = pluginPath
+      if (!path.isAbsolute(newPath)) {
+        newPath = '.' + path.sep + path.relative(rootDirectory, path.join(rootDirectory, newPath))
+      } else if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
+        newPath = `file:///${newPath}`
+      }
+
+      result.push({
+        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
+        originalPath: pluginPath,
+        name: path.basename(pluginPath)
       })
+    }
+
+    return result
   }
 
   async sendConnectSignal(): Promise<void> {
@@ -141,7 +150,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
-      p.plugin.onRun({
+      this.logger.debug(`Loading Plugin ${p.originalPath}`)
+      const loadedPlugin = await p.promise
+      loadedPlugin.onRun({
         // eslint-disable-next-line import/no-named-as-default-member
         logger: log4js.getLogger(`plugin-${p.name}`),
         pluginName: p.name,
