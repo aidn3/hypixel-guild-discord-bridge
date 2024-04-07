@@ -23,7 +23,7 @@ export default class ClientSocket {
     this.key = key
 
     app.on('*', (name, event) => {
-      if (event.localEvent && this.client) {
+      if (event.localEvent && this.client && this.client.readyState === WebSocket.OPEN) {
         this.client.send(
           JSON.stringify({
             name: name,
