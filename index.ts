@@ -37,13 +37,11 @@ app.on('*', (name, event) => {
   logger.log(`[${name}] ${JSON.stringify(event)}`)
 })
 
-app
-  .sendConnectSignal()
-  .then(() => {
-    logger.info('App is connected')
-  })
-  .catch((error: unknown): void => {
-    logger.fatal(error)
-    logger.warn('stopping the process for the controller to restart this node...')
-    process.exit(1)
-  })
+try {
+  await app.sendConnectSignal()
+  logger.info('App is connected')
+} catch (error: unknown) {
+  logger.fatal(error)
+  logger.fatal('stopping the process for the controller to restart this node...')
+  process.exit(1)
+}
