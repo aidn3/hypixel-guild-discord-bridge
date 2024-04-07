@@ -30,8 +30,9 @@ if (process.argv.includes('test-run')) {
 const file = process.argv[2] ?? './config.yaml'
 
 // eslint-disable-next-line unicorn/prefer-module
-const configsDirectory = path.resolve(__dirname, 'config')
 const app = new Application(loadApplicationConfig(file), configsDirectory)
+const rootDirectory = import.meta.dirname
+const configsDirectory = path.resolve(rootDirectory, 'config')
 
 app.on('*', (name, event) => {
   logger.log(`[${name}] ${JSON.stringify(event)}`)
