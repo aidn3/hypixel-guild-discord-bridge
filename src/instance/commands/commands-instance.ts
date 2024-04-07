@@ -6,6 +6,7 @@ import { ClientInstance } from '../../common/client-instance.js'
 
 import type { ChatCommandHandler } from './common/command-interface.js'
 import EightBallCommand from './triggers/8ball.js'
+import Bits from './triggers/bits.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import DarkAuction from './triggers/darkauction.js'
@@ -52,7 +53,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Skills(),
       new Slayer(),
       new Toggle(),
-      new Weight()
+      new Weight(),
+      new Bits()
     ]
 
     const disabled = config.disabledCommand
@@ -106,6 +108,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     const commandResponse = await command.handler({
       app: this.app,
 
+      logger: this.logger,
       allCommands: this.commands,
       commandPrefix: this.config.commandPrefix,
       adminUsername: this.config.adminUsername,
