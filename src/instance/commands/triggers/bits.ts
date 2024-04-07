@@ -3,32 +3,11 @@
  Discord: callanftw
  Minecraft username: Callanplays
 */
-import type { Logger } from 'log4js'
+import type { AxiosResponse } from 'axios'
+import axios from 'axios'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-
-async function fetchBitItemPrice(item: string, logger: Logger): Promise<number | undefined> {
-  try {
-    const response = await fetch(`https://sky.coflnet.com/api/item/price/${item}/current?count=1`)
-
-    if (!response.ok) {
-      logger.error(`API request failed with status ${response.status} for item ${item}`)
-      return undefined
-    }
-
-    if (!response.headers.get('Content-Type')?.startsWith('application/json')) {
-      logger.error(`Expected JSON response for item ${item}, got '${response.headers.get('Content-Type')}'`)
-      return undefined
-    }
-
-    const data = (await response.json()) as { buy?: number }
-    return data.buy
-  } catch (error) {
-    logger.error(`Failed to fetch price for ${item}`, error)
-    return undefined
-  }
-}
 
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
   GOD_POTION_2: { bitValue: 1500, prettyName: 'Godpot' },
@@ -81,6 +60,10 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
 }
 
 export default class Bits extends ChatCommandHandler {
+  private static readonly UPDATE_PRICES_EVERY = 5 * 60 * 1000 // 5 minute
+  private lastPricesUpdateAt = 0
+  private prices: { itemId: string; sellPrice: number }[] = []
+
   constructor() {
     super({
       name: 'Bits',
@@ -91,25 +74,30 @@ export default class Bits extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const bitItemPrices = await Promise.all(
-      Object.keys(BitItem).map(async (item) => {
-        const sellPrice = await fetchBitItemPrice(item, context.logger)
-        if (sellPrice === undefined) return
-        return { item, sellPrice }
-      })
-    )
-
-    const sortedItems = bitItemPrices
-      .filter((item): item is { item: string; sellPrice: number } => item !== undefined)
-      .sort((a, b) => b.sellPrice / BitItem[b.item].bitValue - a.sellPrice / BitItem[a.item].bitValue)
-      .slice(0, 5)
+    const currentTime = Date.now()
+    if (this.lastPricesUpdateAt + Bits.UPDATE_PRICES_EVERY < currentTime) {
+      await this.updatePrices()
+      this.lastPricesUpdateAt = currentTime
+    }
 
     let response = `${context.username}:\n`
     let index = 0
-    for (const { item, sellPrice } of sortedItems) {
-      const itemDetails = BitItem[item]
+    for (const { itemId, sellPrice } of this.prices) {
+      const itemDetails = BitItem[itemId]
       response += `${++index}. ${itemDetails.prettyName} (${Math.floor(sellPrice / itemDetails.bitValue)})\n`
     }
     return response
+  }
+
+  private async updatePrices(): Promise<void> {
+    const response = await axios
+      .get(`https://moulberry.codes/lowestbin.json`)
+      .then((response: AxiosResponse<Record<string, number>, unknown>) => response.data)
+
+    this.prices = Object.entries(response)
+      .filter(([itemId]) => Object.hasOwn(BitItem, itemId))
+      .map(([itemId, sellPrice]) => ({ itemId, sellPrice }))
+      .sort((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
+      .slice(0, 5)
   }
 }
