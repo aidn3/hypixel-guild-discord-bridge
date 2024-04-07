@@ -5,7 +5,7 @@
     "es2021": false,
     "node": true
   },
-  "plugins": ["@typescript-eslint", "unicorn"],
+  "plugins": ["@typescript-eslint", "unicorn", "require-extensions", "import"],
   "parser": "@typescript-eslint/parser",
   "extends": [
     "eslint:recommended",
@@ -14,6 +14,7 @@
     "plugin:import/recommended",
     "plugin:import/typescript",
     "plugin:unicorn/recommended",
+    "plugin:require-extensions/recommended",
     "plugin:prettier/recommended"
   ],
   "parserOptions": {
@@ -53,5 +54,15 @@
         "checkArrowFunctionBody": false
       }
     ]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
+    }
   }
 }
