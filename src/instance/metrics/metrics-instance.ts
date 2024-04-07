@@ -2,7 +2,7 @@ import http from 'node:http'
 import url from 'node:url'
 
 import { HttpStatusCode } from 'axios'
-import Client from 'prom-client'
+import * as Client from 'prom-client'
 
 import type { MetricsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
