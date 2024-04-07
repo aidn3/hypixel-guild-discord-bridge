@@ -2,6 +2,7 @@
   "name": "hypixel-guild-discord-bridge",
   "version": "3.0.0-alpha",
   "description": "A Hypixel guild chat and Discord chat bridge",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "start": "node --require ts-node/register index.ts",
