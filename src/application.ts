@@ -146,8 +146,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 
   async sendConnectSignal(): Promise<void> {
-    this.syncBroadcast()
-
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
       this.logger.debug(`Loading Plugin ${p.originalPath}`)
@@ -167,6 +165,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
           : undefined
       })
     }
+
+    this.syncBroadcast()
 
     for (const instance of this.getAllInstances()) {
       this.logger.debug(`Connecting instance ${instance.instanceName}`)
