@@ -5,8 +5,8 @@
 */
 import type { Logger } from 'log4js'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
 
 async function fetchBitItemPrice(item: string, logger: Logger): Promise<number | undefined> {
   try {
@@ -79,7 +79,6 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
   TALISMAN_ENRICHMENT_ATTACK_SPEED: { bitValue: 5000, prettyName: 'Atk Spd Enrich' },
   TALISMAN_ENRICHMENT_SWAPPER: { bitValue: 200, prettyName: 'Acc Enrich Swapper' }
 }
-
 
 export default class Bits extends ChatCommandHandler {
   constructor() {
