@@ -23,6 +23,7 @@
     "project": true
   },
   "rules": {
+    "unicorn/no-process-exit": 0,
     "unicorn/prefer-top-level-await": 0,
     "unicorn/filename-case": 2,
     "no-use-before-define": 0,

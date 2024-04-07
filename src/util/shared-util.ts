@@ -44,13 +44,11 @@ export async function sleep(ms: number): Promise<void> {
 export function shutdownApplication(exitCode: number): void {
   void sleep(30_000).then(() => {
     console.warn('Logger flush timed out. Exiting...')
-    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(exitCode)
   })
 
   // eslint-disable-next-line import/no-named-as-default-member
   log4js.shutdown(() => {
-    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(exitCode)
   })
 }
