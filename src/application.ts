@@ -128,10 +128,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
 
     for (const pluginPath of this.config.plugins) {
-      let newPath: string = pluginPath
-      if (!path.isAbsolute(newPath)) {
-        newPath = '.' + path.sep + path.relative(rootDirectory, path.join(rootDirectory, newPath))
-      } else if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
+      let newPath: string = path.resolve(rootDirectory, pluginPath)
+      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
         newPath = `file:///${newPath}`
       }
 
