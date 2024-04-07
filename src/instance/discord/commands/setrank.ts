@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
 
 export default {
   getCommandBuilder: () =>

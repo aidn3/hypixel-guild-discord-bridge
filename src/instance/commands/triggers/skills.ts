@@ -2,8 +2,8 @@ import assert from 'node:assert'
 
 import type { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
 
 const SKILLS = new Set([
   'farming',

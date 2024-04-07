@@ -3,12 +3,12 @@ import fs from 'node:fs'
 import * as t from 'ts-interface-checker'
 import { createCheckers } from 'ts-interface-checker'
 
-import type Application from '../application'
-import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../common/application-event'
-import { PunishmentType } from '../common/application-event'
-import ApplicationEventTi from '../common/application-event-ti'
+import type Application from '../application.js'
+import ApplicationEventTi from '../common/application-event-ti.js'
+import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../common/application-event.js'
+import { PunishmentType } from '../common/application-event.js'
 
-import type { MojangApi } from './mojang'
+import type { MojangApi } from './mojang.js'
 
 const applicationEventChecker = createCheckers({ ...ApplicationEventTi, PunishmentList: t.array('PunishmentAddEvent') })
 

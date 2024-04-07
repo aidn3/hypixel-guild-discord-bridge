@@ -2,11 +2,11 @@ import axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
 import emojisMap from 'emoji-name-map'
 
-import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event'
-import EventHandler from '../../common/event-handler'
-import { escapeDiscord } from '../../util/shared-util'
+import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
+import EventHandler from '../../common/event-handler.js'
+import { escapeDiscord } from '../../util/shared-util.js'
 
-import type DiscordInstance from './discord-instance'
+import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
   registerEvents(): void {

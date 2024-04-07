@@ -1,6 +1,6 @@
-import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event'
-import { PunishedUsers } from '../../../util/punished-users'
-import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
+import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { PunishedUsers } from '../../../util/punished-users.js'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {

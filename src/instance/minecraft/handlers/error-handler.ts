@@ -1,5 +1,5 @@
-import EventHandler from '../../../common/event-handler'
-import type MinecraftInstance from '../minecraft-instance'
+import EventHandler from '../../../common/event-handler.js'
+import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {

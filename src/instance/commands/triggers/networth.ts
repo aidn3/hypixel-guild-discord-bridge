@@ -8,9 +8,9 @@ import assert from 'node:assert'
 import axios, { type AxiosResponse } from 'axios'
 import { getNetworth, getPrices } from 'skyhelper-networth'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
-import { getUuidIfExists } from '../common/util'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
+import { getUuidIfExists } from '../common/util.js'
 
 export default class Networth extends ChatCommandHandler {
   private prices: object | undefined

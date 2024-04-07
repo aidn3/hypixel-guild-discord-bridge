@@ -1,5 +1,5 @@
-import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event'
-import type { PluginContext, PluginInterface } from '../common/plugins'
+import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
+import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 export default {
   onRun(context: PluginContext): void {

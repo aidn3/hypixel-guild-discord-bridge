@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
-import { EventType } from '../common/application-event'
-import type { PluginInterface, PluginContext } from '../common/plugins'
+import { EventType } from '../common/application-event.js'
+import type { PluginInterface, PluginContext } from '../common/plugins.js'
 
 const JoinMessages = [
   'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',

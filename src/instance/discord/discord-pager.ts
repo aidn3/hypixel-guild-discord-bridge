@@ -8,9 +8,9 @@ import type {
 } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-import { Severity } from '../../common/application-event'
+import { Severity } from '../../common/application-event.js'
 
-import { DefaultCommandFooter } from './common/discord-config'
+import { DefaultCommandFooter } from './common/discord-config.js'
 
 enum Button {
   NEXT = 'next',

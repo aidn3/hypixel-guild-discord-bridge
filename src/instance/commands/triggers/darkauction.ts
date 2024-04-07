@@ -1,4 +1,4 @@
-import { type ChatCommandContext, ChatCommandHandler } from '../common/command-interface'
+import { type ChatCommandContext, ChatCommandHandler } from '../common/command-interface.js'
 
 export default class DarkAuction extends ChatCommandHandler {
   constructor() {

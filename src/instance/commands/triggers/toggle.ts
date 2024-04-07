@@ -1,6 +1,6 @@
-import { ChannelType } from '../../../common/application-event'
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
+import { ChannelType } from '../../../common/application-event.js'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
 
 export default class Toggle extends ChatCommandHandler {
   constructor() {
