@@ -1,5 +1,5 @@
 import type { Logger } from 'log4js'
-import { getLogger } from 'log4js'
+import log4js from 'log4js'
 
 import type Application from '../application.js'
 
@@ -18,7 +18,8 @@ export abstract class ClientInstance<K> {
     this.app = app
     this.instanceName = instanceName
     this.instanceType = instanceType
-    this.logger = getLogger(instanceName)
+    // eslint-disable-next-line import/no-named-as-default-member
+    this.logger = log4js.getLogger(instanceName)
     this.config = config
     this.status = Status.FRESH
   }

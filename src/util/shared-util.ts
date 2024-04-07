@@ -1,4 +1,4 @@
-import { shutdown as flushLogger } from 'log4js'
+import log4js from 'log4js'
 
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
@@ -48,7 +48,8 @@ export function shutdownApplication(exitCode: number): void {
     process.exit(exitCode)
   })
 
-  flushLogger(() => {
+  // eslint-disable-next-line import/no-named-as-default-member
+  log4js.shutdown(() => {
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(exitCode)
   })

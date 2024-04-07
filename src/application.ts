@@ -4,7 +4,7 @@ import path from 'node:path'
 import BadWords from 'bad-words'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
-import { getLogger } from 'log4js'
+import log4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
@@ -47,7 +47,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   constructor(config: ApplicationConfig, configsDirectory: string) {
     super()
-    this.logger = getLogger('Application')
+    // eslint-disable-next-line import/no-named-as-default-member
+    this.logger = log4js.getLogger('Application')
     this.logger.trace('Application initiating')
     emitAll(this) // first thing to redirect all events
     this.config = config
@@ -141,7 +142,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
       p.plugin.onRun({
-        logger: getLogger(`plugin-${p.name}`),
+        // eslint-disable-next-line import/no-named-as-default-member
+        logger: log4js.getLogger(`plugin-${p.name}`),
         pluginName: p.name,
         application: this,
         // only shared with plugins to directly modify instances

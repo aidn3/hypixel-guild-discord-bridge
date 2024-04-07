@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { configure } from 'log4js'
+import log4js from 'log4js'
 
 import logConfig from './config/log4js-config.json'
 import packageJson from './package.json'
@@ -9,7 +9,8 @@ import { loadApplicationConfig } from './src/configuration-parser.js'
 import { shutdownApplication } from './src/util/shared-util.js'
 
 console.log('Loading Logger...')
-const logger = configure(logConfig).getLogger('Main')
+// eslint-disable-next-line import/no-named-as-default-member
+const logger = log4js.configure(logConfig).getLogger('Main')
 
 logger.debug('Setting up process...')
 process.on('uncaughtException', function (error) {
