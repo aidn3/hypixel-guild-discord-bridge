@@ -1,6 +1,5 @@
-import { EventType, InstanceType, ChannelType } from '../../../common/application-event'
-import { ColorScheme } from '../../discord/common/discord-config'
-import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
+import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 const MESSAGES = [
   "Can't repeat the same message...",
@@ -33,9 +32,9 @@ export default {
         instanceName: context.instanceName,
         instanceType: InstanceType.MINECRAFT,
         channelType: ChannelType.PUBLIC,
-        name: EventType.REPEAT,
+        eventType: EventType.REPEAT,
         username: undefined,
-        severity: ColorScheme.INFO,
+        severity: Severity.INFO,
         message: randomMessage,
         removeLater: false
       })

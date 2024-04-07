@@ -1,9 +1,7 @@
-import type { ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
-import type DiscordInstance from '../discord-instance'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
 
 export default {
   getCommandBuilder: () =>
@@ -16,18 +14,18 @@ export default {
   allowInstance: true,
   permission: Permission.ADMIN,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply()
+  handler: async function (context) {
+    await context.interaction.deferReply()
 
-    const command: string = interaction.options.getString('command', true)
-    const instance: string | null = interaction.options.getString('instance')
+    const command: string = context.interaction.options.getString('command', true)
+    const instance: string | null = context.interaction.options.getString('instance')
 
     if (instance == undefined) {
-      clientInstance.app.clusterHelper.sendCommandToAllMinecraft(command)
+      context.application.clusterHelper.sendCommandToAllMinecraft(command)
     } else {
-      clientInstance.app.clusterHelper.sendCommandToMinecraft(instance, command)
+      context.application.clusterHelper.sendCommandToMinecraft(instance, command)
     }
 
-    await interaction.editReply(`Command executed: ${command}`)
+    await context.interaction.editReply(`Command executed: ${command}`)
   }
 } satisfies CommandInterface

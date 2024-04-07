@@ -4,13 +4,13 @@ import url from 'node:url'
 import { HttpStatusCode } from 'axios'
 import Client from 'prom-client'
 
-import type Application from '../../application'
-import type { MetricsConfig } from '../../application-config'
-import { InstanceType } from '../../common/application-event'
-import { ClientInstance, Status } from '../../common/client-instance'
+import type { MetricsConfig } from '../../application-config.js'
+import type Application from '../../application.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
 
-import ApplicationMetrics from './application-metrics'
-import GuildOnlineMetrics from './guild-online-metrics'
+import ApplicationMetrics from './application-metrics.js'
+import GuildOnlineMetrics from './guild-online-metrics.js'
 
 export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly httpServer

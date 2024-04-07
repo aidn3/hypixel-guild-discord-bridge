@@ -1,20 +1,25 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2022",
+    "module": "esnext",
+    "target": "esnext",
     "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "outDir": "build",
     "resolveJsonModule": true,
+    "lib": ["esnext"],
+    "baseUrl": "./",
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "skipLibCheck": true
   },
   "ts-node": {
-    "files": true
+    "files": true,
+    "esm": true
   },
-  "exclude": ["node_modules", "build"]
+  "exclude": ["node_modules", "build", "config"]
 }

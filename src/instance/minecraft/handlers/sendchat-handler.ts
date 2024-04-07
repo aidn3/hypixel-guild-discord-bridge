@@ -1,6 +1,6 @@
-import type { MinecraftSendChat } from '../../../common/application-event'
-import EventHandler from '../../../common/event-handler'
-import type MinecraftInstance from '../minecraft-instance'
+import type { MinecraftSendChat } from '../../../common/application-event.js'
+import EventHandler from '../../../common/event-handler.js'
+import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class SendchatHandler extends EventHandler<MinecraftInstance> {
   constructor(minecraftInstance: MinecraftInstance) {

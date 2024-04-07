@@ -1,6 +1,6 @@
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
+import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
 
 export default class Secrets extends ChatCommandHandler {
   constructor() {

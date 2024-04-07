@@ -1,11 +1,7 @@
-// noinspection JSUnusedGlobalSymbols
-
-import type { ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
-import type DiscordInstance from '../discord-instance'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
 
 export default {
   getCommandBuilder: () =>
@@ -13,10 +9,10 @@ export default {
   permission: Permission.ANYONE,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply()
+  handler: async function (context) {
+    await context.interaction.deferReply()
 
-    await interaction.editReply(
+    await context.interaction.editReply(
       "This is a bridge that connects guild's discord server with it's guild chat while offering many features.\n" +
         'That way, you can chat with your friends within in-game from the discord.\n' +
         'The features of the bot can be viewed with /help.'

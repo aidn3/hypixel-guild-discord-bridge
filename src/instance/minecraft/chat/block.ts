@@ -1,6 +1,5 @@
-import { EventType, InstanceType, ChannelType } from '../../../common/application-event'
-import { ColorScheme } from '../../discord/common/discord-config'
-import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
+import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -13,9 +12,9 @@ export default {
         instanceName: context.instanceName,
         instanceType: InstanceType.MINECRAFT,
         channelType: ChannelType.PUBLIC,
-        name: EventType.BLOCK,
+        eventType: EventType.BLOCK,
         username: undefined,
-        severity: ColorScheme.INFO,
+        severity: Severity.INFO,
         message: 'The message has been blocked by Hypixel for breaking the rules.',
         removeLater: false
       })

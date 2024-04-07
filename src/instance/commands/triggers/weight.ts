@@ -7,8 +7,8 @@ import assert from 'node:assert'
 
 import axios, { type AxiosResponse } from 'axios'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
 
 export default class Weight extends ChatCommandHandler {
   constructor() {

@@ -4,20 +4,20 @@ import PrismarineChat from 'prismarine-chat'
 import type { NBT } from 'prismarine-nbt'
 import PrismarineRegistry from 'prismarine-registry'
 
-import type Application from '../../application'
-import type { MinecraftInstanceConfig } from '../../application-config'
-import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event'
-import { ChannelType, EventType, InstanceEventType, InstanceType } from '../../common/application-event'
-import { ClientInstance, Status } from '../../common/client-instance'
-import RateLimiter from '../../util/rate-limiter'
-import { antiSpamString } from '../../util/shared-util'
+import type { MinecraftInstanceConfig } from '../../application-config.js'
+import type Application from '../../application.js'
+import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event.js'
+import { ChannelType, EventType, InstanceEventType, InstanceType } from '../../common/application-event.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
+import RateLimiter from '../../util/rate-limiter.js'
+import { antiSpamString } from '../../util/shared-util.js'
 
-import ChatManager from './chat-manager'
-import { resolveProxyIfExist } from './common/proxy-handler'
-import ErrorHandler from './handlers/error-handler'
-import SelfbroadcastHandler from './handlers/selfbroadcast-handler'
-import SendchatHandler from './handlers/sendchat-handler'
-import StateHandler, { QUIT_OWN_VOLITION } from './handlers/state-handler'
+import ChatManager from './chat-manager.js'
+import { resolveProxyIfExist } from './common/proxy-handler.js'
+import ErrorHandler from './handlers/error-handler.js'
+import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
+import SendchatHandler from './handlers/sendchat-handler.js'
+import StateHandler, { QUIT_OWN_VOLITION } from './handlers/state-handler.js'
 
 const commandsLimiter = new RateLimiter(1, 1000)
 
@@ -103,8 +103,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       if (event.instanceName === this.instanceName) return
       if (event.channelType !== ChannelType.PUBLIC) return
       if (event.removeLater) return
-      if (event.name === EventType.BLOCK) return
-      if (event.name === EventType.REPEAT) return
+      if (event.eventType === EventType.BLOCK) return
+      if (event.eventType === EventType.REPEAT) return
 
       void this.send(`/gc @[${event.instanceName}]: ${event.message}`)
     })
@@ -117,7 +117,15 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       ...this.defaultBotConfig,
       username: this.config.email,
       auth: 'microsoft',
-      ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig)
+      ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
+      onMsaCode: (code) => {
+        this.app.emit('statusMessage', {
+          localEvent: true,
+          instanceName: this.instanceName,
+          instanceType: InstanceType.MINECRAFT,
+          message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
+        })
+      }
     })
     this.listenForRegistry(this.client)
 

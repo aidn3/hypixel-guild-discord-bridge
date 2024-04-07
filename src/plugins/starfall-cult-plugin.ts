@@ -1,6 +1,5 @@
-import { ChannelType, EventType, InstanceType } from '../common/application-event'
-import type { PluginContext, PluginInterface } from '../common/plugins'
-import { ColorScheme } from '../instance/discord/common/discord-config'
+import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
+import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 export default {
   onRun(context: PluginContext): void {
@@ -18,8 +17,8 @@ export default {
           localEvent: true,
           instanceType: InstanceType.MAIN,
           instanceName: InstanceType.MAIN,
-          name: EventType.AUTOMATED,
-          severity: ColorScheme.GOOD,
+          eventType: EventType.AUTOMATED,
+          severity: Severity.GOOD,
           channelType: ChannelType.PUBLIC,
           username: undefined,
           message: `Reminder: Star Cult is here. Get that free x200 starfall!`,

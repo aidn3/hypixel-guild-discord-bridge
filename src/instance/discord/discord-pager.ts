@@ -8,12 +8,30 @@ import type {
 } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
+import { Severity } from '../../common/application-event.js'
+
+import { DefaultCommandFooter } from './common/discord-config.js'
+
 enum Button {
-  NEXT,
-  BACK
+  NEXT = 'next',
+  BACK = 'back'
 }
 
 export const DEFAULT_TIMEOUT = 60_000
+
+const NO_EMBED: APIEmbed = {
+  color: Severity.ERROR,
+  title: 'Nothing to display',
+  description:
+    'There is nothing to display.\n' +
+    "This shouldn't happen.\n" +
+    'The application returned an empty body.\n' +
+    'This message is only displayed to inform you about the bug.',
+
+  footer: {
+    text: DefaultCommandFooter
+  }
+}
 
 export async function interactivePaging(
   interaction: CommandInteraction,
@@ -24,43 +42,63 @@ export async function interactivePaging(
   const channel: TextBasedChannel = interaction.channel as TextChannel
   let lastUpdate = await fetch(currentPage)
 
-  const nextInteraction = channel.createMessageComponentCollector({
-    filter: (index) => index.customId === `${interaction.id}-${Button.NEXT}` && index.user.id === interaction.user.id,
-    time: duration
-  })
-  const backInteraction = channel.createMessageComponentCollector({
-    filter: (index) => index.customId === `${interaction.id}-${Button.BACK}` && index.user.id === interaction.user.id,
-    time: duration
-  })
+  if (lastUpdate.embed === undefined) {
+    return await interaction.editReply({ embeds: [NO_EMBED] })
+  }
 
-  nextInteraction.on('collect', async (index: ButtonInteraction) => {
-    await index.deferUpdate()
-    lastUpdate = await fetch(++currentPage)
-    await index.editReply({
-      embeds: [lastUpdate.embed],
-      components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+  if (lastUpdate.totalPages > 1) {
+    const nextInteraction = channel.createMessageComponentCollector({
+      filter: (index) => index.customId === `${interaction.id}-${Button.NEXT}` && index.user.id === interaction.user.id,
+      time: duration
     })
-  })
-  backInteraction.on('collect', async (index: ButtonInteraction) => {
-    await index.deferUpdate()
-    lastUpdate = await fetch(--currentPage)
-    await index.editReply({
-      embeds: [lastUpdate.embed],
-      components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+    const backInteraction = channel.createMessageComponentCollector({
+      filter: (index) => index.customId === `${interaction.id}-${Button.BACK}` && index.user.id === interaction.user.id,
+      time: duration
     })
-  })
 
-  nextInteraction.on('end', async () => {
-    console.log('done collecting')
-    await interaction.editReply({
-      embeds: [lastUpdate.embed],
-      components: []
+    nextInteraction.on('collect', async (index: ButtonInteraction) => {
+      await index.deferUpdate()
+      lastUpdate = await fetch(++currentPage)
+      if (lastUpdate.embed === undefined) {
+        await interaction.editReply({ embeds: [NO_EMBED] })
+        return
+      }
+
+      await index.editReply({
+        embeds: [lastUpdate.embed],
+        components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+      })
     })
-  })
+    backInteraction.on('collect', async (index: ButtonInteraction) => {
+      await index.deferUpdate()
+      lastUpdate = await fetch(--currentPage)
+      if (lastUpdate.embed === undefined) {
+        await interaction.editReply({ embeds: [NO_EMBED] })
+        return
+      }
+
+      await index.editReply({
+        embeds: [lastUpdate.embed],
+        components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+      })
+    })
+
+    nextInteraction.on('end', async () => {
+      if (lastUpdate.embed === undefined) {
+        await interaction.editReply({ embeds: [NO_EMBED] })
+        return
+      }
+
+      await interaction.editReply({
+        embeds: [lastUpdate.embed],
+        components: []
+      })
+    })
+  }
 
   return await interaction.editReply({
     embeds: [lastUpdate.embed],
-    components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+    components: lastUpdate.totalPages > 1 ? [createButtons(interaction.id, currentPage, lastUpdate.totalPages)] : []
   })
 }
 
@@ -94,6 +132,6 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
 }
 
 export interface FetchPageResult {
-  embed: APIEmbed
+  embed?: APIEmbed
   totalPages: number
 }

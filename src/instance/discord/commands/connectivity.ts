@@ -1,14 +1,13 @@
-import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
+import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import type Application from '../../../application'
-import type { MinecraftRawChatEvent } from '../../../common/application-event'
-import { InstanceType } from '../../../common/application-event'
-import { antiSpamString, escapeDiscord } from '../../../util/shared-util'
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
-import type DiscordInstance from '../discord-instance'
+import type Application from '../../../application.js'
+import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
+import { Severity, InstanceType } from '../../../common/application-event.js'
+import { antiSpamString, escapeDiscord } from '../../../util/shared-util.js'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed {
   let content =
@@ -36,7 +35,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
   }
 
   return {
-    color: ColorScheme.DEFAULT,
+    color: Severity.DEFAULT,
     title: `Mute/Connectivity Check`,
     description: content,
     footer: {
@@ -51,17 +50,17 @@ export default {
   permission: Permission.ANYONE,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply()
+  handler: async function (context) {
+    await context.interaction.deferReply()
 
-    const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
-    const lists: Map<string, string[]> = await checkConnectivity(clientInstance.app)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const lists: Map<string, string[]> = await checkConnectivity(context.application)
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
     }
 
-    await interaction.editReply({ embeds: [createEmbed(lists)] })
+    await context.interaction.editReply({ embeds: [createEmbed(lists)] })
   }
 } satisfies CommandInterface
 

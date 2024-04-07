@@ -1,19 +1,18 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
+import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
-import type Application from '../../../application'
-import type { MinecraftRawChatEvent } from '../../../common/application-event'
-import { InstanceType } from '../../../common/application-event'
-import type { MojangApi, MojangProfile } from '../../../util/mojang'
-import { escapeDiscord } from '../../../util/shared-util'
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
-import { ColorScheme, DefaultCommandFooter } from '../common/discord-config'
-import type DiscordInstance from '../discord-instance'
-import { pageMessage } from '../discord-pager'
+import type Application from '../../../application.js'
+import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
+import { Severity, InstanceType } from '../../../common/application-event.js'
+import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
+import { escapeDiscord } from '../../../util/shared-util.js'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
+import { pageMessage } from '../discord-pager.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   const entries: string[] = []
@@ -44,7 +43,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
       currentLength = 0
 
       pages.push({
-        color: ColorScheme.DEFAULT,
+        color: Severity.DEFAULT,
         title: `Guild Online Players (${total}):`,
         description: '',
         footer: {
@@ -67,21 +66,21 @@ export default {
   permission: Permission.ANYONE,
   allowInstance: false,
 
-  handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply()
+  handler: async function (context) {
+    await context.interaction.deferReply()
 
-    const instancesNames = clientInstance.app.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
     const lists: Map<string, string[]> = await listMembers(
-      clientInstance.app,
-      clientInstance.app.mojangApi,
-      clientInstance.app.hypixelApi
+      context.application,
+      context.application.mojangApi,
+      context.application.hypixelApi
     )
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
     }
 
-    await pageMessage(interaction, createEmbed(lists))
+    await pageMessage(context.interaction, createEmbed(lists))
   }
 } satisfies CommandInterface
 

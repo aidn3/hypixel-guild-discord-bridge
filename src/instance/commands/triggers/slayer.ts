@@ -1,8 +1,8 @@
 import type { Slayer as SlayerType } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
+import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],
@@ -53,8 +53,8 @@ export default class Slayer extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const givenSlayer = context.args[0] ?? 'overview'
-    const givenUsername = context.args[1] ?? context.username
+    const givenUsername = context.args[0] ?? context.username
+    const givenSlayer = context.args[1] ?? 'overview'
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
@@ -83,7 +83,7 @@ export default class Slayer extends ChatCommandHandler {
 
     let output = '/'
     for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output += this.getSlayerLevel(slayer.xp, name) + '/'
+      output += `${this.getSlayerLevel(slayer.xp, name)}/`
     }
     return `${givenUsername}'s slayers: ${output}`
   }
@@ -109,7 +109,7 @@ export default class Slayer extends ChatCommandHandler {
 
   private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
     const highestTier = highestTierTable[slayerName as keyof typeof highestTierTable]
-    const index = 'boss_kills_tier_' + highestTier
+    const index = `boss_kills_tier_${highestTier}`
     return slayerData[index as keyof SlayerType] ?? 0
   }
 }

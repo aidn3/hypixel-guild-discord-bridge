@@ -1,7 +1,7 @@
 import type { Registry } from 'prom-client'
 import { Counter } from 'prom-client'
 
-import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event'
+import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event.js'
 
 // location and scope keys are preserved and not renamed like the rest for backward compatibility
 export default class ApplicationMetrics {
@@ -54,7 +54,7 @@ export default class ApplicationMetrics {
       location: event.instanceType,
       scope: event.channelType,
       instance: event.instanceName,
-      event: event.name
+      event: event.eventType
     })
   }
 }

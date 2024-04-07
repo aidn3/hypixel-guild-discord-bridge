@@ -1,9 +1,9 @@
 import { WebhookClient } from 'discord.js'
 
-import type Application from '../../application'
-import { InstanceType } from '../../common/application-event'
-import { ClientInstance } from '../../common/client-instance'
-import { escapeDiscord } from '../../util/shared-util'
+import type Application from '../../application.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ClientInstance } from '../../common/client-instance.js'
+import { escapeDiscord } from '../../util/shared-util.js'
 
 export default class LoggerInstance extends ClientInstance<undefined> {
   private readonly client: WebhookClient
@@ -19,7 +19,7 @@ export default class LoggerInstance extends ClientInstance<undefined> {
       void this.send(`[chat][${event.instanceName}][type=${event.channelType}] ${displayUsername}: ${event.message}`)
     })
     this.app.on('event', (event) => {
-      void this.send(`[event][${event.name}][${event.instanceName}] ${event.username}: ${event.message}`)
+      void this.send(`[event][${event.eventType}][${event.instanceName}] ${event.username}: ${event.message}`)
     })
     this.app.on('command', (event) => {
       void this.send(
@@ -33,6 +33,10 @@ export default class LoggerInstance extends ClientInstance<undefined> {
     this.app.on('selfBroadcast', (event) => {
       void this.send(`[selfBroadcast][${event.instanceName}] Instance broadcasting its existence.`)
     })
+    this.app.on('statusMessage', (event) => {
+      void this.send(`[statusMessage][${event.instanceName}] ${event.message}`)
+    })
+
     this.app.on('reconnectSignal', (event) => {
       void this.send(`[reconnectSignal][target=${event.targetInstanceName}] Reconnect signal has been sent.`)
     })

@@ -1,7 +1,9 @@
 import type { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import type { Logger } from 'log4js'
 
-import type DiscordInstance from '../discord-instance'
+import type Application from '../../../application.js'
 
+// values must be numbers to be comparable
 export enum Permission {
   ANYONE,
   HELPER,
@@ -13,5 +15,14 @@ export interface CommandInterface {
   getCommandBuilder: () => SlashCommandBuilder
   allowInstance: boolean
   permission: Permission
-  handler: (discordInstance: DiscordInstance, interaction: ChatInputCommandInteraction) => Promise<void>
+  handler: (context: DiscordCommandContext) => Promise<void>
+}
+
+export interface DiscordCommandContext {
+  application: Application
+  logger: Logger
+  instanceName: string
+  interaction: ChatInputCommandInteraction
+  privilege: Permission
+  showPermissionDenied: () => Promise<void>
 }

@@ -3,27 +3,27 @@ import assert from 'node:assert'
 import getMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
 
-import { InstanceType } from '../../common/application-event'
-import EventHandler from '../../common/event-handler'
+import { InstanceType } from '../../common/application-event.js'
+import EventHandler from '../../common/event-handler.js'
 
-import BlockChat from './chat/block'
-import DemoteChat from './chat/demote'
-import JoinChat from './chat/join'
-import KickChat from './chat/kick'
-import LeaveChat from './chat/leave'
-import MuteChat from './chat/mute'
-import OfficerChat from './chat/officer'
-import OfflineChat from './chat/offline'
-import OnlineChat from './chat/online'
-import PrivateChat from './chat/private'
-import PromoteChat from './chat/promote'
-import PublicChat from './chat/public'
-import QuestChat from './chat/quest'
-import RepeatChat from './chat/repeat'
-import RequestChat from './chat/request'
-import UnmuteChat from './chat/unmute'
-import type { MinecraftChatMessage } from './common/chat-interface'
-import type MinecraftInstance from './minecraft-instance'
+import BlockChat from './chat/block.js'
+import DemoteChat from './chat/demote.js'
+import JoinChat from './chat/join.js'
+import KickChat from './chat/kick.js'
+import LeaveChat from './chat/leave.js'
+import MuteChat from './chat/mute.js'
+import OfficerChat from './chat/officer.js'
+import OfflineChat from './chat/offline.js'
+import OnlineChat from './chat/online.js'
+import PrivateChat from './chat/private.js'
+import PromoteChat from './chat/promote.js'
+import PublicChat from './chat/public.js'
+import QuestChat from './chat/quest.js'
+import RepeatChat from './chat/repeat.js'
+import RequestChat from './chat/request.js'
+import UnmuteChat from './chat/unmute.js'
+import type { MinecraftChatMessage } from './common/chat-interface.js'
+import type MinecraftInstance from './minecraft-instance.js'
 
 export default class ChatManager extends EventHandler<MinecraftInstance> {
   private readonly chatModules: MinecraftChatMessage[]
@@ -106,7 +106,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
 
   private onMessage(message: string): void {
     for (const module of this.chatModules) {
-      module.onChat({
+      void module.onChat({
         application: this.clientInstance.app,
         clientInstance: this.clientInstance,
         instanceName: this.clientInstance.instanceName,

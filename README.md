@@ -35,6 +35,7 @@ offering quality user experience while keeping it simple
   - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
   - [Node Modes](#node-modes)
   - [Setup Cluster](#setup-cluster)
+- [Documentation and Tutorials](#documentation-and-tutorials)
 - [Credits](#Credits)
 
 ## Features
@@ -62,19 +63,18 @@ offering quality user experience while keeping it simple
 
 ### Supported Discord Commands
 
-| Command                             | Description                                                | Permission |
-| ----------------------------------- | ---------------------------------------------------------- | ---------- |
-| `/ping`                             | Show Discord response latency                              | Anyone     |
-| `/list`                             | List all online members and their current game-mode        | Anyone     |
-| `/connectivity`                     | Send an echo to all Minecraft instances checking if online | Anyone     |
-| `/about`                            | Display basic info about the client                        | Anyone     |
-| `/promote` & `/demote` & `/setrank` | Equivalent to `/guild promote/demote/setrank`              | Helper     |
-| `/mute` & `/unmute`                 | Equivalent to `/guild mute/unmute`                         | Helper     |
-| `/invite` & `/accept`               | Equivalent to `/guild invite/accept`                       | Helper     |
-| `/reconnect`                        | Reconnect an in-game instance                              | Helper     |
-| `/kick`                             | Equivalent to `/guild kick`                                | Officer    |
-| `/restart`                          | Restart the entire bridge service                          | Admin      |
-| `/override`                         | Send direct commands to all minecraft clients              | Admin      |
+| Command                             | Description                                                | Permission     |
+| ----------------------------------- | ---------------------------------------------------------- | -------------- |
+| `/ping`                             | Show Discord response latency                              | Anyone         |
+| `/list`                             | List all online members and their current game-mode        | Anyone         |
+| `/connectivity`                     | Send an echo to all Minecraft instances checking if online | Anyone         |
+| `/about`                            | Display basic info about the client                        | Anyone         |
+| `/promote` & `/demote` & `/setrank` | Equivalent to `/guild promote/demote/setrank`              | Helper         |
+| `/invite` & `/accept`               | Equivalent to `/guild invite/accept`                       | Helper         |
+| `/reconnect`                        | Reconnect an in-game instance                              | Helper         |
+| `/punishments`                      | Equivalent to `/guild mute/unmute/kick`. Can also ban      | Helper/Officer |
+| `/restart`                          | Restart the entire bridge service                          | Admin          |
+| `/override`                         | Send direct commands to all minecraft clients              | Admin          |
 
 ### Supported Events
 
@@ -270,6 +270,10 @@ All configurations will be in `config.yaml` under `socket` section.
 - Start all nodes
 
 ---
+
+## Documentation And Tutorials
+
+- [How to create plugins](./PLUGIN-TUTORIAL.md)
 
 ## Credits
 
