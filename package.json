@@ -5,11 +5,11 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "start": "node --require ts-node/register index.ts",
+    "start": "node --import tsx/esm index.ts",
     "generate": "npx ts-interface-builder src/application-config.ts src/common/application-event.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
     "test:compile": "npx tsc --noEmit",
-    "test:run": "node --require ts-node/register index.ts test-run",
+    "test:run": "node --import tsx/esm index.ts test-run",
     "validate": "npm install && npm run lint:fix && npm run generate && npm run test:compile && npx type-coverage --detail true --update true && npm run test:run"
   },
   "license": "MIT",
@@ -42,6 +42,7 @@
     "socks": "^2.7.1",
     "tiny-typed-emitter": "^2.1.0",
     "ts-interface-checker": "^1.0.2",
+    "tsx": "^4.7.2",
     "ws": "^8.16.0",
     "yaml": "^2.2.2"
   },
@@ -60,7 +61,6 @@
     "prettier": "^3.0.3",
     "prismarine-nbt": "^2.5.0",
     "ts-interface-builder": "^0.3.3",
-    "ts-node": "^10.9.1",
     "type-coverage": "^2.27.1",
     "typescript": "^5.2.2"
   },
