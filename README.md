@@ -14,7 +14,9 @@ offering quality user experience while keeping it simple
 > your own risk"**
 
 ## Migrating To 3.x.x
+
 Breaking changes:
+
 - `config.yaml` options has been moved around. Check the new `config_example.yaml` and compare it with the old config file
 - Version 3.x websocket is incompatible with older versions. Cannot connect the new version with the old one
 - Chat Commands have been moved to their own instance in `config.yaml`. Only enable one instance when using websocket
