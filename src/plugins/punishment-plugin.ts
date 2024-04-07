@@ -1,8 +1,8 @@
-import type Application from '../application'
-import type ClusterHelper from '../cluster-helper'
-import { ChannelType, Severity, EventType, InstanceType, PunishmentType } from '../common/application-event'
-import type { PluginContext, PluginInterface } from '../common/plugins'
-import { PunishedUsers } from '../util/punished-users'
+import type Application from '../application.js'
+import type ClusterHelper from '../cluster-helper.js'
+import { ChannelType, Severity, EventType, InstanceType, PunishmentType } from '../common/application-event.js'
+import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import { PunishedUsers } from '../util/punished-users.js'
 
 // noinspection JSUnusedGlobalSymbols
 export default {

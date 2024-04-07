@@ -1,5 +1,5 @@
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
 
 export default class Help extends ChatCommandHandler {
   constructor() {

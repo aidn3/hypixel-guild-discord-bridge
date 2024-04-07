@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
 
-import type { MojangApi } from '../../../util/mojang'
+import type { MojangApi } from '../../../util/mojang.js'
 
 export async function getUuidIfExists(mojangApi: MojangApi, username: string): Promise<string | undefined> {
   const result = await mojangApi

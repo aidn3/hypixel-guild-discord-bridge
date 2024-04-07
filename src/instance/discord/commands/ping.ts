@@ -1,10 +1,10 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Severity } from '../../../common/application-event'
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
-import { DefaultCommandFooter } from '../common/discord-config'
+import { Severity } from '../../../common/application-event.js'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {

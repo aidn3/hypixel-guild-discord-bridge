@@ -1,4 +1,4 @@
-import type { PluginInterface, PluginContext } from '../common/plugins'
+import type { PluginInterface, PluginContext } from '../common/plugins.js'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

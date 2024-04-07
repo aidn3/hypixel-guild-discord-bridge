@@ -1,10 +1,10 @@
-import type Application from '../../application'
-import type { SocketConfig } from '../../application-config'
-import { InstanceType } from '../../common/application-event'
-import { ClientInstance } from '../../common/client-instance'
+import type { SocketConfig } from '../../application-config.js'
+import type Application from '../../application.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ClientInstance } from '../../common/client-instance.js'
 
-import ClientSocket from './client-socket'
-import ServerSocket from './server-socket'
+import ClientSocket from './client-socket.js'
+import ServerSocket from './server-socket.js'
 
 export default class SocketInstance extends ClientInstance<SocketConfig> {
   private serverSocket: ServerSocket | undefined

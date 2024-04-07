@@ -1,8 +1,8 @@
 import type { SkyblockMember } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
-import { getSelectedSkyblockProfile, getUuidIfExists } from '../common/util'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
+import { getSelectedSkyblockProfile, getUuidIfExists } from '../common/util.js'
 
 export default class Catacomb extends ChatCommandHandler {
   constructor() {

@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type Application from '../../../application'
+import type Application from '../../../application.js'
 
 // values must be numbers to be comparable
 export enum Permission {

@@ -1,6 +1,6 @@
-import { EventType, InstanceType, ChannelType, PunishmentType, Severity } from '../../../common/application-event'
-import { sufficeToTime } from '../../../util/shared-util'
-import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface'
+import { EventType, InstanceType, ChannelType, PunishmentType, Severity } from '../../../common/application-event.js'
+import { sufficeToTime } from '../../../util/shared-util.js'
+import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {

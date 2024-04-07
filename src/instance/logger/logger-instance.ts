@@ -1,9 +1,9 @@
 import { WebhookClient } from 'discord.js'
 
-import type Application from '../../application'
-import { InstanceType } from '../../common/application-event'
-import { ClientInstance } from '../../common/client-instance'
-import { escapeDiscord } from '../../util/shared-util'
+import type Application from '../../application.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ClientInstance } from '../../common/client-instance.js'
+import { escapeDiscord } from '../../util/shared-util.js'
 
 export default class LoggerInstance extends ClientInstance<undefined> {
   private readonly client: WebhookClient

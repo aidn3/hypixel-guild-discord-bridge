@@ -5,8 +5,8 @@
 */
 import { evalExpression } from '@hkh12/node-calc'
 
-import type { ChatCommandContext } from '../common/command-interface'
-import { ChatCommandHandler } from '../common/command-interface'
+import type { ChatCommandContext } from '../common/command-interface.js'
+import { ChatCommandHandler } from '../common/command-interface.js'
 
 export default class Calculate extends ChatCommandHandler {
   constructor() {

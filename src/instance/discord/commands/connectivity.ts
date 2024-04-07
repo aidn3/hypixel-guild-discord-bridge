@@ -1,13 +1,13 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import type Application from '../../../application'
-import type { MinecraftRawChatEvent } from '../../../common/application-event'
-import { Severity, InstanceType } from '../../../common/application-event'
-import { antiSpamString, escapeDiscord } from '../../../util/shared-util'
-import type { CommandInterface } from '../common/command-interface'
-import { Permission } from '../common/command-interface'
-import { DefaultCommandFooter } from '../common/discord-config'
+import type Application from '../../../application.js'
+import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
+import { Severity, InstanceType } from '../../../common/application-event.js'
+import { antiSpamString, escapeDiscord } from '../../../util/shared-util.js'
+import type { CommandInterface } from '../common/command-interface.js'
+import { Permission } from '../common/command-interface.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed {
   let content =

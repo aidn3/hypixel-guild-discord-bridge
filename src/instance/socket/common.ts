@@ -1,4 +1,4 @@
-import type { BaseEvent } from '../../common/application-event'
+import type { BaseEvent } from '../../common/application-event.js'
 
 export interface WebsocketPacket {
   name: string

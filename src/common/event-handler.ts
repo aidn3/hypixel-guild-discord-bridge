@@ -1,4 +1,4 @@
-import type { ClientInstance } from './client-instance'
+import type { ClientInstance } from './client-instance.js'
 
 export default abstract class EventHandler<K extends ClientInstance<unknown>> {
   clientInstance: K

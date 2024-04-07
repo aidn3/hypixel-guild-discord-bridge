@@ -3,16 +3,16 @@ import assert from 'node:assert'
 import type { APIEmbed, TextBasedChannelFields, Webhook } from 'discord.js'
 import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'discord.js'
 
-import type Application from '../../application'
-import type { DiscordConfig } from '../../application-config'
-import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event'
-import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event'
-import { ClientInstance, Status } from '../../common/client-instance'
-import { escapeDiscord } from '../../util/shared-util'
+import type { DiscordConfig } from '../../application-config.js'
+import type Application from '../../application.js'
+import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event.js'
+import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
+import { escapeDiscord } from '../../util/shared-util.js'
 
-import ChatManager from './chat-manager'
-import { CommandManager } from './command-manager'
-import StateHandler from './handlers/state-handler'
+import ChatManager from './chat-manager.js'
+import { CommandManager } from './command-manager.js'
+import StateHandler from './handlers/state-handler.js'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly stateHandler: StateHandler

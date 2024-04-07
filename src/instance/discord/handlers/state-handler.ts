@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
-import EventHandler from '../../../common/event-handler'
-import type DiscordInstance from '../discord-instance'
+import EventHandler from '../../../common/event-handler.js'
+import type DiscordInstance from '../discord-instance.js'
 
 export default class StateHandler extends EventHandler<DiscordInstance> {
   registerEvents(): void {

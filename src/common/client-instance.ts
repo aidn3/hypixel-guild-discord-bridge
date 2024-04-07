@@ -1,9 +1,9 @@
 import type { Logger } from 'log4js'
 import { getLogger } from 'log4js'
 
-import type Application from '../application'
+import type Application from '../application.js'
 
-import type { InstanceType } from './application-event'
+import type { InstanceType } from './application-event.js'
 
 export abstract class ClientInstance<K> {
   readonly instanceName: string

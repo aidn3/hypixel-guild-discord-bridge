@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 
-import { InstanceType } from '../../../common/application-event'
-import EventHandler from '../../../common/event-handler'
-import type MinecraftInstance from '../minecraft-instance'
+import { InstanceType } from '../../../common/application-event.js'
+import EventHandler from '../../../common/event-handler.js'
+import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class SelfbroadcastHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {
