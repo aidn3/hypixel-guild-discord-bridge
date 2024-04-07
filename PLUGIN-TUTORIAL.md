@@ -6,7 +6,7 @@ To start, create a file in the application root directory `example-plugin.ts`.
 Import the plugin interface and implement it as the default export in the file:
 
 ```typescript
-import type { PluginInterface, PluginContext } from './src/common/plugins'
+import type { PluginInterface, PluginContext } from './src/common/plugins.js'
 
 export default {
   onRun(context: PluginContext): void {
@@ -43,12 +43,12 @@ in `./src/common/application-event`.
 Example of a plugin that logs any chat message from anywhere:
 
 ```typescript
-import type { PluginInterface, PluginContext } from './src/common/plugins'
+import type { PluginInterface, PluginContext } from './src/common/plugins.js'
 
 export default {
   onRun(context: PluginContext): void {
     context.application.on('chat', (event) => {
-      console.log(event.message)
+      context.logger.log(event.message)
     })
   }
 } satisfies PluginInterface
@@ -73,7 +73,8 @@ export default {
 Example of a plugin that creates and sends a notification to officer chat when anyone joins the guild in-game:
 
 ```typescript
-import type { PluginInterface, PluginContext } from './src/common/plugins'
+import { ChannelType, EventType, InstanceType, Severity } from './src/common/application-event.js'
+import type { PluginInterface, PluginContext } from './src/common/plugins.js'
 
 export default {
   onRun(context: PluginContext): void {
@@ -118,8 +119,8 @@ It is done by accessing `PluginContext.localInstances`, which contains all inter
 Example of accessing minecraft internal bot clients:
 
 ```typescript
-import type { PluginContext, PluginInterface } from './src/common/plugins'
-import MinecraftInstance from './src/instance/minecraft/minecraft-instance'
+import type { PluginContext, PluginInterface } from './src/common/plugins.js'
+import MinecraftInstance from './src/instance/minecraft/minecraft-instance.js'
 
 export default {
   onRun(context: PluginContext): void {
