@@ -1,12 +1,12 @@
-import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import DiscordInstance from '../DiscordInstance'
-import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
-import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
+import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
+import DiscordInstance from "../DiscordInstance"
+import { DiscordCommandInterface, Permission } from "../common/DiscordCommandInterface"
+import { ColorScheme, DefaultCommandFooter } from "../common/DiscordConfig"
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {
     color: ColorScheme.DEFAULT,
-    title: 'Discord Ping',
+    title: "Discord Ping",
     description:
       `**Latency:** ${latency}ms\n` + `**Websocket heartbeat:** ${websocket}ms.\n` + `**Server lag:** ${lag}ms`,
     footer: {
@@ -16,7 +16,7 @@ function createPing(latency: number, websocket: number, lag: number): APIEmbed {
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord Ping'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName("ping").setDescription("Discord Ping"),
   permission: Permission.ANYONE,
   allowInstance: false,
 

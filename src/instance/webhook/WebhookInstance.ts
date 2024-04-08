@@ -1,10 +1,10 @@
-import { Client, Message, WebhookClient } from 'discord.js'
+import { Client, Message, WebhookClient } from "discord.js"
 
-import Application from '../../Application'
-import { ClientInstance, LOCATION, SCOPE } from '../../common/ClientInstance'
-import { ChatEvent } from '../../common/ApplicationEvent'
-import { cleanMessage, escapeDiscord } from '../../util/DiscordMessageUtil'
-import WebhookConfig from './common/WebhookConfig'
+import Application from "../../Application"
+import { ClientInstance, LOCATION, SCOPE } from "../../common/ClientInstance"
+import { ChatEvent } from "../../common/ApplicationEvent"
+import { cleanMessage, escapeDiscord } from "../../util/DiscordMessageUtil"
+import WebhookConfig from "./common/WebhookConfig"
 
 export default class WebhookInstance extends ClientInstance<WebhookConfig> {
   private readonly discordBot: Client | undefined
@@ -17,7 +17,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     this.discordBot = discordBot
     if (config.sendUrl != undefined) this.client = new WebhookClient({ url: config.sendUrl })
 
-    this.app.on('chat', (event: ChatEvent): void => {
+    this.app.on("chat", (event: ChatEvent): void => {
       if (event.instanceName === this.instanceName) return
       if (event.scope !== SCOPE.PUBLIC) return
 
@@ -37,7 +37,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     // Need to redesign to support reconnecting.
     // Check this commit for further information
     if (this.connected) {
-      this.logger.error('Already connected once. Trying to reconnect again will bug this webhook. Returning.')
+      this.logger.error("Already connected once. Trying to reconnect again will bug this webhook. Returning.")
       return
     }
     this.connected = true
@@ -45,11 +45,11 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
     if (this.config.receiveId != undefined) {
       if (this.discordBot == undefined) {
         this.logger.warn(
-          'Discord instance is not setup. Webhook can not receive messages. ' +
-            'Sending will still work if a link is given though'
+          "Discord instance is not setup. Webhook can not receive messages. " +
+            "Sending will still work if a link is given though"
         )
       } else {
-        this.discordBot.on('messageCreate', (message) => {
+        this.discordBot.on("messageCreate", (message) => {
           this.onChatMessage(message)
         })
       }
@@ -67,7 +67,7 @@ export default class WebhookInstance extends ClientInstance<WebhookConfig> {
       return
     }
 
-    this.app.emit('chat', {
+    this.app.emit("chat", {
       localEvent: true,
       instanceName: this.instanceName,
       location: LOCATION.WEBHOOK,

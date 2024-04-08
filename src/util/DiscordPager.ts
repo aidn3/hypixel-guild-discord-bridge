@@ -7,7 +7,7 @@ import {
   Message,
   TextBasedChannel,
   TextChannel
-} from 'discord.js'
+} from "discord.js"
 
 enum Button {
   NEXT,
@@ -32,7 +32,7 @@ export async function pageMessage(
   })
 
   let lastResponse = pages[currentPage]
-  nextInteraction.on('collect', async (index) => {
+  nextInteraction.on("collect", async (index) => {
     currentPage++
     lastResponse = pages[currentPage]
 
@@ -41,7 +41,7 @@ export async function pageMessage(
       components: [createButtons(interaction.id, currentPage, pages.length)]
     })
   })
-  backInteraction.on('collect', async (index) => {
+  backInteraction.on("collect", async (index) => {
     currentPage--
     lastResponse = pages[currentPage]
 
@@ -51,8 +51,8 @@ export async function pageMessage(
     })
   })
 
-  nextInteraction.on('end', async () => {
-    console.log('done collecting')
+  nextInteraction.on("end", async () => {
+    console.log("done collecting")
     await interaction.editReply({
       embeds: [lastResponse],
       components: []
@@ -72,12 +72,12 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
     .addComponents(
       new ButtonBuilder()
         .setCustomId(`${interactionId}-${Button.BACK}`)
-        .setLabel('Back')
+        .setLabel("Back")
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage <= 0),
       new ButtonBuilder()
         .setCustomId(`${interactionId}-${Button.NEXT}`)
-        .setLabel('Next')
+        .setLabel("Next")
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage + 1 >= totalPages)
     )

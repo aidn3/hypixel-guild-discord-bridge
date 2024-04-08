@@ -1,15 +1,15 @@
-import * as assert from 'node:assert'
-import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { Client, Status } from 'hypixel-api-reborn'
-import DiscordInstance from '../DiscordInstance'
-import { escapeDiscord } from '../../../util/DiscordMessageUtil'
-import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
-import { LOCATION } from '../../../common/ClientInstance'
-import { MinecraftRawChatEvent } from '../../../common/ApplicationEvent'
-import Application from '../../../Application'
-import { ColorScheme, DefaultCommandFooter } from '../common/DiscordConfig'
-import { pageMessage } from '../../../util/DiscordPager'
-import { MojangApi, MojangProfile } from '../../../util/Mojang'
+import * as assert from "node:assert"
+import { APIEmbed, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
+import { Client, Status } from "hypixel-api-reborn"
+import DiscordInstance from "../DiscordInstance"
+import { escapeDiscord } from "../../../util/DiscordMessageUtil"
+import { DiscordCommandInterface, Permission } from "../common/DiscordCommandInterface"
+import { LOCATION } from "../../../common/ClientInstance"
+import { MinecraftRawChatEvent } from "../../../common/ApplicationEvent"
+import Application from "../../../Application"
+import { ColorScheme, DefaultCommandFooter } from "../common/DiscordConfig"
+import { pageMessage } from "../../../util/DiscordPager"
+import { MojangApi, MojangProfile } from "../../../util/Mojang"
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   const entries: string[] = []
@@ -22,13 +22,13 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 
     if (list.length > 0) {
       for (const user of list) {
-        entries.push(user + '\n')
+        entries.push(user + "\n")
       }
     } else {
-      entries.push('_Could not fetch information from this instance._\n')
+      entries.push("_Could not fetch information from this instance._\n")
     }
 
-    entries[entries.length - 1] += '\n'
+    entries[entries.length - 1] += "\n"
   }
 
   const pages = []
@@ -42,7 +42,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
       pages.push({
         color: ColorScheme.DEFAULT,
         title: `Guild Online Players (${total}):`,
-        description: '',
+        description: "",
         footer: {
           text: DefaultCommandFooter
         }
@@ -59,7 +59,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName("list").setDescription("List Online Players"),
   permission: Permission.ANYONE,
   allowInstance: false,
 
@@ -145,13 +145,13 @@ async function lookupProfiles(
 function formatLocation(username: string, session: Status | undefined): string {
   let message = `- **${escapeDiscord(username)}** `
 
-  if (session === undefined) return message + ' is *__unknown?__*'
-  if (!session.online) return message + ' is *__offline?__*'
+  if (session === undefined) return message + " is *__unknown?__*"
+  if (!session.online) return message + " is *__offline?__*"
 
-  message += '*' // START discord markdown. italic
+  message += "*" // START discord markdown. italic
   if (session.game != undefined) message += `playing __${escapeDiscord(session.game.name)}__`
   if (session.mode != undefined) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
-  message += '*' // END discord markdown. italic
+  message += "*" // END discord markdown. italic
 
   return message
 }
@@ -175,10 +175,10 @@ async function getOnlineMembers(app: Application): Promise<Map<string, string[]>
     }
   }
 
-  app.on('minecraftChat', chatListener)
-  app.clusterHelper.sendCommandToAllMinecraft('/guild online')
+  app.on("minecraftChat", chatListener)
+  app.clusterHelper.sendCommandToAllMinecraft("/guild online")
   await new Promise((resolve) => setTimeout(resolve, 3000))
-  app.removeListener('minecraftChat', chatListener)
+  app.removeListener("minecraftChat", chatListener)
 
   return resolvedNames
 }

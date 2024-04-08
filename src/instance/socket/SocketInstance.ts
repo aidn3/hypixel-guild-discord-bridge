@@ -1,8 +1,8 @@
-import { ClientInstance, LOCATION } from '../../common/ClientInstance'
-import Application from '../../Application'
-import ServerSocket from './ServerSocket'
-import ClientSocket from './ClientSocket'
-import { SocketConfig, SocketType } from './common/SocketConfig'
+import { ClientInstance, LOCATION } from "../../common/ClientInstance"
+import Application from "../../Application"
+import ServerSocket from "./ServerSocket"
+import ClientSocket from "./ClientSocket"
+import { SocketConfig, SocketType } from "./common/SocketConfig"
 
 export default class SocketInstance extends ClientInstance<SocketConfig> {
   private serverSocket: ServerSocket | undefined
@@ -14,11 +14,11 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
 
   connect(): void {
     if (this.serverSocket != undefined) {
-      this.logger.trace('Socket Server exists. Shutting it down...')
+      this.logger.trace("Socket Server exists. Shutting it down...")
       this.serverSocket.shutdown()
     }
     if (this.clientSocket != undefined) {
-      this.logger.trace('Socket Client exists. Shutting it down...')
+      this.logger.trace("Socket Client exists. Shutting it down...")
       this.clientSocket.shutdown()
     }
 

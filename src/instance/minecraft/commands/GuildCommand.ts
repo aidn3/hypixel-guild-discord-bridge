@@ -4,11 +4,11 @@
  Minecraft username: _aura
 */
 
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 export default {
-  name: 'Guild',
-  triggers: ['guild', 'guildOf', 'g'],
+  name: "Guild",
+  triggers: ["guild", "guildOf", "g"],
   description: "Returns a player's guild, if they're in one",
   example: `g %s`,
   enabled: true,
@@ -26,12 +26,12 @@ export default {
       return `No such username! (given: ${givenUsername})`
     }
 
-    const guild = await context.clientInstance.app.hypixelApi.getGuild('player', uuid, {}).catch(() => {
+    const guild = await context.clientInstance.app.hypixelApi.getGuild("player", uuid, {}).catch(() => {
       /* return undefined */
     })
     if (guild == undefined) return `${givenUsername} is not in a guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
-    return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? 'unknown'}`
+    return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? "unknown"}`
   }
 } satisfies ChatCommandHandler

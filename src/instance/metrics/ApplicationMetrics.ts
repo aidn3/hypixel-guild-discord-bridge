@@ -1,5 +1,5 @@
-import { Counter, Registry } from 'prom-client'
-import { ChatEvent, ClientEvent, CommandEvent } from '../../common/ApplicationEvent'
+import { Counter, Registry } from "prom-client"
+import { ChatEvent, ClientEvent, CommandEvent } from "../../common/ApplicationEvent"
 
 export default class ApplicationMetrics {
   private readonly chatMetrics
@@ -8,23 +8,23 @@ export default class ApplicationMetrics {
 
   constructor(register: Registry, prefix: string) {
     this.chatMetrics = new Counter({
-      name: prefix + 'chat',
-      help: 'Chat messages sent in guild-bridge.',
-      labelNames: ['location', 'scope', 'instance']
+      name: prefix + "chat",
+      help: "Chat messages sent in guild-bridge.",
+      labelNames: ["location", "scope", "instance"]
     })
     register.registerMetric(this.chatMetrics)
 
     this.commandMetrics = new Counter({
-      name: prefix + 'command',
-      help: 'Commands executed in guild-bridge.',
-      labelNames: ['location', 'scope', 'instance', 'command']
+      name: prefix + "command",
+      help: "Commands executed in guild-bridge.",
+      labelNames: ["location", "scope", "instance", "command"]
     })
     register.registerMetric(this.commandMetrics)
 
     this.eventMetrics = new Counter({
-      name: prefix + 'event',
-      help: 'Events happened in guild-bridge.',
-      labelNames: ['location', 'scope', 'instance', 'event']
+      name: prefix + "event",
+      help: "Events happened in guild-bridge.",
+      labelNames: ["location", "scope", "instance", "event"]
     })
     register.registerMetric(this.eventMetrics)
   }

@@ -1,12 +1,12 @@
-import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance from '../MinecraftInstance'
-import { MinecraftSendChat } from '../../../common/ApplicationEvent'
+import EventHandler from "../../../common/EventHandler"
+import MinecraftInstance from "../MinecraftInstance"
+import { MinecraftSendChat } from "../../../common/ApplicationEvent"
 
 export default class SendChatHandler extends EventHandler<MinecraftInstance> {
   constructor(minecraftInstance: MinecraftInstance) {
     super(minecraftInstance)
 
-    minecraftInstance.app.on('minecraftSend', (event) => {
+    minecraftInstance.app.on("minecraftSend", (event) => {
       void this.onCommand(event)
     })
   }

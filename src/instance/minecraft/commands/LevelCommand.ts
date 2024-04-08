@@ -1,8 +1,8 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 export default {
-  name: 'Level',
-  triggers: ['level', 'lvl', 'l'],
+  name: "Level",
+  triggers: ["level", "lvl", "l"],
   description: "Returns a player's skyblock level",
   example: `lvl %s`,
   enabled: true,

@@ -8,6 +8,6 @@ export interface SocketConfig {
 }
 
 export enum SocketType {
-  SERVER = 'server',
-  CLIENT = 'client'
+  SERVER = "server",
+  CLIENT = "client"
 }

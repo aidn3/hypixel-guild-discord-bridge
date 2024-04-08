@@ -1,8 +1,8 @@
-import { Server, Socket } from 'socket.io'
-import { ExtendedError } from 'socket.io/dist/namespace'
-import { Logger } from 'log4js'
-import Application from '../../Application'
-import { BaseEvent } from '../../common/ApplicationEvent'
+import { Server, Socket } from "socket.io"
+import { ExtendedError } from "socket.io/dist/namespace"
+import { Logger } from "log4js"
+import Application from "../../Application"
+import { BaseEvent } from "../../common/ApplicationEvent"
 
 export default class ServerSocket {
   private readonly server: Server
@@ -10,7 +10,7 @@ export default class ServerSocket {
 
   constructor(app: Application, logger: Logger, port: number, key: string) {
     this.key = key
-    this.server = new Server({ transports: ['websocket'] })
+    this.server = new Server({ transports: ["websocket"] })
     this.server.listen(port)
     this.server.use((socket: Socket, next: (error?: ExtendedError | undefined) => void) => {
       if (socket.handshake.auth.key === this.key) {
@@ -18,11 +18,11 @@ export default class ServerSocket {
         return
       }
 
-      logger.warn('Socket Server has received' + ` an authorized connection request from socket ${socket.id}.`)
-      next(new Error('invalid key'))
+      logger.warn("Socket Server has received" + ` an authorized connection request from socket ${socket.id}.`)
+      next(new Error("invalid key"))
     })
 
-    app.on('*', (name, ...arguments_) => {
+    app.on("*", (name, ...arguments_) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const event: BaseEvent = arguments_[0] as BaseEvent
       if (event.localEvent) {
@@ -31,8 +31,8 @@ export default class ServerSocket {
       }
     })
 
-    this.server.on('connection', (socket) => {
-      logger.debug('New Socket connection.')
+    this.server.on("connection", (socket) => {
+      logger.debug("New Socket connection.")
       app.broadcastLocalInstances()
 
       socket.onAny((name, ...arguments_) => {

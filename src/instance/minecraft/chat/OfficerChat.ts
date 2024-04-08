@@ -1,5 +1,5 @@
-import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
-import { LOCATION, SCOPE } from '../../../common/ClientInstance'
+import { MinecraftChatContext, MinecraftChatMessage } from "../common/ChatInterface"
+import { LOCATION, SCOPE } from "../../../common/ClientInstance"
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -18,7 +18,7 @@ export default {
         return
       if (context.clientInstance.app.clusterHelper.isMinecraftBot(username)) return
 
-      context.application.emit('chat', {
+      context.application.emit("chat", {
         localEvent: true,
         instanceName: context.instanceName,
         location: LOCATION.MINECRAFT,

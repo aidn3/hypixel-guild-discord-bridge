@@ -1,5 +1,5 @@
-import { Client, ClientOptions } from 'minecraft-protocol'
-import { ProxyConfig } from '../../../common/ProxyInterface'
+import { Client, ClientOptions } from "minecraft-protocol"
+import { ProxyConfig } from "../../../common/ProxyInterface"
 
 export default interface MinecraftConfig {
   instanceName: string

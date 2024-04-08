@@ -1,9 +1,9 @@
-name: 'Lint And Compile'
+name: "Lint And Compile"
 
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
 
 jobs:
   lint:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install node dependencies
         run: npm i
@@ -39,7 +39,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - run: npm i
       - name: Test Compile TypeScript
@@ -47,7 +47,7 @@ jobs:
 
   run:
     name: Test Run
-    needs: ['lint', 'compile']
+    needs: ["lint", "compile"]
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -57,7 +57,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - run: npm i
       - run: touch .test_bridge

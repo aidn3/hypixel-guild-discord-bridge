@@ -1,10 +1,10 @@
-import * as assert from 'node:assert'
-import { Client, SkyblockMember } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from "node:assert"
+import { Client, SkyblockMember } from "hypixel-api-reborn"
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 export default {
-  name: 'Catacombs',
-  triggers: ['catacomb', 'cata'],
+  name: "Catacombs",
+  triggers: ["catacomb", "cata"],
   description: "Returns a player's catacombs level",
   example: `cata %s`,
   enabled: true,
@@ -65,31 +65,31 @@ function formatClass(member: SkyblockMember): string {
 
   let xp = 0
   let level = 0
-  let name = '(None)'
+  let name = "(None)"
 
   if (classes.healer.xp > xp) {
     xp = classes.healer.xp
     level = getLevelWithOverflow(classes.healer.xp, classes.healer.level, classes.healer.progress)
-    name = 'Healer'
+    name = "Healer"
   }
   if (classes.mage.xp > xp) {
     xp = classes.mage.xp
     level = getLevelWithOverflow(classes.mage.xp, classes.mage.level, classes.mage.progress)
-    name = 'Mage'
+    name = "Mage"
   }
   if (classes.berserk.xp > xp) {
     xp = classes.berserk.xp
     level = getLevelWithOverflow(classes.berserk.xp, classes.berserk.level, classes.berserk.progress)
-    name = 'Berserk'
+    name = "Berserk"
   }
   if (classes.archer.xp > xp) {
     xp = classes.archer.xp
     level = getLevelWithOverflow(classes.archer.xp, classes.archer.level, classes.archer.progress)
-    name = 'Archer'
+    name = "Archer"
   }
   if (classes.tank.xp > xp) {
     level = getLevelWithOverflow(classes.tank.xp, classes.tank.level, classes.tank.progress)
-    name = 'Tank'
+    name = "Tank"
   }
   return `${name} ${level.toFixed(2)}`
 }

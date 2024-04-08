@@ -1,13 +1,13 @@
-import fs = require('fs')
-import * as Events from 'node:events'
-import * as path from 'node:path'
-import { TypedEmitter } from 'tiny-typed-emitter'
-import { Client as HypixelClient } from 'hypixel-api-reborn'
-import { getLogger, Logger } from 'log4js'
-import DiscordInstance from './instance/discord/DiscordInstance'
-import MinecraftInstance from './instance/minecraft/MinecraftInstance'
-import WebhookInstance from './instance/webhook/WebhookInstance'
-import { PunishedUsers } from './util/PunishedUsers'
+import fs = require("fs")
+import * as Events from "node:events"
+import * as path from "node:path"
+import { TypedEmitter } from "tiny-typed-emitter"
+import { Client as HypixelClient } from "hypixel-api-reborn"
+import { getLogger, Logger } from "log4js"
+import DiscordInstance from "./instance/discord/DiscordInstance"
+import MinecraftInstance from "./instance/minecraft/MinecraftInstance"
+import WebhookInstance from "./instance/webhook/WebhookInstance"
+import { PunishedUsers } from "./util/PunishedUsers"
 import {
   ChatEvent,
   ClientEvent,
@@ -20,15 +20,15 @@ import {
   MinecraftSelfBroadcast,
   MinecraftSendChat,
   ShutdownSignal
-} from './common/ApplicationEvent'
-import { ClientInstance } from './common/ClientInstance'
-import { PluginInterface } from './common/Plugins'
-import MetricsInstance from './instance/metrics/MetricsInstance'
-import ClusterHelper from './ClusterHelper'
-import { ApplicationConfig } from './ApplicationConfig'
-import SocketInstance from './instance/socket/SocketInstance'
-import { MojangApi } from './util/Mojang'
-import { shutdownApplication, sleep } from './util/SharedUtil'
+} from "./common/ApplicationEvent"
+import { ClientInstance } from "./common/ClientInstance"
+import { PluginInterface } from "./common/Plugins"
+import MetricsInstance from "./instance/metrics/MetricsInstance"
+import ClusterHelper from "./ClusterHelper"
+import { ApplicationConfig } from "./ApplicationConfig"
+import SocketInstance from "./instance/socket/SocketInstance"
+import { MojangApi } from "./util/Mojang"
+import { shutdownApplication, sleep } from "./util/SharedUtil"
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
@@ -43,8 +43,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   constructor(config: ApplicationConfig) {
     super()
-    this.logger = getLogger('Application')
-    this.logger.trace('Application initiating')
+    this.logger = getLogger("Application")
+    this.logger.trace("Application initiating")
     emitAll(this) // first thing to redirect all events
     this.config = config
 
@@ -89,12 +89,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       // check strictly for undefined key
       if (this.config.plugins.paths === undefined) {
         this.logger.warn(
-          'Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme'
+          "Plugins config is old. Resolving default plugins. See config_example.yaml for the latest config scheme"
         )
         paths = fs
-          .readdirSync('./src/plugins/')
-          .filter((file) => file.endsWith('Plugin.ts'))
-          .map((f) => path.resolve(mainPath, 'src/plugins', f))
+          .readdirSync("./src/plugins/")
+          .filter((file) => file.endsWith("Plugin.ts"))
+          .map((f) => path.resolve(mainPath, "src/plugins", f))
       } else {
         paths = this.config.plugins.paths.map((p) => (path.isAbsolute(p) ? p : path.resolve(mainPath, p)))
       }
@@ -108,14 +108,14 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.plugins = []
     }
 
-    this.on('shutdownSignal', (event) => {
+    this.on("shutdownSignal", (event) => {
       if (event.targetInstanceName === undefined) {
-        this.logger.info('Shutdown signal has been received. Shutting down this node.')
+        this.logger.info("Shutdown signal has been received. Shutting down this node.")
         if (event.restart) {
-          this.logger.info('Node should auto restart if a process monitor service is used.')
+          this.logger.info("Node should auto restart if a process monitor service is used.")
         }
 
-        this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
+        this.logger.info("Waiting 5 seconds for other nodes to receive the signal before shutting down.")
         void sleep(5000).then(() => {
           shutdownApplication(2)
         })
@@ -126,7 +126,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   async sendConnectSignal(): Promise<void> {
     this.broadcastLocalInstances()
 
-    this.logger.debug('Sending signal to all plugins')
+    this.logger.debug("Sending signal to all plugins")
     for (const p of this.plugins) {
       p.onRun({
         application: this,
@@ -144,10 +144,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 
   public broadcastLocalInstances(): void {
-    this.logger.debug('Informing instances of each other')
+    this.logger.debug("Informing instances of each other")
 
     for (const instance of this.instances) {
-      this.emit('selfBroadcast', {
+      this.emit("selfBroadcast", {
         localEvent: true,
         instanceName: instance.instanceName,
         location: instance.location
@@ -161,7 +161,7 @@ function emitAll(emitter: Events): void {
   const old = emitter.emit
   emitter.emit = (event: string, ...arguments_): boolean => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    if (event !== '*') emitter.emit('*', event, ...arguments_)
+    if (event !== "*") emitter.emit("*", event, ...arguments_)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return old.call(emitter, event, ...arguments_)
   }
@@ -173,7 +173,7 @@ export interface ApplicationEvents {
    * @param event event name
    * @param args event arguments
    */
-  '*': (event: string, ...arguments_: unknown[]) => void
+  "*": (event: string, ...arguments_: unknown[]) => void
 
   /**
    * User sending messages

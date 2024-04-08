@@ -1,4 +1,4 @@
-declare module 'bad-words' {
+declare module "bad-words" {
   interface BadWordsConstructor {
     new (options?: BadWordsOptions): BadWords
 

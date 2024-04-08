@@ -1,7 +1,7 @@
-import EventHandler from '../../../common/EventHandler'
-import MinecraftInstance, { QUIT_OWN_VOLITION } from '../MinecraftInstance'
-import { InstanceEventType } from '../../../common/ApplicationEvent'
-import { LOCATION, Status } from '../../../common/ClientInstance'
+import EventHandler from "../../../common/EventHandler"
+import MinecraftInstance, { QUIT_OWN_VOLITION } from "../MinecraftInstance"
+import { InstanceEventType } from "../../../common/ApplicationEvent"
+import { LOCATION, Status } from "../../../common/ClientInstance"
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts
@@ -18,24 +18,24 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
 
   registerEvents(): void {
     // this will only be called after the player receives spawn packet
-    this.clientInstance.client?.on('login', () => {
+    this.clientInstance.client?.on("login", () => {
       this.onLogin()
       this.loggedIn = true
     })
 
     // this will always be called when connection closes
-    this.clientInstance.client?.on('end', (reason: string) => {
+    this.clientInstance.client?.on("end", (reason: string) => {
       this.onEnd(reason)
       this.loggedIn = false
     })
 
     // depends on protocol version. One of these will be called
-    this.clientInstance.client?.on('kick_disconnect', (packet: { reason: string }) => {
+    this.clientInstance.client?.on("kick_disconnect", (packet: { reason: string }) => {
       const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
       this.onKicked(formattedReason.toString())
       this.loggedIn = false
     })
-    this.clientInstance.client?.on('disconnect', (packet: { reason: string }) => {
+    this.clientInstance.client?.on("disconnect", (packet: { reason: string }) => {
       const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
       this.onKicked(formattedReason.toString())
       this.loggedIn = false
@@ -45,18 +45,18 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   private onLogin(): void {
     if (this.loggedIn) return
 
-    this.clientInstance.logger.info('Minecraft client ready, logged in')
+    this.clientInstance.logger.info("Minecraft client ready, logged in")
 
     this.loginAttempts = 0
     this.exactDelay = 0
     this.clientInstance.status = Status.CONNECTED
 
-    this.clientInstance.app.emit('instance', {
+    this.clientInstance.app.emit("instance", {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       location: LOCATION.MINECRAFT,
       type: InstanceEventType.connect,
-      message: 'Minecraft instance has connected'
+      message: "Minecraft instance has connected"
     })
   }
 
@@ -65,7 +65,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       const reason = `Status is ${this.clientInstance.status}. No further trying to reconnect.`
 
       this.clientInstance.logger.warn(reason)
-      this.clientInstance.app.emit('instance', {
+      this.clientInstance.app.emit("instance", {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
@@ -74,10 +74,10 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       })
       return
     } else if (reason === QUIT_OWN_VOLITION) {
-      const reason = 'Client quit on its own volition. No further trying to reconnect.'
+      const reason = "Client quit on its own volition. No further trying to reconnect."
 
       this.clientInstance.logger.debug(reason)
-      this.clientInstance.app.emit('instance', {
+      this.clientInstance.app.emit("instance", {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
@@ -97,15 +97,15 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     }
 
     this.clientInstance.logger.error(
-      'Minecraft bot disconnected from server,' + `attempting reconnect in ${loginDelay / 1000} seconds`
+      "Minecraft bot disconnected from server," + `attempting reconnect in ${loginDelay / 1000} seconds`
     )
 
-    this.clientInstance.app.emit('instance', {
+    this.clientInstance.app.emit("instance", {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       location: LOCATION.MINECRAFT,
       type: InstanceEventType.disconnect,
-      message: 'Minecraft bot disconnected from server,' + `attempting reconnect in ${loginDelay / 1000} seconds`
+      message: "Minecraft bot disconnected from server," + `attempting reconnect in ${loginDelay / 1000} seconds`
     })
 
     setTimeout(() => {
@@ -118,37 +118,37 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.clientInstance.logger.error(`Minecraft bot was kicked from server for "${reason.toString()}"`)
 
     this.loginAttempts++
-    if (reason.includes('You logged in from another location')) {
-      this.clientInstance.logger.fatal('Instance will shut off since someone logged in from another place')
+    if (reason.includes("You logged in from another location")) {
+      this.clientInstance.logger.fatal("Instance will shut off since someone logged in from another place")
       this.clientInstance.status = Status.FAILED
 
-      this.clientInstance.app.emit('instance', {
+      this.clientInstance.app.emit("instance", {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
         type: InstanceEventType.conflict,
-        message: 'Someone logged in from another place.\n' + "Won't try to re-login.\n" + 'Restart to reconnect.'
+        message: "Someone logged in from another place.\n" + "Won't try to re-login.\n" + "Restart to reconnect."
       })
-    } else if (reason.includes('banned')) {
-      this.clientInstance.logger.fatal('Instance will shut off since the account has been banned')
+    } else if (reason.includes("banned")) {
+      this.clientInstance.logger.fatal("Instance will shut off since the account has been banned")
       this.clientInstance.status = Status.FAILED
 
-      this.clientInstance.app.emit('instance', {
+      this.clientInstance.app.emit("instance", {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
         type: InstanceEventType.end,
-        message: 'Account has been banned.\n' + "Won't try to re-login.\n"
+        message: "Account has been banned.\n" + "Won't try to re-login.\n"
       })
     } else {
-      this.clientInstance.app.emit('instance', {
+      this.clientInstance.app.emit("instance", {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
         location: LOCATION.MINECRAFT,
         type: InstanceEventType.kick,
         message:
           `Client ${this.clientInstance.instanceName} has been kicked.\n` +
-          'Attempting to reconnect soon\n\n' +
+          "Attempting to reconnect soon\n\n" +
           reason.toString()
       })
     }

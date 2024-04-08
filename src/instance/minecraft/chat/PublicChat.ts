@@ -1,5 +1,5 @@
-import { LOCATION, SCOPE } from '../../../common/ClientInstance'
-import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
+import { LOCATION, SCOPE } from "../../../common/ClientInstance"
+import { MinecraftChatContext, MinecraftChatMessage } from "../common/ChatInterface"
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -22,7 +22,7 @@ export default {
       // NOTE: Changed after ESLINT
       void context.commandsManager.publicCommandHandler(context.clientInstance, username, playerMessage)
 
-      context.application.emit('chat', {
+      context.application.emit("chat", {
         localEvent: true,
         instanceName: context.instanceName,
         location: LOCATION.MINECRAFT,

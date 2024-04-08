@@ -1,25 +1,25 @@
-import * as assert from 'node:assert'
-import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
-import { formatLevel } from '../../../util/SkyblockApi'
+import * as assert from "node:assert"
+import { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from "hypixel-api-reborn"
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
+import { formatLevel } from "../../../util/SkyblockApi"
 
 const SKILLS = new Set([
-  'farming',
-  'mining',
-  'combat',
-  'foraging',
-  'fishing',
-  'enchanting',
-  'alchemy',
-  'carpentry',
-  'runecrafting',
-  'taming',
-  'average'
+  "farming",
+  "mining",
+  "combat",
+  "foraging",
+  "fishing",
+  "enchanting",
+  "alchemy",
+  "carpentry",
+  "runecrafting",
+  "taming",
+  "average"
 ])
 
 export default {
-  name: 'Skills',
-  triggers: ['skill', 'skills'],
+  name: "Skills",
+  triggers: ["skill", "skills"],
   description: "Returns a player's skill level",
   example: `skill foraging %s`,
   enabled: true,
@@ -46,7 +46,7 @@ export default {
     const parsedProfile = await getParsedProfile(context.clientInstance.app.hypixelApi, uuid)
 
     // @ts-expect-error Ignoring impossible to trigger scenario
-    const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember['skills']]
+    const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember["skills"]]
 
     return `${givenUsername}: ${skill} - ${formatLevel(skillData.level, skillData.progress)}`
   }

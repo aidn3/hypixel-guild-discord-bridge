@@ -1,10 +1,10 @@
-import * as assert from 'node:assert'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from "node:assert"
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 export default {
-  name: 'Secrets',
-  triggers: ['secrets', 's', 'sec'],
-  description: 'Returns how many secrets a player has done',
+  name: "Secrets",
+  triggers: ["secrets", "s", "sec"],
+  description: "Returns how many secrets a player has done",
   example: `secrets %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {

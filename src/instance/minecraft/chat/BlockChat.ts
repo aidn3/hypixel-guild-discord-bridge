@@ -1,7 +1,7 @@
-import { LOCATION, SCOPE } from '../../../common/ClientInstance'
-import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
-import { ColorScheme } from '../../discord/common/DiscordConfig'
-import { EventType } from '../../../common/ApplicationEvent'
+import { LOCATION, SCOPE } from "../../../common/ClientInstance"
+import { MinecraftChatContext, MinecraftChatMessage } from "../common/ChatInterface"
+import { ColorScheme } from "../../discord/common/DiscordConfig"
+import { EventType } from "../../../common/ApplicationEvent"
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -9,7 +9,7 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      context.application.emit('event', {
+      context.application.emit("event", {
         localEvent: true,
         instanceName: context.instanceName,
         location: LOCATION.MINECRAFT,
@@ -17,7 +17,7 @@ export default {
         name: EventType.BLOCK,
         username: undefined,
         severity: ColorScheme.INFO,
-        message: 'The message has been blocked by Hypixel for breaking the rules.',
+        message: "The message has been blocked by Hypixel for breaking the rules.",
         removeLater: false
       })
     }

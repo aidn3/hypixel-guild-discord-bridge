@@ -3,11 +3,11 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 export default {
-  name: 'IQ',
-  triggers: ['iq'],
+  name: "IQ",
+  triggers: ["iq"],
   description: "Returns a player's IQ (0-200)",
   example: `iq %s`,
   enabled: true,

@@ -1,4 +1,4 @@
-import { getNetworth as calculateNetworth, getPrices } from 'skyhelper-networth'
+import { getNetworth as calculateNetworth, getPrices } from "skyhelper-networth"
 
 let prices: object
 void updatePrices()
@@ -23,18 +23,18 @@ export async function getNetworth(profileData: object, bankBalance: number, muse
 }
 
 export function localizedNetworth(coins: number): string {
-  let suffix = ''
+  let suffix = ""
   if (coins > 1000) {
     coins = coins / 1000
-    suffix = 'k'
+    suffix = "k"
   }
   if (coins > 1000) {
     coins = coins / 1000
-    suffix = 'm'
+    suffix = "m"
   }
   if (coins > 1000) {
     coins = coins / 1000
-    suffix = 'b'
+    suffix = "b"
   }
 
   return coins.toFixed(3) + suffix

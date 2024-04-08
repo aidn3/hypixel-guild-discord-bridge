@@ -1,6 +1,6 @@
-import Application from './Application'
-import { MinecraftSelfBroadcast } from './common/ApplicationEvent'
-import { LOCATION } from './common/ClientInstance'
+import Application from "./Application"
+import { MinecraftSelfBroadcast } from "./common/ApplicationEvent"
+import { LOCATION } from "./common/ClientInstance"
 
 export default class ClusterHelper {
   private readonly app: Application
@@ -10,17 +10,17 @@ export default class ClusterHelper {
   constructor(app: Application) {
     this.app = app
 
-    this.app.on('minecraftSelfBroadcast', (event) => this.minecraftBots.set(event.instanceName, event))
-    this.app.on('instance', (event) => {
+    this.app.on("minecraftSelfBroadcast", (event) => this.minecraftBots.set(event.instanceName, event))
+    this.app.on("instance", (event) => {
       this.instanceBroadcast(event.instanceName, event.location)
     })
-    this.app.on('selfBroadcast', (event) => {
+    this.app.on("selfBroadcast", (event) => {
       this.instanceBroadcast(event.instanceName, event.location)
     })
   }
 
   sendCommandToMinecraft(instanceName: string, command: string): void {
-    this.app.emit('minecraftSend', {
+    this.app.emit("minecraftSend", {
       localEvent: true,
       targetInstanceName: instanceName,
       command
@@ -28,7 +28,7 @@ export default class ClusterHelper {
   }
 
   sendCommandToAllMinecraft(command: string): void {
-    this.app.emit('minecraftSend', {
+    this.app.emit("minecraftSend", {
       localEvent: true,
       targetInstanceName: undefined,
       command

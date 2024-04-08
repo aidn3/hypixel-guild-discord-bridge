@@ -1,6 +1,6 @@
-import { Registry, Gauge } from 'prom-client'
-import { MinecraftRawChatEvent } from '../../common/ApplicationEvent'
-import Application from '../../Application'
+import { Registry, Gauge } from "prom-client"
+import { MinecraftRawChatEvent } from "../../common/ApplicationEvent"
+import Application from "../../Application"
 
 export default class GuildOnlineMetrics {
   private readonly guildTotalMembersCount
@@ -8,16 +8,16 @@ export default class GuildOnlineMetrics {
 
   constructor(register: Registry, prefix: string) {
     this.guildTotalMembersCount = new Gauge({
-      name: prefix + 'guild_members',
-      help: 'Guild members count',
-      labelNames: ['name']
+      name: prefix + "guild_members",
+      help: "Guild members count",
+      labelNames: ["name"]
     })
     register.registerMetric(this.guildTotalMembersCount)
 
     this.guildOnlineMembersCount = new Gauge({
-      name: prefix + 'guild_members_online',
-      help: 'Guild online members',
-      labelNames: ['name']
+      name: prefix + "guild_members_online",
+      help: "Guild online members",
+      labelNames: ["name"]
     })
     register.registerMetric(this.guildOnlineMembersCount)
   }
@@ -56,10 +56,10 @@ export default class GuildOnlineMetrics {
       if (onlineMatch != undefined) guild.online = Number(onlineMatch[1])
     }
 
-    app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToAllMinecraft('/guild online')
+    app.on("minecraftChat", chatListener)
+    app.clusterHelper.sendCommandToAllMinecraft("/guild online")
     await new Promise((resolve) => setTimeout(resolve, 3000))
-    app.removeListener('minecraftChat', chatListener)
+    app.removeListener("minecraftChat", chatListener)
 
     return guilds
   }

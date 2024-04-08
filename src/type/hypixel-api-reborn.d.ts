@@ -1,6 +1,6 @@
-import { skyblockMemberOptions } from 'hypixel-api-reborn'
+import { skyblockMemberOptions } from "hypixel-api-reborn"
 
-declare module 'hypixel-api-reborn' {
+declare module "hypixel-api-reborn" {
   interface Client {
     getSkyblockProfiles(
       query: string,
@@ -20,7 +20,7 @@ declare module 'hypixel-api-reborn' {
     banking?: { balance?: number }
   }
 
-  export type KuudraTier = 'none' | 'hot' | 'burning' | 'fiery' | 'infernal'
+  export type KuudraTier = "none" | "hot" | "burning" | "fiery" | "infernal"
 
   export interface Slayer {
     xp: number
@@ -46,25 +46,25 @@ declare module 'hypixel-api-reborn' {
       dungeon_types: {
         catacombs: {
           tier_completions: {
-            '0': number
-            '1': number
-            '2': number
-            '3': number
-            '4': number
-            '5': number
-            '6': number
-            '7': number
+            "0": number
+            "1": number
+            "2": number
+            "3": number
+            "4": number
+            "5": number
+            "6": number
+            "7": number
           }
         }
         master_catacombs: {
           tier_completions: {
-            '1': number
-            '2': number
-            '3': number
-            '4': number
-            '5': number
-            '6': number
-            '7': number
+            "1": number
+            "2": number
+            "3": number
+            "4": number
+            "5": number
+            "6": number
+            "7": number
           }
         }
       }

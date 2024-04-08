@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-call,unicorn/prevent-abbreviations,unicorn/no-negated-condition,unicorn/no-null */
 // linter disabled for config parsing
 // since typed linter isn't helpful for volatile file
-import * as fs from 'node:fs'
-import * as YAML from 'yaml'
+import * as fs from "node:fs"
+import * as YAML from "yaml"
 
-import WebhookConfig from './instance/webhook/common/WebhookConfig'
-import { DiscordConfig } from './instance/discord/common/DiscordConfig'
-import MetricsConfig from './instance/metrics/common/MetricsConfig'
-import MinecraftConfig from './instance/minecraft/common/MinecraftConfig'
-import { SocketConfig } from './instance/socket/common/SocketConfig'
-import { PluginsConfig } from './common/Plugins'
+import WebhookConfig from "./instance/webhook/common/WebhookConfig"
+import { DiscordConfig } from "./instance/discord/common/DiscordConfig"
+import MetricsConfig from "./instance/metrics/common/MetricsConfig"
+import MinecraftConfig from "./instance/minecraft/common/MinecraftConfig"
+import { SocketConfig } from "./instance/socket/common/SocketConfig"
+import { PluginsConfig } from "./common/Plugins"
 
 export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): ApplicationConfig {
-  const fileString = fs.readFileSync(filepath, 'utf8')
+  const fileString = fs.readFileSync(filepath, "utf8")
   const config = YAML.parse(fileString)
 
   return {
@@ -35,17 +35,17 @@ function parseMinecraftInstances(minecraftYaml: any & { instances: any[] }): Min
     // config are parsed dynamically. Can't set type to "MinecraftConfig"
     const config: any[string] = {}
     for (const key of Object.keys(minecraftYaml)) {
-      if (key === 'instances') continue
+      if (key === "instances") continue
       config[key] = minecraftYaml[key]
     }
 
     config.instanceName = instanceYaml.instanceName
-    config.botOptions.auth = 'microsoft'
+    config.botOptions.auth = "microsoft"
     config.botOptions.username = instanceYaml.email
     config.botOptions.password = instanceYaml.password
 
     if (instanceYaml.proxy != null) {
-      const proxyArgs = instanceYaml.proxy.split(':')
+      const proxyArgs = instanceYaml.proxy.split(":")
       config.proxy = {
         protocol: proxyArgs[0],
         proxyHost: proxyArgs[1],

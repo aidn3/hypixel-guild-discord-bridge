@@ -1,15 +1,15 @@
-import * as assert from 'node:assert'
-import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
-import Application from '../../Application'
+import * as assert from "node:assert"
+import { APIEmbed, Client, GatewayIntentBits, Options, TextBasedChannelFields, TextChannel, Webhook } from "discord.js"
+import Application from "../../Application"
 
-import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
-import { escapeDiscord } from '../../util/DiscordMessageUtil'
-import { ChatEvent, ClientEvent, EventType, InstanceEvent } from '../../common/ApplicationEvent'
-import StateHandler from './handlers/StateHandler'
+import { ClientInstance, LOCATION, SCOPE, Status } from "../../common/ClientInstance"
+import { escapeDiscord } from "../../util/DiscordMessageUtil"
+import { ChatEvent, ClientEvent, EventType, InstanceEvent } from "../../common/ApplicationEvent"
+import StateHandler from "./handlers/StateHandler"
 
-import ChatManager from './ChatManager'
-import { CommandManager } from './CommandManager'
-import { ColorScheme, DiscordConfig } from './common/DiscordConfig'
+import ChatManager from "./ChatManager"
+import { CommandManager } from "./CommandManager"
+import { ColorScheme, DiscordConfig } from "./common/DiscordConfig"
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly handlers
@@ -34,24 +34,24 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     this.handlers = [new StateHandler(this), new ChatManager(this), new CommandManager(this)]
 
     if (this.config.publicChannelIds.length === 0) {
-      this.logger.info('no Discord public channels found')
+      this.logger.info("no Discord public channels found")
     }
 
     if (this.config.officerChannelIds.length === 0) {
-      this.logger.info('no Discord officer channels found')
+      this.logger.info("no Discord officer channels found")
     }
 
     if (this.config.officerRoleIds.length === 0) {
-      this.logger.info('no Discord officer roles found')
+      this.logger.info("no Discord officer roles found")
     }
 
-    this.app.on('chat', (event: ChatEvent) => {
+    this.app.on("chat", (event: ChatEvent) => {
       void this.onChat(event)
     })
-    this.app.on('event', (event: ClientEvent) => {
+    this.app.on("event", (event: ClientEvent) => {
       void this.onEvent(event)
     })
-    this.app.on('instance', (event: InstanceEvent) => {
+    this.app.on("instance", (event: InstanceEvent) => {
       void this.onInstance(event)
     })
   }
@@ -60,7 +60,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     assert(this.config.key)
 
     if (this.connected) {
-      this.logger.error('Instance already connected once. Calling connect() again will bug it. Returning...')
+      this.logger.error("Instance already connected once. Calling connect() again will bug it. Returning...")
       return
     }
     this.connected = true
@@ -192,7 +192,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     const webhooks = await channel.fetchWebhooks()
 
     let webhook = webhooks.find((h) => h.owner?.id === this.client.user?.id)
-    if (webhook == undefined) webhook = await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
+    if (webhook == undefined) webhook = await channel.createWebhook({ name: "Hypixel-Guild-Bridge" })
     return webhook
   }
 }

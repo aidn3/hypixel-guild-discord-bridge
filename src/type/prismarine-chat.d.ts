@@ -1,7 +1,7 @@
 // Package official index.d.ts is incorrect.
 // This fixes some of those mistakes
-declare module 'prismarine-chat' {
-  import { ChatMessage } from 'prismarine-chat'
+declare module "prismarine-chat" {
+  import { ChatMessage } from "prismarine-chat"
 
   // Functions are not static.
   // They require an object created via the default function
@@ -18,4 +18,4 @@ declare module 'prismarine-chat' {
   export = constructor
 }
 
-export { ChatMessage } from 'prismarine-chat'
+export { ChatMessage } from "prismarine-chat"

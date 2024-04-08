@@ -1,6 +1,6 @@
-import MinecraftInstance from '../MinecraftInstance'
-import { CommandsManager } from '../CommandsManager'
-import Application from '../../../Application'
+import MinecraftInstance from "../MinecraftInstance"
+import { CommandsManager } from "../CommandsManager"
+import Application from "../../../Application"
 
 export interface MinecraftChatMessage {
   onChat: (context: MinecraftChatContext) => void

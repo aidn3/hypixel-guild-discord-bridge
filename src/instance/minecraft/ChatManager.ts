@@ -1,28 +1,28 @@
-import * as assert from 'node:assert'
-import * as getMinecraftData from 'minecraft-data'
-import { ChatMessage } from 'prismarine-chat'
-import EventHandler from '../../common/EventHandler'
-import { LOCATION } from '../../common/ClientInstance'
-import MinecraftInstance from './MinecraftInstance'
-import { MinecraftChatMessage } from './common/ChatInterface'
-import { CommandsManager } from './CommandsManager'
+import * as assert from "node:assert"
+import * as getMinecraftData from "minecraft-data"
+import { ChatMessage } from "prismarine-chat"
+import EventHandler from "../../common/EventHandler"
+import { LOCATION } from "../../common/ClientInstance"
+import MinecraftInstance from "./MinecraftInstance"
+import { MinecraftChatMessage } from "./common/ChatInterface"
+import { CommandsManager } from "./CommandsManager"
 
-import BlockChat from './chat/BlockChat'
-import DemoteChat from './chat/DemoteChat'
-import JoinChat from './chat/JoinChat'
-import KickChat from './chat/KickChat'
-import LeaveChat from './chat/LeaveChat'
-import MuteChat from './chat/MuteChat'
-import OfficerChat from './chat/OfficerChat'
-import OfflineChat from './chat/OfflineChat'
-import OnlineChat from './chat/OnlineChat'
-import PrivateChat from './chat/PrivateChat'
-import PromoteChat from './chat/PromoteChat'
-import PublicChat from './chat/PublicChat'
-import QuestChat from './chat/QuestChat'
-import RepeatChat from './chat/RepeatChat'
-import RequestChat from './chat/RequestChat'
-import UnmuteChat from './chat/UnmuteChat'
+import BlockChat from "./chat/BlockChat"
+import DemoteChat from "./chat/DemoteChat"
+import JoinChat from "./chat/JoinChat"
+import KickChat from "./chat/KickChat"
+import LeaveChat from "./chat/LeaveChat"
+import MuteChat from "./chat/MuteChat"
+import OfficerChat from "./chat/OfficerChat"
+import OfflineChat from "./chat/OfflineChat"
+import OnlineChat from "./chat/OnlineChat"
+import PrivateChat from "./chat/PrivateChat"
+import PromoteChat from "./chat/PromoteChat"
+import PublicChat from "./chat/PublicChat"
+import QuestChat from "./chat/QuestChat"
+import RepeatChat from "./chat/RepeatChat"
+import RequestChat from "./chat/RequestChat"
+import UnmuteChat from "./chat/UnmuteChat"
 
 export default class ChatManager extends EventHandler<MinecraftInstance> {
   private readonly commandsManager: CommandsManager
@@ -58,16 +58,16 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
     const prismChat = this.clientInstance.prismChat
     const minecraftData = getMinecraftData(this.clientInstance.client.version)
 
-    this.clientInstance.client.on('systemChat', (data) => {
+    this.clientInstance.client.on("systemChat", (data) => {
       const chatMessage = prismChat.fromNotch(data.formattedMessage)
       this.onMessage(chatMessage.toString())
     })
 
-    this.clientInstance.client.on('playerChat', (data: object) => {
+    this.clientInstance.client.on("playerChat", (data: object) => {
       const message = (data as { formattedMessage?: string }).formattedMessage
       let resultMessage: ChatMessage & Partial<{ unsigned: ChatMessage }>
 
-      if (minecraftData.supportFeature('clientsideChatFormatting')) {
+      if (minecraftData.supportFeature("clientsideChatFormatting")) {
         const verifiedPacket = data as {
           senderName?: string
           targetName?: string
@@ -118,7 +118,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       })
     }
 
-    this.clientInstance.app.emit('minecraftChat', {
+    this.clientInstance.app.emit("minecraftChat", {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       location: LOCATION.MINECRAFT,

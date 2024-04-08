@@ -1,25 +1,25 @@
-import * as assert from 'node:assert'
-import { Slayer } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from "node:assert"
+import { Slayer } from "hypixel-api-reborn"
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 const Slayers: Record<string, string[]> = {
-  zombie: ['revenant', 'rev', 'zombie'],
-  spider: ['tarantula', 'tara', 'spider', 'tar'],
-  wolf: ['sven', 'wolf'],
-  enderman: ['voidgloom', 'eman', 'enderman'],
-  blaze: ['inferno', 'demonlord', 'blaze'],
-  vampire: ['riftstalker', 'bloodfiend', 'vamp', 'vampire'],
-  overview: ['all', 'summary']
+  zombie: ["revenant", "rev", "zombie"],
+  spider: ["tarantula", "tara", "spider", "tar"],
+  wolf: ["sven", "wolf"],
+  enderman: ["voidgloom", "eman", "enderman"],
+  blaze: ["inferno", "demonlord", "blaze"],
+  vampire: ["riftstalker", "bloodfiend", "vamp", "vampire"],
+  overview: ["all", "summary"]
 }
 
 export default {
-  name: 'Slayers',
-  triggers: ['slayer', 'sl', 'slyr'],
+  name: "Slayers",
+  triggers: ["slayer", "sl", "slyr"],
   description: "Returns a player's slayer level",
   example: `slayer eman %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
-    const givenSlayer = context.args[0] ?? 'overview'
+    const givenSlayer = context.args[0] ?? "overview"
     const givenUsername = context.args[1] ?? context.username
 
     const uuid = await context.clientInstance.app.mojangApi
@@ -57,9 +57,9 @@ export default {
       }
     }
 
-    let output = '/'
+    let output = "/"
     for (const [name, slayer] of Object.entries(slayersProfile)) {
-      output += getSlayerLevel(slayer.xp, name) + '/'
+      output += getSlayerLevel(slayer.xp, name) + "/"
     }
     return `${givenUsername}'s slayers: ${output}`
   }
@@ -72,7 +72,7 @@ function getSlayerLevel(exp: number, slayer: string): number {
   let maxLevel
   let expTable
 
-  if (slayer === 'vampire') {
+  if (slayer === "vampire") {
     maxLevel = 5 // vampire slayer only goes to level 5
     expTable = vampExpTable
   } else {
@@ -99,6 +99,6 @@ const highestTierTable = {
 
 function getHighestTierKills(slayerData: Slayer, slayerName: string): number {
   const highestTier = highestTierTable[slayerName as keyof typeof highestTierTable]
-  const index = 'boss_kills_tier_' + highestTier
+  const index = "boss_kills_tier_" + highestTier
   return slayerData[index as keyof Slayer] ?? 0
 }

@@ -1,5 +1,5 @@
-import Application from '../Application'
-import { ClientInstance } from './ClientInstance'
+import Application from "../Application"
+import { ClientInstance } from "./ClientInstance"
 
 export interface PluginInterface {
   onRun: (context: PluginContext) => void

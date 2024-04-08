@@ -1,4 +1,4 @@
-import { MinecraftChatContext, MinecraftChatMessage } from '../common/ChatInterface'
+import { MinecraftChatContext, MinecraftChatMessage } from "../common/ChatInterface"
 
 export default {
   onChat: function (context: MinecraftChatContext): void {

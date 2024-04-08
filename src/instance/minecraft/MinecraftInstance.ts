@@ -1,28 +1,28 @@
-import * as assert from 'node:assert'
-import PrismarineRegistry = require('prismarine-registry')
-import { NBT } from 'prismarine-nbt'
-import { Client, createClient, states } from 'minecraft-protocol'
-import * as PrismarineChat from 'prismarine-chat'
-import Application from '../../Application'
-import { ClientInstance, LOCATION, SCOPE, Status } from '../../common/ClientInstance'
+import * as assert from "node:assert"
+import PrismarineRegistry = require("prismarine-registry")
+import { NBT } from "prismarine-nbt"
+import { Client, createClient, states } from "minecraft-protocol"
+import * as PrismarineChat from "prismarine-chat"
+import Application from "../../Application"
+import { ClientInstance, LOCATION, SCOPE, Status } from "../../common/ClientInstance"
 import {
   ChatEvent,
   ClientEvent,
   EventType,
   InstanceEventType,
   MinecraftCommandResponse
-} from '../../common/ApplicationEvent'
-import RateLimiter from '../../util/RateLimiter'
-import { antiSpamString } from '../../util/SharedUtil'
-import ChatManager from './ChatManager'
-import SelfBroadcastHandler from './handlers/SelfBroadcastHandler'
-import SendChatHandler from './handlers/SendChatHandler'
-import ErrorHandler from './handlers/ErrorHandler'
-import StateHandler from './handlers/StateHandler'
-import MinecraftConfig from './common/MinecraftConfig'
-import { resolveProxyIfExist } from './common/ProxyHandler'
+} from "../../common/ApplicationEvent"
+import RateLimiter from "../../util/RateLimiter"
+import { antiSpamString } from "../../util/SharedUtil"
+import ChatManager from "./ChatManager"
+import SelfBroadcastHandler from "./handlers/SelfBroadcastHandler"
+import SendChatHandler from "./handlers/SendChatHandler"
+import ErrorHandler from "./handlers/ErrorHandler"
+import StateHandler from "./handlers/StateHandler"
+import MinecraftConfig from "./common/MinecraftConfig"
+import { resolveProxyIfExist } from "./common/ProxyHandler"
 
-export const QUIT_OWN_VOLITION = 'disconnect.quitting'
+export const QUIT_OWN_VOLITION = "disconnect.quitting"
 const commandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
@@ -47,31 +47,31 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     this.registry = PrismarineRegistry(config.botOptions.version)
     this.prismChat = PrismarineChat(this.registry)
 
-    this.app.on('reconnectSignal', (event) => {
+    this.app.on("reconnectSignal", (event) => {
       // undefined is strictly checked due to api specification
       if (event.targetInstanceName === undefined || event.targetInstanceName === this.instanceName) {
-        this.logger.log('instance has received restart signal')
+        this.logger.log("instance has received restart signal")
         void this.send(`/gc @Instance restarting...`).then(() => {
           this.connect()
         })
       }
     })
 
-    this.app.on('minecraftCommandResponse', (event: MinecraftCommandResponse) => {
+    this.app.on("minecraftCommandResponse", (event: MinecraftCommandResponse) => {
       void this.send(`/gc ${event.commandResponse} @${antiSpamString()}`)
     })
 
-    this.app.on('chat', (event: ChatEvent) => {
+    this.app.on("chat", (event: ChatEvent) => {
       if (event.instanceName === this.instanceName) return
 
       if (event.scope === SCOPE.PUBLIC) {
-        void this.send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
+        void this.send(this.formatChatMessage("gc", event.username, event.replyUsername, event.message))
       } else if (event.scope === SCOPE.OFFICER) {
-        void this.send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
+        void this.send(this.formatChatMessage("oc", event.username, event.replyUsername, event.message))
       }
     })
 
-    this.app.on('event', (event: ClientEvent) => {
+    this.app.on("event", (event: ClientEvent) => {
       if (event.instanceName === this.instanceName) return
       if (event.scope !== SCOPE.PUBLIC) return
       if (event.removeLater) return
@@ -92,12 +92,12 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
     })
     this.listenForRegistry(this.client)
 
-    this.app.emit('instance', {
+    this.app.emit("instance", {
       localEvent: true,
       instanceName: this.instanceName,
       location: LOCATION.MINECRAFT,
       type: InstanceEventType.create,
-      message: 'Minecraft instance has been created'
+      message: "Minecraft instance has been created"
     })
 
     for (const handler of this.handlers) {
@@ -112,16 +112,16 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
    */
   private listenForRegistry(client: Client): void {
     // 1.20.2+
-    client.on('registry_data', (packet: { codec: NBT }) => {
+    client.on("registry_data", (packet: { codec: NBT }) => {
       this.registry.loadDimensionCodec(packet.codec)
     })
     // older versions
-    client.on('login', (packet: { dimensionCodec?: NBT }) => {
+    client.on("login", (packet: { dimensionCodec?: NBT }) => {
       if (packet.dimensionCodec) {
         this.registry.loadDimensionCodec(packet.dimensionCodec)
       }
     })
-    client.on('respawn', (packet: { dimensionCodec?: NBT }) => {
+    client.on("respawn", (packet: { dimensionCodec?: NBT }) => {
       if (packet.dimensionCodec) {
         this.registry.loadDimensionCodec(packet.dimensionCodec)
       }
@@ -134,20 +134,20 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
   uuid(): string | undefined {
     const uuid = this.client?.uuid
-    return uuid == undefined ? undefined : uuid.split('-').join('')
+    return uuid == undefined ? undefined : uuid.split("-").join("")
   }
 
   async send(message: string): Promise<void> {
     message = message
-      .split('\n')
+      .split("\n")
       .map((chunk) => chunk.trim())
-      .join(' ')
+      .join(" ")
 
     this.logger.debug(`Queuing message to send: ${message}`)
     await commandsLimiter.wait().then(() => {
       if (this.client?.state === states.PLAY) {
         if (message.length > 250) {
-          message = message.slice(0, 250) + '...'
+          message = message.slice(0, 250) + "..."
           this.logger.warn(`Long message truncated: ${message}`)
         }
 
@@ -168,11 +168,11 @@ export default class MinecraftInstance extends ClientInstance<MinecraftConfig> {
 
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`
-    full += ': '
+    full += ": "
     full += message
-      .split('\n')
+      .split("\n")
       .map((s) => s.trim())
-      .join(' ')
+      .join(" ")
       .trim()
 
     return full

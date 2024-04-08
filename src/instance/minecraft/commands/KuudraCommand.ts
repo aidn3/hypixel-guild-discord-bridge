@@ -1,18 +1,18 @@
-import * as assert from 'node:assert'
-import { KuudraTier } from 'hypixel-api-reborn'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from "node:assert"
+import { KuudraTier } from "hypixel-api-reborn"
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 const Kuudra: Record<KuudraTier, string[]> = {
-  none: ['basic', 't1', '1'],
-  hot: ['hot', 't2', '2'],
-  burning: ['burning', 't3', '3'],
-  fiery: ['fiery', 't4', '4'],
-  infernal: ['infernal', 't5', '5']
+  none: ["basic", "t1", "1"],
+  hot: ["hot", "t2", "2"],
+  burning: ["burning", "t3", "3"],
+  fiery: ["fiery", "t4", "4"],
+  infernal: ["infernal", "t5", "5"]
 }
 
 export default {
-  name: 'Kuudra',
-  triggers: ['kuudra', 'k'],
+  name: "Kuudra",
+  triggers: ["kuudra", "k"],
   description: "Returns a player's kuudra runs",
   example: `kuudra t5 %s`,
   enabled: true,

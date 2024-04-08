@@ -1,15 +1,15 @@
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 enum CommandOptions {
-  ROCK = 'rock',
-  PAPER = 'paper',
-  SCISSORS = 'scissors'
+  ROCK = "rock",
+  PAPER = "paper",
+  SCISSORS = "scissors"
 }
 
 export default {
-  name: 'RPS',
-  triggers: ['rps'],
-  description: 'Play rock, paper, scissors against the bot',
+  name: "RPS",
+  triggers: ["rps"],
+  description: "Play rock, paper, scissors against the bot",
   example: `rps rock`,
   enabled: true,
 

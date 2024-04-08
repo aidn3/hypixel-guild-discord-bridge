@@ -1,31 +1,31 @@
-import * as assert from 'node:assert'
-import { ChatCommandContext, ChatCommandHandler } from '../common/ChatInterface'
+import * as assert from "node:assert"
+import { ChatCommandContext, ChatCommandHandler } from "../common/ChatInterface"
 
 enum Catacombs {
-  'entrance' = '0',
-  'f1' = '1',
-  'f2' = '2',
-  'f3' = '3',
-  'f4' = '4',
-  'f5' = '5',
-  'f6' = '6',
-  'f7' = '7'
+  "entrance" = "0",
+  "f1" = "1",
+  "f2" = "2",
+  "f3" = "3",
+  "f4" = "4",
+  "f5" = "5",
+  "f6" = "6",
+  "f7" = "7"
 }
 
 enum MasterMode {
-  'm1' = '1',
-  'm2' = '2',
-  'm3' = '3',
-  'm4' = '4',
-  'm5' = '5',
-  'm6' = '6',
-  'm7' = '7'
+  "m1" = "1",
+  "m2" = "2",
+  "m3" = "3",
+  "m4" = "4",
+  "m5" = "5",
+  "m6" = "6",
+  "m7" = "7"
 }
 
 export default {
-  name: 'Runs',
-  triggers: ['runs', 'r'],
-  description: 'Returns how many dungeon runs a player has done',
+  name: "Runs",
+  triggers: ["runs", "r"],
+  description: "Returns how many dungeon runs a player has done",
   example: `runs m7 %s`,
   enabled: true,
   handler: async function (context: ChatCommandContext): Promise<string> {
@@ -34,10 +34,10 @@ export default {
     let dungeonType: string | undefined = undefined
 
     if (Object.keys(Catacombs).includes(floor)) {
-      dungeonType = 'catacombs'
+      dungeonType = "catacombs"
     }
     if (Object.keys(MasterMode).includes(floor)) {
-      dungeonType = 'mastermode'
+      dungeonType = "mastermode"
     }
     if (dungeonType === undefined) {
       return `${context.username}, Invalid floor! (given: ${floor})`
@@ -61,11 +61,11 @@ export default {
 
     let amount = 0
 
-    if (dungeonType == 'catacombs') {
+    if (dungeonType == "catacombs") {
       amount =
         parsedProfile.dungeons.dungeon_types.catacombs.tier_completions[Catacombs[floor as keyof typeof Catacombs]]
     }
-    if (dungeonType == 'mastermode') {
+    if (dungeonType == "mastermode") {
       amount =
         parsedProfile.dungeons.dungeon_types.master_catacombs.tier_completions[
           MasterMode[floor as keyof typeof MasterMode]

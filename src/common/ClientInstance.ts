@@ -1,5 +1,5 @@
-import { getLogger, Logger } from 'log4js'
-import Application from '../Application'
+import { getLogger, Logger } from "log4js"
+import Application from "../Application"
 
 export abstract class ClientInstance<K> {
   readonly instanceName: string
@@ -34,33 +34,33 @@ export enum Status {
   /**
    * Freshly created instance
    */
-  FRESH = 'FRESH',
+  FRESH = "FRESH",
   /**
    * Instance is connecting for first time
    */
-  CONNECTING = 'CONNECTING',
+  CONNECTING = "CONNECTING",
   /**
    * Instance is trying to connect with its own private client
    */
-  CONNECTED = 'CONNECTED',
+  CONNECTED = "CONNECTED",
   /**
    * Instance has decided to shut down for a critical reason
    */
-  FAILED = 'FAILED'
+  FAILED = "FAILED"
 }
 
 export enum LOCATION {
-  MAIN = 'main',
-  METRICS = 'metrics',
-  SOCKET = 'socket',
+  MAIN = "main",
+  METRICS = "metrics",
+  SOCKET = "socket",
 
-  DISCORD = 'discord',
-  MINECRAFT = 'minecraft',
-  WEBHOOK = 'webhook'
+  DISCORD = "discord",
+  MINECRAFT = "minecraft",
+  WEBHOOK = "webhook"
 }
 
 export enum SCOPE {
-  OFFICER = 'officer',
-  PUBLIC = 'public',
-  PRIVATE = 'private'
+  OFFICER = "officer",
+  PUBLIC = "public",
+  PRIVATE = "private"
 }

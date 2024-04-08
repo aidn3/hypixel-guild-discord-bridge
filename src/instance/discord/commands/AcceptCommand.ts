@@ -1,14 +1,14 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { DiscordCommandInterface, Permission } from '../common/DiscordCommandInterface'
-import DiscordInstance from '../DiscordInstance'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
+import { DiscordCommandInterface, Permission } from "../common/DiscordCommandInterface"
+import DiscordInstance from "../DiscordInstance"
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
-      .setName('accept')
-      .setDescription('accept a player to the guild if they have a join request in-game')
+      .setName("accept")
+      .setDescription("accept a player to the guild if they have a join request in-game")
       .addStringOption((option) =>
-        option.setName('username').setDescription('Username of the player').setRequired(true)
+        option.setName("username").setDescription("Username of the player").setRequired(true)
       ) as SlashCommandBuilder,
   allowInstance: true,
   permission: Permission.HELPER,
@@ -16,10 +16,10 @@ export default {
   handler: async function (clientInstance: DiscordInstance, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply()
 
-    const username: string = interaction.options.getString('username', true)
+    const username: string = interaction.options.getString("username", true)
     const command = `/g accept ${username}`
 
-    const instance: string | null = interaction.options.getString('instance')
+    const instance: string | null = interaction.options.getString("instance")
     if (instance == undefined) {
       clientInstance.app.clusterHelper.sendCommandToAllMinecraft(command)
     } else {

@@ -1,9 +1,9 @@
-import { Message } from 'discord.js'
-import * as BadWords from 'bad-words'
-import EventHandler from '../../common/EventHandler'
-import { LOCATION, SCOPE } from '../../common/ClientInstance'
-import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from '../../util/DiscordMessageUtil'
-import DiscordInstance from './DiscordInstance'
+import { Message } from "discord.js"
+import * as BadWords from "bad-words"
+import EventHandler from "../../common/EventHandler"
+import { LOCATION, SCOPE } from "../../common/ClientInstance"
+import { cleanMessage, escapeDiscord, getReadableName, getReplyUsername } from "../../util/DiscordMessageUtil"
+import DiscordInstance from "./DiscordInstance"
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
   private readonly profanityFilter: BadWords.BadWords
@@ -18,7 +18,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   registerEvents(): void {
-    this.clientInstance.client.on('messageCreate', async (message) => {
+    this.clientInstance.client.on("messageCreate", async (message) => {
       await this.onMessage(message)
     })
   }
@@ -47,7 +47,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const truncatedContent = await this.truncateText(event, content)
     const filteredMessage = await this.proceedFiltering(event, truncatedContent)
 
-    this.clientInstance.app.emit('chat', {
+    this.clientInstance.app.emit("chat", {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       location: LOCATION.DISCORD,
@@ -74,7 +74,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       content: `Message too long! It has been shortened to ${length} characters.`
     })
 
-    return content.slice(0, length) + '...'
+    return content.slice(0, length) + "..."
   }
 
   async hasBeenMuted(message: Message, discordName: string, readableName: string): Promise<boolean> {
@@ -87,7 +87,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (mutedTill != undefined) {
       await message.reply({
         content:
-          '*Looks like you are muted on the chat-bridge.*\n' +
+          "*Looks like you are muted on the chat-bridge.*\n" +
           "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
           `*Your mute will expire <t:${mutedTill}:R>!*`
       })
@@ -113,7 +113,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
     if (content !== filteredMessage) {
       await message.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
+        content: "**Profanity warning, Your message has been edited:**\n" + escapeDiscord(filteredMessage)
       })
     }
 

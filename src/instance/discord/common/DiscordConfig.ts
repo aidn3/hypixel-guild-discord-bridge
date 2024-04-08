@@ -19,4 +19,4 @@ export enum ColorScheme {
   DEFAULT = 0x09_0a_16
 }
 
-export const DefaultCommandFooter = 'Made by aidn5 with <3'
+export const DefaultCommandFooter = "Made by aidn5 with <3"

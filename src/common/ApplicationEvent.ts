@@ -1,4 +1,4 @@
-import { LOCATION, SCOPE } from './ClientInstance'
+import { LOCATION, SCOPE } from "./ClientInstance"
 
 export interface BaseEvent {
   localEvent: boolean
@@ -30,30 +30,30 @@ export enum EventType {
    * Indicates an automated response/action.
    * Used for custom plugins, etc.
    */
-  AUTOMATED = 'automated',
-  REQUEST = 'request',
-  JOIN = 'join',
-  LEAVE = 'leave',
-  KICK = 'kick',
+  AUTOMATED = "automated",
+  REQUEST = "request",
+  JOIN = "join",
+  LEAVE = "leave",
+  KICK = "kick",
 
   // Guild quest completion
-  QUEST = 'quest',
+  QUEST = "quest",
 
-  PROMOTE = 'promote',
-  DEMOTE = 'demote',
-  MUTE = 'mute',
-  UNMUTE = 'unmute',
+  PROMOTE = "promote",
+  DEMOTE = "demote",
+  MUTE = "mute",
+  UNMUTE = "unmute",
 
-  OFFLINE = 'offline',
-  ONLINE = 'online',
+  OFFLINE = "offline",
+  ONLINE = "online",
 
-  REPEAT = 'repeat',
-  BLOCK = 'block',
+  REPEAT = "repeat",
+  BLOCK = "block",
 
   /**
    * @deprecated Command api in "event" event has been depreciated. It will be completely removed and replaced.
    */
-  COMMAND = 'command'
+  COMMAND = "command"
 }
 
 export interface ClientEvent extends InformEvent {

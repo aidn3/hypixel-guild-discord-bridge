@@ -1,26 +1,26 @@
-import { LOCATION, SCOPE } from '../../common/ClientInstance'
-import { ColorScheme } from '../discord/common/DiscordConfig'
-import EventHandler from '../../common/EventHandler'
-import { EventType } from '../../common/ApplicationEvent'
-import { ChatCommandHandler } from './common/ChatInterface'
+import { LOCATION, SCOPE } from "../../common/ClientInstance"
+import { ColorScheme } from "../discord/common/DiscordConfig"
+import EventHandler from "../../common/EventHandler"
+import { EventType } from "../../common/ApplicationEvent"
+import { ChatCommandHandler } from "./common/ChatInterface"
 
-import MinecraftInstance from './MinecraftInstance'
-import CalculateCommand from './commands/CalculateCommand'
-import CataCommand from './commands/CataCommand'
-import EightBallCommand from './commands/EightBallCommand'
-import ExplainCommand from './commands/ExplainCommand'
-import GuildCommand from './commands/GuildCommand'
-import IqCommand from './commands/IqCommand'
-import KuudraCommand from './commands/KuudraCommand'
-import LevelCommand from './commands/LevelCommand'
-import NetworthCommand from './commands/NetworthCommand'
-import RockPaperScissorsCommand from './commands/RockPaperScissorsCommand'
-import RouletteCommand from './commands/RouletteCommand'
-import SecretsCommand from './commands/SecretsCommand'
-import SkillCommand from './commands/SkillCommand'
-import RunsCommand from './commands/RunsCommand'
-import SlayerCommand from './commands/SlayerCommand'
-import WeightCommand from './commands/WeightCommand'
+import MinecraftInstance from "./MinecraftInstance"
+import CalculateCommand from "./commands/CalculateCommand"
+import CataCommand from "./commands/CataCommand"
+import EightBallCommand from "./commands/EightBallCommand"
+import ExplainCommand from "./commands/ExplainCommand"
+import GuildCommand from "./commands/GuildCommand"
+import IqCommand from "./commands/IqCommand"
+import KuudraCommand from "./commands/KuudraCommand"
+import LevelCommand from "./commands/LevelCommand"
+import NetworthCommand from "./commands/NetworthCommand"
+import RockPaperScissorsCommand from "./commands/RockPaperScissorsCommand"
+import RouletteCommand from "./commands/RouletteCommand"
+import SecretsCommand from "./commands/SecretsCommand"
+import SkillCommand from "./commands/SkillCommand"
+import RunsCommand from "./commands/RunsCommand"
+import SlayerCommand from "./commands/SlayerCommand"
+import WeightCommand from "./commands/WeightCommand"
 
 export class CommandsManager extends EventHandler<MinecraftInstance> {
   private readonly commands: ChatCommandHandler[]
@@ -62,26 +62,26 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
   ): Promise<boolean> {
     if (!message.startsWith(minecraftInstance.config.commandPrefix)) return false
 
-    const commandName = message.slice(minecraftInstance.config.commandPrefix.length).split(' ')[0].toLowerCase()
-    const arguments_ = message.split(' ').slice(1)
+    const commandName = message.slice(minecraftInstance.config.commandPrefix.length).split(" ")[0].toLowerCase()
+    const arguments_ = message.split(" ").slice(1)
 
-    if (commandName === 'toggle' && username === minecraftInstance.config.adminUsername && arguments_.length > 0) {
+    if (commandName === "toggle" && username === minecraftInstance.config.adminUsername && arguments_.length > 0) {
       const command = this.commands.find((c) => c.triggers.includes(arguments_[0]))
       if (command == undefined) return false
 
       command.enabled = !command.enabled
       await minecraftInstance.send(
-        `/gc @Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`
+        `/gc @Command ${command.triggers[0]} is now ${command.enabled ? "enabled" : "disabled"}.`
       )
       return true
     }
 
-    if (['help', 'command', 'commands', 'cmd', 'cmds'].includes(commandName)) {
+    if (["help", "command", "commands", "cmd", "cmds"].includes(commandName)) {
       if (arguments_.length <= 0) {
-        const reply = `Commands: ${this.commands.map((command) => command.name).join(', ')}`
+        const reply = `Commands: ${this.commands.map((command) => command.name).join(", ")}`
         await minecraftInstance.send(`/gc ${reply}`)
 
-        minecraftInstance.app.emit('event', {
+        minecraftInstance.app.emit("event", {
           localEvent: true,
           instanceName: minecraftInstance.instanceName,
           location: LOCATION.MINECRAFT,
@@ -99,7 +99,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
         const reply = `That command does not exist, use ${minecraftInstance.config.commandPrefix}help`
         await minecraftInstance.send(`/gc ${reply}`)
 
-        minecraftInstance.app.emit('event', {
+        minecraftInstance.app.emit("event", {
           localEvent: true,
           instanceName: minecraftInstance.instanceName,
           location: LOCATION.MINECRAFT,
@@ -115,10 +115,10 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
       const reply =
         `${command.name}: ${command.description} ` +
-        `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll('%s', username)})`
+        `(${minecraftInstance.config.commandPrefix}${command.example.replaceAll("%s", username)})`
       await minecraftInstance.send(`/gc ${reply}`)
 
-      minecraftInstance.app.emit('event', {
+      minecraftInstance.app.emit("event", {
         localEvent: true,
         instanceName: minecraftInstance.instanceName,
         location: LOCATION.MINECRAFT,
@@ -135,7 +135,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
     const command = this.commands.find((c) => c.triggers.includes(commandName))
     if (command == undefined || !command.enabled) return false
 
-    minecraftInstance.app.emit('command', {
+    minecraftInstance.app.emit("command", {
       localEvent: true,
       instanceName: minecraftInstance.instanceName,
       location: LOCATION.MINECRAFT,
@@ -151,7 +151,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       args: arguments_
     })
 
-    minecraftInstance.app.emit('event', {
+    minecraftInstance.app.emit("event", {
       localEvent: true,
       instanceName: minecraftInstance.instanceName,
       location: LOCATION.MINECRAFT,
@@ -163,7 +163,7 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
       removeLater: false
     })
 
-    minecraftInstance.app.emit('minecraftCommandResponse', {
+    minecraftInstance.app.emit("minecraftCommandResponse", {
       localEvent: true,
       instanceName: minecraftInstance.instanceName,
       location: LOCATION.MINECRAFT,
@@ -181,14 +181,14 @@ export class CommandsManager extends EventHandler<MinecraftInstance> {
 
     minecraftInstance.logger.debug(`${username} executed from private chat: ${message}`)
 
-    minecraftInstance.app.emit('command', {
+    minecraftInstance.app.emit("command", {
       localEvent: true,
       instanceName: minecraftInstance.instanceName,
       location: LOCATION.MINECRAFT,
       scope: SCOPE.PRIVATE,
       username,
       fullCommand: message,
-      commandName: 'override'
+      commandName: "override"
     })
 
     await minecraftInstance.send(message)
