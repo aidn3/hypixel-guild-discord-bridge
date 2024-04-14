@@ -4,6 +4,9 @@
   "description": "A Hypixel guild chat and Discord chat bridge",
   "type": "module",
   "main": "index.ts",
+  "engines": {
+    "node": ">=20.11"
+  },
   "scripts": {
     "start": "node --import tsx/esm index.ts",
     "generate": "npx ts-interface-builder src/application-config.ts src/common/application-event.ts",
