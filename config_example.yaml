@@ -1,8 +1,6 @@
 general:
-  # Get Hypixel API by logging in-game and do `/api new`
+  # Get Hypixel API key by creating one via dashboard.hypixel.net
   hypixelApiKey: '55adcfd6-abcd-477d-1234-12341234123a'
-  # add prefix to messages indicating its origin e.g. '[DC]'
-  displayInstanceName: false
 
 discord:
   instanceName: 'Discord'
@@ -12,7 +10,7 @@ discord:
   adminId: '730667783180493755'
   # Show Chat and public events in this channel id
   publicChannelIds: ['876718702164050860', 'another_channel']
-  # Show Chat and public events in this channel id
+  # Show Officer Chat and events in this channel id
   officerChannelIds: ['841257267059646432', 'another_channel']
   # Discord ID of the role who will have HELPER permission
   helperRoleIds: ['803266248652835111', 'another_role']
@@ -22,43 +20,34 @@ discord:
   deleteTempEventAfter: 15
 
 minecraft:
-  # In-game USERNAME of the user who will have ADMIN permission
-  adminUsername: 'Steve'
-
-  # Minecraft account details
-  instances:
-    - instanceName: 'Good-Name'
-      email: 'email@example.com'
-      password: 'password1234'
-      # This will be used when initiating connection to minecraft server
-      # It will not be used for other purposes.
-      # Leave empty or set it to null to disable
-      # Format: "protocol:host:port"
-      # Example: "HTTP:example.com:8080", "SOCKS5:example.com:8080"
-      proxy: null
-
-  # Options added to 'mineflayer' library. Used for bot instance connection
-  botOptions:
-    host: 'me.hypixel.net'
-    port: 25565
-    version: '1.17.1'
-
-  # change the prefix command in-game commands in guild public chat
-  commandPrefix: '!'
-  disabledCommand: ['somecommand']
   # Put in front of every message.
   # Helpful if more than one bridge exists in same guild
   # So they ignore each other messages
   bridgePrefix: '.'
+  # Minecraft account details
+  instances:
+    # instanceName displayed on discord side
+    - instanceName: 'Good-Name'
+      email: 'email@example.com'
+      # This will only be used when initiating connection to minecraft server
+      # Example: proxy: {protocol: "socks5", host: "example.com", port: 123}
+      proxy: null
 
-# Webhook connections to other guilds/discord servers
-# This is used if the guild/community isn't within the admins' jurisdiction.
-# Formatted as "receive webhook id,full webhook send url"
-# Keep the field blank if you wish to send/receive and not the other
-webhooks:
-  - instanceName: 'useful-webhook'
-    receiveId: '940251356249481432'
-    sendUrl: 'https://discord.com/api/webhooks/...'
+# Webhooks to log all internal events and metadata of the app
+# for staff to preserve and inspect at later date
+# This is an alternative to the log files
+# since sometimes staff don't have access to system files
+loggers:
+  - 'https://discord.com/api/webhooks/...'
+
+commands:
+  # Enable chat commands such as !cata, etc.
+  enabled: true
+  # In-game USERNAME of the user who will have ADMIN permission
+  adminUsername: 'Steve'
+  # change the prefix for chat command
+  commandPrefix: '!'
+  disabledCommand: ['somecommand']
 
 profanity:
   enabled: true
@@ -72,7 +61,6 @@ profanity:
     - 'retard'
 
 metrics:
-  instanceName: 'prometheus'
   enabled: false
   port: 9095
   # Prefix for prometheus metrics database
@@ -86,22 +74,21 @@ metrics:
 # Used to connect multiple applications together to share all their events
 socket:
   enabled: false
-  # Key authorization. required.
+  # Key used like a password.
   key: 'SECRET-KEY'
   # IP address or URL to connect to the server as the Client
-  uri: 'localhost:6090'
+  uri: 'ws://localhost:6090'
   # type could either be "client" or "server"
   # Server: The main application core that runs everything and control other nodes
   # Client: A node with single connection to main application
   type: 'client'
   # Port to listen as Server or to connect to as Client
   port: 6090
-  instanceName: 'Socket'
 
 plugins:
-  enabled: true
-  allowSocketInstance: false
-  paths:
-    - './src/plugins/ExamplePlugin.ts'
-    - './src/plugins/LimboPlugin.ts'
-    - './src/plugins/ReactionPlugin.ts'
+  - './src/plugins/example-plugin.ts'
+  - './src/plugins/limbo-plugin.ts'
+  - './src/plugins/reaction-plugin.ts'
+  - './src/plugins/dark-auction-plugin.ts'
+  - './src/plugins/starfall-cult-plugin.ts'
+  - './src/plugins/punishment-plugin.ts'
