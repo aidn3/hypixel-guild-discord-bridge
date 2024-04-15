@@ -12,6 +12,7 @@ import JoinChat from './chat/join.js'
 import KickChat from './chat/kick.js'
 import LeaveChat from './chat/leave.js'
 import MuteChat from './chat/mute.js'
+import MutedChat from './chat/muted.js'
 import OfficerChat from './chat/officer.js'
 import OfflineChat from './chat/offline.js'
 import OnlineChat from './chat/online.js'
@@ -37,6 +38,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       KickChat,
       LeaveChat,
       MuteChat,
+      MutedChat,
       OfficerChat,
       OfflineChat,
       OnlineChat,

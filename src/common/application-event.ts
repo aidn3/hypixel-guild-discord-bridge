@@ -238,7 +238,13 @@ export enum EventType {
   /**
    * When a Minecraft server blocks a message due to it being harmful/abusive/etc.
    */
-  BLOCK = 'block'
+  BLOCK = 'block',
+
+  /**
+   * When the Minecraft account itself is muted by the server.
+   * Not to be confused with {@link #MUTE}
+   */
+  MUTED = 'muted'
 }
 
 /**

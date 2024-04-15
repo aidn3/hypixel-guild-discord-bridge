@@ -74,6 +74,7 @@ export const EventType = t.enumtype({
   "ONLINE": "online",
   "REPEAT": "repeat",
   "BLOCK": "block",
+  "MUTED": "muted",
 });
 
 export const Severity = t.enumtype({
