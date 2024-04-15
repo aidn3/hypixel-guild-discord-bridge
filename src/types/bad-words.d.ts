@@ -9,6 +9,7 @@ declare module 'bad-words' {
   export = constructor
 
   export class BadWords {
+    addWords: (...words: string) => void
     clean: (text: string) => string
     removeWords: (...arguments_: string[]) => void
   }
