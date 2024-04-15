@@ -8,7 +8,7 @@ export default {
     const regex = /^Your mute will expire in/g
 
     const match = regex.exec(context.message)
-    if (match != undefined && lastWarning + 5000 < Date.now()) {
+    if (match != undefined && lastWarning + 300_000 < Date.now()) {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
