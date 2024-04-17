@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import getMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
 
-import { InstanceType } from '../../common/application-event.js'
+import { ChannelType, EventType, InstanceType, Severity } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
 
 import BlockChat from './chat/block.js'
@@ -25,6 +25,8 @@ import RequestChat from './chat/request.js'
 import UnmuteChat from './chat/unmute.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
 import type MinecraftInstance from './minecraft-instance.js'
+
+import { escapeDiscord } from 'src/util/shared-util.js'
 
 export default class ChatManager extends EventHandler<MinecraftInstance> {
   private readonly chatModules: MinecraftChatMessage[]
@@ -101,8 +103,12 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
         assert(message) // old packet means message exist
         resultMessage = prismChat.fromNotch(message)
       }
-
-      this.onMessage(resultMessage.toString())
+      this.onMessage(
+        this.proceedFiltering(
+          (data as { senderName?: string }).senderName ?? 'unknown sender',
+          resultMessage.toString()
+        )
+      )
     })
   }
 
@@ -122,5 +128,36 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       instanceType: InstanceType.MINECRAFT,
       message
     })
+  }
+
+  proceedFiltering(author: string, content: string): string {
+    let filteredMessage: string
+    try {
+      filteredMessage = this.clientInstance.app.profanityFilter.clean(content)
+    } catch {
+      /*
+        profanity package has bug.
+        will throw error if given one special character.
+        example: clean("?")
+        message is clear if thrown
+      */
+      filteredMessage = content
+    }
+
+    if (content !== filteredMessage) {
+      this.clientInstance.app.emit('event', {
+        localEvent: true,
+        instanceType: InstanceType.DISCORD,
+        username: author,
+        message: `${escapeDiscord(author)}:\n\n**Profanity warning, this message has been edited:**\n${escapeDiscord(filteredMessage)}`,
+        instanceName: InstanceType.MAIN,
+        eventType: EventType.AUTOMATED,
+        channelType: ChannelType.OFFICER,
+        severity: Severity.BAD,
+        removeLater: false
+      })
+    }
+
+    return filteredMessage
   }
 }
