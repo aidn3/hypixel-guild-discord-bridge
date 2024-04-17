@@ -275,7 +275,8 @@ export interface ClientEvent extends InformEvent {
    */
   readonly eventType: EventType
   /**
-   * The name of the user who fired that event
+   * The name of the user who fired that event.
+   * If there is no username, `undefined` is used instead
    */
   readonly username: string | undefined
   /**
