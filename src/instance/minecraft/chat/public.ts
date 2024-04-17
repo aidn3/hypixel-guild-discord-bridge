@@ -1,6 +1,8 @@
-import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { ChannelType, EventType, InstanceType, PunishmentType, Severity } from '../../../common/application-event.js'
 import { PunishedUsers } from '../../../util/punished-users.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+
+import { escapeDiscord } from 'src/util/shared-util.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -10,7 +12,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
-      const playerMessage = match[2].trim()
+      let playerMessage = match[2].trim()
 
       if (
         context.clientInstance.bridgePrefix.length > 0 &&
@@ -33,6 +35,27 @@ export default {
       // if any other punishments active
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
+
+      const old = playerMessage
+      try {
+        playerMessage = context.application.profanityFilter.clean(playerMessage)
+
+        if (playerMessage !== old) {
+          context.application.emit('event', {
+            localEvent: true,
+            instanceType: InstanceType.DISCORD,
+            username,
+            message: `**Profanity warning, this message has been edited:**\n${escapeDiscord(old)}`,
+            instanceName: InstanceType.MAIN,
+            eventType: EventType.AUTOMATED,
+            channelType: ChannelType.OFFICER,
+            severity: Severity.BAD,
+            removeLater: false
+          })
+        }
+      } catch {
+        playerMessage = old
+      }
 
       context.application.emit('chat', {
         localEvent: true,

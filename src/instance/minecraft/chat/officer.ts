@@ -1,5 +1,7 @@
-import { InstanceType, ChannelType } from '../../../common/application-event.js'
+import { InstanceType, ChannelType, EventType, Severity } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+
+import { escapeDiscord } from 'src/util/shared-util.js'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -9,7 +11,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
-      const playerMessage = match[2].trim()
+      let playerMessage = match[2].trim()
 
       if (
         context.clientInstance.bridgePrefix.length > 0 &&
@@ -17,6 +19,27 @@ export default {
       )
         return
       if (context.clientInstance.app.clusterHelper.isMinecraftBot(username)) return
+
+      const old = playerMessage
+      try {
+        playerMessage = context.application.profanityFilter.clean(playerMessage)
+
+        if (playerMessage !== old) {
+          context.application.emit('event', {
+            localEvent: true,
+            instanceType: InstanceType.DISCORD,
+            username,
+            message: `**Profanity warning, this message has been edited:**\n${escapeDiscord(old)}`,
+            instanceName: InstanceType.MAIN,
+            eventType: EventType.AUTOMATED,
+            channelType: ChannelType.OFFICER,
+            severity: Severity.BAD,
+            removeLater: false
+          })
+        }
+      } catch {
+        playerMessage = old
+      }
 
       context.application.emit('chat', {
         localEvent: true,
