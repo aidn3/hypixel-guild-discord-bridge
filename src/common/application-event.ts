@@ -434,8 +434,9 @@ export interface PunishmentAddEvent extends InformEvent {
    */
   readonly reason: string
   /**
-   * Time till the punishment expires.
+   * Time when the punishment expires.
    * Unix Epoch in milliseconds.
+   // TODO: change to "expiresAt"
    */
   readonly till: number
 }
