@@ -73,6 +73,12 @@ export interface ApplicationEvents {
    * Display a useful message coming from the internal components
    */
   statusMessage: (event: StatusMessageEvent) => void
+
+  /**
+   * Reports an IN-GAME occurence of a profanity filtering that occured.
+   * This only applies to messages sent in game by players
+   */
+  profanityWarning: (event: ProfanityWarningEvent) => void
 }
 
 /**
@@ -171,6 +177,28 @@ export interface ChatEvent extends InformEvent {
    * The message content without any prefix or formatting
    */
   readonly message: string
+}
+
+export interface ProfanityWarningEvent extends InformEvent {
+  /**
+   * The name of the user who sent the message
+   */
+  readonly username: string
+
+  /**
+   * The previous, unfiltered/unmodified message
+   */
+  readonly oldMessage: string
+  /**
+   * The resulting, filtered message
+   */
+  readonly newMessage: string
+
+  /**
+   * The channel type the message is coming from
+   * @see ChannelType
+   */
+  readonly channelType: ChannelType
 }
 
 /**

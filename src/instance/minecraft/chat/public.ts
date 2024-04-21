@@ -1,8 +1,8 @@
-import { ChannelType, EventType, InstanceType, PunishmentType, Severity } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
 import { PunishedUsers } from '../../../util/punished-users.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
-import { escapeDiscord } from 'src/util/shared-util.js'
+import { filterProfanity } from 'src/util/shared-util.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -36,25 +36,18 @@ export default {
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
-      const old = playerMessage
-      try {
-        playerMessage = context.application.profanityFilter.clean(playerMessage)
-
-        if (playerMessage !== old) {
-          context.application.emit('event', {
-            localEvent: true,
-            instanceType: InstanceType.DISCORD,
-            username,
-            message: `**Profanity warning, this message has been edited:**\n${escapeDiscord(old)}`,
-            instanceName: InstanceType.MAIN,
-            eventType: EventType.AUTOMATED,
-            channelType: ChannelType.OFFICER,
-            severity: Severity.BAD,
-            removeLater: false
-          })
-        }
-      } catch {
-        playerMessage = old
+      const { filteredMessage, changed } = filterProfanity(playerMessage, context.application)
+      if (changed) {
+        context.application.emit('profanityWarning', {
+          username,
+          oldMessage: playerMessage,
+          newMessage: filteredMessage,
+          localEvent: true,
+          instanceType: InstanceType.MINECRAFT,
+          instanceName: context.instanceName,
+          channelType: ChannelType.PUBLIC
+        })
+        playerMessage = filteredMessage
       }
 
       context.application.emit('chat', {

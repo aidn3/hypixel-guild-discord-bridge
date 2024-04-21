@@ -1,5 +1,7 @@
 import log4js from 'log4js'
 
+import type Application from '../application.js'
+
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
 
@@ -62,4 +64,24 @@ export const escapeDiscord = function (message: string): string {
   message = message.split('@').join('\\@-') // mentions
 
   return message
+}
+
+export function filterProfanity(
+  playerMessage: string,
+  app: Application
+): { filteredMessage: string; changed: boolean } {
+  let filtered: string
+  try {
+    filtered = app.profanityFilter.clean(playerMessage)
+  } catch {
+    /*
+        profanity package has bug.
+        will throw error if given one special character.
+        example: clean("?")
+        message is clear if thrown
+      */
+    filtered = playerMessage
+  }
+
+  return { filteredMessage: filtered, changed: playerMessage !== filtered }
 }

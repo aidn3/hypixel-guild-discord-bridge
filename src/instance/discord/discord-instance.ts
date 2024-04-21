@@ -6,7 +6,13 @@ import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'disco
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event.js'
-import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event.js'
+import type {
+  ChatEvent,
+  ClientEvent,
+  InstanceEvent,
+  CommandEvent,
+  ProfanityWarningEvent
+} from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
@@ -64,6 +70,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
     this.app.on('command', (event: CommandEvent) => {
       void this.onCommand(event)
+    })
+    this.app.on('profanityWarning', (event: ProfanityWarningEvent) => {
+      void this.onProfanityWarning(event)
     })
   }
 
@@ -156,6 +165,18 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
 
     await this.sendEmbed(channels, event.removeLater, embed)
+  }
+
+  private async onProfanityWarning(event: ProfanityWarningEvent): Promise<void> {
+    const embed = {
+      description: `Message by ${event.username} filtered:\n\n'${event.oldMessage}'\n->\n'${event.newMessage}'`,
+      color: 0x8a_2d_00,
+      footer: {
+        text: `${event.instanceName} in ${event.channelType} chat`
+      }
+    } satisfies APIEmbed
+
+    await this.sendEmbed(this.config.officerChannelIds, false, embed)
   }
 
   private async sendEmbed(channels: string[], removeLater: boolean, embed: APIEmbed): Promise<void> {

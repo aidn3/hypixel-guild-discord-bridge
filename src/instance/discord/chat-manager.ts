@@ -4,7 +4,7 @@ import emojisMap from 'emoji-name-map'
 
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
-import { escapeDiscord } from '../../util/shared-util.js'
+import { escapeDiscord, filterProfanity } from '../../util/shared-util.js'
 
 import type DiscordInstance from './discord-instance.js'
 
@@ -40,7 +40,13 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const content = await this.cleanMessage(event)
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
-    const filteredMessage = await this.proceedFiltering(event, truncatedContent)
+
+    const { filteredMessage, changed } = filterProfanity(truncatedContent, this.clientInstance.app)
+    if (changed) {
+      await event.reply({
+        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
+      })
+    }
 
     this.clientInstance.app.emit('chat', {
       localEvent: true,
@@ -99,29 +105,6 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     return false
-  }
-
-  async proceedFiltering(message: Message, content: string): Promise<string> {
-    let filteredMessage: string
-    try {
-      filteredMessage = this.clientInstance.app.profanityFilter.clean(content)
-    } catch {
-      /*
-        profanity package has bug.
-        will throw error if given one special character.
-        example: clean("?")
-        message is clear if thrown
-      */
-      filteredMessage = content
-    }
-
-    if (content !== filteredMessage) {
-      await message.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
-      })
-    }
-
-    return filteredMessage
   }
 
   private async getReplyUsername(messageEvent: Message): Promise<string | undefined> {
