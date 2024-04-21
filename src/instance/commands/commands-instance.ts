@@ -21,6 +21,7 @@ import Override from './triggers/override.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
 import Runs from './triggers/runs.js'
+import RunsToClassAvg from './triggers/runstoclassavg.js'
 import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
@@ -37,6 +38,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new EightBallCommand(),
       new Calculate(),
       new Catacomb(),
+      new RunsToClassAvg(),
       new DarkAuction(),
       new Explain(),
       new Guild(),

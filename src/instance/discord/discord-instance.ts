@@ -79,8 +79,12 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     this.stateHandler.registerEvents()
     this.chatManager.registerEvents()
     this.commandsManager.registerEvents()
-
-    await this.client.login(this.config.key)
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve()
+      }, 500)
+    })
+    // await this.client.login(this.config.key)
   }
 
   private async onChat(event: ChatEvent): Promise<void> {
