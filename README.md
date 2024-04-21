@@ -32,6 +32,7 @@ Breaking changes:
   - [Supported Discord Commands](#supported-discord-commands)
   - [Supported Events](#supported-events)
   - [Supported Chat Commands](#supported-chat-commands)
+  - [Available Plugins](#available-plugins)
   - [How to execute commands](#how-to-execute-commands)
 - [Metrics](#metrics)
   - [Available Metrics](#available-metrics)
@@ -129,6 +130,23 @@ This includes Guild/Officer chat as well as private `/msg` and Direct Messaging 
 | !slayer      | Returns a player's slayer stats `!slayer wolf`  | Anyone     |
 | !toggle      | Enable/disable commands `!toggle 8balls`        | Anyone     |
 | !weight      | Calculate **Senither Weights** of players       | Anyone     |
+
+### Available Plugins
+
+Application has an official public API and supports custom plugins loading to enhance the experience.  
+Loaded plugins can be configured in the `config.yaml` file when [configuring the app](#configure).  
+To create custom plugins see [Documentation And Tutorials](#documentation-and-tutorials).
+
+These are the supported official plugins that come bundled with the application:
+
+| Plugin            | Description                                                                         | Importance      | Notice                                                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| auto-restart      | Schedule Restarting every 24 Hour                                                   | Essential       | Process Monitor required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage. |
+| limbo-plugin      | Forces Minecraft client to stay in Hypixel Limbo                                    | Essential       | Being outside of Limbo for prolonged time can lead to ban. Only disable if required.                                             |
+| punishment-plugin | Enforces punishments and prevents punishment evading                                | Recommended     | Plugin will mute but won't ban, instead it will send a notification in officer chat.                                             |
+| reaction-plugin   | Send a greeting/reaction message when a member joins/leaves/kicked out of the guild | Quality of Life | N/A                                                                                                                              |
+| dark-auction      | Send a reminder when Skyblock Dark Auction is starting                              | Quality of Life | Sends a reminder 5 minutes and 1 minute before the Dark Auction.                                                                 |
+| starfall-cult     | Send a reminder when Skyblock Starfall Cult gathers                                 | Quality of Life | N/A                                                                                                                              |
 
 ### How to execute commands
 
