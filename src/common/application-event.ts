@@ -275,7 +275,8 @@ export interface ClientEvent extends InformEvent {
    */
   readonly eventType: EventType
   /**
-   * The name of the user who fired that event
+   * The name of the user who fired that event.
+   * If there is no username, `undefined` is used instead
    */
   readonly username: string | undefined
   /**
@@ -433,8 +434,9 @@ export interface PunishmentAddEvent extends InformEvent {
    */
   readonly reason: string
   /**
-   * Time till the punishment expires.
+   * Time when the punishment expires.
    * Unix Epoch in milliseconds.
+   // TODO: change to "expiresAt"
    */
   readonly till: number
 }
