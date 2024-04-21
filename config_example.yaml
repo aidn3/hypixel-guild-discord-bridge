@@ -92,3 +92,4 @@ plugins:
   - './src/plugins/dark-auction-plugin.ts'
   - './src/plugins/starfall-cult-plugin.ts'
   - './src/plugins/punishment-plugin.ts'
+  - './src/plugins/auto-restart-plugin.ts'
