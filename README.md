@@ -215,7 +215,7 @@ increase(guild_bridge_guild_exp_total[10m])
 guild_bridge_guild_members_online
 ```
 
-## ![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_members_online.png)
+![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_members_online.png)
 
 ## Installing and Running
 
