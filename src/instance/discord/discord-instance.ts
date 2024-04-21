@@ -169,7 +169,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
   private async onProfanityWarning(event: ProfanityWarningEvent): Promise<void> {
     const embed = {
-      description: `Message by ${event.username} filtered:\n\n'${event.oldMessage}'\n->\n'${event.newMessage}'`,
+      description: `Message by ${escapeDiscord(event.username)} filtered:\n\n'${escapeDiscord(event.oldMessage)}'\n->\n'${escapeDiscord(event.newMessage)}'`,
       color: 0x8a_2d_00,
       footer: {
         text: `${event.instanceName} in ${event.channelType} chat`
