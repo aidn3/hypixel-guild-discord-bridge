@@ -23,18 +23,33 @@ interface InfractionCase {
   userUuid: string | undefined
   userDiscordId: number | undefined
   infractions: InfractionsTable
+  lastInfraction: number
 }
 
 const heats: Record<HeatUser, HeatsTable> = {}
 const warns: Record<HeatUser, WarnsTable> = {}
+let infractions: InfractionCase[] = []
 
 setInterval(() => {
   reduceHeats()
 }, 1000)
 
+function saveConfig(path: string): void {
+  const dataRaw = JSON.stringify(infractions, undefined, 4)
+  fs.writeFileSync(path, dataRaw, { encoding: 'utf8' })
+}
+
+function reduceInfractions() {
+  for (const infractionCase of infractions) {
+    if (infractionCase.lastInfraction <= Date.now() - 7 * 24 * 60 * 60 * 1000) {
+      infractions = infractions.filter((infraction) => infraction.userName !== infractionCase.userName)
+    }
+  }
+}
+
 function reduceHeats() {
   for (const [heatUser, heatsTable] of Object.entries(heats)) {
-    // @ts-ignore prefer-const
+    // @ts-expect-error prefer-const
     for (let [heatType, heatScore] of Object.entries(heatsTable)) {
       switch (heatType) {
         case HeatType.SPAM: {
@@ -59,16 +74,14 @@ function reduceHeats() {
 export default {
   onRun(context: PluginContext): void {
     const infractionFilePath = context.application.getConfigFilePath('infractions.json')
-    let infractions: InfractionCase[] = JSON.parse(fs.readFileSync(infractionFilePath, 'utf8'))
-
-    function saveConfig(): void {
-      const dataRaw = JSON.stringify(infractions, undefined, 4)
-      fs.writeFileSync(infractionFilePath, dataRaw, { encoding: 'utf8' })
-    }
+    infractions.join(JSON.parse(fs.readFileSync(infractionFilePath, 'utf8')))
 
     context.application.on('chat', (event) => {
       const messageAuthor = event.username
       const messageAuthorId = event.userId
+
+      reduceInfractions()
+      saveConfig(infractionFilePath)
 
       let infractionCase = infractions.find((infraction) => infraction.userDiscordId == messageAuthorId)
 
@@ -100,6 +113,7 @@ export default {
       if (heats[messageAuthor].spam >= 1) {
         if (infractionCase) {
           infractionCase.infractions.spam += 1
+          infractionCase.lastInfraction = Date.now()
         } else {
           infractionCase = {
             userName: messageAuthor,
@@ -108,13 +122,14 @@ export default {
             infractions: {
               spam: 1,
               profanity: 0
-            }
+            },
+            lastInfraction: Date.now()
           }
         }
 
         infractions = infractions.filter((infraction) => infraction.userName !== messageAuthor)
         infractions.push(infractionCase)
-        saveConfig()
+        saveConfig(infractionFilePath)
 
         context.application.punishedUsers.punish({
           localEvent: true,
@@ -132,6 +147,15 @@ export default {
   }
 } satisfies PluginInterface
 
-// add infraction tracking
-// add infraction heat mult.
-// add infraction punishment mult.
+// TODOS
+
+// check infraction file exists - create if not
+// profanity tracking
+// mute time value map
+// add settings config - MAJOR
+// - spam base value
+// - individal char value
+// - spam mute reason
+// - profanity base value
+// - profanity mute reason
+// add docs readme
