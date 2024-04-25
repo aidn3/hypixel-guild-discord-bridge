@@ -37,7 +37,7 @@ export default class RunsToClassAvg extends ChatCommandHandler {
     }
     const xpPerRun = FloorsBaseEXP[selectedFloor as keyof typeof FloorsBaseEXP]
     const parsedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
-   
+
     const temporaryClassData = parsedProfile.dungeons.classes
     let temporaryClassAvg = this.getClassAverage(temporaryClassData)
 
