@@ -1,6 +1,7 @@
 # hypixel-guild-discord-bridge
 
 <p>
+  <a href="https://github.com/plantain-00/type-coverage"><img alt="type-coverage" src="https://img.shields.io/badge/dynamic/json.svg?label=type-coverage&prefix=%E2%89%A5&suffix=%&query=$.typeCoverage.atLeast&uri=https%3A%2F%2Fraw.githubusercontent.com%2Faidn3%2Fhypixel-guild-discord-bridge%2Fmaster%2Fpackage.json"></a>
   <img alt="A badge displaying the number of messages being sent via the project" src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
   <a href="https://discord.gg/ej7tQHPF8y"><img src="https://img.shields.io/discord/1002575659694043206?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 </p>
@@ -32,6 +33,7 @@ Breaking changes:
   - [Supported Discord Commands](#supported-discord-commands)
   - [Supported Events](#supported-events)
   - [Supported Chat Commands](#supported-chat-commands)
+  - [Available Plugins](#available-plugins)
   - [How to execute commands](#how-to-execute-commands)
 - [Metrics](#metrics)
   - [Available Metrics](#available-metrics)
@@ -130,6 +132,23 @@ This includes Guild/Officer chat as well as private `/msg` and Direct Messaging 
 | !toggle      | Enable/disable commands `!toggle 8balls`        | Anyone     |
 | !weight      | Calculate **Senither Weights** of players       | Anyone     |
 
+### Available Plugins
+
+Application has an official public API and supports custom plugins loading to enhance the experience.  
+Loaded plugins can be configured in the `config.yaml` file when [configuring the app](#configure).  
+To create custom plugins see [Documentation And Tutorials](#documentation-and-tutorials).
+
+These are the supported official plugins that come bundled with the application:
+
+| Plugin            | Description                                                                         | Importance      | Notice                                                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| auto-restart      | Schedule Restarting every 24 Hour                                                   | Essential       | Process Monitor required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage. |
+| limbo-plugin      | Forces Minecraft client to stay in Hypixel Limbo                                    | Essential       | Being outside of Limbo for prolonged time can lead to ban. Only disable if required.                                             |
+| punishment-plugin | Enforces punishments and prevents punishment evading                                | Recommended     | Plugin will mute but won't ban, instead it will send a notification in officer chat.                                             |
+| reaction-plugin   | Send a greeting/reaction message when a member joins/leaves/kicked out of the guild | Quality of Life | N/A                                                                                                                              |
+| dark-auction      | Send a reminder when Skyblock Dark Auction is starting                              | Quality of Life | Sends a reminder 5 minutes and 1 minute before the Dark Auction.                                                                 |
+| starfall-cult     | Send a reminder when Skyblock Starfall Cult gathers                                 | Quality of Life | N/A                                                                                                                              |
+
 ### How to execute commands
 
 **Note: Only the one person who holds administrator permission can execute command!**  
@@ -196,7 +215,7 @@ increase(guild_bridge_guild_exp_total[10m])
 guild_bridge_guild_members_online
 ```
 
-## ![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_members_online.png)
+![](https://raw.githubusercontent.com/aidn3/hypixel-guild-discord-bridge/media/metrics_guild_members_online.png)
 
 ## Installing and Running
 
