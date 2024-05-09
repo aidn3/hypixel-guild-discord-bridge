@@ -134,20 +134,20 @@ This includes Guild/Officer chat as well as private `/msg` and Direct Messaging 
 
 ### Available Plugins
 
-Application has an official public API and supports custom plugins loading to enhance the experience.  
+Application has an official public API and supports custom plugin loading to enhance potential.  
 Loaded plugins can be configured in the `config.yaml` file when [configuring the app](#configure).  
 To create custom plugins see [Documentation And Tutorials](#documentation-and-tutorials).
 
 These are the supported official plugins that come bundled with the application:
 
-| Plugin            | Description                                                                         | Importance      | Notice                                                                                                                           |
-| ----------------- | ----------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| auto-restart      | Schedule Restarting every 24 Hour                                                   | Essential       | Process Monitor required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage. |
-| limbo-plugin      | Forces Minecraft client to stay in Hypixel Limbo                                    | Essential       | Being outside of Limbo for prolonged time can lead to ban. Only disable if required.                                             |
-| punishment-plugin | Enforces punishments and prevents punishment evading                                | Recommended     | Plugin will mute but won't ban, instead it will send a notification in officer chat.                                             |
-| reaction-plugin   | Send a greeting/reaction message when a member joins/leaves/kicked out of the guild | Quality of Life | N/A                                                                                                                              |
-| dark-auction      | Send a reminder when Skyblock Dark Auction is starting                              | Quality of Life | Sends a reminder 5 minutes and 1 minute before the Dark Auction.                                                                 |
-| starfall-cult     | Send a reminder when Skyblock Starfall Cult gathers                                 | Quality of Life | N/A                                                                                                                              |
+| Plugin            | Description                                                                       | Importance      | Notice                                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| auto-restart      | Schedule Restarting every 24 Hours                                                | Essential       | A process monitor required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage. |
+| limbo-plugin      | Forces Minecraft client to stay in Hypixel limbo                                  | Essential       | Being outside of limbo for prolonged periods can lead to the account being banned. Only disable if required.                       |
+| punishment-plugin | Enforces punishments and prevents punishment evasion                              | Recommended     | Plugin will mute users but won't ban them, instead it will send a notification in officer chat.                                    |
+| reaction-plugin   | Send a greeting/reaction message when a member joins/leaves/kicked from the guild | Quality of Life | N/A                                                                                                                                |
+| dark-auction      | Send a reminder when a Skyblock Dark Auction is starting                          | Quality of Life | Sends a reminder 5 minutes and 1 minute before the Dark Auction.                                                                   |
+| starfall-cult     | Send a reminder when Skyblock Starfall Cult gathers                               | Quality of Life | N/A                                                                                                                                |
 
 ### How to execute commands
 
