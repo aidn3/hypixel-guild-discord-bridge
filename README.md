@@ -30,29 +30,29 @@ Breaking changes:
 
 ## Table Of Contents
 
-- [Features](#Features)
-  - [Permissions](#Permissions)
+- [Features](#features)
+  - [Permissions](#permissions)
   - [Supported Discord Commands](#supported-discord-commands)
   - [Supported Events](#supported-events)
   - [Supported Chat Commands](#supported-chat-commands)
   - [Available Plugins](#available-plugins)
-  - [How to execute commands](#how-to-execute-commands)
+  - [How to execute commands](#how-to-use-override)
 - [Metrics](#metrics)
   - [Available Metrics](#available-metrics)
   - [Metrics Config](#metrics-config)
   - [Metrics With Grafana](#metrics-with-grafana)
 - [Installing](#installing-and-running)
-  - [Prerequisites](#Prerequisites)
-  - [Download](#Download)
-  - [Configure](#Configure)
-  - [Install](#Install)
+  - [Prerequisites](#prerequisites)
+  - [Download](#download)
+  - [Configure](#configure)
+  - [Install](#install)
   - [Run](#Run)
 - [Advanced](#advanced)
   - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
   - [Node Modes](#node-modes)
   - [Setup Cluster](#setup-cluster)
 - [Documentation and Tutorials](#documentation-and-tutorials)
-- [Credits](#Credits)
+- [Credits](#credits)
 
 ## Features
 
@@ -151,7 +151,7 @@ These are the supported official plugins that come bundled with the application:
 | dark-auction      | Send a reminder when a skyblock dark auction is starting                                | Quality of Life | Sends a reminder 5 minutes and 1 minute before the dark auction.                                                                      |
 | starfall-cult     | Send a reminder when the skyblock starfall cult gathers                                 | Quality of Life | N/A                                                                                                                                   |
 
-### How to execute commands (override)
+### How to use override
 
 **Note: Only the one person who has administrator permissions can execute commands!**  
 From In-game: `/gc !override /guild party`  
