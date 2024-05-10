@@ -36,7 +36,7 @@ Breaking changes:
   - [Supported Events](#supported-events)
   - [Supported Chat Commands](#supported-chat-commands)
   - [Available Plugins](#available-plugins)
-  - [How to execute commands](#how-to-use-override)
+  - [How to use override](#how-to-use-override)
 - [Metrics](#metrics)
   - [Available Metrics](#available-metrics)
   - [Metrics Config](#metrics-config)
