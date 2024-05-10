@@ -27,7 +27,7 @@ export interface ApplicationEvents {
    */
   instance: (event: InstanceEvent) => void
   /**
-   * Broadcast instance to inform other application nodes in the cluster about its existence
+   * Broadcast instance to inform other bridges in the cluster about its existence
    */
   selfBroadcast: (event: InstanceSelfBroadcast) => void
 
