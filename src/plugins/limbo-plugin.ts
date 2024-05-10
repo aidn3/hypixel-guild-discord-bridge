@@ -12,7 +12,7 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
 }
 
 /*
- * Permantenly trap Minecraft client in limbo and prevent it from leaving
+ * Permanently trap Minecraft client in limbo and prevent it from leaving
  */
 export default {
   onRun(context: PluginContext): void {
