@@ -11,10 +11,10 @@
 A service that connects multiple Hypixel guilds and Discord servers together.
 This project is made to be fully flexible and customisable, offering a high quality user experience while keeping it simple.
 
-> \***\*DISCLAIMER**: This project interacts with Hypixel in an unintended way by simulating a minecraft client and by processing
+> **_DISCLAIMER_: This project interacts with Hypixel in an unintended way by simulating a minecraft client and by processing
 > packets which might get you banned if over-abused too much.  
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at
-> your own risk"\*\*
+> your own risk"**
 
 ## Migrating To 3.x.x
 
