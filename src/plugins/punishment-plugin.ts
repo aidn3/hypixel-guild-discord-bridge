@@ -4,6 +4,10 @@ import { ChannelType, Severity, EventType, InstanceType, PunishmentType } from '
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import { PunishedUsers } from '../util/punished-users.js'
 
+/* WARNING
+THIS IS AN ESSENTIAL PLUGIN! EDITING IT MAY HAVE ADVERSE AFFECTS ON THE APPLICATION
+*/
+
 // noinspection JSUnusedGlobalSymbols
 export default {
   onRun(context: PluginContext): void {
