@@ -2,6 +2,10 @@ import { ChannelType, Severity, EventType, InstanceType } from '../common/applic
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import { antiSpamString } from '../util/shared-util.js'
 
+/* NOTICE
+THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
+*/
+
 export default {
   onRun(context: PluginContext): void {
     let lastHourCheck = -1

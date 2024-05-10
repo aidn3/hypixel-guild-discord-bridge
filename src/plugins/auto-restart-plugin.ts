@@ -3,6 +3,11 @@ import { uptime } from 'node:process'
 import { ChannelType, EventType, InstanceType, Severity } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
+/* WARNING
+THIS PLUGIN IS NOT ESSENTIAL BUT IS HEAVILY RECOMMENDED.
+BRIDGE WILL USE MORE RAM THE LONGER IT IS LEFT WITHOUT RESTARTING
+*/
+
 const MAX_LIFE_TILL_RESTART = 24 * 60 * 60 // 24 hour in seconds
 const CHECK_EVERY = 5 * 60 * 1000 // 5 minutes in milliseconds
 
