@@ -25,7 +25,7 @@ Breaking changes:
 - Chat Commands have been moved to their own instance in `config.yaml`. Only enable one instance when using websocket.
 - Project has been moved to ESM. Old plugins that still use commonjs will not work anymore.
 - The Minecraft bot and websocket have been stripped down to bare metal. Any plugins that use those features must be updated accordingly.
-- The punishment system has been revised and now uses `./configs/` to save it's state as a file. The `./configs/` directory is now git-ignored.
+- The punishment system has been revised and now uses `./configs/` to save its state as a file. The `./configs/` directory is now git-ignored.
 - Any unexpected errors during the launching phase will result in a shutdown with an exit code instead of sending a notification.
 
 ## Table Of Contents
