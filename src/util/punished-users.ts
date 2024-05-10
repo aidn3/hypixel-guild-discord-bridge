@@ -48,7 +48,7 @@ export class PunishedUsers {
     ) as string[]
 
     const modifiedList = originalList.filter(
-      (punishment) => punishment.till < currentTime && !this.matchIdentifier(punishment, identifiers)
+      (punishment) => punishment.till < currentTime || !this.matchIdentifier(punishment, identifiers)
     )
 
     modifiedList.push(event)
@@ -133,6 +133,7 @@ export class PunishedUsers {
     const remainingTime = till - currentTime
     return `${Math.min(MAX_DURATION, Math.floor(remainingTime / 1000))}${PREFIX}`
   }
+
   private loadFromConfig(): void {
     if (!fs.existsSync(this.configFilePath)) return
 
