@@ -3,6 +3,10 @@ import assert from 'node:assert'
 import { EventType } from '../common/application-event.js'
 import type { PluginInterface, PluginContext } from '../common/plugins.js'
 
+/* NOTICE
+THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
+*/
+
 const JoinMessages = [
   'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',
   "%s, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",

@@ -1,6 +1,10 @@
 import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
+/* NOTICE
+THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
+*/
+
 export default {
   onRun(context: PluginContext): void {
     let lastSkyblockDay = -1

@@ -2,13 +2,17 @@ import { InstanceEventType, InstanceType } from '../common/application-event.js'
 import type { PluginInterface, PluginContext } from '../common/plugins.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
+/* WARNING
+THIS IS AN ESSENTIAL PLUGIN! EDITING IT MAY HAVE ADVERSE AFFECTS ON THE APPLICATION
+*/
+
 async function limbo(clientInstance: MinecraftInstance): Promise<void> {
   clientInstance.logger.debug('Spawn event triggered. sending to limbo...')
   await clientInstance.send('§')
 }
 
 /*
- * Stuck minecraft client in limbo and prevent it from ever leaving
+ * Permanently trap Minecraft client in limbo and prevent it from leaving
  */
 export default {
   onRun(context: PluginContext): void {
