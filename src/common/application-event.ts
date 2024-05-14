@@ -27,7 +27,7 @@ export interface ApplicationEvents {
    */
   instance: (event: InstanceEvent) => void
   /**
-   * Broadcast instance to inform other applications nodes in cluster about its existence
+   * Broadcast instance to inform other bridges in the cluster about its existence
    */
   selfBroadcast: (event: InstanceSelfBroadcast) => void
 
@@ -38,7 +38,7 @@ export interface ApplicationEvents {
    */
   punishmentAdd: (event: PunishmentAddEvent) => void
   /**
-   *  Broadcast any punishment forgiveness to other instances. Such as mute, ban, etc.
+   *  Broadcast any punishments removed to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
@@ -52,7 +52,7 @@ export interface ApplicationEvents {
   /**
    * Command used to shut down the bridge.
    * It will take some time for the bridge to shut down.
-   * Bridge will auto restart if a service monitor is used.
+   * Bridge will auto restart if a process monitor is used.
    */
   shutdownSignal: (event: ShutdownSignal) => void
 
@@ -82,7 +82,7 @@ export interface ApplicationEvents {
 }
 
 /**
- * The instance type the event was created in
+ * The instance type the event was created from
  */
 export enum InstanceType {
   MAIN = 'main',
@@ -303,7 +303,8 @@ export interface ClientEvent extends InformEvent {
    */
   readonly eventType: EventType
   /**
-   * The name of the user who fired that event
+   * The name of the user who fired that event.
+   * If there is no username, `undefined` is used instead
    */
   readonly username: string | undefined
   /**
@@ -461,8 +462,9 @@ export interface PunishmentAddEvent extends InformEvent {
    */
   readonly reason: string
   /**
-   * Time till the punishment expires.
+   * Time when the punishment expires.
    * Unix Epoch in milliseconds.
+   // TODO: change to "expiresAt"
    */
   readonly till: number
 }

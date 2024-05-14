@@ -25,8 +25,8 @@ export abstract class ClientInstance<K> {
   }
 
   /**
-   * Called when trying to connect or reconnecting or resetting connection
-   * The call can be either manually automatically.
+   * Called when trying to connect, reconnect or reset the connection
+   * The call can either be manual or automatic.
    *
    * Make sure the inner client can be completely disposed of,
    * since many listeners will listen to every connection.
