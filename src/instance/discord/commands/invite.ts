@@ -1,5 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { escapeDiscord } from '../../../util/shared-util.js'
+import { checkChatTriggers, formatChatTriggerResponse, INVITE_ACCEPT_CHAT } from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 
@@ -21,12 +23,15 @@ export default {
     const command = `/g invite ${username}`
 
     const instance: string | null = context.interaction.options.getString('instance')
-    if (instance == undefined) {
-      context.application.clusterHelper.sendCommandToAllMinecraft(command)
-    } else {
-      context.application.clusterHelper.sendCommandToMinecraft(instance, command)
-    }
+    const result = await checkChatTriggers(
+      context.application,
+      INVITE_ACCEPT_CHAT,
+      instance ?? undefined,
+      command,
+      username
+    )
+    const formatted = formatChatTriggerResponse(result, `Invite ${escapeDiscord(username)}`)
 
-    await context.interaction.editReply(`Command sent to invite ${username}!`)
+    await context.interaction.editReply({ embeds: [formatted] })
   }
 } satisfies CommandInterface
