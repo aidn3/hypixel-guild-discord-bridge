@@ -7,7 +7,7 @@ import { getSelectedSkyblockProfile, getUuidIfExists } from '../common/util.js'
 
 const FloorsBaseEXP = {
   m6: 105_000,
-  m7: 315_000
+  m7: 340_000
 }
 
 const DUNGEON_XP = [
