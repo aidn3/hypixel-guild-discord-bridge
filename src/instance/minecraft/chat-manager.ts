@@ -101,7 +101,6 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
         assert(message) // old packet means message exists
         resultMessage = prismChat.fromNotch(message)
       }
-
       this.onMessage(resultMessage.toString())
     })
   }

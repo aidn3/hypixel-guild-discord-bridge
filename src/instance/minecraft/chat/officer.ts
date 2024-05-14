@@ -1,6 +1,8 @@
 import { InstanceType, ChannelType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
+import { filterProfanity } from 'src/util/shared-util.js'
+
 export default {
   onChat: function (context: MinecraftChatContext): void {
     // REGEX: Officer > [MVP+] aidn5 [Staff]: hello there.
@@ -9,7 +11,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
-      const playerMessage = match[2].trim()
+      let playerMessage = match[2].trim()
 
       if (
         context.clientInstance.bridgePrefix.length > 0 &&
@@ -17,6 +19,20 @@ export default {
       )
         return
       if (context.clientInstance.app.clusterHelper.isMinecraftBot(username)) return
+
+      const { filteredMessage, changed } = filterProfanity(playerMessage, context.application.profanityFilter)
+      if (changed) {
+        context.application.emit('profanityWarning', {
+          username,
+          oldMessage: playerMessage,
+          newMessage: filteredMessage,
+          localEvent: true,
+          instanceType: InstanceType.MINECRAFT,
+          instanceName: context.instanceName,
+          channelType: ChannelType.OFFICER
+        })
+        playerMessage = filteredMessage
+      }
 
       context.application.emit('chat', {
         localEvent: true,

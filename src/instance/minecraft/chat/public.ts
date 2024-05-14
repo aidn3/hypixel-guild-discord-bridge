@@ -2,6 +2,8 @@ import { ChannelType, InstanceType, PunishmentType } from '../../../common/appli
 import { PunishedUsers } from '../../../util/punished-users.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
+import { filterProfanity } from 'src/util/shared-util.js'
+
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
@@ -10,7 +12,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
-      const playerMessage = match[2].trim()
+      let playerMessage = match[2].trim()
 
       if (
         context.clientInstance.bridgePrefix.length > 0 &&
@@ -33,6 +35,20 @@ export default {
       // if any other punishments active
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
+
+      const { filteredMessage, changed } = filterProfanity(playerMessage, context.application.profanityFilter)
+      if (changed) {
+        context.application.emit('profanityWarning', {
+          username,
+          oldMessage: playerMessage,
+          newMessage: filteredMessage,
+          localEvent: true,
+          instanceType: InstanceType.MINECRAFT,
+          instanceName: context.instanceName,
+          channelType: ChannelType.PUBLIC
+        })
+        playerMessage = filteredMessage
+      }
 
       context.application.emit('chat', {
         localEvent: true,

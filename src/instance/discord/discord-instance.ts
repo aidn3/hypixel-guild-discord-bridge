@@ -6,7 +6,13 @@ import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'disco
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event.js'
-import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event.js'
+import type {
+  ChatEvent,
+  ClientEvent,
+  InstanceEvent,
+  CommandEvent,
+  ProfanityWarningEvent
+} from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
@@ -64,6 +70,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
     this.app.on('command', (event: CommandEvent) => {
       void this.onCommand(event)
+    })
+    this.app.on('profanityWarning', (event: ProfanityWarningEvent) => {
+      void this.onProfanityWarning(event)
     })
   }
 
@@ -156,6 +165,23 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
 
     await this.sendEmbed(channels, event.removeLater, embed)
+  }
+
+  private async onProfanityWarning(event: ProfanityWarningEvent): Promise<void> {
+    const embed = {
+      description: `Message by ${escapeDiscord(event.username)} filtered:\n\n'${escapeDiscord(event.oldMessage)}'\n->\n'${escapeDiscord(event.newMessage)}'`,
+      color: Severity.BAD,
+      footer: {
+        text: `${event.instanceName} in ${event.channelType} chat`
+      }
+    } satisfies APIEmbed
+    if (event.instanceType === InstanceType.MINECRAFT && event.username) {
+      Object.assign(embed, {
+        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
+      })
+    }
+
+    await this.sendEmbed(this.config.officerChannelIds, false, embed)
   }
 
   private async sendEmbed(channels: string[], removeLater: boolean, embed: APIEmbed): Promise<void> {
