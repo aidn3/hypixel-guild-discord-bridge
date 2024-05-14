@@ -36,7 +36,7 @@ export default {
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
-      const { filteredMessage, changed } = filterProfanity(playerMessage, context.application)
+      const { filteredMessage, changed } = filterProfanity(playerMessage, context.application.profanityFilter)
       if (changed) {
         context.application.emit('profanityWarning', {
           username,

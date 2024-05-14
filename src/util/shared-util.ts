@@ -1,6 +1,5 @@
+import type { BadWords } from 'bad-words'
 import log4js from 'log4js'
-
-import type Application from '../application.js'
 
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
@@ -68,11 +67,11 @@ export const escapeDiscord = function (message: string): string {
 
 export function filterProfanity(
   playerMessage: string,
-  app: Application
+  profanityFilter: BadWords
 ): { filteredMessage: string; changed: boolean } {
   let filtered: string
   try {
-    filtered = app.profanityFilter.clean(playerMessage)
+    filtered = profanityFilter.clean(playerMessage)
   } catch {
     /*
         profanity package has bug.

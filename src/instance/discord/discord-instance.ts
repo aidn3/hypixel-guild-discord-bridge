@@ -170,11 +170,16 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private async onProfanityWarning(event: ProfanityWarningEvent): Promise<void> {
     const embed = {
       description: `Message by ${escapeDiscord(event.username)} filtered:\n\n'${escapeDiscord(event.oldMessage)}'\n->\n'${escapeDiscord(event.newMessage)}'`,
-      color: 0x8a_2d_00,
+      color: Severity.BAD,
       footer: {
         text: `${event.instanceName} in ${event.channelType} chat`
       }
     } satisfies APIEmbed
+    if (event.instanceType === InstanceType.MINECRAFT && event.username) {
+      Object.assign(embed, {
+        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
+      })
+    }
 
     await this.sendEmbed(this.config.officerChannelIds, false, embed)
   }
