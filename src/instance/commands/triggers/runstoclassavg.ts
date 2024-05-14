@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import type { SkyblockMember } from 'hypixel-api-reborn'
+import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfile, getUuidIfExists } from '../common/util.js'
+import { getUuidIfExists } from '../common/util.js'
 
 const FloorsBaseEXP = {
   m6: 105_000,
@@ -17,7 +16,7 @@ const DUNGEON_XP = [
   4.8e7, 6e7, 7.5e7, 9.3e7, 1.1625e8
 ]
 
-type ClassName = keyof SkyblockV2Dungeons['player_classes']
+type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
 
 export default class RunsToClassAvg extends ChatCommandHandler {
   constructor() {
@@ -30,7 +29,7 @@ export default class RunsToClassAvg extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const targetAvg = context.args[0] ? Number.parseInt(context.args[0], 10) : 50
+    const targetAverage = context.args[0] ? Number.parseInt(context.args[0], 10) : 50
     const givenUsername = context.args[1] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
@@ -43,52 +42,80 @@ export default class RunsToClassAvg extends ChatCommandHandler {
       return `Invalid floor selected: ${selectedFloor}`
     }
     const xpPerRun = FloorsBaseEXP[selectedFloor as keyof typeof FloorsBaseEXP]
-    const parsedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
 
-    const temporaryClassData = parsedProfile.dungeons.classes
-    let temporaryClassAvg = this.getClassAverage(temporaryClassData)
+    const parsedProfile = await context.app.hypixelApi
+      .getSkyblockProfiles(uuid, { raw: true })
+      .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
+    assert(parsedProfile)
 
-    let runs = 0
+    if (parsedProfile.dungeons.player_classes === undefined) {
+      return `${givenUsername} never played dungeons before?`
+    }
+
+    const heartOfGold = parsedProfile.essence?.perks?.heart_of_gold ?? 0
+    const unbridledRage = parsedProfile.essence?.perks?.unbridled_rage ?? 0
+    const coldEfficiency = parsedProfile.essence?.perks?.cold_efficiency ?? 0
+    const toxophilite = parsedProfile.essence?.perks?.toxophilite ?? 0
+    const diamondInTheRough = parsedProfile.essence?.perks?.diamond_in_the_rough ?? 0
+
+    const classExpBoosts = {
+      healer: (heartOfGold * 2) / 100 + 1,
+      berserk: (unbridledRage * 2) / 100 + 1,
+      mage: (coldEfficiency * 2) / 100 + 1,
+      archer: (toxophilite * 2) / 100 + 1,
+      tank: (diamondInTheRough * 2) / 100 + 1
+    } satisfies Record<ClassName, number>
+
+    let totalRuns = 0
     const runsDone = {
+      healer: 0,
       berserk: 0,
       mage: 0,
-      tank: 0,
+      archer: 0,
+      tank: 0
+    } as Record<ClassName, number>
+    const classesExperiences = {
       healer: 0,
-      archer: 0
-    } satisfies Record<ClassName, number>
+      berserk: 0,
+      mage: 0,
+      archer: 0,
+      tank: 0
+    } as Record<ClassName, number>
+
+    for (const [className, classObject] of Object.entries(parsedProfile.dungeons.player_classes)) {
+      classesExperiences[className as ClassName] = classObject?.experience ?? 0
+    }
+
+    let currentClassAverage = this.getClassAverage(classesExperiences)
     const classes = Object.keys(runsDone) as ClassName[]
 
-    while (temporaryClassAvg < targetAvg) {
-      runs++
-
-      let temporaryClassPlaying: undefined | ClassName
-      for (const c of classes) {
-        temporaryClassData[c].xp += xpPerRun * 0.25 // add the "passive" exp
-        if (!temporaryClassPlaying || temporaryClassData[c].xp < temporaryClassData[temporaryClassPlaying].xp) {
-          temporaryClassPlaying = c
+    while (currentClassAverage < targetAverage) {
+      let currentClassPlaying: undefined | ClassName = undefined
+      for (const key of classes) {
+        classesExperiences[key] += xpPerRun * 0.25 * classExpBoosts[key]
+        if (currentClassPlaying === undefined || classesExperiences[key] < classesExperiences[currentClassPlaying]) {
+          currentClassPlaying = key
         }
       }
 
-      temporaryClassData[temporaryClassPlaying!].xp += xpPerRun * 0.75 // add the "active" exp
+      assert(currentClassPlaying)
+      classesExperiences[currentClassPlaying] += xpPerRun * 0.75 * classExpBoosts[currentClassPlaying]
+      runsDone[currentClassPlaying]++
 
-      runsDone[temporaryClassPlaying!]++
+      currentClassAverage = this.getClassAverage(classesExperiences)
+      totalRuns++
 
-      temporaryClassAvg = this.getClassAverage(temporaryClassData) // update the current temp class avg
-
-      if (runs > 15_000) {
-        return `${givenUsername} needs more than 15,000 runs to reach the average class level of ${targetAvg}.`
+      if (totalRuns > 15_000) {
+        return `${givenUsername} needs more than 15,000 runs to reach the average class level of ${targetAverage}.`
       }
     }
 
-    return `${givenUsername} is ${runs} ${selectedFloor.toUpperCase()} away from c.a. ${targetAvg}: ${classes.map((c) => `${c}: ${runsDone[c]}`).join(', ')}`
+    return `${givenUsername} is ${totalRuns} ${selectedFloor.toUpperCase()} away from c.a. ${targetAverage}: ${classes.map((c) => `${c}: ${runsDone[c]}`).join(', ')}`
   }
 
-  private getClassAverage(classData: SkyblockMember['dungeons']['classes']): number {
-    return (
-      Object.values(classData)
-        .map((c) => this.getLevelWithOverflow(c.xp, c.level, c.progress))
-        .reduce((a, b) => a + b, 0) / Object.keys(classData).length
-    )
+  private getClassAverage(classData: Record<string, number>): number {
+    const classesXp = Object.values(classData)
+    return classesXp.map((xp) => this.getLevelWithOverflow(xp)).reduce((a, b) => a + b, 0) / classesXp.length
   }
 
   private getLevelWithOverflow(experience: number): number {
