@@ -199,7 +199,7 @@ function formatBody(results: ChatTriggerResult): string {
     message += `> ${escapeDiscord(results.message[0])}`
     return message
   } else {
-    message += `**Multiple responses have been detected but cannot tell which belong to this command::**\n`
+    message += `**Multiple responses have been detected but cannot tell which belong to this command:**\n`
     message += '```' + results.message.join('\n') + '```'
     return message
   }
