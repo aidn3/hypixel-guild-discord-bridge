@@ -8,8 +8,6 @@ import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { shutdownApplication } from './src/util/shared-util.js'
 
-import { ChannelType, InstanceType } from 'src/common/application-event'
-
 console.log('Loading Logger...')
 // eslint-disable-next-line import/no-named-as-default-member
 const logger = log4js.configure(logConfig).getLogger('Main')
@@ -42,16 +40,6 @@ app.on('*', (name, event) => {
 try {
   await app.sendConnectSignal()
   logger.info('App is connected')
-  app.emit('chat', {
-    localEvent: true,
-    instanceType: InstanceType.MAIN,
-    instanceName: InstanceType.MAIN,
-    username: 'shiningshadow777',
-    message: '!rtca 55',
-    channelType: ChannelType.PUBLIC,
-    replyUsername: undefined,
-    channelId: undefined
-  })
 } catch (error: unknown) {
   logger.fatal(error)
   logger.fatal('stopping the process for the controller to restart this node...')
