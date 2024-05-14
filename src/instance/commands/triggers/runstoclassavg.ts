@@ -23,13 +23,13 @@ export default class RunsToClassAvg extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    const targetAvg = context.args[0] ? Number.parseInt(context.args[0], 10) : 50
     const givenUsername = context.args[1] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) {
       return `No such username! (given: ${givenUsername})`
     }
-    const targetAvg = context.args[0] ? Number.parseInt(context.args[0], 10) : 50
 
     const selectedFloor = 'm7'.toLowerCase()
     if (!(selectedFloor in FloorsBaseEXP)) {
