@@ -31,7 +31,7 @@ export default class Calculate extends ChatCommandHandler {
 
     // The following if-statement is purely an Easter egg
     // It can be removed without causing any adverse affects on the bridge
-    if (result <= 50 && Math.random() < 0.2) {
+    if (result <= 50 && result >= -50 && Math.random() < 0.2) {
       return `${context.username} haiyaaaaaaaaa this is so easy, you're a disappointement *takes off slipper* (answer: ${result.toLocaleString()})`
     }
 
