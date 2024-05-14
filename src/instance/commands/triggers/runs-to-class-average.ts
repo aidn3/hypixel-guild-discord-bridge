@@ -18,7 +18,7 @@ const DUNGEON_XP = [
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
 
-export default class RunsToClassAvg extends ChatCommandHandler {
+export default class RunsToClassAverage extends ChatCommandHandler {
   constructor() {
     super({
       name: 'Runs to class average',
