@@ -18,7 +18,7 @@ export default class RunsToClassAvg extends ChatCommandHandler {
       name: 'Runs to class average',
       triggers: ['rtca'],
       description: 'Returns the number of runs needed to reach the average class level specified',
-      example: `rtca %i %s`
+      example: `rtca 50 Steve`
     })
   }
 
