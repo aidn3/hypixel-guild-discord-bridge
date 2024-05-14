@@ -25,6 +25,7 @@ import Runs from './triggers/runs.js'
 import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
+import Soopy from './triggers/soopy.js'
 import Toggle from './triggers/toggle.js'
 import Weight from './triggers/weight.js'
 
@@ -54,6 +55,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Secrets(),
       new Skills(),
       new Slayer(),
+      new Soopy(),
       new Toggle(),
       new Weight(),
       new Bits()
