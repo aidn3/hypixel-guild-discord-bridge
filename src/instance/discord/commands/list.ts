@@ -6,7 +6,7 @@ import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Severity, InstanceType } from '../../../common/application-event.js'
+import { InstanceType, Severity } from '../../../common/application-event.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
 import { escapeDiscord } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
@@ -105,7 +105,9 @@ async function look(mojangApi: MojangApi, hypixelApi: Client, members: string[])
   onlineProfiles.resolved.sort((a, b) => a.name.localeCompare(b.name))
   onlineProfiles.failed.sort((a, b) => a.localeCompare(b))
 
-  const statuses = await Promise.all(onlineProfiles.resolved.map((profile) => hypixelApi.getStatus(profile.id)))
+  const statuses: (Status | undefined)[] = await Promise.all(
+    onlineProfiles.resolved.map((profile) => hypixelApi.getStatus(profile.id).catch(() => undefined))
+  )
 
   const list = []
   for (const [index, onlineProfile] of onlineProfiles.resolved.entries()) {
