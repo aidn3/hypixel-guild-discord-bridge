@@ -75,8 +75,7 @@ export interface ApplicationEvents {
   statusMessage: (event: StatusMessageEvent) => void
 
   /**
-   * Reports an IN-GAME occurence of a profanity filtering that occured.
-   * This only applies to messages sent in game by players
+   * Reports an occurence of a profanity filtering that occured.
    */
   profanityWarning: (event: ProfanityWarningEvent) => void
 }
