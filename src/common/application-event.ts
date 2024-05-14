@@ -184,7 +184,7 @@ export enum EventType {
    */
   AUTOMATED = 'automated',
   /**
-   * When a player is reqeusting to join a guild
+   * When a player is requesting to join a guild
    */
   REQUEST = 'request',
   /**
