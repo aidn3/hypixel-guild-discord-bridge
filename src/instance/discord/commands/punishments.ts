@@ -230,7 +230,7 @@ async function handleMuteAddInteraction(
   }
 
   application.punishedUsers.punish(event)
-  const command = `/guild mute ${username} ${PunishedUsers.tillTimeToMinecraftDuration(punishTill)}`
+  const command = `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(muteDuration)}`
 
   const result = await checkChatTriggers(application, MUTE_CHAT, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Mute ${escapeDiscord(username)}`)
