@@ -48,7 +48,7 @@ export class PunishedUsers {
     ) as string[]
 
     const modifiedList = originalList.filter(
-      (punishment) => punishment.till < currentTime && !this.matchIdentifier(punishment, identifiers)
+      (punishment) => punishment.till < currentTime || !this.matchIdentifier(punishment, identifiers)
     )
 
     modifiedList.push(event)
@@ -123,16 +123,23 @@ export class PunishedUsers {
     return identifiers
   }
 
-  static tillTimeToMinecraftDuration(till: number): string {
+  /**
+   * Convert duration number to a duration with prefix
+   * @param duration time in milliseconds
+   * @return a duration with prefix capped at 1 month. Result always 60 or bigger.
+   */
+  static durationToMinecraftDuration(duration: number): string {
     // 30 day in seconds
     // Max allowed duration in minecraft. It is a hard limit from server side
     const MAX_DURATION = 2_592_000
+    // 1 minute in seconds. hard limit too
+    const MIN_DURATION = 60
     const PREFIX = 's' // for "seconds"
 
-    const currentTime = Date.now()
-    const remainingTime = till - currentTime
-    return `${Math.min(MAX_DURATION, Math.floor(remainingTime / 1000))}${PREFIX}`
+    const max_time = Math.min(MAX_DURATION, Math.floor(duration / 1000))
+    return `${Math.max(max_time, MIN_DURATION)}${PREFIX}`
   }
+
   private loadFromConfig(): void {
     if (!fs.existsSync(this.configFilePath)) return
 

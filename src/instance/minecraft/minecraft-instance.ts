@@ -145,7 +145,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
   /*
    * Used to create special minecraft data.
    * Main purpose is to receive signed chat messages
-   * and be able to format them based on how the server deems it
+   * and to be able to format them based on how the server decides
    */
   private listenForRegistry(client: Client): void {
     // 1.20.2+

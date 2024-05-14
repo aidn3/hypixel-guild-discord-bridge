@@ -14,7 +14,7 @@ const MESSAGES = [
   'The verdict has been given and will not be repeated!',
   'Not saying it twice, bro!',
   'Oh no, I tried to send same message but Hypixel is annoying and blocked me!',
-  "Oni-chan, you are big meanie. Don't block my message even if it's repeated!"
+  "Onii-chan, you are big meanie. Don't block my message even if it's repeated!"
 ]
 
 let lastWarning = 0

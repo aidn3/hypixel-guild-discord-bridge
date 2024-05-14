@@ -1,5 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { escapeDiscord } from '../../../util/shared-util.js'
+import { checkChatTriggers, formatChatTriggerResponse, RANK_CHAT } from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 
@@ -23,7 +25,10 @@ export default {
     const username: string = context.interaction.options.getString('username', true)
     const rank: string = context.interaction.options.getString('rank', true)
 
-    context.application.clusterHelper.sendCommandToAllMinecraft(`/g setrank ${username} ${rank}`)
-    await context.interaction.editReply(`Command sent to setrank ${username} to ${rank}!`)
+    const command = `/g setrank ${username} ${rank}`
+    const result = await checkChatTriggers(context.application, RANK_CHAT, undefined, command, username)
+    const formatted = formatChatTriggerResponse(result, `Setrank ${escapeDiscord(username)}`)
+
+    await context.interaction.editReply({ embeds: [formatted] })
   }
 } satisfies CommandInterface
