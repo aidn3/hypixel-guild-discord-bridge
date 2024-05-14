@@ -5,8 +5,8 @@ import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'disco
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event.js'
-import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event.js'
+import type { ChatEvent, ClientEvent, CommandEvent, InstanceEvent } from '../../common/application-event.js'
+import { ChannelType, EventType, InstanceType, Severity } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
