@@ -34,10 +34,24 @@ declare module 'hypixel-api-reborn' {
       }
     }
     slayer: SlayerProfile
+    essence?: SkyblockV2Essence
+  }
+
+  export interface SkyblockV2Essence {
+    perks?: SkyblockV2EssencePerks
+  }
+
+  export interface SkyblockV2EssencePerks {
+    cold_efficiency?: number
+    heart_of_gold?: number
+    diamond_in_the_rough?: number
+    toxophilite?: number
+    unbridled_rage?: number
   }
 
   export interface SkyblockV2Dungeons {
     dungeon_types: SkyblockV2DungeonsTypes
+    player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockV2DungeonsClass | undefined>
   }
 
   export interface SkyblockV2DungeonsTypes {
@@ -52,6 +66,10 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2DungeonsMasterCatacombs {
     tier_completions: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+  }
+
+  export interface SkyblockV2DungeonsClass {
+    experience?: number
   }
 
   export interface SlayerProfile {
