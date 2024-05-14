@@ -29,7 +29,7 @@ export default class Calculate extends ChatCommandHandler {
 
     const result = evalExpression(expression)
     if (result <= 50 && Math.random() < 0.2) {
-      return `${context.username} haiyaaaaaaaaa this is so easy, you're a disappointement *takes off slipper* (answer is ${result.toLocaleString()})`
+      return `${context.username} haiyaaaaaaaaa this is so easy, you're a disappointement *takes off slipper* (answer: ${result.toLocaleString()})`
     }
     return `${context.username}, answer: ${result.toLocaleString()}`
   }
