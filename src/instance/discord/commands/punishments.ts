@@ -174,7 +174,7 @@ async function handleBanAddInteraction(
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
   const noUuidCheck = interaction.options.getBoolean('no-uuid') ?? false
 
-  const punishTill = Date.now() + getDuration(duration) * 1000
+  const punishDuration = getDuration(duration) * 1000
   const userIdentifiers = await findAboutUser(application.mojangApi, interaction, username, noDiscordCheck, noUuidCheck)
 
   const event: PunishmentAddEvent = {
@@ -188,7 +188,7 @@ async function handleBanAddInteraction(
 
     type: PunishmentType.BAN,
     reason: reason,
-    till: punishTill
+    till: Date.now() + punishDuration
   }
 
   application.punishedUsers.punish(event)
@@ -212,7 +212,7 @@ async function handleMuteAddInteraction(
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
   const noUuidCheck = interaction.options.getBoolean('no-uuid') ?? false
 
-  const punishTill = Date.now() + getDuration(duration) * 1000
+  const muteDuration = getDuration(duration) * 1000
   const userIdentifiers = await findAboutUser(application.mojangApi, interaction, username, noDiscordCheck, noUuidCheck)
 
   const event: PunishmentAddEvent = {
@@ -226,11 +226,11 @@ async function handleMuteAddInteraction(
 
     type: PunishmentType.MUTE,
     reason: reason,
-    till: punishTill
+    till: Date.now() + muteDuration
   }
 
   application.punishedUsers.punish(event)
-  const command = `/guild mute ${username} ${PunishedUsers.tillTimeToMinecraftDuration(punishTill)}`
+  const command = `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(muteDuration)}`
 
   const result = await checkChatTriggers(application, MUTE_CHAT, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Mute ${escapeDiscord(username)}`)

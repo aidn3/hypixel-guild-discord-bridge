@@ -58,7 +58,7 @@ function checkMuted(
 
   if (mutedTill) {
     clusterHelper.sendCommandToAllMinecraft(
-      `/guild mute ${username} ${PunishedUsers.tillTimeToMinecraftDuration(mutedTill)}`
+      `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(mutedTill - Date.now())}`
     )
   }
 }
