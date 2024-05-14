@@ -97,7 +97,7 @@ export default class Soopy extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     const commandName = context.args[0]
-    const commandArguments = context.args.length > 1 ? context.args.slice(0, -1) : []
+    const commandArguments = context.args.length > 1 ? context.args.slice(1, context.args.length) : []
 
     const fullCommand = `${commandName} ${commandArguments.join(' ')}`
 
