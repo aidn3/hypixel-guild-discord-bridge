@@ -107,7 +107,7 @@ export default class Soopy extends ChatCommandHandler {
 
     const cachedResult = this.cache.get(fullCommand)
     if (cachedResult) {
-      return this.formatResponse(context.username, cachedResult as string)
+      return Soopy.formatResponse(context.username, cachedResult as string)
     }
 
     try {
@@ -116,14 +116,14 @@ export default class Soopy extends ChatCommandHandler {
         .then((response: AxiosResponse<string, unknown>) => response.data)
 
       this.cache.set(fullCommand, result)
-      return this.formatResponse(context.username, result)
+      return Soopy.formatResponse(context.username, result)
     } catch (error: unknown) {
       context.logger.error(error)
       return `${context.username}, Error while talking to Soopy API.`
     }
   }
 
-  private formatResponse(username: string, result: string): string {
+  private static formatResponse(username: string, result: string): string {
     return `${username} Soopy: ${result}`
   }
 }
