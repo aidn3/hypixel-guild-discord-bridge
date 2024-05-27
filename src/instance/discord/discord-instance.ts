@@ -13,9 +13,11 @@ import { escapeDiscord } from '../../util/shared-util.js'
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
 import StateHandler from './handlers/state-handler.js'
+import StatusHandler from './handlers/status-handler.js'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly stateHandler: StateHandler
+  private readonly statusHandler: StatusHandler
   private readonly chatManager: ChatManager
   readonly commandsManager: CommandManager
   readonly client: Client
@@ -38,6 +40,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
 
     this.stateHandler = new StateHandler(this)
+    this.statusHandler = new StatusHandler(this)
     this.chatManager = new ChatManager(this)
     this.commandsManager = new CommandManager(this)
 
@@ -77,6 +80,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     this.connected = true
 
     this.stateHandler.registerEvents()
+    this.statusHandler.registerEvents()
     this.chatManager.registerEvents()
     this.commandsManager.registerEvents()
 
