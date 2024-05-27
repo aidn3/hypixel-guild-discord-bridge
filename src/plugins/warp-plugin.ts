@@ -134,6 +134,8 @@ async function awaitPartyStatus(
 
     app.on('minecraftChat', chatListener)
     app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/party invite ${username}`)
+    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/party disband`)
+    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/party invite ${username}`)
   })
 }
 
