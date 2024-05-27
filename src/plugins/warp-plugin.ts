@@ -105,7 +105,7 @@ async function awaitPartyStatus(
     const timeoutId = setTimeout(() => {
       app.removeListener('minecraftChat', chatListener)
       resolve("Player didn't accept the invite.")
-    }, 10_000)
+    }, 30_000)
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
       if (event.instanceName !== minecraftInstanceName) return
