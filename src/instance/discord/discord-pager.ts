@@ -56,40 +56,42 @@ export async function interactivePaging(
       time: duration
     })
 
-    nextInteraction.on('collect', async (index: ButtonInteraction) => {
-      await index.deferUpdate()
-      lastUpdate = await fetch(++currentPage)
-      if (lastUpdate.embed === undefined) {
-        await interaction.editReply({ embeds: [NO_EMBED] })
-        return
-      }
+    nextInteraction.on('collect', (index: ButtonInteraction) => {
+      void index.deferUpdate().then(async () => {
+        lastUpdate = await fetch(++currentPage)
+        if (lastUpdate.embed === undefined) {
+          await interaction.editReply({ embeds: [NO_EMBED] })
+          return
+        }
 
-      await index.editReply({
-        embeds: [lastUpdate.embed],
-        components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+        await index.editReply({
+          embeds: [lastUpdate.embed],
+          components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+        })
       })
     })
-    backInteraction.on('collect', async (index: ButtonInteraction) => {
-      await index.deferUpdate()
-      lastUpdate = await fetch(--currentPage)
-      if (lastUpdate.embed === undefined) {
-        await interaction.editReply({ embeds: [NO_EMBED] })
-        return
-      }
+    backInteraction.on('collect', (index: ButtonInteraction) => {
+      void index.deferUpdate().then(async () => {
+        lastUpdate = await fetch(--currentPage)
+        if (lastUpdate.embed === undefined) {
+          await interaction.editReply({ embeds: [NO_EMBED] })
+          return
+        }
 
-      await index.editReply({
-        embeds: [lastUpdate.embed],
-        components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+        await index.editReply({
+          embeds: [lastUpdate.embed],
+          components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+        })
       })
     })
 
-    nextInteraction.on('end', async () => {
+    nextInteraction.on('end', () => {
       if (lastUpdate.embed === undefined) {
-        await interaction.editReply({ embeds: [NO_EMBED] })
+        void interaction.editReply({ embeds: [NO_EMBED] })
         return
       }
 
-      await interaction.editReply({
+      void interaction.editReply({
         embeds: [lastUpdate.embed],
         components: []
       })
