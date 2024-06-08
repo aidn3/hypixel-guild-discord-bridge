@@ -57,7 +57,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
-      cacheTime: 300
+      mojangCacheTime: 300,
+      hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
     this.punishedUsers = new PunishedUsers(this)
