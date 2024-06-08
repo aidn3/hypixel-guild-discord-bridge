@@ -10,7 +10,6 @@
   "scripts": {
     "start": "node --import tsx/esm index.ts",
     "generate": "npx ts-interface-builder src/application-config.ts src/common/application-event.ts",
-    "postinstall": "patch-package",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --import tsx/esm index.ts test-run",
@@ -62,7 +61,6 @@
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-require-extensions": "^0.1.3",
     "eslint-plugin-unicorn": "^51.0.1",
-    "patch-package": "^8.0.0",
     "prettier": "^3.0.3",
     "prismarine-nbt": "^2.5.0",
     "ts-interface-builder": "^0.3.3",
