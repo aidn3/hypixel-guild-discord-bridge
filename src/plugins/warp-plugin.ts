@@ -48,6 +48,8 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
 
 async function warpPlayer(app: Application, minecraftInstanceName: string, username: string): Promise<string> {
   disableLimboTrapping = true
+  //send message in guild chat
+    app.clusterHelper.sendCommandToAllMinecraft(`/gc Attempting to warp ${username}! @${Math.random().toString(36).substring(2, 8)}`)
 
   // exit limbo and go to main lobby. Can't warp from limbo
   app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/lobby')
