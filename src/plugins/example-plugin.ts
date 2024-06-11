@@ -10,6 +10,6 @@ export default {
   onRun(context: PluginContext): void {
     context.logger.info('Running on plugin')
     // do something e.g:
-    // app.ClusterHelper.sendCommandToAllMinecraft("hello there!")
+    // app.clusterHelper.sendCommandToAllMinecraft("hello there!")
   }
 } satisfies PluginInterface
