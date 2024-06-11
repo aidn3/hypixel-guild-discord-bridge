@@ -5,8 +5,8 @@ import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import type { ChatCommandContext } from '../instance/commands/common/command-interface.js'
 import { ChatCommandHandler } from '../instance/commands/common/command-interface.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
-import { sleep } from '../util/shared-util.js'
-import { antiSpamString } from '../util/shared-util.js'
+import { sleep, antiSpamString } from '../util/shared-util.js'
+
 let disableLimboTrapping = false
 
 /* NOTICE
@@ -49,7 +49,7 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
 async function warpPlayer(app: Application, minecraftInstanceName: string, username: string): Promise<string> {
   disableLimboTrapping = true
   //send message in guild chat
-    app.clusterHelper.sendCommandToAllMinecraft(`/gc Attempting to warp ${username}! @${antiSpamString()}`)
+  app.clusterHelper.sendCommandToAllMinecraft(`/gc Attempting to warp ${username}! @${antiSpamString()}`)
 
   // exit limbo and go to main lobby. Can't warp from limbo
   app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/lobby')
