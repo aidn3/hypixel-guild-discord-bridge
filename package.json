@@ -46,7 +46,7 @@
     "tiny-typed-emitter": "^2.1.0",
     "ts-interface-checker": "^1.0.2",
     "tsx": "^4.7.2",
-    "ws": "^8.16.0",
+    "ws": "^8.17.1",
     "yaml": "^2.2.2"
   },
   "devDependencies": {
