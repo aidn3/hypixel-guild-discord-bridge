@@ -54,6 +54,7 @@ export const SignalEvent = t.iface(["BaseEvent"], {
 export const ChatEvent = t.iface(["InformEvent"], {
   "channelType": "ChannelType",
   "channelId": t.union("string", "undefined"),
+  "userId": t.union("number", "undefined"),
   "username": "string",
   "replyUsername": t.union("string", "undefined"),
   "message": "string",

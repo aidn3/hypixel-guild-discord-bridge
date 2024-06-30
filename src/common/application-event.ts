@@ -159,6 +159,10 @@ export interface ChatEvent extends InformEvent {
    */
   readonly channelId: string | undefined
   /**
+   * The discord id of the message sender if exists
+   */
+  readonly userId: number | undefined
+  /**
    * The name of the message sender
    */
   readonly username: string
