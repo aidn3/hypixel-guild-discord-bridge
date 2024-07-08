@@ -96,7 +96,8 @@ export const INVITE_ACCEPT_CHAT: RegexChat = {
     /^You cannot invite this player to your guild!/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in another guild!/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in your guild!/,
-    /^Already in a guild!/
+    /^Already in a guild!/,
+    /^Your guild is full!/
   ]
 }
 
