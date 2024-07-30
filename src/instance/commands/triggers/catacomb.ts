@@ -8,7 +8,7 @@ export default class Catacomb extends ChatCommandHandler {
   constructor() {
     super({
       name: 'Catacombs',
-      triggers: ['catacomb', 'cata'],
+      triggers: ['catacomb', 'catacombs', 'cata'],
       description: "Returns a player's catacombs level",
       example: `cata %s`
     })
