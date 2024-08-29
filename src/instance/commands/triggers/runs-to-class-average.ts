@@ -2,19 +2,12 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getUuidIfExists } from '../common/util.js'
+import { getDungeonLevelWithOverflow, getUuidIfExists } from '../common/util.js'
 
 const FloorsBaseEXP = {
   m6: 105_000,
   m7: 340_000
 }
-
-const DUNGEON_XP = [
-  50, 75, 110, 160, 230, 330, 470, 670, 950, 1340, 1890, 2665, 3760, 5260, 7380, 10_300, 14_400, 20_000, 27_600, 38_000,
-  52_500, 71_500, 97_000, 132_000, 180_000, 243_000, 328_000, 445_000, 600_000, 800_000, 1_065_000, 1_410_000,
-  1_900_000, 2_500_000, 3_300_000, 4_300_000, 5_600_000, 7_200_000, 9_200_000, 1.2e7, 1.5e7, 1.9e7, 2.4e7, 3e7, 3.8e7,
-  4.8e7, 6e7, 7.5e7, 9.3e7, 1.1625e8
-]
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
 
@@ -115,35 +108,6 @@ export default class RunsToClassAverage extends ChatCommandHandler {
 
   private getClassAverage(classData: Record<string, number>): number {
     const classesXp = Object.values(classData)
-    return classesXp.map((xp) => this.getLevelWithOverflow(xp)).reduce((a, b) => a + b, 0) / classesXp.length
-  }
-
-  private getLevelWithOverflow(experience: number): number {
-    const PER_LEVEL = 200_000_000
-    const MAX_50_XP = 569_809_640
-
-    if (experience > MAX_50_XP) {
-      // account for overflow
-      const remainingExperience = experience - MAX_50_XP
-      const extraLevels = Math.floor(remainingExperience / PER_LEVEL)
-      const fractionLevel = (remainingExperience % PER_LEVEL) / PER_LEVEL
-
-      return 50 + extraLevels + fractionLevel
-    }
-
-    let totalLevel = 0
-    let remainingXP = experience
-
-    for (const [index, levelXp] of DUNGEON_XP.entries()) {
-      if (remainingXP > levelXp) {
-        totalLevel = index + 1
-        remainingXP -= levelXp
-      } else {
-        break
-      }
-    }
-
-    const fractionLevel = remainingXP / DUNGEON_XP[totalLevel]
-    return totalLevel + fractionLevel
+    return classesXp.map((xp) => getDungeonLevelWithOverflow(xp)).reduce((a, b) => a + b, 0) / classesXp.length
   }
 }
