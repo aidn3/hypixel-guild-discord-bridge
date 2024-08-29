@@ -43,9 +43,7 @@ export class PunishedUsers {
 
     const originalList = this.punishmentsRecord[event.type]
     const currentTime = Date.now()
-    const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter(
-      (id) => id !== undefined
-    ) as string[]
+    const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter((id) => id !== undefined)
 
     const modifiedList = originalList.filter(
       (punishment) => punishment.till < currentTime || !this.matchIdentifier(punishment, identifiers)

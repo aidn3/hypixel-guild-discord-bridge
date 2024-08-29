@@ -154,7 +154,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           }
         }
 
-        return command.handler(commandContext)
+        await command.handler(commandContext)
+        return
       } else {
         this.clientInstance.logger.debug('No permission to execute this command')
 
