@@ -111,6 +111,9 @@ Breaking changes:
 These commands can be executed from any chat channel the bridge can see.
 This includes guild/officer chat as well as private `/msg` and direct messaging channels.
 
+Most [Soopy commands](https://soopy.dev/commands) are supported and can be used by executing `!soopy rtca`.
+A shorter version can also be used: `!- rtca`
+
 | Command      | Description                                                | Permission |
 | ------------ | ---------------------------------------------------------- | ---------- |
 | !8ball       | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
