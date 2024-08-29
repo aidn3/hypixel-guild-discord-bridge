@@ -310,7 +310,7 @@ All configurations will be in `config.yaml` under `socket` section.
 
 ## Credits
 
-- The Project is inspired
-  by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- The Project is inspired by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- [Soopyboo32](https://github.com/Soopyboo32) for providing [an awesome command API](https://soopy.dev/commands)
 - Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches
 - All contributors whether by code, ideas/suggestions or testing
