@@ -1,4 +1,5 @@
 import { InstanceType } from '../../../common/application-event.js'
+import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
@@ -25,6 +26,14 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         instanceType: InstanceType.MINECRAFT,
         message:
           'Error: does the account own minecraft? changing skin (and deleting cache) and reconnecting might help fix the problem.'
+      })
+    } else if (error.message.includes('Profile not found')) {
+      this.clientInstance.status = Status.FAILED
+      this.clientInstance.app.emit('statusMessage', {
+        localEvent: true,
+        instanceName: this.clientInstance.instanceName,
+        instanceType: InstanceType.MINECRAFT,
+        message: 'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
       })
     }
   }
