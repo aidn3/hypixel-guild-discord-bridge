@@ -134,14 +134,51 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       }
     }
 
-    let channels: string[]
-    if (event.channelType === ChannelType.PUBLIC) {
-      channels = this.config.publicChannelIds
-    } else if (event.channelType === ChannelType.OFFICER) {
-      channels = this.config.officerChannelIds
-    } else {
-      return
+    const channels: string[] = []
+
+    switch (event.eventType) {
+      case EventType.AUTOMATED: {
+        if (event.channelType === ChannelType.PUBLIC) {
+          channels.push(...this.config.publicChannelIds)
+        } else if (event.channelType === ChannelType.OFFICER) {
+          channels.push(...this.config.officerChannelIds)
+        } else {
+          return
+        }
+        break
+      }
+
+      case EventType.REQUEST:
+      case EventType.JOIN:
+      case EventType.LEAVE:
+      case EventType.KICK:
+      case EventType.PROMOTE:
+      case EventType.DEMOTE: {
+        channels.push(...this.config.publicChannelIds, ...this.config.officerChannelIds)
+        break
+      }
+
+      case EventType.MUTE:
+      case EventType.UNMUTE: {
+        channels.push(...this.config.officerChannelIds)
+        break
+      }
+
+      case EventType.BLOCK:
+      case EventType.MUTED:
+      case EventType.OFFLINE:
+      case EventType.ONLINE:
+      case EventType.QUEST:
+      case EventType.REPEAT: {
+        channels.push(...this.config.publicChannelIds)
+        break
+      }
+
+      default: {
+        return
+      }
     }
+
     const embed = {
       description: escapeDiscord(event.message),
 
