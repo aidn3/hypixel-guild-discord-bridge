@@ -292,7 +292,7 @@ async function handleForgiveInteraction(
     noDiscordCheck,
     noUuidCheck
   )
-  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined) as string[]
+  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
   const forgivenPunishments = application.punishedUsers.forgive({
     localEvent: true,
@@ -341,7 +341,7 @@ async function handleCheckInteraction(
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const userResolvedData = await findAboutUser(application.mojangApi, interaction, username, false, false)
-  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined) as string[]
+  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
   const activePunishments = application.punishedUsers.findPunishmentsByUser(userIdentifiers)
 

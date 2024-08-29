@@ -20,7 +20,7 @@ export class MojangApi {
   async profilesByUsername(usernames: string[]): Promise<MojangProfile[]> {
     const partialResult = usernames
       .map((username) => this.cache.get<MojangProfile>(username.toLowerCase()))
-      .filter((entry) => entry !== undefined) as MojangProfile[]
+      .filter((entry) => entry !== undefined)
 
     const leftUsernames = usernames.filter(
       (username) => !partialResult.some((result) => username.toLowerCase() === result.name.toLowerCase())

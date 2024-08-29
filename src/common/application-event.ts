@@ -7,7 +7,7 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  '*': <T extends BaseEvent>(name: string, event: T) => void
+  '*': (name: string, event: BaseEvent) => void
 
   /**
    * User sending messages

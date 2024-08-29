@@ -59,6 +59,8 @@ export default class ServerSocket {
     }
 
     this.socketServer.handleUpgrade(request, socket, head, (ws) => {
+      // @ts-expect-error emit() is officially documented in the docs but not in type declaration
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       this.socketServer.emit('connection', ws, request)
     })
   }

@@ -15,9 +15,7 @@ THIS PLUGIN IS INCOMPATIBLE WITH `limbo-plugin`. DISABLE ONE BEFORE ENABLING THE
 */
 export default {
   onRun(context: PluginContext): void {
-    const minecraftInstances = context.localInstances.filter(
-      (instance) => instance instanceof MinecraftInstance
-    ) as MinecraftInstance[]
+    const minecraftInstances = context.localInstances.filter((instance) => instance instanceof MinecraftInstance)
 
     if (context.addChatCommand) context.addChatCommand(new WarpCommand(minecraftInstances))
 

@@ -5,7 +5,7 @@ import * as t from "ts-interface-checker";
 // tslint:disable:object-literal-key-quotes
 
 export const ApplicationEvents = t.iface([], {
-  "*": t.func("void", t.param("name", "string"), t.param("event", "T")),
+  "*": t.func("void", t.param("name", "string"), t.param("event", "BaseEvent")),
   "chat": t.func("void", t.param("event", "ChatEvent")),
   "event": t.func("void", t.param("event", "ClientEvent")),
   "command": t.func("void", t.param("event", "CommandEvent")),
