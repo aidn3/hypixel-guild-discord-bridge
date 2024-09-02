@@ -75,7 +75,7 @@ export interface ApplicationEvents {
   statusMessage: (event: StatusMessageEvent) => void
 
   /**
-   * Reports an occurence of a profanity filtering that occured.
+   * Reports an occurrence of a profanity filtering that occurred.
    */
   profanityWarning: (event: ProfanityWarningEvent) => void
 }
