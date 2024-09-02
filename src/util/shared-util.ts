@@ -1,4 +1,4 @@
-import type { BadWords } from 'bad-words'
+import type { Filter } from 'bad-words'
 import log4js from 'log4js'
 
 export function sufficeToTime(suffice: string): number {
@@ -67,7 +67,7 @@ export const escapeDiscord = function (message: string): string {
 
 export function filterProfanity(
   playerMessage: string,
-  profanityFilter: BadWords
+  profanityFilter: Filter
 ): { filteredMessage: string; changed: boolean } {
   let filtered: string
   try {
