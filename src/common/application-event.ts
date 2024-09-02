@@ -7,7 +7,7 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  '*': <T extends BaseEvent>(name: string, event: T) => void
+  '*': (name: string, event: BaseEvent) => void
 
   /**
    * User sending messages
@@ -211,7 +211,7 @@ export enum EventType {
    */
   AUTOMATED = 'automated',
   /**
-   * When a player is reqeusting to join a guild
+   * When a player is requesting to join a guild
    */
   REQUEST = 'request',
   /**

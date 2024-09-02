@@ -93,3 +93,5 @@ plugins:
   - './src/plugins/starfall-cult-plugin.ts'
   - './src/plugins/punishment-plugin.ts'
   - './src/plugins/auto-restart-plugin.ts'
+# Only enable after disabling limbo-plugin
+#  - './src/plugins/warp-plugin.ts'

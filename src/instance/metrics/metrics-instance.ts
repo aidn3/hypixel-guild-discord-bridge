@@ -1,5 +1,4 @@
 import http from 'node:http'
-import url from 'node:url'
 
 import { HttpStatusCode } from 'axios'
 import * as Client from 'prom-client'
@@ -50,7 +49,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
         return
       }
 
-      const route = url.parse(request.url).pathname
+      const route = request.url.split('?')[0]
       if (route === '/metrics') {
         this.logger.debug('Metrics scrap is called on /metrics')
         response.setHeader('Content-Type', this.register.contentType)

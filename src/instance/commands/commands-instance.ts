@@ -20,10 +20,12 @@ import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
+import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
+import Soopy from './triggers/soopy.js'
 import Toggle from './triggers/toggle.js'
 import Weight from './triggers/weight.js'
 
@@ -37,6 +39,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new EightBallCommand(),
       new Calculate(),
       new Catacomb(),
+      new RunsToClassAverage(),
       new DarkAuction(),
       new Explain(),
       new Guild(),
@@ -52,6 +55,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Secrets(),
       new Skills(),
       new Slayer(),
+      new Soopy(),
       new Toggle(),
       new Weight(),
       new Bits()

@@ -19,9 +19,11 @@ import { escapeDiscord } from '../../util/shared-util.js'
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
 import StateHandler from './handlers/state-handler.js'
+import StatusHandler from './handlers/status-handler.js'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly stateHandler: StateHandler
+  private readonly statusHandler: StatusHandler
   private readonly chatManager: ChatManager
   readonly commandsManager: CommandManager
   readonly client: Client
@@ -44,6 +46,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
 
     this.stateHandler = new StateHandler(this)
+    this.statusHandler = new StatusHandler(this)
     this.chatManager = new ChatManager(this)
     this.commandsManager = new CommandManager(this)
 
@@ -86,6 +89,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     this.connected = true
 
     this.stateHandler.registerEvents()
+    this.statusHandler.registerEvents()
     this.chatManager.registerEvents()
     this.commandsManager.registerEvents()
 
@@ -139,14 +143,51 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       }
     }
 
-    let channels: string[]
-    if (event.channelType === ChannelType.PUBLIC) {
-      channels = this.config.publicChannelIds
-    } else if (event.channelType === ChannelType.OFFICER) {
-      channels = this.config.officerChannelIds
-    } else {
-      return
+    const channels: string[] = []
+
+    switch (event.eventType) {
+      case EventType.AUTOMATED: {
+        if (event.channelType === ChannelType.PUBLIC) {
+          channels.push(...this.config.publicChannelIds)
+        } else if (event.channelType === ChannelType.OFFICER) {
+          channels.push(...this.config.officerChannelIds)
+        } else {
+          return
+        }
+        break
+      }
+
+      case EventType.REQUEST:
+      case EventType.JOIN:
+      case EventType.LEAVE:
+      case EventType.KICK:
+      case EventType.PROMOTE:
+      case EventType.DEMOTE: {
+        channels.push(...this.config.publicChannelIds, ...this.config.officerChannelIds)
+        break
+      }
+
+      case EventType.MUTE:
+      case EventType.UNMUTE: {
+        channels.push(...this.config.officerChannelIds)
+        break
+      }
+
+      case EventType.BLOCK:
+      case EventType.MUTED:
+      case EventType.OFFLINE:
+      case EventType.ONLINE:
+      case EventType.QUEST:
+      case EventType.REPEAT: {
+        channels.push(...this.config.publicChannelIds)
+        break
+      }
+
+      default: {
+        return
+      }
     }
+
     const embed = {
       description: escapeDiscord(event.message),
 

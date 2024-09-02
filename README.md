@@ -111,28 +111,34 @@ Breaking changes:
 These commands can be executed from any chat channel the bridge can see.
 This includes guild/officer chat as well as private `/msg` and direct messaging channels.
 
-| Command      | Description                                     | Permission |
-| ------------ | ----------------------------------------------- | ---------- |
-| !calculate   | Calculate a math expression: `!calculate 1+2*3` | Anyone     |
-| !catacomb    | Get a player's catacombs and class level        | Anyone     |
-| !8ball       | Replica of **8 ball**.`!8ball Will I win?`      | Anyone     |
-| !darkauction | Show the remaining time till next dark auction  | Anyone     |
-| !explain     | Explain what the bridge does and how it works   | Anyone     |
-| !guild       | Give a summary of the guild of a given user     | Anyone     |
-| !help        | Show a command usage `!help runs`               | Anyone     |
-| !iq          | Give a random IQ number to the guild member     | Anyone     |
-| !kuudra      | Get a player's kuudra completions `!kuudra hot` | Anyone     |
-| !level       | Get a player's skyblock level                   | Anyone     |
-| !networth    | Calculate the in-game networth of a player      | Anyone     |
-| !rps         | Play rock paper scissors `!rps rock`            | Anyone     |
-| !roulette    | Has a chance of muting a player                 | Anyone     |
-| !runs        | Return a plauer's floor completions `!runs m7`  | Anyone     |
-| !secrets     | Return a player's total dungeon secrets         | Anyone     |
-| !skill       | Return player's skill level `!skill mining`     | Anyone     |
-| !slayer      | Return a player's slayer stats `!slayer wolf`   | Anyone     |
-| !toggle      | Enable/disable commands `!toggle 8ball`         | Anyone     |
-| !weight      | Calculate the **Senither Weight** of a player   | Anyone     |
-| !override    | Run a command directly `!overide /guild party`  | Admin      |
+Most [Soopy commands](https://soopy.dev/commands) are supported and can be used by executing `!soopy rtca`.
+A shorter version can also be used: `!- rtca`
+
+| Command      | Description                                                | Permission |
+| ------------ | ---------------------------------------------------------- | ---------- |
+| !8ball       | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
+| !bits        | Returns the best bit items to purchase for the most profit | Anyone"    |
+| !calculate   | Calculate a math expression: `!calculate 1+2*3`            | Anyone     |
+| !catacomb    | Get a player's catacombs and class level                   | Anyone     |
+| !darkauction | Show the remaining time till next dark auction             | Anyone     |
+| !explain     | Explain what the bridge does and how it works              | Anyone     |
+| !guild       | Give a summary of the guild of a given user                | Anyone     |
+| !help        | Show a command usage `!help runs`                          | Anyone     |
+| !iq          | Give a random IQ number to the guild member                | Anyone     |
+| !kuudra      | Get a player's kuudra completions `!kuudra hot`            | Anyone     |
+| !level       | Get a player's skyblock level                              | Anyone     |
+| !networth    | Calculate the in-game networth of a player                 | Anyone     |
+| !rps         | Play rock paper scissors `!rps rock`                       | Anyone     |
+| !roulette    | Has a chance of muting a player                            | Anyone     |
+| !runs        | Return a plauer's floor completions `!runs m7`             | Anyone     |
+| !rtca        | Return runs count to reach an average class level          | Anyone     |
+| !secrets     | Return a player's total dungeon secrets                    | Anyone     |
+| !skill       | Return player's skill level `!skill mining`                | Anyone     |
+| !slayer      | Return a player's slayer stats `!slayer wolf`              | Anyone     |
+| !soopy       | Use Soopy API to execute commands `!- purse`               | Anyone     |
+| !weight      | Calculate the **Senither Weight** of a player              | Anyone     |
+| !toggle      | Enable/disable commands `!toggle 8ball`                    | Officer    |
+| !override    | Run a command directly `!overide /guild party`             | Admin      |
 
 ### Available Plugins
 
@@ -147,6 +153,7 @@ These are the supported official plugins that come bundled with the application:
 | auto-restart      | Schedule restarting every 24 hours                                                      | Essential       | A process monitor is required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage. |
 | limbo-plugin      | Forces Minecraft client to stay in Hypixel limbo                                        | Essential       | Being outside of limbo for prolonged periods can lead to the account being banned. Only disable if required.                          |
 | punishment-plugin | Enforces punishments and prevents punishment evasion                                    | Recommended     | Plugin will mute users but won't ban them, instead it will send a notification in officer chat.                                       |
+| warp-plugin       | Warp players out of their lobbies                                                       | Quality of Life | Incompatible with `limbo-plugin`. Disable one before enabling the other one.                                                          |
 | reaction-plugin   | Send a greeting/reaction message when a member joins/leaves or is kicked from the guild | Quality of Life | N/A                                                                                                                                   |
 | dark-auction      | Send a reminder when a skyblock dark auction is starting                                | Quality of Life | Sends a reminder 5 minutes and 1 minute before the dark auction.                                                                      |
 | starfall-cult     | Send a reminder when the skyblock starfall cult gathers                                 | Quality of Life | N/A                                                                                                                                   |
@@ -309,7 +316,7 @@ All configurations will be in `config.yaml` under `socket` section.
 
 ## Credits
 
-- The Project is inspired
-  by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- The Project is inspired by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- [Soopyboo32](https://github.com/Soopyboo32) for providing [an awesome command API](https://soopy.dev/commands)
 - Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches
 - All contributors whether by code, ideas/suggestions or testing

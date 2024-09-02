@@ -53,6 +53,112 @@
         "checkArguments": false,
         "checkArrowFunctionBody": false
       }
+    ],
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "src/common",
+            "from": ["src/instance", "src/plugins", "src/types", "src/util"],
+            "message": "Common files are used as public api and must not reference internal files"
+          },
+          {
+            "target": "src/plugins",
+            "from": ["src/plugins", "src/types"],
+            "message": "Plugin files must not reference other plugins or outside files"
+          },
+          {
+            "target": "src/types",
+            "from": ["src"],
+            "message": "Type files must only reference published libraries"
+          },
+          {
+            "target": "src/util",
+            "from": ["src/instance", "src/plugins", "src/types"],
+            "message": "Util must only reference other common files. Specific util can be put in their respective instance common dir."
+          },
+
+          {
+            "target": "src/instance/commands",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/discord",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/logger",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/metrics",
+              "src/instance/minecraft",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/metrics",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/minecraft",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/minecraft",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/socket",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft"
+            ],
+            "message": "Instance must only access itself and common files"
+          }
+        ]
+      }
     ]
   },
   "settings": {

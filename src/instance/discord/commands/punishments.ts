@@ -5,10 +5,17 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
-import { Severity, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { InstanceType, PunishmentType, Severity } from '../../../common/application-event.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { PunishedUsers } from '../../../util/punished-users.js'
 import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
+import {
+  checkChatTriggers,
+  formatChatTriggerResponse,
+  KICK_CHAT,
+  MUTE_CHAT,
+  UNMUTE_CHAT
+} from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -167,7 +174,7 @@ async function handleBanAddInteraction(
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
   const noUuidCheck = interaction.options.getBoolean('no-uuid') ?? false
 
-  const punishTill = Date.now() + getDuration(duration) * 1000
+  const punishDuration = getDuration(duration) * 1000
   const userIdentifiers = await findAboutUser(application.mojangApi, interaction, username, noDiscordCheck, noUuidCheck)
 
   const event: PunishmentAddEvent = {
@@ -181,15 +188,16 @@ async function handleBanAddInteraction(
 
     type: PunishmentType.BAN,
     reason: reason,
-    till: punishTill
+    till: Date.now() + punishDuration
   }
 
   application.punishedUsers.punish(event)
-  application.clusterHelper.sendCommandToAllMinecraft(
-    `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
-  )
+  const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
 
-  await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck)] })
+  const result = await checkChatTriggers(application, KICK_CHAT, undefined, command, username)
+  const formatted = formatChatTriggerResponse(result, `Ban ${escapeDiscord(username)}`)
+
+  await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
 }
 
 async function handleMuteAddInteraction(
@@ -204,7 +212,7 @@ async function handleMuteAddInteraction(
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
   const noUuidCheck = interaction.options.getBoolean('no-uuid') ?? false
 
-  const punishTill = Date.now() + getDuration(duration) * 1000
+  const muteDuration = getDuration(duration) * 1000
   const userIdentifiers = await findAboutUser(application.mojangApi, interaction, username, noDiscordCheck, noUuidCheck)
 
   const event: PunishmentAddEvent = {
@@ -218,18 +226,20 @@ async function handleMuteAddInteraction(
 
     type: PunishmentType.MUTE,
     reason: reason,
-    till: punishTill
+    till: Date.now() + muteDuration
   }
 
   application.punishedUsers.punish(event)
-  application.clusterHelper.sendCommandToAllMinecraft(
-    `/guild mute ${username} ${PunishedUsers.tillTimeToMinecraftDuration(punishTill)}`
-  )
+  const command = `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(muteDuration)}`
+
+  const result = await checkChatTriggers(application, MUTE_CHAT, undefined, command, username)
+  const formatted = formatChatTriggerResponse(result, `Mute ${escapeDiscord(username)}`)
+
   application.clusterHelper.sendCommandToAllMinecraft(
     `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
   )
 
-  await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck)] })
+  await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
 }
 
 async function handleKickInteraction(
@@ -238,7 +248,10 @@ async function handleKickInteraction(
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const reason: string = interaction.options.getString('reason', true)
-  application.clusterHelper.sendCommandToAllMinecraft(`/g kick ${username} ${reason}`)
+  const command = `/g kick ${username} ${reason}`
+
+  const result = await checkChatTriggers(application, KICK_CHAT, undefined, command, username)
+  const formatted = formatChatTriggerResponse(result, `Kick ${escapeDiscord(username)}`)
 
   await interaction.editReply({
     embeds: [
@@ -247,11 +260,18 @@ async function handleKickInteraction(
         title: 'Punishment Status',
         description: `Kick command has been sent.\nPlease, ensure the player has been kicked.`,
         fields: [
-          { name: 'Username', value: escapeDiscord(username) },
-          { name: 'reason', value: escapeDiscord(reason) }
+          {
+            name: 'Username',
+            value: escapeDiscord(username)
+          },
+          {
+            name: 'reason',
+            value: escapeDiscord(reason)
+          }
         ],
         footer: { text: DefaultCommandFooter }
-      }
+      },
+      formatted
     ]
   })
 }
@@ -272,7 +292,7 @@ async function handleForgiveInteraction(
     noDiscordCheck,
     noUuidCheck
   )
-  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined) as string[]
+  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
   const forgivenPunishments = application.punishedUsers.forgive({
     localEvent: true,
@@ -281,7 +301,10 @@ async function handleForgiveInteraction(
     userIdentifiers: userIdentifiers
   })
 
-  application.clusterHelper.sendCommandToAllMinecraft(`/guild unmute ${userResolvedData.userName}`)
+  const command = `/guild unmute ${userResolvedData.userName}`
+
+  const result = await checkChatTriggers(application, UNMUTE_CHAT, undefined, command, username)
+  const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeDiscord(username)}`)
 
   const pages: APIEmbed[] = []
   for (let index = 0; index < forgivenPunishments.length; index++) {
@@ -289,13 +312,19 @@ async function handleForgiveInteraction(
     pages.push(formatPunishmentStatus(forgivenPunishments[index], description))
   }
 
-  await (pages.length > 0
-    ? pageMessage(interaction, pages)
-    : interaction.editReply({
-        embeds: [
-          formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId)
-        ]
-      }))
+  if (pages.length === 0) {
+    await interaction.editReply({
+      embeds: [
+        formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId),
+        formatted
+      ]
+    })
+  } else if (pages.length === 1) {
+    await interaction.editReply({ embeds: [pages[0], formatted] })
+  } else {
+    await pageMessage(interaction, pages)
+    await interaction.followUp({ embeds: [formatted] })
+  }
 }
 
 async function handleAllListInteraction(
@@ -312,7 +341,7 @@ async function handleCheckInteraction(
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const userResolvedData = await findAboutUser(application.mojangApi, interaction, username, false, false)
-  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined) as string[]
+  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
   const activePunishments = application.punishedUsers.findPunishmentsByUser(userIdentifiers)
 
@@ -412,13 +441,41 @@ function formatPunishmentStatus(event: PunishmentAddEvent, description: string):
     title: 'Punishment Status',
     description: description,
     fields: [
-      { name: 'Username', value: event.userName, inline: true },
-      { name: 'UUID', value: event.userUuid ? `\`${event.userUuid}\`` : 'None', inline: true },
-      { name: 'Discord', value: event.userDiscordId ? `<@${event.userDiscordId}>` : 'None', inline: true },
-      { name: 'Type', value: event.type, inline: true },
-      { name: 'Created in', value: event.instanceType, inline: true },
-      { name: 'Till', value: `Expires <t:${Math.floor(event.till / 1000)}:R>`, inline: true },
-      { name: 'Reason', value: event.reason, inline: true }
+      {
+        name: 'Username',
+        value: event.userName,
+        inline: true
+      },
+      {
+        name: 'UUID',
+        value: event.userUuid ? `\`${event.userUuid}\`` : 'None',
+        inline: true
+      },
+      {
+        name: 'Discord',
+        value: event.userDiscordId ? `<@${event.userDiscordId}>` : 'None',
+        inline: true
+      },
+      {
+        name: 'Type',
+        value: event.type,
+        inline: true
+      },
+      {
+        name: 'Created in',
+        value: event.instanceType,
+        inline: true
+      },
+      {
+        name: 'Till',
+        value: `Expires <t:${Math.floor(event.till / 1000)}:R>`,
+        inline: true
+      },
+      {
+        name: 'Reason',
+        value: event.reason,
+        inline: true
+      }
     ],
     footer: {
       text: DefaultCommandFooter
@@ -436,9 +493,21 @@ function formatNoPunishmentStatus(
     title: 'Punishment Status',
     description: 'There is no active punishments for that user.',
     fields: [
-      { name: 'Username', value: userName, inline: true },
-      { name: 'UUID', value: userUuid ? `\`${userUuid}\`` : 'None', inline: true },
-      { name: 'Discord', value: discordUserId ? `<@${discordUserId}>` : 'None', inline: true }
+      {
+        name: 'Username',
+        value: userName,
+        inline: true
+      },
+      {
+        name: 'UUID',
+        value: userUuid ? `\`${userUuid}\`` : 'None',
+        inline: true
+      },
+      {
+        name: 'Discord',
+        value: discordUserId ? `<@${discordUserId}>` : 'None',
+        inline: true
+      }
     ],
     footer: { text: DefaultCommandFooter }
   }
@@ -458,7 +527,10 @@ async function findAboutUser(
   const resultedUser = noDiscordCheck
     ? undefined
     : await interaction.guild?.members
-        .search({ query: username, limit: 1 })
+        .search({
+          query: username,
+          limit: 1
+        })
         .then((result) => result.first())
         .catch(() => undefined)
 

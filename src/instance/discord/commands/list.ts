@@ -6,7 +6,7 @@ import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Severity, InstanceType } from '../../../common/application-event.js'
+import { InstanceType, Severity } from '../../../common/application-event.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
 import { escapeDiscord } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
@@ -102,17 +102,18 @@ const listMembers = async function (
 async function look(mojangApi: MojangApi, hypixelApi: Client, members: string[]): Promise<string[]> {
   const onlineProfiles = await lookupProfiles(mojangApi, members)
 
-  onlineProfiles.resolved.sort((a, b) => a.name.localeCompare(b.name))
-  onlineProfiles.failed.sort((a, b) => a.localeCompare(b))
-
-  const statuses = await Promise.all(onlineProfiles.resolved.map((profile) => hypixelApi.getStatus(profile.id)))
+  const statuses: (Status | undefined)[] = await Promise.all(
+    onlineProfiles.resolved.map((profile) => hypixelApi.getStatus(profile.id).catch(() => undefined))
+  )
 
   const list = []
-  for (const [index, onlineProfile] of onlineProfiles.resolved.entries()) {
-    list.push(formatLocation(onlineProfile.name, statuses[index]))
-  }
-  for (const failedToResolveUsername of onlineProfiles.failed) {
-    list.push(formatLocation(failedToResolveUsername, undefined))
+  let resolvedIndex = 0
+  for (const memberName of members) {
+    if (onlineProfiles.failed.includes(memberName)) {
+      list.push(formatLocation(memberName, undefined))
+    } else {
+      list.push(formatLocation(memberName, statuses[resolvedIndex++]))
+    }
   }
 
   return list

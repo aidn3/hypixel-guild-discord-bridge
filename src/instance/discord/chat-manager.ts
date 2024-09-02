@@ -10,8 +10,8 @@ import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
   registerEvents(): void {
-    this.clientInstance.client.on('messageCreate', async (message) => {
-      await this.onMessage(message)
+    this.clientInstance.client.on('messageCreate', (message) => {
+      void this.onMessage(message)
     })
   }
 

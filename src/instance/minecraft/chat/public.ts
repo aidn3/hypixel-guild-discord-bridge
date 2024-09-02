@@ -28,7 +28,7 @@ export default {
       const mutedTill = context.application.punishedUsers.getPunishedTill(identifiers, PunishmentType.MUTE)
       if (mutedTill) {
         context.application.clusterHelper.sendCommandToAllMinecraft(
-          `/guild mute ${username} ${PunishedUsers.tillTimeToMinecraftDuration(mutedTill)}`
+          `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(mutedTill - Date.now())}`
         )
       }
 
