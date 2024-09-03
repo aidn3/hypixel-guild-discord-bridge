@@ -34,6 +34,20 @@ export default {
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
+      const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)
+      if (changed) {
+        context.application.emit('profanityWarning', {
+          localEvent: true,
+          instanceType: InstanceType.MINECRAFT,
+          instanceName: context.instanceName,
+          channelType: ChannelType.PUBLIC,
+
+          username,
+          originalMessage: playerMessage,
+          filteredMessage: filteredMessage
+        })
+      }
+
       context.application.emit('chat', {
         localEvent: true,
         instanceName: context.instanceName,
@@ -42,7 +56,7 @@ export default {
         channelId: undefined,
         username,
         replyUsername: undefined,
-        message: playerMessage
+        message: filteredMessage
       })
     }
   }
