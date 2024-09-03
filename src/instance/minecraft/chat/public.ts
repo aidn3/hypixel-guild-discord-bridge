@@ -38,13 +38,14 @@ export default {
       const { filteredMessage, changed } = filterProfanity(playerMessage, context.application.profanityFilter)
       if (changed) {
         context.application.emit('profanityWarning', {
-          username,
-          oldMessage: playerMessage,
-          newMessage: filteredMessage,
           localEvent: true,
           instanceType: InstanceType.MINECRAFT,
           instanceName: context.instanceName,
-          channelType: ChannelType.PUBLIC
+          channelType: ChannelType.PUBLIC,
+
+          username,
+          oldMessage: playerMessage,
+          newMessage: filteredMessage
         })
       }
 

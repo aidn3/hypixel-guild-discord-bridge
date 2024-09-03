@@ -1,4 +1,4 @@
-import { InstanceType, ChannelType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import { filterProfanity } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
@@ -22,13 +22,14 @@ export default {
       const { filteredMessage, changed } = filterProfanity(playerMessage, context.application.profanityFilter)
       if (changed) {
         context.application.emit('profanityWarning', {
-          username,
-          oldMessage: playerMessage,
-          newMessage: filteredMessage,
           localEvent: true,
           instanceType: InstanceType.MINECRAFT,
           instanceName: context.instanceName,
-          channelType: ChannelType.OFFICER
+          channelType: ChannelType.OFFICER,
+
+          username,
+          oldMessage: playerMessage,
+          newMessage: filteredMessage
         })
       }
 
