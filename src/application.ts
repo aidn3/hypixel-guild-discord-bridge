@@ -2,7 +2,7 @@ import type Events from 'node:events'
 import path from 'node:path'
 import * as process from 'node:process'
 
-import { Filter } from 'bad-words'
+import BadWords from 'bad-words'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 import log4js from 'log4js'
@@ -41,7 +41,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   readonly clusterHelper: ClusterHelper
   readonly punishedUsers: PunishedUsers
-  readonly profanityFilter: Filter
+  readonly profanityFilter: BadWords.BadWords
 
   readonly hypixelApi: HypixelClient
   readonly mojangApi: MojangApi
@@ -64,7 +64,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.punishedUsers = new PunishedUsers(this)
     this.clusterHelper = new ClusterHelper(this)
 
-    this.profanityFilter = new Filter({
+    this.profanityFilter = new BadWords({
       emptyList: !this.config.profanity.enabled
     })
     this.profanityFilter.removeWords(...this.config.profanity.whitelisted)
