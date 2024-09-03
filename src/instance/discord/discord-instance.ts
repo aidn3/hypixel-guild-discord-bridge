@@ -211,8 +211,10 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private async onProfanityWarning(event: ProfanityWarningEvent): Promise<void> {
     const embed = {
       title: 'Profanity Warning',
-      author: { name: escapeDiscord(event.username) },
-      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+      author: {
+        name: escapeDiscord(event.username),
+        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`
+      },
 
       description: `Message by **${escapeDiscord(event.username)}** filtered in ${event.instanceName} in ${event.channelType} chat.`,
       fields: [
