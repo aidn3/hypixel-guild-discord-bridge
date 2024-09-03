@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
 import { escapeDiscord } from '../../../util/shared-util.js'
-import { checkChatTriggers, formatChatTriggerResponse, INVITE_ACCEPT_CHAT } from '../common/chat-triggers.js'
+import { checkChatTriggers, formatChatTriggerResponse, InviteAcceptChat } from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 
@@ -25,7 +25,7 @@ export default {
     const instance: string | null = context.interaction.options.getString('instance')
     const result = await checkChatTriggers(
       context.application,
-      INVITE_ACCEPT_CHAT,
+      InviteAcceptChat,
       instance ?? undefined,
       command,
       username

@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import Logger4js from 'log4js'
 
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
@@ -48,14 +48,14 @@ export async function shutdownApplication(exitCode: number): Promise<void> {
   })
 
   // eslint-disable-next-line import/no-named-as-default-member
-  log4js.shutdown(() => {
+  Logger4js.shutdown(() => {
     process.exit(exitCode)
   })
 
   await timeout
 }
 
-export const escapeDiscord = function (message: string): string {
+export function escapeDiscord(message: string): string {
   message = message.split('\\').join('\\\\') // "\"
   message = message.split('_').join(String.raw`\_`) // Italic
   message = message.split('*').join(String.raw`\*`) // bold

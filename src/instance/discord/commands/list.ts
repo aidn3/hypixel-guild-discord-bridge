@@ -36,10 +36,10 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 
   const pages = []
 
-  const MAX_LENGTH = 3900
+  const MaxLength = 3900
   let currentLength = 0
   for (const entry of entries) {
-    if (pages.length === 0 || currentLength + entry.length > MAX_LENGTH) {
+    if (pages.length === 0 || currentLength + entry.length > MaxLength) {
       currentLength = 0
 
       pages.push({
@@ -84,11 +84,7 @@ export default {
   }
 } satisfies CommandInterface
 
-const listMembers = async function (
-  app: Application,
-  mojangApi: MojangApi,
-  hypixelApi: Client
-): Promise<Map<string, string[]>> {
+async function listMembers(app: Application, mojangApi: MojangApi, hypixelApi: Client): Promise<Map<string, string[]>> {
   const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app)
 
   for (const [instanceName, members] of onlineProfiles) {
@@ -129,7 +125,7 @@ async function lookupProfiles(
 
   // https://stackoverflow.com/a/8495740
   const chunk = 10
-  for (let index = 0, index_ = usernames.length; index < index_; index += chunk) {
+  for (let index = 0; index < usernames.length; index += chunk) {
     const array = usernames.slice(index, index + chunk)
     mojangRequests.push(
       mojangApi.profilesByUsername(array).catch(() => {

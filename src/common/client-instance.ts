@@ -1,5 +1,5 @@
 import type { Logger } from 'log4js'
-import log4js from 'log4js'
+import Logger4js from 'log4js'
 
 import type Application from '../application.js'
 
@@ -19,7 +19,7 @@ export abstract class ClientInstance<K> {
     this.instanceName = instanceName
     this.instanceType = instanceType
     // eslint-disable-next-line import/no-named-as-default-member
-    this.logger = log4js.getLogger(instanceName)
+    this.logger = Logger4js.getLogger(instanceName)
     this.config = config
     this.status = Status.FRESH
   }
@@ -54,4 +54,5 @@ export enum Status {
   FAILED = 'FAILED'
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const INTERNAL_INSTANCE_PREFIX = 'internal/'
