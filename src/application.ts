@@ -21,6 +21,7 @@ import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
+import StatisticsInstance from './instance/statistics/statistics-instance.js'
 import { MojangApi } from './util/mojang.js'
 import { PunishedUsers } from './util/punished-users.js'
 import { shutdownApplication, sleep } from './util/shared-util.js'
@@ -38,6 +39,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly metricsInstance: MetricsInstance | undefined
   private readonly minecraftInstances: MinecraftInstance[] = []
   private readonly socketInstance: SocketInstance | undefined
+  private readonly statisticsInstance: StatisticsInstance
 
   readonly clusterHelper: ClusterHelper
   readonly punishedUsers: PunishedUsers
@@ -102,6 +104,26 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
       : undefined
 
+    const instances = [
+      InstanceType.MAIN,
+      ...this.config.plugins.map(() => InstanceType.PLUGIN),
+
+      this.metricsInstance ? InstanceType.METRICS : undefined,
+      this.socketInstance ? InstanceType.SOCKET : undefined,
+      this.commandsInstance ? InstanceType.COMMANDS : undefined,
+
+      this.discordInstance ? InstanceType.DISCORD : undefined,
+      ...this.minecraftInstances.map(() => InstanceType.MINECRAFT),
+
+      InstanceType.Logger,
+      InstanceType.STATISTICS
+    ]
+    this.statisticsInstance = new StatisticsInstance(
+      this,
+      INTERNAL_INSTANCE_PREFIX + InstanceType.STATISTICS,
+      instances.filter((item) => item !== undefined)
+    )
+
     this.plugins = this.loadPlugins(rootDirectory)
 
     this.on('shutdownSignal', (event) => {
@@ -122,6 +144,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
+
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
     let filtered: string
     try {
