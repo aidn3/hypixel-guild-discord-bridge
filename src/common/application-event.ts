@@ -7,6 +7,7 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '*': (name: string, event: BaseEvent) => void
 
   /**
@@ -354,7 +355,8 @@ export interface CommandEvent extends InformEvent {
    */
   readonly commandResponse: string
 }
-
+// TODO: remove on major update
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Enum containing all available instance statuses
  */
@@ -389,6 +391,7 @@ export enum InstanceEventType {
    */
   kick
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Events used when an instance changes its status

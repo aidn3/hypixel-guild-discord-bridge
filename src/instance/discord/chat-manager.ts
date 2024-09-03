@@ -1,6 +1,6 @@
-import axios, { type AxiosResponse } from 'axios'
+import Axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
-import emojisMap from 'emoji-name-map'
+import EmojisMap from 'emoji-name-map'
 
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
@@ -149,7 +149,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   private cleanStandardEmoji(message: string): string {
-    for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
+    for (const [emojiReadable, emojiUnicode] of Object.entries(EmojisMap.emoji)) {
       message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
     }
 
@@ -183,15 +183,15 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const encoded = 'Q-2-x-p-Z-W-5-0-L-U-l-E-I-D-Y-0-O-W-Y-y-Z-m-I-0-O-G-U-1-O-T-c-2-N-w-=-='
     const decoded = Buffer.from(encoded.replaceAll('-', ''), 'base64').toString('utf8')
 
-    const result = await axios
-      .post(
-        'https://api.imgur.com/3/image',
-        {
-          image: link,
-          type: 'url'
-        },
-        { headers: { Authorization: decoded } }
-      )
+    const result = await Axios.post(
+      'https://api.imgur.com/3/image',
+      {
+        image: link,
+        type: 'url'
+      },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      { headers: { Authorization: decoded } }
+    )
       .then((response: AxiosResponse<ImgurResponse, unknown>) => {
         return response.data.data.link
       })

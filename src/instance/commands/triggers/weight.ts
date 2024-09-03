@@ -5,7 +5,7 @@
 */
 import assert from 'node:assert'
 
-import axios, { type AxiosResponse } from 'axios'
+import Axios, { type AxiosResponse } from 'axios'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
@@ -26,7 +26,7 @@ export default class Weight extends ChatCommandHandler {
   }
 
   private async getSenitherData(username: string): Promise<number> {
-    const skyShiiyuResponse = await axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
+    const skyShiiyuResponse = await Axios(`https://sky.shiiyu.moe/api/v2/profile/${username}`).then(
       (response: AxiosResponse<SkyShiiyuResponse, unknown>) => response.data
     )
 

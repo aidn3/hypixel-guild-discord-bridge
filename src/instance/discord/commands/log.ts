@@ -8,7 +8,7 @@ import { escapeDiscord } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { DEFAULT_TIMEOUT, interactivePaging } from '../discord-pager.js'
+import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 
 const TITLE = 'Guild Log Audit'
 
@@ -85,7 +85,7 @@ export default {
       return
     }
 
-    await interactivePaging(context.interaction, currentPage - 1, DEFAULT_TIMEOUT, async (requestedPage) => {
+    await interactivePaging(context.interaction, currentPage - 1, DefaultTimeout, async (requestedPage) => {
       const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
       return {
         totalPages: chatResult.guildLog?.total ?? 0,

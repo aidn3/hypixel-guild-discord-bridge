@@ -64,7 +64,7 @@ export default {
   }
 } satisfies CommandInterface
 
-const checkConnectivity = async function (app: Application): Promise<Map<string, string[]>> {
+async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
   const receivedResponses = new Map<string, string[]>()
   const queryWords = [
     `Testing Connectivity 1 - @${antiSpamString()}`,

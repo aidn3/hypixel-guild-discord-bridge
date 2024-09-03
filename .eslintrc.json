@@ -41,6 +41,42 @@
     "import/newline-after-import": 2,
     "import/no-extraneous-dependencies": 2,
     "@typescript-eslint/consistent-type-imports": 2,
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "default",
+        "leadingUnderscore": "forbid",
+        "trailingUnderscore": "forbid",
+        "format": ["camelCase"]
+      },
+      {
+        "selector": ["class", "interface", "enum", "enumMember", "typeAlias", "typeParameter"],
+        "format": ["PascalCase"]
+      },
+      {
+        "selector": ["import"],
+        "filter": {
+          "match": false,
+          "regex": "(fs|http|console|process|path|assert)"
+        },
+        "format": ["PascalCase"]
+      },
+      {
+        "selector": ["classProperty"],
+        "format": ["PascalCase"],
+        "modifiers": ["static"]
+      },
+      {
+        "selector": ["variable"],
+        "format": ["PascalCase", "camelCase"],
+        "modifiers": ["const"]
+      },
+      {
+        "selector": ["variable"],
+        "format": ["PascalCase"],
+        "modifiers": ["const", "global"]
+      }
+    ],
     "@typescript-eslint/restrict-template-expressions": [
       "error",
       {
