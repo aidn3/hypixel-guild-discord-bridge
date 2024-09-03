@@ -274,7 +274,8 @@ npm start
 
 ## Run Via Docker
 
-Alternatively, Docker image is available (and usually up to date) to use at [GitHub Container Service](https://github.com/aidn3/hypixel-guild-discord-bridge/pkgs/container/hypixel-guild-discord-bridge).
+Alternatively, Docker image is available to use at [GitHub Container Service](https://github.com/aidn3/hypixel-guild-discord-bridge/pkgs/container/hypixel-guild-discord-bridge).
+Image is usually up to date.
 
 To start, first prepare the configuration as instructed in [this section](#configure). Then execute:
 
