@@ -4,7 +4,7 @@ import emojisMap from 'emoji-name-map'
 
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
-import { escapeDiscord, filterProfanity } from '../../util/shared-util.js'
+import { escapeDiscord } from '../../util/shared-util.js'
 
 import type DiscordInstance from './discord-instance.js'
 
@@ -41,7 +41,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
 
-    const { filteredMessage, changed } = filterProfanity(truncatedContent, this.clientInstance.app.profanityFilter)
+    const { filteredMessage, changed } = this.clientInstance.app.filterProfanity(truncatedContent)
     if (changed) {
       this.clientInstance.app.emit('profanityWarning', {
         username: discordName,

@@ -1,6 +1,5 @@
 import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
 import { PunishedUsers } from '../../../util/punished-users.js'
-import { filterProfanity } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -35,7 +34,7 @@ export default {
       if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
-      const { filteredMessage, changed } = filterProfanity(playerMessage, context.application.profanityFilter)
+      const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)
       if (changed) {
         context.application.emit('profanityWarning', {
           localEvent: true,

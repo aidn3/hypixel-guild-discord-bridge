@@ -122,6 +122,22 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
+  public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
+    let filtered: string
+    try {
+      filtered = this.profanityFilter.clean(message)
+    } catch {
+      /*
+          profanity package has bug.
+          will throw error if given one special character.
+          example: clean("?")
+          message is clear if thrown
+        */
+      filtered = message
+    }
+
+    return { filteredMessage: filtered, changed: message !== filtered }
+  }
 
   private loadPlugins(
     rootDirectory: string
