@@ -44,13 +44,14 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const { filteredMessage, changed } = this.clientInstance.app.filterProfanity(truncatedContent)
     if (changed) {
       this.clientInstance.app.emit('profanityWarning', {
-        username: discordName,
-        originalMessage: truncatedContent,
-        filteredMessage: filteredMessage,
         localEvent: true,
         instanceType: InstanceType.DISCORD,
         instanceName: this.clientInstance.instanceName,
-        channelType: channelType
+        channelType: channelType,
+
+        username: discordName,
+        originalMessage: truncatedContent,
+        filteredMessage: filteredMessage
       })
       await event.reply({
         content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
