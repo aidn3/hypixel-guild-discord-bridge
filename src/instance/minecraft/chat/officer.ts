@@ -1,7 +1,6 @@
 import { InstanceType, ChannelType } from '../../../common/application-event.js'
+import { filterProfanity } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
-
-import { filterProfanity } from 'src/util/shared-util.js'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -11,7 +10,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
-      let playerMessage = match[2].trim()
+      const playerMessage = match[2].trim()
 
       if (
         context.clientInstance.bridgePrefix.length > 0 &&
@@ -31,7 +30,6 @@ export default {
           instanceName: context.instanceName,
           channelType: ChannelType.OFFICER
         })
-        playerMessage = filteredMessage
       }
 
       context.application.emit('chat', {
@@ -42,7 +40,7 @@ export default {
         channelId: undefined,
         username,
         replyUsername: undefined,
-        message: playerMessage
+        message: filteredMessage
       })
     }
   }
