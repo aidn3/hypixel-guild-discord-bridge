@@ -18,6 +18,7 @@ import { escapeDiscord } from '../../util/shared-util.js'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
+import { DefaultCommandFooter } from './common/discord-config.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
@@ -223,7 +224,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       ],
       color: Severity.BAD,
       footer: {
-        text: event.instanceName
+        text: DefaultCommandFooter
       }
     } satisfies APIEmbed
 
