@@ -44,8 +44,8 @@ export default {
           channelType: ChannelType.PUBLIC,
 
           username,
-          oldMessage: playerMessage,
-          newMessage: filteredMessage
+          originalMessage: playerMessage,
+          filteredMessage: filteredMessage
         })
       }
 

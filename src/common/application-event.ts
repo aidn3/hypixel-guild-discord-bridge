@@ -187,11 +187,11 @@ export interface ProfanityWarningEvent extends InformEvent {
   /**
    * The previous, unfiltered/unmodified message
    */
-  readonly oldMessage: string
+  readonly originalMessage: string
   /**
    * The resulting, filtered message
    */
-  readonly newMessage: string
+  readonly filteredMessage: string
 
   /**
    * The channel type the message is coming from

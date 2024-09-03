@@ -216,8 +216,8 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
 
       description: `Message by **${escapeDiscord(event.username)}** filtered in ${event.instanceName} in ${event.channelType} chat.`,
       fields: [
-        { name: 'Original Message', value: escapeDiscord(event.oldMessage) },
-        { name: 'Filtered Message', value: escapeDiscord(event.newMessage) }
+        { name: 'Original Message', value: escapeDiscord(event.originalMessage) },
+        { name: 'Filtered Message', value: escapeDiscord(event.filteredMessage) }
       ],
       color: Severity.BAD,
       footer: {

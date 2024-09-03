@@ -62,8 +62,8 @@ export const ChatEvent = t.iface(["InformEvent"], {
 
 export const ProfanityWarningEvent = t.iface(["InformEvent"], {
   "username": "string",
-  "oldMessage": "string",
-  "newMessage": "string",
+  "originalMessage": "string",
+  "filteredMessage": "string",
   "channelType": "ChannelType",
 });
 

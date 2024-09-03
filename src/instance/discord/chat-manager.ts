@@ -45,8 +45,8 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (changed) {
       this.clientInstance.app.emit('profanityWarning', {
         username: discordName,
-        oldMessage: truncatedContent,
-        newMessage: filteredMessage,
+        originalMessage: truncatedContent,
+        filteredMessage: filteredMessage,
         localEvent: true,
         instanceType: InstanceType.DISCORD,
         instanceName: this.clientInstance.instanceName,

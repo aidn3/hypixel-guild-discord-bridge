@@ -28,8 +28,8 @@ export default {
           channelType: ChannelType.OFFICER,
 
           username,
-          oldMessage: playerMessage,
-          newMessage: filteredMessage
+          originalMessage: playerMessage,
+          filteredMessage: filteredMessage
         })
       }
 
