@@ -32,7 +32,7 @@ if (process.argv.includes('test-run')) {
 const file = process.argv[2] ?? './config.yaml'
 if (!fs.existsSync(file)) {
   logger.fatal(`File ${file} does not exist.`)
-  logger.fatal(`You can rename config_example.yaml into config.yaml and use it as the configuration file.`)
+  logger.fatal(`You can rename config_example.yaml to config.yaml and use it as the configuration file.`)
   logger.fatal(`If this is the first time running the application, please read README.md before proceeding.`)
   await shutdownApplication(1)
 }
