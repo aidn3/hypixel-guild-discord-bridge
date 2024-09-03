@@ -47,6 +47,7 @@ Breaking changes:
   - [Configure](#configure)
   - [Install](#install)
   - [Run](#Run)
+- [Run Via Docker](#run-via-docker)
 - [Advanced](#advanced)
   - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
   - [Node Modes](#node-modes)
@@ -269,6 +270,24 @@ Start the service by executing command:
 
 ```shell
 npm start
+```
+
+## Run Via Docker
+
+Alternatively, Docker image is available (and usually up to date) to use at [GitHub Container Service](https://github.com/aidn3/hypixel-guild-discord-bridge/pkgs/container/hypixel-guild-discord-bridge).
+
+To start, first prepare the configuration as instructed in [this section](#configure). Then execute:
+
+```shell
+sudo docker container run -it --rm -v ./config.yaml:/app/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest
+```
+
+Note that the path of the configuration source file must either be relative (with the `./`) or absolute.
+
+Alternatively, providing the path as an argument to the docker container is also possible:
+
+```shell
+sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
 ```
 
 ---
