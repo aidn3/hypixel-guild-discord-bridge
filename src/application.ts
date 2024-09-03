@@ -113,7 +113,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
         void sleep(5000).then(() => {
-          shutdownApplication(2)
+          void shutdownApplication(2)
         })
       }
     })

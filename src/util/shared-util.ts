@@ -41,8 +41,8 @@ export async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export function shutdownApplication(exitCode: number): void {
-  void sleep(30_000).then(() => {
+export async function shutdownApplication(exitCode: number): Promise<void> {
+  const timeout = sleep(30_000).then(() => {
     console.warn('Logger flush timed out. Exiting...')
     process.exit(exitCode)
   })
@@ -51,6 +51,8 @@ export function shutdownApplication(exitCode: number): void {
   log4js.shutdown(() => {
     process.exit(exitCode)
   })
+
+  await timeout
 }
 
 export const escapeDiscord = function (message: string): string {
