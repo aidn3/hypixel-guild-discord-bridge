@@ -6,6 +6,7 @@ import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
+  playerNeverPlayedSlayers,
   usernameNotExists
 } from '../common/util.js'
 
@@ -71,7 +72,8 @@ export default class Slayer extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const slayerBosses = selectedProfile.slayer.slayer_bosses
+    const slayerBosses = selectedProfile.slayer?.slayer_bosses
+    if (!slayerBosses) return playerNeverPlayedSlayers(givenUsername)
 
     let chosenSlayer: string | undefined
     for (const [key, names] of Object.entries(Slayers)) {

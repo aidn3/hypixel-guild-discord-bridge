@@ -35,7 +35,7 @@ declare module 'hypixel-api-reborn' {
         infernal: number
       }
     }
-    slayer: SlayerProfile
+    slayer: SlayerProfile | undefined
     essence?: SkyblockV2Essence
   }
 
