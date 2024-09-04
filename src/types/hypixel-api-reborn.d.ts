@@ -11,7 +11,7 @@ declare module 'hypixel-api-reborn' {
   }
 
   export interface SkyblockV2ProfilesRaw {
-    profiles: SkyblockV2Profile[]
+    profiles: SkyblockV2Profile[] | undefined
   }
 
   export interface SkyblockV2Profile {
@@ -25,7 +25,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
-    dungeons: SkyblockV2Dungeons
+    dungeons: SkyblockV2Dungeons | undefined
     nether_island_player_data: {
       kuudra_completed_tiers: {
         none: number

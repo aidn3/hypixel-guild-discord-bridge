@@ -1,9 +1,8 @@
-import assert from 'node:assert'
-
 import type { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
 
 const Names = new Set([
   'farming',
@@ -37,37 +36,28 @@ export default class Skills extends ChatCommandHandler {
       return `${context.username}, Invalid skill! (given: ${skill})`
     }
 
-    const uuid = await context.app.mojangApi
-      .profileByUsername(givenUsername)
-      .then((mojangProfile) => mojangProfile.id)
-      .catch(() => {
-        /* return undefined */
-      })
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    if (uuid == undefined) {
-      return `${context.username}, Invalid username! (given: ${givenUsername})`
-    }
-
-    const parsedProfile = await this.getParsedProfile(context.app.hypixelApi, uuid)
+    const selectedProfile = await this.getParsedProfile(context.app.hypixelApi, uuid)
+    if (selectedProfile === undefined) return playerNeverPlayedSkyblock(givenUsername)
 
     // @ts-expect-error Ignoring impossible to trigger scenario
-    const skillData: SKYBLOCK_SKILL_DATA = parsedProfile.skills[skill as keyof SkyblockMember['skills']]
+    const skillData: SKYBLOCK_SKILL_DATA = selectedProfile.skills[skill as keyof SkyblockMember['skills']]
 
     return `${givenUsername}: ${skill} - ${this.formatLevel(skillData.level, skillData.progress)}`
   }
 
-  async getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
+  async getParsedProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember | undefined> {
     const selectedProfile = await hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((profile) => profile.selected)?.cute_name)
-    assert(selectedProfile)
+      .then((response) => response.profiles?.find((profile) => profile.selected)?.cute_name)
 
-    const response = await hypixelApi
+    if (!selectedProfile) return undefined
+
+    return await hypixelApi
       .getSkyblockProfiles(uuid)
       .then((profiles) => profiles.find((profile) => profile.profileName === selectedProfile)?.me)
-
-    assert(response)
-    return response
   }
 
   private formatLevel(level: number, progress: number): number {

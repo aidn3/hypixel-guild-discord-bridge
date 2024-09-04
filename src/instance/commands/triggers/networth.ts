@@ -3,14 +3,12 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import assert from 'node:assert'
-
 import Axios, { type AxiosResponse } from 'axios'
 import { getNetworth, getPrices } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getUuidIfExists } from '../common/util.js'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
 
 export default class Networth extends ChatCommandHandler {
   private prices: object | undefined
@@ -35,14 +33,12 @@ export default class Networth extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `No such username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const selectedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((p) => p.selected))
-    assert(selectedProfile)
+      .then((response) => response.profiles?.find((p) => p.selected))
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
     const museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`

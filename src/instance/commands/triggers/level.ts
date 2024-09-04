@@ -1,6 +1,11 @@
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 export default class Level extends ChatCommandHandler {
   constructor() {
@@ -16,12 +21,12 @@ export default class Level extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `No such username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const profile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    const exp = profile.leveling?.experience ?? 0
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+
+    const exp = selectedProfile.leveling?.experience ?? 0
     return `${givenUsername}'s level: ${(exp / 100).toFixed(2)}`
   }
 }
