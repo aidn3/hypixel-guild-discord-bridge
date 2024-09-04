@@ -15,15 +15,18 @@ export async function getUuidIfExists(mojangApi: MojangApi, username: string): P
   return result || undefined
 }
 
-export async function getSelectedSkyblockProfileRaw(hypixelApi: Client, uuid: string): Promise<SkyblockV2Member> {
-  return await hypixelApi
-    .getSkyblockProfiles(uuid, { raw: true })
-    .then((response) => response.profiles.find((p) => p.selected))
-    .then((profiles) => profiles?.members[uuid])
-    .then((profile) => {
-      assert(profile)
-      return profile
-    })
+export async function getSelectedSkyblockProfileRaw(
+  hypixelApi: Client,
+  uuid: string
+): Promise<SkyblockV2Member | undefined> {
+  const response = await hypixelApi.getSkyblockProfiles(uuid, { raw: true })
+
+  if (!response.profiles) return undefined
+  const profile = response.profiles.find((p) => p.selected)
+
+  const selected = profile?.members[uuid]
+  assert(selected)
+  return selected
 }
 
 export async function getSelectedSkyblockProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
@@ -67,4 +70,16 @@ export function getDungeonLevelWithOverflow(experience: number): number {
 
   const fractionLevel = remainingXP / DungeonXp[totalLevel]
   return totalLevel + fractionLevel
+}
+
+export function usernameNotExists(givenUsername: string): string {
+  return `Invalid username! (given: ${givenUsername})`
+}
+
+export function playerNeverPlayedSkyblock(username: string): string {
+  return `${username} has never played skyblock before?`
+}
+
+export function playerNeverPlayedDungeons(username: string): string {
+  return `${username} has never played dungeons before?`
 }
