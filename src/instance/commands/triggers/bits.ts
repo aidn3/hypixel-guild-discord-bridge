@@ -78,7 +78,11 @@ export default class Bits extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const currentTime = Date.now()
     if (this.lastPricesUpdateAt + Bits.UpdatePriceEvery < currentTime) {
-      await this.updatePrices()
+      try {
+        await this.updatePrices()
+      } catch {
+        return `${context.username}, cannot update prices.`
+      }
       this.lastPricesUpdateAt = currentTime
     }
 

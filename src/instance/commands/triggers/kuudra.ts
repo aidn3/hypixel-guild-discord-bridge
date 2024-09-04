@@ -1,8 +1,11 @@
-import assert from 'node:assert'
-
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getUuidIfExists } from '../common/util.js'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 export default class Kuudra extends ChatCommandHandler {
   constructor() {
@@ -18,16 +21,12 @@ export default class Kuudra extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `${context.username}, Invalid username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const parsedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
-    assert(parsedProfile)
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const tiers = parsedProfile.nether_island_player_data.kuudra_completed_tiers
+    const tiers = selectedProfile.nether_island_player_data.kuudra_completed_tiers
 
     const completions = Object.entries(tiers)
       .filter(([key]) => !key.startsWith('highest_wave'))

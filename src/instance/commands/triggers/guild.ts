@@ -6,6 +6,7 @@
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
+import { getUuidIfExists, usernameNotExists } from '../common/util.js'
 
 export default class Guild extends ChatCommandHandler {
   constructor() {
@@ -20,16 +21,8 @@ export default class Guild extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
 
-    const uuid = await context.app.mojangApi
-      .profileByUsername(givenUsername)
-      .then((p) => p.id)
-      .catch(() => {
-        /* return undefined */
-      })
-
-    if (uuid == undefined) {
-      return `No such username! (given: ${givenUsername})`
-    }
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const guild = await context.app.hypixelApi.getGuild('player', uuid, {}).catch(() => {
       /* return undefined */

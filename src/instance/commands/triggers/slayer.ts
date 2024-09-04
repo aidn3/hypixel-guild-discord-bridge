@@ -2,7 +2,13 @@ import type { Slayer as SlayerType } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  playerNeverPlayedSlayers,
+  usernameNotExists
+} from '../common/util.js'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],
@@ -61,12 +67,13 @@ export default class Slayer extends ChatCommandHandler {
     const givenSlayer = context.args[1] ?? 'overview'
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `${context.username}, Invalid username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const profile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    const slayerBosses = profile.slayer.slayer_bosses
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+
+    const slayerBosses = selectedProfile.slayer?.slayer_bosses
+    if (!slayerBosses) return playerNeverPlayedSlayers(givenUsername)
 
     let chosenSlayer: string | undefined
     for (const [key, names] of Object.entries(Slayers)) {
