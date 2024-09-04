@@ -54,7 +54,7 @@ export default {
       .addNumberOption((option) =>
         option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75)
       ) as SlashCommandBuilder,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   allowInstance: true,
 
   handler: async function (context) {

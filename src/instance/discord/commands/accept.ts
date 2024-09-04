@@ -14,7 +14,7 @@ export default {
         option.setName('username').setDescription('Username of the player').setRequired(true)
       ) as SlashCommandBuilder,
   allowInstance: true,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
 
   handler: async function (context) {
     await context.interaction.deferReply()
