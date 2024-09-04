@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios'
-import axios from 'axios'
+import Axios from 'axios'
 
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
@@ -16,8 +16,8 @@ interface Stats {
 }
 
 export default class StatisticsInstance extends ClientInstance<undefined> {
-  private static readonly SEND_EVERY = 5 * 60 * 1000
-  private static readonly HOST = 'https://bridge-stats.aidn5.com/metrics'
+  private static readonly SendEvery = 5 * 60 * 1000
+  private static readonly Host = 'https://bridge-stats.aidn5.com/metrics'
 
   private readonly stats: Stats
 
@@ -40,8 +40,7 @@ export default class StatisticsInstance extends ClientInstance<undefined> {
   }
 
   private async send(): Promise<void> {
-    await axios
-      .post(StatisticsInstance.HOST, this.stats)
+    await Axios.post(StatisticsInstance.Host, this.stats)
       .then((response: AxiosResponse<{ id: string }, unknown>) => response.data)
       .then((response) => {
         this.stats.id = response.id // ID is used to ensure no duplicates entries when sharing metrics
@@ -55,7 +54,7 @@ export default class StatisticsInstance extends ClientInstance<undefined> {
 
     this.intervalId = setInterval(() => {
       void this.send()
-    }, StatisticsInstance.SEND_EVERY)
+    }, StatisticsInstance.SendEvery)
 
     this.status = Status.CONNECTED
   }
