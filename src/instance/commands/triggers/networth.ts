@@ -40,12 +40,16 @@ export default class Networth extends ChatCommandHandler {
       .then((response) => response.profiles?.find((p) => p.selected))
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const museumData = await Axios.get(
+    let museumData
+    try {
+    museumData = await Axios.get(
       `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
     )
       .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
       .then((museum) => museum.members[uuid] as object)
-      .catch(() => undefined)
+    } catch {
+      return `${context.username}, error fetching museum data?`
+    }
 
     const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
       v2Endpoint: true,
