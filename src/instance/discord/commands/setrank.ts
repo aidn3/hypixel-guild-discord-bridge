@@ -16,7 +16,7 @@ export default {
       .addStringOption((option) =>
         option.setName('rank').setDescription('rank to change to').setRequired(true)
       ) as SlashCommandBuilder,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   allowInstance: false,
 
   handler: async function (context) {

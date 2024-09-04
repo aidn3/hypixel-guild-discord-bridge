@@ -47,7 +47,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('connectivity').setDescription('Check connectivity to Minecraft instances'),
-  permission: Permission.ANYONE,
+  permission: Permission.Anyone,
   allowInstance: false,
 
   handler: async function (context) {

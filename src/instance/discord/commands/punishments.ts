@@ -109,7 +109,7 @@ export default {
       .addSubcommand(
         new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments')
       ) as SlashCommandBuilder,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   allowInstance: false,
 
   handler: async function (context) {
@@ -117,7 +117,7 @@ export default {
 
     switch (context.interaction.options.getSubcommand()) {
       case 'ban': {
-        if (context.privilege < Permission.OFFICER) {
+        if (context.privilege < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -130,7 +130,7 @@ export default {
         return
       }
       case 'kick': {
-        if (context.privilege < Permission.OFFICER) {
+        if (context.privilege < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -143,7 +143,7 @@ export default {
         return
       }
       case 'forgive': {
-        if (context.privilege < Permission.OFFICER) {
+        if (context.privilege < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }

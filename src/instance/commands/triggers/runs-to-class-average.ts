@@ -4,7 +4,7 @@ import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
 import { getDungeonLevelWithOverflow, getUuidIfExists } from '../common/util.js'
 
-const FloorsBaseEXP = {
+const FloorsBaseExp = {
   m6: 105_000,
   m7: 340_000
 }
@@ -31,10 +31,10 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     }
 
     const selectedFloor = 'm7'.toLowerCase()
-    if (!(selectedFloor in FloorsBaseEXP)) {
+    if (!(selectedFloor in FloorsBaseExp)) {
       return `Invalid floor selected: ${selectedFloor}`
     }
-    const xpPerRun = FloorsBaseEXP[selectedFloor as keyof typeof FloorsBaseEXP]
+    const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
     const parsedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })

@@ -63,7 +63,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
-  permission: Permission.ANYONE,
+  permission: Permission.Anyone,
   allowInstance: false,
 
   handler: async function (context) {

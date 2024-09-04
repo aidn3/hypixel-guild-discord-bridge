@@ -1,7 +1,7 @@
 import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
-const MESSAGES = [
+const Messages = [
   "Can't repeat the same message...",
   'I wish I had a way to repeat the same messages over and over again :(',
   'Hypixel blocked this message for repeating... Again! D:',
@@ -25,7 +25,7 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      const randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
+      const randomMessage = Messages[Math.floor(Math.random() * Messages.length)]
 
       context.application.emit('event', {
         localEvent: true,

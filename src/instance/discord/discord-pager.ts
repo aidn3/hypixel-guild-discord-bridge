@@ -13,8 +13,8 @@ import { Severity } from '../../common/application-event.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 
 enum Button {
-  NEXT = 'next',
-  BACK = 'back'
+  Next = 'next',
+  Back = 'back'
 }
 
 export const DefaultTimeout = 60_000
@@ -48,11 +48,11 @@ export async function interactivePaging(
 
   if (lastUpdate.totalPages > 1) {
     const nextInteraction = channel.createMessageComponentCollector({
-      filter: (index) => index.customId === `${interaction.id}-${Button.NEXT}` && index.user.id === interaction.user.id,
+      filter: (index) => index.customId === `${interaction.id}-${Button.Next}` && index.user.id === interaction.user.id,
       time: duration
     })
     const backInteraction = channel.createMessageComponentCollector({
-      filter: (index) => index.customId === `${interaction.id}-${Button.BACK}` && index.user.id === interaction.user.id,
+      filter: (index) => index.customId === `${interaction.id}-${Button.Back}` && index.user.id === interaction.user.id,
       time: duration
     })
 
@@ -120,12 +120,12 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
   return new ActionRowBuilder()
     .addComponents(
       new ButtonBuilder()
-        .setCustomId(`${interactionId}-${Button.BACK}`)
+        .setCustomId(`${interactionId}-${Button.Back}`)
         .setLabel('Back')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage <= 0),
       new ButtonBuilder()
-        .setCustomId(`${interactionId}-${Button.NEXT}`)
+        .setCustomId(`${interactionId}-${Button.Next}`)
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage + 1 >= totalPages)

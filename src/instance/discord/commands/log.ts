@@ -10,7 +10,7 @@ import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 
-const TITLE = 'Guild Log Audit'
+const Title = 'Guild Log Audit'
 
 function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstance: boolean): APIEmbed {
   let result = ''
@@ -38,7 +38,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
 
   return {
     color: chatResult.guildLog ? Severity.DEFAULT : Severity.INFO,
-    title: `${TITLE}${pageTitle}`,
+    title: `${Title}${pageTitle}`,
     description: result,
     footer: {
       text: DefaultCommandFooter
@@ -54,7 +54,7 @@ export default {
       .addNumberOption((option) =>
         option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75)
       ) as SlashCommandBuilder,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   allowInstance: true,
 
   handler: async function (context) {
@@ -70,7 +70,7 @@ export default {
       await context.interaction.editReply({
         embeds: [
           {
-            title: TITLE,
+            title: Title,
             description:
               `No Minecraft instance exist.\n` +
               'This is a Minecraft command that displays ingame logs of a guild.\n' +

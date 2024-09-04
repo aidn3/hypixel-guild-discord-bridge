@@ -13,7 +13,7 @@ export default {
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true)
       ) as SlashCommandBuilder,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   allowInstance: false,
 
   handler: async function (context) {

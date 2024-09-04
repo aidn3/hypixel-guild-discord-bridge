@@ -34,7 +34,8 @@ export abstract class ClientInstance<K> {
    */
   abstract connect(): Promise<void> | void
 }
-
+// TODO: remove on major update
+/* eslint-disable @typescript-eslint/naming-convention */
 export enum Status {
   /**
    * Freshly created instance
@@ -54,5 +55,5 @@ export enum Status {
   FAILED = 'FAILED'
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const INTERNAL_INSTANCE_PREFIX = 'internal/'
+/* eslint-enable @typescript-eslint/naming-convention */

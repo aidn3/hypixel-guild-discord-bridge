@@ -15,7 +15,7 @@ export default {
       ) as SlashCommandBuilder,
   allowInstance: true,
 
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   handler: async function (context) {
     await context.interaction.deferReply()
 

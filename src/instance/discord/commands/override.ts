@@ -12,7 +12,7 @@ export default {
         option.setName('command').setDescription('command to execute. e.g. "/guild party"').setRequired(true)
       ) as SlashCommandBuilder,
   allowInstance: true,
-  permission: Permission.ADMIN,
+  permission: Permission.Admin,
 
   handler: async function (context) {
     await context.interaction.deferReply()
