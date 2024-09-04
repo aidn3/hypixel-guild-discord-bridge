@@ -96,8 +96,14 @@ export default class Soopy extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const commandName = context.args[0]
+    const commandName: string | undefined = context.args[0]
     const commandArguments = context.args.length > 1 ? context.args.slice(1) : []
+
+    // It is possible to be undefined if no arg is supplied
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (commandName === undefined) {
+      return `${context.username}, Try ${this.getExample(context.commandPrefix)}`
+    }
 
     const fullCommand = `${commandName} ${commandArguments.join(' ')}`
 
