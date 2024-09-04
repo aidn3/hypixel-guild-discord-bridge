@@ -20,7 +20,7 @@ function createPing(latency: number, websocket: number, lag: number): APIEmbed {
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord Ping'),
-  permission: Permission.ANYONE,
+  permission: Permission.Anyone,
   allowInstance: false,
 
   handler: async function (context) {

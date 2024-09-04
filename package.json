@@ -1,6 +1,6 @@
 {
   "name": "hypixel-guild-discord-bridge",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "A Hypixel guild chat and Discord chat bridge",
   "type": "module",
   "main": "index.ts",
@@ -29,7 +29,7 @@
   "dependencies": {
     "@hkh12/node-calc": "^4.2.1",
     "axios": "^1.7.2",
-    "bad-words": "^4.0.0",
+    "bad-words": "3.0.4",
     "discord.js": "^14.15.3",
     "emoji-name-map": "^1.2.9",
     "hypixel-api-reborn": "^11.2.1",

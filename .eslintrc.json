@@ -41,6 +41,70 @@
     "import/newline-after-import": 2,
     "import/no-extraneous-dependencies": 2,
     "@typescript-eslint/consistent-type-imports": 2,
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "default",
+        "leadingUnderscore": "forbid",
+        "trailingUnderscore": "forbid",
+        "format": ["camelCase"]
+      },
+      {
+        "selector": ["class", "interface", "enum", "typeAlias"],
+        "format": ["PascalCase"]
+      },
+      {
+        "selector": ["typeParameter"],
+        "format": null,
+        "custom": {
+          "match": true,
+          "regex": "^([A-Z])$"
+        }
+      },
+      {
+        "selector": ["import"],
+        "filter": {
+          "match": false,
+          "regex": "(fs|http|console|process|path|assert)"
+        },
+        "format": null,
+        "custom": {
+          "match": true,
+          "regex": "^([A-Z]{1,3}[a-z0-9]+)+$"
+        }
+      },
+      {
+        "selector": ["classProperty"],
+        "format": null,
+        "custom": {
+          "match": true,
+          "regex": "^([A-Z]{1,3}[a-z0-9]+)+$"
+        },
+        "modifiers": ["static"]
+      },
+      {
+        "selector": ["variable"],
+        "format": ["PascalCase", "camelCase"],
+        "modifiers": ["const"]
+      },
+      {
+        "selector": ["variable"],
+        "format": null,
+        "custom": {
+          "match": true,
+          "regex": "^([A-Z]{1,3}[a-z0-9]+)+$"
+        },
+        "modifiers": ["const", "global"]
+      },
+      {
+        "selector": ["enumMember"],
+        "format": null,
+        "custom": {
+          "match": true,
+          "regex": "^([A-Z]{1,3}[a-z0-9]+)+$"
+        }
+      }
+    ],
     "@typescript-eslint/restrict-template-expressions": [
       "error",
       {

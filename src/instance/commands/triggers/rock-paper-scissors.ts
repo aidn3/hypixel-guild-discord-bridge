@@ -2,9 +2,9 @@ import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
 
 enum CommandOptions {
-  ROCK = 'rock',
-  PAPER = 'paper',
-  SCISSORS = 'scissors'
+  Rock = 'rock',
+  Paper = 'paper',
+  Scissors = 'scissors'
 }
 
 export default class RockPaperScissors extends ChatCommandHandler {
@@ -29,9 +29,9 @@ export default class RockPaperScissors extends ChatCommandHandler {
     if (userChoice === computerChoice) {
       return `${context.username}, I chose ${computerChoice}, We tied!`
     } else if (
-      (userChoice === CommandOptions.PAPER && computerChoice === CommandOptions.ROCK) ||
-      (userChoice === CommandOptions.SCISSORS && computerChoice === CommandOptions.PAPER) ||
-      (userChoice === CommandOptions.ROCK && computerChoice === CommandOptions.SCISSORS)
+      (userChoice === CommandOptions.Paper && computerChoice === CommandOptions.Rock) ||
+      (userChoice === CommandOptions.Scissors && computerChoice === CommandOptions.Paper) ||
+      (userChoice === CommandOptions.Rock && computerChoice === CommandOptions.Scissors)
     ) {
       return `${context.username}, I chose ${computerChoice}, You won!`
     } else {

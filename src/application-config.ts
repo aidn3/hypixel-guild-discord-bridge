@@ -62,8 +62,8 @@ export interface ProxyConfig {
 }
 
 export enum ProxyProtocol {
-  HTTP = 'http',
-  SOCKS5 = 'socks5'
+  Http = 'http',
+  Socks5 = 'Socks5'
 }
 
 export interface ApplicationConfig {

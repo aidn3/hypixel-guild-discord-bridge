@@ -12,9 +12,9 @@ import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
 import {
   checkChatTriggers,
   formatChatTriggerResponse,
-  KICK_CHAT,
-  MUTE_CHAT,
-  UNMUTE_CHAT
+  KickChat,
+  MuteChat,
+  UnmuteChat
 } from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
@@ -109,7 +109,7 @@ export default {
       .addSubcommand(
         new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments')
       ) as SlashCommandBuilder,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   allowInstance: false,
 
   handler: async function (context) {
@@ -117,7 +117,7 @@ export default {
 
     switch (context.interaction.options.getSubcommand()) {
       case 'ban': {
-        if (context.privilege < Permission.OFFICER) {
+        if (context.privilege < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -130,7 +130,7 @@ export default {
         return
       }
       case 'kick': {
-        if (context.privilege < Permission.OFFICER) {
+        if (context.privilege < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -143,7 +143,7 @@ export default {
         return
       }
       case 'forgive': {
-        if (context.privilege < Permission.OFFICER) {
+        if (context.privilege < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -194,7 +194,7 @@ async function handleBanAddInteraction(
   application.punishedUsers.punish(event)
   const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
 
-  const result = await checkChatTriggers(application, KICK_CHAT, undefined, command, username)
+  const result = await checkChatTriggers(application, KickChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Ban ${escapeDiscord(username)}`)
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
@@ -232,7 +232,7 @@ async function handleMuteAddInteraction(
   application.punishedUsers.punish(event)
   const command = `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(muteDuration)}`
 
-  const result = await checkChatTriggers(application, MUTE_CHAT, undefined, command, username)
+  const result = await checkChatTriggers(application, MuteChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Mute ${escapeDiscord(username)}`)
 
   application.clusterHelper.sendCommandToAllMinecraft(
@@ -250,7 +250,7 @@ async function handleKickInteraction(
   const reason: string = interaction.options.getString('reason', true)
   const command = `/g kick ${username} ${reason}`
 
-  const result = await checkChatTriggers(application, KICK_CHAT, undefined, command, username)
+  const result = await checkChatTriggers(application, KickChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Kick ${escapeDiscord(username)}`)
 
   await interaction.editReply({
@@ -303,7 +303,7 @@ async function handleForgiveInteraction(
 
   const command = `/guild unmute ${userResolvedData.userName}`
 
-  const result = await checkChatTriggers(application, UNMUTE_CHAT, undefined, command, username)
+  const result = await checkChatTriggers(application, UnmuteChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeDiscord(username)}`)
 
   const pages: APIEmbed[] = []
@@ -388,11 +388,11 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
 
   const pages = []
 
-  const MAX_LENGTH = 3900
+  const MaxLength = 3900
   let currentLength = 0
   let entriesCount = 0
   for (const entry of entries) {
-    if (pages.length === 0 || currentLength + entry.length > MAX_LENGTH || entriesCount >= 20) {
+    if (pages.length === 0 || currentLength + entry.length > MaxLength || entriesCount >= 20) {
       currentLength = 0
       entriesCount = 0
 

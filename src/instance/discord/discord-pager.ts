@@ -13,13 +13,13 @@ import { Severity } from '../../common/application-event.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 
 enum Button {
-  NEXT = 'next',
-  BACK = 'back'
+  Next = 'next',
+  Back = 'back'
 }
 
-export const DEFAULT_TIMEOUT = 60_000
+export const DefaultTimeout = 60_000
 
-const NO_EMBED: APIEmbed = {
+const NoEmbed: APIEmbed = {
   color: Severity.ERROR,
   title: 'Nothing to display',
   description:
@@ -36,23 +36,23 @@ const NO_EMBED: APIEmbed = {
 export async function interactivePaging(
   interaction: CommandInteraction,
   currentPage = 0,
-  duration = DEFAULT_TIMEOUT,
+  duration = DefaultTimeout,
   fetch: (page: number) => Promise<FetchPageResult> | FetchPageResult
 ): Promise<Message> {
   const channel: TextBasedChannel = interaction.channel as TextChannel
   let lastUpdate = await fetch(currentPage)
 
   if (lastUpdate.embed === undefined) {
-    return await interaction.editReply({ embeds: [NO_EMBED] })
+    return await interaction.editReply({ embeds: [NoEmbed] })
   }
 
   if (lastUpdate.totalPages > 1) {
     const nextInteraction = channel.createMessageComponentCollector({
-      filter: (index) => index.customId === `${interaction.id}-${Button.NEXT}` && index.user.id === interaction.user.id,
+      filter: (index) => index.customId === `${interaction.id}-${Button.Next}` && index.user.id === interaction.user.id,
       time: duration
     })
     const backInteraction = channel.createMessageComponentCollector({
-      filter: (index) => index.customId === `${interaction.id}-${Button.BACK}` && index.user.id === interaction.user.id,
+      filter: (index) => index.customId === `${interaction.id}-${Button.Back}` && index.user.id === interaction.user.id,
       time: duration
     })
 
@@ -60,7 +60,7 @@ export async function interactivePaging(
       void index.deferUpdate().then(async () => {
         lastUpdate = await fetch(++currentPage)
         if (lastUpdate.embed === undefined) {
-          await interaction.editReply({ embeds: [NO_EMBED] })
+          await interaction.editReply({ embeds: [NoEmbed] })
           return
         }
 
@@ -74,7 +74,7 @@ export async function interactivePaging(
       void index.deferUpdate().then(async () => {
         lastUpdate = await fetch(--currentPage)
         if (lastUpdate.embed === undefined) {
-          await interaction.editReply({ embeds: [NO_EMBED] })
+          await interaction.editReply({ embeds: [NoEmbed] })
           return
         }
 
@@ -87,7 +87,7 @@ export async function interactivePaging(
 
     nextInteraction.on('end', () => {
       if (lastUpdate.embed === undefined) {
-        void interaction.editReply({ embeds: [NO_EMBED] })
+        void interaction.editReply({ embeds: [NoEmbed] })
         return
       }
 
@@ -107,7 +107,7 @@ export async function interactivePaging(
 export async function pageMessage(
   interaction: CommandInteraction,
   pages: APIEmbed[],
-  duration = DEFAULT_TIMEOUT
+  duration = DefaultTimeout
 ): Promise<Message> {
   return await interactivePaging(interaction, 0, duration, (page) => {
     return { embed: pages[page], totalPages: pages.length }
@@ -120,12 +120,12 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
   return new ActionRowBuilder()
     .addComponents(
       new ButtonBuilder()
-        .setCustomId(`${interactionId}-${Button.BACK}`)
+        .setCustomId(`${interactionId}-${Button.Back}`)
         .setLabel('Back')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage <= 0),
       new ButtonBuilder()
-        .setCustomId(`${interactionId}-${Button.NEXT}`)
+        .setCustomId(`${interactionId}-${Button.Next}`)
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage + 1 >= totalPages)

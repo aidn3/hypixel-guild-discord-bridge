@@ -107,10 +107,10 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       return
     }
 
-    for (const _channelId of channels) {
-      if (_channelId === event.channelId) continue
+    for (const channelId of channels) {
+      if (channelId === event.channelId) continue
 
-      const webhook = await this.getWebhook(_channelId)
+      const webhook = await this.getWebhook(channelId)
       const displayUsername =
         event.replyUsername == undefined ? event.username : `${event.username}⇾${event.replyUsername}`
 

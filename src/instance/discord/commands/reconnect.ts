@@ -6,7 +6,7 @@ import { Permission } from '../common/command-interface.js'
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('reconnect minecraft clients'),
   allowInstance: true,
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
 
   handler: async function (context) {
     await context.interaction.deferReply()

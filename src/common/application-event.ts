@@ -1,3 +1,5 @@
+// TODO: remove on major update
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * All available High Level events
  */
@@ -522,3 +524,5 @@ export interface ShutdownSignal extends SignalEvent {
    */
   readonly restart: boolean
 }
+
+/* eslint-enable @typescript-eslint/naming-convention */

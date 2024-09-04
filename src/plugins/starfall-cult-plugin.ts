@@ -34,13 +34,13 @@ export default {
 } satisfies PluginInterface
 
 function getSkyblockTime(): { day: number } {
-  const HOUR_MS = 50_000
-  const DAY_MS = 24 * HOUR_MS
-  const MONTH_MS = 31 * DAY_MS
-  const YEAR_0 = 1_560_275_700_000
+  const HourInMillisecond = 50_000
+  const DayInMilliseconds = 24 * HourInMillisecond
+  const MonthInMillisecond = 31 * DayInMilliseconds
+  const Year0 = 1_560_275_700_000
 
-  const currentEpoch = Date.now() - YEAR_0
-  const day = (currentEpoch % MONTH_MS) / DAY_MS + 1
+  const currentEpoch = Date.now() - Year0
+  const day = (currentEpoch % MonthInMillisecond) / DayInMilliseconds + 1
   return {
     day: Math.floor(day)
   }

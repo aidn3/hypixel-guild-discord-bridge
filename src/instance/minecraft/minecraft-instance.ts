@@ -17,9 +17,9 @@ import { resolveProxyIfExist } from './common/proxy-handler.js'
 import ErrorHandler from './handlers/error-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import SendchatHandler from './handlers/sendchat-handler.js'
-import StateHandler, { QUIT_OWN_VOLITION } from './handlers/state-handler.js'
+import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 
-const commandsLimiter = new RateLimiter(1, 1000)
+const CommandsLimiter = new RateLimiter(1, 1000)
 
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
   defaultBotConfig = {
@@ -111,7 +111,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
   }
 
   connect(): void {
-    this.client?.end(QUIT_OWN_VOLITION)
+    this.client?.end(QuitOwnVolition)
 
     this.client = createClient({
       ...this.defaultBotConfig,
@@ -181,7 +181,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       .join(' ')
 
     this.logger.debug(`Queuing message to send: ${message}`)
-    await commandsLimiter.wait().then(() => {
+    await CommandsLimiter.wait().then(() => {
       if (this.client?.state === states.PLAY) {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'

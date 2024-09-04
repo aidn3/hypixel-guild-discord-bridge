@@ -47,7 +47,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('connectivity').setDescription('Check connectivity to Minecraft instances'),
-  permission: Permission.ANYONE,
+  permission: Permission.Anyone,
   allowInstance: false,
 
   handler: async function (context) {
@@ -64,7 +64,7 @@ export default {
   }
 } satisfies CommandInterface
 
-const checkConnectivity = async function (app: Application): Promise<Map<string, string[]>> {
+async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
   const receivedResponses = new Map<string, string[]>()
   const queryWords = [
     `Testing Connectivity 1 - @${antiSpamString()}`,

@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios'
-import axios from 'axios'
+import Axios from 'axios'
 import NodeCache from 'node-cache'
 
 export class MojangApi {
@@ -9,9 +9,9 @@ export class MojangApi {
     const cachedResult = this.cache.get<MojangProfile>(username.toLowerCase())
     if (cachedResult) return cachedResult
 
-    const result = await axios
-      .get(`https://api.mojang.com/users/profiles/minecraft/${username}`)
-      .then((response: AxiosResponse<MojangProfile, unknown>) => response.data)
+    const result = await Axios.get(`https://api.mojang.com/users/profiles/minecraft/${username}`).then(
+      (response: AxiosResponse<MojangProfile, unknown>) => response.data
+    )
 
     this.cache.set<MojangProfile>(result.name.toLowerCase(), result)
     return result
@@ -28,9 +28,9 @@ export class MojangApi {
 
     if (leftUsernames.length === 0) return partialResult
 
-    const result = await axios
-      .post(`https://api.mojang.com/profiles/minecraft`, leftUsernames)
-      .then((response: AxiosResponse<MojangProfile[], unknown>) => response.data)
+    const result = await Axios.post(`https://api.mojang.com/profiles/minecraft`, leftUsernames).then(
+      (response: AxiosResponse<MojangProfile[], unknown>) => response.data
+    )
 
     for (const mojangProfile of result) {
       this.cache.set<MojangProfile>(mojangProfile.name.toLowerCase(), mojangProfile)

@@ -5,7 +5,7 @@ import type { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-re
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
 
-const SKILLS = new Set([
+const Names = new Set([
   'farming',
   'mining',
   'combat',
@@ -33,7 +33,7 @@ export default class Skills extends ChatCommandHandler {
     const skill = context.args[0]
     const givenUsername = context.args[1] ?? context.username
 
-    if (!SKILLS.has(skill)) {
+    if (!Names.has(skill)) {
       return `${context.username}, Invalid skill! (given: ${skill})`
     }
 
