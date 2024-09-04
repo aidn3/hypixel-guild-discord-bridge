@@ -50,7 +50,7 @@ export default class Networth extends ChatCommandHandler {
     const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
       v2Endpoint: true,
       prices: this.prices,
-      museumData: museumData ?? undefined,
+      museumData: museumData,
       onlyNetworth: true
     })
       .then((response) => response.networth)
