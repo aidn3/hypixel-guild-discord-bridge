@@ -46,17 +46,16 @@ export default class Networth extends ChatCommandHandler {
       .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
       .then((museum) => museum.members[uuid] as object)
       .catch(() => undefined)
-    if (museumData === undefined) return `${context.username}, player doesn't have museum?`
 
     const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
       v2Endpoint: true,
       prices: this.prices,
-      museumData: museumData,
+      museumData: museumData ?? undefined,
       onlyNetworth: true
     })
       .then((response) => response.networth)
       .catch(() => undefined)
-    if (networth === undefined) return `${context.username}, cannot calculate the network?`
+    if (networth === undefined) return `${context.username}, cannot calculate the networth?`
 
     return `${givenUsername}'s networth: ${this.localizedNetworth(networth)}`
   }
