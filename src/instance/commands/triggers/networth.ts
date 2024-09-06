@@ -40,13 +40,16 @@ export default class Networth extends ChatCommandHandler {
       .then((response) => response.profiles?.find((p) => p.selected))
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const museumData = await Axios.get(
-      `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
-    )
-      .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
-      .then((museum) => museum.members[uuid] as object)
-      .catch(() => undefined)
-    if (museumData === undefined) return `${context.username}, player doesn't have museum?`
+    let museumData: object | undefined
+    try {
+      museumData = await Axios.get(
+        `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
+      )
+        .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
+        .then((museum) => museum.members[uuid] as object)
+    } catch {
+      return `${context.username}, error fetching museum data?`
+    }
 
     const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
       v2Endpoint: true,
@@ -56,7 +59,7 @@ export default class Networth extends ChatCommandHandler {
     })
       .then((response) => response.networth)
       .catch(() => undefined)
-    if (networth === undefined) return `${context.username}, cannot calculate the network?`
+    if (networth === undefined) return `${context.username}, cannot calculate the networth?`
 
     return `${givenUsername}'s networth: ${this.localizedNetworth(networth)}`
   }
