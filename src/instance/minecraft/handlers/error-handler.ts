@@ -23,6 +23,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       )
       this.restart()
     } else if (error.message.includes('does the account own minecraft')) {
+      this.clientInstance.status = Status.FAILED
       this.clientInstance.app.emit('statusMessage', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
