@@ -5,7 +5,7 @@ import * as t from "ts-interface-checker";
 // tslint:disable:object-literal-key-quotes
 
 export const ApplicationEvents = t.iface([], {
-  "*": t.func("void", t.param("name", "string"), t.param("event", "T")),
+  "*": t.func("void", t.param("name", "string"), t.param("event", "BaseEvent")),
   "chat": t.func("void", t.param("event", "ChatEvent")),
   "event": t.func("void", t.param("event", "ClientEvent")),
   "command": t.func("void", t.param("event", "CommandEvent")),
@@ -19,6 +19,7 @@ export const ApplicationEvents = t.iface([], {
   "minecraftChat": t.func("void", t.param("event", "MinecraftRawChatEvent")),
   "minecraftSend": t.func("void", t.param("event", "MinecraftSendChat")),
   "statusMessage": t.func("void", t.param("event", "StatusMessageEvent")),
+  "profanityWarning": t.func("void", t.param("event", "ProfanityWarningEvent")),
 });
 
 export const InstanceType = t.enumtype({
@@ -57,6 +58,13 @@ export const ChatEvent = t.iface(["InformEvent"], {
   "username": "string",
   "replyUsername": t.union("string", "undefined"),
   "message": "string",
+});
+
+export const ProfanityWarningEvent = t.iface(["InformEvent"], {
+  "username": "string",
+  "originalMessage": "string",
+  "filteredMessage": "string",
+  "channelType": "ChannelType",
 });
 
 export const EventType = t.enumtype({
@@ -170,6 +178,7 @@ const exportedTypeSuite: t.ITypeSuite = {
   InformEvent,
   SignalEvent,
   ChatEvent,
+  ProfanityWarningEvent,
   EventType,
   Severity,
   ClientEvent,

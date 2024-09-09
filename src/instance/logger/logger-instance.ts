@@ -18,6 +18,12 @@ export default class LoggerInstance extends ClientInstance<undefined> {
 
       void this.send(`[chat][${event.instanceName}][type=${event.channelType}] ${displayUsername}: ${event.message}`)
     })
+    this.app.on('profanityWarning', (event) => {
+      void this.send(
+        // filteredMessage is used instead of the original message since discord auto-mod might get triggered and deletes the webhook
+        `[profanityWarning][${event.instanceName}][type=${event.channelType}][username=${event.username}]: ${event.filteredMessage}`
+      )
+    })
     this.app.on('event', (event) => {
       void this.send(`[event][${event.eventType}][${event.instanceName}] ${event.username}: ${event.message}`)
     })

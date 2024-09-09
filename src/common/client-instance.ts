@@ -1,5 +1,5 @@
 import type { Logger } from 'log4js'
-import log4js from 'log4js'
+import Logger4js from 'log4js'
 
 import type Application from '../application.js'
 
@@ -19,7 +19,7 @@ export abstract class ClientInstance<K> {
     this.instanceName = instanceName
     this.instanceType = instanceType
     // eslint-disable-next-line import/no-named-as-default-member
-    this.logger = log4js.getLogger(instanceName)
+    this.logger = Logger4js.getLogger(instanceName)
     this.config = config
     this.status = Status.FRESH
   }
@@ -34,7 +34,8 @@ export abstract class ClientInstance<K> {
    */
   abstract connect(): Promise<void> | void
 }
-
+// TODO: remove on major update
+/* eslint-disable @typescript-eslint/naming-convention */
 export enum Status {
   /**
    * Freshly created instance
@@ -55,3 +56,4 @@ export enum Status {
 }
 
 export const INTERNAL_INSTANCE_PREFIX = 'internal/'
+/* eslint-enable @typescript-eslint/naming-convention */

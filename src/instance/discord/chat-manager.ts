@@ -1,6 +1,6 @@
-import axios, { type AxiosResponse } from 'axios'
+import Axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
-import emojisMap from 'emoji-name-map'
+import EmojisMap from 'emoji-name-map'
 
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
@@ -40,7 +40,23 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const content = await this.cleanMessage(event)
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
-    const filteredMessage = await this.proceedFiltering(event, truncatedContent)
+
+    const { filteredMessage, changed } = this.clientInstance.app.filterProfanity(truncatedContent)
+    if (changed) {
+      this.clientInstance.app.emit('profanityWarning', {
+        localEvent: true,
+        instanceType: InstanceType.DISCORD,
+        instanceName: this.clientInstance.instanceName,
+        channelType: channelType,
+
+        username: discordName,
+        originalMessage: truncatedContent,
+        filteredMessage: filteredMessage
+      })
+      await event.reply({
+        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
+      })
+    }
 
     this.clientInstance.app.emit('chat', {
       localEvent: true,
@@ -101,29 +117,6 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     return false
   }
 
-  async proceedFiltering(message: Message, content: string): Promise<string> {
-    let filteredMessage: string
-    try {
-      filteredMessage = this.clientInstance.app.profanityFilter.clean(content)
-    } catch {
-      /*
-        profanity package has bug.
-        will throw error if given one special character.
-        example: clean("?")
-        message is clear if thrown
-      */
-      filteredMessage = content
-    }
-
-    if (content !== filteredMessage) {
-      await message.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
-      })
-    }
-
-    return filteredMessage
-  }
-
   private async getReplyUsername(messageEvent: Message): Promise<string | undefined> {
     if (messageEvent.reference?.messageId === undefined) return
 
@@ -156,7 +149,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   private cleanStandardEmoji(message: string): string {
-    for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
+    for (const [emojiReadable, emojiUnicode] of Object.entries(EmojisMap.emoji)) {
       message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
     }
 
@@ -190,15 +183,15 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const encoded = 'Q-2-x-p-Z-W-5-0-L-U-l-E-I-D-Y-0-O-W-Y-y-Z-m-I-0-O-G-U-1-O-T-c-2-N-w-=-='
     const decoded = Buffer.from(encoded.replaceAll('-', ''), 'base64').toString('utf8')
 
-    const result = await axios
-      .post(
-        'https://api.imgur.com/3/image',
-        {
-          image: link,
-          type: 'url'
-        },
-        { headers: { Authorization: decoded } }
-      )
+    const result = await Axios.post(
+      'https://api.imgur.com/3/image',
+      {
+        image: link,
+        type: 'url'
+      },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      { headers: { Authorization: decoded } }
+    )
       .then((response: AxiosResponse<ImgurResponse, unknown>) => {
         return response.data.data.link
       })

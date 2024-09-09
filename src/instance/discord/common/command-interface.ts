@@ -5,10 +5,10 @@ import type Application from '../../../application.js'
 
 // values must be numbers to be comparable
 export enum Permission {
-  ANYONE,
-  HELPER,
-  OFFICER,
-  ADMIN
+  Anyone,
+  Helper,
+  Officer,
+  Admin
 }
 
 export interface CommandInterface {

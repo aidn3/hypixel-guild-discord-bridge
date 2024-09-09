@@ -2,7 +2,13 @@ import type { Slayer as SlayerType } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  playerNeverPlayedSlayers,
+  usernameNotExists
+} from '../common/util.js'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],
@@ -13,7 +19,8 @@ const Slayers: Record<string, string[]> = {
   vampire: ['riftstalker', 'bloodfiend', 'vamp', 'vampire'],
   overview: ['all', 'summary']
 }
-const slayerExpTable = {
+const SlayerExpTable = {
+  /* eslint-disable @typescript-eslint/naming-convention */
   1: 5,
   2: 15,
   3: 200,
@@ -23,16 +30,19 @@ const slayerExpTable = {
   7: 100_000,
   8: 400_000,
   9: 1_000_000
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
-const vampExpTable = {
+const VampExpTable = {
+  /* eslint-disable @typescript-eslint/naming-convention */
   1: 20,
   2: 75,
   3: 240,
   4: 840,
   5: 2400
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
-const highestTierTable = {
+const HighestTierTable = {
   // 1 less due to index starting at 0
   zombie: 4,
   spider: 3,
@@ -57,12 +67,13 @@ export default class Slayer extends ChatCommandHandler {
     const givenSlayer = context.args[1] ?? 'overview'
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `${context.username}, Invalid username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const profile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    const slayerBosses = profile.slayer.slayer_bosses
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+
+    const slayerBosses = selectedProfile.slayer?.slayer_bosses
+    if (!slayerBosses) return playerNeverPlayedSlayers(givenUsername)
 
     let chosenSlayer: string | undefined
     for (const [key, names] of Object.entries(Slayers)) {
@@ -94,10 +105,10 @@ export default class Slayer extends ChatCommandHandler {
 
     if (slayer === 'vampire') {
       maxLevel = 5 // vampire slayer only goes to level 5
-      expTable = vampExpTable
+      expTable = VampExpTable
     } else {
       maxLevel = 9
-      expTable = slayerExpTable
+      expTable = SlayerExpTable
     }
 
     let level = 0
@@ -108,7 +119,7 @@ export default class Slayer extends ChatCommandHandler {
   }
 
   private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
-    const highestTier = highestTierTable[slayerName as keyof typeof highestTierTable]
+    const highestTier = HighestTierTable[slayerName as keyof typeof HighestTierTable]
     const index = `boss_kills_tier_${highestTier}`
     return slayerData[index as keyof SlayerType] ?? 0
   }

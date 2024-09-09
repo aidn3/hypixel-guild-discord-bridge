@@ -7,7 +7,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('restart').setDescription('Send signal to restart the bridge'),
   allowInstance: false,
-  permission: Permission.ADMIN,
+  permission: Permission.Admin,
 
   handler: async function (context) {
     await context.interaction.deferReply()

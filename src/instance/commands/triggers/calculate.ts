@@ -27,14 +27,18 @@ export default class Calculate extends ChatCommandHandler {
       .replaceAll('x', '*') // x is also used for multiplication
       .replaceAll(',', '') // removes commas from numbers
 
-    const result = evalExpression(expression)
+    try {
+      const result = evalExpression(expression)
 
-    // The following if-statement is purely an Easter egg
-    // It can be removed without causing any adverse affects on the bridge
-    if (result <= 50 && result >= -50 && Math.random() < 0.2) {
-      return `${context.username} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: ${result.toLocaleString()})`
+      // The following if-statement is purely an Easter egg
+      // It can be removed without causing any adverse affects on the bridge
+      if (result <= 50 && result >= -50 && Math.random() < 0.2) {
+        return `${context.username} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: ${result.toLocaleString()})`
+      }
+
+      return `${context.username}, answer: ${result.toLocaleString()}`
+    } catch {
+      return `${context.username}, invalid math expression`
     }
-
-    return `${context.username}, answer: ${result.toLocaleString()}`
   }
 }

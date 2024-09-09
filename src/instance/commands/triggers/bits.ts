@@ -4,11 +4,12 @@
  Minecraft username: Callanplays
 */
 import type { AxiosResponse } from 'axios'
-import axios from 'axios'
+import Axios from 'axios'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
 
+/* eslint-disable @typescript-eslint/naming-convention */
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
   GOD_POTION_2: { bitValue: 1500, prettyName: 'Godpot' },
   KISMET_FEATHER: { bitValue: 1350, prettyName: 'Kismet' },
@@ -58,9 +59,10 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
   TALISMAN_ENRICHMENT_ATTACK_SPEED: { bitValue: 5000, prettyName: 'Atk Spd Enrich' },
   TALISMAN_ENRICHMENT_SWAPPER: { bitValue: 200, prettyName: 'Acc Enrich Swapper' }
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export default class Bits extends ChatCommandHandler {
-  private static readonly UPDATE_PRICES_EVERY = 5 * 60 * 1000 // 5 minute
+  private static readonly UpdatePriceEvery = 5 * 60 * 1000 // 5 minute
   private lastPricesUpdateAt = 0
   private prices: { itemId: string; sellPrice: number }[] = []
 
@@ -75,8 +77,12 @@ export default class Bits extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     const currentTime = Date.now()
-    if (this.lastPricesUpdateAt + Bits.UPDATE_PRICES_EVERY < currentTime) {
-      await this.updatePrices()
+    if (this.lastPricesUpdateAt + Bits.UpdatePriceEvery < currentTime) {
+      try {
+        await this.updatePrices()
+      } catch {
+        return `${context.username}, cannot update prices.`
+      }
       this.lastPricesUpdateAt = currentTime
     }
 
@@ -90,9 +96,9 @@ export default class Bits extends ChatCommandHandler {
   }
 
   private async updatePrices(): Promise<void> {
-    const response = await axios
-      .get(`https://moulberry.codes/lowestbin.json`)
-      .then((response: AxiosResponse<Record<string, number>, unknown>) => response.data)
+    const response = await Axios.get(`https://moulberry.codes/lowestbin.json`).then(
+      (response: AxiosResponse<Record<string, number>, unknown>) => response.data
+    )
 
     this.prices = Object.entries(response)
       .filter(([itemId]) => Object.hasOwn(BitItem, itemId))

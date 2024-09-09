@@ -1,13 +1,13 @@
 import type { AxiosResponse } from 'axios'
-import axios from 'axios'
+import Axios from 'axios'
 import NodeCache from 'node-cache'
 
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
 
 export default class Soopy extends ChatCommandHandler {
-  private readonly SOOPY_API_URL = 'https://soopy.dev/api/soopyv2/botcommand'
-  private readonly ALLOWED_COMMANDS = [
+  private static readonly SoopyApiUrl = 'https://soopy.dev/api/soopyv2/botcommand'
+  private static readonly AllowedCommands = [
     'kuudra',
     'bazzar',
     'bz',
@@ -96,12 +96,18 @@ export default class Soopy extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const commandName = context.args[0]
-    const commandArguments = context.args.length > 1 ? context.args.slice(1, context.args.length) : []
+    const commandName: string | undefined = context.args[0]
+    const commandArguments = context.args.length > 1 ? context.args.slice(1) : []
+
+    // It is possible to be undefined if no arg is supplied
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (commandName === undefined) {
+      return `${context.username}, Try ${this.getExample(context.commandPrefix)}`
+    }
 
     const fullCommand = `${commandName} ${commandArguments.join(' ')}`
 
-    if (!this.ALLOWED_COMMANDS.includes(commandName.toLowerCase())) {
+    if (!Soopy.AllowedCommands.includes(commandName.toLowerCase())) {
       return `${context.username}, command not defined or allowed to use with Soopy!`
     }
 
@@ -111,9 +117,10 @@ export default class Soopy extends ChatCommandHandler {
     }
 
     try {
-      const result = await axios
-        .get(this.SOOPY_API_URL, { timeout: 2 * 60 * 1000, data: { m: fullCommand, u: context.username } })
-        .then((response: AxiosResponse<string, unknown>) => response.data)
+      const result = await Axios.get(Soopy.SoopyApiUrl, {
+        timeout: 2 * 60 * 1000,
+        data: { m: fullCommand, u: context.username }
+      }).then((response: AxiosResponse<string, unknown>) => response.data)
 
       this.cache.set(Soopy.createCacheKey(context.username, fullCommand), result)
       return Soopy.formatResponse(context.username, result)

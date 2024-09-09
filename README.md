@@ -47,6 +47,7 @@ Breaking changes:
   - [Configure](#configure)
   - [Install](#install)
   - [Run](#Run)
+- [Run Via Docker](#run-via-docker)
 - [Advanced](#advanced)
   - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
   - [Node Modes](#node-modes)
@@ -111,28 +112,34 @@ Breaking changes:
 These commands can be executed from any chat channel the bridge can see.
 This includes guild/officer chat as well as private `/msg` and direct messaging channels.
 
-| Command      | Description                                     | Permission |
-| ------------ | ----------------------------------------------- | ---------- |
-| !calculate   | Calculate a math expression: `!calculate 1+2*3` | Anyone     |
-| !catacomb    | Get a player's catacombs and class level        | Anyone     |
-| !8ball       | Replica of **8 ball**.`!8ball Will I win?`      | Anyone     |
-| !darkauction | Show the remaining time till next dark auction  | Anyone     |
-| !explain     | Explain what the bridge does and how it works   | Anyone     |
-| !guild       | Give a summary of the guild of a given user     | Anyone     |
-| !help        | Show a command usage `!help runs`               | Anyone     |
-| !iq          | Give a random IQ number to the guild member     | Anyone     |
-| !kuudra      | Get a player's kuudra completions `!kuudra hot` | Anyone     |
-| !level       | Get a player's skyblock level                   | Anyone     |
-| !networth    | Calculate the in-game networth of a player      | Anyone     |
-| !rps         | Play rock paper scissors `!rps rock`            | Anyone     |
-| !roulette    | Has a chance of muting a player                 | Anyone     |
-| !runs        | Return a plauer's floor completions `!runs m7`  | Anyone     |
-| !secrets     | Return a player's total dungeon secrets         | Anyone     |
-| !skill       | Return player's skill level `!skill mining`     | Anyone     |
-| !slayer      | Return a player's slayer stats `!slayer wolf`   | Anyone     |
-| !toggle      | Enable/disable commands `!toggle 8ball`         | Anyone     |
-| !weight      | Calculate the **Senither Weight** of a player   | Anyone     |
-| !override    | Run a command directly `!overide /guild party`  | Admin      |
+Most [Soopy commands](https://soopy.dev/commands) are supported and can be used by executing `!soopy rtca`.
+A shorter version can also be used: `!- rtca`
+
+| Command      | Description                                                | Permission |
+| ------------ | ---------------------------------------------------------- | ---------- |
+| !8ball       | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
+| !bits        | Returns the best bit items to purchase for the most profit | Anyone"    |
+| !calculate   | Calculate a math expression: `!calculate 1+2*3`            | Anyone     |
+| !catacomb    | Get a player's catacombs and class level                   | Anyone     |
+| !darkauction | Show the remaining time till next dark auction             | Anyone     |
+| !explain     | Explain what the bridge does and how it works              | Anyone     |
+| !guild       | Give a summary of the guild of a given user                | Anyone     |
+| !help        | Show a command usage `!help runs`                          | Anyone     |
+| !iq          | Give a random IQ number to the guild member                | Anyone     |
+| !kuudra      | Get a player's kuudra completions `!kuudra hot`            | Anyone     |
+| !level       | Get a player's skyblock level                              | Anyone     |
+| !networth    | Calculate the in-game networth of a player                 | Anyone     |
+| !rps         | Play rock paper scissors `!rps rock`                       | Anyone     |
+| !roulette    | Has a chance of muting a player                            | Anyone     |
+| !runs        | Return a plauer's floor completions `!runs m7`             | Anyone     |
+| !rtca        | Return runs count to reach an average class level          | Anyone     |
+| !secrets     | Return a player's total dungeon secrets                    | Anyone     |
+| !skill       | Return player's skill level `!skill mining`                | Anyone     |
+| !slayer      | Return a player's slayer stats `!slayer wolf`              | Anyone     |
+| !soopy       | Use Soopy API to execute commands `!- purse`               | Anyone     |
+| !weight      | Calculate the **Senither Weight** of a player              | Anyone     |
+| !toggle      | Enable/disable commands `!toggle 8ball`                    | Officer    |
+| !override    | Run a command directly `!overide /guild party`             | Admin      |
 
 ### Available Plugins
 
@@ -265,6 +272,25 @@ Start the service by executing command:
 npm start
 ```
 
+## Run Via Docker
+
+Alternatively, Docker image is available to use at [GitHub Container Service](https://github.com/aidn3/hypixel-guild-discord-bridge/pkgs/container/hypixel-guild-discord-bridge).
+Image is usually up to date.
+
+To start, first prepare the configuration as instructed in [this section](#configure). Then execute:
+
+```shell
+sudo docker container run -it --rm -v ./config.yaml:/app/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest
+```
+
+Note that the path of the configuration source file must either be relative (with the `./`) or absolute.
+
+Alternatively, providing the path as an argument to the docker container is also possible:
+
+```shell
+sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
+```
+
 ---
 
 ## Advanced
@@ -310,7 +336,7 @@ All configurations will be in `config.yaml` under `socket` section.
 
 ## Credits
 
-- The Project is inspired
-  by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- The Project is inspired by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
+- [Soopyboo32](https://github.com/Soopyboo32) for providing [an awesome command API](https://soopy.dev/commands)
 - Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches
 - All contributors whether by code, ideas/suggestions or testing

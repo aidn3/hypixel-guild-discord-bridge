@@ -26,12 +26,12 @@ export function resolveProxyIfExist(
 
   let connect: (client: Client) => void
   switch (protocol) {
-    case ProxyProtocol.HTTP: {
+    case ProxyProtocol.Http: {
       connect = createHttpConnectFunction(logger, proxyHost, proxyPort, host, port)
       break
     }
 
-    case ProxyProtocol.SOCKS5: {
+    case ProxyProtocol.Socks5: {
       connect = createSocksConnectFunction(logger, proxyHost, proxyPort, host, port)
       break
     }

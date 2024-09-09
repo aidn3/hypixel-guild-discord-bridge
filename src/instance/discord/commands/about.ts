@@ -6,7 +6,7 @@ import { Permission } from '../common/command-interface.js'
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('about').setDescription('Display basic info about the client.'),
-  permission: Permission.ANYONE,
+  permission: Permission.Anyone,
   allowInstance: false,
 
   handler: async function (context) {

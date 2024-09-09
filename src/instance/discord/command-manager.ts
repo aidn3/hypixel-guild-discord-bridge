@@ -154,7 +154,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           }
         }
 
-        return command.handler(commandContext)
+        await command.handler(commandContext)
+        return
       } else {
         this.clientInstance.logger.debug('No permission to execute this command')
 
@@ -199,26 +200,26 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   }
 
   private memberAllowed(interaction: CommandInteraction, permissionLevel: Permission): boolean {
-    if (permissionLevel === Permission.ANYONE) return true
+    if (permissionLevel === Permission.Anyone) return true
 
     return this.resolvePrivilegeLevel(interaction) >= permissionLevel
   }
 
   private resolvePrivilegeLevel(interaction: CommandInteraction): Permission {
-    if (interaction.user.id === this.clientInstance.config.adminId) return Permission.ADMIN
+    if (interaction.user.id === this.clientInstance.config.adminId) return Permission.Admin
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
-    if (roles == undefined) return Permission.ANYONE
+    if (roles == undefined) return Permission.Anyone
 
     if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.includes(role.id))) {
-      return Permission.OFFICER
+      return Permission.Officer
     }
 
     if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds.includes(role.id))) {
-      return Permission.HELPER
+      return Permission.Helper
     }
 
-    return Permission.ANYONE
+    return Permission.Anyone
   }
 
   private getChannelType(channelId: string): ChannelType | undefined {

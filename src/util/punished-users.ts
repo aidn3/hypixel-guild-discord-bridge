@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import * as t from 'ts-interface-checker'
+import * as TypescriptChecker from 'ts-interface-checker'
 import { createCheckers } from 'ts-interface-checker'
 
 import type Application from '../application.js'
@@ -10,12 +10,16 @@ import { PunishmentType } from '../common/application-event.js'
 
 import type { MojangApi } from './mojang.js'
 
-const applicationEventChecker = createCheckers({ ...ApplicationEventTi, PunishmentList: t.array('PunishmentAddEvent') })
+const ApplicationEventChecker = createCheckers({
+  ...ApplicationEventTi,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  PunishmentList: TypescriptChecker.array('PunishmentAddEvent')
+})
 
 type PunishmentsRecord = Record<PunishmentType, PunishmentAddEvent[]>
 
 export class PunishedUsers {
-  private static readonly CONFIG_NAME = 'punishments.json'
+  private static readonly ConfigName = 'punishments.json'
   private readonly app: Application
   private readonly configFilePath: string
   private punishmentsRecord: PunishmentsRecord = {
@@ -25,7 +29,7 @@ export class PunishedUsers {
 
   constructor(app: Application) {
     this.app = app
-    this.configFilePath = app.getConfigFilePath(PunishedUsers.CONFIG_NAME)
+    this.configFilePath = app.getConfigFilePath(PunishedUsers.ConfigName)
     this.loadFromConfig()
 
     app.on('punishmentAdd', (event) => {
@@ -43,9 +47,7 @@ export class PunishedUsers {
 
     const originalList = this.punishmentsRecord[event.type]
     const currentTime = Date.now()
-    const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter(
-      (id) => id !== undefined
-    ) as string[]
+    const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter((id) => id !== undefined)
 
     const modifiedList = originalList.filter(
       (punishment) => punishment.till < currentTime || !this.matchIdentifier(punishment, identifiers)
@@ -131,13 +133,13 @@ export class PunishedUsers {
   static durationToMinecraftDuration(duration: number): string {
     // 30 day in seconds
     // Max allowed duration in minecraft. It is a hard limit from server side
-    const MAX_DURATION = 2_592_000
+    const MaxDuration = 2_592_000
     // 1 minute in seconds. hard limit too
-    const MIN_DURATION = 60
-    const PREFIX = 's' // for "seconds"
+    const MixDuration = 60
+    const Prefix = 's' // for "seconds"
 
-    const max_time = Math.min(MAX_DURATION, Math.floor(duration / 1000))
-    return `${Math.max(max_time, MIN_DURATION)}${PREFIX}`
+    const maxTime = Math.min(MaxDuration, Math.floor(duration / 1000))
+    return `${Math.max(maxTime, MixDuration)}${Prefix}`
   }
 
   private loadFromConfig(): void {
@@ -147,8 +149,8 @@ export class PunishedUsers {
     const punishmentsRecord = JSON.parse(fileData) as PunishmentsRecord
 
     for (const [type, punishments] of Object.entries(punishmentsRecord)) {
-      applicationEventChecker.PunishmentType.check(type)
-      applicationEventChecker.PunishmentList.check(punishments)
+      ApplicationEventChecker.PunishmentType.check(type)
+      ApplicationEventChecker.PunishmentList.check(punishments)
     }
 
     this.punishmentsRecord = punishmentsRecord

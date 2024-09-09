@@ -8,8 +8,8 @@ THIS PLUGIN IS NOT ESSENTIAL BUT IS HEAVILY RECOMMENDED.
 BRIDGE WILL USE MORE RAM THE LONGER IT IS LEFT WITHOUT RESTARTING
 */
 
-const MAX_LIFE_TILL_RESTART = 24 * 60 * 60 // 24 hour in seconds
-const CHECK_EVERY = 5 * 60 * 1000 // 5 minutes in milliseconds
+const MaxLifeTillRestart = 24 * 60 * 60 // 24 hour in seconds
+const CheckEvery = 5 * 60 * 1000 // 5 minutes in milliseconds
 
 export default {
   onRun(context: PluginContext): void {
@@ -18,7 +18,7 @@ export default {
     setInterval(() => {
       if (shuttingDown) return
 
-      if (MAX_LIFE_TILL_RESTART < uptime()) {
+      if (MaxLifeTillRestart < uptime()) {
         shuttingDown = true
 
         context.application.emit('event', {
@@ -42,6 +42,6 @@ export default {
           targetInstanceName: undefined
         })
       }
-    }, CHECK_EVERY)
+    }, CheckEvery)
   }
 } satisfies PluginInterface

@@ -1,5 +1,7 @@
 import type { skyblockMemberOptions } from 'hypixel-api-reborn'
 
+// public api interfaces. Can't choose a naming convention
+/* eslint-disable @typescript-eslint/naming-convention */
 declare module 'hypixel-api-reborn' {
   interface Client {
     getSkyblockProfiles(
@@ -9,7 +11,7 @@ declare module 'hypixel-api-reborn' {
   }
 
   export interface SkyblockV2ProfilesRaw {
-    profiles: SkyblockV2Profile[]
+    profiles: SkyblockV2Profile[] | undefined
   }
 
   export interface SkyblockV2Profile {
@@ -23,7 +25,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
-    dungeons: SkyblockV2Dungeons
+    dungeons: SkyblockV2Dungeons | undefined
     nether_island_player_data: {
       kuudra_completed_tiers: {
         none: number
@@ -33,7 +35,7 @@ declare module 'hypixel-api-reborn' {
         infernal: number
       }
     }
-    slayer: SlayerProfile
+    slayer: SlayerProfile | undefined
     essence?: SkyblockV2Essence
   }
 
@@ -92,3 +94,4 @@ declare module 'hypixel-api-reborn' {
     boss_kills_tier_4?: number
   }
 }
+/* eslint-enable @typescript-eslint/naming-convention */

@@ -3,7 +3,7 @@ import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export const QUIT_OWN_VOLITION = 'disconnect.quitting'
+export const QuitOwnVolition = 'disconnect.quitting'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts
@@ -75,7 +75,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         message: reason
       })
       return
-    } else if (reason === QUIT_OWN_VOLITION) {
+    } else if (reason === QuitOwnVolition) {
       const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
       this.clientInstance.logger.debug(reason)

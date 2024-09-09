@@ -5,8 +5,8 @@ import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'disco
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import type { ChatEvent, ClientEvent, CommandEvent, InstanceEvent } from '../../common/application-event.js'
-import { ChannelType, EventType, InstanceType, Severity } from '../../common/application-event.js'
+import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event.js'
+import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
@@ -97,10 +97,10 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       return
     }
 
-    for (const _channelId of channels) {
-      if (_channelId === event.channelId) continue
+    for (const channelId of channels) {
+      if (channelId === event.channelId) continue
 
-      const webhook = await this.getWebhook(_channelId)
+      const webhook = await this.getWebhook(channelId)
       const displayUsername =
         event.replyUsername == undefined ? event.username : `${event.username}⇾${event.replyUsername}`
 
@@ -134,14 +134,51 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       }
     }
 
-    let channels: string[]
-    if (event.channelType === ChannelType.PUBLIC) {
-      channels = this.config.publicChannelIds
-    } else if (event.channelType === ChannelType.OFFICER) {
-      channels = this.config.officerChannelIds
-    } else {
-      return
+    const channels: string[] = []
+
+    switch (event.eventType) {
+      case EventType.AUTOMATED: {
+        if (event.channelType === ChannelType.PUBLIC) {
+          channels.push(...this.config.publicChannelIds)
+        } else if (event.channelType === ChannelType.OFFICER) {
+          channels.push(...this.config.officerChannelIds)
+        } else {
+          return
+        }
+        break
+      }
+
+      case EventType.REQUEST:
+      case EventType.JOIN:
+      case EventType.LEAVE:
+      case EventType.KICK:
+      case EventType.PROMOTE:
+      case EventType.DEMOTE: {
+        channels.push(...this.config.publicChannelIds, ...this.config.officerChannelIds)
+        break
+      }
+
+      case EventType.MUTE:
+      case EventType.UNMUTE: {
+        channels.push(...this.config.officerChannelIds)
+        break
+      }
+
+      case EventType.BLOCK:
+      case EventType.MUTED:
+      case EventType.OFFLINE:
+      case EventType.ONLINE:
+      case EventType.QUEST:
+      case EventType.REPEAT: {
+        channels.push(...this.config.publicChannelIds)
+        break
+      }
+
+      default: {
+        return
+      }
     }
+
     const embed = {
       description: escapeDiscord(event.message),
 

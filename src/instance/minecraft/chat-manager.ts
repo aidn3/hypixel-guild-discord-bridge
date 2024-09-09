@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import getMinecraftData from 'minecraft-data'
+import GetMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
 
 import { InstanceType } from '../../common/application-event.js'
@@ -57,7 +57,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
     assert(this.clientInstance.registry)
 
     const prismChat = this.clientInstance.prismChat
-    const minecraftData = getMinecraftData(this.clientInstance.client.version)
+    const minecraftData = GetMinecraftData(this.clientInstance.client.version)
 
     this.clientInstance.client.on('systemChat', (data) => {
       const chatMessage = prismChat.fromNotch(data.formattedMessage)
@@ -101,7 +101,6 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
         assert(message) // old packet means message exists
         resultMessage = prismChat.fromNotch(message)
       }
-
       this.onMessage(resultMessage.toString())
     })
   }

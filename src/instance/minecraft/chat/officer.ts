@@ -1,4 +1,4 @@
-import { InstanceType, ChannelType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -18,6 +18,20 @@ export default {
         return
       if (context.clientInstance.app.clusterHelper.isMinecraftBot(username)) return
 
+      const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)
+      if (changed) {
+        context.application.emit('profanityWarning', {
+          localEvent: true,
+          instanceType: InstanceType.MINECRAFT,
+          instanceName: context.instanceName,
+          channelType: ChannelType.OFFICER,
+
+          username,
+          originalMessage: playerMessage,
+          filteredMessage: filteredMessage
+        })
+      }
+
       context.application.emit('chat', {
         localEvent: true,
         instanceName: context.instanceName,
@@ -26,7 +40,7 @@ export default {
         channelId: undefined,
         username,
         replyUsername: undefined,
-        message: playerMessage
+        message: filteredMessage
       })
     }
   }

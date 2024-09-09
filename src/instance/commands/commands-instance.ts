@@ -109,34 +109,51 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       return
     }
 
-    const commandResponse = await command.handler({
-      app: this.app,
+    try {
+      const commandResponse = await command.handler({
+        app: this.app,
 
-      logger: this.logger,
-      allCommands: this.commands,
-      commandPrefix: this.config.commandPrefix,
-      adminUsername: this.config.adminUsername,
+        logger: this.logger,
+        allCommands: this.commands,
+        commandPrefix: this.config.commandPrefix,
+        adminUsername: this.config.adminUsername,
 
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
-      channelType: event.channelType,
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+        channelType: event.channelType,
 
-      username: event.username,
-      isAdmin: isAdmin,
-      args: commandsArguments
-    })
+        username: event.username,
+        isAdmin: isAdmin,
+        args: commandsArguments
+      })
 
-    this.app.emit('command', {
-      localEvent: true,
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
-      channelType: event.channelType,
-      discordChannelId: event.channelId,
-      username: event.username,
-      fullCommand: event.message,
-      commandName: command.triggers[0],
-      commandResponse: commandResponse,
-      alreadyReplied: false
-    })
+      this.app.emit('command', {
+        localEvent: true,
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+        channelType: event.channelType,
+        discordChannelId: event.channelId,
+        username: event.username,
+        fullCommand: event.message,
+        commandName: command.triggers[0],
+        commandResponse: commandResponse,
+        alreadyReplied: false
+      })
+    } catch (error) {
+      this.logger.error('Error while handling command', error)
+
+      this.app.emit('command', {
+        localEvent: true,
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+        channelType: event.channelType,
+        discordChannelId: event.channelId,
+        username: event.username,
+        fullCommand: event.message,
+        commandName: command.triggers[0],
+        commandResponse: `${event.username}, error trying to execute ${command.triggers[0]}.`,
+        alreadyReplied: false
+      })
+    }
   }
 }

@@ -15,9 +15,7 @@ THIS PLUGIN IS INCOMPATIBLE WITH `limbo-plugin`. DISABLE ONE BEFORE ENABLING THE
 */
 export default {
   onRun(context: PluginContext): void {
-    const minecraftInstances = context.localInstances.filter(
-      (instance) => instance instanceof MinecraftInstance
-    ) as MinecraftInstance[]
+    const minecraftInstances = context.localInstances.filter((instance) => instance instanceof MinecraftInstance)
 
     if (context.addChatCommand) context.addChatCommand(new WarpCommand(minecraftInstances))
 
@@ -142,7 +140,7 @@ async function awaitPartyStatus(
 }
 
 class WarpCommand extends ChatCommandHandler {
-  private static readonly commandCoolDown = 60_000
+  private static readonly CommandCoolDown = 60_000
   private lastCommandExecutionAt = 0
   private readonly minecraftInstances: MinecraftInstance[]
 
@@ -163,8 +161,8 @@ class WarpCommand extends ChatCommandHandler {
     }
 
     const currentTime = Date.now()
-    if (this.lastCommandExecutionAt + WarpCommand.commandCoolDown > currentTime) {
-      return `Can use command again in ${Math.floor((this.lastCommandExecutionAt + WarpCommand.commandCoolDown - currentTime) / 1000)} seconds.`
+    if (this.lastCommandExecutionAt + WarpCommand.CommandCoolDown > currentTime) {
+      return `Can use command again in ${Math.floor((this.lastCommandExecutionAt + WarpCommand.CommandCoolDown - currentTime) / 1000)} seconds.`
     }
 
     const username = context.args[0]

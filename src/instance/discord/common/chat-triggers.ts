@@ -12,7 +12,7 @@ export interface RegexChat {
   failure: RegExp[]
 }
 
-const GENERAL_CHAT: RegexChat = {
+const GeneralChat: RegexChat = {
   success: [],
   failure: [
     /^Can't find a player by the name of '(\w{3,32})'*/,
@@ -23,14 +23,14 @@ const GENERAL_CHAT: RegexChat = {
   ]
 }
 
-export const RANK_CHAT: RegexChat = {
+export const RankChat: RegexChat = {
   success: [
-    ...GENERAL_CHAT.success,
+    ...GeneralChat.success,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was promoted from.*/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was demoted from.*/
   ],
   failure: [
-    ...GENERAL_CHAT.failure,
+    ...GeneralChat.failure,
     /^I couldn't find a rank by the name of.*/,
     /^You can only promote up to your own rank.*/,
     /^You can only demote up to your own rank.*/,
@@ -40,13 +40,13 @@ export const RANK_CHAT: RegexChat = {
   ]
 }
 
-export const KICK_CHAT: RegexChat = {
+export const KickChat: RegexChat = {
   success: [
-    ...GENERAL_CHAT.success,
+    ...GeneralChat.success,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was kicked from the guild by (?:\[[+A-Z]{1,10}] )*(\w{3,32})!/
   ],
   failure: [
-    ...GENERAL_CHAT.failure,
+    ...GeneralChat.failure,
     /^Invalid usage! '\/guild kick <player> <reason>'/,
     /^You cannot kick yourself from the guild!/,
     /^You do not have permission to kick people from the guild!/,
@@ -54,13 +54,13 @@ export const KICK_CHAT: RegexChat = {
   ]
 }
 
-export const MUTE_CHAT: RegexChat = {
+export const MuteChat: RegexChat = {
   success: [
-    ...GENERAL_CHAT.success,
+    ...GeneralChat.success,
     /^(?:\[[+A-Z]{1,10}] )*\w{3,32} has muted (?:\[[+A-Z]{1,10}] )*(\w{3,32}|the guild chat) for.*/
   ],
   failure: [
-    ...GENERAL_CHAT.failure,
+    ...GeneralChat.failure,
     /^Invalid usage! '\/guild mute <player\/everyone> <time>'/,
     /^You cannot mute someone for more than one month/,
     /^You cannot mute someone for less than a minute/,
@@ -69,34 +69,35 @@ export const MUTE_CHAT: RegexChat = {
   ]
 }
 
-export const UNMUTE_CHAT: RegexChat = {
+export const UnmuteChat: RegexChat = {
   success: [
-    ...GENERAL_CHAT.success,
+    ...GeneralChat.success,
     /^(?:\[[+A-Z]{1,10}] )*\w{3,32} has unmuted (?:\[[+A-Z]{1,10}] )*(\w{3,32}|the guild chat).*/
   ],
   failure: [
-    ...GENERAL_CHAT.failure,
+    ...GeneralChat.failure,
     /^Invalid usage! '\/guild unmute <player\/everyone>'/,
     /^This player is not muted!/,
     /^The guild is not muted!/
   ]
 }
 
-export const INVITE_ACCEPT_CHAT: RegexChat = {
+export const InviteAcceptChat: RegexChat = {
   success: [
-    ...GENERAL_CHAT.success,
+    ...GeneralChat.success,
     /^You invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild. They have 5 minutes to accept/,
     /^You sent an offline invite to (?:\[[+A-Z]{1,10}] )*(\w{3,32})! They will have 5 minutes to accept once they come online!/,
     /^You've already invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild! Wait for them to accept!/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) joined the guild!/
   ],
   failure: [
-    ...GENERAL_CHAT.failure,
+    ...GeneralChat.failure,
     /^You do not have permission to invite players!/,
     /^You cannot invite this player to your guild!/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in another guild!/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in your guild!/,
-    /^Already in a guild!/
+    /^Already in a guild!/,
+    /^Your guild is full!/
   ]
 }
 

@@ -5,7 +5,7 @@ import * as process from 'node:process'
 import BadWords from 'bad-words'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
-import log4js from 'log4js'
+import Logger4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
@@ -49,7 +49,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
     // eslint-disable-next-line import/no-named-as-default-member
-    this.logger = log4js.getLogger('Application')
+    this.logger = Logger4js.getLogger('Application')
     this.logger.trace('Application initiating')
     emitAll(this) // first thing to redirect all events
     this.config = config
@@ -113,7 +113,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
         void sleep(5000).then(() => {
-          shutdownApplication(2)
+          void shutdownApplication(2)
         })
       }
     })
@@ -121,6 +121,22 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
+  }
+  public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
+    let filtered: string
+    try {
+      filtered = this.profanityFilter.clean(message)
+    } catch {
+      /*
+          profanity package has bug.
+          will throw error if given one special character.
+          example: clean("?")
+          message is clear if thrown
+        */
+      filtered = message
+    }
+
+    return { filteredMessage: filtered, changed: message !== filtered }
   }
 
   private loadPlugins(
@@ -151,7 +167,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       const loadedPlugin = await p.promise
       loadedPlugin.onRun({
         // eslint-disable-next-line import/no-named-as-default-member
-        logger: log4js.getLogger(`plugin-${p.name}`),
+        logger: Logger4js.getLogger(`plugin-${p.name}`),
         pluginName: p.name,
         application: this,
         // only shared with plugins to directly modify instances
@@ -210,13 +226,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 }
 
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
 function emitAll(emitter: Events): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   const old = emitter.emit
   emitter.emit = (event: string, ...arguments_): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (event !== '*') emitter.emit('*', event, ...arguments_)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return old.call(emitter, event, ...arguments_)
   }
 }
+/* eslint-enable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
