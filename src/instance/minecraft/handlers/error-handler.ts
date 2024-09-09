@@ -16,9 +16,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.logger.error(
         'Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...'
       )
-      setTimeout(() => {
-        this.clientInstance.connect()
-      }, 30_000)
+      this.restart()
     } else if (error.message.includes('Too Many Requests')) {
       this.clientInstance.logger.error(
         'Microsoft XBOX service throttled due to too many requests. Trying again in 30 seconds...'
