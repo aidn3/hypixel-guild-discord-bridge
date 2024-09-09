@@ -16,10 +16,14 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.logger.error(
         'Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...'
       )
-      setTimeout(() => {
-        this.clientInstance.connect()
-      }, 30_000)
+      this.restart()
+    } else if (error.message.includes('Too Many Requests')) {
+      this.clientInstance.logger.error(
+        'Microsoft XBOX service throttled due to too many requests. Trying again in 30 seconds...'
+      )
+      this.restart()
     } else if (error.message.includes('does the account own minecraft')) {
+      this.clientInstance.status = Status.FAILED
       this.clientInstance.app.emit('statusMessage', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
@@ -36,5 +40,11 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         message: 'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
       })
     }
+  }
+
+  private restart(): void {
+    setTimeout(() => {
+      this.clientInstance.connect()
+    }, 30_000)
   }
 }
