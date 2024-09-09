@@ -9,6 +9,7 @@ export const ApplicationEvents = t.iface([], {
   "chat": t.func("void", t.param("event", "ChatEvent")),
   "event": t.func("void", t.param("event", "ClientEvent")),
   "command": t.func("void", t.param("event", "CommandEvent")),
+  "commandFeedback": t.func("void", t.param("event", "CommandFeedbackEvent")),
   "instance": t.func("void", t.param("event", "InstanceEvent")),
   "selfBroadcast": t.func("void", t.param("event", "InstanceSelfBroadcast")),
   "punishmentAdd": t.func("void", t.param("event", "PunishmentAddEvent")),
@@ -112,6 +113,8 @@ export const CommandEvent = t.iface(["InformEvent"], {
   "commandResponse": "string",
 });
 
+export const CommandFeedbackEvent = t.name("CommandEvent");
+
 export const InstanceEventType = t.enumtype({
   "create": 0,
   "start": 1,
@@ -183,6 +186,7 @@ const exportedTypeSuite: t.ITypeSuite = {
   Severity,
   ClientEvent,
   CommandEvent,
+  CommandFeedbackEvent,
   InstanceEventType,
   InstanceEvent,
   MinecraftRawChatEvent,

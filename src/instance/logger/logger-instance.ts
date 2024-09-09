@@ -32,6 +32,11 @@ export default class LoggerInstance extends ClientInstance<undefined> {
         `[command][${event.instanceName}][${event.channelType}][username=${event.username}][command=${event.commandName}] ${event.fullCommand}: ${event.commandResponse}`
       )
     })
+    this.app.on('commandFeedback', (event) => {
+      void this.send(
+        `[commandFeedback][${event.instanceName}][${event.channelType}][username=${event.username}][command=${event.commandName}] ${event.fullCommand}: ${event.commandResponse}`
+      )
+    })
 
     this.app.on('instance', (event) => {
       void this.send(`[instance][${event.instanceName}] ${event.type}: ${event.message}`)

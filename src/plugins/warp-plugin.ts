@@ -171,6 +171,8 @@ class WarpCommand extends ChatCommandHandler {
     }
 
     this.lastCommandExecutionAt = currentTime
+
+    context.sendFeedback(`Attempting to warp ${username}`)
     return await warpPlayer(context.app, minecraftInstanceName, username)
   }
 

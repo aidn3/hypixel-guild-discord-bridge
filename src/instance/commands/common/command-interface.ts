@@ -39,4 +39,6 @@ export interface ChatCommandContext {
   username: string
   isAdmin: boolean
   args: string[]
+
+  sendFeedback: (feedback: string) => void
 }

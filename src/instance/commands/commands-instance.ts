@@ -124,36 +124,47 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
 
         username: event.username,
         isAdmin: isAdmin,
-        args: commandsArguments
+        args: commandsArguments,
+
+        sendFeedback: (feedbackResponse) => {
+          this.feedback(event, command.triggers[0], feedbackResponse)
+        }
       })
 
-      this.app.emit('command', {
-        localEvent: true,
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
-        channelType: event.channelType,
-        discordChannelId: event.channelId,
-        username: event.username,
-        fullCommand: event.message,
-        commandName: command.triggers[0],
-        commandResponse: commandResponse,
-        alreadyReplied: false
-      })
+      this.reply(event, command.triggers[0], commandResponse)
     } catch (error) {
       this.logger.error('Error while handling command', error)
-
-      this.app.emit('command', {
-        localEvent: true,
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
-        channelType: event.channelType,
-        discordChannelId: event.channelId,
-        username: event.username,
-        fullCommand: event.message,
-        commandName: command.triggers[0],
-        commandResponse: `${event.username}, error trying to execute ${command.triggers[0]}.`,
-        alreadyReplied: false
-      })
+      this.reply(event, command.triggers[0], `${event.username}, error trying to execute ${command.triggers[0]}.`)
     }
+  }
+
+  private reply(event: ChatEvent, commandName: string, response: string): void {
+    this.app.emit('command', {
+      localEvent: true,
+      instanceName: event.instanceName,
+      instanceType: event.instanceType,
+      channelType: event.channelType,
+      discordChannelId: event.channelId,
+      username: event.username,
+      fullCommand: event.message,
+      commandName: commandName,
+      commandResponse: response,
+      alreadyReplied: false
+    })
+  }
+
+  private feedback(event: ChatEvent, commandName: string, response: string): void {
+    this.app.emit('commandFeedback', {
+      localEvent: true,
+      instanceName: event.instanceName,
+      instanceType: event.instanceType,
+      channelType: event.channelType,
+      discordChannelId: event.channelId,
+      username: event.username,
+      fullCommand: event.message,
+      commandName: commandName,
+      commandResponse: response,
+      alreadyReplied: false
+    })
   }
 }

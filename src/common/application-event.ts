@@ -20,9 +20,19 @@ export interface ApplicationEvents {
    */
   event: (event: ClientEvent) => void
   /**
-   * User executing a command
+   * User executing a command.
+   * Each command execution can send only one command event.
+   * If multiple response is needed, either format the text using blank lines/etc. or use {@linkcode CommandFeedbackEvent}
    */
   command: (event: CommandEvent) => void
+
+  /**
+   * Command sending a followup responses.
+   * This can be used to send multiple responses.
+   * Useful when working with long term commands that takes time to finish.
+   * It provides a way to give feedback on the command.
+   */
+  commandFeedback: (event: CommandFeedbackEvent) => void
 
   /**
    * Internal instance start/connect/disconnect/etc
@@ -356,6 +366,12 @@ export interface CommandEvent extends InformEvent {
    */
   readonly commandResponse: string
 }
+
+/**
+ * Used to send feedback messages when a command takes time to execute.
+ * Can be used to send multiple responses as well.
+ */
+export type CommandFeedbackEvent = CommandEvent
 
 /**
  * Enum containing all available instance statuses
