@@ -6,7 +6,7 @@ import PrismarineRegistry from 'prismarine-registry'
 
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event.js'
+import type { ChatEvent, ClientEvent, CommandEvent, CommandFeedbackEvent } from '../../common/application-event.js'
 import { ChannelType, EventType, InstanceEventType, InstanceType } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import RateLimiter from '../../util/rate-limiter.js'
@@ -60,33 +60,10 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     })
 
     this.app.on('command', (event: CommandEvent) => {
-      if (
-        event.instanceType === InstanceType.MINECRAFT &&
-        event.instanceName === this.instanceName &&
-        event.alreadyReplied
-      ) {
-        return
-      }
-
-      const finalResponse = `${event.commandResponse} @${antiSpamString()}`
-      switch (event.channelType) {
-        case ChannelType.PUBLIC: {
-          void this.send(`/gc ${finalResponse}`)
-          break
-        }
-        case ChannelType.OFFICER: {
-          void this.send(`/oc ${finalResponse}`)
-          break
-        }
-        case ChannelType.PRIVATE: {
-          if (event.instanceType !== InstanceType.MINECRAFT || event.instanceName !== this.instanceName) return
-          void this.send(`/msg ${event.username} ${finalResponse}`)
-          break
-        }
-        default: {
-          break
-        }
-      }
+      this.sendCommand(event, false)
+    })
+    this.app.on('commandFeedback', (event: CommandFeedbackEvent) => {
+      this.sendCommand(event, true)
     })
 
     this.app.on('chat', (event: ChatEvent) => {
@@ -191,6 +168,36 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
         this.client.chat(message)
       }
     })
+  }
+
+  private sendCommand(event: CommandFeedbackEvent, feedback: boolean) {
+    if (
+      event.instanceType === InstanceType.MINECRAFT &&
+      event.instanceName === this.instanceName &&
+      event.alreadyReplied
+    ) {
+      return
+    }
+
+    const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
+    switch (event.channelType) {
+      case ChannelType.PUBLIC: {
+        void this.send(`/gc ${finalResponse}`)
+        break
+      }
+      case ChannelType.OFFICER: {
+        void this.send(`/oc ${finalResponse}`)
+        break
+      }
+      case ChannelType.PRIVATE: {
+        if (event.instanceType !== InstanceType.MINECRAFT || event.instanceName !== this.instanceName) return
+        void this.send(`/msg ${event.username} ${finalResponse}`)
+        break
+      }
+      default: {
+        break
+      }
+    }
   }
 
   private formatChatMessage(

@@ -5,8 +5,14 @@ import { Client, GatewayIntentBits, Options, Partials, TextChannel } from 'disco
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { EventType, InstanceType, ChannelType, Severity } from '../../common/application-event.js'
-import type { ChatEvent, ClientEvent, InstanceEvent, CommandEvent } from '../../common/application-event.js'
+import type {
+  ChatEvent,
+  ClientEvent,
+  CommandEvent,
+  CommandFeedbackEvent,
+  InstanceEvent
+} from '../../common/application-event.js'
+import { ChannelType, EventType, InstanceType, Severity } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
@@ -67,6 +73,9 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     })
     this.app.on('command', (event: CommandEvent) => {
       void this.onCommand(event)
+    })
+    this.app.on('commandFeedback', (event: CommandFeedbackEvent) => {
+      void this.onCommandFeedback(event)
     })
   }
 
@@ -240,6 +249,14 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   }
 
   private async onCommand(event: CommandEvent): Promise<void> {
+    await this.sendCommandResponse(event, false)
+  }
+
+  private async onCommandFeedback(event: CommandFeedbackEvent): Promise<void> {
+    await this.sendCommandResponse(event, true)
+  }
+
+  private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
     let channels: string[] = []
 
     switch (event.channelType) {
@@ -271,7 +288,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       color: Severity.GOOD,
       description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
       footer: {
-        text: event.instanceName
+        text: `event.instanceName${feedback ? ' (command feedback)' : ''}`
       }
     } satisfies APIEmbed
 
