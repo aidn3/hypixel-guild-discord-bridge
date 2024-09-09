@@ -19,6 +19,11 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       setTimeout(() => {
         this.clientInstance.connect()
       }, 30_000)
+    } else if (error.message.includes('Too Many Requests')) {
+      this.clientInstance.logger.error(
+        'Microsoft XBOX service throttled due to too many requests. Trying again in 30 seconds...'
+      )
+      this.restart()
     } else if (error.message.includes('does the account own minecraft')) {
       this.clientInstance.app.emit('statusMessage', {
         localEvent: true,
@@ -36,5 +41,11 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         message: 'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
       })
     }
+  }
+
+  private restart(): void {
+    setTimeout(() => {
+      this.clientInstance.connect()
+    }, 30_000)
   }
 }
