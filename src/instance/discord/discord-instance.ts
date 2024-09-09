@@ -288,7 +288,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       color: Severity.GOOD,
       description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
       footer: {
-        text: `event.instanceName${feedback ? ' (command feedback)' : ''}`
+        text: `${event.instanceName}${feedback ? ' (command feedback)' : ''}`
       }
     } satisfies APIEmbed
 
