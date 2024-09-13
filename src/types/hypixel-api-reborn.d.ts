@@ -64,10 +64,14 @@ declare module 'hypixel-api-reborn' {
   export interface SkyblockV2DungeonsCatacombs {
     experience: number
     tier_completions: Record<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+    fastest_time_s: Record<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' , number>
+    fastest_time_s_plus: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' , number>
   }
 
   export interface SkyblockV2DungeonsMasterCatacombs {
     tier_completions: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+    fastest_time_s: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' , number>
+    fastest_time_s_plus: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' , number>
   }
 
   export interface SkyblockV2DungeonsClass {
