@@ -19,14 +19,13 @@ import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import SendchatHandler from './handlers/sendchat-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 
-const CommandsLimiter = new RateLimiter(1, 1000)
-
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
   defaultBotConfig = {
     host: 'me.hypixel.net',
     port: 25_565,
     version: '1.17.1'
   }
+  private readonly commandsLimiter = new RateLimiter(1, 1000)
   readonly bridgePrefix: string
   private readonly handlers
   readonly registry
@@ -158,8 +157,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       .join(' ')
 
     this.logger.debug(`Queuing message to send: ${message}`)
-    await CommandsLimiter.wait().then(() => {
       if (this.client?.state === states.PLAY) {
+    await this.commandsLimiter.wait().then(() => {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'
           this.logger.warn(`Long message truncated: ${message}`)
