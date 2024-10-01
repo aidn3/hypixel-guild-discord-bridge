@@ -12,7 +12,6 @@ import ClientSession from './client-session.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import ErrorHandler from './handlers/error-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
-import SendchatHandler from './handlers/sendchat-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
@@ -58,7 +57,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       new ErrorHandler(this),
       new StateHandler(this),
       new SelfbroadcastHandler(this),
-      new SendchatHandler(this),
       new ChatManager(this)
     ]
 

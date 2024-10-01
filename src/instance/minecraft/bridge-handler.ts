@@ -4,7 +4,9 @@ import type {
   ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceEvent
+  InstanceEvent,
+  MinecraftSendChat,
+  ReconnectSignal
 } from '../../common/application-event.js'
 import { ChannelType, EventType, InstanceType } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
@@ -17,13 +19,11 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     super(application, clientInstance)
 
     this.application.on('reconnectSignal', (event) => {
-      // undefined is strictly checked due to api specification
-      if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
-        this.clientInstance.logger.log('instance has received restart signal')
-        void this.clientInstance.send(`/gc @Instance restarting...`).then(() => {
-          this.clientInstance.connect()
-        })
-      }
+      this.onReconnectSignal(event)
+    })
+
+    this.application.on('minecraftSend', (event) => {
+      void this.onMinecraftSend(event)
     })
   }
 
@@ -60,6 +60,23 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
   onCommandFeedback(event: CommandFeedbackEvent): void | Promise<void> {
     this.handleCommand(event, true)
+  }
+
+  private onReconnectSignal(event: ReconnectSignal) {
+    // undefined is strictly checked due to api specification
+    if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
+      this.clientInstance.logger.log('instance has received restart signal')
+      void this.clientInstance.send(`/gc @Instance restarting...`).then(() => {
+        this.clientInstance.connect()
+      })
+    }
+  }
+
+  private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
+    // undefined is strictly checked due to api specification
+    if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
+      await this.clientInstance.send(event.command)
+    }
   }
 
   private handleCommand(event: CommandFeedbackEvent, feedback: boolean) {
