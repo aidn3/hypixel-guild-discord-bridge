@@ -1,5 +1,4 @@
 import { SkyblockV2DungeonsCatacombs } from 'hypixel-api-reborn'
-
 import type { ChatCommandContext } from '../common/command-interface.js'
 import { ChatCommandHandler } from '../common/command-interface.js'
 import {
@@ -33,10 +32,13 @@ export default class Secrets extends ChatCommandHandler {
     const dungeon = skyblockProfile.dungeons?.dungeon_types
     if (!dungeon) return playerNeverPlayedDungeons(givenUsername)
 
-    const dungeonFloor = Number.parseInt(givenFloor, 10)
+    const dungeonFloor = parseInt(givenFloor.split, 10)
 
     const dungeonType = 'catacombs'
-    if (dungeonType === 'catacombs' && !isNaN(dungeonFloor) && dungeonFloor >= 0 && dungeonFloor <= 7) {
+    if (
+      dungeonType === 'catacombs' &&
+      !isNaN(dungeonFloor) && dungeonFloor >= 0 && dungeonFloor <= 7
+    ) {
       dungeon.catacombs.fastest_time_s[givenFloor]
     }
 
