@@ -5,6 +5,8 @@ import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
+export const QuitProxyError = 'Proxy encountered a problem while connecting'
+
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {
     const clientSession = this.clientInstance.clientSession
@@ -44,6 +46,16 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         instanceType: InstanceType.MINECRAFT,
         message: 'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
       })
+    } else if (error.message.includes(QuitProxyError)) {
+      this.clientInstance.app.emit('statusMessage', {
+        localEvent: true,
+        instanceName: this.clientInstance.instanceName,
+        instanceType: InstanceType.MINECRAFT,
+        message: 'Error: Encountered problem while working with proxy.'
+      })
+
+      this.clientInstance.logger.error('Trying again in 30 seconds...')
+      this.restart()
     }
   }
 
