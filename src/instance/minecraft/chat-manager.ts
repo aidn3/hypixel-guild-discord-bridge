@@ -23,14 +23,19 @@ import QuestChat from './chat/quest.js'
 import RepeatChat from './chat/repeat.js'
 import RequestChat from './chat/request.js'
 import UnmuteChat from './chat/unmute.js'
+import type ClientSession from './client-session.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class ChatManager extends EventHandler<MinecraftInstance> {
   private readonly chatModules: MinecraftChatMessage[]
+  private readonly minecraftData
 
   constructor(clientInstance: MinecraftInstance) {
     super(clientInstance)
+
+    this.minecraftData = GetMinecraftData(clientInstance.defaultBotConfig.version)
+
     this.chatModules = [
       BlockChat,
       DemoteChat,
@@ -53,56 +58,61 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
   }
 
   registerEvents(): void {
-    assert(this.clientInstance.client)
-    assert(this.clientInstance.registry)
+    const clientSession = this.clientInstance.clientSession
+    assert(clientSession)
 
-    const prismChat = this.clientInstance.prismChat
-    const minecraftData = GetMinecraftData(this.clientInstance.client.version)
+    this.listenForMessages(clientSession)
+  }
 
-    this.clientInstance.client.on('systemChat', (data) => {
-      const chatMessage = prismChat.fromNotch(data.formattedMessage)
+  private listenForMessages(clientSession: ClientSession): void {
+    clientSession.client.on('systemChat', (data) => {
+      const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
       this.onMessage(chatMessage.toString())
     })
 
-    this.clientInstance.client.on('playerChat', (data: object) => {
-      const message = (data as { formattedMessage?: string }).formattedMessage
-      let resultMessage: ChatMessage & Partial<{ unsigned: ChatMessage }>
-
-      if (minecraftData.supportFeature('clientsideChatFormatting')) {
-        const verifiedPacket = data as {
-          senderName?: string
-          targetName?: string
-          plainMessage: string
-          unsignedContent?: string
-          type: number
-        }
-        const parameters: { content: object; sender?: object; target?: object } = {
-          content: message ? (JSON.parse(message) as object) : { text: verifiedPacket.plainMessage }
-        }
-
-        if (verifiedPacket.senderName) {
-          Object.assign(parameters, { sender: JSON.parse(verifiedPacket.senderName) as object })
-        }
-        if (verifiedPacket.targetName) {
-          Object.assign(parameters, { target: JSON.parse(verifiedPacket.targetName) as object })
-        }
-        resultMessage = prismChat.fromNetwork(verifiedPacket.type, parameters as Record<string, object>)
-
-        if (verifiedPacket.unsignedContent) {
-          resultMessage.unsigned = prismChat.fromNetwork(verifiedPacket.type, {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            sender: parameters.sender!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            target: parameters.target!,
-            content: JSON.parse(verifiedPacket.unsignedContent) as object
-          })
-        }
-      } else {
-        assert(message) // old packet means message exists
-        resultMessage = prismChat.fromNotch(message)
-      }
-      this.onMessage(resultMessage.toString())
+    clientSession.client.on('playerChat', (data: object) => {
+      this.onFormattedMessage(clientSession, data)
     })
+  }
+
+  private onFormattedMessage(clientSession: ClientSession, data: object): void {
+    const message = (data as { formattedMessage?: string }).formattedMessage
+    let resultMessage: ChatMessage & Partial<{ unsigned: ChatMessage }>
+
+    if (this.minecraftData.supportFeature('clientsideChatFormatting')) {
+      const verifiedPacket = data as {
+        senderName?: string
+        targetName?: string
+        plainMessage: string
+        unsignedContent?: string
+        type: number
+      }
+      const parameters: { content: object; sender?: object; target?: object } = {
+        content: message ? (JSON.parse(message) as object) : { text: verifiedPacket.plainMessage }
+      }
+
+      if (verifiedPacket.senderName) {
+        Object.assign(parameters, { sender: JSON.parse(verifiedPacket.senderName) as object })
+      }
+      if (verifiedPacket.targetName) {
+        Object.assign(parameters, { target: JSON.parse(verifiedPacket.targetName) as object })
+      }
+      resultMessage = clientSession.prismChat.fromNetwork(verifiedPacket.type, parameters as Record<string, object>)
+
+      if (verifiedPacket.unsignedContent) {
+        resultMessage.unsigned = clientSession.prismChat.fromNetwork(verifiedPacket.type, {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          sender: parameters.sender!,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          target: parameters.target!,
+          content: JSON.parse(verifiedPacket.unsignedContent) as object
+        })
+      }
+    } else {
+      assert(message) // old packet means message exists
+      resultMessage = clientSession.prismChat.fromNotch(message)
+    }
+    this.onMessage(resultMessage.toString())
   }
 
   private onMessage(message: string): void {

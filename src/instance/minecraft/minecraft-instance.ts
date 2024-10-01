@@ -1,99 +1,45 @@
-import type { Client } from 'minecraft-protocol'
 import { createClient, states } from 'minecraft-protocol'
-import PrismarineChat from 'prismarine-chat'
-import type { NBT } from 'prismarine-nbt'
-import PrismarineRegistry from 'prismarine-registry'
 
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import type { ChatEvent, ClientEvent, CommandEvent, CommandFeedbackEvent } from '../../common/application-event.js'
-import { ChannelType, EventType, InstanceEventType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
+import { InstanceEventType, InstanceType } from '../../common/application-event.js'
+import { ClientInstance } from '../../common/client-instance.js'
 import RateLimiter from '../../util/rate-limiter.js'
-import { antiSpamString } from '../../util/shared-util.js'
 
+import BridgeHandler from './bridge-handler.js'
 import ChatManager from './chat-manager.js'
+import ClientSession from './client-session.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import ErrorHandler from './handlers/error-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
-import SendchatHandler from './handlers/sendchat-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 
-const CommandsLimiter = new RateLimiter(1, 1000)
-
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
-  defaultBotConfig = {
-    host: 'me.hypixel.net',
+  readonly defaultBotConfig = {
+    host: 'host.docker.internal',
     port: 25_565,
     version: '1.17.1'
   }
+
+  private readonly commandsLimiter = new RateLimiter(1, 1000)
   readonly bridgePrefix: string
-  private readonly handlers
-  readonly registry
-  readonly prismChat
-  client: Client | undefined
+
+  clientSession: ClientSession | undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.MINECRAFT, config)
 
+    new BridgeHandler(app, this)
     this.bridgePrefix = bridgePrefix
-    this.status = Status.FRESH
-    this.handlers = [
-      new ErrorHandler(this),
-      new StateHandler(this),
-      new SelfbroadcastHandler(this),
-      new SendchatHandler(this),
-      new ChatManager(this)
-    ]
-
-    this.registry = PrismarineRegistry(this.defaultBotConfig.version)
-    this.prismChat = PrismarineChat(this.registry)
-
-    this.app.on('reconnectSignal', (event) => {
-      // undefined is strictly checked due to api specification
-      if (event.targetInstanceName === undefined || event.targetInstanceName === this.instanceName) {
-        this.logger.log('instance has received restart signal')
-        void this.send(`/gc @Instance restarting...`).then(() => {
-          this.connect()
-        })
-      }
-    })
-
-    this.app.on('command', (event: CommandEvent) => {
-      this.sendCommand(event, false)
-    })
-    this.app.on('commandFeedback', (event: CommandFeedbackEvent) => {
-      this.sendCommand(event, true)
-    })
-
-    this.app.on('chat', (event: ChatEvent) => {
-      if (event.instanceName === this.instanceName) return
-
-      if (event.channelType === ChannelType.PUBLIC) {
-        void this.send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
-      } else if (event.channelType === ChannelType.OFFICER) {
-        void this.send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
-      }
-    })
-
-    this.app.on('event', (event: ClientEvent) => {
-      if (event.instanceName === this.instanceName) return
-      if (event.channelType !== ChannelType.PUBLIC) return
-      if (event.removeLater) return
-      if (event.eventType === EventType.BLOCK) return
-      if (event.eventType === EventType.REPEAT) return
-
-      void this.send(`/gc @[${event.instanceName}]: ${event.message}`)
-    })
   }
 
   connect(): void {
-    this.client?.end(QuitOwnVolition)
+    this.clientSession?.client.end(QuitOwnVolition)
 
-    this.client = createClient({
+    const client = createClient({
       ...this.defaultBotConfig,
-      username: this.config.email,
-      auth: 'microsoft',
+      username: 'test_bot',
+      auth: 'offline',
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
         this.app.emit('statusMessage', {
@@ -104,7 +50,19 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
         })
       }
     })
-    this.listenForRegistry(this.client)
+
+    this.clientSession = new ClientSession(client)
+
+    const handlers = [
+      new ErrorHandler(this),
+      new StateHandler(this),
+      new SelfbroadcastHandler(this),
+      new ChatManager(this)
+    ]
+
+    for (const handler of handlers) {
+      handler.registerEvents()
+    }
 
     this.app.emit('instance', {
       localEvent: true,
@@ -113,41 +71,14 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       type: InstanceEventType.create,
       message: 'Minecraft instance has been created'
     })
-
-    for (const handler of this.handlers) {
-      handler.registerEvents()
-    }
-  }
-
-  /*
-   * Used to create special minecraft data.
-   * Main purpose is to receive signed chat messages
-   * and to be able to format them based on how the server decides
-   */
-  private listenForRegistry(client: Client): void {
-    // 1.20.2+
-    client.on('registry_data', (packet: { codec: NBT }) => {
-      this.registry.loadDimensionCodec(packet.codec)
-    })
-    // older versions
-    client.on('login', (packet: { dimensionCodec?: NBT }) => {
-      if (packet.dimensionCodec) {
-        this.registry.loadDimensionCodec(packet.dimensionCodec)
-      }
-    })
-    client.on('respawn', (packet: { dimensionCodec?: NBT }) => {
-      if (packet.dimensionCodec) {
-        this.registry.loadDimensionCodec(packet.dimensionCodec)
-      }
-    })
   }
 
   username(): string | undefined {
-    return this.client?.username
+    return this.clientSession?.client.username
   }
 
   uuid(): string | undefined {
-    const uuid = this.client?.uuid
+    const uuid = this.clientSession?.client.uuid
     return uuid == undefined ? undefined : uuid.split('-').join('')
   }
 
@@ -158,65 +89,15 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       .join(' ')
 
     this.logger.debug(`Queuing message to send: ${message}`)
-    await CommandsLimiter.wait().then(() => {
-      if (this.client?.state === states.PLAY) {
+    await this.commandsLimiter.wait().then(() => {
+      if (this.clientSession?.client.state === states.PLAY) {
         if (message.length > 250) {
           message = message.slice(0, 250) + '...'
           this.logger.warn(`Long message truncated: ${message}`)
         }
 
-        this.client.chat(message)
+        this.clientSession.client.chat(message)
       }
     })
-  }
-
-  private sendCommand(event: CommandFeedbackEvent, feedback: boolean) {
-    if (
-      event.instanceType === InstanceType.MINECRAFT &&
-      event.instanceName === this.instanceName &&
-      event.alreadyReplied
-    ) {
-      return
-    }
-
-    const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
-    switch (event.channelType) {
-      case ChannelType.PUBLIC: {
-        void this.send(`/gc ${finalResponse}`)
-        break
-      }
-      case ChannelType.OFFICER: {
-        void this.send(`/oc ${finalResponse}`)
-        break
-      }
-      case ChannelType.PRIVATE: {
-        if (event.instanceType !== InstanceType.MINECRAFT || event.instanceName !== this.instanceName) return
-        void this.send(`/msg ${event.username} ${finalResponse}`)
-        break
-      }
-      default: {
-        break
-      }
-    }
-  }
-
-  private formatChatMessage(
-    prefix: string,
-    username: string,
-    replyUsername: string | undefined,
-    message: string
-  ): string {
-    let full = `/${prefix} ${this.bridgePrefix}`
-
-    full += username
-    if (replyUsername != undefined) full += `⇾${replyUsername}`
-    full += ': '
-    full += message
-      .split('\n')
-      .map((s) => s.trim())
-      .join(' ')
-      .trim()
-
-    return full
   }
 }

@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import { InstanceEventType, InstanceType } from '../../../common/application-event.js'
 import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
@@ -19,26 +21,29 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   registerEvents(): void {
+    const clientSession = this.clientInstance.clientSession
+    assert(clientSession)
+
     // this will only be called after the player receives spawn packet
-    this.clientInstance.client?.on('login', () => {
+    clientSession.client.on('login', () => {
       this.onLogin()
       this.loggedIn = true
     })
 
     // this will always be called when connection closes
-    this.clientInstance.client?.on('end', (reason: string) => {
+    clientSession.client.on('end', (reason: string) => {
       this.onEnd(reason)
       this.loggedIn = false
     })
 
     // depends on protocol version. One of these will be called
-    this.clientInstance.client?.on('kick_disconnect', (packet: { reason: string }) => {
-      const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
+    clientSession.client.on('kick_disconnect', (packet: { reason: string }) => {
+      const formattedReason = clientSession.prismChat.fromNotch(packet.reason)
       this.onKicked(formattedReason.toString())
       this.loggedIn = false
     })
-    this.clientInstance.client?.on('disconnect', (packet: { reason: string }) => {
-      const formattedReason = this.clientInstance.prismChat.fromNotch(packet.reason)
+    clientSession.client.on('disconnect', (packet: { reason: string }) => {
+      const formattedReason = clientSession.prismChat.fromNotch(packet.reason)
       this.onKicked(formattedReason.toString())
       this.loggedIn = false
     })
