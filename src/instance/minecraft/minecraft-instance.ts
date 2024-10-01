@@ -22,7 +22,6 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     version: '1.17.1'
   }
 
-  private readonly bridgeHandler
   private readonly commandsLimiter = new RateLimiter(1, 1000)
   readonly bridgePrefix: string
 
@@ -31,7 +30,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.MINECRAFT, config)
 
-    this.bridgeHandler = new BridgeHandler(app, this)
+    new BridgeHandler(app, this)
     this.bridgePrefix = bridgePrefix
   }
 
