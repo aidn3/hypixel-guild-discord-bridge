@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import { InstanceType } from '../../../common/application-event.js'
 import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
@@ -5,7 +7,10 @@ import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   registerEvents(): void {
-    this.clientInstance.client?.on('error', (error: Error) => {
+    const clientSession = this.clientInstance.clientSession
+    assert(clientSession)
+
+    clientSession.client.on('error', (error: Error) => {
       this.onError(error)
     })
   }

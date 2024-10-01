@@ -27,10 +27,10 @@ export default {
         if (localInstance != undefined) {
           const clientInstance = localInstance as MinecraftInstance
           // "login" packet is also first spawn packet containing world metadata
-          clientInstance.client?.on('login', async () => {
+          clientInstance.clientSession?.client.on('login', async () => {
             if (!disableLimboTrapping) await limbo(clientInstance)
           })
-          clientInstance.client?.on('respawn', async () => {
+          clientInstance.clientSession?.client.on('respawn', async () => {
             if (!disableLimboTrapping) await limbo(clientInstance)
           })
         }
