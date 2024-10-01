@@ -16,7 +16,7 @@ import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
   readonly defaultBotConfig = {
-    host: 'host.docker.internal',
+    host: 'me.hypixel.net',
     port: 25_565,
     version: '1.17.1'
   }
@@ -38,8 +38,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
 
     const client = createClient({
       ...this.defaultBotConfig,
-      username: 'test_bot',
-      auth: 'offline',
+      username: this.config.email,
+      auth: 'microsoft',
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
         this.app.emit('statusMessage', {
