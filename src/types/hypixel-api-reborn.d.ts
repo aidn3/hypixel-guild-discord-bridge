@@ -61,13 +61,21 @@ declare module 'hypixel-api-reborn' {
     master_catacombs: SkyblockV2DungeonsMasterCatacombs
   }
 
+  export type DungeonFloors = '1' | '2' | '3' | '4' | '5' | '6' | '7'
+  export type DungeonFloorsWithEntrance = '0' | DungeonFloors
+
   export interface SkyblockV2DungeonsCatacombs {
     experience: number
-    tier_completions: Record<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+    tier_completions: Record<DungeonFloorsWithEntrance | 'total', number | undefined> | undefined
+    fastest_time: Record<DungeonFloorsWithEntrance | 'best', number | undefined> | undefined
+    fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
+    fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined
   }
 
   export interface SkyblockV2DungeonsMasterCatacombs {
-    tier_completions: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+    tier_completions: Record<DungeonFloors | 'total', number | undefined> | undefined
+    fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
+    fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined
   }
 
   export interface SkyblockV2DungeonsClass {

@@ -41,10 +41,12 @@ export default class Secrets extends ChatCommandHandler {
     return `${givenUsername}'s secrets: ${secrets.toLocaleString() || 0} Total ${averageSecrets} Average`
   }
 
-  private getTotalRuns(runs: Record<string, number>): number {
+  private getTotalRuns(runs: Record<string, number | undefined> | undefined): number {
+    if (runs === undefined) return 0
     return Object.entries(runs)
       .filter(([key]) => key !== 'total')
       .map(([, value]) => value)
+      .filter((value) => value !== undefined)
       .reduce((sum, c) => sum + c, 0)
   }
 }
