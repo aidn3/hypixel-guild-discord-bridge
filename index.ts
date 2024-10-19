@@ -41,7 +41,7 @@ const RootDirectory = import.meta.dirname
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
 const App = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
 
-App.on('*', (name, event) => {
+App.on('all', (name, event) => {
   Logger.log(`[${name}] ${JSON.stringify(event)}`)
 })
 

@@ -7,7 +7,8 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  '*': (name: string, event: BaseEvent) => void
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  all: (name: string, event: BaseEvent) => void
 
   /**
    * User sending messages
