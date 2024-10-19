@@ -28,7 +28,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
             {
               title: escapeDiscord(event.instanceName),
               description: escapeDiscord(event.message),
-              color: Severity.INFO
+              color: Severity.Info
             }
           ]
         })
@@ -38,9 +38,9 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
 
   async onChat(event: ChatEvent): Promise<void> {
     let channels: string[]
-    if (event.channelType === ChannelType.PUBLIC) {
+    if (event.channelType === ChannelType.Public) {
       channels = this.clientInstance.config.publicChannelIds
-    } else if (event.channelType === ChannelType.OFFICER) {
+    } else if (event.channelType === ChannelType.Officer) {
       channels = this.clientInstance.config.officerChannelIds
     } else {
       return
@@ -68,14 +68,14 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
   async onClientEvent(event: ClientEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
 
-    if (event.eventType === EventType.REPEAT) {
+    if (event.eventType === EventType.Repeat) {
       if (this.lastRepeatEvent + 5000 < Date.now()) {
         this.lastRepeatEvent = Date.now()
       } else {
         return
       }
     }
-    if (event.eventType === EventType.BLOCK) {
+    if (event.eventType === EventType.Block) {
       if (this.lastBlockEvent + 5000 < Date.now()) {
         this.lastBlockEvent = Date.now()
       } else {
@@ -87,9 +87,9 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
 
     switch (event.eventType) {
       case EventType.AUTOMATED: {
-        if (event.channelType === ChannelType.PUBLIC) {
+        if (event.channelType === ChannelType.Public) {
           channels.push(...this.clientInstance.config.publicChannelIds)
-        } else if (event.channelType === ChannelType.OFFICER) {
+        } else if (event.channelType === ChannelType.Officer) {
           channels.push(...this.clientInstance.config.officerChannelIds)
         } else {
           return
@@ -97,28 +97,28 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
         break
       }
 
-      case EventType.REQUEST:
-      case EventType.JOIN:
-      case EventType.LEAVE:
-      case EventType.KICK:
-      case EventType.PROMOTE:
-      case EventType.DEMOTE: {
+      case EventType.Request:
+      case EventType.Join:
+      case EventType.Leave:
+      case EventType.Kick:
+      case EventType.Promote:
+      case EventType.Demote: {
         channels.push(...this.clientInstance.config.publicChannelIds, ...this.clientInstance.config.officerChannelIds)
         break
       }
 
-      case EventType.MUTE:
-      case EventType.UNMUTE: {
+      case EventType.Mute:
+      case EventType.Unmute: {
         channels.push(...this.clientInstance.config.officerChannelIds)
         break
       }
 
-      case EventType.BLOCK:
-      case EventType.MUTED:
-      case EventType.OFFLINE:
-      case EventType.ONLINE:
-      case EventType.QUEST:
-      case EventType.REPEAT: {
+      case EventType.Block:
+      case EventType.Muted:
+      case EventType.Offline:
+      case EventType.Online:
+      case EventType.Quest:
+      case EventType.Repeat: {
         channels.push(...this.clientInstance.config.publicChannelIds)
         break
       }
@@ -179,15 +179,15 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     let channels: string[] = []
 
     switch (event.channelType) {
-      case ChannelType.PUBLIC: {
+      case ChannelType.Public: {
         channels = this.clientInstance.config.publicChannelIds
         break
       }
-      case ChannelType.OFFICER: {
+      case ChannelType.Officer: {
         channels = this.clientInstance.config.officerChannelIds
         break
       }
-      case ChannelType.PRIVATE: {
+      case ChannelType.Private: {
         if (event.discordChannelId) {
           channels = [event.discordChannelId]
         }
@@ -204,7 +204,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
       title: escapeDiscord(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      color: Severity.GOOD,
+      color: Severity.Good,
       description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
       footer: {
         text: `${event.instanceName}${feedback ? ' (command feedback)' : ''}`

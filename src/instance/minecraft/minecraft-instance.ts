@@ -27,7 +27,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
   clientSession: ClientSession | undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
-    super(app, instanceName, InstanceType.MINECRAFT, config)
+    super(app, instanceName, InstanceType.Minecraft, config)
 
     new BridgeHandler(app, this)
     this.bridgePrefix = bridgePrefix
@@ -45,7 +45,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
         this.app.emit('statusMessage', {
           localEvent: true,
           instanceName: this.instanceName,
-          instanceType: InstanceType.MINECRAFT,
+          instanceType: InstanceType.Minecraft,
           message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
         })
       }
@@ -67,8 +67,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     this.app.emit('instance', {
       localEvent: true,
       instanceName: this.instanceName,
-      instanceType: InstanceType.MINECRAFT,
-      type: InstanceEventType.create,
+      instanceType: InstanceType.Minecraft,
+      type: InstanceEventType.Created,
       message: 'Minecraft instance has been created'
     })
   }

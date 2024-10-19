@@ -19,11 +19,11 @@ export default {
       if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
         context.application.emit('event', {
           localEvent: true,
-          instanceType: InstanceType.MAIN,
-          instanceName: InstanceType.MAIN,
+          instanceType: InstanceType.Main,
+          instanceName: InstanceType.Main,
           eventType: EventType.AUTOMATED,
-          severity: Severity.GOOD,
-          channelType: ChannelType.PUBLIC,
+          severity: Severity.Good,
+          channelType: ChannelType.Public,
           username: undefined,
           message: `Reminder: Star Cult is here. Get that free x200 starfall!`,
           removeLater: false

@@ -24,11 +24,11 @@ export default {
         context.application.emit('event', {
           localEvent: true,
 
-          instanceType: InstanceType.PLUGIN,
+          instanceType: InstanceType.Plugin,
           instanceName: context.pluginName,
 
-          channelType: ChannelType.PUBLIC,
-          severity: Severity.INFO,
+          channelType: ChannelType.Public,
+          severity: Severity.Info,
           eventType: EventType.AUTOMATED,
           removeLater: false,
 

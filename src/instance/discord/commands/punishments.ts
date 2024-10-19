@@ -179,14 +179,14 @@ async function handleBanAddInteraction(
 
   const event: PunishmentAddEvent = {
     localEvent: true,
-    instanceType: InstanceType.DISCORD,
+    instanceType: InstanceType.Discord,
     instanceName: instanceName,
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
     userDiscordId: userIdentifiers.discordUserId,
 
-    type: PunishmentType.BAN,
+    type: PunishmentType.Ban,
     reason: reason,
     till: Date.now() + punishDuration
   }
@@ -217,14 +217,14 @@ async function handleMuteAddInteraction(
 
   const event: PunishmentAddEvent = {
     localEvent: true,
-    instanceType: InstanceType.DISCORD,
+    instanceType: InstanceType.Discord,
     instanceName: instanceName,
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
     userDiscordId: userIdentifiers.discordUserId,
 
-    type: PunishmentType.MUTE,
+    type: PunishmentType.Mute,
     reason: reason,
     till: Date.now() + muteDuration
   }
@@ -256,7 +256,7 @@ async function handleKickInteraction(
   await interaction.editReply({
     embeds: [
       {
-        color: Severity.GOOD,
+        color: Severity.Good,
         title: 'Punishment Status',
         description: `Kick command has been sent.\nPlease, ensure the player has been kicked.`,
         fields: [
@@ -296,7 +296,7 @@ async function handleForgiveInteraction(
 
   const forgivenPunishments = application.punishedUsers.forgive({
     localEvent: true,
-    instanceType: InstanceType.DISCORD,
+    instanceType: InstanceType.Discord,
     instanceName: instanceName,
     userIdentifiers: userIdentifiers
   })
@@ -364,7 +364,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
   if (list.length === 0) {
     return [
       {
-        color: Severity.INFO,
+        color: Severity.Info,
         title: `Active Punishments`,
         description: '_There are no active punishments._',
         footer: {
@@ -397,7 +397,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
       entriesCount = 0
 
       pages.push({
-        color: Severity.DEFAULT,
+        color: Severity.Default,
         title: `Active Punishments (${list.length}):`,
         description: '',
         footer: {
@@ -437,7 +437,7 @@ function formatPunishmentAdd(event: PunishmentAddEvent, noUuidCheck: boolean): A
 
 function formatPunishmentStatus(event: PunishmentAddEvent, description: string): APIEmbed {
   return {
-    color: Severity.GOOD,
+    color: Severity.Good,
     title: 'Punishment Status',
     description: description,
     fields: [
@@ -489,7 +489,7 @@ function formatNoPunishmentStatus(
   discordUserId: string | undefined
 ): APIEmbed {
   return {
-    color: Severity.GOOD,
+    color: Severity.Good,
     title: 'Punishment Status',
     description: 'There is no active punishments for that user.',
     fields: [

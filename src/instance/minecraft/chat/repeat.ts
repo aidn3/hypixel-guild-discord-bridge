@@ -30,11 +30,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.REPEAT,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
+        eventType: EventType.Repeat,
         username: undefined,
-        severity: Severity.INFO,
+        severity: Severity.Info,
         message: randomMessage,
         removeLater: false
       })

@@ -12,11 +12,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.REQUEST,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
+        eventType: EventType.Request,
         username,
-        severity: Severity.GOOD,
+        severity: Severity.Good,
         message: `${username} has requested to join the guild!`,
         removeLater: false
       })

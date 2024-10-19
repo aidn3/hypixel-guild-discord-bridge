@@ -20,7 +20,7 @@ enum Button {
 export const DefaultTimeout = 60_000
 
 const NoEmbed: APIEmbed = {
-  color: Severity.ERROR,
+  color: Severity.Error,
   title: 'Nothing to display',
   description:
     'There is nothing to display.\n' +

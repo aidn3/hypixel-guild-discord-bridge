@@ -10,11 +10,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.QUEST,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
+        eventType: EventType.Quest,
         username: undefined,
-        severity: Severity.GOOD,
+        severity: Severity.Good,
         message: context.message.trim(),
         removeLater: false
       })

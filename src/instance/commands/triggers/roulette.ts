@@ -33,7 +33,7 @@ export default class Roulette extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.instanceType !== InstanceType.MINECRAFT) {
+    if (context.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
     }
 
@@ -62,7 +62,7 @@ export default class Roulette extends ChatCommandHandler {
       context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
       context.app.punishedUsers.punish({
         localEvent: true,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         instanceName: context.instanceName,
 
         userName: context.username,
@@ -70,7 +70,7 @@ export default class Roulette extends ChatCommandHandler {
         userUuid: undefined,
         userDiscordId: undefined,
 
-        type: PunishmentType.MUTE,
+        type: PunishmentType.Mute,
         till: Date.now() + 900_000,
         reason: 'Lost in RussianRoulette game'
       })

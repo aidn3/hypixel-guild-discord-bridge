@@ -34,7 +34,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, InstanceType.COMMANDS, config)
+    super(app, instanceName, InstanceType.Commands, config)
 
     this.commands = [
       new EightBallCommand(),
@@ -99,7 +99,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   async handle(event: ChatEvent): Promise<void> {
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
-    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.MINECRAFT
+    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.Minecraft
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
@@ -107,7 +107,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     if (command == undefined) return
 
     // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.OFFICER) {
+    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.Officer) {
       return
     }
 

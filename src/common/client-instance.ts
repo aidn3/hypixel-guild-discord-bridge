@@ -21,7 +21,7 @@ export abstract class ClientInstance<K> {
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger(instanceName)
     this.config = config
-    this.status = Status.FRESH
+    this.status = Status.Fresh
   }
 
   /**
@@ -34,26 +34,24 @@ export abstract class ClientInstance<K> {
    */
   abstract connect(): Promise<void> | void
 }
-// TODO: remove on major update
-/* eslint-disable @typescript-eslint/naming-convention */
+
 export enum Status {
   /**
    * Freshly created instance
    */
-  FRESH = 'FRESH',
+  Fresh = 'fresh',
   /**
    * Instance is connecting for first time
    */
-  CONNECTING = 'CONNECTING',
+  Connecting = 'connecting',
   /**
    * Instance is trying to connect with its own private client
    */
-  CONNECTED = 'CONNECTED',
+  Connected = 'connected',
   /**
    * Instance has decided to shut down for a critical reason
    */
-  FAILED = 'FAILED'
+  Failed = 'failed'
 }
 
-export const INTERNAL_INSTANCE_PREFIX = 'internal/'
-/* eslint-enable @typescript-eslint/naming-convention */
+export const InternalInstancePrefix = 'internal/'

@@ -13,7 +13,7 @@ import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents } from './common/application-event.js'
 import { InstanceType } from './common/application-event.js'
 import type { ClientInstance } from './common/client-instance.js'
-import { INTERNAL_INSTANCE_PREFIX } from './common/client-instance.js'
+import { InternalInstancePrefix } from './common/client-instance.js'
 import type { PluginInterface } from './common/plugins.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
@@ -78,7 +78,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.loggerInstances.push(
         new LoggerInstance(
           this,
-          `${INTERNAL_INSTANCE_PREFIX}${InstanceType.Logger}-${index + 1}`,
+          `${InternalInstancePrefix}${InstanceType.Logger}-${index + 1}`,
           this.config.loggers[index]
         )
       )
@@ -91,15 +91,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.metricsInstance = this.config.metrics.enabled
-      ? new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
+      ? new MetricsInstance(this, InternalInstancePrefix + InstanceType.Metrics, this.config.metrics)
       : undefined
 
     this.socketInstance = this.config.socket.enabled
-      ? new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket)
+      ? new SocketInstance(this, InternalInstancePrefix + InstanceType.Socket, this.config.socket)
       : undefined
 
     this.commandsInstance = this.config.commands.enabled
-      ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
+      ? new CommandsInstance(this, InternalInstancePrefix + InstanceType.Commands, this.config.commands)
       : undefined
 
     this.plugins = this.loadPlugins(rootDirectory)
@@ -226,12 +226,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 }
 
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
 function emitAll(emitter: Events): void {
   const old = emitter.emit
-  emitter.emit = (event: string, ...arguments_): boolean => {
-    if (event !== '*') emitter.emit('*', event, ...arguments_)
-    return old.call(emitter, event, ...arguments_)
+  emitter.emit = (event: string, ...callerArguments): boolean => {
+    if (event !== '*') emitter.emit('*', event, ...callerArguments)
+    return old.call(emitter, event, ...callerArguments)
   }
 }
-/* eslint-enable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */

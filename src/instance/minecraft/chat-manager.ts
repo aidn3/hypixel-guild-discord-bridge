@@ -128,7 +128,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
     this.clientInstance.app.emit('minecraftChat', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.MINECRAFT,
+      instanceType: InstanceType.Minecraft,
       message
     })
   }

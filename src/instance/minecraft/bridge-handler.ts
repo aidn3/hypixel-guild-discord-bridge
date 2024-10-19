@@ -37,19 +37,19 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
 
-    if (event.channelType === ChannelType.PUBLIC) {
+    if (event.channelType === ChannelType.Public) {
       void this.clientInstance.send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
-    } else if (event.channelType === ChannelType.OFFICER) {
+    } else if (event.channelType === ChannelType.Officer) {
       void this.clientInstance.send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
     }
   }
 
   onClientEvent(event: ClientEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
-    if (event.channelType !== ChannelType.PUBLIC) return
+    if (event.channelType !== ChannelType.Public) return
     if (event.removeLater) return
-    if (event.eventType === EventType.BLOCK) return
-    if (event.eventType === EventType.REPEAT) return
+    if (event.eventType === EventType.Block) return
+    if (event.eventType === EventType.Repeat) return
 
     void this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
   }
@@ -81,7 +81,7 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
   private handleCommand(event: CommandFeedbackEvent, feedback: boolean) {
     if (
-      event.instanceType === InstanceType.MINECRAFT &&
+      event.instanceType === InstanceType.Minecraft &&
       event.instanceName === this.clientInstance.instanceName &&
       event.alreadyReplied
     ) {
@@ -90,16 +90,16 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
     switch (event.channelType) {
-      case ChannelType.PUBLIC: {
+      case ChannelType.Public: {
         void this.clientInstance.send(`/gc ${finalResponse}`)
         break
       }
-      case ChannelType.OFFICER: {
+      case ChannelType.Officer: {
         void this.clientInstance.send(`/oc ${finalResponse}`)
         break
       }
-      case ChannelType.PRIVATE: {
-        if (event.instanceType !== InstanceType.MINECRAFT || event.instanceName !== this.clientInstance.instanceName)
+      case ChannelType.Private: {
+        if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
         void this.clientInstance.send(`/msg ${event.username} ${finalResponse}`)
         break

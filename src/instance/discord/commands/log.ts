@@ -37,7 +37,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
   }
 
   return {
-    color: chatResult.guildLog ? Severity.DEFAULT : Severity.INFO,
+    color: chatResult.guildLog ? Severity.Default : Severity.Info,
     title: `${Title}${pageTitle}`,
     description: result,
     footer: {
@@ -62,7 +62,7 @@ export default {
 
     const currentPage: number = context.interaction.options.getNumber('page') ?? 1
     const chosenInstance: string | null = context.interaction.options.getString('instance')
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const soleInstance = instancesNames.length <= 1 || !!chosenInstance
     const targetInstanceName = chosenInstance ?? (instancesNames.length > 0 ? instancesNames[0] : undefined)
 
@@ -75,7 +75,7 @@ export default {
               `No Minecraft instance exist.\n` +
               'This is a Minecraft command that displays ingame logs of a guild.\n' +
               `Check the tutorial on how to add a Minecraft account.`,
-            color: Severity.INFO,
+            color: Severity.Info,
             footer: {
               text: DefaultCommandFooter
             }

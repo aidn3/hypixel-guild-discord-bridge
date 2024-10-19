@@ -10,11 +10,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.BLOCK,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
+        eventType: EventType.Block,
         username: undefined,
-        severity: Severity.INFO,
+        severity: Severity.Info,
         message: 'The message has been blocked by Hypixel for breaking the rules.',
         removeLater: false
       })

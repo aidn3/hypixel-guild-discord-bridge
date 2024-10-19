@@ -12,11 +12,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.KICK,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
+        eventType: EventType.Kick,
         username,
-        severity: Severity.BAD,
+        severity: Severity.Bad,
         message: context.message,
         removeLater: false
       })

@@ -27,7 +27,7 @@ export default class SelfbroadcastHandler extends EventHandler<MinecraftInstance
       this.clientInstance.app.emit('minecraftSelfBroadcast', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         uuid,
         username
       })

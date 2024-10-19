@@ -22,9 +22,9 @@ export default {
       if (changed) {
         context.application.emit('profanityWarning', {
           localEvent: true,
-          instanceType: InstanceType.MINECRAFT,
+          instanceType: InstanceType.Minecraft,
           instanceName: context.instanceName,
-          channelType: ChannelType.OFFICER,
+          channelType: ChannelType.Officer,
 
           username,
           originalMessage: playerMessage,
@@ -35,8 +35,8 @@ export default {
       context.application.emit('chat', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.OFFICER,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Officer,
         channelId: undefined,
         username,
         replyUsername: undefined,

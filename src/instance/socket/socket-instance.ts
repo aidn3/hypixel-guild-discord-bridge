@@ -11,7 +11,7 @@ export default class SocketInstance extends ClientInstance<SocketConfig> {
   private clientSocket: ClientSocket | undefined
 
   constructor(app: Application, instanceName: string, socketConfig: SocketConfig) {
-    super(app, instanceName, InstanceType.SOCKET, socketConfig)
+    super(app, instanceName, InstanceType.Socket, socketConfig)
   }
 
   connect(): void {

@@ -23,11 +23,11 @@ export default {
       if ([50, 54].includes(currentMinute)) {
         context.application.emit('event', {
           localEvent: true,
-          instanceType: InstanceType.MAIN,
-          instanceName: InstanceType.MAIN,
+          instanceType: InstanceType.Main,
+          instanceName: InstanceType.Main,
           eventType: EventType.AUTOMATED,
-          severity: Severity.GOOD,
-          channelType: ChannelType.PUBLIC,
+          severity: Severity.Good,
+          channelType: ChannelType.Public,
           username: undefined,
           message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`,
           removeLater: false

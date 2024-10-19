@@ -43,7 +43,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
       currentLength = 0
 
       pages.push({
-        color: Severity.DEFAULT,
+        color: Severity.Default,
         title: `Guild Online Players (${total}):`,
         description: '',
         footer: {
@@ -69,7 +69,7 @@ export default {
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const lists: Map<string, string[]> = await listMembers(
       context.application,
       context.application.mojangApi,

@@ -8,7 +8,7 @@ import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {
-    color: Severity.DEFAULT,
+    color: Severity.Default,
     title: 'Discord Ping',
     description:
       `**Latency:** ${latency}ms\n` + `**Websocket heartbeat:** ${websocket}ms.\n` + `**Server lag:** ${lag}ms`,

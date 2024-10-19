@@ -23,8 +23,8 @@ export class PunishedUsers {
   private readonly app: Application
   private readonly configFilePath: string
   private punishmentsRecord: PunishmentsRecord = {
-    [PunishmentType.MUTE]: [],
-    [PunishmentType.BAN]: []
+    [PunishmentType.Mute]: [],
+    [PunishmentType.Ban]: []
   }
 
   constructor(app: Application) {

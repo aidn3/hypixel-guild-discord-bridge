@@ -12,11 +12,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.MUTED,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
+        eventType: EventType.Muted,
         username: undefined,
-        severity: Severity.BAD,
+        severity: Severity.Bad,
         message: `Account has been muted. ${context.message}`,
         removeLater: false
       })

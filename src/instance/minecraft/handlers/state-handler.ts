@@ -56,27 +56,27 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
 
     this.loginAttempts = 0
     this.exactDelay = 0
-    this.clientInstance.status = Status.CONNECTED
+    this.clientInstance.status = Status.Connected
 
     this.clientInstance.app.emit('instance', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.MINECRAFT,
-      type: InstanceEventType.connect,
+      instanceType: InstanceType.Minecraft,
+      type: InstanceEventType.Connecting,
       message: 'Minecraft instance has connected'
     })
   }
 
   private onEnd(reason: string): void {
-    if (this.clientInstance.status === Status.FAILED) {
+    if (this.clientInstance.status === Status.Failed) {
       const reason = `Status is ${this.clientInstance.status}. No further trying to reconnect.`
 
       this.clientInstance.logger.warn(reason)
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        type: InstanceEventType.end,
+        instanceType: InstanceType.Minecraft,
+        type: InstanceEventType.Ended,
         message: reason
       })
       return
@@ -87,8 +87,8 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        type: InstanceEventType.end,
+        instanceType: InstanceType.Minecraft,
+        type: InstanceEventType.Ended,
         message: reason
       })
       return
@@ -110,15 +110,15 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.clientInstance.app.emit('instance', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.MINECRAFT,
-      type: InstanceEventType.disconnect,
+      instanceType: InstanceType.Minecraft,
+      type: InstanceEventType.Disconnected,
       message: 'Minecraft bot disconnected from server,' + `attempting reconnect in ${loginDelay / 1000} seconds`
     })
 
     setTimeout(() => {
       this.clientInstance.connect()
     }, loginDelay)
-    this.clientInstance.status = Status.CONNECTING
+    this.clientInstance.status = Status.Connecting
   }
 
   private onKicked(reason: string): void {
@@ -127,32 +127,32 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     this.loginAttempts++
     if (reason.includes('You logged in from another location')) {
       this.clientInstance.logger.fatal('Instance will shut off since someone logged in from another place')
-      this.clientInstance.status = Status.FAILED
+      this.clientInstance.status = Status.Failed
 
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        type: InstanceEventType.conflict,
+        instanceType: InstanceType.Minecraft,
+        type: InstanceEventType.Conflicted,
         message: 'Someone logged in from another place.\n' + "Won't try to re-login.\n" + 'Restart to reconnect.'
       })
     } else if (reason.includes('banned')) {
       this.clientInstance.logger.fatal('Instance will shut off since the account has been banned')
-      this.clientInstance.status = Status.FAILED
+      this.clientInstance.status = Status.Failed
 
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        type: InstanceEventType.end,
+        instanceType: InstanceType.Minecraft,
+        type: InstanceEventType.Ended,
         message: 'Account has been banned.\n' + "Won't try to re-login.\n"
       })
     } else {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        type: InstanceEventType.kick,
+        instanceType: InstanceType.Minecraft,
+        type: InstanceEventType.Kicked,
         message:
           `Client ${this.clientInstance.instanceName} has been kicked.\n` +
           'Attempting to reconnect soon\n\n' +

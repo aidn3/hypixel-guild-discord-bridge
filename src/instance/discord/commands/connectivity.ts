@@ -35,7 +35,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
   }
 
   return {
-    color: Severity.DEFAULT,
+    color: Severity.Default,
     title: `Mute/Connectivity Check`,
     description: content,
     footer: {
@@ -53,7 +53,7 @@ export default {
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const lists: Map<string, string[]> = await checkConnectivity(context.application)
 
     for (const instancesName of instancesNames) {

@@ -23,7 +23,7 @@ export default {
       const identifiers = [username]
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
 
-      const mutedTill = context.application.punishedUsers.getPunishedTill(identifiers, PunishmentType.MUTE)
+      const mutedTill = context.application.punishedUsers.getPunishedTill(identifiers, PunishmentType.Mute)
       if (mutedTill) {
         context.application.clusterHelper.sendCommandToAllMinecraft(
           `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(mutedTill - Date.now())}`
@@ -38,9 +38,9 @@ export default {
       if (changed) {
         context.application.emit('profanityWarning', {
           localEvent: true,
-          instanceType: InstanceType.MINECRAFT,
+          instanceType: InstanceType.Minecraft,
           instanceName: context.instanceName,
-          channelType: ChannelType.PUBLIC,
+          channelType: ChannelType.Public,
 
           username,
           originalMessage: playerMessage,
@@ -51,8 +51,8 @@ export default {
       context.application.emit('chat', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Public,
         channelId: undefined,
         username,
         replyUsername: undefined,

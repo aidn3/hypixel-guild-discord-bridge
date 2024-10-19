@@ -30,27 +30,27 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       )
       this.restart()
     } else if (error.message.includes('does the account own minecraft')) {
-      this.clientInstance.status = Status.FAILED
+      this.clientInstance.status = Status.Failed
       this.clientInstance.app.emit('statusMessage', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         message:
           'Error: does the account own minecraft? changing skin (and deleting cache) and reconnecting might help fix the problem.'
       })
     } else if (error.message.includes('Profile not found')) {
-      this.clientInstance.status = Status.FAILED
+      this.clientInstance.status = Status.Failed
       this.clientInstance.app.emit('statusMessage', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         message: 'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
       })
     } else if (error.message.includes(QuitProxyError)) {
       this.clientInstance.app.emit('statusMessage', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         message: 'Error: Encountered problem while working with proxy.'
       })
 

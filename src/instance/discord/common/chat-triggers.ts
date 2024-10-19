@@ -159,15 +159,15 @@ export function formatChatTriggerResponse(results: ChatTriggerResult, title: str
   let color: Severity
   switch (results.status) {
     case 'success': {
-      color = Severity.GOOD
+      color = Severity.Good
       break
     }
     case 'failed': {
-      color = Severity.INFO
+      color = Severity.Info
       break
     }
     case 'error': {
-      color = Severity.BAD
+      color = Severity.Bad
     }
   }
 

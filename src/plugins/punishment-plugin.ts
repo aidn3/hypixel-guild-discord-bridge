@@ -16,8 +16,8 @@ export default {
     context.application.on('event', async (event) => {
       if (event.username == undefined) return
       switch (event.eventType) {
-        case EventType.UNMUTE:
-        case EventType.JOIN: {
+        case EventType.Unmute:
+        case EventType.Join: {
           const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
           checkBanned(
             context.application,
@@ -29,11 +29,11 @@ export default {
           checkMuted(context.application.punishedUsers, context.application.clusterHelper, event.username, identifiers)
           break
         }
-        case EventType.MUTE:
-        case EventType.PROMOTE:
-        case EventType.DEMOTE:
-        case EventType.OFFLINE:
-        case EventType.ONLINE: {
+        case EventType.Mute:
+        case EventType.Promote:
+        case EventType.Demote:
+        case EventType.Offline:
+        case EventType.Online: {
           const identifiers = await PunishedUsers.getMinecraftIdentifiers(context.application.mojangApi, event.username)
           checkBanned(
             context.application,
@@ -54,7 +54,7 @@ function checkMuted(
   username: string,
   identifiers: string[]
 ): void {
-  const mutedTill = punishedUsers.getPunishedTill(identifiers, PunishmentType.MUTE)
+  const mutedTill = punishedUsers.getPunishedTill(identifiers, PunishmentType.Mute)
 
   if (mutedTill) {
     clusterHelper.sendCommandToAllMinecraft(
@@ -70,18 +70,18 @@ function checkBanned(
   username: string,
   identifiers: string[]
 ): void {
-  const bannedTill = punishedUsers.getPunishedTill(identifiers, PunishmentType.BAN)
+  const bannedTill = punishedUsers.getPunishedTill(identifiers, PunishmentType.Ban)
 
   if (bannedTill) {
     application.emit('event', {
       localEvent: true,
-      instanceType: InstanceType.MAIN,
+      instanceType: InstanceType.Main,
       username: username,
       message: `Punishments-System tried to kick ${username} since they are banned.`,
-      instanceName: InstanceType.MAIN,
+      instanceName: InstanceType.Main,
       eventType: EventType.AUTOMATED,
-      channelType: ChannelType.OFFICER,
-      severity: Severity.BAD,
+      channelType: ChannelType.Officer,
+      severity: Severity.Bad,
       removeLater: false
     })
   }

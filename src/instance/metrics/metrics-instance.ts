@@ -19,7 +19,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
   constructor(app: Application, instanceName: string, config: MetricsConfig) {
-    super(app, instanceName, InstanceType.METRICS, config)
+    super(app, instanceName, InstanceType.Metrics, config)
 
     this.register = new Client.Registry()
     this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
@@ -85,16 +85,16 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }
 
     if (!this.config.enabled) {
-      this.status = Status.FAILED
+      this.status = Status.Failed
       return
     }
 
-    this.status = Status.CONNECTING
+    this.status = Status.Connecting
     this.logger.debug('prometheus is enabled')
 
     this.logger.debug(`Listening on port ${this.config.port}`)
     this.httpServer.listen(this.config.port)
 
-    this.status = Status.CONNECTED
+    this.status = Status.Connected
   }
 }

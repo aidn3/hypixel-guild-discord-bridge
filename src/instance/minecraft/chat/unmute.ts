@@ -17,7 +17,7 @@ export default {
 
       context.application.punishedUsers.forgive({
         localEvent: true,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         instanceName: context.instanceName,
         userIdentifiers: identifiers
       })
@@ -25,11 +25,11 @@ export default {
       context.application.emit('event', {
         localEvent: true,
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.OFFICER,
-        eventType: EventType.UNMUTE,
+        instanceType: InstanceType.Minecraft,
+        channelType: ChannelType.Officer,
+        eventType: EventType.Unmute,
         username: responsible,
-        severity: Severity.GOOD,
+        severity: Severity.Good,
         message: context.message,
         removeLater: false
       })

@@ -1,5 +1,3 @@
-// TODO: remove on major update
-/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * All available High Level events
  */
@@ -96,15 +94,15 @@ export interface ApplicationEvents {
  * The instance type the event was created from
  */
 export enum InstanceType {
-  MAIN = 'main',
-  PLUGIN = 'plugin',
+  Main = 'main',
+  Plugin = 'plugin',
 
-  METRICS = 'metrics',
-  SOCKET = 'socket',
-  COMMANDS = 'commands',
+  Metrics = 'metrics',
+  Socket = 'socket',
+  Commands = 'commands',
 
-  DISCORD = 'discord',
-  MINECRAFT = 'minecraft',
+  Discord = 'discord',
+  Minecraft = 'minecraft',
   Logger = 'webhook'
 }
 
@@ -112,9 +110,9 @@ export enum InstanceType {
  * The channel the event is targeting/coming from
  */
 export enum ChannelType {
-  OFFICER = 'officer',
-  PUBLIC = 'public',
-  PRIVATE = 'private'
+  Officer = 'officer',
+  Public = 'public',
+  Private = 'private'
 }
 
 /**
@@ -216,74 +214,69 @@ export interface ProfanityWarningEvent extends InformEvent {
  * In-game guild events such as joining/leaving/online/offline/etc.
  */
 export enum EventType {
-  // noinspection JSUnusedGlobalSymbols
-  /**
-   * Indicates an automated response/action.
-   * Used for custom plugins, etc.
-   */
-  AUTOMATED = 'automated',
   /**
    * When a player is requesting to join a guild
    */
-  REQUEST = 'request',
+  Request = 'request',
   /**
    * When a player joins a guild
    */
-  JOIN = 'join',
+  Join = 'join',
   /**
    * When a player leaves a guild
    */
-  LEAVE = 'leave',
+  Leave = 'leave',
   /**
    * When a player is kicked out of a guild
    */
-  KICK = 'kick',
+  Kick = 'kick',
 
   /**
    * When a guild quest completion message is shown
    */
-  QUEST = 'quest',
+  Quest = 'quest',
 
   /**
    * When a player is promoted in a guild
    */
-  PROMOTE = 'promote',
+  Promote = 'promote',
   /**
    * When a player is demoted in a guild.
    */
-  DEMOTE = 'demote',
+  Demote = 'demote',
   /**
    * When a player gets muted in a guild
    */
-  MUTE = 'mute',
+  Mute = 'mute',
   /**
    * When a player is unmuted in a guild
    */
-  UNMUTE = 'unmute',
+  Unmute = 'unmute',
 
   /**
    * When a player goes offline
    */
-  OFFLINE = 'offline',
+  Offline = 'offline',
   /**
    * When a player comes online
    */
-  ONLINE = 'online',
+  Online = 'online'
+}
 
+enum MinecraftChatEvent {
   /**
    * When a Minecraft server blocks a message due to it being repetitive
    */
-  REPEAT = 'repeat',
+  Repeat = 'repeat',
   /**
    * When a Minecraft server blocks a message due to it being harmful/abusive/etc.
    */
-  BLOCK = 'block',
-
+  Block = 'block',
   /**
    * When the Minecraft account itself is muted by the server.
-   * Not to be confused with {@link #MUTE}
+   * Not to be confused with {@link #Mute}
    */
-  MUTED = 'muted'
+  Muted = 'muted'
 }
 
 /**
@@ -291,11 +284,11 @@ export enum EventType {
  * This is used to choose an embed color when displaying in discord
  */
 export enum Severity {
-  GOOD = 0x00_8a_00,
-  INFO = 0x84_84_00,
-  BAD = 0x8a_2d_00,
-  ERROR = 0xff_00_00,
-  DEFAULT = 0x09_0a_16
+  Good = 0x00_8a_00,
+  Info = 0x84_84_00,
+  Bad = 0x8a_2d_00,
+  Error = 0xff_00_00,
+  Default = 0x09_0a_16
 }
 
 /**
@@ -380,32 +373,28 @@ export enum InstanceEventType {
   /**
    * When an instance is freshly created
    */
-  create,
-  /**
-   * When an instance is starting but not connected yet
-   */
-  start,
+  Created = 'created',
   /**
    * When an instance has gracefully ended
    */
-  end,
+  Ended = 'ended',
   /**
    * When an instance is connecting
    */
-  connect,
+  Connecting = 'connecting',
   /**
    * When an instance is temporarily disconnected
    */
-  disconnect,
+  Disconnected = 'disconnected',
   /**
    * When an instance has conflicted with another instance.
    * Receiving this event means the instance won't retry to reconnect.
    */
-  conflict,
+  Conflicted = 'conflicted',
   /**
    * when an instance is kicked from a server
    */
-  kick
+  Kicked = 'Kicked'
 }
 
 /**
@@ -499,8 +488,8 @@ export interface PunishmentForgiveEvent extends InformEvent {
 }
 
 export enum PunishmentType {
-  MUTE = 'mute',
-  BAN = 'ban'
+  Mute = 'mute',
+  Ban = 'ban'
 }
 
 /**
@@ -538,5 +527,3 @@ export interface ShutdownSignal extends SignalEvent {
    */
   readonly restart: boolean
 }
-
-/* eslint-enable @typescript-eslint/naming-convention */
