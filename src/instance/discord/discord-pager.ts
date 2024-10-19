@@ -8,7 +8,7 @@ import type {
 } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-import { Severity } from '../../common/application-event.js'
+import { Color } from '../../common/application-event.js'
 
 import { DefaultCommandFooter } from './common/discord-config.js'
 
@@ -20,7 +20,7 @@ enum Button {
 export const DefaultTimeout = 60_000
 
 const NoEmbed: APIEmbed = {
-  color: Severity.Error,
+  color: Color.Error,
   title: 'Nothing to display',
   description:
     'There is nothing to display.\n' +

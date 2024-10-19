@@ -6,7 +6,7 @@ import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { InstanceType, Severity } from '../../../common/application-event.js'
+import { InstanceType, Color } from '../../../common/application-event.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
 import { escapeDiscord } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
@@ -43,7 +43,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
       currentLength = 0
 
       pages.push({
-        color: Severity.Default,
+        color: Color.Default,
         title: `Guild Online Players (${total}):`,
         description: '',
         footer: {

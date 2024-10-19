@@ -5,7 +5,7 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
-import { InstanceType, PunishmentType, Severity } from '../../../common/application-event.js'
+import { InstanceType, PunishmentType, Color } from '../../../common/application-event.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { PunishedUsers } from '../../../util/punished-users.js'
 import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
@@ -256,7 +256,7 @@ async function handleKickInteraction(
   await interaction.editReply({
     embeds: [
       {
-        color: Severity.Good,
+        color: Color.Good,
         title: 'Punishment Status',
         description: `Kick command has been sent.\nPlease, ensure the player has been kicked.`,
         fields: [
@@ -364,7 +364,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
   if (list.length === 0) {
     return [
       {
-        color: Severity.Info,
+        color: Color.Info,
         title: `Active Punishments`,
         description: '_There are no active punishments._',
         footer: {
@@ -397,7 +397,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
       entriesCount = 0
 
       pages.push({
-        color: Severity.Default,
+        color: Color.Default,
         title: `Active Punishments (${list.length}):`,
         description: '',
         footer: {
@@ -437,7 +437,7 @@ function formatPunishmentAdd(event: PunishmentAddEvent, noUuidCheck: boolean): A
 
 function formatPunishmentStatus(event: PunishmentAddEvent, description: string): APIEmbed {
   return {
-    color: Severity.Good,
+    color: Color.Good,
     title: 'Punishment Status',
     description: description,
     fields: [
@@ -489,7 +489,7 @@ function formatNoPunishmentStatus(
   discordUserId: string | undefined
 ): APIEmbed {
   return {
-    color: Severity.Good,
+    color: Color.Good,
     title: 'Punishment Status',
     description: 'There is no active punishments for that user.',
     fields: [

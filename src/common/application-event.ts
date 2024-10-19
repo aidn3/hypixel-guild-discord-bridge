@@ -119,6 +119,19 @@ export enum ChannelType {
 }
 
 /**
+ * The severity of the event.
+ * This is also used to choose an embed color when displaying messages in discord.
+ * Although this is discord specific. This is exposed here for plugins to take advantage of.
+ */
+export enum Color {
+  Good = 0x00_8a_00,
+  Info = 0x84_84_00,
+  Bad = 0x8a_2d_00,
+  Error = 0xff_00_00,
+  Default = 0x09_0a_16
+}
+
+/**
  * The base interface for every event.
  * There are two main types of events: {@link InformEvent} and {@link SignalEvent}.
  */
@@ -280,18 +293,6 @@ enum MinecraftChatEvent {
    * Not to be confused with {@link #Mute}
    */
   Muted = 'muted'
-}
-
-/**
- * The severity of the event.
- * This is used to choose an embed color when displaying in discord
- */
-export enum Severity {
-  Good = 0x00_8a_00,
-  Info = 0x84_84_00,
-  Bad = 0x8a_2d_00,
-  Error = 0xff_00_00,
-  Default = 0x09_0a_16
 }
 
 /**

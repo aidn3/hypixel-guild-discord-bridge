@@ -28,7 +28,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
             {
               title: escapeDiscord(event.instanceName),
               description: escapeDiscord(event.message),
-              color: Severity.Info
+              color: Color.Info
             }
           ]
         })
@@ -204,7 +204,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
       title: escapeDiscord(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      color: Severity.Good,
+      color: Color.Good,
       description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
       footer: {
         text: `${event.instanceName}${feedback ? ' (command feedback)' : ''}`

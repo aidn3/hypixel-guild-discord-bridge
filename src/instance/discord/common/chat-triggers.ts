@@ -2,7 +2,7 @@ import type { APIEmbed } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Severity } from '../../../common/application-event.js'
+import { Color } from '../../../common/application-event.js'
 import { escapeDiscord } from '../../../util/shared-util.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
@@ -156,18 +156,18 @@ export async function checkChatTriggers(
 }
 
 export function formatChatTriggerResponse(results: ChatTriggerResult, title: string): APIEmbed {
-  let color: Severity
+  let color: Color
   switch (results.status) {
     case 'success': {
-      color = Severity.Good
+      color = Color.Good
       break
     }
     case 'failed': {
-      color = Severity.Info
+      color = Color.Info
       break
     }
     case 'error': {
-      color = Severity.Bad
+      color = Color.Bad
     }
   }
 

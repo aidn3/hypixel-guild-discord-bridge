@@ -35,7 +35,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
   }
 
   return {
-    color: Severity.Default,
+    color: Color.Default,
     title: `Mute/Connectivity Check`,
     description: content,
     footer: {
