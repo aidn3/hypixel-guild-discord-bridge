@@ -37,6 +37,10 @@ export interface ApplicationEvents {
    * If multiple response is needed, either format the text using blank lines/etc. or use {@linkcode CommandFeedbackEvent}
    */
   command: (event: CommandEvent) => void
+  /**
+   * When a plugin wishes to broadcast a message to all instances.
+   */
+  pluginBroadcast: (event: PluginBroadcastEvent) => void
 
   /**
    * Command sending a followup responses.
@@ -359,6 +363,20 @@ export interface MinecraftChatEvent extends InformEvent {
    * The message that fired that event
    */
   readonly message: string
+}
+
+/**
+ * When a plugin wishes to broadcast a message to all instances.
+ */
+export interface PluginBroadcastEvent extends InformEvent {
+  /**
+   * The message to broadcast
+   */
+  readonly message: string
+  /**
+   * The color to display the message at if the receiver supports it.
+   */
+  readonly color: Color
 }
 
 /**
