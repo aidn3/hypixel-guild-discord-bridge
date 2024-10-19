@@ -53,6 +53,10 @@ export abstract class ClientInstance<K> {
       message: reason
     } satisfies InstanceStatusEvent)
   }
+
+  public currentStatus(): Status {
+    return this.status
+  }
 }
 
 export enum Status {

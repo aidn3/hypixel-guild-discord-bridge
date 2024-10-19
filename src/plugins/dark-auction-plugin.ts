@@ -1,4 +1,4 @@
-import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, InstanceType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import { antiSpamString } from '../util/shared-util.js'
 
@@ -21,16 +21,17 @@ export default {
       lastMinuteCheck = currentMinute
 
       if ([50, 54].includes(currentMinute)) {
-        context.application.emit('event', {
+        context.application.emit('pluginBroadcast', {
           localEvent: true,
-          instanceType: InstanceType.Main,
-          instanceName: InstanceType.Main,
-          eventType: EventType.AUTOMATED,
-          severity: Severity.Good,
-          channelType: ChannelType.Public,
+
+          instanceType: InstanceType.Plugin,
+          instanceName: context.pluginName,
+
+          channel: ChannelType.Public,
+          color: Color.Good,
+
           username: undefined,
-          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`,
-          removeLater: false
+          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`
         })
       }
     }, 5000)

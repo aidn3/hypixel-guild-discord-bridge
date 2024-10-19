@@ -1,4 +1,4 @@
-import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color, InstanceType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 /* NOTICE
@@ -17,16 +17,17 @@ export default {
       lastSkyblockDay = currentSkyblockDay
 
       if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
-        context.application.emit('event', {
+        context.application.emit('pluginBroadcast', {
           localEvent: true,
-          instanceType: InstanceType.Main,
-          instanceName: InstanceType.Main,
-          eventType: EventType.AUTOMATED,
-          severity: Severity.Good,
-          channelType: ChannelType.Public,
+
+          instanceType: InstanceType.Plugin,
+          instanceName: context.pluginName,
+
+          color: Color.Good,
+          channel: ChannelType.Public,
+
           username: undefined,
-          message: `Reminder: Star Cult is here. Get that free x200 starfall!`,
-          removeLater: false
+          message: `Reminder: Star Cult is here. Get that free x200 starfall!`
         })
       }
     }, 5000)

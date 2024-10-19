@@ -377,6 +377,16 @@ export interface PluginBroadcastEvent extends InformEvent {
    * The color to display the message at if the receiver supports it.
    */
   readonly color: Color
+  /**
+   * The name of the user associated with the event.
+   * If there is no username, `undefined` is used instead.
+   */
+  readonly username: string | undefined
+  /**
+   * The channel type to broadcast the message at.
+   * @see ChannelType
+   */
+  readonly channel: ChannelType.Public | ChannelType.Officer
 }
 
 /**
