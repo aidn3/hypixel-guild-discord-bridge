@@ -1,6 +1,14 @@
 import type Application from '../application.js'
 
-import type { ChatEvent, ClientEvent, CommandEvent, CommandFeedbackEvent, InstanceEvent } from './application-event.js'
+import type {
+  ChatEvent,
+  GuildPlayerEvent,
+  CommandEvent,
+  CommandFeedbackEvent,
+  InstanceStatusEvent,
+  GuildGeneralEvent,
+  MinecraftChatEvent
+} from './application-event.js'
 import type { ClientInstance } from './client-instance.js'
 
 /**
@@ -15,21 +23,27 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
     this.application = application
     this.clientInstance = clientInstance
 
-    this.application.on('command', (event: CommandEvent) => {
+    this.application.on('command', (event) => {
       void this.onCommand(event)
     })
-    this.application.on('commandFeedback', (event: CommandFeedbackEvent) => {
+    this.application.on('commandFeedback', (event) => {
       void this.onCommandFeedback(event)
     })
 
-    this.application.on('chat', (event: ChatEvent) => {
+    this.application.on('chat', (event) => {
       void this.onChat(event)
     })
 
-    this.application.on('event', (event: ClientEvent) => {
-      void this.onClientEvent(event)
+    this.application.on('guildPlayer', (event) => {
+      void this.onGuildPlayer(event)
     })
-    this.application.on('instance', (event: InstanceEvent) => {
+    this.application.on('guildGeneral', (event) => {
+      void this.onGuildGeneral(event)
+    })
+    this.application.on('minecraftChatEvent', (event) => {
+      void this.onMinecraftChatEvent(event)
+    })
+    this.application.on('instanceStatus', (event) => {
       void this.onInstance(event)
     })
   }
@@ -40,7 +54,11 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
 
   abstract onChat(event: ChatEvent): void | Promise<void>
 
-  abstract onClientEvent(event: ClientEvent): void | Promise<void>
+  abstract onGuildPlayer(event: GuildPlayerEvent): void | Promise<void>
 
-  abstract onInstance(event: InstanceEvent): void | Promise<void>
+  abstract onGuildGeneral(event: GuildGeneralEvent): void | Promise<void>
+
+  abstract onMinecraftChatEvent(event: MinecraftChatEvent): void | Promise<void>
+
+  abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
 }

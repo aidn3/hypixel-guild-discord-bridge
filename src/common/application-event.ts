@@ -19,7 +19,18 @@ export interface ApplicationEvents {
   /**
    * User join/leave/offline/online/mute/kick/etc
    */
-  event: (event: ClientEvent) => void
+  guildPlayer: (event: GuildPlayerEvent) => void
+  /**
+   * When a guild emits an event that isn't specific for any player or user.
+   * Events such as reach a general guild quest goal.
+   */
+  guildGeneral: (event: GuildGeneralEvent) => void
+  /**
+   * In-game events such as interactions blocked/etc.
+   *
+   * @see MinecraftChatEventType
+   */
+  minecraftChatEvent: (event: MinecraftChatEvent) => void
   /**
    * User executing a command.
    * Each command execution can send only one command event.
@@ -229,7 +240,7 @@ export interface ProfanityWarningEvent extends InformEvent {
 /**
  * In-game guild events such as joining/leaving/online/offline/etc.
  */
-export enum EventType {
+export enum GuildPlayerEventType {
   /**
    * When a player is requesting to join a guild
    */
@@ -246,11 +257,6 @@ export enum EventType {
    * When a player is kicked out of a guild
    */
   Kick = 'kick',
-
-  /**
-   * When a guild quest completion message is shown
-   */
-  Quest = 'quest',
 
   /**
    * When a player is promoted in a guild
@@ -279,7 +285,51 @@ export enum EventType {
   Online = 'online'
 }
 
-enum MinecraftChatEvent {
+/**
+ * In-game guild events such as joining/leaving/online/offline/etc.
+ *
+ * @see GuildPlayerEventType
+ */
+export interface GuildPlayerEvent extends InformEvent {
+  /**
+   * Which event has occurred
+   */
+  readonly type: GuildPlayerEventType
+  /**
+   * The name of the user who fired that event.
+   */
+  readonly username: string
+  /**
+   * The message that fired that event
+   */
+  readonly message: string
+}
+
+enum GuildGeneralEventType {
+  /**
+   * When a guild quest completion message is shown
+   */
+  Quest = 'quest'
+}
+
+/**
+ * When a guild emits an event that isn't specific for any player or user.
+ * Events such as reach a general guild quest goal.
+ *
+ * @see GuildGeneralEventType
+ */
+export interface GuildGeneralEvent extends InformEvent {
+  /**
+   * Which event has occurred
+   */
+  readonly type: GuildGeneralEventType
+  /**
+   * The message that fired that event
+   */
+  readonly message: string
+}
+
+enum MinecraftChatEventType {
   /**
    * When a Minecraft server blocks a message due to it being repetitive
    */
@@ -290,44 +340,25 @@ enum MinecraftChatEvent {
   Block = 'block',
   /**
    * When the Minecraft account itself is muted by the server.
-   * Not to be confused with {@link #Mute}
+   * Not to be confused with {@link GuildPlayerEventType#Mute}
    */
   Muted = 'muted'
 }
 
 /**
- * In-game guild events such as joining/leaving/online/offline/etc.
+ * In-game events such as interactions blocked/etc.
  *
- * @see EventType
+ * @see MinecraftChatEventType
  */
-export interface ClientEvent extends InformEvent {
-  /**
-   * The channel type the message is coming from
-   * @see ChannelType
-   */
-  readonly channelType: ChannelType
+export interface MinecraftChatEvent extends InformEvent {
   /**
    * Which event has occurred
    */
-  readonly eventType: EventType
-  /**
-   * The name of the user who fired that event.
-   * If there is no username, `undefined` is used instead
-   */
-  readonly username: string | undefined
-  /**
-   * @see Severity
-   */
-  readonly severity: Severity
+  readonly type: MinecraftChatEventType
   /**
    * The message that fired that event
    */
   readonly message: string
-  /**
-   * Whether to delete any notification that has been sent due to this event.
-   * Used to reduce spam if an event occurs too often.
-   */
-  readonly removeLater: boolean
 }
 
 /**
@@ -369,37 +400,6 @@ export interface CommandEvent extends InformEvent {
  * Can be used to send multiple responses as well.
  */
 export type CommandFeedbackEvent = CommandEvent
-
-/**
- * Enum containing all available instance statuses
- */
-export enum InstanceEventType {
-  /**
-   * When an instance is freshly created
-   */
-  Created = 'created',
-  /**
-   * When an instance has gracefully ended
-   */
-  Ended = 'ended',
-  /**
-   * When an instance is connecting
-   */
-  Connecting = 'connecting',
-  /**
-   * When an instance is temporarily disconnected
-   */
-  Disconnected = 'disconnected',
-  /**
-   * When an instance has conflicted with another instance.
-   * Receiving this event means the instance won't retry to reconnect.
-   */
-  Conflicted = 'conflicted',
-  /**
-   * when an instance is kicked from a server
-   */
-  Kicked = 'Kicked'
-}
 
 /**
  * Events used when an instance changes its status
