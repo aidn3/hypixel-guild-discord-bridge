@@ -10,7 +10,7 @@ export default class ClusterHelper {
     this.app = app
 
     this.app.on('minecraftSelfBroadcast', (event) => this.minecraftBots.set(event.instanceName, event))
-    this.app.on('instance', (event) => {
+    this.app.on('instanceStatus', (event) => {
       this.instanceBroadcast(event.instanceName, event.instanceType)
     })
     this.app.on('selfBroadcast', (event) => {

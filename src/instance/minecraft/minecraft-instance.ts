@@ -64,7 +64,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       handler.registerEvents()
     }
 
-    this.app.emit('instance', {
+    this.app.emit('instanceStatus', {
       localEvent: true,
       instanceName: this.instanceName,
       instanceType: InstanceType.Minecraft,

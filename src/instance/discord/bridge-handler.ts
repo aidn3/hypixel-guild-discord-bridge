@@ -6,7 +6,7 @@ import type {
   ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceEvent
+  InstanceStatusEvent
 } from '../../common/application-event.js'
 import { ChannelType, EventType, Severity } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
@@ -15,7 +15,7 @@ import { escapeDiscord } from '../../util/shared-util.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance> {
-  async onInstance(event: InstanceEvent): Promise<void> {
+  async onInstance(event: InstanceStatusEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
 
     for (const channelId of this.clientInstance.config.publicChannelIds) {

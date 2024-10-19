@@ -1,3 +1,5 @@
+import type { Status } from './client-instance.js'
+
 /**
  * All available High Level events
  */
@@ -36,7 +38,7 @@ export interface ApplicationEvents {
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  instance: (event: InstanceEvent) => void
+  instanceStatus: (event: InstanceStatusEvent) => void
   /**
    * Broadcast instance to inform other bridges in the cluster about its existence
    */
@@ -401,11 +403,11 @@ export enum InstanceEventType {
 /**
  * Events used when an instance changes its status
  */
-export interface InstanceEvent extends InformEvent {
+export interface InstanceStatusEvent extends InformEvent {
   /**
    * The instance event status
    */
-  readonly type: InstanceEventType
+  readonly status: Status
   /**
    * Humanly formatted message of the situation
    */

@@ -38,8 +38,8 @@ export default class LoggerInstance extends ClientInstance<undefined> {
       )
     })
 
-    this.app.on('instance', (event) => {
-      void this.send(`[instance][${event.instanceName}] ${event.type}: ${event.message}`)
+    this.app.on('instanceStatus', (event) => {
+      void this.send(`[instance][${event.instanceName}] ${event.status}: ${event.message}`)
     })
     this.app.on('selfBroadcast', (event) => {
       void this.send(`[selfBroadcast][${event.instanceName}] Instance broadcasting its existence.`)

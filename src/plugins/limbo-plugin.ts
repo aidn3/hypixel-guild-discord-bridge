@@ -16,8 +16,8 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
  */
 export default {
   onRun(context: PluginContext): void {
-    context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.Created && event.instanceType === InstanceType.Minecraft) {
+    context.application.on('instanceStatus', (event) => {
+      if (event.status === InstanceEventType.Created && event.instanceType === InstanceType.Minecraft) {
         const localInstance = context.localInstances.find(
           (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
         )

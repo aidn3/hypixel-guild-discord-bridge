@@ -3,7 +3,7 @@ import Logger4js from 'log4js'
 
 import type Application from '../application.js'
 
-import type { InstanceType } from './application-event.js'
+import type { InstanceStatusEvent, InstanceType } from './application-event.js'
 
 export abstract class ClientInstance<K> {
   readonly instanceName: string
@@ -12,7 +12,7 @@ export abstract class ClientInstance<K> {
   readonly logger: Logger
   readonly config: K
 
-  status: Status
+  private status: Status
 
   protected constructor(app: Application, instanceName: string, instanceType: InstanceType, config: K) {
     this.app = app
@@ -33,6 +33,26 @@ export abstract class ClientInstance<K> {
    * Not disposing of the old client may result in double listeners.
    */
   abstract connect(): Promise<void> | void
+
+  /**
+   * Change instance status and inform other instances about the status.
+   * Function will just return if the status is the same.
+   *
+   * @param status The status to set
+   * @param reason Any message to supply for other instances in case of displaying a human-readable message.
+   * @protected
+   */
+  protected setStatus(status: Status, reason: string): void {
+    if (this.status === status) return
+    this.status = status
+    this.app.emit('instanceStatus', {
+      localEvent: true,
+      instanceName: this.instanceName,
+      instanceType: this.instanceType,
+      status: status,
+      message: reason
+    } satisfies InstanceStatusEvent)
+  }
 }
 
 export enum Status {
@@ -49,7 +69,17 @@ export enum Status {
    */
   Connected = 'connected',
   /**
-   * Instance has decided to shut down for a critical reason
+   * When an instance is temporarily disconnected
+   */
+  Disconnected = 'disconnected',
+  /**
+   * When an instance has gracefully ended
+   */
+  Ended = 'ended',
+
+  /**
+   * Instance has decided to shut down for a critical reason.
+   * This means the instance won't retry to reconnect.
    */
   Failed = 'failed'
 }

@@ -4,7 +4,7 @@ import type {
   ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceEvent,
+  InstanceStatusEvent,
   MinecraftSendChat,
   ReconnectSignal
 } from '../../common/application-event.js'
@@ -28,7 +28,7 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onInstance(event: InstanceEvent): void | Promise<void> {
+  onInstance(event: InstanceStatusEvent): void | Promise<void> {
     // TODO: implement onInstance on minecraft side
     // maybe not implement either if it gives better UX
     return undefined
