@@ -45,7 +45,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     })
 
     setInterval(() => {
-      void this.collectMetrics()
+      void this.collectMetrics().catch(this.errorHandler.promiseCatch('collecting metrics'))
     }, config.interval * 1000)
 
     this.httpServer = http.createServer((request, response) => {

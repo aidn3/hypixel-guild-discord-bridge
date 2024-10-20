@@ -4,6 +4,7 @@ import Logger4js from 'log4js'
 import type Application from '../application.js'
 
 import type { InstanceStatusEvent, InstanceType } from './application-event.js'
+import UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 export abstract class ClientInstance<K> {
   readonly instanceName: string
@@ -11,6 +12,7 @@ export abstract class ClientInstance<K> {
   readonly app: Application
   readonly logger: Logger
   readonly config: K
+  readonly errorHandler: UnexpectedErrorHandler
 
   private status: Status
 
@@ -22,6 +24,7 @@ export abstract class ClientInstance<K> {
     this.logger = Logger4js.getLogger(instanceName)
     this.config = config
     this.status = Status.Fresh
+    this.errorHandler = new UnexpectedErrorHandler(this.logger)
   }
 
   /**

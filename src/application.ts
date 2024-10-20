@@ -15,6 +15,7 @@ import { InstanceType } from './common/application-event.js'
 import type { ClientInstance } from './common/client-instance.js'
 import { InternalInstancePrefix } from './common/client-instance.js'
 import type { PluginInterface } from './common/plugins.js'
+import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import LoggerInstance from './instance/logger/logger-instance.js'
@@ -27,6 +28,8 @@ import { shutdownApplication, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
+  private readonly errorHandler: UnexpectedErrorHandler
+
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
@@ -50,7 +53,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     super()
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
+    this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
+
     emitAll(this) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
@@ -112,9 +117,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         }
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-        void sleep(5000).then(() => {
-          void shutdownApplication(2)
-        })
+        void sleep(5000)
+          .then(async () => {
+            await shutdownApplication(2)
+          })
+          .catch(this.errorHandler.promiseCatch('shutting down application with shutdownSignal'))
       }
     })
   }
@@ -235,4 +242,5 @@ function emitAll(emitter: Events): void {
     return old.call(emitter, event, ...callerArguments)
   }
 }
+
 /* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */

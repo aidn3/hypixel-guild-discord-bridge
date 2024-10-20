@@ -172,7 +172,9 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
         const deleteAfter = this.clientInstance.config.deleteTempEventAfter
         setTimeout(
           () => {
-            void responsePromise.then(async (response) => await response.delete())
+            void responsePromise
+              .then(async (response) => await response.delete())
+              .catch(this.clientInstance.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
           },
           deleteAfter * 60 * 1000
         )

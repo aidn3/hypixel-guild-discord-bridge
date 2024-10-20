@@ -25,30 +25,46 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
     this.clientInstance = clientInstance
 
     this.application.on('command', (event) => {
-      void this.onCommand(event)
+      void Promise.resolve(this.onCommand(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling command event')
+      )
     })
     this.application.on('commandFeedback', (event) => {
-      void this.onCommandFeedback(event)
+      void Promise.resolve(this.onCommandFeedback(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling command feedback')
+      )
     })
 
     this.application.on('chat', (event) => {
-      void this.onChat(event)
+      void Promise.resolve(this.onChat(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling chat event')
+      )
     })
 
     this.application.on('guildPlayer', (event) => {
-      void this.onGuildPlayer(event)
+      void Promise.resolve(this.onGuildPlayer(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling guildPlayer event')
+      )
     })
     this.application.on('guildGeneral', (event) => {
-      void this.onGuildGeneral(event)
+      void Promise.resolve(this.onGuildGeneral(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling guildGeneral event')
+      )
     })
     this.application.on('minecraftChatEvent', (event) => {
-      void this.onMinecraftChatEvent(event)
+      void Promise.resolve(this.onMinecraftChatEvent(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling minecraftChat event')
+      )
     })
     this.application.on('instanceStatus', (event) => {
-      void this.onInstance(event)
+      void Promise.resolve(this.onInstance(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling instance event')
+      )
     })
     this.application.on('broadcast', (event) => {
-      void this.onBroadcast(event)
+      void Promise.resolve(this.onBroadcast(event)).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling broadcast event')
+      )
     })
   }
 

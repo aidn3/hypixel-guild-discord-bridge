@@ -80,7 +80,7 @@ export default {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
     }
 
-    await pageMessage(context.interaction, createEmbed(lists))
+    await pageMessage(context.interaction, createEmbed(lists), context.errorHandler)
   }
 } satisfies CommandInterface
 

@@ -6,6 +6,7 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
 import { InstanceType, PunishmentType, Color } from '../../../common/application-event.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
 import { durationToMinecraftDuration } from '../../moderation/util.js'
@@ -139,7 +140,7 @@ export default {
         return
       }
       case 'list': {
-        await handleAllListInteraction(context.application, context.interaction)
+        await handleAllListInteraction(context.application, context.interaction, context.errorHandler)
         return
       }
       case 'forgive': {
@@ -148,11 +149,16 @@ export default {
           return
         }
 
-        await handleForgiveInteraction(context.application, context.instanceName, context.interaction)
+        await handleForgiveInteraction(
+          context.application,
+          context.instanceName,
+          context.interaction,
+          context.errorHandler
+        )
         return
       }
       case 'check': {
-        await handleCheckInteraction(context.application, context.interaction)
+        await handleCheckInteraction(context.application, context.interaction, context.errorHandler)
         return
       }
       default: {
@@ -279,7 +285,8 @@ async function handleKickInteraction(
 async function handleForgiveInteraction(
   application: Application,
   instanceName: string,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
@@ -322,22 +329,24 @@ async function handleForgiveInteraction(
   } else if (pages.length === 1) {
     await interaction.editReply({ embeds: [pages[0], formatted] })
   } else {
-    await pageMessage(interaction, pages)
+    await pageMessage(interaction, pages, errorHandler)
     await interaction.followUp({ embeds: [formatted] })
   }
 }
 
 async function handleAllListInteraction(
   application: Application,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
   const list = application.moderation.punishments.all()
-  await pageMessage(interaction, formatList(list))
+  await pageMessage(interaction, formatList(list), errorHandler)
 }
 
 async function handleCheckInteraction(
   application: Application,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const userResolvedData = await findAboutUser(application.mojangApi, interaction, username, false, false)
@@ -352,7 +361,7 @@ async function handleCheckInteraction(
   }
 
   await (pages.length > 0
-    ? pageMessage(interaction, pages)
+    ? pageMessage(interaction, pages, errorHandler)
     : interaction.editReply({
         embeds: [
           formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId)

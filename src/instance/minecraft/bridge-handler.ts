@@ -32,7 +32,9 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     })
 
     this.application.on('minecraftSend', (event) => {
-      void this.onMinecraftSend(event)
+      void this.onMinecraftSend(event).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling incoming minecraftSend event')
+      )
     })
   }
 
@@ -47,9 +49,13 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     if (event.instanceName === this.clientInstance.instanceName) return
 
     if (event.channelType === ChannelType.Public) {
-      void this.clientInstance.send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
+      void this.clientInstance
+        .send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
+        .catch(this.clientInstance.errorHandler.promiseCatch('sending public chat message'))
     } else if (event.channelType === ChannelType.Officer) {
-      void this.clientInstance.send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
+      void this.clientInstance
+        .send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
+        .catch(this.clientInstance.errorHandler.promiseCatch('sending officer chat message'))
     }
   }
 
@@ -98,9 +104,12 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     // undefined is strictly checked due to api specification
     if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
       this.clientInstance.logger.log('instance has received restart signal')
-      void this.clientInstance.send(`/gc @Instance restarting...`).then(() => {
-        this.clientInstance.connect()
-      })
+      void this.clientInstance
+        .send(`/gc @Instance restarting...`)
+        .then(() => {
+          this.clientInstance.connect()
+        })
+        .catch(this.clientInstance.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
     }
   }
 
@@ -123,17 +132,23 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
     switch (event.channelType) {
       case ChannelType.Public: {
-        void this.clientInstance.send(`/gc ${finalResponse}`)
+        void this.clientInstance
+          .send(`/gc ${finalResponse}`)
+          .catch(this.clientInstance.errorHandler.promiseCatch('handling public command response display'))
         break
       }
       case ChannelType.Officer: {
-        void this.clientInstance.send(`/oc ${finalResponse}`)
+        void this.clientInstance
+          .send(`/oc ${finalResponse}`)
+          .catch(this.clientInstance.errorHandler.promiseCatch('handling private command response display'))
         break
       }
       case ChannelType.Private: {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
-        void this.clientInstance.send(`/msg ${event.username} ${finalResponse}`)
+        void this.clientInstance
+          .send(`/msg ${event.username} ${finalResponse}`)
+          .catch(this.clientInstance.errorHandler.promiseCatch('handling private command response display'))
         break
       }
       default: {

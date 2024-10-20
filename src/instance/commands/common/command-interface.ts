@@ -2,6 +2,7 @@ import type * as Logger4js from 'log4js'
 
 import type Application from '../../../application.js'
 import type { ChannelType, InstanceType } from '../../../common/application-event.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 
 export abstract class ChatCommandHandler {
   readonly name: string
@@ -28,6 +29,8 @@ export interface ChatCommandContext {
   app: Application
 
   logger: Logger4js.Logger
+  errorHandler: UnexpectedErrorHandler
+
   allCommands: ChatCommandHandler[]
   commandPrefix: string
   adminUsername: string

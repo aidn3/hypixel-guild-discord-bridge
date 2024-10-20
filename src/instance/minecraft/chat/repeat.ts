@@ -41,7 +41,9 @@ export default {
       })
 
       if (lastWarning + 5000 < Date.now()) {
-        void context.clientInstance.send(`/gc @${randomMessage}`)
+        void context.clientInstance
+          .send(`/gc @${randomMessage}`)
+          .catch(context.clientInstance.errorHandler.promiseCatch('sending message about repeating in chat'))
         lastWarning = Date.now()
       }
     }

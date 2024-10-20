@@ -9,6 +9,7 @@ import type {
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 import { Color } from '../../common/application-event.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import { DefaultCommandFooter } from './common/discord-config.js'
 
@@ -37,6 +38,7 @@ export async function interactivePaging(
   interaction: CommandInteraction,
   currentPage = 0,
   duration = DefaultTimeout,
+  errorHandler: UnexpectedErrorHandler,
   fetch: (page: number) => Promise<FetchPageResult> | FetchPageResult
 ): Promise<Message> {
   const channel: TextBasedChannel = interaction.channel as TextChannel
@@ -57,44 +59,53 @@ export async function interactivePaging(
     })
 
     nextInteraction.on('collect', (index: ButtonInteraction) => {
-      void index.deferUpdate().then(async () => {
-        lastUpdate = await fetch(++currentPage)
-        if (lastUpdate.embed === undefined) {
-          await interaction.editReply({ embeds: [NoEmbed] })
-          return
-        }
+      void index
+        .deferUpdate()
+        .then(async () => {
+          lastUpdate = await fetch(++currentPage)
+          if (lastUpdate.embed === undefined) {
+            await interaction.editReply({ embeds: [NoEmbed] })
+            return
+          }
 
-        await index.editReply({
-          embeds: [lastUpdate.embed],
-          components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+          await index.editReply({
+            embeds: [lastUpdate.embed],
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+          })
         })
-      })
+        .catch(errorHandler.promiseCatch('pressing next button on discord-pager'))
     })
     backInteraction.on('collect', (index: ButtonInteraction) => {
-      void index.deferUpdate().then(async () => {
-        lastUpdate = await fetch(--currentPage)
-        if (lastUpdate.embed === undefined) {
-          await interaction.editReply({ embeds: [NoEmbed] })
-          return
-        }
+      void index
+        .deferUpdate()
+        .then(async () => {
+          lastUpdate = await fetch(--currentPage)
+          if (lastUpdate.embed === undefined) {
+            await interaction.editReply({ embeds: [NoEmbed] })
+            return
+          }
 
-        await index.editReply({
-          embeds: [lastUpdate.embed],
-          components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+          await index.editReply({
+            embeds: [lastUpdate.embed],
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+          })
         })
-      })
+        .catch(errorHandler.promiseCatch('pressing back button on discord-pager'))
     })
 
     nextInteraction.on('end', () => {
       if (lastUpdate.embed === undefined) {
-        void interaction.editReply({ embeds: [NoEmbed] })
+        void interaction
+          .editReply({ embeds: [NoEmbed] })
+          .catch(errorHandler.promiseCatch('handling discord-pager end event when no embed exists'))
         return
       }
 
-      void interaction.editReply({
-        embeds: [lastUpdate.embed],
-        components: []
-      })
+      void interaction
+        .editReply({ embeds: [lastUpdate.embed], components: [] })
+        .catch(
+          errorHandler.promiseCatch('handling discord-pager end event by setting last embed without paging buttons')
+        )
     })
   }
 
@@ -107,9 +118,10 @@ export async function interactivePaging(
 export async function pageMessage(
   interaction: CommandInteraction,
   pages: APIEmbed[],
+  errorHandler: UnexpectedErrorHandler,
   duration = DefaultTimeout
 ): Promise<Message> {
-  return await interactivePaging(interaction, 0, duration, (page) => {
+  return await interactivePaging(interaction, 0, duration, errorHandler, (page) => {
     return { embed: pages[page], totalPages: pages.length }
   })
 }

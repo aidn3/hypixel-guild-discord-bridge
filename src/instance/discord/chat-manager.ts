@@ -11,7 +11,9 @@ import type DiscordInstance from './discord-instance.js'
 export default class ChatManager extends EventHandler<DiscordInstance> {
   registerEvents(): void {
     this.clientInstance.client.on('messageCreate', (message) => {
-      void this.onMessage(message)
+      void this.onMessage(message).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling incoming discord messageCreate event')
+      )
     })
   }
 

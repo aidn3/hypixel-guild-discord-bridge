@@ -20,7 +20,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
     this.application = application
 
     this.application.on('guildPlayer', (event) => {
-      void this.onGuildPlayer(event)
+      void this.onGuildPlayer(event).catch(this.clientInstance.errorHandler.promiseCatch('handling guildPlayer event'))
     })
   }
 

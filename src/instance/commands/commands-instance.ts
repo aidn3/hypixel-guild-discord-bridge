@@ -72,7 +72,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     this.checkCommandsIntegrity()
 
     this.app.on('chat', (event) => {
-      void this.handle(event)
+      void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
@@ -117,6 +117,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
         app: this.app,
 
         logger: this.logger,
+        errorHandler: this.errorHandler,
+
         allCommands: this.commands,
         commandPrefix: this.config.commandPrefix,
         adminUsername: this.config.adminUsername,

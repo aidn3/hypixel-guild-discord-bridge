@@ -58,7 +58,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
   registerEvents(): void {
     this.clientInstance.client.on('interactionCreate', (interaction) => {
-      void this.interactionCreate(interaction)
+      void this.interactionCreate(interaction).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling incoming discord interactionCreate event')
+      )
     })
     this.clientInstance.logger.debug('CommandManager is registered')
   }
@@ -134,6 +136,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         const commandContext: DiscordCommandContext = {
           application: this.clientInstance.app,
           logger: this.clientInstance.logger,
+          errorHandler: this.clientInstance.errorHandler,
           instanceName: this.clientInstance.instanceName,
           privilege: this.resolvePrivilegeLevel(interaction),
           interaction: interaction as ChatInputCommandInteraction,
@@ -195,7 +198,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     for (const [, guild] of this.clientInstance.client.guilds.cache) {
       this.clientInstance.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
-      void rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
+      void rest
+        .put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
+        .catch(this.clientInstance.errorHandler.promiseCatch('registering discord commands'))
     }
   }
 

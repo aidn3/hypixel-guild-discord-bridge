@@ -117,12 +117,14 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
 
   private onMessage(message: string): void {
     for (const module of this.chatModules) {
-      void module.onChat({
-        application: this.clientInstance.app,
-        clientInstance: this.clientInstance,
-        instanceName: this.clientInstance.instanceName,
-        message
-      })
+      void Promise.resolve(
+        module.onChat({
+          application: this.clientInstance.app,
+          clientInstance: this.clientInstance,
+          instanceName: this.clientInstance.instanceName,
+          message
+        })
+      ).catch(this.clientInstance.errorHandler.promiseCatch('handling chat trigger'))
     }
 
     this.clientInstance.app.emit('minecraftChat', {

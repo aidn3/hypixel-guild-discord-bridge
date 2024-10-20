@@ -85,13 +85,19 @@ export default {
       return
     }
 
-    await interactivePaging(context.interaction, currentPage - 1, DefaultTimeout, async (requestedPage) => {
-      const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
-      return {
-        totalPages: chatResult.guildLog?.total ?? 0,
-        embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+    await interactivePaging(
+      context.interaction,
+      currentPage - 1,
+      DefaultTimeout,
+      context.errorHandler,
+      async (requestedPage) => {
+        const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
+        return {
+          totalPages: chatResult.guildLog?.total ?? 0,
+          embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+        }
       }
-    })
+    )
   }
 } satisfies CommandInterface
 
