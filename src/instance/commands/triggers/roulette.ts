@@ -60,7 +60,7 @@ export default class Roulette extends ChatCommandHandler {
       this.countSinceLastLose = 0
 
       context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
-      context.app.punishedUsers.punish({
+      context.app.punishmentsSystem.punishments.add({
         localEvent: true,
         instanceType: InstanceType.Minecraft,
         instanceName: context.instanceName,

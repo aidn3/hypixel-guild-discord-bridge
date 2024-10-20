@@ -89,9 +89,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
-    const punishedUsers = this.clientInstance.app.punishedUsers
+    const punishmentsSystem = this.clientInstance.app.punishmentsSystem
     const userIdentifiers = [discordName, readableName, message.author.id]
-    const mutedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.Mute)
+    const mutedTill = punishmentsSystem.punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
     if (mutedTill != undefined) {
       await message.reply({
@@ -103,7 +103,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       return true
     }
 
-    const bannedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.Ban)
+    const bannedTill = punishmentsSystem.punishments.punishedTill(userIdentifiers, PunishmentType.Ban)
     if (bannedTill != undefined) {
       await message.reply({
         content:

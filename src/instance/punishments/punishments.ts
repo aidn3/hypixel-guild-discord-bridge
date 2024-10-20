@@ -3,12 +3,11 @@ import fs from 'node:fs'
 import * as TypescriptChecker from 'ts-interface-checker'
 import { createCheckers } from 'ts-interface-checker'
 
-import type Application from '../application.js'
-import ApplicationEventTi from '../common/application-event-ti.js'
-import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../common/application-event.js'
-import { PunishmentType } from '../common/application-event.js'
+import type Application from '../../application.js'
+import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../../common/application-event.js'
+import { PunishmentType } from '../../common/application-event.js'
 
-import type { MojangApi } from './mojang.js'
+import ApplicationEventTi from './application-event-ti.js'
 
 const ApplicationEventChecker = createCheckers({
   ...ApplicationEventTi,
@@ -18,34 +17,35 @@ const ApplicationEventChecker = createCheckers({
 
 type PunishmentsRecord = Record<PunishmentType, PunishmentAddEvent[]>
 
-export class PunishedUsers {
+export default class Punishments {
   private static readonly ConfigName = 'punishments.json'
+
   private readonly app: Application
   private readonly configFilePath: string
-  private punishmentsRecord: PunishmentsRecord = {
+  private records: PunishmentsRecord = {
     [PunishmentType.Mute]: [],
     [PunishmentType.Ban]: []
   }
 
   constructor(app: Application) {
     this.app = app
-    this.configFilePath = app.getConfigFilePath(PunishedUsers.ConfigName)
+    this.configFilePath = app.getConfigFilePath(Punishments.ConfigName)
     this.loadFromConfig()
 
     app.on('punishmentAdd', (event) => {
       if (event.localEvent) return
-      this.punish(event)
+      this.add(event)
     })
     app.on('punishmentForgive', (event) => {
       if (event.localEvent) return
-      this.forgive(event)
+      this.remove(event)
     })
   }
 
-  public punish(event: PunishmentAddEvent): void {
+  public add(event: PunishmentAddEvent): void {
     if (event.localEvent) this.app.emit('punishmentAdd', event)
 
-    const originalList = this.punishmentsRecord[event.type]
+    const originalList = this.records[event.type]
     const currentTime = Date.now()
     const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter((id) => id !== undefined)
 
@@ -54,18 +54,18 @@ export class PunishedUsers {
     )
 
     modifiedList.push(event)
-    this.punishmentsRecord[event.type] = modifiedList
+    this.records[event.type] = modifiedList
     this.saveConfig()
   }
 
-  public forgive(event: PunishmentForgiveEvent): PunishmentAddEvent[] {
+  public remove(event: PunishmentForgiveEvent): PunishmentAddEvent[] {
     if (event.localEvent) this.app.emit('punishmentForgive', event)
 
     const result: PunishmentAddEvent[] = []
 
     const currentTime = Date.now()
-    for (const type of Object.keys(this.punishmentsRecord) as PunishmentType[]) {
-      this.punishmentsRecord[type] = this.punishmentsRecord[type].filter((punishment) => {
+    for (const type of Object.keys(this.records) as PunishmentType[]) {
+      this.records[type] = this.records[type].filter((punishment) => {
         if (punishment.till < currentTime) return false
         const shouldDelete = this.matchIdentifier(punishment, event.userIdentifiers)
         if (shouldDelete) {
@@ -80,8 +80,8 @@ export class PunishedUsers {
     return result
   }
 
-  getPunishedTill(identifiers: string[], type: PunishmentType): number | undefined {
-    const allPunishments = this.punishmentsRecord[type]
+  punishedTill(identifiers: string[], type: PunishmentType): number | undefined {
+    const allPunishments = this.records[type]
 
     const current = Date.now()
     const punishment = allPunishments.find((p) => p.till > current && this.matchIdentifier(p, identifiers))
@@ -92,54 +92,26 @@ export class PunishedUsers {
     return undefined
   }
 
-  findPunishmentsByUser(identifiers: string[]): PunishmentAddEvent[] {
+  findByUser(identifiers: string[]): PunishmentAddEvent[] {
     const current = Date.now()
     const result: PunishmentAddEvent[] = []
 
-    for (const [, events] of Object.entries(this.punishmentsRecord)) {
+    for (const [, events] of Object.entries(this.records)) {
       result.push(...events.filter((event) => event.till > current && this.matchIdentifier(event, identifiers)))
     }
 
     return result
   }
 
-  getAllPunishments(): PunishmentAddEvent[] {
+  all(): PunishmentAddEvent[] {
     const current = Date.now()
     const result: PunishmentAddEvent[] = []
 
-    for (const [, events] of Object.entries(this.punishmentsRecord)) {
+    for (const [, events] of Object.entries(this.records)) {
       result.push(...events.filter((event) => event.till > current))
     }
 
     return result
-  }
-
-  getPunishmentsByType(type: PunishmentType): PunishmentAddEvent[] {
-    return this.punishmentsRecord[type]
-  }
-
-  static async getMinecraftIdentifiers(mojangApi: MojangApi, username: string): Promise<string[]> {
-    const mojangProfile = await mojangApi.profileByUsername(username).catch(() => undefined)
-    const identifiers = [username]
-    if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
-    return identifiers
-  }
-
-  /**
-   * Convert duration number to a duration with prefix
-   * @param duration time in milliseconds
-   * @return a duration with prefix capped at 1 month. Result always 60 or bigger.
-   */
-  static durationToMinecraftDuration(duration: number): string {
-    // 30 day in seconds
-    // Max allowed duration in minecraft. It is a hard limit from server side
-    const MaxDuration = 2_592_000
-    // 1 minute in seconds. hard limit too
-    const MixDuration = 60
-    const Prefix = 's' // for "seconds"
-
-    const maxTime = Math.min(MaxDuration, Math.floor(duration / 1000))
-    return `${Math.max(maxTime, MixDuration)}${Prefix}`
   }
 
   private loadFromConfig(): void {
@@ -153,11 +125,11 @@ export class PunishedUsers {
       ApplicationEventChecker.PunishmentList.check(punishments)
     }
 
-    this.punishmentsRecord = punishmentsRecord
+    this.records = punishmentsRecord
   }
 
   private saveConfig(): void {
-    const dataRaw = JSON.stringify(this.punishmentsRecord, undefined, 4)
+    const dataRaw = JSON.stringify(this.records, undefined, 4)
     fs.writeFileSync(this.configFilePath, dataRaw, { encoding: 'utf8' })
   }
 

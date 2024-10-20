@@ -91,7 +91,6 @@ plugins:
   - './src/plugins/reaction-plugin.ts'
   - './src/plugins/dark-auction-plugin.ts'
   - './src/plugins/starfall-cult-plugin.ts'
-  - './src/plugins/punishment-plugin.ts'
   - './src/plugins/auto-restart-plugin.ts'
 # Only enable after disabling limbo-plugin
 #  - './src/plugins/warp-plugin.ts'

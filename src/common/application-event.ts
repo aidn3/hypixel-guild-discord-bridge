@@ -113,14 +113,17 @@ export interface ApplicationEvents {
  */
 export enum InstanceType {
   Main = 'main',
+
   Plugin = 'plugin',
+  Commands = 'commands',
+  Punishments = 'management',
 
   Metrics = 'metrics',
   Socket = 'socket',
-  Commands = 'commands',
 
   Discord = 'discord',
   Minecraft = 'minecraft',
+
   Logger = 'webhook'
 }
 
@@ -377,7 +380,7 @@ export interface PluginBroadcastEvent extends InformEvent {
    */
   readonly username: string | undefined
   /**
-   * The channels type to broadcast the message at.
+   * The channels to broadcast the message to.
    * @see ChannelType
    */
   readonly channels: (ChannelType.Public | ChannelType.Officer)[]
@@ -496,7 +499,6 @@ export interface PunishmentAddEvent extends InformEvent {
   /**
    * Time when the punishment expires.
    * Unix Epoch in milliseconds.
-   // TODO: change to "expiresAt"
    */
   readonly till: number
 }

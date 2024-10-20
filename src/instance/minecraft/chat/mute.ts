@@ -23,7 +23,7 @@ export default {
       const mojangProfile = await context.application.mojangApi.profileByUsername(target).catch(() => undefined)
 
       if (responsible !== context.clientInstance.username()) {
-        context.application.punishedUsers.punish({
+        context.application.punishmentsSystem.punishments.add({
           localEvent: true,
           instanceType: InstanceType.Minecraft,
           instanceName: context.instanceName,

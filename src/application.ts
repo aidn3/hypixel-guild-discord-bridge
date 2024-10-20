@@ -20,9 +20,9 @@ import DiscordInstance from './instance/discord/discord-instance.js'
 import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import PunishmentsInstance from './instance/punishments/punishments-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
 import { MojangApi } from './util/mojang.js'
-import { PunishedUsers } from './util/punished-users.js'
 import { shutdownApplication, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
@@ -40,7 +40,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly socketInstance: SocketInstance | undefined
 
   readonly clusterHelper: ClusterHelper
-  readonly punishedUsers: PunishedUsers
+  readonly punishmentsSystem: PunishmentsInstance
   readonly profanityFilter: BadWords.BadWords
 
   readonly hypixelApi: HypixelClient
@@ -61,7 +61,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishedUsers = new PunishedUsers(this)
+    this.punishmentsSystem = new PunishmentsInstance(this, this.mojangApi)
     this.clusterHelper = new ClusterHelper(this)
 
     this.profanityFilter = new BadWords({
@@ -122,6 +122,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
+
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
     let filtered: string
     try {
@@ -206,7 +207,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.punishedUsers.getAllPunishments()) {
+    for (const punishment of this.punishmentsSystem.punishments.all()) {
       punishment.localEvent = true
       this.emit('punishmentAdd', punishment)
     }

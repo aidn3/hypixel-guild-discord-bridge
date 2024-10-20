@@ -2,7 +2,7 @@ import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
 
 import type { ChatCommandHandler } from './common/command-interface.js'
 import EightBallCommand from './triggers/8ball.js'
@@ -92,8 +92,9 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
   }
 
-  connect(): Promise<void> | void {
+  connect(): void {
     this.checkCommandsIntegrity()
+    this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
   }
 
   async handle(event: ChatEvent): Promise<void> {

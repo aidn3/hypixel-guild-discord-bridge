@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node --import tsx/esm index.ts",
-    "generate": "npx ts-interface-builder src/application-config.ts src/common/application-event.ts",
+    "generate": "npx ts-interface-builder src/application-config.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --import tsx/esm index.ts test-run",
