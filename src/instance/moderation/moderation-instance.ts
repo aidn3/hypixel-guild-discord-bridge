@@ -3,21 +3,21 @@ import { InstanceType } from '../../common/application-event.js'
 import { ClientInstance, InternalInstancePrefix, Status } from '../../common/client-instance.js'
 import type { MojangApi } from '../../util/mojang.js'
 
-import EnforcePunishments from './handlers/enforce-punishments.js'
+import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
 
-export default class PunishmentsInstance extends ClientInstance<unknown> {
+export default class ModerationInstance extends ClientInstance<unknown> {
   public readonly punishments: Punishments
-  private readonly enforcer: EnforcePunishments
+  private readonly enforcer: PunishmentsEnforcer
 
   private readonly mojangApi: MojangApi
 
   constructor(application: Application, mojangApi: MojangApi) {
-    super(application, InternalInstancePrefix + 'punishments', InstanceType.Punishments, undefined)
+    super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation, undefined)
 
     this.mojangApi = mojangApi
     this.punishments = new Punishments(application)
-    this.enforcer = new EnforcePunishments(application, this)
+    this.enforcer = new PunishmentsEnforcer(application, this)
   }
 
   async getMinecraftIdentifiers(username: string): Promise<string[]> {

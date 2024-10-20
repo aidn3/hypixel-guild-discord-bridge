@@ -15,7 +15,7 @@ export default {
       const identifiers = [target]
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
 
-      context.application.punishmentsSystem.punishments.remove({
+      context.application.moderation.punishments.remove({
         localEvent: true,
         instanceType: InstanceType.Minecraft,
         instanceName: context.instanceName,

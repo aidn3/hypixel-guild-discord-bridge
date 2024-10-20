@@ -20,7 +20,7 @@ import DiscordInstance from './instance/discord/discord-instance.js'
 import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
-import PunishmentsInstance from './instance/punishments/punishments-instance.js'
+import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
 import { MojangApi } from './util/mojang.js'
 import { shutdownApplication, sleep } from './util/shared-util.js'
@@ -40,7 +40,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly socketInstance: SocketInstance | undefined
 
   readonly clusterHelper: ClusterHelper
-  readonly punishmentsSystem: PunishmentsInstance
+  readonly moderation: ModerationInstance
   readonly profanityFilter: BadWords.BadWords
 
   readonly hypixelApi: HypixelClient
@@ -61,7 +61,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishmentsSystem = new PunishmentsInstance(this, this.mojangApi)
+    this.moderation = new ModerationInstance(this, this.mojangApi)
     this.clusterHelper = new ClusterHelper(this)
 
     this.profanityFilter = new BadWords({
@@ -207,7 +207,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.punishmentsSystem.punishments.all()) {
+    for (const punishment of this.moderation.punishments.all()) {
       punishment.localEvent = true
       this.emit('punishmentAdd', punishment)
     }

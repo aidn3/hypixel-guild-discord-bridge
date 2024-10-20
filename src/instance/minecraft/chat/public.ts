@@ -1,5 +1,5 @@
 import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
-import { durationToMinecraftDuration } from '../../punishments/util.js'
+import { durationToMinecraftDuration } from '../../moderation/util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -23,7 +23,7 @@ export default {
       const identifiers = [username]
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
 
-      const mutedTill = context.application.punishmentsSystem.punishments.punishedTill(identifiers, PunishmentType.Mute)
+      const mutedTill = context.application.moderation.punishments.punishedTill(identifiers, PunishmentType.Mute)
       if (mutedTill) {
         context.application.clusterHelper.sendCommandToAllMinecraft(
           `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
@@ -31,7 +31,7 @@ export default {
       }
 
       // if any other punishments active
-      if (context.application.punishmentsSystem.punishments.findByUser(identifiers).length > 0) return
+      if (context.application.moderation.punishments.findByUser(identifiers).length > 0) return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
       const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)

@@ -8,13 +8,13 @@ import {
   PunishmentType
 } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
-import type PunishmentsInstance from '../punishments-instance.js'
+import type ModerationInstance from '../moderation-instance.js'
 import { durationToMinecraftDuration } from '../util.js'
 
-export default class EnforcePunishments extends EventHandler<PunishmentsInstance> {
+export default class PunishmentsEnforcer extends EventHandler<ModerationInstance> {
   private readonly application: Application
 
-  constructor(application: Application, system: PunishmentsInstance) {
+  constructor(application: Application, system: ModerationInstance) {
     super(system)
 
     this.application = application
@@ -61,7 +61,7 @@ export default class EnforcePunishments extends EventHandler<PunishmentsInstance
       this.application.emit('broadcast', {
         localEvent: true,
 
-        instanceType: InstanceType.Punishments,
+        instanceType: InstanceType.Moderation,
         instanceName: this.clientInstance.instanceName,
 
         channels: [ChannelType.Officer],

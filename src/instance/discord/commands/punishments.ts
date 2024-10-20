@@ -8,7 +8,7 @@ import type { PunishmentAddEvent } from '../../../common/application-event.js'
 import { InstanceType, PunishmentType, Color } from '../../../common/application-event.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
-import { durationToMinecraftDuration } from '../../punishments/util.js'
+import { durationToMinecraftDuration } from '../../moderation/util.js'
 import {
   checkChatTriggers,
   formatChatTriggerResponse,
@@ -191,7 +191,7 @@ async function handleBanAddInteraction(
     till: Date.now() + punishDuration
   }
 
-  application.punishmentsSystem.punishments.add(event)
+  application.moderation.punishments.add(event)
   const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
 
   const result = await checkChatTriggers(application, KickChat, undefined, command, username)
@@ -229,7 +229,7 @@ async function handleMuteAddInteraction(
     till: Date.now() + muteDuration
   }
 
-  application.punishmentsSystem.punishments.add(event)
+  application.moderation.punishments.add(event)
   const command = `/guild mute ${username} ${durationToMinecraftDuration(muteDuration)}`
 
   const result = await checkChatTriggers(application, MuteChat, undefined, command, username)
@@ -294,7 +294,7 @@ async function handleForgiveInteraction(
   )
   const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
-  const forgivenPunishments = application.punishmentsSystem.punishments.remove({
+  const forgivenPunishments = application.moderation.punishments.remove({
     localEvent: true,
     instanceType: InstanceType.Discord,
     instanceName: instanceName,
@@ -331,7 +331,7 @@ async function handleAllListInteraction(
   application: Application,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  const list = application.punishmentsSystem.punishments.all()
+  const list = application.moderation.punishments.all()
   await pageMessage(interaction, formatList(list))
 }
 
@@ -343,7 +343,7 @@ async function handleCheckInteraction(
   const userResolvedData = await findAboutUser(application.mojangApi, interaction, username, false, false)
   const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
-  const activePunishments = application.punishmentsSystem.punishments.findByUser(userIdentifiers)
+  const activePunishments = application.moderation.punishments.findByUser(userIdentifiers)
 
   const pages: APIEmbed[] = []
   for (let index = 0; index < activePunishments.length; index++) {

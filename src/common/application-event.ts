@@ -116,7 +116,7 @@ export enum InstanceType {
 
   Plugin = 'plugin',
   Commands = 'commands',
-  Punishments = 'management',
+  Moderation = 'moderation',
 
   Metrics = 'metrics',
   Socket = 'socket',
