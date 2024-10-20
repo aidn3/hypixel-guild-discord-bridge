@@ -21,7 +21,7 @@ export default {
       if (MaxLifeTillRestart < uptime()) {
         shuttingDown = true
 
-        context.application.emit('pluginBroadcast', {
+        context.application.emit('broadcast', {
           localEvent: true,
 
           instanceType: InstanceType.Plugin,

@@ -8,7 +8,7 @@ import type {
   InstanceStatusEvent,
   GuildGeneralEvent,
   MinecraftChatEvent,
-  PluginBroadcastEvent
+  BroadcastEvent
 } from './application-event.js'
 import type { ClientInstance } from './client-instance.js'
 
@@ -47,8 +47,8 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
     this.application.on('instanceStatus', (event) => {
       void this.onInstance(event)
     })
-    this.application.on('pluginBroadcast', (event) => {
-      void this.onPluginBroadcast(event)
+    this.application.on('broadcast', (event) => {
+      void this.onBroadcast(event)
     })
   }
 
@@ -66,5 +66,5 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
 
   abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
 
-  abstract onPluginBroadcast(event: PluginBroadcastEvent): void | Promise<void>
+  abstract onBroadcast(event: BroadcastEvent): void | Promise<void>
 }

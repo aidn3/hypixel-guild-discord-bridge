@@ -10,7 +10,7 @@ import type {
   GuildPlayerEvent,
   InstanceStatusEvent,
   MinecraftChatEvent,
-  PluginBroadcastEvent
+  BroadcastEvent
 } from '../../common/application-event.js'
 import { ChannelType, Color, GuildPlayerEventType, MinecraftChatEventType } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
@@ -114,7 +114,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     await this.handleEventEmbed({ event, username: undefined, removeLater: false })
   }
 
-  async onPluginBroadcast(event: PluginBroadcastEvent): Promise<void> {
+  async onBroadcast(event: BroadcastEvent): Promise<void> {
     if (
       event.instanceType === this.clientInstance.instanceType &&
       event.instanceName === this.clientInstance.instanceName
@@ -125,7 +125,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
   }
 
   async handleEventEmbed(options: {
-    event: BaseInGameEvent<string> | PluginBroadcastEvent
+    event: BaseInGameEvent<string> | BroadcastEvent
     username: string | undefined
     removeLater: boolean
   }): Promise<void> {

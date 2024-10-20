@@ -21,7 +21,7 @@ export default {
       lastMinuteCheck = currentMinute
 
       if ([50, 54].includes(currentMinute)) {
-        context.application.emit('pluginBroadcast', {
+        context.application.emit('broadcast', {
           localEvent: true,
 
           instanceType: InstanceType.Plugin,

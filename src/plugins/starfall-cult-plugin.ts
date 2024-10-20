@@ -17,7 +17,7 @@ export default {
       lastSkyblockDay = currentSkyblockDay
 
       if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
-        context.application.emit('pluginBroadcast', {
+        context.application.emit('broadcast', {
           localEvent: true,
 
           instanceType: InstanceType.Plugin,

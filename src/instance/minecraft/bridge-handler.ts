@@ -9,7 +9,7 @@ import type {
   InstanceStatusEvent,
   MinecraftChatEvent,
   MinecraftSendChat,
-  PluginBroadcastEvent,
+  BroadcastEvent,
   ReconnectSignal
 } from '../../common/application-event.js'
 import {
@@ -79,7 +79,7 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
       await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
   }
 
-  async onPluginBroadcast(event: PluginBroadcastEvent): Promise<void> {
+  async onBroadcast(event: BroadcastEvent): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
       await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
     else if (event.channels.includes(ChannelType.Officer))

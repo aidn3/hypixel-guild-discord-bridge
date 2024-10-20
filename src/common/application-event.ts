@@ -38,9 +38,9 @@ export interface ApplicationEvents {
    */
   command: (event: CommandEvent) => void
   /**
-   * When a plugin wishes to broadcast a message to all instances.
+   * When a plugin or a component wishes to broadcast a message to all instances.
    */
-  pluginBroadcast: (event: PluginBroadcastEvent) => void
+  broadcast: (event: BroadcastEvent) => void
 
   /**
    * Command sending a followup responses.
@@ -363,9 +363,9 @@ export enum MinecraftChatEventType {
 export type MinecraftChatEvent = BaseInGameEvent<MinecraftChatEventType>
 
 /**
- * When a plugin wishes to broadcast a message to all instances.
+ * When a plugin or a component wishes to broadcast a message to all instances.
  */
-export interface PluginBroadcastEvent extends InformEvent {
+export interface BroadcastEvent extends InformEvent {
   /**
    * The message to broadcast
    */

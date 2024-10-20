@@ -33,7 +33,7 @@ export default class LoggerInstance extends ClientInstance<undefined> {
     this.app.on('minecraftChatEvent', (event) => {
       void this.send(`[minecraftChatEvent][${event.type}][${event.instanceName}] ${event.message}`)
     })
-    this.app.on('pluginBroadcast', (event) => {
+    this.app.on('broadcast', (event) => {
       void this.send(`[pluginBroadcast][${event.instanceName}] ${event.username}: ${event.message}`)
     })
     this.app.on('command', (event) => {
