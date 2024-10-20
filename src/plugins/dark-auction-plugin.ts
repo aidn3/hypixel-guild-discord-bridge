@@ -1,4 +1,4 @@
-import { ChannelType, Color, GuildPlayerEventType, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color, InstanceType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import { antiSpamString } from '../util/shared-util.js'
 
@@ -27,7 +27,7 @@ export default {
           instanceType: InstanceType.Plugin,
           instanceName: context.pluginName,
 
-          channel: ChannelType.Public,
+          channels: [ChannelType.Public],
           color: Color.Good,
 
           username: undefined,

@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, InstanceType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -9,16 +9,18 @@ export default {
     if (match != undefined) {
       const username = match[1]
 
-      context.application.emit('event', {
+      context.application.emit('guildPlayer', {
         localEvent: true,
+
         instanceName: context.instanceName,
         instanceType: InstanceType.Minecraft,
-        channelType: ChannelType.Public,
-        eventType: EventType.Demote,
-        username,
-        severity: Severity.Bad,
-        message: context.message,
-        removeLater: false
+
+        color: Color.Bad,
+        channels: [ChannelType.Public, ChannelType.Officer],
+
+        type: GuildPlayerEventType.Demote,
+        username: username,
+        message: context.message
       })
     }
   }

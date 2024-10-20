@@ -1,9 +1,7 @@
-import type Application from '../application.js'
 import type ClusterHelper from '../cluster-helper.js'
 import { ChannelType, Color, GuildPlayerEventType, InstanceType, PunishmentType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import { PunishedUsers } from '../util/punished-users.js'
-import { antiSpamString } from '../util/shared-util.js'
 
 /* WARNING
 THIS IS AN ESSENTIAL PLUGIN! EDITING IT MAY HAVE ADVERSE AFFECTS ON THE APPLICATION
@@ -66,7 +64,7 @@ function checkBanned(
       instanceType: InstanceType.Plugin,
       instanceName: context.pluginName,
 
-      channel: ChannelType.Officer,
+      channels: [ChannelType.Officer],
       color: Color.Bad,
 
       username: username,

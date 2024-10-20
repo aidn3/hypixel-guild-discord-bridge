@@ -28,7 +28,13 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     this.applicationMetrics = new ApplicationMetrics(this.register, config.prefix)
     this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
 
-    app.on('event', (event) => {
+    app.on('guildPlayer', (event) => {
+      this.applicationMetrics.onClientEvent(event)
+    })
+    app.on('guildGeneral', (event) => {
+      this.applicationMetrics.onClientEvent(event)
+    })
+    app.on('minecraftChatEvent', (event) => {
       this.applicationMetrics.onClientEvent(event)
     })
     app.on('chat', (event) => {
@@ -85,16 +91,14 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }
 
     if (!this.config.enabled) {
-      this.status = Status.Failed
+      this.setAndBroadcastNewStatus(Status.Failed, 'Metrics are disabled.')
       return
     }
-
-    this.status = Status.Connecting
-    this.logger.debug('prometheus is enabled')
 
     this.logger.debug(`Listening on port ${this.config.port}`)
     this.httpServer.listen(this.config.port)
 
-    this.status = Status.Connected
+    this.logger.debug('prometheus is enabled')
+    this.setAndBroadcastNewStatus(Status.Connected, 'Metrics webserver is listening for collectors')
   }
 }

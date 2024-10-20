@@ -24,7 +24,7 @@ export default {
           instanceName: context.pluginName,
 
           color: Color.Good,
-          channel: ChannelType.Public,
+          channels: [ChannelType.Public],
 
           username: undefined,
           message: `Reminder: Star Cult is here. Get that free x200 starfall!`

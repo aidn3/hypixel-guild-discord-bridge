@@ -2,13 +2,17 @@ import type { APIEmbed, TextBasedChannelFields, Webhook } from 'discord.js'
 import { TextChannel } from 'discord.js'
 
 import type {
+  BaseInGameEvent,
   ChatEvent,
-  ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceStatusEvent
+  GuildGeneralEvent,
+  GuildPlayerEvent,
+  InstanceStatusEvent,
+  MinecraftChatEvent,
+  PluginBroadcastEvent
 } from '../../common/application-event.js'
-import { ChannelType, EventType, Severity } from '../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, MinecraftChatEventType } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
@@ -62,20 +66,44 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     }
   }
 
+  async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+    const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
+
+    await this.handleEventEmbed({ event, username: event.username, removeLater })
+  }
+
+  async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+
+    await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+  }
+
   private lastRepeatEvent = 0
   private lastBlockEvent = 0
 
-  async onClientEvent(event: ClientEvent): Promise<void> {
-    if (event.instanceName === this.clientInstance.instanceName) return
-
-    if (event.eventType === EventType.Repeat) {
+  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+    if (event.type === MinecraftChatEventType.Repeat) {
       if (this.lastRepeatEvent + 5000 < Date.now()) {
         this.lastRepeatEvent = Date.now()
       } else {
         return
       }
     }
-    if (event.eventType === EventType.Block) {
+    if (event.type === MinecraftChatEventType.Block) {
       if (this.lastBlockEvent + 5000 < Date.now()) {
         this.lastBlockEvent = Date.now()
       } else {
@@ -83,69 +111,46 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
       }
     }
 
+    await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+  }
+
+  async onPluginBroadcast(event: PluginBroadcastEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+
+    await this.handleEventEmbed({ event, username: event.username, removeLater: false })
+  }
+
+  async handleEventEmbed(options: {
+    event: BaseInGameEvent<string> | PluginBroadcastEvent
+    username: string | undefined
+    removeLater: boolean
+  }): Promise<void> {
     const channels: string[] = []
-
-    switch (event.eventType) {
-      case EventType.AUTOMATED: {
-        if (event.channelType === ChannelType.Public) {
-          channels.push(...this.clientInstance.config.publicChannelIds)
-        } else if (event.channelType === ChannelType.Officer) {
-          channels.push(...this.clientInstance.config.officerChannelIds)
-        } else {
-          return
-        }
-        break
-      }
-
-      case EventType.Request:
-      case EventType.Join:
-      case EventType.Leave:
-      case EventType.Kick:
-      case EventType.Promote:
-      case EventType.Demote: {
-        channels.push(...this.clientInstance.config.publicChannelIds, ...this.clientInstance.config.officerChannelIds)
-        break
-      }
-
-      case EventType.Mute:
-      case EventType.Unmute: {
-        channels.push(...this.clientInstance.config.officerChannelIds)
-        break
-      }
-
-      case EventType.Block:
-      case EventType.Muted:
-      case EventType.Offline:
-      case EventType.Online:
-      case EventType.Quest:
-      case EventType.Repeat: {
-        channels.push(...this.clientInstance.config.publicChannelIds)
-        break
-      }
-
-      default: {
-        return
-      }
-    }
+    if (options.event.channels.includes(ChannelType.Public))
+      channels.push(...this.clientInstance.config.publicChannelIds)
+    if (options.event.channels.includes(ChannelType.Officer))
+      channels.push(...this.clientInstance.config.officerChannelIds)
 
     const embed = {
-      description: escapeDiscord(event.message),
+      description: escapeDiscord(options.event.message),
 
-      color: event.severity,
-      footer: {
-        text: event.instanceName
-      }
+      color: options.event.color,
+      footer: { text: options.event.instanceName }
     } satisfies APIEmbed
-    if (event.username != undefined) {
+    if (options.username != undefined) {
       const extra = {
-        title: escapeDiscord(event.username),
-        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
-        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
+        title: escapeDiscord(options.username),
+        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(options.username)}`,
+        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(options.username)}.png` }
       }
       Object.assign(embed, extra)
     }
 
-    await this.sendEmbed(channels, event.removeLater, embed)
+    await this.sendEmbed(channels, options.removeLater, embed)
   }
 
   async onCommand(event: CommandEvent): Promise<void> {

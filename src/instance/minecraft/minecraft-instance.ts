@@ -2,8 +2,8 @@ import { createClient, states } from 'minecraft-protocol'
 
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceEventType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
 import RateLimiter from '../../util/rate-limiter.js'
 
 import BridgeHandler from './bridge-handler.js'
@@ -64,13 +64,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       handler.registerEvents()
     }
 
-    this.app.emit('instanceStatus', {
-      localEvent: true,
-      instanceName: this.instanceName,
-      instanceType: InstanceType.Minecraft,
-      type: InstanceEventType.Created,
-      message: 'Minecraft instance has been created'
-    })
+    this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
 
   username(): string | undefined {

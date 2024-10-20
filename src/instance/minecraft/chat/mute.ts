@@ -1,4 +1,10 @@
-import { EventType, InstanceType, ChannelType, PunishmentType, Severity } from '../../../common/application-event.js'
+import {
+  ChannelType,
+  Color,
+  GuildPlayerEventType,
+  InstanceType,
+  PunishmentType
+} from '../../../common/application-event.js'
 import { sufficeToTime } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
@@ -32,16 +38,18 @@ export default {
         })
       }
 
-      context.application.emit('event', {
+      context.application.emit('guildPlayer', {
         localEvent: true,
+
         instanceName: context.instanceName,
         instanceType: InstanceType.Minecraft,
-        channelType: ChannelType.Officer,
-        eventType: EventType.Mute,
+
+        color: Color.Bad,
+        channels: [ChannelType.Officer],
+
+        type: GuildPlayerEventType.Mute,
         username: responsible,
-        severity: Severity.Bad,
-        message: context.message,
-        removeLater: false
+        message: context.message
       })
     }
   }

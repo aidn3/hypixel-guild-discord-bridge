@@ -1,7 +1,7 @@
 import type { Registry } from 'prom-client'
 import { Counter } from 'prom-client'
 
-import type { ChatEvent, ClientEvent, CommandEvent } from '../../common/application-event.js'
+import type { ChatEvent, CommandEvent, BaseInGameEvent } from '../../common/application-event.js'
 
 // location and scope keys are preserved and not renamed like the rest for backwards compatibility
 export default class ApplicationMetrics {
@@ -27,7 +27,7 @@ export default class ApplicationMetrics {
     this.eventMetrics = new Counter({
       name: prefix + 'event',
       help: 'Events happened in guild-bridge.',
-      labelNames: ['location', 'scope', 'instance', 'event']
+      labelNames: ['location', 'instance', 'event']
     })
     register.registerMetric(this.eventMetrics)
   }
@@ -49,12 +49,11 @@ export default class ApplicationMetrics {
     })
   }
 
-  onClientEvent(event: ClientEvent): void {
+  onClientEvent(event: BaseInGameEvent<string>): void {
     this.eventMetrics.inc({
       location: event.instanceType,
-      scope: event.channelType,
       instance: event.instanceName,
-      event: event.eventType
+      event: event.type
     })
   }
 }

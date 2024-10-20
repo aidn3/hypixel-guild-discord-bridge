@@ -1,6 +1,6 @@
 import { uptime } from 'node:process'
 
-import { ChannelType, GuildPlayerEventType, InstanceType, Color } from '../common/application-event.js'
+import { ChannelType, InstanceType, Color } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 /* WARNING
@@ -27,7 +27,7 @@ export default {
           instanceType: InstanceType.Plugin,
           instanceName: context.pluginName,
 
-          channel: ChannelType.Public,
+          channels: [ChannelType.Public],
           color: Color.Info,
 
           username: undefined,

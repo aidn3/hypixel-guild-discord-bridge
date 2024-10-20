@@ -34,10 +34,13 @@ export default {
 
       context.application.emit('chat', {
         localEvent: true,
+
         instanceName: context.instanceName,
         instanceType: InstanceType.Minecraft,
+
         channelType: ChannelType.Officer,
         channelId: undefined,
+
         username,
         replyUsername: undefined,
         message: filteredMessage

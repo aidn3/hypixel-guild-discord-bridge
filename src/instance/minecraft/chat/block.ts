@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, InstanceType, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -7,16 +7,17 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      context.application.emit('event', {
+      context.application.emit('minecraftChatEvent', {
         localEvent: true,
+
         instanceName: context.instanceName,
         instanceType: InstanceType.Minecraft,
-        channelType: ChannelType.Public,
-        eventType: EventType.Block,
-        username: undefined,
-        severity: Severity.Info,
-        message: 'The message has been blocked by Hypixel for breaking the rules.',
-        removeLater: false
+
+        color: Color.Info,
+        channels: [ChannelType.Public],
+
+        type: MinecraftChatEventType.Block,
+        message: 'The message has been blocked by Hypixel for breaking the rules.'
       })
     }
   }

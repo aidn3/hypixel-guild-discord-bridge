@@ -1,14 +1,23 @@
 import type Application from '../../application.js'
 import type {
+  BaseInGameEvent,
   ChatEvent,
-  ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
+  GuildGeneralEvent,
+  GuildPlayerEvent,
   InstanceStatusEvent,
+  MinecraftChatEvent,
   MinecraftSendChat,
+  PluginBroadcastEvent,
   ReconnectSignal
 } from '../../common/application-event.js'
-import { ChannelType, EventType, InstanceType } from '../../common/application-event.js'
+import {
+  ChannelType,
+  GuildPlayerEventType,
+  InstanceType,
+  MinecraftChatEventType
+} from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
 import { antiSpamString } from '../../util/shared-util.js'
 
@@ -44,14 +53,37 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     }
   }
 
-  onClientEvent(event: ClientEvent): void | Promise<void> {
+  async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
-    if (event.channelType !== ChannelType.Public) return
-    if (event.removeLater) return
-    if (event.eventType === EventType.Block) return
-    if (event.eventType === EventType.Repeat) return
+    if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
 
-    void this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+    await this.handleInGameEvent(event)
+  }
+
+  async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
+    if (event.instanceName === this.clientInstance.instanceName) return
+
+    await this.handleInGameEvent(event)
+  }
+
+  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
+    if (event.type === MinecraftChatEventType.Block) return
+    if (event.type === MinecraftChatEventType.Repeat) return
+    await this.handleInGameEvent(event)
+  }
+
+  async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
+    if (event.channels.includes(ChannelType.Public))
+      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+    else if (event.channels.includes(ChannelType.Officer))
+      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
+  }
+
+  async onPluginBroadcast(event: PluginBroadcastEvent): Promise<void> {
+    if (event.channels.includes(ChannelType.Public))
+      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+    else if (event.channels.includes(ChannelType.Officer))
+      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {

@@ -42,7 +42,7 @@ export abstract class ClientInstance<K> {
    * @param reason Any message to supply for other instances in case of displaying a human-readable message.
    * @protected
    */
-  protected setStatus(status: Status, reason: string): void {
+  setAndBroadcastNewStatus(status: Status, reason: string): void {
     if (this.status === status) return
     this.status = status
     this.app.emit('instanceStatus', {

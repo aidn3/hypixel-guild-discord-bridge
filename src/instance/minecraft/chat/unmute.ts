@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { GuildPlayerEventType, InstanceType, ChannelType, Color } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -22,16 +22,18 @@ export default {
         userIdentifiers: identifiers
       })
 
-      context.application.emit('event', {
+      context.application.emit('guildPlayer', {
         localEvent: true,
+
         instanceName: context.instanceName,
         instanceType: InstanceType.Minecraft,
-        channelType: ChannelType.Officer,
-        eventType: EventType.Unmute,
+
+        color: Color.Good,
+        channels: [ChannelType.Officer],
+
+        type: GuildPlayerEventType.Unmute,
         username: responsible,
-        severity: Severity.Good,
-        message: context.message,
-        removeLater: false
+        message: context.message
       })
     }
   }

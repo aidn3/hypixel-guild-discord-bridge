@@ -289,27 +289,39 @@ export enum GuildPlayerEventType {
   Online = 'online'
 }
 
+export interface BaseInGameEvent<K extends string> extends InformEvent {
+  /**
+   * Which event has occurred
+   */
+  readonly type: K
+  /**
+   * The message that fired that event
+   */
+  readonly message: string
+  /**
+   * The color to display the message at if the receiver supports it.
+   */
+  readonly color: Color
+  /**
+   * The channels type to broadcast the message at.
+   * @see ChannelType
+   */
+  readonly channels: (ChannelType.Public | ChannelType.Officer)[]
+}
+
 /**
  * In-game guild events such as joining/leaving/online/offline/etc.
  *
  * @see GuildPlayerEventType
  */
-export interface GuildPlayerEvent extends InformEvent {
-  /**
-   * Which event has occurred
-   */
-  readonly type: GuildPlayerEventType
+export interface GuildPlayerEvent extends BaseInGameEvent<GuildPlayerEventType> {
   /**
    * The name of the user who fired that event.
    */
   readonly username: string
-  /**
-   * The message that fired that event
-   */
-  readonly message: string
 }
 
-enum GuildGeneralEventType {
+export enum GuildGeneralEventType {
   /**
    * When a guild quest completion message is shown
    */
@@ -322,18 +334,9 @@ enum GuildGeneralEventType {
  *
  * @see GuildGeneralEventType
  */
-export interface GuildGeneralEvent extends InformEvent {
-  /**
-   * Which event has occurred
-   */
-  readonly type: GuildGeneralEventType
-  /**
-   * The message that fired that event
-   */
-  readonly message: string
-}
+export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType>
 
-enum MinecraftChatEventType {
+export enum MinecraftChatEventType {
   /**
    * When a Minecraft server blocks a message due to it being repetitive
    */
@@ -354,16 +357,7 @@ enum MinecraftChatEventType {
  *
  * @see MinecraftChatEventType
  */
-export interface MinecraftChatEvent extends InformEvent {
-  /**
-   * Which event has occurred
-   */
-  readonly type: MinecraftChatEventType
-  /**
-   * The message that fired that event
-   */
-  readonly message: string
-}
+export type MinecraftChatEvent = BaseInGameEvent<MinecraftChatEventType>
 
 /**
  * When a plugin wishes to broadcast a message to all instances.
@@ -383,10 +377,10 @@ export interface PluginBroadcastEvent extends InformEvent {
    */
   readonly username: string | undefined
   /**
-   * The channel type to broadcast the message at.
+   * The channels type to broadcast the message at.
    * @see ChannelType
    */
-  readonly channel: ChannelType.Public | ChannelType.Officer
+  readonly channels: (ChannelType.Public | ChannelType.Officer)[]
 }
 
 /**

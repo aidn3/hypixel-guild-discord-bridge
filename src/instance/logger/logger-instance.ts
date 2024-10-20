@@ -24,8 +24,17 @@ export default class LoggerInstance extends ClientInstance<undefined> {
         `[profanityWarning][${event.instanceName}][type=${event.channelType}][username=${event.username}]: ${event.filteredMessage}`
       )
     })
-    this.app.on('event', (event) => {
-      void this.send(`[event][${event.eventType}][${event.instanceName}] ${event.username}: ${event.message}`)
+    this.app.on('guildPlayer', (event) => {
+      void this.send(`[guildPlayer][${event.type}][${event.instanceName}] ${event.username}: ${event.message}`)
+    })
+    this.app.on('guildGeneral', (event) => {
+      void this.send(`[guildGeneral][${event.type}][${event.instanceName}] ${event.message}`)
+    })
+    this.app.on('minecraftChatEvent', (event) => {
+      void this.send(`[minecraftChatEvent][${event.type}][${event.instanceName}] ${event.message}`)
+    })
+    this.app.on('pluginBroadcast', (event) => {
+      void this.send(`[pluginBroadcast][${event.instanceName}] ${event.username}: ${event.message}`)
     })
     this.app.on('command', (event) => {
       void this.send(

@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, InstanceType, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 const Messages = [
@@ -27,16 +27,17 @@ export default {
     if (match != undefined) {
       const randomMessage = Messages[Math.floor(Math.random() * Messages.length)]
 
-      context.application.emit('event', {
+      context.application.emit('minecraftChatEvent', {
         localEvent: true,
+
         instanceName: context.instanceName,
         instanceType: InstanceType.Minecraft,
-        channelType: ChannelType.Public,
-        eventType: EventType.Repeat,
-        username: undefined,
-        severity: Severity.Info,
-        message: randomMessage,
-        removeLater: false
+
+        color: Color.Info,
+        channels: [ChannelType.Public],
+
+        type: MinecraftChatEventType.Repeat,
+        message: randomMessage
       })
 
       if (lastWarning + 5000 < Date.now()) {
