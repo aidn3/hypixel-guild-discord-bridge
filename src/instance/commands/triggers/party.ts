@@ -76,7 +76,7 @@ class PartyList extends ChatCommandHandler {
 }
 
 class PartyStart extends ChatCommandHandler {
-  private static readonly MinPartySize = 1
+  private static readonly MinPartySize = 2
   private static readonly MaxPartySize = 100
   private static readonly MaxPurposeLength = 32
   private static readonly MaxDuration = 12 * 60 * 60 // 12 hours in seconds
