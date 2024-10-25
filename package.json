@@ -36,6 +36,7 @@
     "log4js": "^6.9.1",
     "minecraft-data": "^3.66.0",
     "minecraft-protocol": "^1.47.0",
+    "moment": "^2.30.1",
     "node-cache": "^5.1.2",
     "prismarine-chat": "^1.10.1",
     "prismarine-registry": "^1.7.0",

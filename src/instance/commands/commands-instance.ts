@@ -18,6 +18,7 @@ import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
+import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
@@ -50,6 +51,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Level(),
       new Networth(),
       new Override(),
+      ...new PartyManager().resolveCommands(),
       new PersonalBest(),
       new RockPaperScissors(),
       new Roulette(),
