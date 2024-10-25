@@ -67,9 +67,10 @@ class PartyList extends ChatCommandHandler {
     for (const [index, party] of this.partyManager.activeParties.entries()) {
       // utc() is not directly exported
       // eslint-disable-next-line import/no-named-as-default-member
-      response += `${index + 1}. ${party.username} ${party.count} players ${party.purpose} with ${Moment.utc(party.expiresAt).fromNow(true)} left\n`
+      response += `${index + 1}. ${party.username}, ${party.count} players, ${party.purpose}, with ${Moment.utc(party.expiresAt).fromNow(true)} left\n`
     }
 
+    response += `/p join [name] or message the leader to join one of the parties`
     return response
   }
 }
@@ -141,7 +142,7 @@ class PartyStart extends ChatCommandHandler {
     } satisfies Party
 
     this.partyManager.activeParties.push(party)
-    return `${context.username}, party started!`
+    return `${context.username}, party started. Don't forget to open your party via /stream and tune in for any messages requesting to join! `
   }
 }
 
