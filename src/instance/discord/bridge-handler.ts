@@ -1,5 +1,4 @@
-import type { APIEmbed, TextBasedChannelFields, Webhook } from 'discord.js'
-import { TextChannel } from 'discord.js'
+import type { APIEmbed, TextBasedChannelFields, Webhook, TextChannel } from 'discord.js'
 
 import type {
   BaseInGameEvent,
@@ -30,7 +29,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
 
     for (const channelId of this.clientInstance.config.publicChannelIds) {
       const channel = await this.clientInstance.client.channels.fetch(channelId)
-      if (channel == undefined || !(channel instanceof TextChannel)) continue
+      if (!channel?.isSendable()) continue
 
       await channel
         .send({
