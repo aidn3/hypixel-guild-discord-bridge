@@ -2,7 +2,7 @@ import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
 
 import type { ChatCommandHandler } from './common/command-interface.js'
 import EightBallCommand from './triggers/8ball.js'
@@ -35,7 +35,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, InstanceType.COMMANDS, config)
+    super(app, instanceName, InstanceType.Commands, config)
 
     this.commands = [
       new EightBallCommand(),
@@ -74,7 +74,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     this.checkCommandsIntegrity()
 
     this.app.on('chat', (event) => {
-      void this.handle(event)
+      void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
@@ -94,14 +94,15 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
   }
 
-  connect(): Promise<void> | void {
+  connect(): void {
     this.checkCommandsIntegrity()
+    this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
   }
 
   async handle(event: ChatEvent): Promise<void> {
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
-    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.MINECRAFT
+    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.Minecraft
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
@@ -109,7 +110,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     if (command == undefined) return
 
     // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.OFFICER) {
+    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.Officer) {
       return
     }
 
@@ -118,6 +119,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
         app: this.app,
 
         logger: this.logger,
+        errorHandler: this.errorHandler,
+
         allCommands: this.commands,
         commandPrefix: this.config.commandPrefix,
         adminUsername: this.config.adminUsername,
@@ -148,7 +151,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       instanceName: event.instanceName,
       instanceType: event.instanceType,
       channelType: event.channelType,
-      discordChannelId: event.channelId,
+      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
       fullCommand: event.message,
       commandName: commandName,
@@ -163,7 +166,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       instanceName: event.instanceName,
       instanceType: event.instanceType,
       channelType: event.channelType,
-      discordChannelId: event.channelId,
+      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
       fullCommand: event.message,
       commandName: commandName,

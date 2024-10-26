@@ -1,5 +1,5 @@
 import type Application from '../application.js'
-import { InstanceEventType, InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
+import { InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
 import { Status } from '../common/client-instance.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import type { ChatCommandContext } from '../instance/commands/common/command-interface.js'
@@ -19,8 +19,8 @@ export default {
 
     if (context.addChatCommand) context.addChatCommand(new WarpCommand(minecraftInstances))
 
-    context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.create && event.instanceType === InstanceType.MINECRAFT) {
+    context.application.on('instanceStatus', (event) => {
+      if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
         const localInstance = context.localInstances.find(
           (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
         )
@@ -165,7 +165,7 @@ class WarpCommand extends ChatCommandHandler {
 
     const username = context.args[0]
     const minecraftInstanceName =
-      context.instanceType === InstanceType.MINECRAFT ? context.instanceName : this.getActiveMinecraftInstanceName()
+      context.instanceType === InstanceType.Minecraft ? context.instanceName : this.getActiveMinecraftInstanceName()
     if (minecraftInstanceName === undefined) {
       return `No active connected Minecraft account exists to use`
     }
@@ -177,6 +177,6 @@ class WarpCommand extends ChatCommandHandler {
   }
 
   private getActiveMinecraftInstanceName(): string | undefined {
-    return this.minecraftInstances.find((instance) => instance.status === Status.CONNECTED)?.instanceName
+    return this.minecraftInstances.find((instance) => instance.currentStatus() === Status.Connected)?.instanceName
   }
 }

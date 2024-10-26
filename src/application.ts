@@ -13,20 +13,23 @@ import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents } from './common/application-event.js'
 import { InstanceType } from './common/application-event.js'
 import type { ClientInstance } from './common/client-instance.js'
-import { INTERNAL_INSTANCE_PREFIX } from './common/client-instance.js'
+import { InternalInstancePrefix } from './common/client-instance.js'
 import type { PluginInterface } from './common/plugins.js'
+import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
 import { MojangApi } from './util/mojang.js'
-import { PunishedUsers } from './util/punished-users.js'
 import { shutdownApplication, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly logger: Logger
+  private readonly errorHandler: UnexpectedErrorHandler
+
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
@@ -40,7 +43,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   private readonly socketInstance: SocketInstance | undefined
 
   readonly clusterHelper: ClusterHelper
-  readonly punishedUsers: PunishedUsers
+  readonly moderation: ModerationInstance
   readonly profanityFilter: BadWords.BadWords
 
   readonly hypixelApi: HypixelClient
@@ -50,7 +53,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     super()
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
+    this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
+
     emitAll(this) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
@@ -61,7 +66,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishedUsers = new PunishedUsers(this)
+    this.moderation = new ModerationInstance(this, this.mojangApi)
     this.clusterHelper = new ClusterHelper(this)
 
     this.profanityFilter = new BadWords({
@@ -78,7 +83,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.loggerInstances.push(
         new LoggerInstance(
           this,
-          `${INTERNAL_INSTANCE_PREFIX}${InstanceType.Logger}-${index + 1}`,
+          `${InternalInstancePrefix}${InstanceType.Logger}-${index + 1}`,
           this.config.loggers[index]
         )
       )
@@ -91,15 +96,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.metricsInstance = this.config.metrics.enabled
-      ? new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
+      ? new MetricsInstance(this, InternalInstancePrefix + InstanceType.Metrics, this.config.metrics)
       : undefined
 
     this.socketInstance = this.config.socket.enabled
-      ? new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket)
+      ? new SocketInstance(this, InternalInstancePrefix + InstanceType.Socket, this.config.socket)
       : undefined
 
     this.commandsInstance = this.config.commands.enabled
-      ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
+      ? new CommandsInstance(this, InternalInstancePrefix + InstanceType.Commands, this.config.commands)
       : undefined
 
     this.plugins = this.loadPlugins(rootDirectory)
@@ -112,9 +117,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         }
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-        void sleep(5000).then(() => {
-          void shutdownApplication(2)
-        })
+        void sleep(5000)
+          .then(async () => {
+            await shutdownApplication(2)
+          })
+          .catch(this.errorHandler.promiseCatch('shutting down application with shutdownSignal'))
       }
     })
   }
@@ -122,6 +129,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
+
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
     let filtered: string
     try {
@@ -206,7 +214,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.punishedUsers.getAllPunishments()) {
+    for (const punishment of this.moderation.punishments.all()) {
       punishment.localEvent = true
       this.emit('punishmentAdd', punishment)
     }
@@ -226,12 +234,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 }
 
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
 function emitAll(emitter: Events): void {
   const old = emitter.emit
-  emitter.emit = (event: string, ...arguments_): boolean => {
-    if (event !== '*') emitter.emit('*', event, ...arguments_)
-    return old.call(emitter, event, ...arguments_)
+  emitter.emit = (event: string, ...callerArguments): boolean => {
+    if (event !== '*') emitter.emit('*', event, ...callerArguments)
+    return old.call(emitter, event, ...callerArguments)
   }
 }
-/* eslint-enable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+
+/* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */

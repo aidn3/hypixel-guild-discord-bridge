@@ -22,8 +22,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
-    super(app, instanceName, InstanceType.DISCORD, config)
-    this.status = Status.FRESH
+    super(app, instanceName, InstanceType.Discord, config)
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),
@@ -65,6 +64,8 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       return
     }
     this.connected = true
+
+    this.setAndBroadcastNewStatus(Status.Connecting, 'Discord connecting')
 
     this.stateHandler.registerEvents()
     this.statusHandler.registerEvents()

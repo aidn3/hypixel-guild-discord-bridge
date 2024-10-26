@@ -2,8 +2,8 @@ import { createClient, states } from 'minecraft-protocol'
 
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceEventType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
 import RateLimiter from '../../util/rate-limiter.js'
 
 import BridgeHandler from './bridge-handler.js'
@@ -27,7 +27,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
   clientSession: ClientSession | undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
-    super(app, instanceName, InstanceType.MINECRAFT, config)
+    super(app, instanceName, InstanceType.Minecraft, config)
 
     new BridgeHandler(app, this)
     this.bridgePrefix = bridgePrefix
@@ -45,7 +45,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
         this.app.emit('statusMessage', {
           localEvent: true,
           instanceName: this.instanceName,
-          instanceType: InstanceType.MINECRAFT,
+          instanceType: InstanceType.Minecraft,
           message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
         })
       }
@@ -64,13 +64,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       handler.registerEvents()
     }
 
-    this.app.emit('instance', {
-      localEvent: true,
-      instanceName: this.instanceName,
-      instanceType: InstanceType.MINECRAFT,
-      type: InstanceEventType.create,
-      message: 'Minecraft instance has been created'
-    })
+    this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
 
   username(): string | undefined {

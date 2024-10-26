@@ -1,34 +1,43 @@
-import type { APIEmbed, TextBasedChannelFields, Webhook } from 'discord.js'
-import { TextChannel } from 'discord.js'
+import type { APIEmbed, TextBasedChannelFields, Webhook, TextChannel } from 'discord.js'
+import { escapeMarkdown } from 'discord.js'
 
 import type {
+  BaseInGameEvent,
+  BroadcastEvent,
   ChatEvent,
-  ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceEvent
+  GuildGeneralEvent,
+  GuildPlayerEvent,
+  InstanceStatusEvent,
+  MinecraftChatEvent
 } from '../../common/application-event.js'
-import { ChannelType, EventType, Severity } from '../../common/application-event.js'
+import {
+  ChannelType,
+  Color,
+  GuildPlayerEventType,
+  InstanceType,
+  MinecraftChatEventType
+} from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
-import { escapeDiscord } from '../../util/shared-util.js'
 
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance> {
-  async onInstance(event: InstanceEvent): Promise<void> {
+  async onInstance(event: InstanceStatusEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
 
     for (const channelId of this.clientInstance.config.publicChannelIds) {
       const channel = await this.clientInstance.client.channels.fetch(channelId)
-      if (channel == undefined || !(channel instanceof TextChannel)) continue
+      if (!channel?.isSendable()) continue
 
       await channel
         .send({
           embeds: [
             {
-              title: escapeDiscord(event.instanceName),
-              description: escapeDiscord(event.message),
-              color: Severity.INFO
+              title: escapeMarkdown(event.instanceName),
+              description: escapeMarkdown(event.message),
+              color: Color.Info
             }
           ]
         })
@@ -38,44 +47,70 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
 
   async onChat(event: ChatEvent): Promise<void> {
     let channels: string[]
-    if (event.channelType === ChannelType.PUBLIC) {
+    if (event.channelType === ChannelType.Public) {
       channels = this.clientInstance.config.publicChannelIds
-    } else if (event.channelType === ChannelType.OFFICER) {
+    } else if (event.channelType === ChannelType.Officer) {
       channels = this.clientInstance.config.officerChannelIds
     } else {
       return
     }
 
     for (const channelId of channels) {
-      if (channelId === event.channelId) continue
+      if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
 
       const webhook = await this.getWebhook(channelId)
       const displayUsername =
-        event.replyUsername == undefined ? event.username : `${event.username}⇾${event.replyUsername}`
+        event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
+          ? `${event.username}⇾${event.replyUsername}`
+          : event.username
 
       // TODO: integrate instanceName
       await webhook.send({
-        content: escapeDiscord(event.message),
+        content: escapeMarkdown(event.message),
         username: displayUsername,
         avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`
       })
     }
   }
 
+  async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+    const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
+
+    await this.handleEventEmbed({ event, username: event.username, removeLater })
+  }
+
+  async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+
+    await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+  }
+
   private lastRepeatEvent = 0
   private lastBlockEvent = 0
 
-  async onClientEvent(event: ClientEvent): Promise<void> {
-    if (event.instanceName === this.clientInstance.instanceName) return
-
-    if (event.eventType === EventType.REPEAT) {
+  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+    if (event.type === MinecraftChatEventType.Repeat) {
       if (this.lastRepeatEvent + 5000 < Date.now()) {
         this.lastRepeatEvent = Date.now()
       } else {
         return
       }
     }
-    if (event.eventType === EventType.BLOCK) {
+    if (event.type === MinecraftChatEventType.Block) {
       if (this.lastBlockEvent + 5000 < Date.now()) {
         this.lastBlockEvent = Date.now()
       } else {
@@ -83,69 +118,46 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
       }
     }
 
+    await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+  }
+
+  async onBroadcast(event: BroadcastEvent): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+
+    await this.handleEventEmbed({ event, username: event.username, removeLater: false })
+  }
+
+  async handleEventEmbed(options: {
+    event: BaseInGameEvent<string> | BroadcastEvent
+    username: string | undefined
+    removeLater: boolean
+  }): Promise<void> {
     const channels: string[] = []
-
-    switch (event.eventType) {
-      case EventType.AUTOMATED: {
-        if (event.channelType === ChannelType.PUBLIC) {
-          channels.push(...this.clientInstance.config.publicChannelIds)
-        } else if (event.channelType === ChannelType.OFFICER) {
-          channels.push(...this.clientInstance.config.officerChannelIds)
-        } else {
-          return
-        }
-        break
-      }
-
-      case EventType.REQUEST:
-      case EventType.JOIN:
-      case EventType.LEAVE:
-      case EventType.KICK:
-      case EventType.PROMOTE:
-      case EventType.DEMOTE: {
-        channels.push(...this.clientInstance.config.publicChannelIds, ...this.clientInstance.config.officerChannelIds)
-        break
-      }
-
-      case EventType.MUTE:
-      case EventType.UNMUTE: {
-        channels.push(...this.clientInstance.config.officerChannelIds)
-        break
-      }
-
-      case EventType.BLOCK:
-      case EventType.MUTED:
-      case EventType.OFFLINE:
-      case EventType.ONLINE:
-      case EventType.QUEST:
-      case EventType.REPEAT: {
-        channels.push(...this.clientInstance.config.publicChannelIds)
-        break
-      }
-
-      default: {
-        return
-      }
-    }
+    if (options.event.channels.includes(ChannelType.Public))
+      channels.push(...this.clientInstance.config.publicChannelIds)
+    if (options.event.channels.includes(ChannelType.Officer))
+      channels.push(...this.clientInstance.config.officerChannelIds)
 
     const embed = {
-      description: escapeDiscord(event.message),
+      description: escapeMarkdown(options.event.message),
 
-      color: event.severity,
-      footer: {
-        text: event.instanceName
-      }
+      color: options.event.color,
+      footer: { text: options.event.instanceName }
     } satisfies APIEmbed
-    if (event.username != undefined) {
+    if (options.username != undefined) {
       const extra = {
-        title: escapeDiscord(event.username),
-        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
-        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
+        title: escapeMarkdown(options.username),
+        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(options.username)}`,
+        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(options.username)}.png` }
       }
       Object.assign(embed, extra)
     }
 
-    await this.sendEmbed(channels, event.removeLater, embed)
+    await this.sendEmbed(channels, options.removeLater, embed)
   }
 
   async onCommand(event: CommandEvent): Promise<void> {
@@ -167,7 +179,9 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
         const deleteAfter = this.clientInstance.config.deleteTempEventAfter
         setTimeout(
           () => {
-            void responsePromise.then(async (response) => await response.delete())
+            void responsePromise
+              .then(async (response) => await response.delete())
+              .catch(this.clientInstance.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
           },
           deleteAfter * 60 * 1000
         )
@@ -179,15 +193,15 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     let channels: string[] = []
 
     switch (event.channelType) {
-      case ChannelType.PUBLIC: {
+      case ChannelType.Public: {
         channels = this.clientInstance.config.publicChannelIds
         break
       }
-      case ChannelType.OFFICER: {
+      case ChannelType.Officer: {
         channels = this.clientInstance.config.officerChannelIds
         break
       }
-      case ChannelType.PRIVATE: {
+      case ChannelType.Private: {
         if (event.discordChannelId) {
           channels = [event.discordChannelId]
         }
@@ -201,11 +215,11 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     if (channels.length === 0) return
 
     const embed = {
-      title: escapeDiscord(event.username),
+      title: escapeMarkdown(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      color: Severity.GOOD,
-      description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
+      color: Color.Good,
+      description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`,
       footer: {
         text: `${event.instanceName}${feedback ? ' (command feedback)' : ''}`
       }

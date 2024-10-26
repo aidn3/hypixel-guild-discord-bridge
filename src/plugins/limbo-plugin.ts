@@ -1,4 +1,5 @@
-import { InstanceEventType, InstanceType } from '../common/application-event.js'
+import { InstanceType } from '../common/application-event.js'
+import { Status } from '../common/client-instance.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
@@ -16,8 +17,8 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
  */
 export default {
   onRun(context: PluginContext): void {
-    context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.create && event.instanceType === InstanceType.MINECRAFT) {
+    context.application.on('instanceStatus', (event) => {
+      if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
         const localInstance = context.localInstances.find(
           (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
         )

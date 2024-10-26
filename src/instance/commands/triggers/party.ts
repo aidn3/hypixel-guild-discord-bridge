@@ -31,9 +31,9 @@ export default class PartyManager {
   }
 
   allowedExecution(context: ChatCommandContext): string | undefined {
-    if (context.channelType === ChannelType.OFFICER || context.channelType === ChannelType.PUBLIC) {
-      if (context.instanceType === InstanceType.MINECRAFT) return undefined
-      if (context.instanceType === InstanceType.DISCORD) return undefined
+    if (context.channelType === ChannelType.Officer || context.channelType === ChannelType.Public) {
+      if (context.instanceType === InstanceType.Minecraft) return undefined
+      if (context.instanceType === InstanceType.Discord) return undefined
     }
 
     return 'Parties commands can only be executed in public and officer chat of either minecraft or discord.'

@@ -2,6 +2,7 @@ import type { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.j
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 
 // values must be numbers to be comparable
 export enum Permission {
@@ -25,4 +26,5 @@ export interface DiscordCommandContext {
   interaction: ChatInputCommandInteraction
   privilege: Permission
   showPermissionDenied: () => Promise<void>
+  errorHandler: UnexpectedErrorHandler
 }

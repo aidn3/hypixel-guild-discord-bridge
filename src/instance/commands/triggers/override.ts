@@ -13,7 +13,7 @@ export default class Override extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.instanceType !== InstanceType.MINECRAFT) {
+    if (context.instanceType !== InstanceType.Minecraft) {
       return 'Can only be executed from Minecraft'
     }
     if (context.username !== context.adminUsername) {

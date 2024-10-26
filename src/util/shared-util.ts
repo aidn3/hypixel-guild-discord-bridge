@@ -54,14 +54,3 @@ export async function shutdownApplication(exitCode: number): Promise<void> {
 
   await timeout
 }
-
-export function escapeDiscord(message: string): string {
-  message = message.split('\\').join('\\\\') // "\"
-  message = message.split('_').join(String.raw`\_`) // Italic
-  message = message.split('*').join(String.raw`\*`) // bold
-  message = message.split('~').join(String.raw`\~`) // strikethrough
-  message = message.split('`').join('\\`') // code
-  message = message.split('@').join(String.raw`\@-`) // mentions
-
-  return message
-}

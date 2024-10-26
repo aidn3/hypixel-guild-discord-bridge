@@ -1,6 +1,6 @@
 import { uptime } from 'node:process'
 
-import { ChannelType, EventType, InstanceType, Severity } from '../common/application-event.js'
+import { ChannelType, InstanceType, Color } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 /* WARNING
@@ -21,16 +21,14 @@ export default {
       if (MaxLifeTillRestart < uptime()) {
         shuttingDown = true
 
-        context.application.emit('event', {
+        context.application.emit('broadcast', {
           localEvent: true,
 
-          instanceType: InstanceType.PLUGIN,
+          instanceType: InstanceType.Plugin,
           instanceName: context.pluginName,
 
-          channelType: ChannelType.PUBLIC,
-          severity: Severity.INFO,
-          eventType: EventType.AUTOMATED,
-          removeLater: false,
+          channels: [ChannelType.Public],
+          color: Color.Info,
 
           username: undefined,
           message: 'Application Restarting: Scheduled restart'

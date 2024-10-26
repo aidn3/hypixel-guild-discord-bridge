@@ -1,5 +1,5 @@
-// TODO: remove on major update
-/* eslint-disable @typescript-eslint/naming-convention */
+import type { Status } from './client-instance.js'
+
 /**
  * All available High Level events
  */
@@ -9,7 +9,8 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  '*': (name: string, event: BaseEvent) => void
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  all: (name: string, event: BaseEvent) => void
 
   /**
    * User sending messages
@@ -18,13 +19,28 @@ export interface ApplicationEvents {
   /**
    * User join/leave/offline/online/mute/kick/etc
    */
-  event: (event: ClientEvent) => void
+  guildPlayer: (event: GuildPlayerEvent) => void
+  /**
+   * When a guild emits an event that isn't specific for any player or user.
+   * Events such as reach a general guild quest goal.
+   */
+  guildGeneral: (event: GuildGeneralEvent) => void
+  /**
+   * In-game events such as interactions blocked/etc.
+   *
+   * @see MinecraftChatEventType
+   */
+  minecraftChatEvent: (event: MinecraftChatEvent) => void
   /**
    * User executing a command.
    * Each command execution can send only one command event.
    * If multiple response is needed, either format the text using blank lines/etc. or use {@linkcode CommandFeedbackEvent}
    */
   command: (event: CommandEvent) => void
+  /**
+   * When a plugin or a component wishes to broadcast a message to all instances.
+   */
+  broadcast: (event: BroadcastEvent) => void
 
   /**
    * Command sending a followup responses.
@@ -37,7 +53,7 @@ export interface ApplicationEvents {
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  instance: (event: InstanceEvent) => void
+  instanceStatus: (event: InstanceStatusEvent) => void
   /**
    * Broadcast instance to inform other bridges in the cluster about its existence
    */
@@ -96,15 +112,18 @@ export interface ApplicationEvents {
  * The instance type the event was created from
  */
 export enum InstanceType {
-  MAIN = 'main',
-  PLUGIN = 'plugin',
+  Main = 'main',
 
-  METRICS = 'metrics',
-  SOCKET = 'socket',
-  COMMANDS = 'commands',
+  Plugin = 'plugin',
+  Commands = 'commands',
+  Moderation = 'moderation',
 
-  DISCORD = 'discord',
-  MINECRAFT = 'minecraft',
+  Metrics = 'metrics',
+  Socket = 'socket',
+
+  Discord = 'discord',
+  Minecraft = 'minecraft',
+
   Logger = 'webhook'
 }
 
@@ -112,9 +131,22 @@ export enum InstanceType {
  * The channel the event is targeting/coming from
  */
 export enum ChannelType {
-  OFFICER = 'officer',
-  PUBLIC = 'public',
-  PRIVATE = 'private'
+  Officer = 'officer',
+  Public = 'public',
+  Private = 'private'
+}
+
+/**
+ * The severity of the event.
+ * This is also used to choose an embed color when displaying messages in discord.
+ * Although this is discord specific. This is exposed here for plugins to take advantage of.
+ */
+export enum Color {
+  Good = 0x00_8a_00,
+  Info = 0x84_84_00,
+  Bad = 0x8a_2d_00,
+  Error = 0xff_00_00,
+  Default = 0x09_0a_16
 }
 
 /**
@@ -164,30 +196,51 @@ interface SignalEvent extends BaseEvent {
  * The event has all the fields formatted and never raw.
  * For example {@link #message} will contain the message content only and will never include any prefix of any kind.
  */
-export interface ChatEvent extends InformEvent {
+export type ChatEvent = MinecraftGuildChat | MinecraftPrivateChat | DiscordChat
+
+export interface BaseChat extends InformEvent {
   /**
    * The channel type the message is coming from
    * @see ChannelType
    */
   readonly channelType: ChannelType
-  /**
-   * The channel id if exists.
-   * This is only set if the message is coming from a discord channel.
-   */
-  readonly channelId: string | undefined
+
   /**
    * The name of the message sender
    */
   readonly username: string
+
+  /**
+   * The message content without any prefix or formatting
+   */
+  readonly message: string
+}
+
+export interface MinecraftChat extends BaseChat {
+  readonly instanceType: InstanceType.Minecraft
+  readonly hypixelRank: string
+}
+
+export interface MinecraftPrivateChat extends MinecraftChat {
+  readonly channelType: ChannelType.Private
+}
+
+export interface MinecraftGuildChat extends MinecraftChat {
+  readonly channelType: ChannelType.Public | ChannelType.Officer
+  readonly guildRank: string
+}
+
+export interface DiscordChat extends BaseChat {
+  readonly instanceType: InstanceType.Discord
   /**
    * The name of the user the message is sent as a reply to.
    * Used if someone is replying to another user's message
    */
   readonly replyUsername: string | undefined
   /**
-   * The message content without any prefix or formatting
+   * The channel id if exists.
    */
-  readonly message: string
+  readonly channelId: string
 }
 
 export interface ProfanityWarningEvent extends InformEvent {
@@ -215,122 +268,143 @@ export interface ProfanityWarningEvent extends InformEvent {
 /**
  * In-game guild events such as joining/leaving/online/offline/etc.
  */
-export enum EventType {
-  // noinspection JSUnusedGlobalSymbols
-  /**
-   * Indicates an automated response/action.
-   * Used for custom plugins, etc.
-   */
-  AUTOMATED = 'automated',
+export enum GuildPlayerEventType {
   /**
    * When a player is requesting to join a guild
    */
-  REQUEST = 'request',
+  Request = 'request',
   /**
    * When a player joins a guild
    */
-  JOIN = 'join',
+  Join = 'join',
   /**
    * When a player leaves a guild
    */
-  LEAVE = 'leave',
+  Leave = 'leave',
   /**
    * When a player is kicked out of a guild
    */
-  KICK = 'kick',
-
-  /**
-   * When a guild quest completion message is shown
-   */
-  QUEST = 'quest',
+  Kick = 'kick',
 
   /**
    * When a player is promoted in a guild
    */
-  PROMOTE = 'promote',
+  Promote = 'promote',
   /**
    * When a player is demoted in a guild.
    */
-  DEMOTE = 'demote',
+  Demote = 'demote',
   /**
    * When a player gets muted in a guild
    */
-  MUTE = 'mute',
+  Mute = 'mute',
   /**
    * When a player is unmuted in a guild
    */
-  UNMUTE = 'unmute',
+  Unmute = 'unmute',
 
   /**
    * When a player goes offline
    */
-  OFFLINE = 'offline',
+  Offline = 'offline',
   /**
    * When a player comes online
    */
-  ONLINE = 'online',
-
-  /**
-   * When a Minecraft server blocks a message due to it being repetitive
-   */
-  REPEAT = 'repeat',
-  /**
-   * When a Minecraft server blocks a message due to it being harmful/abusive/etc.
-   */
-  BLOCK = 'block',
-
-  /**
-   * When the Minecraft account itself is muted by the server.
-   * Not to be confused with {@link #MUTE}
-   */
-  MUTED = 'muted'
+  Online = 'online'
 }
 
-/**
- * The severity of the event.
- * This is used to choose an embed color when displaying in discord
- */
-export enum Severity {
-  GOOD = 0x00_8a_00,
-  INFO = 0x84_84_00,
-  BAD = 0x8a_2d_00,
-  ERROR = 0xff_00_00,
-  DEFAULT = 0x09_0a_16
-}
-
-/**
- * In-game guild events such as joining/leaving/online/offline/etc.
- *
- * @see EventType
- */
-export interface ClientEvent extends InformEvent {
-  /**
-   * The channel type the message is coming from
-   * @see ChannelType
-   */
-  readonly channelType: ChannelType
+export interface BaseInGameEvent<K extends string> extends InformEvent {
   /**
    * Which event has occurred
    */
-  readonly eventType: EventType
-  /**
-   * The name of the user who fired that event.
-   * If there is no username, `undefined` is used instead
-   */
-  readonly username: string | undefined
-  /**
-   * @see Severity
-   */
-  readonly severity: Severity
+  readonly type: K
   /**
    * The message that fired that event
    */
   readonly message: string
   /**
-   * Whether to delete any notification that has been sent due to this event.
-   * Used to reduce spam if an event occurs too often.
+   * The color to display the message at if the receiver supports it.
    */
-  readonly removeLater: boolean
+  readonly color: Color
+  /**
+   * The channels type to broadcast the message at.
+   * @see ChannelType
+   */
+  readonly channels: (ChannelType.Public | ChannelType.Officer)[]
+}
+
+/**
+ * In-game guild events such as joining/leaving/online/offline/etc.
+ *
+ * @see GuildPlayerEventType
+ */
+export interface GuildPlayerEvent extends BaseInGameEvent<GuildPlayerEventType> {
+  /**
+   * The name of the user who fired that event.
+   */
+  readonly username: string
+}
+
+export enum GuildGeneralEventType {
+  /**
+   * When a guild quest completion message is shown
+   */
+  Quest = 'quest'
+}
+
+/**
+ * When a guild emits an event that isn't specific for any player or user.
+ * Events such as reach a general guild quest goal.
+ *
+ * @see GuildGeneralEventType
+ */
+export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType>
+
+export enum MinecraftChatEventType {
+  /**
+   * When a Minecraft server blocks a message due to it being repetitive
+   */
+  Repeat = 'repeat',
+  /**
+   * When a Minecraft server blocks a message due to it being harmful/abusive/etc.
+   */
+  Block = 'block',
+  /**
+   * When the Minecraft account itself is muted by the server.
+   * Not to be confused with {@link GuildPlayerEventType#Mute}
+   */
+  Muted = 'muted'
+}
+
+/**
+ * In-game events such as interactions blocked/etc.
+ *
+ * @see MinecraftChatEventType
+ */
+export type MinecraftChatEvent = BaseInGameEvent<MinecraftChatEventType>
+
+/**
+ * When a plugin or a component wishes to broadcast a message to all instances.
+ */
+export interface BroadcastEvent extends InformEvent {
+  /**
+   * The message to broadcast
+   */
+  readonly message: string
+  /**
+   * The color to display the message at if the receiver supports it.
+   */
+  readonly color: Color
+  /**
+   * The name of the user associated with the event.
+   * If there is no username, `undefined` is used instead.
+   */
+  readonly username: string | undefined
+  /**
+   * The channels to broadcast the message to.
+   * @see ChannelType
+   */
+  readonly channels: (ChannelType.Public | ChannelType.Officer)[]
 }
 
 /**
@@ -374,48 +448,13 @@ export interface CommandEvent extends InformEvent {
 export type CommandFeedbackEvent = CommandEvent
 
 /**
- * Enum containing all available instance statuses
- */
-export enum InstanceEventType {
-  /**
-   * When an instance is freshly created
-   */
-  create,
-  /**
-   * When an instance is starting but not connected yet
-   */
-  start,
-  /**
-   * When an instance has gracefully ended
-   */
-  end,
-  /**
-   * When an instance is connecting
-   */
-  connect,
-  /**
-   * When an instance is temporarily disconnected
-   */
-  disconnect,
-  /**
-   * When an instance has conflicted with another instance.
-   * Receiving this event means the instance won't retry to reconnect.
-   */
-  conflict,
-  /**
-   * when an instance is kicked from a server
-   */
-  kick
-}
-
-/**
  * Events used when an instance changes its status
  */
-export interface InstanceEvent extends InformEvent {
+export interface InstanceStatusEvent extends InformEvent {
   /**
    * The instance event status
    */
-  readonly type: InstanceEventType
+  readonly status: Status
   /**
    * Humanly formatted message of the situation
    */
@@ -481,7 +520,6 @@ export interface PunishmentAddEvent extends InformEvent {
   /**
    * Time when the punishment expires.
    * Unix Epoch in milliseconds.
-   // TODO: change to "expiresAt"
    */
   readonly till: number
 }
@@ -499,8 +537,8 @@ export interface PunishmentForgiveEvent extends InformEvent {
 }
 
 export enum PunishmentType {
-  MUTE = 'mute',
-  BAN = 'ban'
+  Mute = 'mute',
+  Ban = 'ban'
 }
 
 /**
@@ -538,5 +576,3 @@ export interface ShutdownSignal extends SignalEvent {
    */
   readonly restart: boolean
 }
-
-/* eslint-enable @typescript-eslint/naming-convention */

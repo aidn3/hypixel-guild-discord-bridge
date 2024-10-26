@@ -49,7 +49,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       timerReset()
     })
     this.clientInstance.app.on('selfBroadcast', (event): void => {
-      if (event.instanceType === InstanceType.MINECRAFT) {
+      if (event.instanceType === InstanceType.Minecraft) {
         timerReset()
       }
     })
@@ -58,7 +58,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
   registerEvents(): void {
     this.clientInstance.client.on('interactionCreate', (interaction) => {
-      void this.interactionCreate(interaction)
+      void this.interactionCreate(interaction).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling incoming discord interactionCreate event')
+      )
     })
     this.clientInstance.logger.debug('CommandManager is registered')
   }
@@ -119,7 +121,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         this.clientInstance.app.emit('command', {
           localEvent: true,
           instanceName: this.clientInstance.instanceName,
-          instanceType: InstanceType.DISCORD,
+          instanceType: InstanceType.Discord,
           channelType: channelType,
           discordChannelId: interaction.channelId,
           username,
@@ -134,6 +136,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         const commandContext: DiscordCommandContext = {
           application: this.clientInstance.app,
           logger: this.clientInstance.logger,
+          errorHandler: this.clientInstance.errorHandler,
           instanceName: this.clientInstance.instanceName,
           privilege: this.resolvePrivilegeLevel(interaction),
           interaction: interaction as ChatInputCommandInteraction,
@@ -195,7 +198,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     for (const [, guild] of this.clientInstance.client.guilds.cache) {
       this.clientInstance.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
-      void rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
+      void rest
+        .put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
+        .catch(this.clientInstance.errorHandler.promiseCatch('registering discord commands'))
     }
   }
 
@@ -223,15 +228,15 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   }
 
   private getChannelType(channelId: string): ChannelType | undefined {
-    if (this.clientInstance.config.publicChannelIds.includes(channelId)) return ChannelType.PUBLIC
-    if (this.clientInstance.config.officerChannelIds.includes(channelId)) return ChannelType.OFFICER
+    if (this.clientInstance.config.publicChannelIds.includes(channelId)) return ChannelType.Public
+    if (this.clientInstance.config.officerChannelIds.includes(channelId)) return ChannelType.Officer
     return undefined
   }
 
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
     const instanceChoices = this.clientInstance.app.clusterHelper
-      .getInstancesNames(InstanceType.MINECRAFT)
+      .getInstancesNames(InstanceType.Minecraft)
       .map((choice: string) => ({
         name: choice,
         value: choice

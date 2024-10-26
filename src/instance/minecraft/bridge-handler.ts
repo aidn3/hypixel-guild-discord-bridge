@@ -1,14 +1,23 @@
 import type Application from '../../application.js'
 import type {
+  BaseInGameEvent,
+  BroadcastEvent,
   ChatEvent,
-  ClientEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceEvent,
+  GuildGeneralEvent,
+  GuildPlayerEvent,
+  InstanceStatusEvent,
+  MinecraftChatEvent,
   MinecraftSendChat,
   ReconnectSignal
 } from '../../common/application-event.js'
-import { ChannelType, EventType, InstanceType } from '../../common/application-event.js'
+import {
+  ChannelType,
+  GuildPlayerEventType,
+  InstanceType,
+  MinecraftChatEventType
+} from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
 import { antiSpamString } from '../../util/shared-util.js'
 
@@ -23,12 +32,14 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     })
 
     this.application.on('minecraftSend', (event) => {
-      void this.onMinecraftSend(event)
+      void this.onMinecraftSend(event).catch(
+        this.clientInstance.errorHandler.promiseCatch('handling incoming minecraftSend event')
+      )
     })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onInstance(event: InstanceEvent): void | Promise<void> {
+  onInstance(event: InstanceStatusEvent): void | Promise<void> {
     // TODO: implement onInstance on minecraft side
     // maybe not implement either if it gives better UX
     return undefined
@@ -36,22 +47,50 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
+    const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
 
-    if (event.channelType === ChannelType.PUBLIC) {
-      void this.clientInstance.send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
-    } else if (event.channelType === ChannelType.OFFICER) {
-      void this.clientInstance.send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
+    if (event.channelType === ChannelType.Public) {
+      void this.clientInstance
+        .send(this.formatChatMessage('gc', event.username, replyUsername, event.message))
+        .catch(this.clientInstance.errorHandler.promiseCatch('sending public chat message'))
+    } else if (event.channelType === ChannelType.Officer) {
+      void this.clientInstance
+        .send(this.formatChatMessage('oc', event.username, replyUsername, event.message))
+        .catch(this.clientInstance.errorHandler.promiseCatch('sending officer chat message'))
     }
   }
 
-  onClientEvent(event: ClientEvent): void | Promise<void> {
+  async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
-    if (event.channelType !== ChannelType.PUBLIC) return
-    if (event.removeLater) return
-    if (event.eventType === EventType.BLOCK) return
-    if (event.eventType === EventType.REPEAT) return
+    if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
 
-    void this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+    await this.handleInGameEvent(event)
+  }
+
+  async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
+    if (event.instanceName === this.clientInstance.instanceName) return
+
+    await this.handleInGameEvent(event)
+  }
+
+  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
+    if (event.type === MinecraftChatEventType.Block) return
+    if (event.type === MinecraftChatEventType.Repeat) return
+    await this.handleInGameEvent(event)
+  }
+
+  async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
+    if (event.channels.includes(ChannelType.Public))
+      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+    else if (event.channels.includes(ChannelType.Officer))
+      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
+  }
+
+  async onBroadcast(event: BroadcastEvent): Promise<void> {
+    if (event.channels.includes(ChannelType.Public))
+      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+    else if (event.channels.includes(ChannelType.Officer))
+      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {
@@ -66,9 +105,12 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     // undefined is strictly checked due to api specification
     if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
       this.clientInstance.logger.log('instance has received restart signal')
-      void this.clientInstance.send(`/gc @Instance restarting...`).then(() => {
-        this.clientInstance.connect()
-      })
+      void this.clientInstance
+        .send(`/gc @Instance restarting...`)
+        .then(() => {
+          this.clientInstance.connect()
+        })
+        .catch(this.clientInstance.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
     }
   }
 
@@ -81,7 +123,7 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
   private handleCommand(event: CommandFeedbackEvent, feedback: boolean) {
     if (
-      event.instanceType === InstanceType.MINECRAFT &&
+      event.instanceType === InstanceType.Minecraft &&
       event.instanceName === this.clientInstance.instanceName &&
       event.alreadyReplied
     ) {
@@ -90,18 +132,24 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
     switch (event.channelType) {
-      case ChannelType.PUBLIC: {
-        void this.clientInstance.send(`/gc ${finalResponse}`)
+      case ChannelType.Public: {
+        void this.clientInstance
+          .send(`/gc ${finalResponse}`)
+          .catch(this.clientInstance.errorHandler.promiseCatch('handling public command response display'))
         break
       }
-      case ChannelType.OFFICER: {
-        void this.clientInstance.send(`/oc ${finalResponse}`)
+      case ChannelType.Officer: {
+        void this.clientInstance
+          .send(`/oc ${finalResponse}`)
+          .catch(this.clientInstance.errorHandler.promiseCatch('handling private command response display'))
         break
       }
-      case ChannelType.PRIVATE: {
-        if (event.instanceType !== InstanceType.MINECRAFT || event.instanceName !== this.clientInstance.instanceName)
+      case ChannelType.Private: {
+        if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
-        void this.clientInstance.send(`/msg ${event.username} ${finalResponse}`)
+        void this.clientInstance
+          .send(`/msg ${event.username} ${finalResponse}`)
+          .catch(this.clientInstance.errorHandler.promiseCatch('handling private command response display'))
         break
       }
       default: {
