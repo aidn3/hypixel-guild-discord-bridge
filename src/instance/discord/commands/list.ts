@@ -1,14 +1,13 @@
 import assert from 'node:assert'
 
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { InstanceType, Color } from '../../../common/application-event.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
-import { escapeDiscord } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -21,7 +20,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   for (const [instanceName, list] of instances) {
     total += list.length
 
-    entries.push(`**${escapeDiscord(instanceName)} (${list.length})**\n`)
+    entries.push(`**${escapeMarkdown(instanceName)} (${list.length})**\n`)
 
     if (list.length > 0) {
       for (const user of list) {
@@ -143,14 +142,14 @@ async function lookupProfiles(
 }
 
 function formatLocation(username: string, session: Status | undefined): string {
-  let message = `- **${escapeDiscord(username)}** `
+  let message = `- **${escapeMarkdown(username)}** `
 
   if (session === undefined) return message + ' is *__unknown?__*'
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  if (session.game != undefined) message += `playing __${escapeDiscord(session.game.name)}__`
-  if (session.mode != undefined) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
+  if (session.game != undefined) message += `playing __${escapeMarkdown(session.game.name)}__`
+  if (session.mode != undefined) message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
   message += '*' // END discord markdown. italic
 
   return message

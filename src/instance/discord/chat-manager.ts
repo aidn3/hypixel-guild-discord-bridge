@@ -1,10 +1,10 @@
 import Axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
+import { escapeMarkdown } from 'discord.js'
 import EmojisMap from 'emoji-name-map'
 
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
-import { escapeDiscord } from '../../util/shared-util.js'
 
 import type DiscordInstance from './discord-instance.js'
 
@@ -56,7 +56,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         filteredMessage: filteredMessage
       })
       await event.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
+        content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
       })
     }
 

@@ -1,4 +1,5 @@
 import type { APIEmbed, TextBasedChannelFields, Webhook, TextChannel } from 'discord.js'
+import { escapeMarkdown } from 'discord.js'
 
 import type {
   BaseInGameEvent,
@@ -19,7 +20,6 @@ import {
   MinecraftChatEventType
 } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
-import { escapeDiscord } from '../../util/shared-util.js'
 
 import type DiscordInstance from './discord-instance.js'
 
@@ -35,8 +35,8 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
         .send({
           embeds: [
             {
-              title: escapeDiscord(event.instanceName),
-              description: escapeDiscord(event.message),
+              title: escapeMarkdown(event.instanceName),
+              description: escapeMarkdown(event.message),
               color: Color.Info
             }
           ]
@@ -66,7 +66,7 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
 
       // TODO: integrate instanceName
       await webhook.send({
-        content: escapeDiscord(event.message),
+        content: escapeMarkdown(event.message),
         username: displayUsername,
         avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`
       })
@@ -143,14 +143,14 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
       channels.push(...this.clientInstance.config.officerChannelIds)
 
     const embed = {
-      description: escapeDiscord(options.event.message),
+      description: escapeMarkdown(options.event.message),
 
       color: options.event.color,
       footer: { text: options.event.instanceName }
     } satisfies APIEmbed
     if (options.username != undefined) {
       const extra = {
-        title: escapeDiscord(options.username),
+        title: escapeMarkdown(options.username),
         url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(options.username)}`,
         thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(options.username)}.png` }
       }
@@ -215,11 +215,11 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     if (channels.length === 0) return
 
     const embed = {
-      title: escapeDiscord(event.username),
+      title: escapeMarkdown(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
       color: Color.Good,
-      description: `${escapeDiscord(event.fullCommand)}\n**${escapeDiscord(event.commandResponse)}**`,
+      description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`,
       footer: {
         text: `${event.instanceName}${feedback ? ' (command feedback)' : ''}`
       }

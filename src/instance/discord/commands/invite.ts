@@ -1,6 +1,5 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { escapeDiscord } from '../../../util/shared-util.js'
 import { checkChatTriggers, formatChatTriggerResponse, InviteAcceptChat } from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
@@ -30,7 +29,7 @@ export default {
       command,
       username
     )
-    const formatted = formatChatTriggerResponse(result, `Invite ${escapeDiscord(username)}`)
+    const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
   }

@@ -1,9 +1,8 @@
-import { WebhookClient } from 'discord.js'
+import { escapeMarkdown, WebhookClient } from 'discord.js'
 
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ClientInstance } from '../../common/client-instance.js'
-import { escapeDiscord } from '../../util/shared-util.js'
 
 export default class LoggerInstance extends ClientInstance<undefined> {
   private readonly client: WebhookClient
@@ -101,7 +100,7 @@ export default class LoggerInstance extends ClientInstance<undefined> {
   private async send(message: string): Promise<void> {
     await this.client.send({
       username: this.instanceName,
-      content: escapeDiscord(message)
+      content: escapeMarkdown(message)
     })
   }
 

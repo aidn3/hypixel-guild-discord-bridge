@@ -1,9 +1,9 @@
 import type { APIEmbed } from 'discord.js'
+import { escapeMarkdown } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color } from '../../../common/application-event.js'
-import { escapeDiscord } from '../../../util/shared-util.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
 
@@ -197,7 +197,7 @@ function formatBody(results: ChatTriggerResult): string {
     message += '**No response returned while executing the command.**'
     return message
   } else if (results.message.length === 1) {
-    message += `> ${escapeDiscord(results.message[0])}`
+    message += `> ${escapeMarkdown(results.message[0])}`
     return message
   } else {
     message += `**Multiple responses have been detected but cannot tell which belong to this command:**\n`

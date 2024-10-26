@@ -1,6 +1,5 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { escapeDiscord } from '../../../util/shared-util.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
@@ -23,7 +22,7 @@ export default {
     const command = `/g promote ${username}`
 
     const result = await checkChatTriggers(context.application, RankChat, undefined, command, username)
-    const formatted = formatChatTriggerResponse(result, `Promote ${escapeDiscord(username)}`)
+    const formatted = formatChatTriggerResponse(result, `Promote ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
   }

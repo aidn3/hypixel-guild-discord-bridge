@@ -1,4 +1,3 @@
-import { escapeMarkdown } from 'discord.js'
 import Logger4js from 'log4js'
 
 export function sufficeToTime(suffice: string): number {
@@ -54,8 +53,4 @@ export async function shutdownApplication(exitCode: number): Promise<void> {
   })
 
   await timeout
-}
-
-export function escapeDiscord(message: string): string {
-  return escapeMarkdown(message)
 }

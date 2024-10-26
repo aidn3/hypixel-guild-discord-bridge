@@ -1,10 +1,9 @@
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
-import { escapeDiscord } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -23,7 +22,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
       `_You can select an instance via the optional command argument._\n\n`
   }
 
-  result += `**${escapeDiscord(targetInstance)}**\n`
+  result += `**${escapeMarkdown(targetInstance)}**\n`
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
@@ -32,7 +31,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
   } else {
     result += `_Could not fetch information for ${targetInstance}._`
     if (chatResult.error) {
-      result += `\n${escapeDiscord(chatResult.error)}`
+      result += `\n${escapeMarkdown(chatResult.error)}`
     }
   }
 

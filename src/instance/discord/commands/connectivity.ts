@@ -1,10 +1,10 @@
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
-import { antiSpamString, escapeDiscord } from '../../../util/shared-util.js'
+import { antiSpamString } from '../../../util/shared-util.js'
 import type { CommandInterface } from '../common/command-interface.js'
 import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -19,7 +19,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
     '- Bot does not have permission to send/receive messages in that channel\n\n'
 
   for (const [instanceName, list] of instances) {
-    content += `**${escapeDiscord(instanceName)}**\n`
+    content += `**${escapeMarkdown(instanceName)}**\n`
 
     if (list.length > 0) {
       content += '```'

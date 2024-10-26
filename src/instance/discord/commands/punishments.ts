@@ -1,14 +1,14 @@
 import assert from 'node:assert'
 
 import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
 import { InstanceType, PunishmentType, Color } from '../../../common/application-event.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
-import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
+import { getDuration } from '../../../util/shared-util.js'
 import { durationToMinecraftDuration } from '../../moderation/util.js'
 import {
   checkChatTriggers,
@@ -201,7 +201,7 @@ async function handleBanAddInteraction(
   const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
 
   const result = await checkChatTriggers(application, KickChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Ban ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Ban ${escapeMarkdown(username)}`)
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
 }
@@ -239,7 +239,7 @@ async function handleMuteAddInteraction(
   const command = `/guild mute ${username} ${durationToMinecraftDuration(muteDuration)}`
 
   const result = await checkChatTriggers(application, MuteChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Mute ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Mute ${escapeMarkdown(username)}`)
 
   application.clusterHelper.sendCommandToAllMinecraft(
     `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
@@ -257,7 +257,7 @@ async function handleKickInteraction(
   const command = `/g kick ${username} ${reason}`
 
   const result = await checkChatTriggers(application, KickChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Kick ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Kick ${escapeMarkdown(username)}`)
 
   await interaction.editReply({
     embeds: [
@@ -268,11 +268,11 @@ async function handleKickInteraction(
         fields: [
           {
             name: 'Username',
-            value: escapeDiscord(username)
+            value: escapeMarkdown(username)
           },
           {
             name: 'reason',
-            value: escapeDiscord(reason)
+            value: escapeMarkdown(reason)
           }
         ],
         footer: { text: DefaultCommandFooter }
@@ -311,7 +311,7 @@ async function handleForgiveInteraction(
   const command = `/guild unmute ${userResolvedData.userName}`
 
   const result = await checkChatTriggers(application, UnmuteChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeMarkdown(username)}`)
 
   const pages: APIEmbed[] = []
   for (let index = 0; index < forgivenPunishments.length; index++) {
@@ -391,7 +391,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
 
   for (const punishment of list) {
     entries.push(
-      `- [${punishment.type}] Expires <t:${Math.floor(punishment.till / 1000)}:R> **${escapeDiscord(punishment.userName)}**: ${escapeDiscord(punishment.reason)}\n`
+      `- [${punishment.type}] Expires <t:${Math.floor(punishment.till / 1000)}:R> **${escapeMarkdown(punishment.userName)}**: ${escapeMarkdown(punishment.reason)}\n`
     )
   }
 
