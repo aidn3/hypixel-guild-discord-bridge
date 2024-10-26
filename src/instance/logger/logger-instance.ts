@@ -14,7 +14,9 @@ export default class LoggerInstance extends ClientInstance<undefined> {
 
     this.app.on('chat', (event) => {
       const displayUsername =
-        event.replyUsername == undefined ? event.username : `${event.username}▸${event.replyUsername}`
+        event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
+          ? `${event.username}▸${event.replyUsername}`
+          : event.username
 
       void this.send(
         `[chat][${event.instanceName}][type=${event.channelType}] ${displayUsername}: ${event.message}`

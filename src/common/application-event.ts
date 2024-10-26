@@ -196,30 +196,51 @@ interface SignalEvent extends BaseEvent {
  * The event has all the fields formatted and never raw.
  * For example {@link #message} will contain the message content only and will never include any prefix of any kind.
  */
-export interface ChatEvent extends InformEvent {
+export type ChatEvent = MinecraftGuildChat | MinecraftPrivateChat | DiscordChat
+
+export interface BaseChat extends InformEvent {
   /**
    * The channel type the message is coming from
    * @see ChannelType
    */
   readonly channelType: ChannelType
-  /**
-   * The channel id if exists.
-   * This is only set if the message is coming from a discord channel.
-   */
-  readonly channelId: string | undefined
+
   /**
    * The name of the message sender
    */
   readonly username: string
+
+  /**
+   * The message content without any prefix or formatting
+   */
+  readonly message: string
+}
+
+export interface MinecraftChat extends BaseChat {
+  readonly instanceType: InstanceType.Minecraft
+  readonly hypixelRank: string
+}
+
+export interface MinecraftPrivateChat extends MinecraftChat {
+  readonly channelType: ChannelType.Private
+}
+
+export interface MinecraftGuildChat extends MinecraftChat {
+  readonly channelType: ChannelType.Public | ChannelType.Officer
+  readonly guildRank: string
+}
+
+export interface DiscordChat extends BaseChat {
+  readonly instanceType: InstanceType.Discord
   /**
    * The name of the user the message is sent as a reply to.
    * Used if someone is replying to another user's message
    */
   readonly replyUsername: string | undefined
   /**
-   * The message content without any prefix or formatting
+   * The channel id if exists.
    */
-  readonly message: string
+  readonly channelId: string
 }
 
 export interface ProfanityWarningEvent extends InformEvent {

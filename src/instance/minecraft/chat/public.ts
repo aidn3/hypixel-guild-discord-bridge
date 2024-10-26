@@ -5,12 +5,14 @@ import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
-    const regex = /^Guild > (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})(?: \[\w{1,10}]){0,3}:(.{1,256})/g
+    const regex = /^Guild > (?:\[([+A-Z]{1,10})] ){0,3}(\w{3,32})(?: \[(\w{1,10})]){0,3}:(.{1,256})/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      const username = match[1]
-      const playerMessage = match[2].trim()
+      const hypixelRank = match[1]
+      const username = match[2]
+      const guildRank = match[3]
+      const playerMessage = match[4].trim()
 
       if (
         context.clientInstance.bridgePrefix.length > 0 &&
@@ -55,10 +57,11 @@ export default {
         instanceType: InstanceType.Minecraft,
 
         channelType: ChannelType.Public,
-        channelId: undefined,
 
         username,
-        replyUsername: undefined,
+        hypixelRank: hypixelRank,
+        guildRank: guildRank,
+
         message: filteredMessage
       })
     }

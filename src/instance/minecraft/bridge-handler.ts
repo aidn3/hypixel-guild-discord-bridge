@@ -1,6 +1,7 @@
 import type Application from '../../application.js'
 import type {
   BaseInGameEvent,
+  BroadcastEvent,
   ChatEvent,
   CommandEvent,
   CommandFeedbackEvent,
@@ -9,7 +10,6 @@ import type {
   InstanceStatusEvent,
   MinecraftChatEvent,
   MinecraftSendChat,
-  BroadcastEvent,
   ReconnectSignal
 } from '../../common/application-event.js'
 import {
@@ -47,14 +47,15 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
 
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
+    const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
 
     if (event.channelType === ChannelType.Public) {
       void this.clientInstance
-        .send(this.formatChatMessage('gc', event.username, event.replyUsername, event.message))
+        .send(this.formatChatMessage('gc', event.username, replyUsername, event.message))
         .catch(this.clientInstance.errorHandler.promiseCatch('sending public chat message'))
     } else if (event.channelType === ChannelType.Officer) {
       void this.clientInstance
-        .send(this.formatChatMessage('oc', event.username, event.replyUsername, event.message))
+        .send(this.formatChatMessage('oc', event.username, replyUsername, event.message))
         .catch(this.clientInstance.errorHandler.promiseCatch('sending officer chat message'))
     }
   }

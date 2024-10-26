@@ -1,14 +1,14 @@
 import type Application from '../application.js'
 
 import type {
+  BroadcastEvent,
   ChatEvent,
-  GuildPlayerEvent,
   CommandEvent,
   CommandFeedbackEvent,
-  InstanceStatusEvent,
   GuildGeneralEvent,
-  MinecraftChatEvent,
-  BroadcastEvent
+  GuildPlayerEvent,
+  InstanceStatusEvent,
+  MinecraftChatEvent
 } from './application-event.js'
 import type { ClientInstance } from './client-instance.js'
 

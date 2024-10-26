@@ -3,16 +3,22 @@ import { TextChannel } from 'discord.js'
 
 import type {
   BaseInGameEvent,
+  BroadcastEvent,
   ChatEvent,
   CommandEvent,
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
   InstanceStatusEvent,
-  MinecraftChatEvent,
-  BroadcastEvent
+  MinecraftChatEvent
 } from '../../common/application-event.js'
-import { ChannelType, Color, GuildPlayerEventType, MinecraftChatEventType } from '../../common/application-event.js'
+import {
+  ChannelType,
+  Color,
+  GuildPlayerEventType,
+  InstanceType,
+  MinecraftChatEventType
+} from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
 import { escapeDiscord } from '../../util/shared-util.js'
 
@@ -51,11 +57,13 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     }
 
     for (const channelId of channels) {
-      if (channelId === event.channelId) continue
+      if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
 
       const webhook = await this.getWebhook(channelId)
       const displayUsername =
-        event.replyUsername == undefined ? event.username : `${event.username}⇾${event.replyUsername}`
+        event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
+          ? `${event.username}⇾${event.replyUsername}`
+          : event.username
 
       // TODO: integrate instanceName
       await webhook.send({
