@@ -129,6 +129,7 @@ A shorter version can also be used: `!- rtca`
 | !kuudra      | Get a player's kuudra completions `!kuudra hot`            | Anyone     |
 | !level       | Get a player's skyblock level                              | Anyone     |
 | !networth    | Calculate the in-game networth of a player                 | Anyone     |
+| !startparty  | Create public !parties to be viewed by guild members       | Anyone     |
 | !rps         | Play rock paper scissors `!rps rock`                       | Anyone     |
 | !roulette    | Has a chance of muting a player                            | Anyone     |
 | !runs        | Return a plauer's floor completions `!runs m7`             | Anyone     |
