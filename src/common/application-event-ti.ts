@@ -32,6 +32,7 @@ export const InstanceType = t.enumtype({
   "DISCORD": "discord",
   "MINECRAFT": "minecraft",
   "Logger": "webhook",
+  "STATISTICS": "statistics",
 });
 
 export const ChannelType = t.enumtype({

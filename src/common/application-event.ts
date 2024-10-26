@@ -105,7 +105,9 @@ export enum InstanceType {
 
   DISCORD = 'discord',
   MINECRAFT = 'minecraft',
-  Logger = 'webhook'
+
+  Logger = 'webhook',
+  STATISTICS = 'statistics'
 }
 
 /**
