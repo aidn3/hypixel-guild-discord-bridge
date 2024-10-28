@@ -24,7 +24,7 @@ export default class SelfbroadcastHandler extends EventHandler<MinecraftInstance
     const uuid = this.clientInstance.uuid()
 
     if (username != undefined && uuid != undefined) {
-      this.clientInstance.app.emit('minecraftSelfBroadcast', {
+      this.application.emit('minecraftSelfBroadcast', {
         localEvent: true,
         instanceName: this.clientInstance.instanceName,
         instanceType: InstanceType.Minecraft,

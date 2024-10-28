@@ -21,15 +21,17 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     version: '1.17.1'
   }
 
-  private readonly commandsLimiter = new RateLimiter(1, 1000)
+  clientSession: ClientSession | undefined
+
   readonly bridgePrefix: string
 
-  clientSession: ClientSession | undefined
+  private readonly bridgeHandler: BridgeHandler
+  private readonly commandsLimiter = new RateLimiter(1, 1000)
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.Minecraft, config)
 
-    new BridgeHandler(app, this)
+    this.bridgeHandler = new BridgeHandler(app, this, this.logger, this.errorHandler)
     this.bridgePrefix = bridgePrefix
   }
 
@@ -54,10 +56,10 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     this.clientSession = new ClientSession(client)
 
     const handlers = [
-      new ErrorHandler(this),
-      new StateHandler(this),
-      new SelfbroadcastHandler(this),
-      new ChatManager(this)
+      new ErrorHandler(this.app, this, this.logger, this.errorHandler),
+      new StateHandler(this.app, this, this.logger, this.errorHandler),
+      new SelfbroadcastHandler(this.app, this, this.logger, this.errorHandler),
+      new ChatManager(this.app, this, this.logger, this.errorHandler)
     ]
 
     for (const handler of handlers) {

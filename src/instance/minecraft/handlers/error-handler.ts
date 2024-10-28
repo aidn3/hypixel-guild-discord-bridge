@@ -17,11 +17,9 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   private onError(error: Error & { code?: string }): void {
-    this.clientInstance.logger.error('Minecraft Bot Error: ', error)
+    this.logger.error('Minecraft Bot Error: ', error)
     if (error.code === 'EAI_AGAIN') {
-      this.clientInstance.logger.error(
-        'Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...'
-      )
+      this.logger.error('Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...')
       this.restart()
     } else if (error.message.includes('Too Many Requests')) {
       this.clientInstance.setAndBroadcastNewStatus(
@@ -45,7 +43,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         'Error: Encountered problem while working with proxy.'
       )
 
-      this.clientInstance.logger.error('Trying again in 30 seconds...')
+      this.logger.error('Trying again in 30 seconds...')
       this.restart()
     }
   }

@@ -1,7 +1,11 @@
 import assert from 'node:assert'
 
+import type { Logger } from 'log4js'
+
+import type Application from '../../../application.js'
 import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export const QuitOwnVolition = 'disconnect.quitting'
@@ -11,8 +15,13 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   private exactDelay
   public loggedIn
 
-  constructor(clientInstance: MinecraftInstance) {
-    super(clientInstance)
+  constructor(
+    application: Application,
+    clientInstance: MinecraftInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
+    super(application, clientInstance, logger, errorHandler)
 
     this.loginAttempts = 0
     this.exactDelay = 0
@@ -51,7 +60,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   private onLogin(): void {
     if (this.loggedIn) return
 
-    this.clientInstance.logger.info('Minecraft client ready, logged in')
+    this.logger.info('Minecraft client ready, logged in')
 
     this.loginAttempts = 0
     this.exactDelay = 0
@@ -62,13 +71,13 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     if (this.clientInstance.currentStatus() === Status.Failed) {
       const reason = `Status is ${this.clientInstance.currentStatus()}. No further trying to reconnect.`
 
-      this.clientInstance.logger.warn(reason)
+      this.logger.warn(reason)
       this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
       return
     } else if (reason === QuitOwnVolition) {
       const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
-      this.clientInstance.logger.debug(reason)
+      this.logger.debug(reason)
       this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
       return
     }
@@ -93,17 +102,17 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   private onKicked(reason: string): void {
-    this.clientInstance.logger.error(`Minecraft bot was kicked from the server for "${reason.toString()}"`)
+    this.logger.error(`Minecraft bot was kicked from the server for "${reason.toString()}"`)
 
     this.loginAttempts++
     if (reason.includes('You logged in from another location')) {
-      this.clientInstance.logger.fatal('Instance will shut off since someone logged in from another place')
+      this.logger.fatal('Instance will shut off since someone logged in from another place')
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Failed,
         "Someone logged in from another place.\nWon't try to re-login.\nRestart to reconnect."
       )
     } else if (reason.includes('banned')) {
-      this.clientInstance.logger.fatal('Instance will shut off since the account has been banned')
+      this.logger.fatal('Instance will shut off since the account has been banned')
       this.clientInstance.setAndBroadcastNewStatus(Status.Failed, "Account has been banned.\nWon't try to re-login.\n")
     } else {
       this.clientInstance.setAndBroadcastNewStatus(

@@ -13,7 +13,7 @@ export default class StateHandler extends EventHandler<DiscordInstance> {
 
   private onReady(): void {
     assert(this.clientInstance.client.user)
-    this.clientInstance.logger.info('Discord client ready, logged in as ' + this.clientInstance.client.user.tag)
+    this.logger.info('Discord client ready, logged in as ' + this.clientInstance.client.user.tag)
     this.clientInstance.setAndBroadcastNewStatus(Status.Connected, 'Discord logged in')
   }
 }

@@ -17,7 +17,7 @@ export default class ModerationInstance extends ClientInstance<unknown> {
 
     this.mojangApi = mojangApi
     this.punishments = new Punishments(application)
-    this.enforcer = new PunishmentsEnforcer(application, this)
+    this.enforcer = new PunishmentsEnforcer(application, this, this.logger, this.errorHandler)
   }
 
   async getMinecraftIdentifiers(username: string): Promise<string[]> {

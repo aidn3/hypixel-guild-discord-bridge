@@ -9,10 +9,11 @@ import UnexpectedErrorHandler from './unexpected-error-handler.js'
 export abstract class ClientInstance<K> {
   readonly instanceName: string
   readonly instanceType: InstanceType
-  readonly app: Application
-  readonly logger: Logger
-  readonly config: K
-  readonly errorHandler: UnexpectedErrorHandler
+
+  protected readonly app: Application
+  protected readonly logger: Logger
+  protected readonly config: K
+  protected readonly errorHandler: UnexpectedErrorHandler
 
   private status: Status
 

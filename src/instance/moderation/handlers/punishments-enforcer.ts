@@ -1,3 +1,5 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../../../application.js'
 import type { GuildPlayerEvent } from '../../../common/application-event.js'
 import {
@@ -8,19 +10,21 @@ import {
   PunishmentType
 } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type ModerationInstance from '../moderation-instance.js'
 import { durationToMinecraftDuration } from '../util.js'
 
 export default class PunishmentsEnforcer extends EventHandler<ModerationInstance> {
-  private readonly application: Application
-
-  constructor(application: Application, system: ModerationInstance) {
-    super(system)
-
-    this.application = application
+  constructor(
+    application: Application,
+    system: ModerationInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
+    super(application, system, logger, errorHandler)
 
     this.application.on('guildPlayer', (event) => {
-      void this.onGuildPlayer(event).catch(this.clientInstance.errorHandler.promiseCatch('handling guildPlayer event'))
+      void this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
   }
 

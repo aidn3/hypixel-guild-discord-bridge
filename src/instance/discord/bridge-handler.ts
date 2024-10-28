@@ -1,6 +1,9 @@
-import type { APIEmbed, TextBasedChannelFields, Webhook, TextChannel } from 'discord.js'
+import type { APIEmbed, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
+import type { Logger } from 'log4js'
 
+import type { DiscordConfig } from '../../application-config.js'
+import type Application from '../../application.js'
 import type {
   BaseInGameEvent,
   BroadcastEvent,
@@ -20,14 +23,29 @@ import {
   MinecraftChatEventType
 } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance> {
+  private readonly config
+
+  constructor(
+    application: Application,
+    clientInstance: DiscordInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    config: DiscordConfig
+  ) {
+    super(application, clientInstance, logger, errorHandler)
+
+    this.config = config
+  }
+
   async onInstance(event: InstanceStatusEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
 
-    for (const channelId of this.clientInstance.config.publicChannelIds) {
+    for (const channelId of this.config.publicChannelIds) {
       const channel = await this.clientInstance.client.channels.fetch(channelId)
       if (!channel?.isSendable()) continue
 
@@ -48,9 +66,9 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
   async onChat(event: ChatEvent): Promise<void> {
     let channels: string[]
     if (event.channelType === ChannelType.Public) {
-      channels = this.clientInstance.config.publicChannelIds
+      channels = this.config.publicChannelIds
     } else if (event.channelType === ChannelType.Officer) {
-      channels = this.clientInstance.config.officerChannelIds
+      channels = this.config.officerChannelIds
     } else {
       return
     }
@@ -137,10 +155,8 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
     removeLater: boolean
   }): Promise<void> {
     const channels: string[] = []
-    if (options.event.channels.includes(ChannelType.Public))
-      channels.push(...this.clientInstance.config.publicChannelIds)
-    if (options.event.channels.includes(ChannelType.Officer))
-      channels.push(...this.clientInstance.config.officerChannelIds)
+    if (options.event.channels.includes(ChannelType.Public)) channels.push(...this.config.publicChannelIds)
+    if (options.event.channels.includes(ChannelType.Officer)) channels.push(...this.config.officerChannelIds)
 
     const embed = {
       description: escapeMarkdown(options.event.message),
@@ -176,12 +192,12 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
       const responsePromise = channel.send({ embeds: [embed] })
 
       if (removeLater) {
-        const deleteAfter = this.clientInstance.config.deleteTempEventAfter
+        const deleteAfter = this.config.deleteTempEventAfter
         setTimeout(
           () => {
             void responsePromise
               .then(async (response) => await response.delete())
-              .catch(this.clientInstance.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
+              .catch(this.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
           },
           deleteAfter * 60 * 1000
         )
@@ -194,11 +210,11 @@ export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance>
 
     switch (event.channelType) {
       case ChannelType.Public: {
-        channels = this.clientInstance.config.publicChannelIds
+        channels = this.config.publicChannelIds
         break
       }
       case ChannelType.Officer: {
-        channels = this.clientInstance.config.officerChannelIds
+        channels = this.config.officerChannelIds
         break
       }
       case ChannelType.Private: {

@@ -18,7 +18,7 @@ export default {
         playerMessage.startsWith(context.clientInstance.bridgePrefix)
       )
         return
-      if (context.clientInstance.app.clusterHelper.isMinecraftBot(username)) return
+      if (context.application.clusterHelper.isMinecraftBot(username)) return
 
       const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)
       if (changed) {

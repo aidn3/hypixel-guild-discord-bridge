@@ -1,3 +1,5 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../application.js'
 
 import type {
@@ -11,6 +13,7 @@ import type {
   MinecraftChatEvent
 } from './application-event.js'
 import type { ClientInstance } from './client-instance.js'
+import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 /**
  * Abstract class with abstract callback functions that must be implemented
@@ -20,51 +23,53 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
   protected readonly application: Application
   protected readonly clientInstance: K
 
-  constructor(application: Application, clientInstance: K) {
+  protected readonly logger: Logger
+  protected readonly errorHandler: UnexpectedErrorHandler
+
+  protected constructor(
+    application: Application,
+    clientInstance: K,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
     this.application = application
     this.clientInstance = clientInstance
+    this.logger = logger
+    this.errorHandler = errorHandler
 
     this.application.on('command', (event) => {
-      void Promise.resolve(this.onCommand(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling command event')
-      )
+      void Promise.resolve(this.onCommand(event)).catch(this.errorHandler.promiseCatch('handling command event'))
     })
     this.application.on('commandFeedback', (event) => {
       void Promise.resolve(this.onCommandFeedback(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling command feedback')
+        this.errorHandler.promiseCatch('handling command feedback')
       )
     })
 
     this.application.on('chat', (event) => {
-      void Promise.resolve(this.onChat(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling chat event')
-      )
+      void Promise.resolve(this.onChat(event)).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
 
     this.application.on('guildPlayer', (event) => {
       void Promise.resolve(this.onGuildPlayer(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling guildPlayer event')
+        this.errorHandler.promiseCatch('handling guildPlayer event')
       )
     })
     this.application.on('guildGeneral', (event) => {
       void Promise.resolve(this.onGuildGeneral(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling guildGeneral event')
+        this.errorHandler.promiseCatch('handling guildGeneral event')
       )
     })
     this.application.on('minecraftChatEvent', (event) => {
       void Promise.resolve(this.onMinecraftChatEvent(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling minecraftChat event')
+        this.errorHandler.promiseCatch('handling minecraftChat event')
       )
     })
     this.application.on('instanceStatus', (event) => {
-      void Promise.resolve(this.onInstance(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling instance event')
-      )
+      void Promise.resolve(this.onInstance(event)).catch(this.errorHandler.promiseCatch('handling instance event'))
     })
     this.application.on('broadcast', (event) => {
-      void Promise.resolve(this.onBroadcast(event)).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling broadcast event')
-      )
+      void Promise.resolve(this.onBroadcast(event)).catch(this.errorHandler.promiseCatch('handling broadcast event'))
     })
   }
 

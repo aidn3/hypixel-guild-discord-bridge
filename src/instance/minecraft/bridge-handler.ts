@@ -1,3 +1,5 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../../application.js'
 import type {
   BaseInGameEvent,
@@ -19,22 +21,26 @@ import {
   MinecraftChatEventType
 } from '../../common/application-event.js'
 import BridgeHandler from '../../common/bridge-handler.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { antiSpamString } from '../../util/shared-util.js'
 
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInstance> {
-  constructor(application: Application, clientInstance: MinecraftInstance) {
-    super(application, clientInstance)
+  constructor(
+    application: Application,
+    clientInstance: MinecraftInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
+    super(application, clientInstance, logger, errorHandler)
 
     this.application.on('reconnectSignal', (event) => {
       this.onReconnectSignal(event)
     })
 
     this.application.on('minecraftSend', (event) => {
-      void this.onMinecraftSend(event).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling incoming minecraftSend event')
-      )
+      void this.onMinecraftSend(event).catch(this.errorHandler.promiseCatch('handling incoming minecraftSend event'))
     })
   }
 
@@ -52,11 +58,11 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
     if (event.channelType === ChannelType.Public) {
       void this.clientInstance
         .send(this.formatChatMessage('gc', event.username, replyUsername, event.message))
-        .catch(this.clientInstance.errorHandler.promiseCatch('sending public chat message'))
+        .catch(this.errorHandler.promiseCatch('sending public chat message'))
     } else if (event.channelType === ChannelType.Officer) {
       void this.clientInstance
         .send(this.formatChatMessage('oc', event.username, replyUsername, event.message))
-        .catch(this.clientInstance.errorHandler.promiseCatch('sending officer chat message'))
+        .catch(this.errorHandler.promiseCatch('sending officer chat message'))
     }
   }
 
@@ -104,13 +110,13 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
   private onReconnectSignal(event: ReconnectSignal) {
     // undefined is strictly checked due to api specification
     if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
-      this.clientInstance.logger.log('instance has received restart signal')
+      this.logger.log('instance has received restart signal')
       void this.clientInstance
         .send(`/gc @Instance restarting...`)
         .then(() => {
           this.clientInstance.connect()
         })
-        .catch(this.clientInstance.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
+        .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
     }
   }
 
@@ -135,13 +141,13 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
       case ChannelType.Public: {
         void this.clientInstance
           .send(`/gc ${finalResponse}`)
-          .catch(this.clientInstance.errorHandler.promiseCatch('handling public command response display'))
+          .catch(this.errorHandler.promiseCatch('handling public command response display'))
         break
       }
       case ChannelType.Officer: {
         void this.clientInstance
           .send(`/oc ${finalResponse}`)
-          .catch(this.clientInstance.errorHandler.promiseCatch('handling private command response display'))
+          .catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }
       case ChannelType.Private: {
@@ -149,7 +155,7 @@ export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInsta
           return
         void this.clientInstance
           .send(`/msg ${event.username} ${finalResponse}`)
-          .catch(this.clientInstance.errorHandler.promiseCatch('handling private command response display'))
+          .catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }
       default: {

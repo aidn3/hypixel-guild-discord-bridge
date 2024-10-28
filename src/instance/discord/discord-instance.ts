@@ -14,11 +14,14 @@ import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
 export default class DiscordInstance extends ClientInstance<DiscordConfig> {
+  readonly commandsManager: CommandManager
+  readonly client: Client
+
   private readonly stateHandler: StateHandler
   private readonly statusHandler: StatusHandler
   private readonly chatManager: ChatManager
-  readonly commandsManager: CommandManager
-  readonly client: Client
+
+  private readonly bridgeHandler: BridgeHandler
   private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
@@ -36,24 +39,22 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       partials: [Partials.Channel, Partials.Message]
     })
 
-    this.stateHandler = new StateHandler(this)
-    this.statusHandler = new StatusHandler(this)
-    this.chatManager = new ChatManager(this)
-    this.commandsManager = new CommandManager(this)
+    this.stateHandler = new StateHandler(this.app, this, this.logger, this.errorHandler)
+    this.statusHandler = new StatusHandler(this.app, this, this.logger, this.errorHandler)
+    this.chatManager = new ChatManager(this.app, this, this.logger, this.errorHandler, this.config)
+    this.commandsManager = new CommandManager(this.app, this, this.logger, this.errorHandler, this.config)
+
+    this.bridgeHandler = new BridgeHandler(this.app, this, this.logger, this.errorHandler, this.config)
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')
     }
-
     if (this.config.officerChannelIds.length === 0) {
       this.logger.info('no Discord officer channels found')
     }
-
     if (this.config.officerRoleIds.length === 0) {
       this.logger.info('no Discord officer roles found')
     }
-
-    new BridgeHandler(app, this)
   }
 
   async connect(): Promise<void> {

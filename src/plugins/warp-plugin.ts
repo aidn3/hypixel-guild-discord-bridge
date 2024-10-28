@@ -1,3 +1,5 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../application.js'
 import { InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
 import { Status } from '../common/client-instance.js'
@@ -28,10 +30,10 @@ export default {
           const clientInstance = localInstance as MinecraftInstance
           // "login" packet is also first spawn packet containing world metadata
           clientInstance.clientSession?.client.on('login', async () => {
-            if (!disableLimboTrapping) await limbo(clientInstance)
+            if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
           })
           clientInstance.clientSession?.client.on('respawn', async () => {
-            if (!disableLimboTrapping) await limbo(clientInstance)
+            if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
           })
         }
       }
@@ -39,8 +41,8 @@ export default {
   }
 } satisfies PluginInterface
 
-async function limbo(clientInstance: MinecraftInstance): Promise<void> {
-  clientInstance.logger.debug('Spawn event triggered. sending to limbo...')
+async function limbo(logger: Logger, clientInstance: MinecraftInstance): Promise<void> {
+  logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
   await clientInstance.send('§')
 }
 

@@ -2,17 +2,34 @@ import Axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import EmojisMap from 'emoji-name-map'
+import type { Logger } from 'log4js'
 
+import type { DiscordConfig } from '../../application-config.js'
+import type Application from '../../application.js'
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
+  private readonly config
+
+  constructor(
+    application: Application,
+    clientInstance: DiscordInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    config: DiscordConfig
+  ) {
+    super(application, clientInstance, logger, errorHandler)
+    this.config = config
+  }
+
   registerEvents(): void {
     this.clientInstance.client.on('messageCreate', (message) => {
       void this.onMessage(message).catch(
-        this.clientInstance.errorHandler.promiseCatch('handling incoming discord messageCreate event')
+        this.errorHandler.promiseCatch('handling incoming discord messageCreate event')
       )
     })
   }
@@ -21,9 +38,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (event.author.bot) return
 
     let channelType: ChannelType
-    if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
+    if (this.config.publicChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Public
-    } else if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
+    } else if (this.config.officerChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Officer
     } else if (event.guildId) {
       return
@@ -43,9 +60,9 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
 
-    const { filteredMessage, changed } = this.clientInstance.app.filterProfanity(truncatedContent)
+    const { filteredMessage, changed } = this.application.filterProfanity(truncatedContent)
     if (changed) {
-      this.clientInstance.app.emit('profanityWarning', {
+      this.application.emit('profanityWarning', {
         localEvent: true,
         instanceType: InstanceType.Discord,
         instanceName: this.clientInstance.instanceName,
@@ -60,7 +77,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       })
     }
 
-    this.clientInstance.app.emit('chat', {
+    this.application.emit('chat', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
       instanceType: InstanceType.Discord,
@@ -91,7 +108,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
-    const punishments = this.clientInstance.app.moderation.punishments
+    const punishments = this.application.moderation.punishments
     const userIdentifiers = [discordName, readableName, message.author.id]
     const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
@@ -198,7 +215,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
         return response.data.data.link
       })
       .catch((error: unknown) => {
-        this.clientInstance.logger.error(error)
+        this.logger.error(error)
       })
 
     return result || undefined
