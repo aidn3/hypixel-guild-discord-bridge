@@ -18,8 +18,14 @@ export class MojangApi {
   }
 
   async profileByUuid(uuid: string): Promise<MojangProfile> {
-    const result = await Axios .get(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`)
-      .then((response: AxiosResponse<MojangProfile, unknown>) => response.data)
+    for (const cachedUsername of this.cache.keys()) {
+      const cachedProfile: MojangProfile | undefined = this.cache.get(cachedUsername)
+      if (cachedProfile?.id === uuid) return cachedProfile
+    }
+
+    const result = await Axios.get(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`).then(
+      (response: AxiosResponse<MojangProfile, unknown>) => response.data
+    )
 
     this.cache.set(result.name.toLowerCase(), { ...result, fetchedAt: Date.now() })
     return result
