@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 
 import type {
-  BaseInteraction,
   ChatInputCommandInteraction,
   CommandInteraction,
   GuildMemberRoleManager,
+  Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
 import { Collection, GuildMember, REST, Routes } from 'discord.js'
@@ -101,7 +101,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private async interactionCreate(interaction: BaseInteraction): Promise<void> {
+  private async interactionCreate(interaction: Interaction): Promise<void> {
     if (!interaction.isCommand()) return
 
     this.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
