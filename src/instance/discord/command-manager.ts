@@ -70,12 +70,34 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   }
 
   registerEvents(): void {
+    let listenerStarted = false
+    this.clientInstance.client.on('ready', () => {
+      if (listenerStarted) return
+      listenerStarted = true
+      this.listenToRegisterCommands()
+    })
+
     this.clientInstance.client.on('interactionCreate', (interaction) => {
       void this.interactionCreate(interaction).catch(
         this.errorHandler.promiseCatch('handling incoming discord interactionCreate event')
       )
     })
     this.logger.debug('CommandManager is registered')
+  }
+
+  private listenToRegisterCommands(): void {
+    const timeoutId = setTimeout(() => {
+      this.registerDiscordCommand()
+    }, 5 * 1000)
+
+    this.application.on('minecraftSelfBroadcast', (): void => {
+      timeoutId.refresh()
+    })
+    this.application.on('selfBroadcast', (event): void => {
+      if (event.instanceType === InstanceType.Minecraft) {
+        timeoutId.refresh()
+      }
+    })
   }
 
   private addDefaultCommands(): void {
