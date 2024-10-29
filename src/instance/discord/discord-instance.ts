@@ -39,6 +39,10 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       partials: [Partials.Channel, Partials.Message]
     })
 
+    this.client.on('error', (error: Error) => {
+      this.logger.error(error)
+    })
+
     this.stateHandler = new StateHandler(this.app, this, this.logger, this.errorHandler)
     this.statusHandler = new StatusHandler(this.app, this, this.logger, this.errorHandler)
     this.chatManager = new ChatManager(this.app, this, this.logger, this.errorHandler, this.config)
