@@ -130,6 +130,7 @@ A shorter version can also be used: `!- rtca`
 | !level       | Get a player's skyblock level                              | Anyone     |
 | !networth    | Calculate the in-game networth of a player                 | Anyone     |
 | !startparty  | Create public !parties to be viewed by guild members       | Anyone     |
+| !pb          | Returns a players best dungeon run time `!pb aidn5 m7`     | Anyone     |
 | !rps         | Play rock paper scissors `!rps rock`                       | Anyone     |
 | !roulette    | Has a chance of muting a player                            | Anyone     |
 | !runs        | Return a player's floor completions `!runs m7`             | Anyone     |
