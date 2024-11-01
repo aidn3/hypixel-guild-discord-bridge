@@ -16,6 +16,7 @@ import Help from './triggers/help.js'
 import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
+import MagicalPower from './triggers/magicalpower.js'
 import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
 import PartyManager from './triggers/party.js'
@@ -49,6 +50,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Iq(),
       new Kuudra(),
       new Level(),
+      new MagicalPower(),
       new Networth(),
       new Override(),
       ...new PartyManager().resolveCommands(),
