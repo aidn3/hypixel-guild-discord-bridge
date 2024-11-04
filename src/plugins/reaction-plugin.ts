@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import { GuildPlayerEventType } from '../common/application-event.js'
-import type { PluginInterface, PluginContext } from '../common/plugins.js'
+import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 /* NOTICE
 THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS

@@ -1,7 +1,7 @@
 import type { Registry } from 'prom-client'
 import { Counter } from 'prom-client'
 
-import type { CommandEvent, BaseInGameEvent, ChatEvent } from '../../common/application-event.js'
+import type { BaseInGameEvent, ChatEvent, CommandEvent } from '../../common/application-event.js'
 
 // location and scope keys are preserved and not renamed like the rest for backwards compatibility
 export default class ApplicationMetrics {

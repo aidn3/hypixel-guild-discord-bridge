@@ -1,4 +1,4 @@
-import { GuildPlayerEventType, InstanceType, ChannelType, Color } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, InstanceType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {

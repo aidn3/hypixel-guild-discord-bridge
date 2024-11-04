@@ -1,4 +1,4 @@
-import type { PluginInterface, PluginContext } from '../common/plugins.js'
+import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 /* NOTICE
 THIS PLUGIN DOES NOTHING. ITS PURPOSE IS TO PROVIDE AN EXAMPLE OF SYNTAX.

@@ -30,6 +30,7 @@
       "error",
       {
         "newlines-between": "always",
+        "named": true,
         "alphabetize": {
           "order": "asc",
           "caseInsensitive": true

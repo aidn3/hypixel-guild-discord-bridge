@@ -5,7 +5,7 @@ import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } fr
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
-import { InstanceType, PunishmentType, Color } from '../../../common/application-event.js'
+import { Color, InstanceType, PunishmentType } from '../../../common/application-event.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { getDuration } from '../../../util/shared-util.js'

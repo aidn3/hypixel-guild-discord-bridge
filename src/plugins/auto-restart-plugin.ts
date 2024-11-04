@@ -1,6 +1,6 @@
 import { uptime } from 'node:process'
 
-import { ChannelType, InstanceType, Color } from '../common/application-event.js'
+import { ChannelType, Color, InstanceType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
 
 /* WARNING
