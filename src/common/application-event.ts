@@ -1,4 +1,12 @@
 import type { Status } from './client-instance.js'
+/*
+ All events must be immutable.
+ Events can be transferred over IPC or websockets. Immutability can ensure defined and repeatable behaviour.
+ All events are set with Readonly<?>
+
+ All communication with other instances must be done via events.
+ This is to ensure full synchronization with other processes over IPC/websockets.
+ */
 
 /**
  * All available High Level events
@@ -10,37 +18,37 @@ export interface ApplicationEvents {
    * @param event event object
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  all: (name: string, event: BaseEvent) => void
+  all: (name: string, event: Readonly<BaseEvent>) => void
 
   /**
    * User sending messages
    */
-  chat: (event: ChatEvent) => void
+  chat: (event: Readonly<ChatEvent>) => void
   /**
    * User join/leave/offline/online/mute/kick/etc
    */
-  guildPlayer: (event: GuildPlayerEvent) => void
+  guildPlayer: (event: Readonly<GuildPlayerEvent>) => void
   /**
    * When a guild emits an event that isn't specific for any player or user.
    * Events such as reach a general guild quest goal.
    */
-  guildGeneral: (event: GuildGeneralEvent) => void
+  guildGeneral: (event: Readonly<GuildGeneralEvent>) => void
   /**
    * In-game events such as interactions blocked/etc.
    *
    * @see MinecraftChatEventType
    */
-  minecraftChatEvent: (event: MinecraftChatEvent) => void
+  minecraftChatEvent: (event: Readonly<MinecraftChatEvent>) => void
   /**
    * User executing a command.
    * Each command execution can send only one command event.
    * If multiple response is needed, either format the text using blank lines/etc. or use {@linkcode CommandFeedbackEvent}
    */
-  command: (event: CommandEvent) => void
+  command: (event: Readonly<CommandEvent>) => void
   /**
    * When a plugin or a component wishes to broadcast a message to all instances.
    */
-  broadcast: (event: BroadcastEvent) => void
+  broadcast: (event: Readonly<BroadcastEvent>) => void
 
   /**
    * Command sending a followup responses.
@@ -48,64 +56,64 @@ export interface ApplicationEvents {
    * Useful when working with long term commands that takes time to finish.
    * It provides a way to give feedback on the command.
    */
-  commandFeedback: (event: CommandFeedbackEvent) => void
+  commandFeedback: (event: Readonly<CommandFeedbackEvent>) => void
 
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  instanceStatus: (event: InstanceStatusEvent) => void
+  instanceStatus: (event: Readonly<InstanceStatusEvent>) => void
   /**
    * Broadcast instance to inform other bridges in the cluster about its existence
    */
-  selfBroadcast: (event: InstanceSelfBroadcast) => void
+  selfBroadcast: (event: Readonly<InstanceSelfBroadcast>) => void
 
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
-  punishmentAdd: (event: PunishmentAddEvent) => void
+  punishmentAdd: (event: Readonly<PunishmentAddEvent>) => void
   /**
    *  Broadcast any punishments removed to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
-  punishmentForgive: (event: PunishmentForgiveEvent) => void
+  punishmentForgive: (event: Readonly<PunishmentForgiveEvent>) => void
 
   /**
    * Command used to restart an instance.
    * Note: This is currently only registered in Minecraft instances
    */
-  reconnectSignal: (event: ReconnectSignal) => void
+  reconnectSignal: (event: Readonly<ReconnectSignal>) => void
   /**
    * Command used to shut down the bridge.
    * It will take some time for the bridge to shut down.
    * Bridge will auto restart if a process monitor is used.
    */
-  shutdownSignal: (event: ShutdownSignal) => void
+  shutdownSignal: (event: Readonly<ShutdownSignal>) => void
 
   /**
    * Used to broadcast which in-game username/uuid belongs to which bot.
    * Useful to distinguish in-game between players and bots
    */
-  minecraftSelfBroadcast: (event: MinecraftSelfBroadcast) => void
+  minecraftSelfBroadcast: (event: Readonly<MinecraftSelfBroadcast>) => void
   /**
    * Minecraft instance raw chat
    */
-  minecraftChat: (event: MinecraftRawChatEvent) => void
+  minecraftChat: (event: Readonly<MinecraftRawChatEvent>) => void
   /**
    * Command used to send a chat message/command through a minecraft instance
    */
-  minecraftSend: (event: MinecraftSendChat) => void
+  minecraftSend: (event: Readonly<MinecraftSendChat>) => void
   /**
    * Display a useful message coming from the internal components
    */
-  statusMessage: (event: StatusMessageEvent) => void
+  statusMessage: (event: Readonly<StatusMessageEvent>) => void
 
   /**
    * Reports an occurrence of a profanity filtering that occurred.
    */
-  profanityWarning: (event: ProfanityWarningEvent) => void
+  profanityWarning: (event: Readonly<ProfanityWarningEvent>) => void
 }
 
 /**

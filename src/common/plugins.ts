@@ -10,7 +10,7 @@ import type { CommandInterface } from '../instance/discord/common/command-interf
 import type { ClientInstance } from './client-instance.js'
 
 export interface PluginInterface {
-  onRun: (context: PluginContext) => void
+  onRun: (context: Readonly<PluginContext>) => void
 }
 
 export interface PluginContext {
