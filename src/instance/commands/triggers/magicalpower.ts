@@ -7,7 +7,7 @@ export default class MagicalPower extends ChatCommandHandler {
     super({
       name: 'magicalpower',
       triggers: ['magicalpower', 'mp'],
-      description: "Returns a player's highest recorded skyblock magical power",
+      description: "Returns a player's highest recorded skyblock Magical Power",
       example: `mp %s`
     })
   }
@@ -21,6 +21,6 @@ export default class MagicalPower extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     const magicalPower = selectedProfile.highestMagicalPower
 
-    return `${givenUsername}'s highest magical power: ${magicalPower}`
+    return `${givenUsername}'s highest Magical Power: ${magicalPower}`
   }
 }
