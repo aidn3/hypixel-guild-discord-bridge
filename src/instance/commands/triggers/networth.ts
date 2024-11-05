@@ -6,12 +6,15 @@
 import Axios, { type AxiosResponse } from 'axios'
 import { getNetworth, getPrices } from 'skyhelper-networth'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
 
 export default class Networth extends ChatCommandHandler {
   private prices: object | undefined
+
+  private priceUpdater: NodeJS.Timeout | undefined
 
   constructor() {
     super({
@@ -20,14 +23,6 @@ export default class Networth extends ChatCommandHandler {
       description: "Returns a calculation of a player's networth",
       example: `nw %s`
     })
-
-    void this.updatePrices()
-    setInterval(
-      () => {
-        void this.updatePrices()
-      },
-      1000 * 60 * 5
-    ) // 5 minutes
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
@@ -51,6 +46,8 @@ export default class Networth extends ChatCommandHandler {
       return `${context.username}, error fetching museum data?`
     }
 
+    await this.tryUpdatePrices(context.errorHandler)
+
     const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
       v2Endpoint: true,
       prices: this.prices,
@@ -62,6 +59,19 @@ export default class Networth extends ChatCommandHandler {
     if (networth === undefined) return `${context.username}, cannot calculate the networth?`
 
     return `${givenUsername}'s networth: ${this.localizedNetworth(networth)}`
+  }
+
+  private async tryUpdatePrices(errorHandler: UnexpectedErrorHandler): Promise<void> {
+    if (!this.priceUpdater) {
+      this.priceUpdater = setInterval(
+        () => {
+          void this.updatePrices().catch(errorHandler.promiseCatch('periodical price updating'))
+        },
+        1000 * 60 * 5
+      ) // 5 minutes
+    }
+
+    if (!this.prices) await this.updatePrices()
   }
 
   private async updatePrices(): Promise<void> {

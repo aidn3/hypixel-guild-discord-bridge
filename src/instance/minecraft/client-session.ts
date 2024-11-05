@@ -1,6 +1,7 @@
 import type { Client } from 'minecraft-protocol'
 import PrismarineChat from 'prismarine-chat'
 import type { NBT } from 'prismarine-nbt'
+import type { RegistryPc } from 'prismarine-registry'
 import PrismarineRegistry from 'prismarine-registry'
 
 export default class ClientSession {
@@ -14,7 +15,7 @@ export default class ClientSession {
   constructor(client: Client) {
     this.client = client
 
-    this.registry = PrismarineRegistry(client.version)
+    this.registry = PrismarineRegistry(client.version) as RegistryPc
     this.prismChat = PrismarineChat(this.registry)
 
     this.listenForRegistry(client)

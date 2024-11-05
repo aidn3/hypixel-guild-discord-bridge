@@ -1,9 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { escapeDiscord } from '../../../util/shared-util.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, InviteAcceptChat } from '../common/chat-triggers.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 
 export default {
   getCommandBuilder: () =>
@@ -22,16 +21,10 @@ export default {
     const username: string = context.interaction.options.getString('username', true)
     const command = `/g invite ${username}`
 
-    const instance: string | null = context.interaction.options.getString('instance')
-    const result = await checkChatTriggers(
-      context.application,
-      InviteAcceptChat,
-      instance ?? undefined,
-      command,
-      username
-    )
-    const formatted = formatChatTriggerResponse(result, `Invite ${escapeDiscord(username)}`)
+    const instance: string | undefined = context.interaction.options.getString('instance') ?? undefined
+    const result = await checkChatTriggers(context.application, InviteAcceptChat, instance, command, username)
+    const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
