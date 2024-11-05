@@ -10,7 +10,7 @@ export abstract class ClientInstance<K> {
   public readonly instanceName: string
   public readonly instanceType: InstanceType
 
-  protected readonly app: Application
+  protected readonly application: Application
   protected readonly logger: Logger
   protected readonly config: K
   protected readonly errorHandler: UnexpectedErrorHandler
@@ -18,7 +18,7 @@ export abstract class ClientInstance<K> {
   private status: Status
 
   protected constructor(app: Application, instanceName: string, instanceType: InstanceType, config: K) {
-    this.app = app
+    this.application = app
     this.instanceName = instanceName
     this.instanceType = instanceType
     // eslint-disable-next-line import/no-named-as-default-member
@@ -39,7 +39,7 @@ export abstract class ClientInstance<K> {
   public setAndBroadcastNewStatus(status: Status, reason: string): void {
     if (this.status === status) return
     this.status = status
-    this.app.emit('instanceStatus', {
+    this.application.emit('instanceStatus', {
       localEvent: true,
       instanceName: this.instanceName,
       instanceType: this.instanceType,

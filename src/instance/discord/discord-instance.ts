@@ -43,12 +43,12 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       this.logger.error(error)
     })
 
-    this.stateHandler = new StateHandler(this.app, this, this.logger, this.errorHandler)
-    this.statusHandler = new StatusHandler(this.app, this, this.logger, this.errorHandler)
-    this.chatManager = new ChatManager(this.app, this, this.logger, this.errorHandler, this.config)
-    this.commandsManager = new CommandManager(this.app, this, this.logger, this.errorHandler, this.config)
+    this.stateHandler = new StateHandler(this.application, this, this.logger, this.errorHandler)
+    this.statusHandler = new StatusHandler(this.application, this, this.logger, this.errorHandler)
+    this.chatManager = new ChatManager(this.application, this, this.logger, this.errorHandler, this.config)
+    this.commandsManager = new CommandManager(this.application, this, this.logger, this.errorHandler, this.config)
 
-    this.bridgeHandler = new BridgeHandler(this.app, this, this.logger, this.errorHandler, this.config)
+    this.bridgeHandler = new BridgeHandler(this.application, this, this.logger, this.errorHandler, this.config)
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')

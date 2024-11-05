@@ -73,7 +73,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
     this.checkCommandsIntegrity()
 
-    this.app.on('chat', (event) => {
+    this.application.on('chat', (event) => {
       void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
@@ -116,7 +116,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
 
     try {
       const commandResponse = await command.handler({
-        app: this.app,
+        app: this.application,
 
         logger: this.logger,
         errorHandler: this.errorHandler,
@@ -146,7 +146,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
-    this.app.emit('command', {
+    this.application.emit('command', {
       localEvent: true,
       instanceName: event.instanceName,
       instanceType: event.instanceType,
@@ -161,7 +161,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   }
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
-    this.app.emit('commandFeedback', {
+    this.application.emit('commandFeedback', {
       localEvent: true,
       instanceName: event.instanceName,
       instanceType: event.instanceType,

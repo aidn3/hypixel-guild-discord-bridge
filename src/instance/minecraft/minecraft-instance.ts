@@ -44,7 +44,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       auth: 'microsoft',
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
-        this.app.emit('statusMessage', {
+        this.application.emit('statusMessage', {
           localEvent: true,
           instanceName: this.instanceName,
           instanceType: InstanceType.Minecraft,
@@ -56,10 +56,10 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     this.clientSession = new ClientSession(client)
 
     const handlers = [
-      new ErrorHandler(this.app, this, this.logger, this.errorHandler),
-      new StateHandler(this.app, this, this.logger, this.errorHandler),
-      new SelfbroadcastHandler(this.app, this, this.logger, this.errorHandler),
-      new ChatManager(this.app, this, this.logger, this.errorHandler)
+      new ErrorHandler(this.application, this, this.logger, this.errorHandler),
+      new StateHandler(this.application, this, this.logger, this.errorHandler),
+      new SelfbroadcastHandler(this.application, this, this.logger, this.errorHandler),
+      new ChatManager(this.application, this, this.logger, this.errorHandler)
     ]
 
     for (const handler of handlers) {
