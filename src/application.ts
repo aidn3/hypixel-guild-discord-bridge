@@ -1,3 +1,6 @@
+/* eslint @typescript-eslint/explicit-member-accessibility: "error" */
+// @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
+
 import type Events from 'node:events'
 import path from 'node:path'
 import * as process from 'node:process'
@@ -27,6 +30,13 @@ import { MojangApi } from './util/mojang.js'
 import { shutdownApplication, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
+  public readonly clusterHelper: ClusterHelper
+  public readonly moderation: ModerationInstance
+  public readonly profanityFilter: BadWords.BadWords
+
+  public readonly hypixelApi: HypixelClient
+  public readonly mojangApi: MojangApi
+
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
 
@@ -35,21 +45,14 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   private readonly plugins: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
 
-  readonly commandsInstance: CommandsInstance | undefined
-  readonly discordInstance: DiscordInstance | undefined
+  private readonly commandsInstance: CommandsInstance | undefined
+  private readonly discordInstance: DiscordInstance | undefined
   private readonly loggerInstances: LoggerInstance[] = []
   private readonly metricsInstance: MetricsInstance | undefined
   private readonly minecraftInstances: MinecraftInstance[] = []
   private readonly socketInstance: SocketInstance | undefined
 
-  readonly clusterHelper: ClusterHelper
-  readonly moderation: ModerationInstance
-  readonly profanityFilter: BadWords.BadWords
-
-  readonly hypixelApi: HypixelClient
-  readonly mojangApi: MojangApi
-
-  constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
+  public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
@@ -147,28 +150,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     return { filteredMessage: filtered, changed: message !== filtered }
   }
 
-  private loadPlugins(
-    rootDirectory: string
-  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
-    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
-
-    for (const pluginPath of this.config.plugins) {
-      let newPath: string = path.resolve(rootDirectory, pluginPath)
-      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
-        newPath = `file:///${newPath}`
-      }
-
-      result.push({
-        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
-        originalPath: pluginPath,
-        name: path.basename(pluginPath)
-      })
-    }
-
-    return result
-  }
-
-  async sendConnectSignal(): Promise<void> {
+  public async sendConnectSignal(): Promise<void> {
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
       this.logger.debug(`Loading Plugin ${p.originalPath}`)
@@ -218,6 +200,27 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       punishment.localEvent = true
       this.emit('punishmentAdd', punishment)
     }
+  }
+
+  private loadPlugins(
+    rootDirectory: string
+  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
+    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+
+    for (const pluginPath of this.config.plugins) {
+      let newPath: string = path.resolve(rootDirectory, pluginPath)
+      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
+        newPath = `file:///${newPath}`
+      }
+
+      result.push({
+        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
+        originalPath: pluginPath,
+        name: path.basename(pluginPath)
+      })
+    }
+
+    return result
   }
 
   private getAllInstances(): ClientInstance<unknown>[] {
