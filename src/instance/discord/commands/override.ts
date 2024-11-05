@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
@@ -12,7 +12,7 @@ export default {
         option.setName('command').setDescription('command to execute. e.g. "/guild party"').setRequired(true)
       ) as SlashCommandBuilder,
   allowInstance: true,
-  permission: Permission.ADMIN,
+  permission: Permission.Admin,
 
   handler: async function (context) {
     await context.interaction.deferReply()
@@ -28,4 +28,4 @@ export default {
 
     await context.interaction.editReply(`Command executed: ${command}`)
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

@@ -1,7 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
+import { checkChatTriggers, formatChatTriggerResponse, InviteAcceptChat } from '../common/chat-triggers.js'
 
 export default {
   getCommandBuilder: () =>
@@ -13,20 +14,17 @@ export default {
       ) as SlashCommandBuilder,
   allowInstance: true,
 
-  permission: Permission.HELPER,
+  permission: Permission.Helper,
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
     const command = `/g invite ${username}`
 
-    const instance: string | null = context.interaction.options.getString('instance')
-    if (instance == undefined) {
-      context.application.clusterHelper.sendCommandToAllMinecraft(command)
-    } else {
-      context.application.clusterHelper.sendCommandToMinecraft(instance, command)
-    }
+    const instance: string | undefined = context.interaction.options.getString('instance') ?? undefined
+    const result = await checkChatTriggers(context.application, InviteAcceptChat, instance, command, username)
+    const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(username)}`)
 
-    await context.interaction.editReply(`Command sent to invite ${username}!`)
+    await context.interaction.editReply({ embeds: [formatted] })
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

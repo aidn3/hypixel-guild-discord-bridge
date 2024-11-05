@@ -1,12 +1,12 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('about').setDescription('Display basic info about the client.'),
-  permission: Permission.ANYONE,
+  permission: Permission.Anyone,
   allowInstance: false,
 
   handler: async function (context) {
@@ -18,4 +18,4 @@ export default {
         'The features of the bot can be viewed with /help.'
     )
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

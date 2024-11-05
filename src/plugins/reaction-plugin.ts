@@ -1,7 +1,11 @@
 import assert from 'node:assert'
 
-import { EventType } from '../common/application-event.js'
-import type { PluginInterface, PluginContext } from '../common/plugins.js'
+import { GuildPlayerEventType } from '../common/application-event.js'
+import type { PluginContext, PluginInterface } from '../common/plugins.js'
+
+/* NOTICE
+THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
+*/
 
 const JoinMessages = [
   'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',
@@ -34,22 +38,22 @@ const KickMessages = [
 
 export default {
   onRun(context: PluginContext): void {
-    context.application.on('event', (event) => {
-      if (event.eventType === EventType.JOIN) {
+    context.application.on('guildPlayer', (event) => {
+      if (event.type === GuildPlayerEventType.Join) {
         assert(event.username)
         let message = JoinMessages[Math.floor(Math.random() * JoinMessages.length)]
         message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
 
-      if (event.eventType === EventType.LEAVE) {
+      if (event.type === GuildPlayerEventType.Leave) {
         assert(event.username)
         let message = LeaveMessages[Math.floor(Math.random() * LeaveMessages.length)]
         message = message.replaceAll('%s', event.username)
         context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
       }
 
-      if (event.eventType === EventType.KICK) {
+      if (event.type === GuildPlayerEventType.Kick) {
         assert(event.username)
         let message = KickMessages[Math.floor(Math.random() * KickMessages.length)]
         message = message.replaceAll('%s', event.username)

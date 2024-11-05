@@ -1,14 +1,21 @@
-import type { SkyblockMember } from 'hypixel-api-reborn'
+import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfile, getUuidIfExists } from '../common/util.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import {
+  getDungeonLevelWithOverflow,
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedDungeons,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 export default class Catacomb extends ChatCommandHandler {
   constructor() {
     super({
       name: 'Catacombs',
-      triggers: ['catacomb', 'cata'],
+      triggers: ['catacomb', 'catacombs', 'cata'],
       description: "Returns a player's catacombs level",
       example: `cata %s`
     })
@@ -18,64 +25,47 @@ export default class Catacomb extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `No such username! (given: ${givenUsername})`
+    if (uuid == undefined) return usernameNotExists(givenUsername)
+
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+
+    const dungeons = selectedProfile.dungeons
+    if (!dungeons) {
+      return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const parsedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
-    const catacombs = parsedProfile.dungeons.types.catacombs
-    const skillLevel = this.getLevelWithOverflow(catacombs.xp, catacombs.level, catacombs.progress)
+    const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
 
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${this.formatClass(parsedProfile)}.`
+    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${this.formatClass(dungeons)}.`
   }
 
-  private getLevelWithOverflow(totalExperience: number, level: number, progress: number): number {
-    const PER_LEVEL = 200_000_000
-    const MAX_50_XP = 569_809_640
-
-    if (totalExperience > MAX_50_XP) {
-      // account for overflow
-      const remainingExperience = totalExperience - MAX_50_XP
-      const extraLevels = Math.floor(remainingExperience / PER_LEVEL)
-      const fractionLevel = (remainingExperience % PER_LEVEL) / PER_LEVEL
-
-      return 50 + extraLevels + fractionLevel
-    } else {
-      return Number(level) + progress / 100
-    }
-  }
-
-  private formatClass(member: SkyblockMember): string {
-    const classes = member.dungeons.classes
+  private formatClass(dungeon: SkyblockV2Dungeons): string {
+    const classes = dungeon.player_classes
 
     let xp = 0
-    let level = 0
     let name = '(None)'
 
-    if (classes.healer.xp > xp) {
-      xp = classes.healer.xp
-      level = this.getLevelWithOverflow(classes.healer.xp, classes.healer.level, classes.healer.progress)
+    if (classes?.healer?.experience && classes.healer.experience > xp) {
+      xp = classes.healer.experience
       name = 'Healer'
     }
-    if (classes.mage.xp > xp) {
-      xp = classes.mage.xp
-      level = this.getLevelWithOverflow(classes.mage.xp, classes.mage.level, classes.mage.progress)
+    if (classes?.mage?.experience && classes.mage.experience > xp) {
+      xp = classes.mage.experience
       name = 'Mage'
     }
-    if (classes.berserk.xp > xp) {
-      xp = classes.berserk.xp
-      level = this.getLevelWithOverflow(classes.berserk.xp, classes.berserk.level, classes.berserk.progress)
+    if (classes?.berserk?.experience && classes.berserk.experience > xp) {
+      xp = classes.berserk.experience
       name = 'Berserk'
     }
-    if (classes.archer.xp > xp) {
-      xp = classes.archer.xp
-      level = this.getLevelWithOverflow(classes.archer.xp, classes.archer.level, classes.archer.progress)
+    if (classes?.archer?.experience && classes.archer.experience > xp) {
+      xp = classes.archer.experience
       name = 'Archer'
     }
-    if (classes.tank.xp > xp) {
-      level = this.getLevelWithOverflow(classes.tank.xp, classes.tank.level, classes.tank.progress)
+    if (classes?.tank?.experience && classes.tank.experience > xp) {
+      xp = classes.tank.experience
       name = 'Tank'
     }
-    return `${name} ${level.toFixed(2)}`
+    return `${name} ${getDungeonLevelWithOverflow(xp).toFixed(2)}`
   }
 }

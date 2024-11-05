@@ -2,9 +2,9 @@ import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { ClientInstance, Status } from '../../common/client-instance.js'
+import type { ChatCommandHandler } from '../../common/commands.js'
 
-import type { ChatCommandHandler } from './common/command-interface.js'
 import EightBallCommand from './triggers/8ball.js'
 import Bits from './triggers/bits.js'
 import Calculate from './triggers/calculate.js'
@@ -18,12 +18,16 @@ import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
+import PartyManager from './triggers/party.js'
+import PersonalBest from './triggers/personal-best.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
+import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
+import Soopy from './triggers/soopy.js'
 import Toggle from './triggers/toggle.js'
 import Weight from './triggers/weight.js'
 
@@ -31,12 +35,13 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
   public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, InstanceType.COMMANDS, config)
+    super(app, instanceName, InstanceType.Commands, config)
 
     this.commands = [
       new EightBallCommand(),
       new Calculate(),
       new Catacomb(),
+      new RunsToClassAverage(),
       new DarkAuction(),
       new Explain(),
       new Guild(),
@@ -46,12 +51,15 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Level(),
       new Networth(),
       new Override(),
+      ...new PartyManager().resolveCommands(),
+      new PersonalBest(),
       new RockPaperScissors(),
       new Roulette(),
       new Runs(),
       new Secrets(),
       new Skills(),
       new Slayer(),
+      new Soopy(),
       new Toggle(),
       new Weight(),
       new Bits()
@@ -65,8 +73,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
     this.checkCommandsIntegrity()
 
-    this.app.on('chat', (event) => {
-      void this.handle(event)
+    this.application.on('chat', (event) => {
+      void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
@@ -86,14 +94,15 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
   }
 
-  connect(): Promise<void> | void {
+  connect(): void {
     this.checkCommandsIntegrity()
+    this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
   }
 
   async handle(event: ChatEvent): Promise<void> {
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
-    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.MINECRAFT
+    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.Minecraft
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
@@ -101,37 +110,67 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     if (command == undefined) return
 
     // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.OFFICER) {
+    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.Officer) {
       return
     }
 
-    const commandResponse = await command.handler({
-      app: this.app,
+    try {
+      const commandResponse = await command.handler({
+        app: this.application,
 
-      logger: this.logger,
-      allCommands: this.commands,
-      commandPrefix: this.config.commandPrefix,
-      adminUsername: this.config.adminUsername,
+        logger: this.logger,
+        errorHandler: this.errorHandler,
 
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
-      channelType: event.channelType,
+        allCommands: this.commands,
+        commandPrefix: this.config.commandPrefix,
+        adminUsername: this.config.adminUsername,
 
-      username: event.username,
-      isAdmin: isAdmin,
-      args: commandsArguments
-    })
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+        channelType: event.channelType,
 
-    this.app.emit('command', {
+        username: event.username,
+        isAdmin: isAdmin,
+        args: commandsArguments,
+
+        sendFeedback: (feedbackResponse) => {
+          this.feedback(event, command.triggers[0], feedbackResponse)
+        }
+      })
+
+      this.reply(event, command.triggers[0], commandResponse)
+    } catch (error) {
+      this.logger.error('Error while handling command', error)
+      this.reply(event, command.triggers[0], `${event.username}, error trying to execute ${command.triggers[0]}.`)
+    }
+  }
+
+  private reply(event: ChatEvent, commandName: string, response: string): void {
+    this.application.emit('command', {
       localEvent: true,
       instanceName: event.instanceName,
       instanceType: event.instanceType,
       channelType: event.channelType,
-      discordChannelId: event.channelId,
+      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
       fullCommand: event.message,
-      commandName: command.triggers[0],
-      commandResponse: commandResponse,
+      commandName: commandName,
+      commandResponse: response,
+      alreadyReplied: false
+    })
+  }
+
+  private feedback(event: ChatEvent, commandName: string, response: string): void {
+    this.application.emit('commandFeedback', {
+      localEvent: true,
+      instanceName: event.instanceName,
+      instanceType: event.instanceType,
+      channelType: event.channelType,
+      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
+      username: event.username,
+      fullCommand: event.message,
+      commandName: commandName,
+      commandResponse: response,
       alreadyReplied: false
     })
   }

@@ -1,6 +1,12 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedDungeons,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 export default class Runs extends ChatCommandHandler {
   constructor() {
@@ -26,22 +32,29 @@ export default class Runs extends ChatCommandHandler {
     }
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `${context.username}, Invalid username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const parsedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    const dungeon = parsedProfile.dungeons.dungeon_types
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+
+    const dungeon = selectedProfile.dungeons?.dungeon_types
+    if (!dungeon) {
+      return playerNeverPlayedDungeons(givenUsername)
+    }
 
     const runs = masterMode
       ? this.getTotalRuns(dungeon.master_catacombs.tier_completions)
       : this.getTotalRuns(dungeon.catacombs.tier_completions)
+    if (runs.length === 0) return `${givenUsername}: ${givenType} - never done runs in this type before?`
+
     return `${givenUsername}: ${givenType} - ${runs.join('/')}`
   }
 
-  private getTotalRuns(runs: Record<string, number>): number[] {
+  private getTotalRuns(runs: Record<string, number | undefined> | undefined): number[] {
+    if (runs === undefined) return []
     return Object.entries(runs)
       .filter(([key]) => key !== 'total')
       .map(([, value]) => value)
+      .filter((value) => value !== undefined)
   }
 }

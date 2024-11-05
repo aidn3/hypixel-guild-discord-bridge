@@ -1,17 +1,36 @@
-import axios, { type AxiosResponse } from 'axios'
+import Axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
-import emojisMap from 'emoji-name-map'
+import { escapeMarkdown } from 'discord.js'
+import EmojisMap from 'emoji-name-map'
+import type { Logger } from 'log4js'
 
+import type { DiscordConfig } from '../../application-config.js'
+import type Application from '../../application.js'
 import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
-import { escapeDiscord } from '../../util/shared-util.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance> {
+  private readonly config
+
+  constructor(
+    application: Application,
+    clientInstance: DiscordInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    config: DiscordConfig
+  ) {
+    super(application, clientInstance, logger, errorHandler)
+    this.config = config
+  }
+
   registerEvents(): void {
-    this.clientInstance.client.on('messageCreate', async (message) => {
-      await this.onMessage(message)
+    this.clientInstance.client.on('messageCreate', (message) => {
+      void this.onMessage(message).catch(
+        this.errorHandler.promiseCatch('handling incoming discord messageCreate event')
+      )
     })
   }
 
@@ -19,19 +38,19 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (event.author.bot) return
 
     let channelType: ChannelType
-    if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
-      channelType = ChannelType.PUBLIC
-    } else if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
-      channelType = ChannelType.OFFICER
+    if (this.config.publicChannelIds.includes(event.channel.id)) {
+      channelType = ChannelType.Public
+    } else if (this.config.officerChannelIds.includes(event.channel.id)) {
+      channelType = ChannelType.Officer
     } else if (event.guildId) {
       return
     } else {
-      channelType = ChannelType.PRIVATE
+      channelType = ChannelType.Private
     }
 
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = this.getReadableName(discordName, event.author.id)
-    if (channelType !== ChannelType.OFFICER && (await this.hasBeenPunished(event, discordName, readableName))) return
+    if (channelType !== ChannelType.Officer && (await this.hasBeenPunished(event, discordName, readableName))) return
 
     const replyUsername = await this.getReplyUsername(event)
     const readableReplyUsername =
@@ -40,12 +59,28 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const content = await this.cleanMessage(event)
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
-    const filteredMessage = await this.proceedFiltering(event, truncatedContent)
 
-    this.clientInstance.app.emit('chat', {
+    const { filteredMessage, changed } = this.application.filterProfanity(truncatedContent)
+    if (changed) {
+      this.application.emit('profanityWarning', {
+        localEvent: true,
+        instanceType: InstanceType.Discord,
+        instanceName: this.clientInstance.instanceName,
+        channelType: channelType,
+
+        username: discordName,
+        originalMessage: truncatedContent,
+        filteredMessage: filteredMessage
+      })
+      await event.reply({
+        content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
+      })
+    }
+
+    this.application.emit('chat', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.DISCORD,
+      instanceType: InstanceType.Discord,
       channelType: channelType,
       channelId: event.channel.id,
       userId: Number.parseInt(event.author.id),
@@ -55,7 +90,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     })
   }
 
-  async truncateText(message: Message, content: string): Promise<string> {
+  private async truncateText(message: Message, content: string): Promise<string> {
     /*
       minecraft has a limit of 256 chars per message
       256 - 232 = 24
@@ -73,10 +108,10 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     return content.slice(0, length) + '...'
   }
 
-  async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
-    const punishedUsers = this.clientInstance.app.punishedUsers
+  private async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
+    const punishments = this.application.moderation.punishments
     const userIdentifiers = [discordName, readableName, message.author.id]
-    const mutedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.MUTE)
+    const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
     if (mutedTill != undefined) {
       await message.reply({
@@ -88,7 +123,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       return true
     }
 
-    const bannedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.BAN)
+    const bannedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Ban)
     if (bannedTill != undefined) {
       await message.reply({
         content:
@@ -100,29 +135,6 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     return false
-  }
-
-  async proceedFiltering(message: Message, content: string): Promise<string> {
-    let filteredMessage: string
-    try {
-      filteredMessage = this.clientInstance.app.profanityFilter.clean(content)
-    } catch {
-      /*
-        profanity package has bug.
-        will throw error if given one special character.
-        example: clean("?")
-        message is clear if thrown
-      */
-      filteredMessage = content
-    }
-
-    if (content !== filteredMessage) {
-      await message.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
-      })
-    }
-
-    return filteredMessage
   }
 
   private async getReplyUsername(messageEvent: Message): Promise<string | undefined> {
@@ -157,7 +169,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
   }
 
   private cleanStandardEmoji(message: string): string {
-    for (const [emojiReadable, emojiUnicode] of Object.entries(emojisMap.emoji)) {
+    for (const [emojiReadable, emojiUnicode] of Object.entries(EmojisMap.emoji)) {
       message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
     }
 
@@ -191,20 +203,20 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const encoded = 'Q-2-x-p-Z-W-5-0-L-U-l-E-I-D-Y-0-O-W-Y-y-Z-m-I-0-O-G-U-1-O-T-c-2-N-w-=-='
     const decoded = Buffer.from(encoded.replaceAll('-', ''), 'base64').toString('utf8')
 
-    const result = await axios
-      .post(
-        'https://api.imgur.com/3/image',
-        {
-          image: link,
-          type: 'url'
-        },
-        { headers: { Authorization: decoded } }
-      )
+    const result = await Axios.post(
+      'https://api.imgur.com/3/image',
+      {
+        image: link,
+        type: 'url'
+      },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      { headers: { Authorization: decoded } }
+    )
       .then((response: AxiosResponse<ImgurResponse, unknown>) => {
         return response.data.data.link
       })
       .catch((error: unknown) => {
-        this.clientInstance.logger.error(error)
+        this.logger.error(error)
       })
 
     return result || undefined

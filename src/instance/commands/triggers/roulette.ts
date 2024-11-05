@@ -1,6 +1,6 @@
 import { InstanceType, PunishmentType } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
 const LossMessages = [
   '%s you got blasted!',
@@ -33,7 +33,7 @@ export default class Roulette extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.instanceType !== InstanceType.MINECRAFT) {
+    if (context.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
     }
 
@@ -60,9 +60,9 @@ export default class Roulette extends ChatCommandHandler {
       this.countSinceLastLose = 0
 
       context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
-      context.app.punishedUsers.punish({
+      context.app.moderation.punishments.add({
         localEvent: true,
-        instanceType: InstanceType.MINECRAFT,
+        instanceType: InstanceType.Minecraft,
         instanceName: context.instanceName,
 
         userName: context.username,
@@ -70,7 +70,7 @@ export default class Roulette extends ChatCommandHandler {
         userUuid: undefined,
         userDiscordId: undefined,
 
-        type: PunishmentType.MUTE,
+        type: PunishmentType.Mute,
         till: Date.now() + 900_000,
         reason: 'Lost in RussianRoulette game'
       })

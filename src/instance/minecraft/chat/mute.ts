@@ -1,4 +1,10 @@
-import { EventType, InstanceType, ChannelType, PunishmentType, Severity } from '../../../common/application-event.js'
+import {
+  ChannelType,
+  Color,
+  GuildPlayerEventType,
+  InstanceType,
+  PunishmentType
+} from '../../../common/application-event.js'
 import { sufficeToTime } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
@@ -17,31 +23,33 @@ export default {
       const mojangProfile = await context.application.mojangApi.profileByUsername(target).catch(() => undefined)
 
       if (responsible !== context.clientInstance.username()) {
-        context.application.punishedUsers.punish({
+        context.application.moderation.punishments.add({
           localEvent: true,
-          instanceType: InstanceType.MINECRAFT,
+          instanceType: InstanceType.Minecraft,
           instanceName: context.instanceName,
 
           userName: mojangProfile?.name ?? target,
           userUuid: mojangProfile?.id,
           userDiscordId: undefined,
 
-          type: PunishmentType.MUTE,
+          type: PunishmentType.Mute,
           till: Date.now() + muteTime * sufficeToTime(muteSuffice) * 1000,
           reason: context.message
         })
       }
 
-      context.application.emit('event', {
+      context.application.emit('guildPlayer', {
         localEvent: true,
+
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.OFFICER,
-        eventType: EventType.MUTE,
+        instanceType: InstanceType.Minecraft,
+
+        color: Color.Bad,
+        channels: [ChannelType.Officer],
+
+        type: GuildPlayerEventType.Mute,
         username: responsible,
-        severity: Severity.BAD,
-        message: context.message,
-        removeLater: false
+        message: context.message
       })
     }
   }

@@ -1,5 +1,9 @@
-import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color, InstanceType } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugins.js'
+
+/* NOTICE
+THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
+*/
 
 export default {
   onRun(context: PluginContext): void {
@@ -13,16 +17,17 @@ export default {
       lastSkyblockDay = currentSkyblockDay
 
       if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
-        context.application.emit('event', {
+        context.application.emit('broadcast', {
           localEvent: true,
-          instanceType: InstanceType.MAIN,
-          instanceName: InstanceType.MAIN,
-          eventType: EventType.AUTOMATED,
-          severity: Severity.GOOD,
-          channelType: ChannelType.PUBLIC,
+
+          instanceType: InstanceType.Plugin,
+          instanceName: context.pluginName,
+
+          color: Color.Good,
+          channels: [ChannelType.Public],
+
           username: undefined,
-          message: `Reminder: Star Cult is here. Get that free x200 starfall!`,
-          removeLater: false
+          message: `Reminder: Star Cult is here. Get that free x200 starfall!`
         })
       }
     }, 5000)
@@ -30,13 +35,13 @@ export default {
 } satisfies PluginInterface
 
 function getSkyblockTime(): { day: number } {
-  const HOUR_MS = 50_000
-  const DAY_MS = 24 * HOUR_MS
-  const MONTH_MS = 31 * DAY_MS
-  const YEAR_0 = 1_560_275_700_000
+  const HourInMillisecond = 50_000
+  const DayInMilliseconds = 24 * HourInMillisecond
+  const MonthInMillisecond = 31 * DayInMilliseconds
+  const Year0 = 1_560_275_700_000
 
-  const currentEpoch = Date.now() - YEAR_0
-  const day = (currentEpoch % MONTH_MS) / DAY_MS + 1
+  const currentEpoch = Date.now() - Year0
+  const day = (currentEpoch % MonthInMillisecond) / DayInMilliseconds + 1
   return {
     day: Math.floor(day)
   }

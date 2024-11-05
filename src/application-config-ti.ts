@@ -65,8 +65,8 @@ export const ProxyConfig = t.iface([], {
 });
 
 export const ProxyProtocol = t.enumtype({
-  "HTTP": "http",
-  "SOCKS5": "socks5",
+  "Http": "http",
+  "Socks5": "socks5",
 });
 
 export const ApplicationConfig = t.iface([], {

@@ -1,5 +1,4 @@
 import http from 'node:http'
-import url from 'node:url'
 
 import { HttpStatusCode } from 'axios'
 import * as Client from 'prom-client'
@@ -20,7 +19,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
   constructor(app: Application, instanceName: string, config: MetricsConfig) {
-    super(app, instanceName, InstanceType.METRICS, config)
+    super(app, instanceName, InstanceType.Metrics, config)
 
     this.register = new Client.Registry()
     this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
@@ -29,7 +28,13 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     this.applicationMetrics = new ApplicationMetrics(this.register, config.prefix)
     this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
 
-    app.on('event', (event) => {
+    app.on('guildPlayer', (event) => {
+      this.applicationMetrics.onClientEvent(event)
+    })
+    app.on('guildGeneral', (event) => {
+      this.applicationMetrics.onClientEvent(event)
+    })
+    app.on('minecraftChatEvent', (event) => {
       this.applicationMetrics.onClientEvent(event)
     })
     app.on('chat', (event) => {
@@ -40,7 +45,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     })
 
     setInterval(() => {
-      void this.collectMetrics()
+      void this.collectMetrics().catch(this.errorHandler.promiseCatch('collecting metrics'))
     }, config.interval * 1000)
 
     this.httpServer = http.createServer((request, response) => {
@@ -50,7 +55,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
         return
       }
 
-      const route = url.parse(request.url).pathname
+      const route = request.url.split('?')[0]
       if (route === '/metrics') {
         this.logger.debug('Metrics scrap is called on /metrics')
         response.setHeader('Content-Type', this.register.contentType)
@@ -75,7 +80,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     this.logger.debug('Collecting metrics')
 
     if (this.config.useIngameCommand) {
-      await this.guildOnlineMetrics.collectMetrics(this.app)
+      await this.guildOnlineMetrics.collectMetrics(this.application)
     }
   }
 
@@ -86,16 +91,14 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     }
 
     if (!this.config.enabled) {
-      this.status = Status.FAILED
+      this.setAndBroadcastNewStatus(Status.Failed, 'Metrics are disabled.')
       return
     }
-
-    this.status = Status.CONNECTING
-    this.logger.debug('prometheus is enabled')
 
     this.logger.debug(`Listening on port ${this.config.port}`)
     this.httpServer.listen(this.config.port)
 
-    this.status = Status.CONNECTED
+    this.logger.debug('prometheus is enabled')
+    this.setAndBroadcastNewStatus(Status.Connected, 'Metrics webserver is listening for collectors')
   }
 }

@@ -4,10 +4,10 @@
  Minecraft username: _aura
 */
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
-const ANSWERS = [
+const Answers = [
   'As I see it, yes.',
   'Ask again later.',
   'Better not tell you now.',
@@ -41,6 +41,6 @@ export default class EightBallCommand extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    return `${context.username}, ${ANSWERS[Math.floor(Math.random() * ANSWERS.length)]}`
+    return `${context.username}, ${Answers[Math.floor(Math.random() * Answers.length)]}`
   }
 }

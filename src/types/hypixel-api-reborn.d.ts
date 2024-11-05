@@ -1,5 +1,7 @@
 import type { skyblockMemberOptions } from 'hypixel-api-reborn'
 
+// public api interfaces. Can't choose a naming convention
+/* eslint-disable @typescript-eslint/naming-convention */
 declare module 'hypixel-api-reborn' {
   interface Client {
     getSkyblockProfiles(
@@ -9,7 +11,7 @@ declare module 'hypixel-api-reborn' {
   }
 
   export interface SkyblockV2ProfilesRaw {
-    profiles: SkyblockV2Profile[]
+    profiles: SkyblockV2Profile[] | undefined
   }
 
   export interface SkyblockV2Profile {
@@ -23,7 +25,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
-    dungeons: SkyblockV2Dungeons
+    dungeons: SkyblockV2Dungeons | undefined
     nether_island_player_data: {
       kuudra_completed_tiers: {
         none: number
@@ -33,11 +35,25 @@ declare module 'hypixel-api-reborn' {
         infernal: number
       }
     }
-    slayer: SlayerProfile
+    slayer: SlayerProfile | undefined
+    essence?: SkyblockV2Essence
+  }
+
+  export interface SkyblockV2Essence {
+    perks?: SkyblockV2EssencePerks
+  }
+
+  export interface SkyblockV2EssencePerks {
+    cold_efficiency?: number
+    heart_of_gold?: number
+    diamond_in_the_rough?: number
+    toxophilite?: number
+    unbridled_rage?: number
   }
 
   export interface SkyblockV2Dungeons {
     dungeon_types: SkyblockV2DungeonsTypes
+    player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockV2DungeonsClass | undefined>
   }
 
   export interface SkyblockV2DungeonsTypes {
@@ -45,13 +61,25 @@ declare module 'hypixel-api-reborn' {
     master_catacombs: SkyblockV2DungeonsMasterCatacombs
   }
 
+  export type DungeonFloors = '1' | '2' | '3' | '4' | '5' | '6' | '7'
+  export type DungeonFloorsWithEntrance = '0' | DungeonFloors
+
   export interface SkyblockV2DungeonsCatacombs {
     experience: number
-    tier_completions: Record<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+    tier_completions: Record<DungeonFloorsWithEntrance | 'total', number | undefined> | undefined
+    fastest_time: Record<DungeonFloorsWithEntrance | 'best', number | undefined> | undefined
+    fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
+    fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined
   }
 
   export interface SkyblockV2DungeonsMasterCatacombs {
-    tier_completions: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | 'total', number>
+    tier_completions: Record<DungeonFloors | 'total', number | undefined> | undefined
+    fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
+    fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined
+  }
+
+  export interface SkyblockV2DungeonsClass {
+    experience?: number
   }
 
   export interface SlayerProfile {
@@ -74,3 +102,4 @@ declare module 'hypixel-api-reborn' {
     boss_kills_tier_4?: number
   }
 }
+/* eslint-enable @typescript-eslint/naming-convention */

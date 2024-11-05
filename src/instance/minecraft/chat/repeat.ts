@@ -1,7 +1,7 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, InstanceType, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
-const MESSAGES = [
+const Messages = [
   "Can't repeat the same message...",
   'I wish I had a way to repeat the same messages over and over again :(',
   'Hypixel blocked this message for repeating... Again! D:',
@@ -14,7 +14,7 @@ const MESSAGES = [
   'The verdict has been given and will not be repeated!',
   'Not saying it twice, bro!',
   'Oh no, I tried to send same message but Hypixel is annoying and blocked me!',
-  "Oni-chan, you are big meanie. Don't block my message even if it's repeated!"
+  "Onii-chan, you are big meanie. Don't block my message even if it's repeated!"
 ]
 
 let lastWarning = 0
@@ -25,22 +25,25 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      const randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)]
+      const randomMessage = Messages[Math.floor(Math.random() * Messages.length)]
 
-      context.application.emit('event', {
+      context.application.emit('minecraftChatEvent', {
         localEvent: true,
+
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.REPEAT,
-        username: undefined,
-        severity: Severity.INFO,
-        message: randomMessage,
-        removeLater: false
+        instanceType: InstanceType.Minecraft,
+
+        color: Color.Info,
+        channels: [ChannelType.Public],
+
+        type: MinecraftChatEventType.Repeat,
+        message: randomMessage
       })
 
       if (lastWarning + 5000 < Date.now()) {
-        void context.clientInstance.send(`/gc @${randomMessage}`)
+        void context.clientInstance
+          .send(`/gc @${randomMessage}`)
+          .catch(context.errorHandler.promiseCatch('sending message about repeating in chat'))
         lastWarning = Date.now()
       }
     }

@@ -1,13 +1,13 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('restart').setDescription('Send signal to restart the bridge'),
   allowInstance: false,
-  permission: Permission.ADMIN,
+  permission: Permission.Admin,
 
   handler: async function (context) {
     await context.interaction.deferReply()
@@ -23,4 +23,4 @@ export default {
       'Restart signal has been sent.\n' + 'It will take some time for the bridge to restart.\n'
     )
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
