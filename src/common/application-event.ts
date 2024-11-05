@@ -420,11 +420,12 @@ export interface BroadcastEvent extends InformEvent {
  */
 export interface CommandEvent extends InformEvent {
   readonly channelType: ChannelType
+
   /**
    * Only available if the message comes from a DM.
    * Used to reply to the message
    */
-  readonly discordChannelId?: string
+  readonly discordChannelId: string | undefined
   /**
    * Whether the command response has already been sent.
    * If not, then each instance will handle the replying themselves instead.
