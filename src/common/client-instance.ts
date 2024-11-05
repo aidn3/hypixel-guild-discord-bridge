@@ -29,16 +29,6 @@ export abstract class ClientInstance<K> {
   }
 
   /**
-   * Called when trying to connect, reconnect or reset the connection
-   * The call can either be manual or automatic.
-   *
-   * Make sure the inner client can be completely disposed of,
-   * since many listeners will listen to every connection.
-   * Not disposing of the old client may result in double listeners.
-   */
-  abstract connect(): Promise<void> | void
-
-  /**
    * Change instance status and inform other instances about the status.
    * Function will just return if the status is the same.
    *
@@ -61,6 +51,16 @@ export abstract class ClientInstance<K> {
   public currentStatus(): Status {
     return this.status
   }
+
+  /**
+   * Called when trying to connect, reconnect or reset the connection
+   * The call can either be manual or automatic.
+   *
+   * Make sure the inner client can be completely disposed of,
+   * since many listeners will listen to every connection.
+   * Not disposing of the old client may result in double listeners.
+   */
+  public abstract connect(): Promise<void> | void
 }
 
 export enum Status {
