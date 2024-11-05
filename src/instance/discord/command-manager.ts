@@ -13,6 +13,8 @@ import type { Logger } from 'log4js'
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
+import type { DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
+import { Permission } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
@@ -30,12 +32,10 @@ import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
-import type { CommandInterface, DiscordCommandContext } from './common/command-interface.js'
-import { Permission } from './common/command-interface.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
-  readonly commands = new Collection<string, CommandInterface>()
+  readonly commands = new Collection<string, DiscordCommandHandler>()
 
   private readonly config
 

@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
@@ -18,4 +18,4 @@ export default {
         'The features of the bot can be viewed with /help.'
     )
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

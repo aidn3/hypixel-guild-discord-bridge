@@ -1,8 +1,8 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 
 export default {
   getCommandBuilder: () =>
@@ -30,4 +30,4 @@ export default {
 
     await context.interaction.editReply({ embeds: [formatted] })
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

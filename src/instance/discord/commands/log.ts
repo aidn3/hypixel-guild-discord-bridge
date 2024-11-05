@@ -4,8 +4,8 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 
@@ -98,7 +98,7 @@ export default {
       }
     )
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
 async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
   const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g

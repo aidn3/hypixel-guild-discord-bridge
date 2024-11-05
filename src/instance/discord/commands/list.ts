@@ -7,9 +7,9 @@ import type { Client, Status } from 'hypixel-api-reborn'
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'
 
@@ -81,7 +81,7 @@ export default {
 
     await pageMessage(context.interaction, createEmbed(lists), context.errorHandler)
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
 async function listMembers(app: Application, mojangApi: MojangApi, hypixelApi: Client): Promise<Map<string, string[]>> {
   const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app)

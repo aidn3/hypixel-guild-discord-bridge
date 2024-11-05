@@ -6,6 +6,8 @@ import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } fr
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
 import { Color, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { getDuration } from '../../../util/shared-util.js'
@@ -17,8 +19,6 @@ import {
   MuteChat,
   UnmuteChat
 } from '../common/chat-triggers.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'
 
@@ -166,7 +166,7 @@ export default {
       }
     }
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
 async function handleBanAddInteraction(
   application: Application,

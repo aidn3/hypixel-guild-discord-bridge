@@ -4,9 +4,9 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { antiSpamString } from '../../../util/shared-util.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed {
@@ -62,7 +62,7 @@ export default {
 
     await context.interaction.editReply({ embeds: [createEmbed(lists)] })
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
 async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
   const receivedResponses = new Map<string, string[]>()
