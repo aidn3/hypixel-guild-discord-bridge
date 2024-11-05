@@ -41,7 +41,7 @@ export async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function shutdownApplication(exitCode: number): Promise<void> {
+export async function gracefullyExitProcess(exitCode: number): Promise<void> {
   const timeout = sleep(30_000).then(() => {
     console.warn('Logger flush timed out. Exiting...')
     process.exit(exitCode)

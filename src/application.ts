@@ -27,7 +27,7 @@ import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
 import { MojangApi } from './util/mojang.js'
-import { shutdownApplication, sleep } from './util/shared-util.js'
+import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   public readonly clusterHelper: ClusterHelper
@@ -122,7 +122,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
         void sleep(5000)
           .then(async () => {
-            await shutdownApplication(2)
+            await gracefullyExitProcess(2)
           })
           .catch(this.errorHandler.promiseCatch('shutting down application with shutdownSignal'))
       }
