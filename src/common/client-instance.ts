@@ -7,8 +7,8 @@ import type { InstanceStatusEvent, InstanceType } from './application-event.js'
 import UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 export abstract class ClientInstance<K> {
-  readonly instanceName: string
-  readonly instanceType: InstanceType
+  public readonly instanceName: string
+  public readonly instanceType: InstanceType
 
   protected readonly app: Application
   protected readonly logger: Logger
@@ -46,7 +46,7 @@ export abstract class ClientInstance<K> {
    * @param reason Any message to supply for other instances in case of displaying a human-readable message.
    * @protected
    */
-  setAndBroadcastNewStatus(status: Status, reason: string): void {
+  public setAndBroadcastNewStatus(status: Status, reason: string): void {
     if (this.status === status) return
     this.status = status
     this.app.emit('instanceStatus', {

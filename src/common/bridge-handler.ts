@@ -73,19 +73,19 @@ export default abstract class BridgeHandler<K extends ClientInstance<unknown>> {
     })
   }
 
-  abstract onCommand(event: CommandEvent): void | Promise<void>
+  protected abstract onCommand(event: CommandEvent): void | Promise<void>
 
-  abstract onCommandFeedback(event: CommandFeedbackEvent): void | Promise<void>
+  protected abstract onCommandFeedback(event: CommandFeedbackEvent): void | Promise<void>
 
-  abstract onChat(event: ChatEvent): void | Promise<void>
+  protected abstract onChat(event: ChatEvent): void | Promise<void>
 
-  abstract onGuildPlayer(event: GuildPlayerEvent): void | Promise<void>
+  protected abstract onGuildPlayer(event: GuildPlayerEvent): void | Promise<void>
 
-  abstract onGuildGeneral(event: GuildGeneralEvent): void | Promise<void>
+  protected abstract onGuildGeneral(event: GuildGeneralEvent): void | Promise<void>
 
-  abstract onMinecraftChatEvent(event: MinecraftChatEvent): void | Promise<void>
+  protected abstract onMinecraftChatEvent(event: MinecraftChatEvent): void | Promise<void>
 
-  abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
+  protected abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
 
-  abstract onBroadcast(event: BroadcastEvent): void | Promise<void>
+  protected abstract onBroadcast(event: BroadcastEvent): void | Promise<void>
 }

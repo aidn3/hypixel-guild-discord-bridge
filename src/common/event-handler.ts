@@ -30,7 +30,7 @@ export default abstract class EventHandler<K extends ClientInstance<unknown>> {
    * This function will be called multiple times with every reconstruct of the instance.
    * Use constructors functions if you want to register an event once
    */
-  registerEvents(): void {
+  public registerEvents(): void {
     // optional to implement
   }
 }

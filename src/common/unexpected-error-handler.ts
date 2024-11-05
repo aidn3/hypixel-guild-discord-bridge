@@ -4,7 +4,7 @@ type PromiseCatchHandler = (error: unknown) => void
 export default class UnexpectedErrorHandler {
   private readonly logger: Logger
 
-  constructor(logger: Logger) {
+  public constructor(logger: Logger) {
     this.logger = logger
   }
 
