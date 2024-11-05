@@ -145,7 +145,7 @@ A shorter version can also be used: `!- rtca`
 ### Available Plugins
 
 Application has an official public API and supports custom plugins to enhance potential.  
-Loaded plugins can be configured in the `config.yaml` file when [configuring the app](#configure).  
+Loaded plugins can be configured in the `config.yaml` file when [configuring the application](#configure).  
 To create custom plugins see [Documentation And Tutorials](#documentation-and-tutorials).
 
 These are the supported official plugins that come bundled with the application:
