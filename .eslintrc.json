@@ -42,7 +42,6 @@
     "import/newline-after-import": 2,
     "import/no-extraneous-dependencies": 2,
     "@typescript-eslint/consistent-type-imports": 2,
-    "@typescript-eslint/member-ordering": "error",
     "@typescript-eslint/no-floating-promises": [
       "error",
       {
