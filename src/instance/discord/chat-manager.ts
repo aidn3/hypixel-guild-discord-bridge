@@ -89,7 +89,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     })
   }
 
-  async truncateText(message: Message, content: string): Promise<string> {
+  private async truncateText(message: Message, content: string): Promise<string> {
     /*
       minecraft has a limit of 256 chars per message
       256 - 232 = 24
@@ -107,7 +107,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     return content.slice(0, length) + '...'
   }
 
-  async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
+  private async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishments = this.application.moderation.punishments
     const userIdentifiers = [discordName, readableName, message.author.id]
     const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)

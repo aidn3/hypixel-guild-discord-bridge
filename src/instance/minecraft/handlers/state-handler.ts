@@ -13,7 +13,7 @@ export const QuitOwnVolition = 'disconnect.quitting'
 export default class StateHandler extends EventHandler<MinecraftInstance> {
   private loginAttempts
   private exactDelay
-  public loggedIn
+  private loggedIn
 
   constructor(
     application: Application,
