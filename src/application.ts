@@ -241,7 +241,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 function emitAll(emitter: Events): void {
   const old = emitter.emit
   emitter.emit = (event: string, ...callerArguments): boolean => {
-    if (event !== '*') emitter.emit('*', event, ...callerArguments)
+    if (event !== 'all') emitter.emit('all', event, ...callerArguments)
     return old.call(emitter, event, ...callerArguments)
   }
 }
