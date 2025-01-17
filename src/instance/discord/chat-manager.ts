@@ -83,6 +83,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
       instanceType: InstanceType.Discord,
       channelType: channelType,
       channelId: event.channel.id,
+      userId: Number.parseInt(event.author.id),
       username: readableName,
       replyUsername: readableReplyUsername,
       message: filteredMessage
