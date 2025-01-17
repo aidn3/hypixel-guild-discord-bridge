@@ -35,11 +35,13 @@ export default {
     if (option.name === 'username') {
       const response = context.application.autoComplete
         .username(option.value)
+        .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     } else if (option.name === 'rank') {
       const response = context.application.autoComplete
         .rank(option.value)
+        .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     }
