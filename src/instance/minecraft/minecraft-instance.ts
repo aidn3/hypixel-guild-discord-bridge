@@ -6,13 +6,13 @@ import { InstanceType } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import RateLimiter from '../../util/rate-limiter.js'
 
-import BridgeHandler from './bridge-handler.js'
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import ErrorHandler from './handlers/error-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
+import MinecraftBridge from './minecraft-bridge.js'
 
 export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
   readonly defaultBotConfig = {
@@ -25,13 +25,13 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
 
   readonly bridgePrefix: string
 
-  private readonly bridgeHandler: BridgeHandler
+  private readonly bridge: MinecraftBridge
   private readonly commandsLimiter = new RateLimiter(1, 1000)
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.Minecraft, config)
 
-    this.bridgeHandler = new BridgeHandler(app, this, this.logger, this.errorHandler)
+    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
     this.bridgePrefix = bridgePrefix
   }
 

@@ -20,13 +20,13 @@ import {
   InstanceType,
   MinecraftChatEventType
 } from '../../common/application-event.js'
-import BridgeHandler from '../../common/bridge-handler.js'
+import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { antiSpamString } from '../../util/shared-util.js'
 
 import type MinecraftInstance from './minecraft-instance.js'
 
-export default class MinecraftBridgeHandler extends BridgeHandler<MinecraftInstance> {
+export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,

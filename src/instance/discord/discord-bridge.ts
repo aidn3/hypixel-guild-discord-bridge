@@ -22,12 +22,12 @@ import {
   InstanceType,
   MinecraftChatEventType
 } from '../../common/application-event.js'
-import BridgeHandler from '../../common/bridge-handler.js'
+import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import type DiscordInstance from './discord-instance.js'
 
-export default class DiscordBridgeHandler extends BridgeHandler<DiscordInstance> {
+export default class DiscordBridge extends Bridge<DiscordInstance> {
   private readonly config
 
   constructor(

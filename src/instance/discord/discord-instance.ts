@@ -7,9 +7,9 @@ import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 
-import BridgeHandler from './bridge-handler.js'
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
+import DiscordBridge from './discord-bridge.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
@@ -21,7 +21,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
   private readonly statusHandler: StatusHandler
   private readonly chatManager: ChatManager
 
-  private readonly bridgeHandler: BridgeHandler
+  private readonly bridge: DiscordBridge
   private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
@@ -48,7 +48,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     this.chatManager = new ChatManager(this.application, this, this.logger, this.errorHandler, this.config)
     this.commandsManager = new CommandManager(this.application, this, this.logger, this.errorHandler, this.config)
 
-    this.bridgeHandler = new BridgeHandler(this.application, this, this.logger, this.errorHandler, this.config)
+    this.bridge = new DiscordBridge(this.application, this, this.logger, this.errorHandler, this.config)
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')
