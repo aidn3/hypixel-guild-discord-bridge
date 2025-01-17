@@ -1,7 +1,6 @@
-import assert from 'node:assert'
-
 import type {
   ChatInputCommandInteraction,
+  Client,
   CommandInteraction,
   GuildMemberRoleManager,
   Interaction,
@@ -50,31 +49,14 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     this.config = config
 
     this.addDefaultCommands()
-
-    let timeoutId: undefined | NodeJS.Timeout
-    const timerReset = (): void => {
-      if (timeoutId != undefined) clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        this.registerDiscordCommand()
-      }, 5 * 1000)
-    }
-    this.application.on('minecraftSelfBroadcast', (): void => {
-      timerReset()
-    })
-    this.application.on('selfBroadcast', (event): void => {
-      if (event.instanceType === InstanceType.Minecraft) {
-        timerReset()
-      }
-    })
-    timerReset()
   }
 
   registerEvents(): void {
     let listenerStarted = false
-    this.clientInstance.client.on('ready', () => {
+    this.clientInstance.client.on('ready', (client) => {
       if (listenerStarted) return
       listenerStarted = true
-      this.listenToRegisterCommands()
+      this.listenToRegisterCommands(client)
     })
 
     this.clientInstance.client.on('interactionCreate', (interaction) => {
@@ -85,9 +67,9 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     this.logger.debug('CommandManager is registered')
   }
 
-  private listenToRegisterCommands(): void {
+  private listenToRegisterCommands(client: Client<true>): void {
     const timeoutId = setTimeout(() => {
-      this.registerDiscordCommand()
+      this.registerDiscordCommand(client)
     }, 5 * 1000)
 
     this.application.on('minecraftSelfBroadcast', (): void => {
@@ -221,16 +203,14 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private registerDiscordCommand(): void {
+  private registerDiscordCommand(client: Client<true>): void {
     this.logger.debug('Registering commands')
-    assert(this.clientInstance.client.token)
-    assert(this.clientInstance.client.application)
 
-    const token = this.clientInstance.client.token
-    const clientId = this.clientInstance.client.application.id
+    const token = client.token
+    const clientId = client.application.id
     const commandsJson = this.getCommandsJson()
 
-    for (const [, guild] of this.clientInstance.client.guilds.cache) {
+    for (const [, guild] of client.guilds.cache) {
       this.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
       void rest
