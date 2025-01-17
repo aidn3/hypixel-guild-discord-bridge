@@ -92,6 +92,6 @@ plugins:
   - './src/plugins/dark-auction-plugin.ts'
   - './src/plugins/starfall-cult-plugin.ts'
   - './src/plugins/auto-restart-plugin.ts'
-  - './src/plugins/bypass-hypixel-url-plugin.ts'
+#  - './src/plugins/stuf-plugin.ts'
 # Only enable after disabling limbo-plugin
 #  - './src/plugins/warp-plugin.ts'
