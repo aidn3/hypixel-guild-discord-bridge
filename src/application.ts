@@ -26,11 +26,13 @@ import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
+import Autocomplete from './util/autocomplete.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
   public readonly clusterHelper: ClusterHelper
+  public readonly autoComplete: Autocomplete
   public readonly moderation: ModerationInstance
   public readonly profanityFilter: BadWords.BadWords
 
@@ -71,6 +73,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.mojangApi = new MojangApi()
     this.moderation = new ModerationInstance(this, this.mojangApi)
     this.clusterHelper = new ClusterHelper(this)
+    this.autoComplete = new Autocomplete(this)
 
     this.profanityFilter = new BadWords({
       emptyList: !this.config.profanity.enabled

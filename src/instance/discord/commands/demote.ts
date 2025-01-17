@@ -10,7 +10,7 @@ export default {
       .setName('demote')
       .setDescription('demote guild member in-game')
       .addStringOption((option) =>
-        option.setName('username').setDescription('Username of the player').setRequired(true)
+        option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
   allowInstance: false,
@@ -25,5 +25,14 @@ export default {
     const formatted = formatChatTriggerResponse(result, `Demote ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username') {
+      const response = context.application.autoComplete
+        .username(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
 } satisfies DiscordCommandHandler

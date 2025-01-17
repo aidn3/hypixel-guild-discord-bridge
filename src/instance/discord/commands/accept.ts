@@ -10,7 +10,7 @@ export default {
       .setName('accept')
       .setDescription('accept a player to the guild if they have a join request in-game')
       .addStringOption((option) =>
-        option.setName('username').setDescription('Username of the player').setRequired(true)
+        option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ) as SlashCommandBuilder,
   allowInstance: true,
   permission: Permission.Helper,
@@ -26,5 +26,14 @@ export default {
     const formatted = formatChatTriggerResponse(result, `Accept ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username') {
+      const response = context.application.autoComplete
+        .username(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
 } satisfies DiscordCommandHandler

@@ -1,7 +1,7 @@
 import type {
+  AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
-  CommandInteraction,
   GuildMemberRoleManager,
   Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
@@ -12,7 +12,7 @@ import type { Logger } from 'log4js'
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
-import type { DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
+import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
 import { Permission } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -60,9 +60,15 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     })
 
     this.clientInstance.client.on('interactionCreate', (interaction) => {
-      void this.interactionCreate(interaction).catch(
-        this.errorHandler.promiseCatch('handling incoming discord interactionCreate event')
-      )
+      if (interaction.isChatInputCommand()) {
+        void this.onCommand(interaction).catch(
+          this.errorHandler.promiseCatch('handling incoming ChatInputCommand event')
+        )
+      } else if (interaction.isAutocomplete()) {
+        void this.onAutoComplete(interaction).catch(
+          this.errorHandler.promiseCatch('handling incoming autocomplete event')
+        )
+      }
     })
     this.logger.debug('CommandManager is registered')
   }
@@ -105,9 +111,32 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private async interactionCreate(interaction: Interaction): Promise<void> {
-    if (!interaction.isCommand()) return
+  private async onAutoComplete(interaction: AutocompleteInteraction): Promise<void> {
+    const command = this.commands.get(interaction.commandName)
+    if (!command) {
+      this.logger.warn(`command ${interaction.commandName} not found for autocomplete interaction.`)
+      return
+    }
 
+    if (command.autoComplete) {
+      const context: DiscordAutoCompleteContext = {
+        application: this.application,
+        logger: this.logger,
+        errorHandler: this.errorHandler,
+        instanceName: this.clientInstance.instanceName,
+        privilege: this.resolvePrivilegeLevel(interaction),
+        interaction: interaction
+      }
+
+      try {
+        await command.autoComplete(context)
+      } catch (error: unknown) {
+        this.logger.error(error)
+      }
+    }
+  }
+
+  private async onCommand(interaction: ChatInputCommandInteraction): Promise<void> {
     this.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
     const command = this.commands.get(interaction.commandName)
 
@@ -156,7 +185,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           errorHandler: this.errorHandler,
           instanceName: this.clientInstance.instanceName,
           privilege: this.resolvePrivilegeLevel(interaction),
-          interaction: interaction as ChatInputCommandInteraction,
+          interaction: interaction,
 
           showPermissionDenied: async () => {
             if (interaction.deferred || interaction.replied) {
@@ -219,13 +248,13 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private memberAllowed(interaction: CommandInteraction, permissionLevel: Permission): boolean {
+  private memberAllowed(interaction: Interaction, permissionLevel: Permission): boolean {
     if (permissionLevel === Permission.Anyone) return true
 
     return this.resolvePrivilegeLevel(interaction) >= permissionLevel
   }
 
-  private resolvePrivilegeLevel(interaction: CommandInteraction): Permission {
+  private resolvePrivilegeLevel(interaction: Interaction): Permission {
     if (interaction.user.id === this.config.adminId) return Permission.Admin
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined

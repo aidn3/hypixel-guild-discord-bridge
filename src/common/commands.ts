@@ -1,4 +1,4 @@
-import type { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import type { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
@@ -64,14 +64,23 @@ export interface DiscordCommandHandler {
   allowInstance: boolean
   permission: Permission
   handler: (context: DiscordCommandContext) => Promise<void>
+  autoComplete?: (context: DiscordAutoCompleteContext) => Promise<void>
 }
 
-export interface DiscordCommandContext {
+interface DiscordContext {
   application: Application
   logger: Logger
   instanceName: string
-  interaction: ChatInputCommandInteraction
+
   privilege: Permission
-  showPermissionDenied: () => Promise<void>
   errorHandler: UnexpectedErrorHandler
+}
+
+export interface DiscordCommandContext extends DiscordContext {
+  interaction: ChatInputCommandInteraction
+  showPermissionDenied: () => Promise<void>
+}
+
+export interface DiscordAutoCompleteContext extends DiscordContext {
+  interaction: AutocompleteInteraction
 }
