@@ -10,10 +10,10 @@ export default class Autocomplete {
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
 
-  private usernames: string[] = []
-  private inclusion = new Set<string>()
+  private readonly usernames: string[] = []
+  private readonly loweredCaseUsernames = new Set<string>()
 
-  private guildRanks: string[] = []
+  private readonly guildRanks: string[] = []
 
   constructor(application: Application) {
     this.application = application
@@ -107,8 +107,8 @@ export default class Autocomplete {
 
   private addUsername(username: string): void {
     const loweredCase = username.toLowerCase()
-    if (this.inclusion.has(loweredCase)) return
-    this.inclusion.add(loweredCase)
+    if (this.loweredCaseUsernames.has(loweredCase)) return
+    this.loweredCaseUsernames.add(loweredCase)
     this.usernames.push(username)
   }
 
