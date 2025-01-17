@@ -6,7 +6,7 @@ import type {
   Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
-import { Collection, GuildMember, REST, Routes } from 'discord.js'
+import { Collection, REST, Routes } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type { DiscordConfig } from '../../application-config.js'
@@ -161,8 +161,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
       } else if (this.memberAllowed(interaction, command.permission)) {
         this.logger.debug('execution granted.')
 
-        const username =
-          interaction.member instanceof GuildMember ? interaction.member.displayName : interaction.user.displayName
+        const username = interaction.inCachedGuild() ? interaction.member.displayName : interaction.user.displayName
 
         this.application.emit('command', {
           localEvent: true,
