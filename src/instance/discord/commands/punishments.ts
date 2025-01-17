@@ -33,7 +33,11 @@ export default {
           .setName('ban')
           .setDescription('Add a member to banned list')
           .addStringOption((option) =>
-            option.setName('username').setDescription('username of the player to ban').setRequired(true)
+            option
+              .setName('username')
+              .setDescription('username of the player to ban')
+              .setRequired(true)
+              .setAutocomplete(true)
           )
           .addStringOption((option) =>
             option.setName('reason').setDescription('reason to ban the player').setRequired(true)
@@ -53,7 +57,11 @@ export default {
           .setName('mute')
           .setDescription('Add a member to muted list')
           .addStringOption((option) =>
-            option.setName('username').setDescription('username of the player to mute').setRequired(true)
+            option
+              .setName('username')
+              .setDescription('username of the player to mute')
+              .setRequired(true)
+              .setAutocomplete(true)
           )
           .addStringOption((option) =>
             option.setName('reason').setDescription('reason to mute the player').setRequired(true)
@@ -73,7 +81,11 @@ export default {
           .setName('kick')
           .setDescription('kick a member from all Minecraft instances')
           .addStringOption((option) =>
-            option.setName('user').setDescription('username or userUuid of the player to kick').setRequired(true)
+            option
+              .setName('user')
+              .setDescription('username or userUuid of the player to kick')
+              .setRequired(true)
+              .setAutocomplete(true)
           )
           .addStringOption((option) =>
             option.setName('reason').setDescription('reason to kick the player').setRequired(true)
@@ -88,6 +100,7 @@ export default {
               .setName('user')
               .setDescription('username or userUuid or discord-id of the player to forgive')
               .setRequired(true)
+              .setAutocomplete(true)
           )
           .addBooleanOption((option) =>
             option.setName('no-discord').setDescription('Do not check with Discord for similar names')
@@ -105,6 +118,7 @@ export default {
               .setName('user')
               .setDescription('username or userUuid or discord-id of the person to check')
               .setRequired(true)
+              .setAutocomplete(true)
           )
       )
       .addSubcommand(
@@ -164,6 +178,15 @@ export default {
       default: {
         throw new Error('No such command flow found')
       }
+    }
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username' || option.name === 'user') {
+      const response = context.application.autoComplete
+        .username(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
     }
   }
 } satisfies DiscordCommandHandler
