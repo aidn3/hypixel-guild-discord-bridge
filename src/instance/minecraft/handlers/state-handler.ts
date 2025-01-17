@@ -11,6 +11,7 @@ import type MinecraftInstance from '../minecraft-instance.js'
 export const QuitOwnVolition = 'disconnect.quitting'
 
 export default class StateHandler extends EventHandler<MinecraftInstance> {
+  private static readonly MaxLoginAttempts = 5
   private loginAttempts
   private exactDelay
   private loggedIn
@@ -80,6 +81,11 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
       this.logger.debug(reason)
       this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
       return
+    } else if (this.loginAttempts > StateHandler.MaxLoginAttempts) {
+      const reason = `Client failed to connect too many times. No further trying to reconnect.`
+
+      this.logger.error(reason)
+      this.clientInstance.setAndBroadcastNewStatus(Status.Failed, reason)
     }
 
     let loginDelay = this.exactDelay
