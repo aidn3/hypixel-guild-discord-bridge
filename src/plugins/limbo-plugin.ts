@@ -2,7 +2,7 @@ import type { Logger } from 'log4js'
 
 import { InstanceType } from '../common/application-event.js'
 import { Status } from '../common/client-instance.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 /* WARNING

@@ -5,7 +5,7 @@ import { InstanceType, type MinecraftRawChatEvent } from '../common/application-
 import { Status } from '../common/client-instance.js'
 import type { ChatCommandContext } from '../common/commands.js'
 import { ChatCommandHandler } from '../common/commands.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 import { sleep } from '../util/shared-util.js'
 
