@@ -8,7 +8,7 @@ import LoggerConfig from './config/log4js-config.json' with { type: 'json' }
 import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
-import { shutdownApplication } from './src/util/shared-util.js'
+import { gracefullyExitProcess } from './src/util/shared-util.js'
 
 console.log('Loading Logger...')
 // eslint-disable-next-line import/no-named-as-default-member
@@ -26,7 +26,7 @@ if (process.argv.includes('test-run')) {
   Logger.warn('Argument passed to run in testing mode')
   Logger.warn('Test Loading finished.')
   Logger.warn('Returning from program with exit code 0')
-  await shutdownApplication(0)
+  await gracefullyExitProcess(0)
 }
 
 const File = process.argv[2] ?? './config.yaml'
@@ -34,14 +34,14 @@ if (!fs.existsSync(File)) {
   Logger.fatal(`File ${File} does not exist.`)
   Logger.fatal(`You can rename config_example.yaml to config.yaml and use it as the configuration file.`)
   Logger.fatal(`If this is the first time running the application, please read README.md before proceeding.`)
-  await shutdownApplication(1)
+  await gracefullyExitProcess(1)
 }
 
 const RootDirectory = import.meta.dirname
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
 const App = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
 
-App.on('*', (name, event) => {
+App.on('all', (name, event) => {
   Logger.log(`[${name}] ${JSON.stringify(event)}`)
 })
 

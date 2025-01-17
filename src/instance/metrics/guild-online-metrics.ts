@@ -37,7 +37,7 @@ export default class GuildOnlineMetrics {
     }
   }
 
-  static async getGuilds(app: Application): Promise<Map<string, { online?: number; total?: number }>> {
+  private static async getGuilds(app: Application): Promise<Map<string, { online?: number; total?: number }>> {
     const guilds = new Map<string, { online?: number; total?: number }>()
 
     const onlineRegex = /^Online Members: (\d+)$/g

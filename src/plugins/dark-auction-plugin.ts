@@ -1,5 +1,5 @@
-import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import { ChannelType, Color, InstanceType } from '../common/application-event.js'
+import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import { antiSpamString } from '../util/shared-util.js'
 
 /* NOTICE
@@ -21,16 +21,17 @@ export default {
       lastMinuteCheck = currentMinute
 
       if ([50, 54].includes(currentMinute)) {
-        context.application.emit('event', {
+        context.application.emit('broadcast', {
           localEvent: true,
-          instanceType: InstanceType.MAIN,
-          instanceName: InstanceType.MAIN,
-          eventType: EventType.AUTOMATED,
-          severity: Severity.GOOD,
-          channelType: ChannelType.PUBLIC,
+
+          instanceType: InstanceType.Plugin,
+          instanceName: context.pluginName,
+
+          channels: [ChannelType.Public],
+          color: Color.Good,
+
           username: undefined,
-          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`,
-          removeLater: false
+          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`
         })
       }
     }, 5000)

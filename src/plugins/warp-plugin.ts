@@ -1,9 +1,11 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../application.js'
-import { InstanceEventType, InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
+import { InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
 import { Status } from '../common/client-instance.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
-import type { ChatCommandContext } from '../instance/commands/common/command-interface.js'
-import { ChatCommandHandler } from '../instance/commands/common/command-interface.js'
+import type { ChatCommandContext } from '../common/commands.js'
+import { ChatCommandHandler } from '../common/commands.js'
+import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 import { sleep } from '../util/shared-util.js'
 
@@ -19,8 +21,8 @@ export default {
 
     if (context.addChatCommand) context.addChatCommand(new WarpCommand(minecraftInstances))
 
-    context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.create && event.instanceType === InstanceType.MINECRAFT) {
+    context.application.on('instanceStatus', (event) => {
+      if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
         const localInstance = context.localInstances.find(
           (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
         )
@@ -28,10 +30,10 @@ export default {
           const clientInstance = localInstance as MinecraftInstance
           // "login" packet is also first spawn packet containing world metadata
           clientInstance.clientSession?.client.on('login', async () => {
-            if (!disableLimboTrapping) await limbo(clientInstance)
+            if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
           })
           clientInstance.clientSession?.client.on('respawn', async () => {
-            if (!disableLimboTrapping) await limbo(clientInstance)
+            if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
           })
         }
       }
@@ -39,8 +41,8 @@ export default {
   }
 } satisfies PluginInterface
 
-async function limbo(clientInstance: MinecraftInstance): Promise<void> {
-  clientInstance.logger.debug('Spawn event triggered. sending to limbo...')
+async function limbo(logger: Logger, clientInstance: MinecraftInstance): Promise<void> {
+  logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
   await clientInstance.send('§')
 }
 
@@ -165,7 +167,7 @@ class WarpCommand extends ChatCommandHandler {
 
     const username = context.args[0]
     const minecraftInstanceName =
-      context.instanceType === InstanceType.MINECRAFT ? context.instanceName : this.getActiveMinecraftInstanceName()
+      context.instanceType === InstanceType.Minecraft ? context.instanceName : this.getActiveMinecraftInstanceName()
     if (minecraftInstanceName === undefined) {
       return `No active connected Minecraft account exists to use`
     }
@@ -177,6 +179,6 @@ class WarpCommand extends ChatCommandHandler {
   }
 
   private getActiveMinecraftInstanceName(): string | undefined {
-    return this.minecraftInstances.find((instance) => instance.status === Status.CONNECTED)?.instanceName
+    return this.minecraftInstances.find((instance) => instance.currentStatus() === Status.Connected)?.instanceName
   }
 }

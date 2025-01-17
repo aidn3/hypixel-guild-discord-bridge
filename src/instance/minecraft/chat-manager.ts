@@ -1,10 +1,13 @@
 import assert from 'node:assert'
 
+import type { Logger } from 'log4js'
 import GetMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
 
+import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import BlockChat from './chat/block.js'
 import DemoteChat from './chat/demote.js'
@@ -31,8 +34,13 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
   private readonly chatModules: MinecraftChatMessage[]
   private readonly minecraftData
 
-  constructor(clientInstance: MinecraftInstance) {
-    super(clientInstance)
+  constructor(
+    application: Application,
+    clientInstance: MinecraftInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
+    super(application, clientInstance, logger, errorHandler)
 
     this.minecraftData = GetMinecraftData(clientInstance.defaultBotConfig.version)
 
@@ -117,18 +125,25 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
 
   private onMessage(message: string): void {
     for (const module of this.chatModules) {
-      void module.onChat({
-        application: this.clientInstance.app,
-        clientInstance: this.clientInstance,
-        instanceName: this.clientInstance.instanceName,
-        message
-      })
+      void Promise.resolve(
+        module.onChat({
+          application: this.application,
+
+          clientInstance: this.clientInstance,
+          instanceName: this.clientInstance.instanceName,
+
+          logger: this.logger,
+          errorHandler: this.errorHandler,
+
+          message
+        })
+      ).catch(this.errorHandler.promiseCatch('handling chat trigger'))
     }
 
-    this.clientInstance.app.emit('minecraftChat', {
+    this.application.emit('minecraftChat', {
       localEvent: true,
       instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.MINECRAFT,
+      instanceType: InstanceType.Minecraft,
       message
     })
   }

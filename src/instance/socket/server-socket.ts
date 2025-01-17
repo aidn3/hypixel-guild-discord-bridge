@@ -36,7 +36,7 @@ export default class ServerSocket {
     })
     this.httpServer.listen(port)
 
-    app.on('*', (name, event) => {
+    app.on('all', (name, event) => {
       if (event.localEvent) {
         for (const client of this.socketServer.clients) {
           client.send(

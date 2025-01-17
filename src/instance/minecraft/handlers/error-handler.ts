@@ -1,6 +1,5 @@
 import assert from 'node:assert'
 
-import { InstanceType } from '../../../common/application-event.js'
 import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
@@ -18,43 +17,33 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   }
 
   private onError(error: Error & { code?: string }): void {
-    this.clientInstance.logger.error('Minecraft Bot Error: ', error)
+    this.logger.error('Minecraft Bot Error: ', error)
     if (error.code === 'EAI_AGAIN') {
-      this.clientInstance.logger.error(
-        'Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...'
-      )
+      this.logger.error('Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...')
       this.restart()
     } else if (error.message.includes('Too Many Requests')) {
-      this.clientInstance.logger.error(
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
         'Microsoft XBOX service throttled due to too many requests. Trying again in 30 seconds...'
       )
       this.restart()
     } else if (error.message.includes('does the account own minecraft')) {
-      this.clientInstance.status = Status.FAILED
-      this.clientInstance.app.emit('statusMessage', {
-        localEvent: true,
-        instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        message:
-          'Error: does the account own minecraft? changing skin (and deleting cache) and reconnecting might help fix the problem.'
-      })
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Failed,
+        'Error: does the account own minecraft? changing skin (and deleting cache) and reconnecting might help fix the problem.'
+      )
     } else if (error.message.includes('Profile not found')) {
-      this.clientInstance.status = Status.FAILED
-      this.clientInstance.app.emit('statusMessage', {
-        localEvent: true,
-        instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        message: 'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
-      })
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Failed,
+        'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
+      )
     } else if (error.message.includes(QuitProxyError)) {
-      this.clientInstance.app.emit('statusMessage', {
-        localEvent: true,
-        instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        message: 'Error: Encountered problem while working with proxy.'
-      })
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Error: Encountered problem while working with proxy.'
+      )
 
-      this.clientInstance.logger.error('Trying again in 30 seconds...')
+      this.logger.error('Trying again in 30 seconds...')
       this.restart()
     }
   }

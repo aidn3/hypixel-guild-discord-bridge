@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildGeneralEventType, InstanceType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -7,16 +7,17 @@ export default {
 
     const match = regex.exec(context.message.trim())
     if (match != undefined) {
-      context.application.emit('event', {
+      context.application.emit('guildGeneral', {
         localEvent: true,
+
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.QUEST,
-        username: undefined,
-        severity: Severity.GOOD,
-        message: context.message.trim(),
-        removeLater: false
+        instanceType: InstanceType.Minecraft,
+
+        color: Color.Good,
+        channels: [ChannelType.Public],
+
+        type: GuildGeneralEventType.Quest,
+        message: context.message.trim()
       })
     }
   }

@@ -1,4 +1,4 @@
-import type { PluginInterface, PluginContext } from '../common/plugins.js'
+import type { PluginContext, PluginInterface } from '../common/plugin.js'
 
 /* NOTICE
 THIS PLUGIN DOES NOTHING. ITS PURPOSE IS TO PROVIDE AN EXAMPLE OF SYNTAX.
@@ -10,6 +10,6 @@ export default {
   onRun(context: PluginContext): void {
     context.logger.info('Running on plugin')
     // do something e.g:
-    // app.clusterHelper.sendCommandToAllMinecraft("hello there!")
+    // application.clusterHelper.sendCommandToAllMinecraft("hello there!")
   }
 } satisfies PluginInterface
