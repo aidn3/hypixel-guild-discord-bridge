@@ -19,7 +19,7 @@ export default {
         .split(' ')
         .map((part) => {
           try {
-            if (part.startsWith('https:') || part.startsWith('http')) return encode(part)
+            if (part.startsWith('l$')) return decode(part)
           } catch {
             /* ignored */
           }
@@ -39,7 +39,7 @@ export default {
         .split(' ')
         .map((part) => {
           try {
-            if (part.startsWith('l$')) return decode(part)
+            if (part.startsWith('https:') || part.startsWith('http')) return encode(part)
           } catch {
             /* ignored */
           }
