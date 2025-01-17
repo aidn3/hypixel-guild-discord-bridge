@@ -13,7 +13,7 @@ export default {
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       )
       .addStringOption((option) =>
-        option.setName('rank').setDescription('rank to change to').setRequired(true)
+        option.setName('rank').setDescription('rank to change to').setRequired(true).setAutocomplete(true)
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
   allowInstance: false,
@@ -35,6 +35,11 @@ export default {
     if (option.name === 'username') {
       const response = context.application.autoComplete
         .username(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    } else if (option.name === 'rank') {
+      const response = context.application.autoComplete
+        .rank(option.value)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     }

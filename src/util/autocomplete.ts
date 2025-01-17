@@ -1,10 +1,26 @@
+import type { Logger } from 'log4js'
+import Logger4js from 'log4js'
+
 import type Application from '../application.js'
+import { InstanceType } from '../common/application-event.js'
+import UnexpectedErrorHandler from '../common/unexpected-error-handler.js'
 
 export default class Autocomplete {
+  private readonly application: Application
+  private readonly logger: Logger
+  private readonly errorHandler: UnexpectedErrorHandler
+
   private usernames: string[] = []
   private inclusion = new Set<string>()
 
+  private guildRanks: string[] = []
+
   constructor(application: Application) {
+    this.application = application
+    // eslint-disable-next-line import/no-named-as-default-member
+    this.logger = Logger4js.getLogger('Autocomplete')
+    this.errorHandler = new UnexpectedErrorHandler(this.logger)
+
     application.on('chat', (event) => {
       this.addUsername(event.username)
     })
@@ -35,19 +51,40 @@ export default class Autocomplete {
     setInterval(() => {
       application.clusterHelper.sendCommandToAllMinecraft('/guild list')
     }, 60_000)
+
+    const ranksResolver = setTimeout(() => {
+      void this.resolveGuildRanks().catch(this.errorHandler.promiseCatch('resolving guild ranks'))
+    }, 10 * 1000)
+    application.on('minecraftSelfBroadcast', (): void => {
+      ranksResolver.refresh()
+    })
+    application.on('selfBroadcast', (event): void => {
+      if (event.instanceType === InstanceType.Minecraft) {
+        ranksResolver.refresh()
+      }
+    })
+  }
+
+  public username(query: string): string[] {
+    return this.search(query, this.usernames)
+  }
+
+  public rank(query: string): string[] {
+    return this.search(query, this.guildRanks)
   }
 
   /**
    * Return a sorted list from best match to least.
    *
    * The results are sorted alphabetically by:
-   * - matching the query with the start of a username
+   * - matching the query with the start of a query
    * - matching any part of a username with the query
    *
    * @param query the usernames to look for
+   * @param collection collection to lookup the query in
    */
-  public username(query: string): string[] {
-    const copy = [...this.usernames]
+  private search(query: string, collection: string[]): string[] {
+    const copy = [...collection]
     copy.sort((a, b) => a.localeCompare(b))
 
     const queryLowerCased = query.toLowerCase()
@@ -73,5 +110,27 @@ export default class Autocomplete {
     if (this.inclusion.has(loweredCase)) return
     this.inclusion.add(loweredCase)
     this.usernames.push(username)
+  }
+
+  private async resolveGuildRanks(): Promise<void> {
+    this.logger.debug('Resolving guild ranks from server')
+
+    const guildsResolver = this.application.clusterHelper
+      .getMinecraftBots()
+      .map((bots) => bots.uuid)
+      .map((uuid) => this.application.hypixelApi.getGuild('player', uuid).catch(() => undefined))
+
+    const guilds = await Promise.all(guildsResolver)
+    for (const guild of guilds) {
+      if (guild === undefined) continue
+
+      for (const rank of guild.ranks) {
+        const rankName = rank.name
+
+        if (!this.guildRanks.includes(rankName)) {
+          this.guildRanks.push(rankName)
+        }
+      }
+    }
   }
 }
