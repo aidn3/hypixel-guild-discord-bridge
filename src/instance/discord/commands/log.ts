@@ -1,12 +1,11 @@
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Severity, InstanceType } from '../../../common/application-event.js'
-import { escapeDiscord } from '../../../util/shared-util.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import { Color, InstanceType } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 
@@ -23,7 +22,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
       `_You can select an instance via the optional command argument._\n\n`
   }
 
-  result += `**${escapeDiscord(targetInstance)}**\n`
+  result += `**${escapeMarkdown(targetInstance)}**\n`
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
@@ -32,12 +31,12 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
   } else {
     result += `_Could not fetch information for ${targetInstance}._`
     if (chatResult.error) {
-      result += `\n${escapeDiscord(chatResult.error)}`
+      result += `\n${escapeMarkdown(chatResult.error)}`
     }
   }
 
   return {
-    color: chatResult.guildLog ? Severity.DEFAULT : Severity.INFO,
+    color: chatResult.guildLog ? Color.Default : Color.Info,
     title: `${Title}${pageTitle}`,
     description: result,
     footer: {
@@ -62,7 +61,7 @@ export default {
 
     const currentPage: number = context.interaction.options.getNumber('page') ?? 1
     const chosenInstance: string | null = context.interaction.options.getString('instance')
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const soleInstance = instancesNames.length <= 1 || !!chosenInstance
     const targetInstanceName = chosenInstance ?? (instancesNames.length > 0 ? instancesNames[0] : undefined)
 
@@ -75,7 +74,7 @@ export default {
               `No Minecraft instance exist.\n` +
               'This is a Minecraft command that displays ingame logs of a guild.\n' +
               `Check the tutorial on how to add a Minecraft account.`,
-            color: Severity.INFO,
+            color: Color.Info,
             footer: {
               text: DefaultCommandFooter
             }
@@ -85,15 +84,21 @@ export default {
       return
     }
 
-    await interactivePaging(context.interaction, currentPage - 1, DefaultTimeout, async (requestedPage) => {
-      const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
-      return {
-        totalPages: chatResult.guildLog?.total ?? 0,
-        embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+    await interactivePaging(
+      context.interaction,
+      currentPage - 1,
+      DefaultTimeout,
+      context.errorHandler,
+      async (requestedPage) => {
+        const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
+        return {
+          totalPages: chatResult.guildLog?.total ?? 0,
+          embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+        }
       }
-    })
+    )
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
 async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
   const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g

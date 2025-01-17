@@ -1,13 +1,16 @@
-import { InstanceEventType, InstanceType } from '../common/application-event.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import type { Logger } from 'log4js'
+
+import { InstanceType } from '../common/application-event.js'
+import { Status } from '../common/client-instance.js'
+import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 /* WARNING
 THIS IS AN ESSENTIAL PLUGIN! EDITING IT MAY HAVE ADVERSE AFFECTS ON THE APPLICATION
 */
 
-async function limbo(clientInstance: MinecraftInstance): Promise<void> {
-  clientInstance.logger.debug('Spawn event triggered. sending to limbo...')
+async function limbo(logger: Logger, clientInstance: MinecraftInstance): Promise<void> {
+  logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
   await clientInstance.send('§')
 }
 
@@ -16,8 +19,8 @@ async function limbo(clientInstance: MinecraftInstance): Promise<void> {
  */
 export default {
   onRun(context: PluginContext): void {
-    context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.create && event.instanceType === InstanceType.MINECRAFT) {
+    context.application.on('instanceStatus', (event) => {
+      if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
         const localInstance = context.localInstances.find(
           (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
         )
@@ -25,10 +28,10 @@ export default {
           const clientInstance = localInstance as MinecraftInstance
           // "login" packet is also first spawn packet containing world metadata
           clientInstance.clientSession?.client.on('login', async () => {
-            await limbo(clientInstance)
+            await limbo(context.logger, clientInstance)
           })
           clientInstance.clientSession?.client.on('respawn', async () => {
-            await limbo(clientInstance)
+            await limbo(context.logger, clientInstance)
           })
         }
       }

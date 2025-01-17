@@ -41,7 +41,7 @@ export async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function shutdownApplication(exitCode: number): Promise<void> {
+export async function gracefullyExitProcess(exitCode: number): Promise<void> {
   const timeout = sleep(30_000).then(() => {
     console.warn('Logger flush timed out. Exiting...')
     process.exit(exitCode)
@@ -53,15 +53,4 @@ export async function shutdownApplication(exitCode: number): Promise<void> {
   })
 
   await timeout
-}
-
-export function escapeDiscord(message: string): string {
-  message = message.split('\\').join('\\\\') // "\"
-  message = message.split('_').join(String.raw`\_`) // Italic
-  message = message.split('*').join(String.raw`\*`) // bold
-  message = message.split('~').join(String.raw`\~`) // strikethrough
-  message = message.split('`').join('\\`') // code
-  message = message.split('@').join(String.raw`\@-`) // mentions
-
-  return message
 }

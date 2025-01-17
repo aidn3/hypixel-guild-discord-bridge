@@ -1,7 +1,7 @@
 import type { Client, SKYBLOCK_SKILL_DATA, SkyblockMember } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
 
 const Names = new Set([

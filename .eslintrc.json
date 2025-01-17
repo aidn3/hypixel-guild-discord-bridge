@@ -30,6 +30,7 @@
       "error",
       {
         "newlines-between": "always",
+        "named": true,
         "alphabetize": {
           "order": "asc",
           "caseInsensitive": true
@@ -41,6 +42,12 @@
     "import/newline-after-import": 2,
     "import/no-extraneous-dependencies": 2,
     "@typescript-eslint/consistent-type-imports": 2,
+    "@typescript-eslint/no-floating-promises": [
+      "error",
+      {
+        "ignoreVoid": false
+      }
+    ],
     "@typescript-eslint/naming-convention": [
       "error",
       {

@@ -1,14 +1,17 @@
 import assert from 'node:assert'
 
 import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent } from '../../../common/application-event.js'
-import { InstanceType, PunishmentType, Severity } from '../../../common/application-event.js'
+import { Color, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
-import { PunishedUsers } from '../../../util/punished-users.js'
-import { escapeDiscord, getDuration } from '../../../util/shared-util.js'
+import { getDuration } from '../../../util/shared-util.js'
+import { durationToMinecraftDuration } from '../../moderation/util.js'
 import {
   checkChatTriggers,
   formatChatTriggerResponse,
@@ -16,8 +19,6 @@ import {
   MuteChat,
   UnmuteChat
 } from '../common/chat-triggers.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'
 
@@ -32,7 +33,11 @@ export default {
           .setName('ban')
           .setDescription('Add a member to banned list')
           .addStringOption((option) =>
-            option.setName('username').setDescription('username of the player to ban').setRequired(true)
+            option
+              .setName('username')
+              .setDescription('username of the player to ban')
+              .setRequired(true)
+              .setAutocomplete(true)
           )
           .addStringOption((option) =>
             option.setName('reason').setDescription('reason to ban the player').setRequired(true)
@@ -52,7 +57,11 @@ export default {
           .setName('mute')
           .setDescription('Add a member to muted list')
           .addStringOption((option) =>
-            option.setName('username').setDescription('username of the player to mute').setRequired(true)
+            option
+              .setName('username')
+              .setDescription('username of the player to mute')
+              .setRequired(true)
+              .setAutocomplete(true)
           )
           .addStringOption((option) =>
             option.setName('reason').setDescription('reason to mute the player').setRequired(true)
@@ -72,7 +81,11 @@ export default {
           .setName('kick')
           .setDescription('kick a member from all Minecraft instances')
           .addStringOption((option) =>
-            option.setName('user').setDescription('username or userUuid of the player to kick').setRequired(true)
+            option
+              .setName('user')
+              .setDescription('username or userUuid of the player to kick')
+              .setRequired(true)
+              .setAutocomplete(true)
           )
           .addStringOption((option) =>
             option.setName('reason').setDescription('reason to kick the player').setRequired(true)
@@ -87,6 +100,7 @@ export default {
               .setName('user')
               .setDescription('username or userUuid or discord-id of the player to forgive')
               .setRequired(true)
+              .setAutocomplete(true)
           )
           .addBooleanOption((option) =>
             option.setName('no-discord').setDescription('Do not check with Discord for similar names')
@@ -104,6 +118,7 @@ export default {
               .setName('user')
               .setDescription('username or userUuid or discord-id of the person to check')
               .setRequired(true)
+              .setAutocomplete(true)
           )
       )
       .addSubcommand(
@@ -139,7 +154,7 @@ export default {
         return
       }
       case 'list': {
-        await handleAllListInteraction(context.application, context.interaction)
+        await handleAllListInteraction(context.application, context.interaction, context.errorHandler)
         return
       }
       case 'forgive': {
@@ -148,19 +163,33 @@ export default {
           return
         }
 
-        await handleForgiveInteraction(context.application, context.instanceName, context.interaction)
+        await handleForgiveInteraction(
+          context.application,
+          context.instanceName,
+          context.interaction,
+          context.errorHandler
+        )
         return
       }
       case 'check': {
-        await handleCheckInteraction(context.application, context.interaction)
+        await handleCheckInteraction(context.application, context.interaction, context.errorHandler)
         return
       }
       default: {
         throw new Error('No such command flow found')
       }
     }
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username' || option.name === 'user') {
+      const response = context.application.autoComplete
+        .username(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
 async function handleBanAddInteraction(
   application: Application,
@@ -179,23 +208,23 @@ async function handleBanAddInteraction(
 
   const event: PunishmentAddEvent = {
     localEvent: true,
-    instanceType: InstanceType.DISCORD,
+    instanceType: InstanceType.Discord,
     instanceName: instanceName,
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
     userDiscordId: userIdentifiers.discordUserId,
 
-    type: PunishmentType.BAN,
+    type: PunishmentType.Ban,
     reason: reason,
     till: Date.now() + punishDuration
   }
 
-  application.punishedUsers.punish(event)
+  application.moderation.punishments.add(event)
   const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
 
   const result = await checkChatTriggers(application, KickChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Ban ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Ban ${escapeMarkdown(username)}`)
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
 }
@@ -217,23 +246,23 @@ async function handleMuteAddInteraction(
 
   const event: PunishmentAddEvent = {
     localEvent: true,
-    instanceType: InstanceType.DISCORD,
+    instanceType: InstanceType.Discord,
     instanceName: instanceName,
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
     userDiscordId: userIdentifiers.discordUserId,
 
-    type: PunishmentType.MUTE,
+    type: PunishmentType.Mute,
     reason: reason,
     till: Date.now() + muteDuration
   }
 
-  application.punishedUsers.punish(event)
-  const command = `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(muteDuration)}`
+  application.moderation.punishments.add(event)
+  const command = `/guild mute ${username} ${durationToMinecraftDuration(muteDuration)}`
 
   const result = await checkChatTriggers(application, MuteChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Mute ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Mute ${escapeMarkdown(username)}`)
 
   application.clusterHelper.sendCommandToAllMinecraft(
     `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
@@ -251,22 +280,22 @@ async function handleKickInteraction(
   const command = `/g kick ${username} ${reason}`
 
   const result = await checkChatTriggers(application, KickChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Kick ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Kick ${escapeMarkdown(username)}`)
 
   await interaction.editReply({
     embeds: [
       {
-        color: Severity.GOOD,
+        color: Color.Good,
         title: 'Punishment Status',
         description: `Kick command has been sent.\nPlease, ensure the player has been kicked.`,
         fields: [
           {
             name: 'Username',
-            value: escapeDiscord(username)
+            value: escapeMarkdown(username)
           },
           {
             name: 'reason',
-            value: escapeDiscord(reason)
+            value: escapeMarkdown(reason)
           }
         ],
         footer: { text: DefaultCommandFooter }
@@ -279,7 +308,8 @@ async function handleKickInteraction(
 async function handleForgiveInteraction(
   application: Application,
   instanceName: string,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
@@ -294,9 +324,9 @@ async function handleForgiveInteraction(
   )
   const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
-  const forgivenPunishments = application.punishedUsers.forgive({
+  const forgivenPunishments = application.moderation.punishments.remove({
     localEvent: true,
-    instanceType: InstanceType.DISCORD,
+    instanceType: InstanceType.Discord,
     instanceName: instanceName,
     userIdentifiers: userIdentifiers
   })
@@ -304,7 +334,7 @@ async function handleForgiveInteraction(
   const command = `/guild unmute ${userResolvedData.userName}`
 
   const result = await checkChatTriggers(application, UnmuteChat, undefined, command, username)
-  const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeDiscord(username)}`)
+  const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeMarkdown(username)}`)
 
   const pages: APIEmbed[] = []
   for (let index = 0; index < forgivenPunishments.length; index++) {
@@ -322,28 +352,30 @@ async function handleForgiveInteraction(
   } else if (pages.length === 1) {
     await interaction.editReply({ embeds: [pages[0], formatted] })
   } else {
-    await pageMessage(interaction, pages)
+    await pageMessage(interaction, pages, errorHandler)
     await interaction.followUp({ embeds: [formatted] })
   }
 }
 
 async function handleAllListInteraction(
   application: Application,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
-  const list = application.punishedUsers.getAllPunishments()
-  await pageMessage(interaction, formatList(list))
+  const list = application.moderation.punishments.all()
+  await pageMessage(interaction, formatList(list), errorHandler)
 }
 
 async function handleCheckInteraction(
   application: Application,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const userResolvedData = await findAboutUser(application.mojangApi, interaction, username, false, false)
   const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
-  const activePunishments = application.punishedUsers.findPunishmentsByUser(userIdentifiers)
+  const activePunishments = application.moderation.punishments.findByUser(userIdentifiers)
 
   const pages: APIEmbed[] = []
   for (let index = 0; index < activePunishments.length; index++) {
@@ -352,7 +384,7 @@ async function handleCheckInteraction(
   }
 
   await (pages.length > 0
-    ? pageMessage(interaction, pages)
+    ? pageMessage(interaction, pages, errorHandler)
     : interaction.editReply({
         embeds: [
           formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId)
@@ -364,7 +396,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
   if (list.length === 0) {
     return [
       {
-        color: Severity.INFO,
+        color: Color.Info,
         title: `Active Punishments`,
         description: '_There are no active punishments._',
         footer: {
@@ -382,7 +414,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
 
   for (const punishment of list) {
     entries.push(
-      `- [${punishment.type}] Expires <t:${Math.floor(punishment.till / 1000)}:R> **${escapeDiscord(punishment.userName)}**: ${escapeDiscord(punishment.reason)}\n`
+      `- [${punishment.type}] Expires <t:${Math.floor(punishment.till / 1000)}:R> **${escapeMarkdown(punishment.userName)}**: ${escapeMarkdown(punishment.reason)}\n`
     )
   }
 
@@ -397,7 +429,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
       entriesCount = 0
 
       pages.push({
-        color: Severity.DEFAULT,
+        color: Color.Default,
         title: `Active Punishments (${list.length}):`,
         description: '',
         footer: {
@@ -437,7 +469,7 @@ function formatPunishmentAdd(event: PunishmentAddEvent, noUuidCheck: boolean): A
 
 function formatPunishmentStatus(event: PunishmentAddEvent, description: string): APIEmbed {
   return {
-    color: Severity.GOOD,
+    color: Color.Good,
     title: 'Punishment Status',
     description: description,
     fields: [
@@ -489,7 +521,7 @@ function formatNoPunishmentStatus(
   discordUserId: string | undefined
 ): APIEmbed {
   return {
-    color: Severity.GOOD,
+    color: Color.Good,
     title: 'Punishment Status',
     description: 'There is no active punishments for that user.',
     fields: [

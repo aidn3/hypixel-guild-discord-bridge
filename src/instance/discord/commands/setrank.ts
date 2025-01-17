@@ -1,9 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { escapeDiscord } from '../../../util/shared-util.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 
 export default {
   getCommandBuilder: () =>
@@ -11,10 +10,10 @@ export default {
       .setName('setrank')
       .setDescription('setrank guild member in-game')
       .addStringOption((option) =>
-        option.setName('username').setDescription('Username of the player').setRequired(true)
+        option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       )
       .addStringOption((option) =>
-        option.setName('rank').setDescription('rank to change to').setRequired(true)
+        option.setName('rank').setDescription('rank to change to').setRequired(true).setAutocomplete(true)
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
   allowInstance: false,
@@ -27,8 +26,22 @@ export default {
 
     const command = `/g setrank ${username} ${rank}`
     const result = await checkChatTriggers(context.application, RankChat, undefined, command, username)
-    const formatted = formatChatTriggerResponse(result, `Setrank ${escapeDiscord(username)}`)
+    const formatted = formatChatTriggerResponse(result, `Setrank ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username') {
+      const response = context.application.autoComplete
+        .username(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    } else if (option.name === 'rank') {
+      const response = context.application.autoComplete
+        .rank(option.value)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, InstanceType, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 const Messages = [
@@ -27,20 +27,23 @@ export default {
     if (match != undefined) {
       const randomMessage = Messages[Math.floor(Math.random() * Messages.length)]
 
-      context.application.emit('event', {
+      context.application.emit('minecraftChatEvent', {
         localEvent: true,
+
         instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.REPEAT,
-        username: undefined,
-        severity: Severity.INFO,
-        message: randomMessage,
-        removeLater: false
+        instanceType: InstanceType.Minecraft,
+
+        color: Color.Info,
+        channels: [ChannelType.Public],
+
+        type: MinecraftChatEventType.Repeat,
+        message: randomMessage
       })
 
       if (lastWarning + 5000 < Date.now()) {
-        void context.clientInstance.send(`/gc @${randomMessage}`)
+        void context.clientInstance
+          .send(`/gc @${randomMessage}`)
+          .catch(context.errorHandler.promiseCatch('sending message about repeating in chat'))
         lastWarning = Date.now()
       }
     }

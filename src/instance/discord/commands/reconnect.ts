@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('reconnect minecraft clients'),
@@ -18,4 +18,4 @@ export default {
     })
     await context.interaction.editReply('Reconnect signal has been sent!')
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

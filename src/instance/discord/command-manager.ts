@@ -1,16 +1,21 @@
-import assert from 'node:assert'
-
 import type {
-  BaseInteraction,
+  AutocompleteInteraction,
   ChatInputCommandInteraction,
-  CommandInteraction,
+  Client,
   GuildMemberRoleManager,
+  Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
-import { Collection, GuildMember, REST, Routes } from 'discord.js'
+import { Collection, REST, Routes } from 'discord.js'
+import type { Logger } from 'log4js'
 
+import type { DiscordConfig } from '../../application-config.js'
+import type Application from '../../application.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
+import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
+import { Permission } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
@@ -26,41 +31,61 @@ import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
-import type { CommandInterface, DiscordCommandContext } from './common/command-interface.js'
-import { Permission } from './common/command-interface.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends EventHandler<DiscordInstance> {
-  readonly commands = new Collection<string, CommandInterface>()
+  readonly commands = new Collection<string, DiscordCommandHandler>()
 
-  constructor(discordInstance: DiscordInstance) {
-    super(discordInstance)
+  private readonly config
+
+  constructor(
+    application: Application,
+    clientInstance: DiscordInstance,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    config: DiscordConfig
+  ) {
+    super(application, clientInstance, logger, errorHandler)
+    this.config = config
 
     this.addDefaultCommands()
-
-    let timeoutId: undefined | NodeJS.Timeout
-    const timerReset = (): void => {
-      if (timeoutId != undefined) clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        this.registerDiscordCommand()
-      }, 5 * 1000)
-    }
-    this.clientInstance.app.on('minecraftSelfBroadcast', (): void => {
-      timerReset()
-    })
-    this.clientInstance.app.on('selfBroadcast', (event): void => {
-      if (event.instanceType === InstanceType.MINECRAFT) {
-        timerReset()
-      }
-    })
-    timerReset()
   }
 
   registerEvents(): void {
-    this.clientInstance.client.on('interactionCreate', (interaction) => {
-      void this.interactionCreate(interaction)
+    let listenerStarted = false
+    this.clientInstance.client.on('ready', (client) => {
+      if (listenerStarted) return
+      listenerStarted = true
+      this.listenToRegisterCommands(client)
     })
-    this.clientInstance.logger.debug('CommandManager is registered')
+
+    this.clientInstance.client.on('interactionCreate', (interaction) => {
+      if (interaction.isChatInputCommand()) {
+        void this.onCommand(interaction).catch(
+          this.errorHandler.promiseCatch('handling incoming ChatInputCommand event')
+        )
+      } else if (interaction.isAutocomplete()) {
+        void this.onAutoComplete(interaction).catch(
+          this.errorHandler.promiseCatch('handling incoming autocomplete event')
+        )
+      }
+    })
+    this.logger.debug('CommandManager is registered')
+  }
+
+  private listenToRegisterCommands(client: Client<true>): void {
+    const timeoutId = setTimeout(() => {
+      this.registerDiscordCommand(client)
+    }, 5 * 1000)
+
+    this.application.on('minecraftSelfBroadcast', (): void => {
+      timeoutId.refresh()
+    })
+    this.application.on('selfBroadcast', (event): void => {
+      if (event.instanceType === InstanceType.Minecraft) {
+        timeoutId.refresh()
+      }
+    })
   }
 
   private addDefaultCommands(): void {
@@ -86,16 +111,39 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private async interactionCreate(interaction: BaseInteraction): Promise<void> {
-    if (!interaction.isCommand()) return
+  private async onAutoComplete(interaction: AutocompleteInteraction): Promise<void> {
+    const command = this.commands.get(interaction.commandName)
+    if (!command) {
+      this.logger.warn(`command ${interaction.commandName} not found for autocomplete interaction.`)
+      return
+    }
 
-    this.clientInstance.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
+    if (command.autoComplete) {
+      const context: DiscordAutoCompleteContext = {
+        application: this.application,
+        logger: this.logger,
+        errorHandler: this.errorHandler,
+        instanceName: this.clientInstance.instanceName,
+        privilege: this.resolvePrivilegeLevel(interaction),
+        interaction: interaction
+      }
+
+      try {
+        await command.autoComplete(context)
+      } catch (error: unknown) {
+        this.logger.error(error)
+      }
+    }
+  }
+
+  private async onCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+    this.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
     const command = this.commands.get(interaction.commandName)
 
     try {
       const channelType = this.getChannelType(interaction.channelId)
       if (command == undefined) {
-        this.clientInstance.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
+        this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
         await interaction.reply({
           content: 'Command is not implemented somehow. Maybe there is new version?',
@@ -103,7 +151,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         })
         return
       } else if (!channelType) {
-        this.clientInstance.logger.debug(`can't execute in channel ${interaction.channelId}`)
+        this.logger.debug(`can't execute in channel ${interaction.channelId}`)
 
         await interaction.reply({
           content: 'You can only use commands in public/officer bridge channels!',
@@ -111,15 +159,14 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         })
         return
       } else if (this.memberAllowed(interaction, command.permission)) {
-        this.clientInstance.logger.debug('execution granted.')
+        this.logger.debug('execution granted.')
 
-        const username =
-          interaction.member instanceof GuildMember ? interaction.member.displayName : interaction.user.displayName
+        const username = interaction.inCachedGuild() ? interaction.member.displayName : interaction.user.displayName
 
-        this.clientInstance.app.emit('command', {
+        this.application.emit('command', {
           localEvent: true,
           instanceName: this.clientInstance.instanceName,
-          instanceType: InstanceType.DISCORD,
+          instanceType: InstanceType.Discord,
           channelType: channelType,
           discordChannelId: interaction.channelId,
           username,
@@ -132,11 +179,12 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         })
 
         const commandContext: DiscordCommandContext = {
-          application: this.clientInstance.app,
-          logger: this.clientInstance.logger,
+          application: this.application,
+          logger: this.logger,
+          errorHandler: this.errorHandler,
           instanceName: this.clientInstance.instanceName,
           privilege: this.resolvePrivilegeLevel(interaction),
-          interaction: interaction as ChatInputCommandInteraction,
+          interaction: interaction,
 
           showPermissionDenied: async () => {
             if (interaction.deferred || interaction.replied) {
@@ -157,7 +205,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         await command.handler(commandContext)
         return
       } else {
-        this.clientInstance.logger.debug('No permission to execute this command')
+        this.logger.debug('No permission to execute this command')
 
         await interaction.reply({
           content: "You don't have permission to execute this command",
@@ -166,7 +214,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         return
       }
     } catch (error) {
-      this.clientInstance.logger.error(error)
+      this.logger.error(error)
 
       if (interaction.deferred || interaction.replied) {
         await interaction.editReply({
@@ -183,39 +231,39 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     }
   }
 
-  private registerDiscordCommand(): void {
-    this.clientInstance.logger.debug('Registering commands')
-    assert(this.clientInstance.client.token)
-    assert(this.clientInstance.client.application)
+  private registerDiscordCommand(client: Client<true>): void {
+    this.logger.debug('Registering commands')
 
-    const token = this.clientInstance.client.token
-    const clientId = this.clientInstance.client.application.id
+    const token = client.token
+    const clientId = client.application.id
     const commandsJson = this.getCommandsJson()
 
-    for (const [, guild] of this.clientInstance.client.guilds.cache) {
-      this.clientInstance.logger.debug(`Informing guild ${guild.id} about commands`)
+    for (const [, guild] of client.guilds.cache) {
+      this.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
-      void rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
+      void rest
+        .put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
+        .catch(this.errorHandler.promiseCatch('registering discord commands'))
     }
   }
 
-  private memberAllowed(interaction: CommandInteraction, permissionLevel: Permission): boolean {
+  private memberAllowed(interaction: Interaction, permissionLevel: Permission): boolean {
     if (permissionLevel === Permission.Anyone) return true
 
     return this.resolvePrivilegeLevel(interaction) >= permissionLevel
   }
 
-  private resolvePrivilegeLevel(interaction: CommandInteraction): Permission {
-    if (interaction.user.id === this.clientInstance.config.adminId) return Permission.Admin
+  private resolvePrivilegeLevel(interaction: Interaction): Permission {
+    if (interaction.user.id === this.config.adminId) return Permission.Admin
 
     const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
     if (roles == undefined) return Permission.Anyone
 
-    if (roles.cache.some((role) => this.clientInstance.config.officerRoleIds.includes(role.id))) {
+    if (roles.cache.some((role) => this.config.officerRoleIds.includes(role.id))) {
       return Permission.Officer
     }
 
-    if (roles.cache.some((role) => this.clientInstance.config.helperRoleIds.includes(role.id))) {
+    if (roles.cache.some((role) => this.config.helperRoleIds.includes(role.id))) {
       return Permission.Helper
     }
 
@@ -223,15 +271,15 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   }
 
   private getChannelType(channelId: string): ChannelType | undefined {
-    if (this.clientInstance.config.publicChannelIds.includes(channelId)) return ChannelType.PUBLIC
-    if (this.clientInstance.config.officerChannelIds.includes(channelId)) return ChannelType.OFFICER
+    if (this.config.publicChannelIds.includes(channelId)) return ChannelType.Public
+    if (this.config.officerChannelIds.includes(channelId)) return ChannelType.Officer
     return undefined
   }
 
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
-    const instanceChoices = this.clientInstance.app.clusterHelper
-      .getInstancesNames(InstanceType.MINECRAFT)
+    const instanceChoices = this.application.clusterHelper
+      .getInstancesNames(InstanceType.Minecraft)
       .map((choice: string) => ({
         name: choice,
         value: choice

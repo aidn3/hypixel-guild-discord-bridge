@@ -1,14 +1,14 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Severity } from '../../../common/application-event.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import { Color } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
   return {
-    color: Severity.DEFAULT,
+    color: Color.Default,
     title: 'Discord Ping',
     description:
       `**Latency:** ${latency}ms\n` + `**Websocket heartbeat:** ${websocket}ms.\n` + `**Server lag:** ${lag}ms`,
@@ -34,4 +34,4 @@ export default {
 
     await context.interaction.editReply({ embeds: [createPing(latency, websocket, lag)] })
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

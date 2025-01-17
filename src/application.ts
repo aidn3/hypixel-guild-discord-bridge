@@ -1,3 +1,6 @@
+/* eslint @typescript-eslint/explicit-member-accessibility: "error" */
+// @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
+
 import type Events from 'node:events'
 import path from 'node:path'
 import * as process from 'node:process'
@@ -13,44 +16,51 @@ import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents } from './common/application-event.js'
 import { InstanceType } from './common/application-event.js'
 import type { ClientInstance } from './common/client-instance.js'
-import { INTERNAL_INSTANCE_PREFIX } from './common/client-instance.js'
-import type { PluginInterface } from './common/plugins.js'
+import { InternalInstancePrefix } from './common/client-instance.js'
+import type { PluginInterface } from './common/plugin.js'
+import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
+import Autocomplete from './util/autocomplete.js'
 import { MojangApi } from './util/mojang.js'
-import { PunishedUsers } from './util/punished-users.js'
-import { shutdownApplication, sleep } from './util/shared-util.js'
+import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> {
+  public readonly clusterHelper: ClusterHelper
+  public readonly autoComplete: Autocomplete
+  public readonly moderation: ModerationInstance
+  public readonly profanityFilter: BadWords.BadWords
+
+  public readonly hypixelApi: HypixelClient
+  public readonly mojangApi: MojangApi
+
   private readonly logger: Logger
+  private readonly errorHandler: UnexpectedErrorHandler
+
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
   private readonly plugins: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
 
-  readonly commandsInstance: CommandsInstance | undefined
-  readonly discordInstance: DiscordInstance | undefined
+  private readonly commandsInstance: CommandsInstance | undefined
+  private readonly discordInstance: DiscordInstance | undefined
   private readonly loggerInstances: LoggerInstance[] = []
   private readonly metricsInstance: MetricsInstance | undefined
   private readonly minecraftInstances: MinecraftInstance[] = []
   private readonly socketInstance: SocketInstance | undefined
 
-  readonly clusterHelper: ClusterHelper
-  readonly punishedUsers: PunishedUsers
-  readonly profanityFilter: BadWords.BadWords
-
-  readonly hypixelApi: HypixelClient
-  readonly mojangApi: MojangApi
-
-  constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
+  public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
+    this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
+
     emitAll(this) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
@@ -61,8 +71,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishedUsers = new PunishedUsers(this)
+    this.moderation = new ModerationInstance(this, this.mojangApi)
     this.clusterHelper = new ClusterHelper(this)
+    this.autoComplete = new Autocomplete(this)
 
     this.profanityFilter = new BadWords({
       emptyList: !this.config.profanity.enabled
@@ -78,7 +89,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       this.loggerInstances.push(
         new LoggerInstance(
           this,
-          `${INTERNAL_INSTANCE_PREFIX}${InstanceType.Logger}-${index + 1}`,
+          `${InternalInstancePrefix}${InstanceType.Logger}-${index + 1}`,
           this.config.loggers[index]
         )
       )
@@ -91,15 +102,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.metricsInstance = this.config.metrics.enabled
-      ? new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
+      ? new MetricsInstance(this, InternalInstancePrefix + InstanceType.Metrics, this.config.metrics)
       : undefined
 
     this.socketInstance = this.config.socket.enabled
-      ? new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket)
+      ? new SocketInstance(this, InternalInstancePrefix + InstanceType.Socket, this.config.socket)
       : undefined
 
     this.commandsInstance = this.config.commands.enabled
-      ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
+      ? new CommandsInstance(this, InternalInstancePrefix + InstanceType.Commands, this.config.commands)
       : undefined
 
     this.plugins = this.loadPlugins(rootDirectory)
@@ -112,9 +123,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         }
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-        void sleep(5000).then(() => {
-          void shutdownApplication(2)
-        })
+        void sleep(5000)
+          .then(async () => {
+            await gracefullyExitProcess(2)
+          })
+          .catch(this.errorHandler.promiseCatch('shutting down application with shutdownSignal'))
       }
     })
   }
@@ -122,6 +135,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
+
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
     let filtered: string
     try {
@@ -139,28 +153,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     return { filteredMessage: filtered, changed: message !== filtered }
   }
 
-  private loadPlugins(
-    rootDirectory: string
-  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
-    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
-
-    for (const pluginPath of this.config.plugins) {
-      let newPath: string = path.resolve(rootDirectory, pluginPath)
-      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
-        newPath = `file:///${newPath}`
-      }
-
-      result.push({
-        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
-        originalPath: pluginPath,
-        name: path.basename(pluginPath)
-      })
-    }
-
-    return result
-  }
-
-  async sendConnectSignal(): Promise<void> {
+  public async sendConnectSignal(): Promise<void> {
     this.logger.debug('Sending signal to all plugins')
     for (const p of this.plugins) {
       this.logger.debug(`Loading Plugin ${p.originalPath}`)
@@ -206,10 +199,31 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
 
     this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.punishedUsers.getAllPunishments()) {
+    for (const punishment of this.moderation.punishments.all()) {
       punishment.localEvent = true
       this.emit('punishmentAdd', punishment)
     }
+  }
+
+  private loadPlugins(
+    rootDirectory: string
+  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
+    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+
+    for (const pluginPath of this.config.plugins) {
+      let newPath: string = path.resolve(rootDirectory, pluginPath)
+      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
+        newPath = `file:///${newPath}`
+      }
+
+      result.push({
+        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
+        originalPath: pluginPath,
+        name: path.basename(pluginPath)
+      })
+    }
+
+    return result
   }
 
   private getAllInstances(): ClientInstance<unknown>[] {
@@ -226,12 +240,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   }
 }
 
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
 function emitAll(emitter: Events): void {
   const old = emitter.emit
-  emitter.emit = (event: string, ...arguments_): boolean => {
-    if (event !== '*') emitter.emit('*', event, ...arguments_)
-    return old.call(emitter, event, ...arguments_)
+  emitter.emit = (event: string, ...callerArguments): boolean => {
+    if (event !== 'all') emitter.emit('all', event, ...callerArguments)
+    return old.call(emitter, event, ...callerArguments)
   }
 }
-/* eslint-enable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+
+/* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
