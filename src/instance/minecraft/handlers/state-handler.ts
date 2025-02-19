@@ -136,8 +136,12 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         type: InstanceEventType.conflict,
         message: 'Someone logged in from another place.\n' + "Won't try to re-login.\n" + 'Restart to reconnect.'
       })
-    } else if (reason.includes('banned')) {
-      this.clientInstance.logger.fatal('Instance will shut off since the account has been banned')
+    } else if (
+      reason.includes('You are permanently banned') ||
+      reason.includes('You are temporarily banned') ||
+      reason.includes('Your account has been blocked')
+    ) {
+      this.clientInstance.logger.fatal('Instance will shut off since the account has been banned/blocked')
       this.clientInstance.status = Status.FAILED
 
       this.clientInstance.app.emit('instance', {
@@ -145,7 +149,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         instanceName: this.clientInstance.instanceName,
         instanceType: InstanceType.MINECRAFT,
         type: InstanceEventType.end,
-        message: 'Account has been banned.\n' + "Won't try to re-login.\n"
+        message: 'Account has been banned/blocked.\n' + "Won't try to re-login.\n"
       })
     } else {
       this.clientInstance.app.emit('instance', {
