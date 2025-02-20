@@ -65,7 +65,7 @@ export default class PersonalBest extends ChatCommandHandler {
           username,
           `floor ${selectedFloorWithEntrance}`,
           dungeon.catacombs.fastest_time?.[selectedFloorWithEntrance],
-          dungeon.catacombs.fastest_time_s?.[selectedFloorWithEntrance],
+          dungeon.catacombs.fastest_time_s?.[selectedFloorWithoutEntrance],
           dungeon.catacombs.fastest_time_s_plus?.[selectedFloorWithoutEntrance]
         )
       }
