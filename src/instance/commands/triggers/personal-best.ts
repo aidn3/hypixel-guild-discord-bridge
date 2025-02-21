@@ -48,6 +48,7 @@ export default class PersonalBest extends ChatCommandHandler {
         return this.formatFloor(
           username,
           `master mode ${selectedFloorWithoutEntrance}`,
+          dungeon.master_catacombs.fastest_time?.[selectedFloorWithoutEntrance],
           dungeon.master_catacombs.fastest_time_s?.[selectedFloorWithoutEntrance],
           dungeon.master_catacombs.fastest_time_s_plus?.[selectedFloorWithoutEntrance]
         )
@@ -56,13 +57,15 @@ export default class PersonalBest extends ChatCommandHandler {
           username,
           `entrance floor`,
           dungeon.catacombs.fastest_time?.[selectedFloorWithEntrance],
+          undefined,
           undefined
         )
       } else {
         return this.formatFloor(
           username,
           `floor ${selectedFloorWithEntrance}`,
-          dungeon.catacombs.fastest_time_s?.[selectedFloorWithEntrance],
+          dungeon.catacombs.fastest_time?.[selectedFloorWithEntrance],
+          dungeon.catacombs.fastest_time_s?.[selectedFloorWithoutEntrance],
           dungeon.catacombs.fastest_time_s_plus?.[selectedFloorWithoutEntrance]
         )
       }
@@ -80,8 +83,9 @@ export default class PersonalBest extends ChatCommandHandler {
         return this.formatFloor(
           username,
           `master mode ${selectedFloor}`,
+          dungeon.master_catacombs.fastest_time?.[selectedFloor],
           dungeon.master_catacombs.fastest_time_s?.[selectedFloor],
-          dungeon.master_catacombs.fastest_time_s?.[selectedFloor]
+          dungeon.master_catacombs.fastest_time_s_plus[selectedFloor]
         )
       }
     }
@@ -98,14 +102,15 @@ export default class PersonalBest extends ChatCommandHandler {
         return this.formatFloor(
           username,
           `floor ${selectedFloor}`,
+          dungeon.catacombs.fastest_time?.[selectedFloor],
           dungeon.catacombs.fastest_time_s?.[selectedFloor],
-          dungeon.catacombs.fastest_time_s?.[selectedFloor]
+          dungeon.catacombs.fastest_time_s_plus[selectedFloor]
         )
       }
     }
 
     if (dungeon.catacombs.fastest_time?.['0']) {
-      return this.formatFloor(username, 'Entrance floor', dungeon.catacombs.fastest_time['0'], undefined)
+      return this.formatFloor(username, 'Entrance floor', dungeon.catacombs.fastest_time['0'], undefined, undefined)
     }
 
     return 'Player never played dungeons before?'
@@ -114,15 +119,15 @@ export default class PersonalBest extends ChatCommandHandler {
   private static formatFloor(
     username: string,
     floorName: string,
+    completion: number | undefined,
     s: number | undefined,
     sPlus: number | undefined
   ): string {
-    if (s === undefined && sPlus === undefined) return `${username} never finished ${floorName}`
-
     let result = `${username} finished ${floorName} with `
 
-    if (s !== undefined && sPlus !== undefined && s === sPlus) {
-      result += `an S/+ ${this.formatTime(sPlus)}`
+    if (s === undefined && sPlus === undefined) {
+      if (completion === undefined) return `${username} never finished ${floorName}`
+      result += `a completion ${this.formatTime(completion)}`
       return result
     }
 
