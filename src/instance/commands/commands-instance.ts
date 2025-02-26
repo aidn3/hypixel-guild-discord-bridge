@@ -31,6 +31,7 @@ import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
 import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
+import Vengeance from './triggers/vengence.js'
 import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ClientInstance<CommandsConfig> {
@@ -65,6 +66,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Soopy(),
       new StatusCommand(),
       new Toggle(),
+      new Vengeance(),
       new Weight(),
       new Bits()
     ]
