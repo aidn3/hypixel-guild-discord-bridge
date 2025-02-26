@@ -21,6 +21,12 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
     if (error.code === 'EAI_AGAIN') {
       this.logger.error('Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...')
       this.restart()
+    } else if (error.message.includes('socket disconnected before secure TLS connection')) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Failed to establish secure connection. Trying again in 30 seconds...'
+      )
+      this.restart()
     } else if (error.message.includes('Too Many Requests')) {
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Disconnected,
