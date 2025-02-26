@@ -1,0 +1,19 @@
+{
+  "name": "Hypixel Guild Discord Bridge (DevContainer)",
+  "image": "node:lts",
+  "features": {
+    // needed to test docker production
+    "ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker": {},
+    // needed to checkout and commit
+    "ghcr.io/devcontainers/features/git": {},
+    "ghcr.io/devcontainers/features/github-cli": {},
+    "ghcr.io/cirolosapio/devcontainers-features/alpine-openssh": {}
+  },
+  "onCreateCommand": "npm install -g",
+  "remoteUser": "node",
+  "customizations": {
+    "jetbrains": {
+      "backend": "WebStorm"
+    }
+  }
+}
