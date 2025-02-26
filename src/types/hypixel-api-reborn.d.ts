@@ -74,6 +74,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2DungeonsMasterCatacombs {
     tier_completions: Record<DungeonFloors | 'total', number | undefined> | undefined
+    fastest_time: Record<DungeonFloors | 'best', number | undefined> | undefined
     fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
     fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined
   }

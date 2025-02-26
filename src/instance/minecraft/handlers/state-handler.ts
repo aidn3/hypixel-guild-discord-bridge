@@ -117,9 +117,16 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         Status.Failed,
         "Someone logged in from another place.\nWon't try to re-login.\nRestart to reconnect."
       )
-    } else if (reason.includes('banned')) {
+    } else if (
+      reason.includes('You are permanently banned') ||
+      reason.includes('You are temporarily banned') ||
+      reason.includes('Your account has been blocked')
+    ) {
       this.logger.fatal('Instance will shut off since the account has been banned')
-      this.clientInstance.setAndBroadcastNewStatus(Status.Failed, "Account has been banned.\nWon't try to re-login.\n")
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Failed,
+        "Account has been banned/blocked.\nWon't try to re-login.\n"
+      )
     } else {
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Disconnected,
