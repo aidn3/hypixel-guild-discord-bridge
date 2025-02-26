@@ -1,0 +1,14 @@
+{
+  "name": "Hypixel Guild Discord Bridge (DevContainer)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "features": {
+    // needed to test docker production
+    //"ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker": {},
+    // needed to checkout and commit
+    "ghcr.io/devcontainers/features/git": {},
+    //"ghcr.io/devcontainers/features/github-cli": {},
+  },
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "npm install",
+  "remoteUser": "node"
+}
