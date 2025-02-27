@@ -2,7 +2,6 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 
-import type { ClientInstance } from './client-instance.js'
 import type { ChatCommandHandler, DiscordCommandHandler } from './commands.js'
 
 export interface PluginInterface {
