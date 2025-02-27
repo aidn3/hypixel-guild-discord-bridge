@@ -170,7 +170,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
           channelType: channelType,
           discordChannelId: interaction.channelId,
           username,
-          fullCommand: interaction.command?.options.toString() ?? '',
+          fullCommand: interaction.options.data.map((option) => `${option.name}:${option.value}`).join(' '),
           commandName: interaction.commandName,
           // discord commands response are long
           // and not useful for others across platform to read
