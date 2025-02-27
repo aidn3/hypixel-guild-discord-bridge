@@ -37,9 +37,17 @@ export const CommandsConfig = t.iface([], {
   "disabledCommand": t.array("string"),
 });
 
-export const ProfanityFilterConfig = t.iface([], {
+export const ModerationConfig = t.iface([], {
+  "heatPunishment": "boolean",
+  "kicksPerDay": "number",
+  "immune": t.array("string"),
+  "profanity": "ProfanityConfig",
+});
+
+export const ProfanityConfig = t.iface([], {
   "enabled": "boolean",
-  "whitelisted": t.array("string"),
+  "whitelist": t.array("string"),
+  "blacklist": t.array("string"),
 });
 
 export const MetricsConfig = t.iface([], {
@@ -75,7 +83,7 @@ export const ApplicationConfig = t.iface([], {
   "minecraft": "MinecraftConfig",
   "loggers": t.array("string"),
   "commands": "CommandsConfig",
-  "profanity": "ProfanityFilterConfig",
+  "moderation": "ModerationConfig",
   "metrics": "MetricsConfig",
   "socket": "SocketConfig",
   "plugins": t.array("string"),
@@ -87,7 +95,8 @@ const exportedTypeSuite: t.ITypeSuite = {
   MinecraftConfig,
   MinecraftInstanceConfig,
   CommandsConfig,
-  ProfanityFilterConfig,
+  ModerationConfig,
+  ProfanityConfig,
   MetricsConfig,
   SocketConfig,
   ProxyConfig,

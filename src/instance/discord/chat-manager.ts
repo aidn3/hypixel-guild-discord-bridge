@@ -60,7 +60,7 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
 
-    const { filteredMessage, changed } = this.application.filterProfanity(truncatedContent)
+    const { filteredMessage, changed } = this.application.moderation.filterProfanity(truncatedContent)
     if (changed) {
       this.application.emit('profanityWarning', {
         localEvent: true,

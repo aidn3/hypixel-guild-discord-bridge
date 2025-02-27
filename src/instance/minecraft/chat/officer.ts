@@ -20,7 +20,7 @@ export default {
         return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
-      const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)
+      const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {
         context.application.emit('profanityWarning', {
           localEvent: true,

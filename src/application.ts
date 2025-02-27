@@ -5,7 +5,6 @@ import type Events from 'node:events'
 import path from 'node:path'
 import * as process from 'node:process'
 
-import BadWords from 'bad-words'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 import Logger4js from 'log4js'
@@ -34,7 +33,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public readonly clusterHelper: ClusterHelper
   public readonly autoComplete: Autocomplete
   public readonly moderation: ModerationInstance
-  public readonly profanityFilter: BadWords.BadWords
 
   public readonly hypixelApi: HypixelClient
   public readonly mojangApi: MojangApi
@@ -71,14 +69,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.moderation = new ModerationInstance(this, this.mojangApi)
+    this.moderation = new ModerationInstance(this, this.mojangApi, config.moderation)
     this.clusterHelper = new ClusterHelper(this)
     this.autoComplete = new Autocomplete(this)
-
-    this.profanityFilter = new BadWords({
-      emptyList: !this.config.profanity.enabled
-    })
-    this.profanityFilter.removeWords(...this.config.profanity.whitelisted)
 
     this.discordInstance =
       this.config.discord.key == undefined
@@ -134,23 +127,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
-  }
-
-  public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
-    let filtered: string
-    try {
-      filtered = this.profanityFilter.clean(message)
-    } catch {
-      /*
-          profanity package has bug.
-          will throw error if given one special character.
-          example: clean("?")
-          message is clear if thrown
-        */
-      filtered = message
-    }
-
-    return { filteredMessage: filtered, changed: message !== filtered }
   }
 
   public async sendConnectSignal(): Promise<void> {

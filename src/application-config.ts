@@ -34,9 +34,17 @@ export interface CommandsConfig {
   disabledCommand: string[]
 }
 
-export interface ProfanityFilterConfig {
+export interface ModerationConfig {
+  heatPunishment: boolean
+  kicksPerDay: number
+  immune: string[]
+  profanity: ProfanityConfig
+}
+
+export interface ProfanityConfig {
   enabled: boolean
-  whitelisted: string[]
+  whitelist: string[]
+  blacklist: string[]
 }
 
 export interface MetricsConfig {
@@ -74,7 +82,7 @@ export interface ApplicationConfig {
   loggers: string[]
 
   commands: CommandsConfig
-  profanity: ProfanityFilterConfig
+  moderation: ModerationConfig
   metrics: MetricsConfig
   socket: SocketConfig
 
