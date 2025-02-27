@@ -204,6 +204,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
       this.discordInstance, // discord second to send any notification about connecting
 
+      this.moderation,
       this.metricsInstance,
       this.commandsInstance,
       ...this.minecraftInstances,
