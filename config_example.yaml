@@ -49,16 +49,13 @@ commands:
   commandPrefix: '!'
   disabledCommand: ['somecommand']
 
-profanity:
-  enabled: true
-  whitelisted:
-    - 'sadist'
-    - 'hell'
-    - 'damn'
-    - 'god'
-    - 'shit'
-    - 'balls'
-    - 'retard'
+moderation:
+  heatPunishment: true
+  kicksPerDay: 5
+  profanity:
+    enabled: true
+    whitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard']
+    blacklist: []
 
 metrics:
   enabled: false
