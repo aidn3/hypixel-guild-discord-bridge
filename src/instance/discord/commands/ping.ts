@@ -26,7 +26,8 @@ export default {
   handler: async function (context) {
     const timestamp = Date.now()
 
-    const defer = await context.interaction.deferReply({ fetchReply: true })
+    await context.interaction.deferReply()
+    const defer = await context.interaction.fetchReply()
 
     const latency = defer.createdTimestamp - context.interaction.createdTimestamp
     const websocket = context.interaction.client.ws.ping
