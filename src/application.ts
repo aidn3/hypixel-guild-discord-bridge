@@ -163,9 +163,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         logger: Logger4js.getLogger(`plugin-${p.name}`),
         pluginName: p.name,
         application: this,
-        // only shared with plugins to directly modify instances
-        // everything else is encapsulated
-        localInstances: this.getAllInstances(),
 
         addChatCommand: this.commandsInstance ? (command) => this.commandsInstance?.commands.push(command) : undefined,
         addDiscordCommand: this.discordInstance

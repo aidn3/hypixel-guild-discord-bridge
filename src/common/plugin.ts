@@ -13,7 +13,6 @@ export interface PluginContext {
   logger: Logger
   pluginName: string
   application: Application
-  localInstances: ClientInstance<unknown>[]
 
   addChatCommand?: (command: ChatCommandHandler) => void
   addDiscordCommand?: (command: DiscordCommandHandler) => void
