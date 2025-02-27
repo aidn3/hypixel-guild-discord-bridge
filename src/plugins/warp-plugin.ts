@@ -6,7 +6,7 @@ import { Status } from '../common/client-instance.js'
 import type { ChatCommandContext } from '../common/commands.js'
 import { ChatCommandHandler } from '../common/commands.js'
 import type { PluginContext, PluginInterface } from '../common/plugin.js'
-import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 import { sleep } from '../util/shared-util.js'
 
 let disableLimboTrapping = false
@@ -17,17 +17,19 @@ THIS PLUGIN IS INCOMPATIBLE WITH `limbo-plugin`. DISABLE ONE BEFORE ENABLING THE
 */
 export default {
   onRun(context: PluginContext): void {
-    const minecraftInstances = context.localInstances.filter((instance) => instance instanceof MinecraftInstance)
+    // @ts-expect-error onMessage is private
+    const minecraftInstances = context.application.minecraftInstances
 
     if (context.addChatCommand) context.addChatCommand(new WarpCommand(minecraftInstances))
 
     context.application.on('instanceStatus', (event) => {
       if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
-        const localInstance = context.localInstances.find(
-          (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
+        // @ts-expect-error onMessage is private
+        const localInstance = context.application.minecraftInstances.find(
+          (instance) => instance.instanceName === event.instanceName
         )
         if (localInstance != undefined) {
-          const clientInstance = localInstance as MinecraftInstance
+          const clientInstance = localInstance
           // "login" packet is also first spawn packet containing world metadata
           clientInstance.clientSession?.client.on('login', async () => {
             if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
