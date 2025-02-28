@@ -56,17 +56,16 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const channel = await this.clientInstance.client.channels.fetch(channelId)
       if (!channel?.isSendable()) continue
 
-      await channel
-        .send({
-          embeds: [
-            {
-              title: escapeMarkdown(event.instanceName),
-              description: escapeMarkdown(event.message),
-              color: Color.Info
-            }
-          ]
-        })
-        .then()
+      const message = await channel.send({
+        embeds: [
+          {
+            title: escapeMarkdown(event.instanceName),
+            description: escapeMarkdown(event.message),
+            color: Color.Info
+          }
+        ]
+      })
+      this.messageAssociation.addMessageId(event.eventId, { channelId: message.channelId, messageId: message.id })
     }
   }
 
@@ -90,11 +89,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           : event.username
 
       // TODO: integrate instanceName
-      await webhook.send({
+      const message = await webhook.send({
         content: escapeMarkdown(event.message),
         username: displayUsername,
         avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`
       })
+
+      this.messageAssociation.addMessageId(event.eventId, { channelId: message.channelId, messageId: message.id })
     }
   }
 
@@ -182,7 +183,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     const embed = this.extendEmbed(options)
 
-    await this.sendEmbedToChannels(channels, options.removeLater, embed)
+    await this.sendEmbedToChannels(options.event.eventId, channels, options.removeLater, embed)
   }
 
   async onCommand(event: CommandEvent): Promise<void> {
@@ -215,28 +216,33 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return embed
   }
 
-  private async replyWithEmbed(replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
+  private async replyWithEmbed(eventId: string, replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
     const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
     assert(channel != undefined)
     assert(channel.isSendable())
 
-    await channel.send({ embeds: [embed], reply: { messageReference: replyId.messageId } })
+    const result = await channel.send({ embeds: [embed], reply: { messageReference: replyId.messageId } })
+    this.messageAssociation.addMessageId(eventId, { channelId: result.channelId, messageId: result.id })
   }
 
-  private async sendEmbedToChannels(channels: string[], removeLater: boolean, embed: APIEmbed): Promise<void> {
+  private async sendEmbedToChannels(
+    eventId: string,
+    channels: string[],
+    removeLater: boolean,
+    embed: APIEmbed
+  ): Promise<void> {
     for (const channelId of channels) {
       const channel = (await this.clientInstance.client.channels.fetch(channelId)) as unknown as TextChannel | null
       if (channel == undefined) return
 
-      const responsePromise = channel.send({ embeds: [embed] })
+      const message = await channel.send({ embeds: [embed] })
+      this.messageAssociation.addMessageId(eventId, { channelId: message.channelId, messageId: message.id })
 
       if (removeLater) {
         const deleteAfter = this.config.deleteTempEventAfter
         setTimeout(
           () => {
-            void responsePromise
-              .then(async (response) => await response.delete())
-              .catch(this.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
+            void message.delete().catch(this.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
           },
           deleteAfter * 60 * 1000
         )
@@ -280,7 +286,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     } satisfies APIEmbed
 
-    await this.sendEmbedToChannels(channels, false, embed)
+    await this.sendEmbedToChannels(event.eventId, channels, false, embed)
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {
