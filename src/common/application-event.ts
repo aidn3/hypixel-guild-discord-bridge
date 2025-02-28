@@ -131,7 +131,11 @@ export enum InstanceType {
   Discord = 'discord',
   Minecraft = 'minecraft',
 
-  Logger = 'webhook'
+  Logger = 'webhook',
+  /**
+   * Used for when utils broadcast events
+   */
+  Util = 'util'
 }
 
 /**

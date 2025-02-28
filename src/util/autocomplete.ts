@@ -3,10 +3,15 @@ import Logger4js from 'log4js'
 
 import type Application from '../application.js'
 import { InstanceType } from '../common/application-event.js'
+import { InternalInstancePrefix } from '../common/client-instance.js'
 import UnexpectedErrorHandler from '../common/unexpected-error-handler.js'
 
+import EventHelper from './event-helper.js'
+
 export default class Autocomplete {
+  private static readonly InstanceName = InternalInstancePrefix + 'Autocomplete'
   private readonly application: Application
+  private readonly eventHelper: EventHelper<InstanceType.Util>
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
 
@@ -17,8 +22,9 @@ export default class Autocomplete {
 
   constructor(application: Application) {
     this.application = application
+    this.eventHelper = new EventHelper(Autocomplete.InstanceName, InstanceType.Util)
     // eslint-disable-next-line import/no-named-as-default-member
-    this.logger = Logger4js.getLogger('Autocomplete')
+    this.logger = Logger4js.getLogger(Autocomplete.InstanceName)
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
 
     application.on('chat', (event) => {
@@ -49,7 +55,7 @@ export default class Autocomplete {
     // MetricsInstance also fetches guild list all the time
     // This will make the minecraftChat event spams a lot
     setInterval(() => {
-      application.clusterHelper.sendCommandToAllMinecraft('/guild list')
+      application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, '/guild list')
     }, 60_000)
 
     const ranksResolver = setTimeout(() => {
