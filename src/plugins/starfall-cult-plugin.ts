@@ -1,4 +1,4 @@
-import { ChannelType, Color, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugin.js'
 
 /* NOTICE
@@ -18,10 +18,7 @@ export default {
 
       if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
         context.application.emit('broadcast', {
-          localEvent: true,
-
-          instanceType: InstanceType.Plugin,
-          instanceName: context.pluginName,
+          ...context.eventHelper.fillBaseEvent(),
 
           color: Color.Good,
           channels: [ChannelType.Public],
