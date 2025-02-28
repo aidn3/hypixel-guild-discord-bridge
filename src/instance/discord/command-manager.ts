@@ -310,34 +310,48 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         value: choice
       }))
 
+    /*
+    options are added after converting to json. 
+    This is done to specifically insert the "instance" option directly after the required options
+    the official api doesn't support this. So JSON manipulation is used instead.
+    This is mainly used for "Required" option. 
+    Discord will throw an error with "invalid body" otherwise.
+     */
     for (const command of this.commands.values()) {
-      const commandBuilder = command.getCommandBuilder()
+      const commandBuilder = command.getCommandBuilder().toJSON()
       const instanceCommandName = 'instance'
       const instanceCommandDescription = 'Which instance to send this command to'
+
       if (instanceChoices.length > 0) {
+        const index = commandBuilder.options?.findIndex((option) => option.required) ?? -1
+
         switch (command.addMinecraftInstancesToOptions) {
           case OptionToAddMinecraftInstances.Required: {
-            commandBuilder.addStringOption((option) =>
-              option
-                .setName(instanceCommandName)
-                .setDescription(instanceCommandDescription)
-                .setChoices(...instanceChoices)
-                .setRequired(true)
-            )
+            if (commandBuilder.options === undefined) commandBuilder.options = []
+
+            // splice is just fancy push at certain index
+            commandBuilder.options.splice(index + 1, 0, {
+              type: 3,
+              name: instanceCommandName,
+              description: instanceCommandDescription,
+              choices: instanceChoices,
+              required: true
+            })
             break
           }
           case OptionToAddMinecraftInstances.Optional: {
-            commandBuilder.addStringOption((option) =>
-              option
-                .setName(instanceCommandName)
-                .setDescription(instanceCommandDescription)
-                .setChoices(...instanceChoices)
-            )
+            if (commandBuilder.options === undefined) commandBuilder.options = []
+            commandBuilder.options.push({
+              type: 3,
+              name: instanceCommandName,
+              description: instanceCommandDescription,
+              choices: instanceChoices
+            })
           }
         }
       }
 
-      commandsJson.push(commandBuilder.toJSON())
+      commandsJson.push(commandBuilder)
     }
 
     return commandsJson
