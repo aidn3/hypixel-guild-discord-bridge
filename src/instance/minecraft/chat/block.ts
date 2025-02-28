@@ -1,4 +1,4 @@
-import { ChannelType, Color, InstanceType, MinecraftChatEventType } from '../../../common/application-event.js'
+import { ChannelType, Color, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -8,10 +8,7 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       context.application.emit('minecraftChatEvent', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,
         channels: [ChannelType.Public],

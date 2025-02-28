@@ -13,7 +13,7 @@ import DiscordBridge from './discord-bridge.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
-export default class DiscordInstance extends ClientInstance<DiscordConfig> {
+export default class DiscordInstance extends ClientInstance<DiscordConfig, InstanceType.Discord> {
   readonly commandsManager: CommandManager
   readonly client: Client
 
@@ -43,10 +43,24 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       this.logger.error(error)
     })
 
-    this.stateHandler = new StateHandler(this.application, this, this.logger, this.errorHandler)
-    this.statusHandler = new StatusHandler(this.application, this, this.logger, this.errorHandler)
-    this.chatManager = new ChatManager(this.application, this, this.logger, this.errorHandler, this.config)
-    this.commandsManager = new CommandManager(this.application, this, this.logger, this.errorHandler, this.config)
+    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.chatManager = new ChatManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
+    this.commandsManager = new CommandManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
 
     this.bridge = new DiscordBridge(this.application, this, this.logger, this.errorHandler, this.config)
 

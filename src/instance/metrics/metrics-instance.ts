@@ -11,7 +11,7 @@ import { ClientInstance, Status } from '../../common/client-instance.js'
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class MetricsInstance extends ClientInstance<MetricsConfig> {
+export default class MetricsInstance extends ClientInstance<MetricsConfig, InstanceType.Metrics> {
   private readonly httpServer
   private readonly register
 
@@ -80,7 +80,7 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig> {
     this.logger.debug('Collecting metrics')
 
     if (this.config.useIngameCommand) {
-      await this.guildOnlineMetrics.collectMetrics(this.application)
+      await this.guildOnlineMetrics.collectMetrics(this.application, this.eventHelper)
     }
   }
 

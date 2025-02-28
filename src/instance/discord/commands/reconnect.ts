@@ -13,7 +13,7 @@ export default {
 
     const targetInstance: string | null = context.interaction.options.getString('instance')
     context.application.emit('reconnectSignal', {
-      localEvent: true,
+      ...context.eventHelper.fillBaseEvent(),
       targetInstanceName: targetInstance ?? undefined
     })
     await context.interaction.editReply('Reconnect signal has been sent!')

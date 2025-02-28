@@ -9,7 +9,7 @@ import type { MojangApi } from '../../util/mojang.js'
 import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
 
-export default class ModerationInstance extends ClientInstance<ModerationConfig> {
+export default class ModerationInstance extends ClientInstance<ModerationConfig, InstanceType.Moderation> {
   public readonly punishments: Punishments
   private readonly enforcer: PunishmentsEnforcer
 
@@ -34,7 +34,7 @@ export default class ModerationInstance extends ClientInstance<ModerationConfig>
     }
 
     this.punishments = new Punishments(application)
-    this.enforcer = new PunishmentsEnforcer(application, this, this.logger, this.errorHandler)
+    this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {

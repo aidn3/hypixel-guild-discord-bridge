@@ -1,4 +1,4 @@
-import { ChannelType, Color, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import { antiSpamString } from '../util/shared-util.js'
 
@@ -22,10 +22,7 @@ export default {
 
       if ([50, 54].includes(currentMinute)) {
         context.application.emit('broadcast', {
-          localEvent: true,
-
-          instanceType: InstanceType.Plugin,
-          instanceName: context.pluginName,
+          ...context.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
           color: Color.Good,

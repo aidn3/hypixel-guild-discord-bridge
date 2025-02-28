@@ -4,11 +4,12 @@ import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
 import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
-import type { PunishmentAddEvent } from '../../../common/application-event.js'
-import { Color, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import type { InstanceType, PunishmentAddEvent } from '../../../common/application-event.js'
+import { Color, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { Permission } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type EventHelper from '../../../util/event-helper.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { getDuration } from '../../../util/shared-util.js'
 import { durationToMinecraftDuration } from '../../moderation/util.js'
@@ -137,11 +138,21 @@ export default {
           return
         }
 
-        await handleBanAddInteraction(context.application, context.instanceName, context.interaction)
+        await handleBanAddInteraction(
+          context.application,
+          context.instanceName,
+          context.eventHelper,
+          context.interaction
+        )
         return
       }
       case 'mute': {
-        await handleMuteAddInteraction(context.application, context.instanceName, context.interaction)
+        await handleMuteAddInteraction(
+          context.application,
+          context.instanceName,
+          context.eventHelper,
+          context.interaction
+        )
         return
       }
       case 'kick': {
@@ -150,7 +161,7 @@ export default {
           return
         }
 
-        await handleKickInteraction(context.application, context.interaction)
+        await handleKickInteraction(context.application, context.eventHelper, context.interaction)
         return
       }
       case 'list': {
@@ -166,6 +177,7 @@ export default {
         await handleForgiveInteraction(
           context.application,
           context.instanceName,
+          context.eventHelper,
           context.interaction,
           context.errorHandler
         )
@@ -195,6 +207,7 @@ export default {
 async function handleBanAddInteraction(
   application: Application,
   instanceName: string,
+  eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
   // noinspection DuplicatedCode
@@ -208,9 +221,7 @@ async function handleBanAddInteraction(
   const userIdentifiers = await findAboutUser(application.mojangApi, interaction, username, noDiscordCheck, noUuidCheck)
 
   const event: PunishmentAddEvent = {
-    localEvent: true,
-    instanceType: InstanceType.Discord,
-    instanceName: instanceName,
+    ...eventHelper.fillBaseEvent(),
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
@@ -224,7 +235,7 @@ async function handleBanAddInteraction(
   application.moderation.punishments.add(event)
   const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
 
-  const result = await checkChatTriggers(application, KickChat, undefined, command, username)
+  const result = await checkChatTriggers(application, eventHelper, KickChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Ban ${escapeMarkdown(username)}`)
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
@@ -233,6 +244,7 @@ async function handleBanAddInteraction(
 async function handleMuteAddInteraction(
   application: Application,
   instanceName: string,
+  eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
   // noinspection DuplicatedCode
@@ -246,9 +258,7 @@ async function handleMuteAddInteraction(
   const userIdentifiers = await findAboutUser(application.mojangApi, interaction, username, noDiscordCheck, noUuidCheck)
 
   const event: PunishmentAddEvent = {
-    localEvent: true,
-    instanceType: InstanceType.Discord,
-    instanceName: instanceName,
+    ...eventHelper.fillBaseEvent(),
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
@@ -262,10 +272,11 @@ async function handleMuteAddInteraction(
   application.moderation.punishments.add(event)
   const command = `/guild mute ${username} ${durationToMinecraftDuration(muteDuration)}`
 
-  const result = await checkChatTriggers(application, MuteChat, undefined, command, username)
+  const result = await checkChatTriggers(application, eventHelper, MuteChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Mute ${escapeMarkdown(username)}`)
 
   application.clusterHelper.sendCommandToAllMinecraft(
+    eventHelper,
     `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
   )
 
@@ -274,13 +285,14 @@ async function handleMuteAddInteraction(
 
 async function handleKickInteraction(
   application: Application,
+  eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const reason: string = interaction.options.getString('reason', true)
   const command = `/g kick ${username} ${reason}`
 
-  const result = await checkChatTriggers(application, KickChat, undefined, command, username)
+  const result = await checkChatTriggers(application, eventHelper, KickChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Kick ${escapeMarkdown(username)}`)
 
   await interaction.editReply({
@@ -309,6 +321,7 @@ async function handleKickInteraction(
 async function handleForgiveInteraction(
   application: Application,
   instanceName: string,
+  eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
@@ -326,15 +339,13 @@ async function handleForgiveInteraction(
   const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
 
   const forgivenPunishments = application.moderation.punishments.remove({
-    localEvent: true,
-    instanceType: InstanceType.Discord,
-    instanceName: instanceName,
+    ...eventHelper.fillBaseEvent(),
     userIdentifiers: userIdentifiers
   })
 
   const command = `/guild unmute ${userResolvedData.userName}`
 
-  const result = await checkChatTriggers(application, UnmuteChat, undefined, command, username)
+  const result = await checkChatTriggers(application, eventHelper, UnmuteChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeMarkdown(username)}`)
 
   const pages: APIEmbed[] = []

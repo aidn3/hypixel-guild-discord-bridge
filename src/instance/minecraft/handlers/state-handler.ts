@@ -3,14 +3,16 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
+import type { InstanceType } from '../../../common/application-event.js'
 import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type EventHelper from '../../../util/event-helper.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export const QuitOwnVolition = 'disconnect.quitting'
 
-export default class StateHandler extends EventHandler<MinecraftInstance> {
+export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
   private static readonly MaxLoginAttempts = 5
   private loginAttempts
   private exactDelay
@@ -19,10 +21,11 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
+    eventHelper: EventHelper<InstanceType.Minecraft>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
-    super(application, clientInstance, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler)
 
     this.loginAttempts = 0
     this.exactDelay = 0

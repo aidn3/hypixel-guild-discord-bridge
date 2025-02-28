@@ -6,7 +6,7 @@ import { ClientInstance } from '../../common/client-instance.js'
 import ClientSocket from './client-socket.js'
 import ServerSocket from './server-socket.js'
 
-export default class SocketInstance extends ClientInstance<SocketConfig> {
+export default class SocketInstance extends ClientInstance<SocketConfig, InstanceType.Socket> {
   private serverSocket: ServerSocket | undefined
   private clientSocket: ClientSocket | undefined
 

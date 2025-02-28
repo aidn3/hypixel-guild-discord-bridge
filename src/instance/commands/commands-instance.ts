@@ -34,7 +34,7 @@ import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengence.js'
 import Weight from './triggers/weight.js'
 
-export class CommandsInstance extends ClientInstance<CommandsConfig> {
+export class CommandsInstance extends ClientInstance<CommandsConfig, InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {
@@ -124,6 +124,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       const commandResponse = await command.handler({
         app: this.application,
 
+        eventHelper: this.eventHelper,
         logger: this.logger,
         errorHandler: this.errorHandler,
 
@@ -153,9 +154,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
     this.application.emit('command', {
-      localEvent: true,
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+      ...this.eventHelper.fillBaseEvent(),
+
       channelType: event.channelType,
       discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
@@ -168,9 +168,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
     this.application.emit('commandFeedback', {
-      localEvent: true,
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+      ...this.eventHelper.fillBaseEvent(),
+
       channelType: event.channelType,
       discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,

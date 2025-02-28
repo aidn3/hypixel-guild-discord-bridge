@@ -9,6 +9,7 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { Permission } from '../../../common/commands.js'
+import type EventHelper from '../../../util/event-helper.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'
@@ -71,6 +72,7 @@ export default {
     const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const lists: Map<string, string[]> = await listMembers(
       context.application,
+      context.eventHelper,
       context.application.mojangApi,
       context.application.hypixelApi
     )
@@ -83,8 +85,13 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function listMembers(app: Application, mojangApi: MojangApi, hypixelApi: Client): Promise<Map<string, string[]>> {
-  const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app)
+async function listMembers(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>,
+  mojangApi: MojangApi,
+  hypixelApi: Client
+): Promise<Map<string, string[]>> {
+  const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app, eventHelper)
 
   for (const [instanceName, members] of onlineProfiles) {
     const fetchedMembers = await look(mojangApi, hypixelApi, unique(members))
@@ -155,7 +162,10 @@ function formatLocation(username: string, session: Status | undefined): string {
   return message
 }
 
-async function getOnlineMembers(app: Application): Promise<Map<string, string[]>> {
+async function getOnlineMembers(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>
+): Promise<Map<string, string[]>> {
   const resolvedNames = new Map<string, string[]>()
   const regexOnline = /(\w{3,16}) \u25CF/g
 
@@ -175,7 +185,7 @@ async function getOnlineMembers(app: Application): Promise<Map<string, string[]>
   }
 
   app.on('minecraftChat', chatListener)
-  app.clusterHelper.sendCommandToAllMinecraft('/guild online')
+  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, '/guild online')
   await new Promise((resolve) => setTimeout(resolve, 3000))
   app.removeListener('minecraftChat', chatListener)
 

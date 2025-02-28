@@ -2,7 +2,8 @@ import type { Registry } from 'prom-client'
 import { Gauge } from 'prom-client'
 
 import type Application from '../../application.js'
-import type { MinecraftRawChatEvent } from '../../common/application-event.js'
+import type { InstanceType, MinecraftRawChatEvent } from '../../common/application-event.js'
+import type EventHelper from '../../util/event-helper.js'
 
 export default class GuildOnlineMetrics {
   private readonly guildTotalMembersCount
@@ -24,8 +25,8 @@ export default class GuildOnlineMetrics {
     register.registerMetric(this.guildOnlineMembersCount)
   }
 
-  async collectMetrics(app: Application): Promise<void> {
-    const guilds = await GuildOnlineMetrics.getGuilds(app)
+  async collectMetrics(app: Application, eventHelper: EventHelper<InstanceType.Metrics>): Promise<void> {
+    const guilds = await GuildOnlineMetrics.getGuilds(app, eventHelper)
     for (const [instanceName, guild] of guilds) {
       if (guild.total != undefined) {
         this.guildTotalMembersCount.set({ name: instanceName }, guild.total)
@@ -37,7 +38,10 @@ export default class GuildOnlineMetrics {
     }
   }
 
-  private static async getGuilds(app: Application): Promise<Map<string, { online?: number; total?: number }>> {
+  private static async getGuilds(
+    app: Application,
+    eventHelper: EventHelper<InstanceType.Metrics>
+  ): Promise<Map<string, { online?: number; total?: number }>> {
     const guilds = new Map<string, { online?: number; total?: number }>()
 
     const onlineRegex = /^Online Members: (\d+)$/g
@@ -59,7 +63,7 @@ export default class GuildOnlineMetrics {
     }
 
     app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToAllMinecraft('/guild online')
+    app.clusterHelper.sendCommandToAllMinecraft(eventHelper, '/guild online')
     await new Promise((resolve) => setTimeout(resolve, 3000))
     app.removeListener('minecraftChat', chatListener)
 

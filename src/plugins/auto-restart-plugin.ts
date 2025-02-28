@@ -1,6 +1,6 @@
 import { uptime } from 'node:process'
 
-import { ChannelType, Color, InstanceType } from '../common/application-event.js'
+import { ChannelType, Color } from '../common/application-event.js'
 import type { PluginContext, PluginInterface } from '../common/plugin.js'
 
 /* WARNING
@@ -22,10 +22,7 @@ export default {
         shuttingDown = true
 
         context.application.emit('broadcast', {
-          localEvent: true,
-
-          instanceType: InstanceType.Plugin,
-          instanceName: context.pluginName,
+          ...context.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
           color: Color.Info,
@@ -35,7 +32,8 @@ export default {
         })
 
         context.application.emit('shutdownSignal', {
-          localEvent: true,
+          ...context.eventHelper.fillBaseEvent(),
+
           restart: true,
           targetInstanceName: undefined
         })

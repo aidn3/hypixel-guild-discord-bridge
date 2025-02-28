@@ -7,6 +7,7 @@ import type { ChatCommandContext } from '../common/commands.js'
 import { ChatCommandHandler } from '../common/commands.js'
 import type { PluginContext, PluginInterface } from '../common/plugin.js'
 import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import type EventHelper from '../util/event-helper.js'
 import { sleep } from '../util/shared-util.js'
 
 let disableLimboTrapping = false
@@ -48,42 +49,47 @@ async function limbo(logger: Logger, clientInstance: MinecraftInstance): Promise
   await clientInstance.send('§')
 }
 
-async function warpPlayer(app: Application, minecraftInstanceName: string, username: string): Promise<string> {
+async function warpPlayer(
+  app: Application,
+  eventHelper: EventHelper<InstanceType>,
+  minecraftInstanceName: string,
+  username: string
+): Promise<string> {
   disableLimboTrapping = true
 
   // exit limbo and go to main lobby. Can't warp from limbo
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/lobby')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/lobby')
 
   // Go to Skyblock first before warping.
   // Person can rejoin if warped to the main lobby
   await sleep(2000)
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/skyblock')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/skyblock')
 
   // ensure the account is in the hub and not on private island
   // to prevent being banned for "profile boosting"
   await sleep(12_000) // need higher cooldown to change between lobbies
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/hub')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/hub')
 
   await sleep(2000)
 
-  const errorMessage = await awaitPartyStatus(app, minecraftInstanceName, username)
+  const errorMessage = await awaitPartyStatus(app, eventHelper, minecraftInstanceName, username)
   if (errorMessage != undefined) {
     disableLimboTrapping = false
-    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '§')
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
 
-    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/party disband')
-    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/party leave')
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
 
     return errorMessage
   }
 
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/party warp')
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/pc Blame the gods on your luck`)
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/party disband')
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '/party leave')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party warp')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/pc Blame the gods on your luck`)
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
 
   disableLimboTrapping = false
-  app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, '§')
+  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
 
   return 'Player has been warped out!'
 }
@@ -93,11 +99,13 @@ async function warpPlayer(app: Application, minecraftInstanceName: string, usern
  * The return is only a failure message. undefined means the invite was successful.
  *
  * @param app the application instance
+ * @param eventHelper used to send commands with context for other instances
  * @param minecraftInstanceName the target minecraft instance to use to execute commands
  * @param username the target to party
  */
 async function awaitPartyStatus(
   app: Application,
+  eventHelper: EventHelper<InstanceType>,
   minecraftInstanceName: string,
   username: string
 ): Promise<string | undefined> {
@@ -135,9 +143,9 @@ async function awaitPartyStatus(
     }
 
     app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/party invite ${username}`)
-    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/party disband`)
-    app.clusterHelper.sendCommandToMinecraft(minecraftInstanceName, `/party invite ${username}`)
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/party invite ${username}`)
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/party disband`)
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/party invite ${username}`)
   })
 }
 
@@ -177,7 +185,7 @@ class WarpCommand extends ChatCommandHandler {
     this.lastCommandExecutionAt = currentTime
 
     context.sendFeedback(`Attempting to warp ${username}`)
-    return await warpPlayer(context.app, minecraftInstanceName, username)
+    return await warpPlayer(context.app, context.eventHelper, minecraftInstanceName, username)
   }
 
   private getActiveMinecraftInstanceName(): string | undefined {

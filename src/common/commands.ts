@@ -2,6 +2,8 @@ import type { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommand
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
+// eslint-disable-next-line import/no-restricted-paths
+import type EventHelper from '../util/event-helper.js'
 
 import type { ChannelType, InstanceType } from './application-event.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
@@ -30,6 +32,7 @@ export abstract class ChatCommandHandler {
 export interface ChatCommandContext {
   app: Application
 
+  eventHelper: EventHelper<InstanceType.Commands>
   logger: Logger
   errorHandler: UnexpectedErrorHandler
 
@@ -69,6 +72,7 @@ export interface DiscordCommandHandler {
 
 interface DiscordContext {
   application: Application
+  eventHelper: EventHelper<InstanceType.Discord>
   logger: Logger
   instanceName: string
 

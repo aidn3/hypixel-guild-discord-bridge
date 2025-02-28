@@ -10,6 +10,7 @@ import type {
   GuildGeneralEvent,
   GuildPlayerEvent,
   InstanceStatusEvent,
+  InstanceType,
   MinecraftChatEvent
 } from './application-event.js'
 import type { ClientInstance } from './client-instance.js'
@@ -19,7 +20,7 @@ import type UnexpectedErrorHandler from './unexpected-error-handler.js'
  * Abstract class with abstract callback functions that must be implemented
  * to integrate bridge to other services. Use this class as a base when connecting two services.
  */
-export default abstract class Bridge<K extends ClientInstance<unknown>> {
+export default abstract class Bridge<K extends ClientInstance<unknown, InstanceType>> {
   protected readonly application: Application
   protected readonly clientInstance: K
 

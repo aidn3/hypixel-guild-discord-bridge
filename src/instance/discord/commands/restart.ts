@@ -13,7 +13,7 @@ export default {
     await context.interaction.deferReply()
 
     context.application.emit('shutdownSignal', {
-      localEvent: true,
+      ...context.eventHelper.fillBaseEvent(),
       // undefined is used to set the command globally
       targetInstanceName: undefined,
       restart: true

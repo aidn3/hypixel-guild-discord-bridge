@@ -114,12 +114,10 @@ export default class Vengeance extends ChatCommandHandler {
   }
 
   private mute(context: ChatCommandContext, username: string): void {
-    context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${username} 15m`)
+    context.app.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/g mute ${username} 15m`)
 
     context.app.moderation.punishments.add({
-      localEvent: true,
-      instanceType: InstanceType.Minecraft,
-      instanceName: context.instanceName,
+      ...context.eventHelper.fillBaseEvent(),
 
       userName: username,
       // not really that important to resolve uuid since it ends fast and the punishment is just a game

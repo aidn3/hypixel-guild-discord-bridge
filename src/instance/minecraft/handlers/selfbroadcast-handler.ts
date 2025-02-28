@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 
-import { InstanceType } from '../../../common/application-event.js'
+import type { InstanceType } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class SelfbroadcastHandler extends EventHandler<MinecraftInstance> {
+export default class SelfbroadcastHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
   registerEvents(): void {
     const clientSession = this.clientInstance.clientSession
     assert(clientSession)
@@ -25,9 +25,8 @@ export default class SelfbroadcastHandler extends EventHandler<MinecraftInstance
 
     if (username != undefined && uuid != undefined) {
       this.application.emit('minecraftSelfBroadcast', {
-        localEvent: true,
-        instanceName: this.clientInstance.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...this.eventHelper.fillBaseEvent(),
+
         uuid,
         username
       })

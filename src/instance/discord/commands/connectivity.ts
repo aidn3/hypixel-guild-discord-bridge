@@ -6,6 +6,7 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { Permission } from '../../../common/commands.js'
+import type EventHelper from '../../../util/event-helper.js'
 import { antiSpamString } from '../../../util/shared-util.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
@@ -54,7 +55,7 @@ export default {
     await context.interaction.deferReply()
 
     const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
-    const lists: Map<string, string[]> = await checkConnectivity(context.application)
+    const lists: Map<string, string[]> = await checkConnectivity(context.application, context.eventHelper)
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
@@ -64,7 +65,10 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
+async function checkConnectivity(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>
+): Promise<Map<string, string[]>> {
   const receivedResponses = new Map<string, string[]>()
   const queryWords = [
     `Testing Connectivity 1 - @${antiSpamString()}`,
@@ -88,11 +92,11 @@ async function checkConnectivity(app: Application): Promise<Map<string, string[]
 
   app.on('minecraftChat', chatListener)
 
-  app.clusterHelper.sendCommandToAllMinecraft(`/ac ${queryWords[0]}`)
-  app.clusterHelper.sendCommandToAllMinecraft(`/gc ${queryWords[1]}`)
-  app.clusterHelper.sendCommandToAllMinecraft(`/oc ${queryWords[2]}`)
+  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, `/ac ${queryWords[0]}`)
+  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, `/gc ${queryWords[1]}`)
+  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, `/oc ${queryWords[2]}`)
   for (const bot of app.clusterHelper.getMinecraftBots()) {
-    app.clusterHelper.sendCommandToMinecraft(bot.instanceName, `/msg ${bot.username} ${queryWords[3]}`)
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, bot.instanceName, `/msg ${bot.username} ${queryWords[3]}`)
   }
 
   await new Promise((resolve) => setTimeout(resolve, 5000))

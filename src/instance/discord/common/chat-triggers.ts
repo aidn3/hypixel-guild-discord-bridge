@@ -2,8 +2,8 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 
 import type Application from '../../../application.js'
-import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color } from '../../../common/application-event.js'
+import { Color, type InstanceType, type MinecraftRawChatEvent } from '../../../common/application-event.js'
+import type EventHelper from '../../../util/event-helper.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
 
@@ -108,6 +108,7 @@ export interface ChatTriggerResult {
 
 export async function checkChatTriggers(
   app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>,
   regexList: RegexChat,
   targetInstance: string | undefined,
   command: string,
@@ -145,7 +146,7 @@ export async function checkChatTriggers(
 
   app.on('minecraftChat', chatListener)
   app.emit('minecraftSend', {
-    localEvent: true,
+    ...eventHelper.fillBaseEvent(),
     targetInstanceName: targetInstance,
     command
   })

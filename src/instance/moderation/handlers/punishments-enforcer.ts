@@ -1,27 +1,23 @@
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { GuildPlayerEvent } from '../../../common/application-event.js'
-import {
-  ChannelType,
-  Color,
-  GuildPlayerEventType,
-  InstanceType,
-  PunishmentType
-} from '../../../common/application-event.js'
+import type { GuildPlayerEvent, InstanceType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type EventHelper from '../../../util/event-helper.js'
 import type ModerationInstance from '../moderation-instance.js'
 import { durationToMinecraftDuration } from '../util.js'
 
-export default class PunishmentsEnforcer extends EventHandler<ModerationInstance> {
+export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation> {
   constructor(
     application: Application,
     system: ModerationInstance,
+    eventHelper: EventHelper<InstanceType.Moderation>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
-    super(application, system, logger, errorHandler)
+    super(application, system, eventHelper, logger, errorHandler)
 
     this.application.on('guildPlayer', (event) => {
       void this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
@@ -53,6 +49,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
 
     if (mutedTill) {
       this.application.clusterHelper.sendCommandToAllMinecraft(
+        this.eventHelper,
         `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
       )
     }
@@ -63,10 +60,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
 
     if (bannedTill) {
       this.application.emit('broadcast', {
-        localEvent: true,
-
-        instanceType: InstanceType.Moderation,
-        instanceName: this.clientInstance.instanceName,
+        ...this.eventHelper.fillBaseEvent(),
 
         channels: [ChannelType.Officer],
         color: Color.Bad,

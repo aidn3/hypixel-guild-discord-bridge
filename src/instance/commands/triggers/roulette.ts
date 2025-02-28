@@ -59,11 +59,9 @@ export default class Roulette extends ChatCommandHandler {
     if (Math.random() < currentChance) {
       this.countSinceLastLose = 0
 
-      context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
+      context.app.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/g mute ${context.username} 15m`)
       context.app.moderation.punishments.add({
-        localEvent: true,
-        instanceType: InstanceType.Minecraft,
-        instanceName: context.instanceName,
+        ...context.eventHelper.fillBaseEvent(),
 
         userName: context.username,
         // not really that important to resolve uuid since it ends fast and the punishment is just a game

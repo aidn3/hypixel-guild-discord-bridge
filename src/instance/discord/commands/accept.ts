@@ -22,7 +22,14 @@ export default {
     const command = `/g accept ${username}`
 
     const instance: string | undefined = context.interaction.options.getString('instance') ?? undefined
-    const result = await checkChatTriggers(context.application, InviteAcceptChat, instance, command, username)
+    const result = await checkChatTriggers(
+      context.application,
+      context.eventHelper,
+      InviteAcceptChat,
+      instance,
+      command,
+      username
+    )
     const formatted = formatChatTriggerResponse(result, `Accept ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })

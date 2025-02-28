@@ -26,7 +26,7 @@ export default class Override extends ChatCommandHandler {
       return this.getExample(context.commandPrefix)
     }
 
-    context.app.clusterHelper.sendCommandToMinecraft(context.instanceName, context.args.join(' '))
+    context.app.clusterHelper.sendCommandToMinecraft(context.eventHelper, context.instanceName, context.args.join(' '))
     return `Override command executed.`
   }
 }

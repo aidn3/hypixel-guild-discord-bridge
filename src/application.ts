@@ -26,6 +26,7 @@ import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
 import Autocomplete from './util/autocomplete.js'
+import EventHelper from './util/event-helper.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
@@ -138,6 +139,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         // eslint-disable-next-line import/no-named-as-default-member
         logger: Logger4js.getLogger(`plugin-${p.name}`),
         pluginName: p.name,
+        eventHelper: new EventHelper(p.name, InstanceType.Plugin),
         application: this,
 
         addChatCommand: this.commandsInstance ? (command) => this.commandsInstance?.commands.push(command) : undefined,
@@ -158,11 +160,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public syncBroadcast(): void {
     this.logger.debug('Informing instances of each other')
     for (const instance of this.getAllInstances()) {
-      this.emit('selfBroadcast', {
-        localEvent: true,
-        instanceName: instance.instanceName,
-        instanceType: instance.instanceType
-      })
+      instance.selfBroadcast()
     }
 
     this.logger.debug('Broadcasting all Minecraft bots')
@@ -199,7 +197,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     return result
   }
 
-  private getAllInstances(): ClientInstance<unknown>[] {
+  private getAllInstances(): ClientInstance<unknown, InstanceType>[] {
     return [
       ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
       this.discordInstance, // discord second to send any notification about connecting
@@ -210,7 +208,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       ...this.minecraftInstances,
 
       this.socketInstance // socket last. so other instances are ready when connecting to other clients
-    ].filter((instance) => instance != undefined) as ClientInstance<unknown>[]
+    ].filter((instance) => instance != undefined) as ClientInstance<unknown, InstanceType>[]
   }
 }
 

@@ -22,7 +22,14 @@ export default {
     const command = `/g invite ${username}`
 
     const instance: string | undefined = context.interaction.options.getString('instance') ?? undefined
-    const result = await checkChatTriggers(context.application, InviteAcceptChat, instance, command, username)
+    const result = await checkChatTriggers(
+      context.application,
+      context.eventHelper,
+      InviteAcceptChat,
+      instance,
+      command,
+      username
+    )
     const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })

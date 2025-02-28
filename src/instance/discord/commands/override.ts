@@ -21,9 +21,9 @@ export default {
     const instance: string | null = context.interaction.options.getString('instance')
 
     if (instance == undefined) {
-      context.application.clusterHelper.sendCommandToAllMinecraft(command)
+      context.application.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, command)
     } else {
-      context.application.clusterHelper.sendCommandToMinecraft(instance, command)
+      context.application.clusterHelper.sendCommandToMinecraft(context.eventHelper, instance, command)
     }
 
     await context.interaction.editReply(`Command executed: ${command}`)

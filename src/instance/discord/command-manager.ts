@@ -16,6 +16,7 @@ import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandH
 import { Permission } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type EventHelper from '../../util/event-helper.js'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
@@ -33,7 +34,7 @@ import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
 import type DiscordInstance from './discord-instance.js'
 
-export class CommandManager extends EventHandler<DiscordInstance> {
+export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
 
   private readonly config
@@ -41,11 +42,12 @@ export class CommandManager extends EventHandler<DiscordInstance> {
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     config: DiscordConfig
   ) {
-    super(application, clientInstance, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler)
     this.config = config
 
     this.addDefaultCommands()
@@ -121,6 +123,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
     if (command.autoComplete) {
       const context: DiscordAutoCompleteContext = {
         application: this.application,
+        eventHelper: this.eventHelper,
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
@@ -164,9 +167,8 @@ export class CommandManager extends EventHandler<DiscordInstance> {
         const username = interaction.inCachedGuild() ? interaction.member.displayName : interaction.user.displayName
 
         this.application.emit('command', {
-          localEvent: true,
-          instanceName: this.clientInstance.instanceName,
-          instanceType: InstanceType.Discord,
+          ...this.eventHelper.fillBaseEvent(),
+
           channelType: channelType,
           discordChannelId: interaction.channelId,
           username,
@@ -180,6 +182,7 @@ export class CommandManager extends EventHandler<DiscordInstance> {
 
         const commandContext: DiscordCommandContext = {
           application: this.application,
+          eventHelper: this.eventHelper,
           logger: this.logger,
           errorHandler: this.errorHandler,
           instanceName: this.clientInstance.instanceName,

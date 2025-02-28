@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType } from '../../../common/application-event.js'
+import { ChannelType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -15,10 +15,7 @@ export default {
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
       context.application.emit('chat', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         channelType: ChannelType.Private,
 

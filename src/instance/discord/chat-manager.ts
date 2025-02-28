@@ -6,23 +6,26 @@ import type { Logger } from 'log4js'
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
+import type { InstanceType } from '../../common/application-event.js'
+import { ChannelType, PunishmentType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type EventHelper from '../../util/event-helper.js'
 
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends EventHandler<DiscordInstance> {
+export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
   private readonly config
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     config: DiscordConfig
   ) {
-    super(application, clientInstance, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler)
     this.config = config
   }
 
@@ -63,9 +66,8 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     const { filteredMessage, changed } = this.application.moderation.filterProfanity(truncatedContent)
     if (changed) {
       this.application.emit('profanityWarning', {
-        localEvent: true,
-        instanceType: InstanceType.Discord,
-        instanceName: this.clientInstance.instanceName,
+        ...this.eventHelper.fillBaseEvent(),
+
         channelType: channelType,
 
         username: discordName,
@@ -78,9 +80,8 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     }
 
     this.application.emit('chat', {
-      localEvent: true,
-      instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.Discord,
+      ...this.eventHelper.fillBaseEvent(),
+
       channelType: channelType,
       channelId: event.channel.id,
       username: readableName,

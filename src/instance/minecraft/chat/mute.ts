@@ -1,10 +1,4 @@
-import {
-  ChannelType,
-  Color,
-  GuildPlayerEventType,
-  InstanceType,
-  PunishmentType
-} from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
 import { sufficeToTime } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
@@ -24,9 +18,7 @@ export default {
 
       if (responsible !== context.clientInstance.username()) {
         context.application.moderation.punishments.add({
-          localEvent: true,
-          instanceType: InstanceType.Minecraft,
-          instanceName: context.instanceName,
+          ...context.eventHelper.fillBaseEvent(),
 
           userName: mojangProfile?.name ?? target,
           userUuid: mojangProfile?.id,
@@ -39,10 +31,7 @@ export default {
       }
 
       context.application.emit('guildPlayer', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Bad,
         channels: [ChannelType.Officer],

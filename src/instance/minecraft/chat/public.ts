@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { ChannelType, PunishmentType } from '../../../common/application-event.js'
 import { durationToMinecraftDuration } from '../../moderation/util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
@@ -28,6 +28,7 @@ export default {
       const mutedTill = context.application.moderation.punishments.punishedTill(identifiers, PunishmentType.Mute)
       if (mutedTill) {
         context.application.clusterHelper.sendCommandToAllMinecraft(
+          context.eventHelper,
           `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
         )
       }
@@ -39,9 +40,8 @@ export default {
       const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {
         context.application.emit('profanityWarning', {
-          localEvent: true,
-          instanceType: InstanceType.Minecraft,
-          instanceName: context.instanceName,
+          ...context.eventHelper.fillBaseEvent(),
+
           channelType: ChannelType.Public,
 
           username,
@@ -51,10 +51,7 @@ export default {
       }
 
       context.application.emit('chat', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         channelType: ChannelType.Public,
 

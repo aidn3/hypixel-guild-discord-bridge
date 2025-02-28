@@ -14,7 +14,7 @@ import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
 
-export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig> {
+export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig, InstanceType.Minecraft> {
   readonly defaultBotConfig = {
     host: 'me.hypixel.net',
     port: 25_565,
@@ -45,9 +45,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
         this.application.emit('statusMessage', {
-          localEvent: true,
-          instanceName: this.instanceName,
-          instanceType: InstanceType.Minecraft,
+          ...this.eventHelper.fillBaseEvent(),
+
           message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
         })
       }
@@ -56,10 +55,10 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     this.clientSession = new ClientSession(client)
 
     const handlers = [
-      new ErrorHandler(this.application, this, this.logger, this.errorHandler),
-      new StateHandler(this.application, this, this.logger, this.errorHandler),
-      new SelfbroadcastHandler(this.application, this, this.logger, this.errorHandler),
-      new ChatManager(this.application, this, this.logger, this.errorHandler)
+      new ErrorHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
+      new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
+      new SelfbroadcastHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
+      new ChatManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     ]
 
     for (const handler of handlers) {

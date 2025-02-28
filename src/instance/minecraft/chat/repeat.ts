@@ -1,4 +1,4 @@
-import { ChannelType, Color, InstanceType, MinecraftChatEventType } from '../../../common/application-event.js'
+import { ChannelType, Color, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 const Messages = [
@@ -28,10 +28,7 @@ export default {
       const randomMessage = Messages[Math.floor(Math.random() * Messages.length)]
 
       context.application.emit('minecraftChatEvent', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,
         channels: [ChannelType.Public],

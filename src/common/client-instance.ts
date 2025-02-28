@@ -2,22 +2,25 @@ import type { Logger } from 'log4js'
 import Logger4js from 'log4js'
 
 import type Application from '../application.js'
+// eslint-disable-next-line import/no-restricted-paths
+import EventHelper from '../util/event-helper.js'
 
 import type { InstanceStatusEvent, InstanceType } from './application-event.js'
 import UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export abstract class ClientInstance<K> {
+export abstract class ClientInstance<K, T extends InstanceType> {
   public readonly instanceName: string
-  public readonly instanceType: InstanceType
+  public readonly instanceType: T
 
   protected readonly application: Application
   protected readonly logger: Logger
   protected readonly config: K
   protected readonly errorHandler: UnexpectedErrorHandler
+  protected readonly eventHelper: EventHelper<T>
 
   private status: Status
 
-  protected constructor(app: Application, instanceName: string, instanceType: InstanceType, config: K) {
+  protected constructor(app: Application, instanceName: string, instanceType: T, config: K) {
     this.application = app
     this.instanceName = instanceName
     this.instanceType = instanceType
@@ -26,6 +29,13 @@ export abstract class ClientInstance<K> {
     this.config = config
     this.status = Status.Fresh
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
+    this.eventHelper = new EventHelper<T>(this.instanceName, this.instanceType)
+  }
+
+  public selfBroadcast(): void {
+    this.application.emit('selfBroadcast', {
+      ...this.eventHelper.fillBaseEvent()
+    })
   }
 
   /**
@@ -40,9 +50,8 @@ export abstract class ClientInstance<K> {
     if (this.status === status) return
     this.status = status
     this.application.emit('instanceStatus', {
-      localEvent: true,
-      instanceName: this.instanceName,
-      instanceType: this.instanceType,
+      ...this.eventHelper.fillBaseEvent(),
+
       status: status,
       message: reason
     } satisfies InstanceStatusEvent)

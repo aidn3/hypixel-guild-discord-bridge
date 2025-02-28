@@ -1,4 +1,4 @@
-import { ChannelType, Color, GuildPlayerEventType, InstanceType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -10,10 +10,7 @@ export default {
       const username = match[1]
 
       context.application.emit('guildPlayer', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Good,
         channels: [ChannelType.Public],

@@ -21,7 +21,14 @@ export default {
     const username: string = context.interaction.options.getString('username', true)
     const command = `/g demote ${username}`
 
-    const result = await checkChatTriggers(context.application, RankChat, undefined, command, username)
+    const result = await checkChatTriggers(
+      context.application,
+      context.eventHelper,
+      RankChat,
+      undefined,
+      command,
+      username
+    )
     const formatted = formatChatTriggerResponse(result, `Demote ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })

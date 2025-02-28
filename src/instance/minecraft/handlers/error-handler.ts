@@ -1,12 +1,13 @@
 import assert from 'node:assert'
 
+import type { InstanceType } from '../../../common/application-event.js'
 import { Status } from '../../../common/client-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export const QuitProxyError = 'Proxy encountered a problem while connecting'
 
-export default class StateHandler extends EventHandler<MinecraftInstance> {
+export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
   registerEvents(): void {
     const clientSession = this.clientInstance.clientSession
     assert(clientSession)

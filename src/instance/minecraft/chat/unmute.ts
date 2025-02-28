@@ -1,4 +1,4 @@
-import { ChannelType, Color, GuildPlayerEventType, InstanceType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -16,17 +16,12 @@ export default {
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
 
       context.application.moderation.punishments.remove({
-        localEvent: true,
-        instanceType: InstanceType.Minecraft,
-        instanceName: context.instanceName,
+        ...context.eventHelper.fillBaseEvent(),
         userIdentifiers: identifiers
       })
 
       context.application.emit('guildPlayer', {
-        localEvent: true,
-
-        instanceName: context.instanceName,
-        instanceType: InstanceType.Minecraft,
+        ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Good,
         channels: [ChannelType.Officer],

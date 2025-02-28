@@ -6,6 +6,7 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { Permission } from '../../../common/commands.js'
+import type EventHelper from '../../../util/event-helper.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 
@@ -90,7 +91,12 @@ export default {
       DefaultTimeout,
       context.errorHandler,
       async (requestedPage) => {
-        const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
+        const chatResult = await getGuildLog(
+          context.application,
+          context.eventHelper,
+          targetInstanceName,
+          requestedPage + 1
+        )
         return {
           totalPages: chatResult.guildLog?.total ?? 0,
           embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
@@ -100,7 +106,12 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
+async function getGuildLog(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>,
+  targetInstance: string,
+  page: number
+): Promise<ChatResult> {
   const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g
   return await new Promise((resolve) => {
     const result: ChatResult = {}
@@ -140,7 +151,7 @@ async function getGuildLog(app: Application, targetInstance: string, page: numbe
     }
 
     app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToMinecraft(targetInstance, `/guild log ${page}`)
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, targetInstance, `/guild log ${page}`)
   })
 }
 

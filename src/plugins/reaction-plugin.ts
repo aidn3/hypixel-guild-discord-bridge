@@ -43,21 +43,21 @@ export default {
         assert(event.username)
         let message = JoinMessages[Math.floor(Math.random() * JoinMessages.length)]
         message = message.replaceAll('%s', event.username)
-        context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
+        context.application.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/gc ${message}`)
       }
 
       if (event.type === GuildPlayerEventType.Leave) {
         assert(event.username)
         let message = LeaveMessages[Math.floor(Math.random() * LeaveMessages.length)]
         message = message.replaceAll('%s', event.username)
-        context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
+        context.application.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/gc ${message}`)
       }
 
       if (event.type === GuildPlayerEventType.Kick) {
         assert(event.username)
         let message = KickMessages[Math.floor(Math.random() * KickMessages.length)]
         message = message.replaceAll('%s', event.username)
-        context.application.clusterHelper.sendCommandToAllMinecraft(`/gc ${message}`)
+        context.application.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/gc ${message}`)
       }
     })
   }
