@@ -74,7 +74,6 @@ export default class ServerSocket {
     socket.on('message', (rawData) => {
       const packet = JSON.parse(rawData as unknown as string) as WebsocketPacket
       packet.data.localEvent = false
-      // @ts-expect-error packet.data is a safe type here
       this.app.emit(packet.name as keyof ApplicationEvents, packet.data)
 
       for (const clientEntry of this.socketServer.clients) {

@@ -17,7 +17,6 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   all: (name: string, event: Readonly<BaseEvent>) => void
 
   /**
