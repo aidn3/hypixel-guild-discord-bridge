@@ -143,17 +143,20 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    const replyId = event.originEventId ? this.messageAssociation.getMessageId(event.originEventId) : undefined
+    const replyIds = this.messageAssociation.getMessageId(event.originEventId)
 
-    if (replyId === undefined) {
+    if (replyIds.length === 0) {
       await this.handleEventEmbed({ event, username: undefined, removeLater: false })
     } else {
-      try {
-        const embed = this.extendEmbed({ event, username: undefined })
-        await this.replyWithEmbed(replyId, embed)
-      } catch (error: unknown) {
-        this.logger.error(error, 'can not reply to message. sending the event independently')
-        await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+      const embed = this.extendEmbed({ event, username: undefined })
+
+      for (const replyId of replyIds) {
+        try {
+          await this.replyWithEmbed(event.eventId, replyId, embed)
+        } catch (error: unknown) {
+          this.logger.error(error, 'can not reply to message. sending the event independently')
+          await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+        }
       }
     }
   }
