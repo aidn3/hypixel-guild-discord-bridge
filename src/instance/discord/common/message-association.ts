@@ -1,7 +1,7 @@
 import NodeCache from 'node-cache'
 
 export default class MessageAssociation {
-  private readonly messageIds = new NodeCache({ maxKeys: 20, stdTTL: 30 * 60 })
+  private readonly messageIds = new NodeCache({ stdTTL: 60 })
 
   public getMessageId(eventId: string): DiscordAssociatedMessage | undefined {
     return this.messageIds.get(eventId)
