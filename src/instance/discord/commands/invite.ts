@@ -1,7 +1,7 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, InviteAcceptChat } from '../common/chat-triggers.js'
 
 export default {
@@ -12,7 +12,7 @@ export default {
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ) as SlashCommandBuilder,
-  allowInstance: true,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
 
   permission: Permission.Helper,
   handler: async function (context) {
@@ -21,7 +21,7 @@ export default {
     const username: string = context.interaction.options.getString('username', true)
     const command = `/g invite ${username}`
 
-    const instance: string | undefined = context.interaction.options.getString('instance') ?? undefined
+    const instance: string = context.interaction.options.getString('instance', true)
     const result = await checkChatTriggers(
       context.application,
       context.eventHelper,

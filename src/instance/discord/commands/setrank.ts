@@ -1,7 +1,7 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
 
 export default {
@@ -16,7 +16,7 @@ export default {
         option.setName('rank').setDescription('rank to change to').setRequired(true).setAutocomplete(true)
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     await context.interaction.deferReply()

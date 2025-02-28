@@ -8,7 +8,7 @@ import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type EventHelper from '../../../util/event-helper.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -64,7 +64,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
   permission: Permission.Anyone,
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     await context.interaction.deferReply()

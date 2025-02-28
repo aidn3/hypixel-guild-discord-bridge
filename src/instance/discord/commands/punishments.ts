@@ -7,7 +7,7 @@ import type Application from '../../../application.js'
 import type { InstanceType, PunishmentAddEvent } from '../../../common/application-event.js'
 import { Color, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type EventHelper from '../../../util/event-helper.js'
 import type { MojangApi } from '../../../util/mojang.js'
@@ -126,7 +126,7 @@ export default {
         new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments')
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     await context.interaction.deferReply()

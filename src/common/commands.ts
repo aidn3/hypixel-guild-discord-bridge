@@ -61,12 +61,16 @@ export enum Permission {
 
 export interface DiscordCommandHandler {
   getCommandBuilder: () => SlashCommandBuilder
-  // TODO: use enum with "Disabled", "Optional", "Required". Name can be "addMinecraftInstancesToOption"
-  // Maybe rename it "options" and enum like "OptionalMinecraftInstances" | etc
-  allowInstance: boolean
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances
   permission: Permission
   handler: (context: DiscordCommandContext) => Promise<void>
   autoComplete?: (context: DiscordAutoCompleteContext) => Promise<void>
+}
+
+export enum OptionToAddMinecraftInstances {
+  Disabled,
+  Optional,
+  Required
 }
 
 interface DiscordContext {

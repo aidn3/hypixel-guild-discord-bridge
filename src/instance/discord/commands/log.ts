@@ -2,26 +2,19 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
-import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color, InstanceType } from '../../../common/application-event.js'
+import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
+import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type EventHelper from '../../../util/event-helper.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 
 const Title = 'Guild Log Audit'
 
-function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstance: boolean): APIEmbed {
+function formatEmbed(chatResult: ChatResult, targetInstance: string): APIEmbed {
   let result = ''
   let pageTitle = ''
-
-  if (!soleInstance) {
-    result +=
-      `_Warning: More than one Minecraft instance detected._\n` +
-      `_Since no particular instance has been selected, ${targetInstance} will be used._\n` +
-      `_You can select an instance via the optional command argument._\n\n`
-  }
 
   result += `**${escapeMarkdown(targetInstance)}**\n`
   if (chatResult.guildLog) {
@@ -55,35 +48,13 @@ export default {
         option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75)
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
-  allowInstance: true,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const currentPage: number = context.interaction.options.getNumber('page') ?? 1
-    const chosenInstance: string | null = context.interaction.options.getString('instance')
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
-    const soleInstance = instancesNames.length <= 1 || !!chosenInstance
-    const targetInstanceName = chosenInstance ?? (instancesNames.length > 0 ? instancesNames[0] : undefined)
-
-    if (!targetInstanceName) {
-      await context.interaction.editReply({
-        embeds: [
-          {
-            title: Title,
-            description:
-              `No Minecraft instance exist.\n` +
-              'This is a Minecraft command that displays ingame logs of a guild.\n' +
-              `Check the tutorial on how to add a Minecraft account.`,
-            color: Color.Info,
-            footer: {
-              text: DefaultCommandFooter
-            }
-          }
-        ]
-      })
-      return
-    }
+    const targetInstanceName: string = context.interaction.options.getString('instance', true)
 
     await interactivePaging(
       context.interaction,
@@ -99,7 +70,7 @@ export default {
         )
         return {
           totalPages: chatResult.guildLog?.total ?? 0,
-          embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+          embed: formatEmbed(chatResult, targetInstanceName)
         }
       }
     )

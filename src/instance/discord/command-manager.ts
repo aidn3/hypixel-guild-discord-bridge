@@ -6,14 +6,14 @@ import type {
   Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
-import { Collection, REST, Routes } from 'discord.js'
+import { Collection, escapeMarkdown, REST, Routes } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { ChannelType, InstanceType } from '../../common/application-event.js'
+import { ChannelType, Color, InstanceType } from '../../common/application-event.js'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
-import { Permission } from '../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type EventHelper from '../../util/event-helper.js'
@@ -32,6 +32,7 @@ import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
+import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
@@ -161,7 +162,36 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ephemeral: true
         })
         return
-      } else if (this.memberAllowed(interaction, command.permission)) {
+      } else if (!this.memberAllowed(interaction, command.permission)) {
+        this.logger.debug('No permission to execute this command')
+
+        await interaction.reply({
+          content: "You don't have permission to execute this command",
+          ephemeral: true
+        })
+        return
+      } else if (
+        (command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Required ||
+          command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Optional) &&
+        this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft).length === 0
+      ) {
+        await interaction.editReply({
+          embeds: [
+            {
+              title: `Command ${escapeMarkdown(command.getCommandBuilder().name)}`,
+              description:
+                `No Minecraft instance exist.\n` +
+                'This is a Minecraft command that requires a working Minecraft account connected to the bridge.\n' +
+                `Check the tutorial on how to add a Minecraft account before using this command.`,
+              color: Color.Info,
+              footer: {
+                text: DefaultCommandFooter
+              }
+            }
+          ]
+        })
+        return
+      } else {
         this.logger.debug('execution granted.')
 
         const username = interaction.inCachedGuild() ? interaction.member.displayName : interaction.user.displayName
@@ -206,14 +236,6 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         }
 
         await command.handler(commandContext)
-        return
-      } else {
-        this.logger.debug('No permission to execute this command')
-
-        await interaction.reply({
-          content: "You don't have permission to execute this command",
-          ephemeral: true
-        })
         return
       }
     } catch (error) {
@@ -290,13 +312,29 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
     for (const command of this.commands.values()) {
       const commandBuilder = command.getCommandBuilder()
-      if (command.allowInstance && instanceChoices.length > 0) {
-        commandBuilder.addStringOption((option) =>
-          option
-            .setName('instance')
-            .setDescription('Which instance to send this command to')
-            .setChoices(...instanceChoices)
-        )
+      const instanceCommandName = 'instance'
+      const instanceCommandDescription = 'Which instance to send this command to'
+      if (instanceChoices.length > 0) {
+        switch (command.addMinecraftInstancesToOptions) {
+          case OptionToAddMinecraftInstances.Required: {
+            commandBuilder.addStringOption((option) =>
+              option
+                .setName(instanceCommandName)
+                .setDescription(instanceCommandDescription)
+                .setChoices(...instanceChoices)
+                .setRequired(true)
+            )
+            break
+          }
+          case OptionToAddMinecraftInstances.Optional: {
+            commandBuilder.addStringOption((option) =>
+              option
+                .setName(instanceCommandName)
+                .setDescription(instanceCommandDescription)
+                .setChoices(...instanceChoices)
+            )
+          }
+        }
       }
 
       commandsJson.push(commandBuilder.toJSON())

@@ -1,13 +1,13 @@
 import { SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('about').setDescription('Display basic info about the client.'),
   permission: Permission.Anyone,
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     await context.interaction.deferReply()
