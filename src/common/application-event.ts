@@ -409,7 +409,7 @@ export interface MinecraftChatEvent extends BaseInGameEvent<MinecraftChatEventTy
    * The original event id {@link BaseEvent#eventId} this event is mentioning.
    *  @see {@link BaseEvent#eventId}
    */
-  readonly originEventId: string
+  readonly originEventId: string | undefined
 }
 
 /**

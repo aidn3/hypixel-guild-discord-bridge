@@ -34,12 +34,13 @@ export default {
         channels: [ChannelType.Public],
 
         type: MinecraftChatEventType.Repeat,
+        originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
         message: randomMessage
       })
 
       if (lastWarning + 5000 < Date.now()) {
         void context.clientInstance
-          .send(`/gc @${randomMessage}`)
+          .send(`/gc @${randomMessage}`, undefined)
           .catch(context.errorHandler.promiseCatch('sending message about repeating in chat'))
         lastWarning = Date.now()
       }

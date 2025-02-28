@@ -27,6 +27,8 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
 
   private readonly bridge: MinecraftBridge
   private readonly commandsLimiter = new RateLimiter(1, 1000)
+  private readonly chatLimiter = new RateLimiter(1, 3000)
+  private lastEventIdForSentChatMessage: string | undefined = undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.Minecraft, config)
@@ -77,22 +79,53 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     return uuid == undefined ? undefined : uuid.split('-').join('')
   }
 
-  async send(message: string): Promise<void> {
+  /**
+   * returns {@link BaseEvent#eventId} of the last **MESSAGE** sent via {@link #send}.
+   * Sent commands that aren't messages will NOT change this value.
+   */
+  getLastEventIdForSentChatMessage(): string | undefined {
+    return this.lastEventIdForSentChatMessage
+  }
+
+  /**
+   * Send a message/command via minecraft client.
+   * The command will be queued to be sent in the future
+   * @param message the message/command to send
+   * @param originEventId {@link BaseEvent#eventId} that resulted in this send. <code>undefined</code> if none.
+   */
+  async send(message: string, originEventId: string | undefined): Promise<void> {
     message = message
       .split('\n')
       .map((chunk) => chunk.trim())
       .join(' ')
 
     this.logger.debug(`Queuing message to send: ${message}`)
-    await this.commandsLimiter.wait().then(() => {
-      if (this.clientSession?.client.state === states.PLAY) {
-        if (message.length > 250) {
-          message = message.slice(0, 250) + '...'
-          this.logger.warn(`Long message truncated: ${message}`)
-        }
+    await this.commandsLimiter.wait()
 
-        this.clientSession.client.chat(message)
+    const loweredCaseMessage = message.toLowerCase()
+    let isChatMessage = false
+    if (
+      loweredCaseMessage.startsWith('/ac') ||
+      loweredCaseMessage.startsWith('/pc') ||
+      loweredCaseMessage.startsWith('/gc') ||
+      loweredCaseMessage.startsWith('/msg') ||
+      loweredCaseMessage.startsWith('/w') ||
+      loweredCaseMessage.startsWith('/tell') ||
+      loweredCaseMessage.startsWith('/whisper') ||
+      !loweredCaseMessage.startsWith('/') // normal chat on default channel and not a command
+    ) {
+      isChatMessage = true
+      await this.chatLimiter.wait()
+    }
+
+    if (this.clientSession?.client.state === states.PLAY) {
+      if (message.length > 250) {
+        message = message.slice(0, 250) + '...'
+        this.logger.warn(`Long message truncated: ${message}`)
       }
-    })
+
+      if (isChatMessage) this.lastEventIdForSentChatMessage = originEventId
+      this.clientSession.client.chat(message)
+    }
   }
 }

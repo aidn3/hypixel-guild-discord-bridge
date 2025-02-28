@@ -46,7 +46,7 @@ export default {
 
 async function limbo(logger: Logger, clientInstance: MinecraftInstance): Promise<void> {
   logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
-  await clientInstance.send('§')
+  await clientInstance.send('§', undefined)
 }
 
 async function warpPlayer(

@@ -16,6 +16,7 @@ export default {
         channels: [ChannelType.Public],
 
         type: MinecraftChatEventType.Muted,
+        originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
         message: `Account has been muted. ${context.message}`
       })
       lastWarning = Date.now()

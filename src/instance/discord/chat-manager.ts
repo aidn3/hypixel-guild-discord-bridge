@@ -12,20 +12,24 @@ import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type EventHelper from '../../util/event-helper.js'
 
+import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
+  private readonly messageAssociation: MessageAssociation
   private readonly config
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    messageAssociation: MessageAssociation,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     config: DiscordConfig
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
+    this.messageAssociation = messageAssociation
     this.config = config
   }
 
@@ -63,10 +67,13 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
 
+    const fillBaseEvent = this.eventHelper.fillBaseEvent()
+    this.messageAssociation.addMessageId(fillBaseEvent.eventId, { channelId: event.channelId, messageId: event.id })
+
     const { filteredMessage, changed } = this.application.moderation.filterProfanity(truncatedContent)
     if (changed) {
       this.application.emit('profanityWarning', {
-        ...this.eventHelper.fillBaseEvent(),
+        ...fillBaseEvent,
 
         channelType: channelType,
 
@@ -80,7 +87,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     }
 
     this.application.emit('chat', {
-      ...this.eventHelper.fillBaseEvent(),
+      ...fillBaseEvent,
 
       channelType: channelType,
       channelId: event.channel.id,

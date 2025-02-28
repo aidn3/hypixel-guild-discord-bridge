@@ -34,7 +34,10 @@ export default {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const sendMessage = MinecraftInstance.prototype.send
 
-    MinecraftInstance.prototype.send = async function (message: string): Promise<void> {
+    MinecraftInstance.prototype.send = async function (
+      message: string,
+      originEventId: string | undefined
+    ): Promise<void> {
       const modifiedMessage = message
         .split(' ')
         .map((part) => {
@@ -47,7 +50,7 @@ export default {
         })
         .join(' ')
 
-      await sendMessage.call(this, modifiedMessage)
+      await sendMessage.call(this, modifiedMessage, originEventId)
     }
   }
 } satisfies PluginInterface

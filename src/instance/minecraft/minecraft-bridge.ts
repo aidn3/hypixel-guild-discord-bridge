@@ -57,11 +57,11 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
     if (event.channelType === ChannelType.Public) {
       void this.clientInstance
-        .send(this.formatChatMessage('gc', event.username, replyUsername, event.message))
+        .send(this.formatChatMessage('gc', event.username, replyUsername, event.message), event.eventId)
         .catch(this.errorHandler.promiseCatch('sending public chat message'))
     } else if (event.channelType === ChannelType.Officer) {
       void this.clientInstance
-        .send(this.formatChatMessage('oc', event.username, replyUsername, event.message))
+        .send(this.formatChatMessage('oc', event.username, replyUsername, event.message), event.eventId)
         .catch(this.errorHandler.promiseCatch('sending officer chat message'))
     }
   }
@@ -87,16 +87,16 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`, event.eventId)
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
+      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`, event.eventId)
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`)
+      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`, event.eventId)
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`)
+      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`, event.eventId)
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {
@@ -112,7 +112,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
       this.logger.log('instance has received restart signal')
       void this.clientInstance
-        .send(`/gc @Instance restarting...`)
+        .send(`/gc @Instance restarting...`, event.eventId)
         .then(() => {
           this.clientInstance.connect()
         })
@@ -123,7 +123,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
     // undefined is strictly checked due to api specification
     if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
-      await this.clientInstance.send(event.command)
+      await this.clientInstance.send(event.command, event.eventId)
     }
   }
 
@@ -140,13 +140,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     switch (event.channelType) {
       case ChannelType.Public: {
         void this.clientInstance
-          .send(`/gc ${finalResponse}`)
+          .send(`/gc ${finalResponse}`, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling public command response display'))
         break
       }
       case ChannelType.Officer: {
         void this.clientInstance
-          .send(`/oc ${finalResponse}`)
+          .send(`/oc ${finalResponse}`, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }
@@ -154,7 +154,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
         void this.clientInstance
-          .send(`/msg ${event.username} ${finalResponse}`)
+          .send(`/msg ${event.username} ${finalResponse}`, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }

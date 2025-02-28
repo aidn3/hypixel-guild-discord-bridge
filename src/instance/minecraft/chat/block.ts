@@ -14,6 +14,7 @@ export default {
         channels: [ChannelType.Public],
 
         type: MinecraftChatEventType.Block,
+        originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
         message: 'The message has been blocked by Hypixel for breaking the rules.'
       })
     }

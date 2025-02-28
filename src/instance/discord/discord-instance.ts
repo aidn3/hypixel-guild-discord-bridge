@@ -9,6 +9,7 @@ import { ClientInstance, Status } from '../../common/client-instance.js'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
+import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
@@ -22,6 +23,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig, Insta
   private readonly chatManager: ChatManager
 
   private readonly bridge: DiscordBridge
+  private readonly messageAssociation: MessageAssociation = new MessageAssociation()
   private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
@@ -48,6 +50,7 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig, Insta
     this.chatManager = new ChatManager(
       this.application,
       this,
+      this.messageAssociation,
       this.eventHelper,
       this.logger,
       this.errorHandler,
@@ -62,7 +65,14 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig, Insta
       this.config
     )
 
-    this.bridge = new DiscordBridge(this.application, this, this.logger, this.errorHandler, this.config)
+    this.bridge = new DiscordBridge(
+      this.application,
+      this,
+      this.messageAssociation,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')

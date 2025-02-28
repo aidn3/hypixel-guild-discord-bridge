@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { APIEmbed, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import type { Logger } from 'log4js'
@@ -25,20 +27,25 @@ import {
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
+import type { DiscordAssociatedMessage } from './common/message-association.js'
+import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridge extends Bridge<DiscordInstance> {
+  private readonly messageAssociation: MessageAssociation
   private readonly config
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    messageAssociation: MessageAssociation,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     config: DiscordConfig
   ) {
     super(application, clientInstance, logger, errorHandler)
 
+    this.messageAssociation = messageAssociation
     this.config = config
   }
 
@@ -136,7 +143,19 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+    const replyId = event.originEventId ? this.messageAssociation.getMessageId(event.originEventId) : undefined
+
+    if (replyId === undefined) {
+      await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+    } else {
+      try {
+        const embed = this.extendEmbed({ event, username: undefined })
+        await this.replyWithEmbed(replyId, embed)
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message. sending the event independently')
+        await this.handleEventEmbed({ event, username: undefined, removeLater: false })
+      }
+    }
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
@@ -158,6 +177,23 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if (options.event.channels.includes(ChannelType.Public)) channels.push(...this.config.publicChannelIds)
     if (options.event.channels.includes(ChannelType.Officer)) channels.push(...this.config.officerChannelIds)
 
+    const embed = this.extendEmbed(options)
+
+    await this.sendEmbedToChannels(channels, options.removeLater, embed)
+  }
+
+  async onCommand(event: CommandEvent): Promise<void> {
+    await this.sendCommandResponse(event, false)
+  }
+
+  async onCommandFeedback(event: CommandFeedbackEvent): Promise<void> {
+    await this.sendCommandResponse(event, true)
+  }
+
+  private extendEmbed(options: {
+    event: BaseInGameEvent<string> | BroadcastEvent
+    username: string | undefined
+  }): APIEmbed {
     const embed = {
       description: escapeMarkdown(options.event.message),
 
@@ -173,18 +209,18 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       Object.assign(embed, extra)
     }
 
-    await this.sendEmbed(channels, options.removeLater, embed)
+    return embed
   }
 
-  async onCommand(event: CommandEvent): Promise<void> {
-    await this.sendCommandResponse(event, false)
+  private async replyWithEmbed(replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
+    const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
+    assert(channel != undefined)
+    assert(channel.isSendable())
+
+    await channel.send({ embeds: [embed], reply: { messageReference: replyId.messageId } })
   }
 
-  async onCommandFeedback(event: CommandFeedbackEvent): Promise<void> {
-    await this.sendCommandResponse(event, true)
-  }
-
-  private async sendEmbed(channels: string[], removeLater: boolean, embed: APIEmbed): Promise<void> {
+  private async sendEmbedToChannels(channels: string[], removeLater: boolean, embed: APIEmbed): Promise<void> {
     for (const channelId of channels) {
       const channel = (await this.clientInstance.client.channels.fetch(channelId)) as unknown as TextChannel | null
       if (channel == undefined) return
@@ -241,7 +277,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     } satisfies APIEmbed
 
-    await this.sendEmbed(channels, false, embed)
+    await this.sendEmbedToChannels(channels, false, embed)
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {
