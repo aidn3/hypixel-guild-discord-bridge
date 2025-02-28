@@ -1,11 +1,11 @@
 import { SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('reconnect minecraft clients'),
-  allowInstance: true,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Optional,
   permission: Permission.Helper,
 
   handler: async function (context) {

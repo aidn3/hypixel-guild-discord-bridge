@@ -1,12 +1,12 @@
 import { SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('restart').setDescription('Send signal to restart the bridge'),
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
   permission: Permission.Admin,
 
   handler: async function (context) {
