@@ -4,6 +4,7 @@ import type { ChatEvent } from '../../common/application-event.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
 import { ClientInstance, Status } from '../../common/client-instance.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
+import { Permission } from '../../common/commands.js'
 
 import EightBallCommand from './triggers/8ball.js'
 import Bits from './triggers/bits.js'
@@ -108,7 +109,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig, InstanceTyp
   async handle(event: ChatEvent): Promise<void> {
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
-    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.Minecraft
+    const permission = this.resolvePermission(event)
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
@@ -116,7 +117,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig, InstanceTyp
     if (command == undefined) return
 
     // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.Officer) {
+    if (!command.enabled && permission === Permission.Anyone) {
       return
     }
 
@@ -137,7 +138,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig, InstanceTyp
         channelType: event.channelType,
 
         username: event.username,
-        isAdmin: isAdmin,
+        permission: permission,
         args: commandsArguments,
 
         sendFeedback: (feedbackResponse) => {
@@ -150,6 +151,16 @@ export class CommandsInstance extends ClientInstance<CommandsConfig, InstanceTyp
       this.logger.error('Error while handling command', error)
       this.reply(event, command.triggers[0], `${event.username}, error trying to execute ${command.triggers[0]}.`)
     }
+  }
+
+  private resolvePermission(event: ChatEvent): Permission {
+    if (event.username === this.config.adminUsername && event.instanceType === InstanceType.Minecraft) {
+      return Permission.Admin
+    } else if (event.instanceType === InstanceType.Minecraft && event.channelType === ChannelType.Officer) {
+      return Permission.Helper
+    }
+
+    return Permission.Anyone
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {

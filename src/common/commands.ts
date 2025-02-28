@@ -45,8 +45,7 @@ export interface ChatCommandContext {
   channelType: ChannelType
 
   username: string
-  // TODO: use Permission from discord instead
-  isAdmin: boolean
+  permission: Permission
   args: string[]
 
   sendFeedback: (feedback: string) => void

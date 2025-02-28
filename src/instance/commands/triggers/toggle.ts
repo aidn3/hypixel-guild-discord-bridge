@@ -1,6 +1,5 @@
-import { ChannelType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandHandler, Permission } from '../../../common/commands.js'
 
 export default class Toggle extends ChatCommandHandler {
   constructor() {
@@ -13,7 +12,7 @@ export default class Toggle extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.channelType !== ChannelType.Officer && !context.isAdmin) {
+    if (context.permission !== Permission.Officer && context.permission !== Permission.Admin) {
       return `${context.username}, Command can only be executed in officer chat or by the bridge admin`
     }
 
