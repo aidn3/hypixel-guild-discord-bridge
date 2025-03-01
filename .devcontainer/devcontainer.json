@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
   "features": {
     // needed to test docker production
-    //"ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker": {},
+    //"ghcr.io/devcontainers/features/docker-in-docker:2": {},
     // needed to checkout and commit
     "ghcr.io/devcontainers/features/git": {}
     //"ghcr.io/devcontainers/features/github-cli": {},
