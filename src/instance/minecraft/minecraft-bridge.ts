@@ -80,6 +80,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
+    if (event.type === MinecraftChatEventType.Advertise) return
     if (event.type === MinecraftChatEventType.Block) return
     if (event.type === MinecraftChatEventType.Repeat) return
     await this.handleInGameEvent(event)
