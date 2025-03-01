@@ -102,17 +102,11 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
     this.logger.debug(`Queuing message to send: ${message}`)
     await this.commandsLimiter.wait()
 
+    const chatPrefix = ['/ac', '/pc', '/gc', '/oc', '/msg', '/whisper', '/w', 'tell']
     const loweredCaseMessage = message.toLowerCase()
     let isChatMessage = false
     if (
-      loweredCaseMessage.startsWith('/ac') ||
-      loweredCaseMessage.startsWith('/pc') ||
-      loweredCaseMessage.startsWith('/gc') ||
-      loweredCaseMessage.startsWith('/oc') ||
-      loweredCaseMessage.startsWith('/msg') ||
-      loweredCaseMessage.startsWith('/w') ||
-      loweredCaseMessage.startsWith('/tell') ||
-      loweredCaseMessage.startsWith('/whisper') ||
+      chatPrefix.some((prefix) => loweredCaseMessage.startsWith(prefix)) ||
       !loweredCaseMessage.startsWith('/') // normal chat on default channel and not a command
     ) {
       isChatMessage = true
