@@ -131,6 +131,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.handleEventEmbed({ event, username: undefined, removeLater: false })
   }
 
+  private lastAdvertiseEvent = 0
   private lastRepeatEvent = 0
   private lastBlockEvent = 0
 
@@ -140,6 +141,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       event.instanceName === this.clientInstance.instanceName
     )
       return
+    if (event.type === MinecraftChatEventType.Advertise) {
+      if (this.lastAdvertiseEvent + 5000 < Date.now()) {
+        this.lastAdvertiseEvent = Date.now()
+      } else {
+        return
+      }
+    }
     if (event.type === MinecraftChatEventType.Repeat) {
       if (this.lastRepeatEvent + 5000 < Date.now()) {
         this.lastRepeatEvent = Date.now()
