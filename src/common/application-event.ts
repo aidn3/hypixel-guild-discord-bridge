@@ -164,7 +164,7 @@ export enum Color {
  * The base interface for every event.
  * There are two main types of events: {@link InformEvent} and {@link SignalEvent}.
  */
-export interface BaseEvent {
+export interface BaseEvent extends InstanceIdentifier {
   /**
    * Always set to `true`.
 
@@ -184,7 +184,17 @@ export interface BaseEvent {
    *  - discord instance can use that to associate the event with the message the user sent
    */
   eventId: string
+}
 
+/**
+ * Identifiers every instance MUST have.
+ *
+ * The different between an instance and a utility is that an instance:
+ * - can emit events on its own.
+ * - can be stateful
+ * - has the ability to interact with other instances
+ */
+export interface InstanceIdentifier {
   /**
    * The instance name the event is happening in
    */

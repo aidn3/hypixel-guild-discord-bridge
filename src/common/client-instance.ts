@@ -5,10 +5,10 @@ import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
 import EventHelper from '../util/event-helper.js'
 
-import type { InstanceStatusEvent, InstanceType } from './application-event.js'
+import type { InstanceIdentifier, InstanceStatusEvent, InstanceType } from './application-event.js'
 import UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export abstract class ClientInstance<K, T extends InstanceType> {
+export abstract class ClientInstance<K, T extends InstanceType> implements InstanceIdentifier {
   public readonly instanceName: string
   public readonly instanceType: T
 
