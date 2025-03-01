@@ -108,6 +108,7 @@ export default class MinecraftInstance extends ClientInstance<MinecraftInstanceC
       loweredCaseMessage.startsWith('/ac') ||
       loweredCaseMessage.startsWith('/pc') ||
       loweredCaseMessage.startsWith('/gc') ||
+      loweredCaseMessage.startsWith('/oc') ||
       loweredCaseMessage.startsWith('/msg') ||
       loweredCaseMessage.startsWith('/w') ||
       loweredCaseMessage.startsWith('/tell') ||
