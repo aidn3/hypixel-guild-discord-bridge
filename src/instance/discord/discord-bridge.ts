@@ -51,6 +51,17 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
   async onInstance(event: InstanceStatusEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
+    switch (event.instanceType) {
+      case InstanceType.Commands:
+      case InstanceType.Metrics:
+      case InstanceType.Plugin:
+      case InstanceType.Socket:
+      case InstanceType.Logger:
+      case InstanceType.Util:
+      case InstanceType.Moderation: {
+        return
+      }
+    }
 
     for (const channelId of this.config.publicChannelIds) {
       const channel = await this.clientInstance.client.channels.fetch(channelId)
