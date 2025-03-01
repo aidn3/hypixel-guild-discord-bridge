@@ -12,7 +12,7 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
 import ClusterHelper from './cluster-helper.js'
-import type { ApplicationEvents } from './common/application-event.js'
+import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceType } from './common/application-event.js'
 import type { ClientInstance } from './common/client-instance.js'
 import { InternalInstancePrefix } from './common/client-instance.js'
@@ -25,14 +25,19 @@ import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
+import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
 import EventHelper from './util/event-helper.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
-export default class Application extends TypedEmitter<ApplicationEvents> {
+export default class Application extends TypedEmitter<ApplicationEvents> implements InstanceIdentifier {
+  public readonly instanceName: string = InstanceType.Main
+  public readonly instanceType: InstanceType = InstanceType.Main
+
   public readonly clusterHelper: ClusterHelper
   public readonly autoComplete: Autocomplete
+  public readonly applicationIntegrity: ApplicationIntegrity
   public readonly moderation: ModerationInstance
 
   public readonly hypixelApi: HypixelClient
@@ -60,7 +65,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
 
-    emitAll(this) // first thing to redirect all events
+    this.applicationIntegrity = new ApplicationIntegrity()
+    this.applicationIntegrity.addLocalInstance(this)
+
+    emitAll(this, this.applicationIntegrity) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
 
@@ -107,7 +115,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       ? new CommandsInstance(this, InternalInstancePrefix + InstanceType.Commands, this.config.commands)
       : undefined
 
-    this.plugins = this.loadPlugins(rootDirectory)
+    this.loadPlugins(rootDirectory)
 
     this.on('shutdownSignal', (event) => {
       if (event.targetInstanceName === undefined) {
@@ -176,6 +184,29 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
     }
   }
 
+  /**
+   * Get all instances {@link InstanceIdentifier} exist in this application.
+   * This includes all internal and public instances as well as plugins and utilities.
+   */
+  public getAllInstancesIdentifiers(): InstanceIdentifier[] {
+    const list: InstanceIdentifier[] = []
+
+    list.push(
+      ...this.getAllInstances().map((instance) => ({
+        instanceName: instance.instanceName,
+        instanceType: instance.instanceType
+      })),
+      ...this.plugins.map((plugin) => ({
+        instanceName: plugin.name,
+        instanceType: InstanceType.Plugin
+      })),
+      { instanceName: this.autoComplete.instanceName, instanceType: this.autoComplete.instanceType },
+      { instanceName: this.applicationIntegrity.instanceName, instanceType: this.applicationIntegrity.instanceType }
+    )
+
+    return list
+  }
+
   private loadPlugins(
     rootDirectory: string
   ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
@@ -187,11 +218,14 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
         newPath = `file:///${newPath}`
       }
 
-      result.push({
+      const plugin = {
         promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
         originalPath: pluginPath,
         name: path.basename(pluginPath)
-      })
+      }
+
+      this.applicationIntegrity.addLocalInstance({ instanceName: plugin.name, instanceType: InstanceType.Plugin })
+      this.plugins.push(plugin)
     }
 
     return result
@@ -213,10 +247,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
 }
 
 /* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
-function emitAll(emitter: Events): void {
+function emitAll(emitter: Events, applicationIntegrity: ApplicationIntegrity): void {
   const old = emitter.emit
   emitter.emit = (event: string, ...callerArguments): boolean => {
-    if (event !== 'all') emitter.emit('all', event, ...callerArguments)
+    if (event !== 'all') {
+      applicationIntegrity.checkEventIntegrity(event, callerArguments[0])
+      emitter.emit('all', event, ...callerArguments)
+    }
     return old.call(emitter, event, ...callerArguments)
   }
 }

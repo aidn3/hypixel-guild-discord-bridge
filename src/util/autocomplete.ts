@@ -24,6 +24,8 @@ export default class Autocomplete implements InstanceIdentifier {
   private readonly guildRanks: string[] = []
 
   constructor(application: Application) {
+    application.applicationIntegrity.addLocalInstance(this)
+
     this.application = application
     this.eventHelper = new EventHelper(this.instanceName, this.instanceType)
     // eslint-disable-next-line import/no-named-as-default-member

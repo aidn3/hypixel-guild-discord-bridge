@@ -24,6 +24,9 @@ export abstract class ClientInstance<K, T extends InstanceType> implements Insta
     this.application = app
     this.instanceName = instanceName
     this.instanceType = instanceType
+
+    app.applicationIntegrity.addLocalInstance(this)
+
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger(instanceName)
     this.config = config
