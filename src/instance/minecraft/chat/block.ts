@@ -3,7 +3,7 @@ import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
-    const regex = /^We blocked your comment "[\W\w]+" as it is breaking our rules/g
+    const regex = /^We blocked your comment "[\W\w]+" because/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
@@ -15,7 +15,7 @@ export default {
 
         type: MinecraftChatEventType.Block,
         originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
-        message: 'The message has been blocked by Hypixel for breaking the rules.'
+        message: 'The message has been blocked by Hypixel for breaking its rules.'
       })
     }
   }
