@@ -10,6 +10,7 @@ import EventHandler from '../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type EventHelper from '../../util/event-helper.js'
 
+import AdvertiseChat from './chat/advertise.js'
 import BlockChat from './chat/block.js'
 import DemoteChat from './chat/demote.js'
 import JoinChat from './chat/join.js'
@@ -48,6 +49,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
     this.minecraftData = GetMinecraftData(clientInstance.defaultBotConfig.version)
 
     this.chatModules = [
+      AdvertiseChat,
       BlockChat,
       DemoteChat,
       JoinChat,

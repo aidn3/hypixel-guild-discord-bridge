@@ -393,6 +393,10 @@ export enum MinecraftChatEventType {
    */
   Block = 'block',
   /**
+   * When a Minecraft server blocks a message due to it being considered a form of advertising
+   */
+  Advertise = 'advertise',
+  /**
    * When the Minecraft account itself is muted by the server.
    * Not to be confused with {@link GuildPlayerEventType#Mute}
    */
