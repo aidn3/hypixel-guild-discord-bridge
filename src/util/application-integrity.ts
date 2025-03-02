@@ -31,6 +31,7 @@ export default class ApplicationIntegrity implements InstanceIdentifier {
   private readonly remoteApplications = new Map<number, InstanceIdentifier[]>()
   private lastApplicationId = -1
 
+  private remoteEventsIntegrity = true
   private cachedInstances: InstanceIdentifier[] | undefined
   private cachedInvalidated = true
 
@@ -38,7 +39,13 @@ export default class ApplicationIntegrity implements InstanceIdentifier {
     this.addLocalInstance(this)
   }
 
+  public enableRemoteEventsIntegrity(enabled: boolean): void {
+    this.remoteEventsIntegrity = enabled
+  }
+
   public checkEventIntegrity(name: string, event: BaseEvent): void {
+    if (!event.localEvent && !this.remoteEventsIntegrity) return
+
     if (this.cachedInstances === undefined || this.cachedInvalidated) {
       this.cachedInvalidated = false
       this.cachedInstances = [...this.localInstanceIdentifier, ...this.remoteApplications.values().toArray().flat()]

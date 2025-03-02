@@ -2,10 +2,15 @@ import type { Logger } from 'log4js'
 import { WebSocket } from 'ws'
 
 import type Application from '../../application.js'
-import type { ApplicationEvents } from '../../common/application-event.js'
 
-import type { WebsocketPacket } from './common.js'
-import { AuthenticationHeader } from './common.js'
+import type { ApplicationPacket, WebsocketPacket } from './common.js'
+import {
+  AuthenticationHeader,
+  InstancesHeader,
+  InternalInstances,
+  SocketConnectionInfoPacketName,
+  SocketIdHeader
+} from './common.js'
 
 export default class ClientSocket {
   private readonly app: Application
@@ -14,6 +19,7 @@ export default class ClientSocket {
   private readonly key: string
 
   private client: WebSocket | undefined
+  private socketId = -1
   private stopped = false
 
   constructor(app: Application, logger: Logger, uri: string, key: string) {
@@ -23,14 +29,16 @@ export default class ClientSocket {
     this.key = key
 
     app.on('all', (name, event) => {
-      if (event.localEvent && this.client && this.client.readyState === WebSocket.OPEN) {
-        this.client.send(
-          JSON.stringify({
-            name: name,
-            data: event
-          } satisfies WebsocketPacket)
-        )
-      }
+      if (!event.localEvent) return
+      if (InternalInstances.includes(event.instanceType)) return
+      if (!this.client || this.client.readyState !== WebSocket.OPEN) return
+
+      this.client.send(
+        JSON.stringify({
+          name: name,
+          data: event
+        } satisfies ApplicationPacket)
+      )
     })
 
     this.createClient()
@@ -44,6 +52,11 @@ export default class ClientSocket {
 
     const headers: Record<string, string> = {}
     headers[AuthenticationHeader] = this.key
+    headers[InstancesHeader] = JSON.stringify(
+      this.app.getAllInstancesIdentifiers().filter((instance) => !InternalInstances.includes(instance.instanceType))
+    )
+    headers[SocketIdHeader] = this.socketId.toString(10)
+
     const client = new WebSocket(this.uri, { headers: headers })
     this.client = client
 
@@ -65,8 +78,21 @@ export default class ClientSocket {
 
     client.on('message', (rawData) => {
       const packet = JSON.parse(rawData as unknown as string) as WebsocketPacket
+
+      if (packet.name === SocketConnectionInfoPacketName) {
+        this.socketId = packet.data.socketId
+        return
+      }
+
       packet.data.localEvent = false
-      this.app.emit(packet.name as keyof ApplicationEvents, packet.data)
+      if (InternalInstances.includes(packet.data.instanceType)) {
+        this.logger.warn(
+          `Socket server has sent an event with instanceType=${packet.data.instanceType}.` +
+            ` dropping it since it is considered an internal type.`
+        )
+        return
+      }
+      this.app.emit(packet.name, packet.data)
     })
   }
 

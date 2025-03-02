@@ -66,6 +66,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.logger.trace('Application initiating')
 
     this.applicationIntegrity = new ApplicationIntegrity()
+    // only check for integrity if this application is the main one that distributes events
+    // applications cross-sockets only have to worry about themselves
+    this.applicationIntegrity.enableRemoteEventsIntegrity(config.socket.enabled && config.socket.type === 'server')
     this.applicationIntegrity.addLocalInstance(this)
 
     emitAll(this, this.applicationIntegrity) // first thing to redirect all events

@@ -1,16 +1,24 @@
+import assert from 'node:assert'
 import type { IncomingMessage, Server } from 'node:http'
 import { createServer } from 'node:http'
 import type { Duplex } from 'node:stream'
 
+import { HttpStatusCode } from 'axios'
 import type { Logger } from 'log4js'
 import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
 
 import type Application from '../../application.js'
-import type { ApplicationEvents } from '../../common/application-event.js'
+import type { InstanceIdentifier } from '../../common/application-event.js'
 
-import type { WebsocketPacket } from './common.js'
-import { AuthenticationHeader } from './common.js'
+import type { ApplicationPacket, SocketConnectionInfo, SocketPacket } from './common.js'
+import {
+  AuthenticationHeader,
+  InstancesHeader,
+  InternalInstances,
+  SocketConnectionInfoPacketName,
+  SocketIdHeader
+} from './common.js'
 
 export default class ServerSocket {
   private readonly app: Application
@@ -37,15 +45,16 @@ export default class ServerSocket {
     this.httpServer.listen(port)
 
     app.on('all', (name, event) => {
-      if (event.localEvent) {
-        for (const client of this.socketServer.clients) {
-          client.send(
-            JSON.stringify({
-              name: name,
-              data: event
-            } satisfies WebsocketPacket)
-          )
-        }
+      if (!event.localEvent) return
+      if (InternalInstances.includes(event.instanceType)) return
+
+      for (const client of this.socketServer.clients) {
+        client.send(
+          JSON.stringify({
+            name: name,
+            data: event
+          } satisfies ApplicationPacket)
+        )
       }
     })
   }
@@ -58,9 +67,35 @@ export default class ServerSocket {
       return
     }
 
-    this.socketServer.handleUpgrade(request, socket, head, (ws) => {
-      this.socketServer.emit('connection', ws, request)
-    })
+    try {
+      const socketIdHeader = request.headers[SocketIdHeader]
+      assert(typeof socketIdHeader === 'string')
+      const socketId = Number.parseInt(socketIdHeader, 10)
+
+      const instancesHeader = request.headers[InstancesHeader]
+      assert(typeof instancesHeader === 'string')
+      const instanceIdentifiers = JSON.parse(instancesHeader) as InstanceIdentifier[]
+
+      const newSocketId = this.app.applicationIntegrity.addRemoteApplication(socketId, instanceIdentifiers)
+
+      this.socketServer.handleUpgrade(request, socket, head, (ws) => {
+        this.socketServer.emit('connection', ws, request)
+        ws.send(
+          JSON.stringify({
+            name: SocketConnectionInfoPacketName,
+            data: { socketId: newSocketId } satisfies SocketConnectionInfo
+          } satisfies SocketPacket)
+        )
+      })
+    } catch (error: unknown) {
+      this.logger.error(
+        error,
+        'Socket Server has received an authorized connection request but failed to properly parse it'
+      )
+
+      socket.write('HTTP/1.1 409 Conflict\r\n\r\n')
+      socket.destroy()
+    }
   }
 
   private handleConnection(socket: WebSocket): void {
@@ -72,9 +107,28 @@ export default class ServerSocket {
     this.app.syncBroadcast()
 
     socket.on('message', (rawData) => {
-      const packet = JSON.parse(rawData as unknown as string) as WebsocketPacket
+      const packet = JSON.parse(rawData as unknown as string) as ApplicationPacket
       packet.data.localEvent = false
-      this.app.emit(packet.name as keyof ApplicationEvents, packet.data)
+
+      if (InternalInstances.includes(packet.data.instanceType)) {
+        this.logger.error(
+          `Socket client has sent an event with instanceType=${packet.data.instanceType}.` +
+            ` dropping it and closing the connection since it is considered an internal type.`
+        )
+        socket.close(HttpStatusCode.NotAcceptable, `instanceType=${packet.data.instanceType} not acceptable`)
+        return
+      }
+
+      try {
+        this.app.emit(packet.name, packet.data)
+      } catch (error: unknown) {
+        this.logger.error(
+          error,
+          'A socket event has resulted in an error when being emitted to the application. Dropping the socket connection'
+        )
+        socket.close(HttpStatusCode.InternalServerError, 'invalid event data')
+        return
+      }
 
       for (const clientEntry of this.socketServer.clients) {
         if (clientEntry !== socket) clientEntry.send(rawData)
