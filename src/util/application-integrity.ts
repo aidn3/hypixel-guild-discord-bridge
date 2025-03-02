@@ -19,6 +19,7 @@ import { InternalInstancePrefix } from '../common/client-instance.js'
  * Integrity checks:
  * - {@link #ensureInstanceUniqueness} checks if a given <code>instanceName</code> already exists
  * - {@link #ensureInstanceName} checks if a given <code>instanceName</code> isn't conformed to regex <code>[\w-]+</code>
+ *   (with {@link InternalInstancePrefix} being allowed as a prefix)
  */
 export default class ApplicationIntegrity implements InstanceIdentifier {
   public readonly instanceName: string = InternalInstancePrefix + 'ApplicationIntegrity'

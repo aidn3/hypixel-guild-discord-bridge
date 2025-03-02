@@ -17,7 +17,7 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  all: (name: string, event: Readonly<BaseEvent>) => void
+  all: (name: keyof ApplicationEvents, event: Readonly<BaseEvent>) => void
 
   /**
    * User sending messages
