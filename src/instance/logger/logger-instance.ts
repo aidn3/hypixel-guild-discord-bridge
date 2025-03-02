@@ -91,6 +91,9 @@ export default class LoggerInstance extends ClientInstance<undefined, InstanceTy
       )
     })
     this.application.on('minecraftSend', (event) => {
+      // Too spammy events that are automatically sent every half a minute
+      if (event.command === '/guild list' || event.command === '/guild online') return
+
       void this.send(`[minecraftSend][target=${event.targetInstanceName}] ${event.command}`).catch(
         this.errorHandler.promiseCatch('handling minecraftSend event')
       )
