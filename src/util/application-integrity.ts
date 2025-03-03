@@ -46,7 +46,9 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
       this.cachedInstances = [...this.localInstanceIdentifier, ...this.remoteApplications.values().toArray().flat()]
     }
 
-    if (!this.cachedInstances.some((instance) => instance.instanceName.toLowerCase() === event.instanceName)) {
+    if (
+      !this.cachedInstances.some((instance) => instance.instanceName.toLowerCase() === event.instanceName.toLowerCase())
+    ) {
       const message =
         `Instance type=${event.instanceType},name=${event.instanceName} has sent an event type=${name}` +
         ` without first registering its identifiers by ${this.instanceName}.` +
