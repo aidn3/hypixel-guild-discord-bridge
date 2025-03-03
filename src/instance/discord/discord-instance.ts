@@ -5,7 +5,7 @@ import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
@@ -14,7 +14,7 @@ import DiscordBridge from './discord-bridge.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
-export default class DiscordInstance extends ClientInstance<DiscordConfig, InstanceType.Discord> {
+export default class DiscordInstance extends ConnectableInstance<DiscordConfig, InstanceType.Discord> {
   readonly commandsManager: CommandManager
   readonly client: Client
 

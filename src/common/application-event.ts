@@ -1,4 +1,4 @@
-import type { Status } from './client-instance.js'
+import type { Status } from './connectable-instance.js'
 /*
  All events must be immutable.
  Events can be transferred over IPC or websockets. Immutability can ensure defined and repeatable behaviour.

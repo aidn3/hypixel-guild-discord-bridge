@@ -3,13 +3,13 @@ import BadWords from 'bad-words'
 import type { ModerationConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance, InternalInstancePrefix, Status } from '../../common/client-instance.js'
+import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type { MojangApi } from '../../util/mojang.js'
 
 import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
 
-export default class ModerationInstance extends ClientInstance<ModerationConfig, InstanceType.Moderation> {
+export default class ModerationInstance extends Instance<ModerationConfig, InstanceType.Moderation> {
   public readonly punishments: Punishments
   private readonly enforcer: PunishmentsEnforcer
 
@@ -73,9 +73,5 @@ export default class ModerationInstance extends ClientInstance<ModerationConfig,
     const identifiers = [username]
     if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
     return identifiers
-  }
-
-  connect(): void {
-    this.setAndBroadcastNewStatus(Status.Connected, 'punishments system is ready')
   }
 }

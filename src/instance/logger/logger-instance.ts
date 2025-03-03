@@ -2,9 +2,9 @@ import { escapeMarkdown, WebhookClient } from 'discord.js'
 
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { Instance } from '../../common/instance.js'
 
-export default class LoggerInstance extends ClientInstance<undefined, InstanceType.Logger> {
+export default class LoggerInstance extends Instance<undefined, InstanceType.Logger> {
   private readonly client: WebhookClient
 
   constructor(app: Application, instanceName: string, sendUrl: string) {
@@ -105,9 +105,5 @@ export default class LoggerInstance extends ClientInstance<undefined, InstanceTy
       username: this.instanceName,
       content: escapeMarkdown(message)
     })
-  }
-
-  connect(): void {
-    // do nothing
   }
 }

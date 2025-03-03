@@ -4,7 +4,7 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
-import { Status } from '../../../common/client-instance.js'
+import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type EventHelper from '../../../util/event-helper.js'

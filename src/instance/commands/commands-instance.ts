@@ -2,9 +2,10 @@ import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
 import { ChannelType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
 import { Permission } from '../../common/commands.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import { InternalInstancePrefix } from '../../common/instance.js'
 
 import EightBallCommand from './triggers/8ball.js'
 import Bits from './triggers/bits.js'
@@ -35,7 +36,7 @@ import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengence.js'
 import Weight from './triggers/weight.js'
 
-export class CommandsInstance extends ClientInstance<CommandsConfig, InstanceType.Commands> {
+export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, instanceName: string, config: CommandsConfig) {

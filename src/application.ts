@@ -14,9 +14,11 @@ import type { ApplicationConfig } from './application-config.js'
 import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceType } from './common/application-event.js'
-import type { ClientInstance } from './common/client-instance.js'
-import { InternalInstancePrefix } from './common/client-instance.js'
-import type { PluginInterface } from './common/plugin.js'
+import { ConnectableInstance } from './common/connectable-instance.js'
+import type { Instance } from './common/instance.js'
+import { InternalInstancePrefix } from './common/instance.js'
+import type { AddChatCommand, AddDiscordCommand } from './common/plugin-instance.js'
+import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
@@ -65,7 +67,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
 
-    this.applicationIntegrity = new ApplicationIntegrity()
+    this.applicationIntegrity = new ApplicationIntegrity(this)
     // only check for integrity if this application is the main one that distributes events
     // applications cross-sockets only have to worry about themselves
     this.applicationIntegrity.enableRemoteEventsIntegrity(config.socket.enabled && config.socket.type === 'server')
@@ -141,30 +143,21 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
 
-  public async sendConnectSignal(): Promise<void> {
-    this.logger.debug('Sending signal to all plugins')
-    for (const p of this.plugins) {
-      this.logger.debug(`Loading Plugin ${p.originalPath}`)
-      const loadedPlugin = await p.promise
-      loadedPlugin.onRun({
-        // eslint-disable-next-line import/no-named-as-default-member
-        logger: Logger4js.getLogger(`plugin-${p.name}`),
-        pluginName: p.name,
-        eventHelper: new EventHelper(p.name, InstanceType.Plugin),
-        application: this,
-
-        addChatCommand: this.commandsInstance ? (command) => this.commandsInstance?.commands.push(command) : undefined,
-        addDiscordCommand: this.discordInstance
-          ? (command) => this.discordInstance?.commandsManager.commands.set(command.getCommandBuilder().name, command)
-          : undefined
-      })
-    }
-
+  public async start(): Promise<void> {
     this.syncBroadcast()
 
     for (const instance of this.getAllInstances()) {
-      this.logger.debug(`Connecting instance ${instance.instanceName}`)
-      await instance.connect()
+      // must cast first before using due to typescript limitation
+      // https://github.com/microsoft/TypeScript/issues/30650#issuecomment-486680485
+      const checkedInstance = instance
+
+      if (checkedInstance instanceof ConnectableInstance) {
+        this.logger.debug(`Connecting instance type=${instance.instanceType},name=${instance.instanceName}`)
+        await checkedInstance.connect()
+      } else if (instance instanceof PluginInstance) {
+        this.logger.debug(`Signaling plugin instance type=${instance.instanceType},name=${instance.instanceName}`)
+        await instance.onReady()
+      }
     }
   }
 
@@ -192,22 +185,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
    * This includes all internal and public instances as well as plugins and utilities.
    */
   public getAllInstancesIdentifiers(): InstanceIdentifier[] {
-    const list: InstanceIdentifier[] = []
-
-    list.push(
-      ...this.getAllInstances().map((instance) => ({
-        instanceName: instance.instanceName,
-        instanceType: instance.instanceType
-      })),
-      ...this.plugins.map((plugin) => ({
-        instanceName: plugin.name,
-        instanceType: InstanceType.Plugin
-      })),
-      { instanceName: this.autoComplete.instanceName, instanceType: this.autoComplete.instanceType },
-      { instanceName: this.applicationIntegrity.instanceName, instanceType: this.applicationIntegrity.instanceType }
-    )
-
-    return list
+    return this.getAllInstances().map((instance) => ({
+      instanceName: instance.instanceName,
+      instanceType: instance.instanceType
+    }))
   }
 
   private loadPlugins(
@@ -234,8 +215,16 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     return result
   }
 
-  private getAllInstances(): ClientInstance<unknown, InstanceType>[] {
+  private getAllInstances(): (
+    | Instance<unknown, InstanceType>
+    | ConnectableInstance<unknown, InstanceType>
+    | PluginInstance
+  )[] {
     return [
+      ...this.plugins,
+      this.autoComplete,
+      this.applicationIntegrity,
+
       ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
       this.discordInstance, // discord second to send any notification about connecting
 
@@ -245,7 +234,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       ...this.minecraftInstances,
 
       this.socketInstance // socket last. so other instances are ready when connecting to other clients
-    ].filter((instance) => instance != undefined) as ClientInstance<unknown, InstanceType>[]
+    ].filter((instance) => instance != undefined)
   }
 }
 

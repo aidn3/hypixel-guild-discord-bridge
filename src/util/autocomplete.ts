@@ -1,36 +1,16 @@
-import type { Logger } from 'log4js'
-import Logger4js from 'log4js'
-
 import type Application from '../application.js'
-import type { InstanceIdentifier } from '../common/application-event.js'
 import { InstanceType } from '../common/application-event.js'
-import { InternalInstancePrefix } from '../common/client-instance.js'
-import UnexpectedErrorHandler from '../common/unexpected-error-handler.js'
+import { Instance, InternalInstancePrefix } from '../common/instance.js'
 
-import EventHelper from './event-helper.js'
-
-export default class Autocomplete implements InstanceIdentifier {
-  public readonly instanceName: string = InternalInstancePrefix + 'Autocomplete'
-  public readonly instanceType: InstanceType.Util = InstanceType.Util
-
-  private readonly application: Application
-  private readonly eventHelper: EventHelper<InstanceType.Util>
-  private readonly logger: Logger
-  private readonly errorHandler: UnexpectedErrorHandler
-
+export default class Autocomplete extends Instance<void, InstanceType.Util> {
   private readonly usernames: string[] = []
   private readonly loweredCaseUsernames = new Set<string>()
 
   private readonly guildRanks: string[] = []
 
   constructor(application: Application) {
+    super(application, InternalInstancePrefix + 'Autocomplete', InstanceType.Util)
     application.applicationIntegrity.addLocalInstance(this)
-
-    this.application = application
-    this.eventHelper = new EventHelper(this.instanceName, this.instanceType)
-    // eslint-disable-next-line import/no-named-as-default-member
-    this.logger = Logger4js.getLogger(this.instanceName)
-    this.errorHandler = new UnexpectedErrorHandler(this.logger)
 
     application.on('chat', (event) => {
       this.addUsername(event.username)

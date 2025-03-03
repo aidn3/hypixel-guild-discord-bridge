@@ -1,8 +1,7 @@
-import Logger4js from 'log4js'
-
+import type Application from '../application.js'
 import type { BaseEvent, InstanceIdentifier } from '../common/application-event.js'
 import { InstanceType } from '../common/application-event.js'
-import { InternalInstancePrefix } from '../common/client-instance.js'
+import { Instance, InternalInstancePrefix } from '../common/instance.js'
 
 /**
  * Application events communication is based on
@@ -21,13 +20,7 @@ import { InternalInstancePrefix } from '../common/client-instance.js'
  * - {@link #ensureInstanceName} checks if a given <code>instanceName</code> isn't conformed to regex <code>[\w-]+</code>
  *   (with {@link InternalInstancePrefix} being allowed as a prefix)
  */
-export default class ApplicationIntegrity implements InstanceIdentifier {
-  public readonly instanceName: string = InternalInstancePrefix + 'ApplicationIntegrity'
-  public readonly instanceType: InstanceType = InstanceType.Util
-
-  // eslint-disable-next-line import/no-named-as-default-member
-  private readonly logger = Logger4js.getLogger(this.instanceName)
-
+export default class ApplicationIntegrity extends Instance<void, InstanceType.Util> {
   private readonly localInstanceIdentifier: InstanceIdentifier[] = []
   private readonly remoteApplications = new Map<number, InstanceIdentifier[]>()
   private lastApplicationId = -1
@@ -36,7 +29,8 @@ export default class ApplicationIntegrity implements InstanceIdentifier {
   private cachedInstances: InstanceIdentifier[] | undefined
   private cachedInvalidated = true
 
-  constructor() {
+  constructor(application: Application) {
+    super(application, InternalInstancePrefix + 'ApplicationIntegrity', InstanceType.Util)
     this.addLocalInstance(this)
   }
 

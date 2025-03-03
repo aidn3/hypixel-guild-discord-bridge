@@ -5,10 +5,15 @@ import type Application from '../application.js'
 import type EventHelper from '../util/event-helper.js'
 
 import type { InstanceType } from './application-event.js'
-import type { ClientInstance } from './client-instance.js'
+import type { ConnectableInstance } from './connectable-instance.js'
+import type EventHelper from './event-helper.js'
+import type { Instance } from './instance.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export default abstract class EventHandler<K extends ClientInstance<unknown, T>, T extends InstanceType> {
+export default abstract class EventHandler<
+  K extends ConnectableInstance<unknown, T> | Instance<unknown, T>,
+  T extends InstanceType
+> {
   protected application: Application
   protected clientInstance: K
   protected eventHelper: EventHelper<T>

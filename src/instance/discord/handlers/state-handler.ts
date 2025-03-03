@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { InstanceType } from '../../../common/application-event.js'
-import { Status } from '../../../common/client-instance.js'
+import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type DiscordInstance from '../discord-instance.js'
 

@@ -3,7 +3,7 @@ import { createClient, states } from 'minecraft-protocol'
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import RateLimiter from '../../util/rate-limiter.js'
 
 import ChatManager from './chat-manager.js'
@@ -14,7 +14,7 @@ import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
 
-export default class MinecraftInstance extends ClientInstance<MinecraftInstanceConfig, InstanceType.Minecraft> {
+export default class MinecraftInstance extends ConnectableInstance<MinecraftInstanceConfig, InstanceType.Minecraft> {
   readonly defaultBotConfig = {
     host: 'me.hypixel.net',
     port: 25_565,

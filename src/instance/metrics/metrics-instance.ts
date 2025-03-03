@@ -6,12 +6,12 @@ import * as Client from 'prom-client'
 import type { MetricsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
+import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class MetricsInstance extends ClientInstance<MetricsConfig, InstanceType.Metrics> {
+export default class MetricsInstance extends Instance<MetricsConfig, InstanceType.Metrics> {
   private readonly httpServer
   private readonly register
 
@@ -74,6 +74,11 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig, Insta
         response.end()
       }
     })
+
+    this.logger.debug(`Listening on port ${this.config.port}`)
+    this.httpServer.listen(this.config.port)
+
+    this.logger.debug('prometheus is enabled')
   }
 
   private async collectMetrics(): Promise<void> {
@@ -82,23 +87,5 @@ export default class MetricsInstance extends ClientInstance<MetricsConfig, Insta
     if (this.config.useIngameCommand) {
       await this.guildOnlineMetrics.collectMetrics(this.application, this.eventHelper)
     }
-  }
-
-  connect(): void {
-    if (this.httpServer.listening) {
-      this.logger.debug('Server already listening. Returning')
-      return
-    }
-
-    if (!this.config.enabled) {
-      this.setAndBroadcastNewStatus(Status.Failed, 'Metrics are disabled.')
-      return
-    }
-
-    this.logger.debug(`Listening on port ${this.config.port}`)
-    this.httpServer.listen(this.config.port)
-
-    this.logger.debug('prometheus is enabled')
-    this.setAndBroadcastNewStatus(Status.Connected, 'Metrics webserver is listening for collectors')
   }
 }
