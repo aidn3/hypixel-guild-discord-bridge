@@ -107,19 +107,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       )
     }
 
-    this.metricsInstance = this.config.metrics.enabled
-      ? new MetricsInstance(this, InternalInstancePrefix + InstanceType.Metrics, this.config.metrics)
-      : undefined
-
-    this.socketInstance = this.config.socket.enabled
-      ? new SocketInstance(this, InternalInstancePrefix + InstanceType.Socket, this.config.socket)
-      : undefined
-
-    this.commandsInstance = this.config.commands.enabled
-      ? new CommandsInstance(this, InternalInstancePrefix + InstanceType.Commands, this.config.commands)
-      : undefined
-
-    this.loadPlugins(rootDirectory)
+    this.metricsInstance = this.config.metrics.enabled ? new MetricsInstance(this, this.config.metrics) : undefined
+    this.socketInstance = this.config.socket.enabled ? new SocketInstance(this, this.config.socket) : undefined
+    this.commandsInstance = this.config.commands.enabled ? new CommandsInstance(this, this.config.commands) : undefined
 
     this.on('shutdownSignal', (event) => {
       if (event.targetInstanceName === undefined) {

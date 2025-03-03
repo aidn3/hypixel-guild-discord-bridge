@@ -39,8 +39,8 @@ import Weight from './triggers/weight.js'
 export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
 
-  constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, InstanceType.Commands, config)
+  constructor(app: Application, config: CommandsConfig) {
+    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, config)
 
     this.commands = [
       new EightBallCommand(),

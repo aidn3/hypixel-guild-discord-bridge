@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import http from 'node:http'
 
 import { HttpStatusCode } from 'axios'
@@ -18,8 +19,10 @@ export default class MetricsInstance extends Instance<MetricsConfig, InstanceTyp
   private readonly applicationMetrics: ApplicationMetrics
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
-  constructor(app: Application, instanceName: string, config: MetricsConfig) {
-    super(app, instanceName, InstanceType.Metrics, config)
+  constructor(app: Application, config: MetricsConfig) {
+    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics, config)
+
+    assert(config.enabled)
 
     this.register = new Client.Registry()
     this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
