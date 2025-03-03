@@ -6,7 +6,7 @@ import type { InstanceType, MinecraftRawChatEvent } from '../../../common/applic
 import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
-import type EventHelper from '../../../util/event-helper.js'
+import type EventHelper from '../../../common/event-helper.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
 

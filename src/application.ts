@@ -29,7 +29,6 @@ import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
 import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
-import EventHelper from './util/event-helper.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 

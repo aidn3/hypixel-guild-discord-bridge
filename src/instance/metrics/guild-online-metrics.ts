@@ -3,7 +3,7 @@ import { Gauge } from 'prom-client'
 
 import type Application from '../../application.js'
 import type { InstanceType, MinecraftRawChatEvent } from '../../common/application-event.js'
-import type EventHelper from '../../util/event-helper.js'
+import type EventHelper from '../../common/event-helper.js'
 
 export default class GuildOnlineMetrics {
   private readonly guildTotalMembersCount

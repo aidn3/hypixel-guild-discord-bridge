@@ -9,7 +9,7 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
-import type EventHelper from '../../../util/event-helper.js'
+import type EventHelper from '../../../common/event-helper.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'

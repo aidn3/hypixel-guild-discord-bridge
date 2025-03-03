@@ -3,7 +3,7 @@ import { escapeMarkdown } from 'discord.js'
 
 import type Application from '../../../application.js'
 import { Color, type InstanceType, type MinecraftRawChatEvent } from '../../../common/application-event.js'
-import type EventHelper from '../../../util/event-helper.js'
+import type EventHelper from '../../../common/event-helper.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
 

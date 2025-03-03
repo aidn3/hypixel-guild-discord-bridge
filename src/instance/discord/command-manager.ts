@@ -15,8 +15,8 @@ import { ChannelType, Color, InstanceType } from '../../common/application-event
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
+import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type EventHelper from '../../util/event-helper.js'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'

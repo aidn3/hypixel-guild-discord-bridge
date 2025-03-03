@@ -2,10 +2,9 @@ import type { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommand
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
-// eslint-disable-next-line import/no-restricted-paths
-import type EventHelper from '../util/event-helper.js'
 
 import type { ChannelType, InstanceType } from './application-event.js'
+import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 export abstract class ChatCommandHandler {
