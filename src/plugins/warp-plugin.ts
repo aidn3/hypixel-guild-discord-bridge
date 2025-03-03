@@ -1,97 +1,94 @@
-import type { Logger } from 'log4js'
-
 import type Application from '../application.js'
 import { InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
-import { Status } from '../common/client-instance.js'
 import type { ChatCommandContext } from '../common/commands.js'
 import { ChatCommandHandler } from '../common/commands.js'
-import type { PluginContext, PluginInterface } from '../common/plugin.js'
+import { Status } from '../common/connectable-instance.js'
+import type EventHelper from '../common/event-helper.js'
+import PluginInstance from '../common/plugin-instance.js'
 import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
-import type EventHelper from '../util/event-helper.js'
 import { sleep } from '../util/shared-util.js'
-
-let disableLimboTrapping = false
 
 /* NOTICE
 THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS.
 THIS PLUGIN IS INCOMPATIBLE WITH `limbo-plugin`. DISABLE ONE BEFORE ENABLING THE OTHER ONE.
 */
-export default {
-  onRun(context: PluginContext): void {
+export default class WarpPlugin extends PluginInstance {
+  private disableLimboTrapping = false
+  onReady(): Promise<void> | void {
     // @ts-expect-error onMessage is private
-    const minecraftInstances = context.application.minecraftInstances
+    const minecraftInstances = this.application.minecraftInstances
 
-    if (context.addChatCommand) context.addChatCommand(new WarpCommand(minecraftInstances))
+    if (this.addChatCommand) this.addChatCommand(new WarpCommand(this, minecraftInstances))
 
-    context.application.on('instanceStatus', (event) => {
+    this.application.on('instanceStatus', (event) => {
       if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
         // @ts-expect-error onMessage is private
-        const localInstance = context.application.minecraftInstances.find(
+        const localInstance = this.application.minecraftInstances.find(
           (instance) => instance.instanceName === event.instanceName
         )
         if (localInstance != undefined) {
           const clientInstance = localInstance
           // "login" packet is also first spawn packet containing world metadata
           clientInstance.clientSession?.client.on('login', async () => {
-            if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
+            if (!this.disableLimboTrapping) await this.limbo(clientInstance)
           })
           clientInstance.clientSession?.client.on('respawn', async () => {
-            if (!disableLimboTrapping) await limbo(context.logger, clientInstance)
+            if (!this.disableLimboTrapping) await this.limbo(clientInstance)
           })
         }
       }
     })
   }
-} satisfies PluginInterface
 
-async function limbo(logger: Logger, clientInstance: MinecraftInstance): Promise<void> {
-  logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
-  await clientInstance.send('§', undefined)
-}
+  private async limbo(clientInstance: MinecraftInstance): Promise<void> {
+    this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
+    await clientInstance.send('§', undefined)
+  }
 
-async function warpPlayer(
-  app: Application,
-  eventHelper: EventHelper<InstanceType>,
-  minecraftInstanceName: string,
-  username: string
-): Promise<string> {
-  disableLimboTrapping = true
+  async warpPlayer(
+    app: Application,
+    eventHelper: EventHelper<InstanceType>,
+    minecraftInstanceName: string,
+    username: string
+  ): Promise<string> {
+    this.disableLimboTrapping = true
 
-  // exit limbo and go to main lobby. Can't warp from limbo
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/lobby')
+    // exit limbo and go to main lobby. Can't warp from limbo
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/lobby')
 
-  // Go to Skyblock first before warping.
-  // Person can rejoin if warped to the main lobby
-  await sleep(2000)
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/skyblock')
+    // Go to Skyblock first before warping.
+    // Person can rejoin if warped to the main lobby
+    await sleep(2000)
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/skyblock')
 
-  // ensure the account is in the hub and not on private island
-  // to prevent being banned for "profile boosting"
-  await sleep(12_000) // need higher cooldown to change between lobbies
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/hub')
+    // ensure the account is in the hub and not on private island
+    // to prevent being banned for "profile boosting"
+    await sleep(12_000) // need higher cooldown to change between lobbies
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/hub')
 
-  await sleep(2000)
+    await sleep(2000)
 
-  const errorMessage = await awaitPartyStatus(app, eventHelper, minecraftInstanceName, username)
-  if (errorMessage != undefined) {
-    disableLimboTrapping = false
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
+    const errorMessage = await awaitPartyStatus(app, eventHelper, minecraftInstanceName, username)
+    if (errorMessage != undefined) {
+      this.disableLimboTrapping = false
+      app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
 
+      app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
+      app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
+
+      return errorMessage
+    }
+
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party warp')
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/pc Blame the gods on your luck`)
     app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
     app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
 
-    return errorMessage
+    this.disableLimboTrapping = false
+    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
+
+    return 'Player has been warped out!'
   }
-
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party warp')
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/pc Blame the gods on your luck`)
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
-
-  disableLimboTrapping = false
-  app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
-
-  return 'Player has been warped out!'
 }
 
 /**
@@ -153,8 +150,9 @@ class WarpCommand extends ChatCommandHandler {
   private static readonly CommandCoolDown = 60_000
   private lastCommandExecutionAt = 0
   private readonly minecraftInstances: MinecraftInstance[]
+  private readonly warpPlugin: WarpPlugin
 
-  constructor(minecraftInstances: MinecraftInstance[]) {
+  constructor(warpPlugin: WarpPlugin, minecraftInstances: MinecraftInstance[]) {
     super({
       name: 'Warp',
       triggers: ['warp'],
@@ -162,6 +160,7 @@ class WarpCommand extends ChatCommandHandler {
       example: `warp Steve`
     })
 
+    this.warpPlugin = warpPlugin
     this.minecraftInstances = minecraftInstances
   }
 
@@ -185,7 +184,7 @@ class WarpCommand extends ChatCommandHandler {
     this.lastCommandExecutionAt = currentTime
 
     context.sendFeedback(`Attempting to warp ${username}`)
-    return await warpPlayer(context.app, context.eventHelper, minecraftInstanceName, username)
+    return await this.warpPlugin.warpPlayer(context.app, context.eventHelper, minecraftInstanceName, username)
   }
 
   private getActiveMinecraftInstanceName(): string | undefined {

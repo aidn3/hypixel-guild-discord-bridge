@@ -50,7 +50,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
-  private readonly plugins: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+  private readonly plugins: PluginInstance[] = []
 
   private readonly commandsInstance: CommandsInstance | undefined
   private readonly discordInstance: DiscordInstance | undefined
@@ -180,10 +180,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }))
   }
 
-  private loadPlugins(
-    rootDirectory: string
-  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
-    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+  private async loadPlugins<T extends PluginInstance>(rootDirectory: string): Promise<T[]> {
+    const result: Promise<T>[] = []
+
+    const addChatCommand: AddChatCommand | undefined = this.commandsInstance
+      ? (command) => this.commandsInstance?.commands.push(command)
+      : undefined
+    const addDiscordCommand: AddDiscordCommand | undefined = this.discordInstance
+      ? (command) => this.discordInstance?.commandsManager.commands.set(command.getCommandBuilder().name, command)
+      : undefined
 
     for (const pluginPath of this.config.plugins) {
       let newPath: string = path.resolve(rootDirectory, pluginPath)
@@ -191,17 +196,16 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
         newPath = `file:///${newPath}`
       }
 
-      const plugin = {
-        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
-        originalPath: pluginPath,
-        name: path.basename(pluginPath)
-      }
+      const pluginName = path.basename(pluginPath)
+      const plugin = import(newPath)
+        .then((resolved: { default: typeof PluginInstance }) => resolved.default)
+        // @ts-expect-error although it says it is an abstract, the class isn't since it is extended.
+        .then((clazz) => new clazz(this, pluginName, pluginPath, addChatCommand, addDiscordCommand) as T)
 
-      this.applicationIntegrity.addLocalInstance({ instanceName: plugin.name, instanceType: InstanceType.Plugin })
-      this.plugins.push(plugin)
+      result.push(plugin)
     }
 
-    return result
+    return await Promise.all(result)
   }
 
   private getAllInstances(): (

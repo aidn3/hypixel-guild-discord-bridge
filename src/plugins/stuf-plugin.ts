@@ -1,4 +1,4 @@
-import type { PluginContext, PluginInterface } from '../common/plugin.js'
+import PluginInstance from '../common/plugin-instance.js'
 import ChatManager from '../instance/minecraft/chat-manager.js'
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
@@ -6,9 +6,8 @@ import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
 */
 
-export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onRun(context: PluginContext): void {
+export default class StufPlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
     // @ts-expect-error onMessage is private
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const onMessage = ChatManager.prototype.onMessage
@@ -53,7 +52,7 @@ export default {
       await sendMessage.call(this, modifiedMessage, originEventId)
     }
   }
-} satisfies PluginInterface
+}
 
 // Modified version of https://github.com/stuffyerface/STuF
 /**
