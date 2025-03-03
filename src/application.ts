@@ -242,5 +242,4 @@ function emitAll(emitter: Events, applicationIntegrity: ApplicationIntegrity): v
     return old.call(emitter, event, ...callerArguments)
   }
 }
-
 /* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
