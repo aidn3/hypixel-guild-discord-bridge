@@ -105,12 +105,17 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
   }
 
   private ensureInstanceName(instance: InstanceIdentifier): void {
+    const hasPrefix = instance.instanceName.startsWith(InternalInstancePrefix)
+    const instanceName = hasPrefix ? instance.instanceName.slice(InternalInstancePrefix.length) : instance.instanceName
+
     const nameRegex = /[^\w-]+/g
-    if (nameRegex.test(instance.instanceName)) {
-      throw new Error(
-        `Instance type=${instance.instanceType},name=${instance.instanceName} violates the application integrity` +
-          ` due to the name not conforming with regex ${nameRegex.source}`
-      )
+    if (nameRegex.test(instanceName)) {
+      let message =
+        `Instance type=${instance.instanceType},name=${instanceName} violates the application integrity` +
+        ` due to the name not conforming with regex ${nameRegex.source}.`
+      if (hasPrefix)
+        message += ` Prefix: ${InternalInstancePrefix} is allowed though and does not affect the requirements.`
+      throw new Error(message)
     }
   }
 }
