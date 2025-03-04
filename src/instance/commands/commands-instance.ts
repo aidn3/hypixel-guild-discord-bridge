@@ -40,7 +40,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
   public readonly commands: ChatCommandHandler[]
 
   constructor(app: Application, config: CommandsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, config)
+    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, true, config)
 
     this.commands = [
       new EightBallCommand(),

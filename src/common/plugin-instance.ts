@@ -21,7 +21,7 @@ export default abstract class PluginInstance extends Instance<void, InstanceType
     protected readonly addChatCommand: AddChatCommand | undefined,
     protected readonly addDiscordCommand: AddDiscordCommand | undefined
   ) {
-    super(application, instanceName, InstanceType.Plugin)
+    super(application, instanceName, InstanceType.Plugin, true)
   }
 
   public abstract onReady(): Promise<void> | void

@@ -30,7 +30,7 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
   private cachedInvalidated = true
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'ApplicationIntegrity', InstanceType.Util)
+    super(application, InternalInstancePrefix + 'ApplicationIntegrity', InstanceType.Util, false)
     this.addLocalInstance(this)
   }
 

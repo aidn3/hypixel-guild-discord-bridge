@@ -32,7 +32,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   private lastEventIdForGuildAction: string | undefined = undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
-    super(app, instanceName, InstanceType.Minecraft, config)
+    super(app, instanceName, InstanceType.Minecraft, true, config)
 
     this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
     this.bridgePrefix = bridgePrefix

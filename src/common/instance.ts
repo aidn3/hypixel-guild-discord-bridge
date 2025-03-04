@@ -17,12 +17,18 @@ export abstract class Instance<K, T extends InstanceType> implements InstanceIde
   protected readonly errorHandler: UnexpectedErrorHandler
   protected readonly eventHelper: EventHelper<T>
 
-  protected constructor(app: Application, instanceName: string, instanceType: T, config: K) {
+  protected constructor(
+    app: Application,
+    instanceName: string,
+    instanceType: T,
+    addToApplicationIntegrity = true,
+    config: K
+  ) {
     this.application = app
     this.instanceName = instanceName
     this.instanceType = instanceType
 
-    app.applicationIntegrity.addLocalInstance(this)
+    if (addToApplicationIntegrity) app.applicationIntegrity.addLocalInstance(this)
 
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger(instanceName)

@@ -4,11 +4,11 @@ import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { Instance } from '../../common/instance.js'
 
-export default class LoggerInstance extends Instance<undefined, InstanceType.Logger> {
+export default class LoggerInstance extends Instance<void, InstanceType.Logger> {
   private readonly client: WebhookClient
 
   constructor(app: Application, instanceName: string, sendUrl: string) {
-    super(app, instanceName, InstanceType.Logger, undefined)
+    super(app, instanceName, InstanceType.Logger, true)
     this.client = new WebhookClient({ url: sendUrl })
 
     this.application.on('chat', (event) => {
