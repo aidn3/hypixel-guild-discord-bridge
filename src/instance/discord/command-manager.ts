@@ -23,6 +23,7 @@ import AcceptCommand from './commands/accept.js'
 import ConnectivityCommand from './commands/connectivity.js'
 import DemoteCommand from './commands/demote.js'
 import InviteCommand from './commands/invite.js'
+import JoinCommand from './commands/join.js'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
 import OverrideCommand from './commands/override.js'
@@ -98,6 +99,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       ConnectivityCommand,
       DemoteCommand,
       InviteCommand,
+      JoinCommand,
       ListCommand,
       LogCommand,
       OverrideCommand,
