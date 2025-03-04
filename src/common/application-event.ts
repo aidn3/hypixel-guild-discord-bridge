@@ -414,7 +414,11 @@ export enum MinecraftChatEventType {
   /**
    * When the Minecraft account not in a guild.
    */
-  RequireGuild = 'require_guild'
+  RequireGuild = 'require_guild',
+  /**
+   * Minecraft account is in a guild but does not have permission to access officer chat.
+   */
+  NoOfficer = 'no_officer'
 }
 
 /**

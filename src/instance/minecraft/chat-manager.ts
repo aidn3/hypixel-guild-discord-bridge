@@ -18,6 +18,7 @@ import KickChat from './chat/kick.js'
 import LeaveChat from './chat/leave.js'
 import MuteChat from './chat/mute.js'
 import MutedChat from './chat/muted.js'
+import NoOfficerChat from './chat/no-officer.js'
 import OfficerChat from './chat/officer.js'
 import OfflineChat from './chat/offline.js'
 import OnlineChat from './chat/online.js'
@@ -27,6 +28,7 @@ import PublicChat from './chat/public.js'
 import QuestChat from './chat/quest.js'
 import RepeatChat from './chat/repeat.js'
 import RequestChat from './chat/request.js'
+import RequireGuildChat from './chat/require-guild.js'
 import UnmuteChat from './chat/unmute.js'
 import type ClientSession from './client-session.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
@@ -57,6 +59,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
       LeaveChat,
       MuteChat,
       MutedChat,
+      NoOfficerChat,
       OfficerChat,
       OfflineChat,
       OnlineChat,
@@ -66,6 +69,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
       PublicChat,
       RepeatChat,
       RequestChat,
+      RequireGuildChat,
       UnmuteChat
     ]
   }
