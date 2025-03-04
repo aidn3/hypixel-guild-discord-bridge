@@ -83,6 +83,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (event.type === MinecraftChatEventType.Advertise) return
     if (event.type === MinecraftChatEventType.Block) return
     if (event.type === MinecraftChatEventType.Repeat) return
+    if (event.type === MinecraftChatEventType.RequireGuild) return
     await this.handleInGameEvent(event)
   }
 

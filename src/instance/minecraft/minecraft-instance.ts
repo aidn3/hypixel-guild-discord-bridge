@@ -27,8 +27,9 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   private readonly bridge: MinecraftBridge
   private readonly commandsLimiter = new RateLimiter(1, 1000)
-  private readonly chatLimiter = new RateLimiter(1, 3000)
-  private lastEventIdForSentChatMessage: string | undefined = undefined
+  private readonly eventIdLimiter = new RateLimiter(1, 3000)
+  private lastEventIdForChatMessage: string | undefined = undefined
+  private lastEventIdForGuildAction: string | undefined = undefined
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.Minecraft, config)
@@ -84,7 +85,16 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
    * Sent commands that aren't messages will NOT change this value.
    */
   getLastEventIdForSentChatMessage(): string | undefined {
-    return this.lastEventIdForSentChatMessage
+    return this.lastEventIdForChatMessage
+  }
+
+  /**
+   * returns {@link BaseEvent#eventId} of the last **GUILD ACTION** sent via {@link #send}.
+   * Sent commands that aren't the type will NOT change this value.
+   * commands the type are: guild chat message, guild change settings, guild info, etc.
+   */
+  getLastEventIdForSentGuildAction(): string | undefined {
+    return this.lastEventIdForGuildAction
   }
 
   /**
@@ -101,26 +111,43 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     this.logger.debug(`Queuing message to send: ${message}`)
     await this.commandsLimiter.wait()
+    if (this.clientSession?.client.state !== states.PLAY) return
 
     const chatPrefix = ['/ac', '/pc', '/gc', '/oc', '/msg', '/whisper', '/w', 'tell']
+    const guildPrefix = [
+      '/g ',
+      '/guild',
+      '/gc',
+      '/oc',
+      '/chat guild',
+      '/chat g',
+      '/chat officer',
+      '/chat o',
+      '/c g',
+      '/c guild',
+      '/c o',
+      '/c officer'
+    ]
+
     const loweredCaseMessage = message.toLowerCase()
-    let isChatMessage = false
     if (
       chatPrefix.some((prefix) => loweredCaseMessage.startsWith(prefix)) ||
       !loweredCaseMessage.startsWith('/') // normal chat on default channel and not a command
     ) {
-      isChatMessage = true
-      await this.chatLimiter.wait()
+      await this.eventIdLimiter.wait()
+      this.lastEventIdForChatMessage = originEventId
     }
 
-    if (this.clientSession?.client.state === states.PLAY) {
-      if (message.length > 250) {
-        message = message.slice(0, 250) + '...'
-        this.logger.warn(`Long message truncated: ${message}`)
-      }
-
-      if (isChatMessage) this.lastEventIdForSentChatMessage = originEventId
-      this.clientSession.client.chat(message)
+    if (guildPrefix.some((prefix) => loweredCaseMessage.startsWith(prefix))) {
+      await this.eventIdLimiter.wait()
+      this.lastEventIdForGuildAction = originEventId
     }
+
+    if (message.length > 250) {
+      message = message.slice(0, 250) + '...'
+      this.logger.warn(`Long message truncated: ${message}`)
+    }
+
+    this.clientSession.client.chat(message)
   }
 }

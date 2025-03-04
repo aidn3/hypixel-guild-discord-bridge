@@ -410,7 +410,11 @@ export enum MinecraftChatEventType {
    * When the Minecraft account itself is muted by the server.
    * Not to be confused with {@link GuildPlayerEventType#Mute}
    */
-  Muted = 'muted'
+  Muted = 'muted',
+  /**
+   * When the Minecraft account not in a guild.
+   */
+  RequireGuild = 'require_guild'
 }
 
 /**

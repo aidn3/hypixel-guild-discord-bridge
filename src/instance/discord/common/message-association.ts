@@ -21,6 +21,7 @@ export default class MessageAssociation {
 }
 
 export interface DiscordAssociatedMessage {
+  guildId: string | undefined
   channelId: string
   messageId: string
 }

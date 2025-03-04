@@ -68,7 +68,11 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     const truncatedContent = await this.truncateText(event, content)
 
     const fillBaseEvent = this.eventHelper.fillBaseEvent()
-    this.messageAssociation.addMessageId(fillBaseEvent.eventId, { channelId: event.channelId, messageId: event.id })
+    this.messageAssociation.addMessageId(fillBaseEvent.eventId, {
+      guildId: event.guildId ?? undefined,
+      channelId: event.channelId,
+      messageId: event.id
+    })
 
     const { filteredMessage, changed } = this.application.moderation.filterProfanity(truncatedContent)
     if (changed) {
