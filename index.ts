@@ -46,7 +46,7 @@ App.on('all', (name, event) => {
 })
 
 try {
-  await App.sendConnectSignal()
+  await App.start()
   Logger.info('App is connected')
 } catch (error: unknown) {
   Logger.fatal(error)
