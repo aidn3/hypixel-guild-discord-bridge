@@ -5,6 +5,7 @@ import { ChatCommandHandler } from '../common/commands.js'
 import { Status } from '../common/connectable-instance.js'
 import type EventHelper from '../common/event-helper.js'
 import PluginInstance from '../common/plugin-instance.js'
+// eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 import { sleep } from '../util/shared-util.js'
 

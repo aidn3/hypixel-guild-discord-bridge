@@ -1,6 +1,7 @@
 import { InstanceType } from '../common/application-event.js'
 import { Status } from '../common/connectable-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
+// eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 /* WARNING

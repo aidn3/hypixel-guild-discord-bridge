@@ -1,5 +1,7 @@
 import PluginInstance from '../common/plugin-instance.js'
+// eslint-disable-next-line import/no-restricted-paths
 import ChatManager from '../instance/minecraft/chat-manager.js'
+// eslint-disable-next-line import/no-restricted-paths
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 /* WARNING

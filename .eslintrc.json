@@ -136,7 +136,16 @@
           },
           {
             "target": "src/plugins",
-            "from": ["src/plugins", "src/types"],
+            "from": [
+              "src/types",
+              "src/plugins",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft",
+              "src/instance/socket"
+            ],
             "message": "Plugin files must not reference other plugins or outside files"
           },
           {
