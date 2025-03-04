@@ -126,7 +126,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       return
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
 
-    await this.handleEventEmbed(event, removeLater)
+    await this.sendEmbedToChannels(event, removeLater, this.resolveChannels(event.channels), undefined)
   }
 
   async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
@@ -136,7 +136,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    await this.handleEventEmbed(event, false)
+    await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
   }
 
   private lastEvent = new Map<MinecraftChatEventType, number>()
@@ -154,16 +154,23 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
 
     if (replyIds.length === 0) {
-      await this.handleEventEmbed(event, false)
+      await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
     } else {
+      const sentChannels: string[] = []
       for (const replyId of replyIds) {
         try {
           await this.replyWithEmbed(event, replyId)
+          sentChannels.push(replyId.channelId)
         } catch (error: unknown) {
           this.logger.error(error, 'can not reply to message. sending the event independently')
-          await this.handleEventEmbed(event, false)
+          await this.sendEmbedToChannels(event, false, [replyId.channelId], undefined)
         }
       }
+
+      const remainingChannels = this.resolveChannels(event.channels).filter(
+        (channelId) => !sentChannels.includes(channelId)
+      )
+      await this.sendEmbedToChannels(event, false, remainingChannels, undefined)
     }
   }
 
@@ -174,15 +181,15 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    await this.handleEventEmbed(event, false)
+    await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
   }
 
-  async handleEventEmbed(event: BaseInGameEvent<string> | BroadcastEvent, removeLater: boolean): Promise<void> {
-    const channels: string[] = []
-    if (event.channels.includes(ChannelType.Public)) channels.push(...this.config.publicChannelIds)
-    if (event.channels.includes(ChannelType.Officer)) channels.push(...this.config.officerChannelIds)
+  resolveChannels(channels: ChannelType[]): string[] {
+    const results: string[] = []
+    if (channels.includes(ChannelType.Public)) results.push(...this.config.publicChannelIds)
+    if (channels.includes(ChannelType.Officer)) results.push(...this.config.officerChannelIds)
 
-    await this.sendEmbedToChannels(event, removeLater, channels, undefined)
+    return results
   }
 
   async onCommand(event: CommandEvent): Promise<void> {
