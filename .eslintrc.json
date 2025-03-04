@@ -149,7 +149,6 @@
             "from": ["src/instance", "src/plugins", "src/types"],
             "message": "Util must only reference other common files. Specific util can be put in their respective instance common dir."
           },
-
           {
             "target": "src/instance/commands",
             "from": [
@@ -159,6 +158,7 @@
               "src/instance/logger",
               "src/instance/metrics",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -172,6 +172,7 @@
               "src/instance/logger",
               "src/instance/metrics",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -185,6 +186,7 @@
               "src/instance/discord",
               "src/instance/metrics",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -198,6 +200,7 @@
               "src/instance/discord",
               "src/instance/logger",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -211,6 +214,21 @@
               "src/instance/discord",
               "src/instance/logger",
               "src/instance/metrics",
+              "src/instance/moderation",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/moderation",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -224,7 +242,8 @@
               "src/instance/discord",
               "src/instance/logger",
               "src/instance/metrics",
-              "src/instance/minecraft"
+              "src/instance/minecraft",
+              "src/instance/moderation"
             ],
             "message": "Instance must only access itself and common files"
           }
