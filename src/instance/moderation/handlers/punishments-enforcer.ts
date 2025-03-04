@@ -6,8 +6,8 @@ import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { durationToMinecraftDuration } from '../../../util/shared-util.js'
 import type ModerationInstance from '../moderation-instance.js'
-import { durationToMinecraftDuration } from '../util.js'
 
 export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation> {
   constructor(

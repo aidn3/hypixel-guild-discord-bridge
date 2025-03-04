@@ -1,5 +1,5 @@
 import { ChannelType, PunishmentType } from '../../../common/application-event.js'
-import { durationToMinecraftDuration } from '../../moderation/util.js'
+import { durationToMinecraftDuration } from '../../../util/shared-util.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {

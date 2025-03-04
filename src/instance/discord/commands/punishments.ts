@@ -11,8 +11,7 @@ import { OptionToAddMinecraftInstances, Permission } from '../../../common/comma
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
-import { getDuration } from '../../../util/shared-util.js'
-import { durationToMinecraftDuration } from '../../moderation/util.js'
+import { durationToMinecraftDuration, getDuration } from '../../../util/shared-util.js'
 import {
   checkChatTriggers,
   formatChatTriggerResponse,
