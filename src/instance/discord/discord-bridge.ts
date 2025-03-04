@@ -131,9 +131,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.handleEventEmbed({ event, username: undefined, removeLater: false })
   }
 
-  private lastAdvertiseEvent = 0
-  private lastRepeatEvent = 0
-  private lastBlockEvent = 0
+  private lastEvent = new Map<MinecraftChatEventType, number>()
 
   async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
     if (
@@ -141,27 +139,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       event.instanceName === this.clientInstance.instanceName
     )
       return
-    if (event.type === MinecraftChatEventType.Advertise) {
-      if (this.lastAdvertiseEvent + 5000 < Date.now()) {
-        this.lastAdvertiseEvent = Date.now()
-      } else {
-        return
-      }
-    }
-    if (event.type === MinecraftChatEventType.Repeat) {
-      if (this.lastRepeatEvent + 5000 < Date.now()) {
-        this.lastRepeatEvent = Date.now()
-      } else {
-        return
-      }
-    }
-    if (event.type === MinecraftChatEventType.Block) {
-      if (this.lastBlockEvent + 5000 < Date.now()) {
-        this.lastBlockEvent = Date.now()
-      } else {
-        return
-      }
-    }
+
+    if ((this.lastEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
+    this.lastEvent.set(event.type, Date.now())
 
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
 
