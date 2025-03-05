@@ -10,7 +10,6 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
 
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'Autocomplete', InstanceType.Util, true)
-    application.applicationIntegrity.addLocalInstance(this)
 
     application.on('chat', (event) => {
       this.addUsername(event.username)
