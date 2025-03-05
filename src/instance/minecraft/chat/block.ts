@@ -1,4 +1,4 @@
-import { ChannelType, Color, MinecraftChatEventType } from '../../../common/application-event.js'
+import { Color, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -11,7 +11,7 @@ export default {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,
-        channels: [ChannelType.Public],
+        channels: [],
 
         type: MinecraftChatEventType.Block,
         originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),

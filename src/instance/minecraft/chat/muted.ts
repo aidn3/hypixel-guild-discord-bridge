@@ -1,4 +1,4 @@
-import { ChannelType, Color, MinecraftChatEventType } from '../../../common/application-event.js'
+import { Color, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 let lastWarning = 0
@@ -13,7 +13,7 @@ export default {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Bad,
-        channels: [ChannelType.Public],
+        channels: [],
 
         type: MinecraftChatEventType.Muted,
         originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),

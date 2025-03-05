@@ -1,4 +1,4 @@
-import { ChannelType, Color, MinecraftChatEventType } from '../../../common/application-event.js'
+import { Color, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 const Messages = [
@@ -31,7 +31,7 @@ export default {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,
-        channels: [ChannelType.Public],
+        channels: [],
 
         type: MinecraftChatEventType.Repeat,
         originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
