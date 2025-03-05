@@ -44,8 +44,9 @@ export default {
     new SlashCommandBuilder()
       .setName('log')
       .setDescription('View guild activity logs')
-      .addNumberOption((option) =>
-        option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75)
+      .addNumberOption((option) => option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75))
+      .addStringOption((option) =>
+        option.setName('username').setDescription('Username of the player').setAutocomplete(true)
       ) as SlashCommandBuilder,
   permission: Permission.Helper,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
@@ -54,6 +55,7 @@ export default {
     await context.interaction.deferReply()
 
     const currentPage: number = context.interaction.options.getNumber('page') ?? 1
+    const selectedUsername = context.interaction.options.getString('username') ?? undefined
     const targetInstanceName: string = context.interaction.options.getString('instance', true)
 
     await interactivePaging(
@@ -66,6 +68,7 @@ export default {
           context.application,
           context.eventHelper,
           targetInstanceName,
+          selectedUsername,
           requestedPage + 1
         )
         return {
@@ -74,6 +77,16 @@ export default {
         }
       }
     )
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username') {
+      const response = context.application.autoComplete
+        .username(option.value)
+        .slice(0, 25)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
 } satisfies DiscordCommandHandler
 
@@ -81,6 +94,7 @@ async function getGuildLog(
   app: Application,
   eventHelper: EventHelper<InstanceType.Discord>,
   targetInstance: string,
+  selectedUsername: string | undefined,
   page: number
 ): Promise<ChatResult> {
   const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g
@@ -122,7 +136,11 @@ async function getGuildLog(
     }
 
     app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, targetInstance, `/guild log ${page}`)
+    app.clusterHelper.sendCommandToMinecraft(
+      eventHelper,
+      targetInstance,
+      `/guild log ${selectedUsername ?? ''} ${page}`
+    )
   })
 }
 
