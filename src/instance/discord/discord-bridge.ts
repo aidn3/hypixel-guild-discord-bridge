@@ -26,6 +26,7 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import { beautifyInstanceName } from '../../util/shared-util.js'
 
 import type { DiscordAssociatedMessage } from './common/message-association.js'
 import type MessageAssociation from './common/message-association.js'
@@ -70,7 +71,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const message = await channel.send({
         embeds: [
           {
-            title: escapeMarkdown(event.instanceName),
+            title: escapeMarkdown(beautifyInstanceName(event.instanceName)),
             description: escapeMarkdown(event.message),
             color: Color.Info
           }
@@ -209,7 +210,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       description: escapeMarkdown(allEvent.message),
 
       color: allEvent.color,
-      footer: { text: allEvent.instanceName }
+      footer: { text: beautifyInstanceName(allEvent.instanceName) }
     } satisfies APIEmbed
     if (event.guild?.username != undefined) {
       const extra = {
@@ -314,7 +315,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       color: Color.Good,
       description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`,
       footer: {
-        text: `${event.instanceName}${feedback ? ' (command feedback)' : ''}`
+        text: `${beautifyInstanceName(event.instanceName)}${feedback ? ' (command feedback)' : ''}`
       }
     } satisfies APIEmbed
 

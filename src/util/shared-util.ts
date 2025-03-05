@@ -1,5 +1,7 @@
 import Logger4js from 'log4js'
 
+import { InternalInstancePrefix } from '../common/instance.js'
+
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
 
@@ -70,4 +72,18 @@ export function durationToMinecraftDuration(duration: number): string {
 
   const maxTime = Math.min(MaxDuration, Math.floor(duration / 1000))
   return `${Math.max(maxTime, MinDuration)}${Prefix}`
+}
+
+/**
+ * Used to convert instanceName to a human-readable one.
+ * Most instanceNames are either lowercased or contain metadata such as prefixes.
+ * This function aimed to beautify the instanceName and prepare for human display.
+ */
+export function beautifyInstanceName(instanceName: string): string {
+  instanceName = instanceName.startsWith(InternalInstancePrefix)
+    ? instanceName.slice(InternalInstancePrefix.length)
+    : instanceName
+
+  instanceName = instanceName.slice(0, 1).toUpperCase() + instanceName.slice(1).toLowerCase()
+  return instanceName
 }
