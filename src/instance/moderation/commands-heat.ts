@@ -45,17 +45,18 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
 
   public add(identifier: UserIdentifier, type: HeatType): HeatResult {
     const user = this.resolveUser(identifier)
+    const typeInfo = this.resolveType(type)
+    const count = user.heatActions.filter((action) => action.type === type).length
     user.heatActions.push({ timestamp: Date.now(), type: type })
     this.addUser(user)
 
     if (this.clientInstance.immune(identifier)) return HeatResult.Allowed
 
-    const typeInfo = this.resolveType(type)
-    const count = user.heatActions.filter((action) => action.type === type).length
     if (count >= typeInfo.maxLimit) return HeatResult.Denied
 
     const currentTimestamp = Date.now()
-    if (count >= typeInfo.warnLimit && (user.lastWarning.get(type) ?? 0) + typeInfo.expire < currentTimestamp) {
+    // 1+ added to help with low warnLimit
+    if (count + 1 >= typeInfo.warnLimit && (user.lastWarning.get(type) ?? 0) + typeInfo.warnEvery < currentTimestamp) {
       user.lastWarning.set(type, currentTimestamp)
       return HeatResult.Warn
     }
@@ -65,6 +66,9 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
 
   public tryAdd(identifier: UserIdentifier, type: HeatType): HeatResult {
     const user = this.resolveUser(identifier)
+
+    const typeInfo = this.resolveType(type)
+    const count = user.heatActions.filter((action) => action.type === type).length
     user.heatActions.push({ timestamp: Date.now(), type: type })
 
     if (this.clientInstance.immune(identifier)) {
@@ -72,13 +76,12 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
       return HeatResult.Allowed
     }
 
-    const typeInfo = this.resolveType(type)
-    const count = user.heatActions.filter((action) => action.type === type).length
     if (count >= typeInfo.maxLimit) return HeatResult.Denied
 
     this.addUser(user)
     const currentTimestamp = Date.now()
-    if (count >= typeInfo.warnLimit && (user.lastWarning.get(type) ?? 0) + typeInfo.expire < currentTimestamp) {
+    // 1+ added to help with low warnLimit
+    if (count + 1 >= typeInfo.warnLimit && (user.lastWarning.get(type) ?? 0) + typeInfo.warnEvery < currentTimestamp) {
       user.lastWarning.set(type, currentTimestamp)
       return HeatResult.Warn
     }
