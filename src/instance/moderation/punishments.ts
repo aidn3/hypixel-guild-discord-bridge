@@ -30,6 +30,7 @@ export default class Punishments {
   constructor(app: Application) {
     this.app = app
     this.configFilePath = app.getConfigFilePath(Punishments.ConfigName)
+    this.app.applicationIntegrity.addConfigPath(this.configFilePath)
     this.loadFromConfig()
 
     app.on('punishmentAdd', (event) => {

@@ -29,6 +29,8 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
   private cachedInstances: InstanceIdentifier[] | undefined
   private cachedInvalidated = true
 
+  private configPaths: string[] = []
+
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'ApplicationIntegrity', InstanceType.Util, false)
     this.addLocalInstance(this)
@@ -86,6 +88,15 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
     this.ensureInstanceUniqueness(registeredInstances, instance)
     this.localInstanceIdentifier.push({ instanceName: instance.instanceName, instanceType: instance.instanceType })
     this.cachedInvalidated = true
+  }
+
+  public addConfigPath(configPath: string): void {
+    const loweredCase = configPath.toLowerCase().trim()
+    if (this.configPaths.includes(loweredCase)) {
+      throw new Error(`Config path='${configPath}' is already in use`)
+    }
+
+    this.configPaths.push(loweredCase)
   }
 
   private ensureInstanceUniqueness(
