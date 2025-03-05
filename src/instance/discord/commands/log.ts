@@ -138,10 +138,11 @@ async function getGuildLog(
     }
 
     app.on('minecraftChat', chatListener)
+
     app.clusterHelper.sendCommandToMinecraft(
       eventHelper,
       targetInstance,
-      `/guild log ${selectedUsername ?? ''} ${page}`
+      `/guild log ${selectedUsername ? selectedUsername + ' ' : ''}${page}`
     )
   })
 }
