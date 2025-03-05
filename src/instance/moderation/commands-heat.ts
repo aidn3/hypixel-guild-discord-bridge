@@ -12,9 +12,9 @@ import type ModerationInstance from './moderation-instance.js'
 import { matchIdentifiersLists, matchUserIdentifier, userIdentifiersToList } from './util.js'
 
 export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.Moderation> {
-  private static readonly MuteExpiration: number = 24 * 60 * 60 * 1000
-  private static readonly KickExpiration: number = 24 * 60 * 60 * 1000
+  private static readonly ActionExpiresAfter: number = 24 * 60 * 60 * 10
   private static readonly WarnPercentage = 0.8
+  private static readonly WarnEvery = 30 * 60 * 1000
 
   private readonly configManager
 
@@ -117,13 +117,14 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     } satisfies HeatUser
   }
 
-  private resolveType(type: HeatType): { expire: number; maxLimit: number; warnLimit: number } {
+  private resolveType(type: HeatType): { expire: number; maxLimit: number; warnLimit: number; warnEvery: number } {
+    const common = { expire: CommandsHeat.ActionExpiresAfter, warnEvery: CommandsHeat.WarnEvery }
     switch (type) {
       case HeatType.Mute: {
-        return { expire: CommandsHeat.MuteExpiration, ...CommandsHeat.resolveLimits(this.config.mutesPerDay) }
+        return { ...common, ...CommandsHeat.resolveLimits(this.config.mutesPerDay) }
       }
       case HeatType.Kick: {
-        return { expire: CommandsHeat.KickExpiration, ...CommandsHeat.resolveLimits(this.config.kicksPerDay) }
+        return { ...common, ...CommandsHeat.resolveLimits(this.config.kicksPerDay) }
       }
     }
 
