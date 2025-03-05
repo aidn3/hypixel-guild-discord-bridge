@@ -1,5 +1,3 @@
-import assert from 'node:assert'
-
 import { GuildPlayerEventType } from '../common/application-event.js'
 import PluginInstance from '../common/plugin-instance.js'
 
@@ -38,21 +36,18 @@ export default class ReactionPlugin extends PluginInstance {
   onReady(): Promise<void> | void {
     this.application.on('guildPlayer', (event) => {
       if (event.type === GuildPlayerEventType.Join) {
-        assert(event.username)
         let message = ReactionPlugin.JoinMessages[Math.floor(Math.random() * ReactionPlugin.JoinMessages.length)]
         message = message.replaceAll('%s', event.username)
         this.application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, `/gc ${message}`)
       }
 
       if (event.type === GuildPlayerEventType.Leave) {
-        assert(event.username)
         let message = ReactionPlugin.LeaveMessages[Math.floor(Math.random() * ReactionPlugin.LeaveMessages.length)]
         message = message.replaceAll('%s', event.username)
         this.application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, `/gc ${message}`)
       }
 
       if (event.type === GuildPlayerEventType.Kick) {
-        assert(event.username)
         let message = ReactionPlugin.KickMessages[Math.floor(Math.random() * ReactionPlugin.KickMessages.length)]
         message = message.replaceAll('%s', event.username)
         this.application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, `/gc ${message}`)
