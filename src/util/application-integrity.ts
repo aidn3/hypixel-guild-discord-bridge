@@ -43,7 +43,7 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
 
     if (this.cachedInstances === undefined || this.cachedInvalidated) {
       this.cachedInvalidated = false
-      this.cachedInstances = [...this.localInstanceIdentifier, ...this.remoteApplications.values().toArray().flat()]
+      this.cachedInstances = [...this.localInstanceIdentifier, ...[...this.remoteApplications.values()].flat()]
     }
 
     if (
