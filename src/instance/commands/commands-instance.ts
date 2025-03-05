@@ -150,7 +150,11 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       this.reply(event, command.triggers[0], commandResponse)
     } catch (error) {
       this.logger.error('Error while handling command', error)
-      this.reply(event, command.triggers[0], `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`)
+      this.reply(
+        event,
+        command.triggers[0],
+        `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`
+      )
     }
   }
 
