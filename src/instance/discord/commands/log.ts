@@ -111,6 +111,8 @@ async function getGuildLog(
 
       if (event.message.startsWith('Your guild rank does not have permission to use this')) {
         result.error = event.message.trim()
+      } else if (event.message.startsWith("Can't find a player by the name of")) {
+        result.error = event.message.trim()
       }
       const match = regexLog.exec(event.message)
       if (match != undefined) {
