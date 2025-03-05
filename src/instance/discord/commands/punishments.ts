@@ -212,7 +212,8 @@ async function handleBanAddInteraction(
   eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Kick)) return
+  const allowance = await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Kick)
+  if (allowance === 'denied') return
 
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('username', true)
@@ -243,6 +244,7 @@ async function handleBanAddInteraction(
   const formatted = formatChatTriggerResponse(result, `Ban ${escapeMarkdown(username)}`)
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
+  if (allowance !== 'allow') await interaction.followUp({ embeds: [allowance] })
 }
 
 async function handleMuteAddInteraction(
@@ -251,7 +253,8 @@ async function handleMuteAddInteraction(
   eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Mute)) return
+  const allowance = await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Mute)
+  if (allowance === 'denied') return
 
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('username', true)
@@ -287,6 +290,7 @@ async function handleMuteAddInteraction(
   )
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
+  if (allowance !== 'allow') await interaction.followUp({ embeds: [allowance] })
 }
 
 async function handleKickInteraction(
@@ -294,7 +298,8 @@ async function handleKickInteraction(
   eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Kick)) return
+  const allowance = await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Kick)
+  if (allowance === 'denied') return
 
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('user', true)
@@ -325,6 +330,7 @@ async function handleKickInteraction(
       formatted
     ]
   })
+  if (allowance !== 'allow') await interaction.followUp({ embeds: [allowance] })
 }
 
 async function handleForgiveInteraction(
@@ -334,7 +340,8 @@ async function handleForgiveInteraction(
   interaction: ChatInputCommandInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
-  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Mute)) return
+  const allowance = await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Mute)
+  if (allowance === 'denied') return
 
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('user', true)
@@ -375,6 +382,7 @@ async function handleForgiveInteraction(
     })
   } else if (pages.length === 1) {
     await interaction.editReply({ embeds: [pages[0], formatted] })
+    if (allowance !== 'allow') await interaction.followUp({ embeds: [allowance] })
   } else {
     await pageMessage(interaction, pages, errorHandler)
     await interaction.followUp({ embeds: [formatted] })
@@ -574,27 +582,26 @@ async function handleAllowance(
   mojangApi: MojangApi,
   moderation: ModerationInstance,
   type: HeatType
-): Promise<boolean> {
+): Promise<'denied' | 'allow' | APIEmbed> {
   const issuerUser = await findAboutUser(mojangApi, interaction, interaction.user.username, false, false)
   const actionAllowance = moderation.commandsHeat.tryAdd(issuerUser, type)
 
   switch (actionAllowance) {
     case HeatResult.Allowed: {
-      return false
+      return 'allow'
     }
     case HeatResult.Warn: {
-      await handleHeatWarning(interaction)
-      return false
+      return generateHeatWarning()
     }
     case HeatResult.Denied: {
       await handleHeatDenied(interaction)
-      return true
+      return 'denied'
     }
   }
 }
 
-async function handleHeatWarning(interaction: ChatInputCommandInteraction): Promise<void> {
-  const embed: APIEmbed = {
+function generateHeatWarning(): APIEmbed {
+  return {
     title: 'Guild Protection',
     description:
       'You are taking too many actions in a short notice.\n' +
@@ -605,8 +612,7 @@ async function handleHeatWarning(interaction: ChatInputCommandInteraction): Prom
     footer: {
       text: DefaultCommandFooter
     }
-  }
-  await interaction.followUp({ embeds: [embed] })
+  } satisfies APIEmbed
 }
 
 async function handleHeatDenied(interaction: ChatInputCommandInteraction): Promise<void> {
