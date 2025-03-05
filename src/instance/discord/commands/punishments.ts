@@ -4,7 +4,7 @@ import type { APIEmbed, ChatInputCommandInteraction } from 'discord.js'
 import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
-import type { InstanceType, PunishmentAddEvent } from '../../../common/application-event.js'
+import type { InstanceType, PunishmentAddEvent, UserIdentifier } from '../../../common/application-event.js'
 import { Color, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
@@ -12,6 +12,9 @@ import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { durationToMinecraftDuration, getDuration } from '../../../util/shared-util.js'
+import { HeatResult, HeatType } from '../../moderation/commands-heat.js'
+import type ModerationInstance from '../../moderation/moderation-instance.js'
+import { userIdentifiersToList } from '../../moderation/util.js'
 import {
   checkChatTriggers,
   formatChatTriggerResponse,
@@ -209,6 +212,8 @@ async function handleBanAddInteraction(
   eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
+  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Kick)) return
+
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('username', true)
   const reason: string = interaction.options.getString('reason', true)
@@ -224,7 +229,7 @@ async function handleBanAddInteraction(
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
-    userDiscordId: userIdentifiers.discordUserId,
+    userDiscordId: userIdentifiers.userDiscordId,
 
     type: PunishmentType.Ban,
     reason: reason,
@@ -246,6 +251,8 @@ async function handleMuteAddInteraction(
   eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
+  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Mute)) return
+
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('username', true)
   const reason: string = interaction.options.getString('reason', true)
@@ -261,7 +268,7 @@ async function handleMuteAddInteraction(
 
     userName: userIdentifiers.userName,
     userUuid: userIdentifiers.userUuid,
-    userDiscordId: userIdentifiers.discordUserId,
+    userDiscordId: userIdentifiers.userDiscordId,
 
     type: PunishmentType.Mute,
     reason: reason,
@@ -287,6 +294,9 @@ async function handleKickInteraction(
   eventHelper: EventHelper<InstanceType.Discord>,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
+  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Kick)) return
+
+  // noinspection DuplicatedCode
   const username: string = interaction.options.getString('user', true)
   const reason: string = interaction.options.getString('reason', true)
   const command = `/g kick ${username} ${reason}`
@@ -324,6 +334,9 @@ async function handleForgiveInteraction(
   interaction: ChatInputCommandInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<void> {
+  if (await handleAllowance(interaction, application.mojangApi, application.moderation, HeatType.Mute)) return
+
+  // noinspection DuplicatedCode
   const username: string = interaction.options.getString('user', true)
   const noDiscordCheck = interaction.options.getBoolean('no-discord') ?? false
   const noUuidCheck = interaction.options.getBoolean('no-uuid') ?? false
@@ -335,7 +348,7 @@ async function handleForgiveInteraction(
     noDiscordCheck,
     noUuidCheck
   )
-  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
+  const userIdentifiers = userIdentifiersToList(userResolvedData)
 
   const forgivenPunishments = application.moderation.punishments.remove({
     ...eventHelper.fillBaseEvent(),
@@ -356,7 +369,7 @@ async function handleForgiveInteraction(
   if (pages.length === 0) {
     await interaction.editReply({
       embeds: [
-        formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId),
+        formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.userDiscordId),
         formatted
       ]
     })
@@ -384,7 +397,7 @@ async function handleCheckInteraction(
 ): Promise<void> {
   const username: string = interaction.options.getString('user', true)
   const userResolvedData = await findAboutUser(application.mojangApi, interaction, username, false, false)
-  const userIdentifiers = Object.values(userResolvedData).filter((identifier) => identifier !== undefined)
+  const userIdentifiers = userIdentifiersToList(userResolvedData)
 
   const activePunishments = application.moderation.punishments.findByUser(userIdentifiers)
 
@@ -398,7 +411,7 @@ async function handleCheckInteraction(
     ? pageMessage(interaction, pages, errorHandler)
     : interaction.editReply({
         embeds: [
-          formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.discordUserId)
+          formatNoPunishmentStatus(userResolvedData.userName, userResolvedData.userUuid, userResolvedData.userDiscordId)
         ]
       }))
 }
@@ -556,17 +569,70 @@ function formatNoPunishmentStatus(
   }
 }
 
+async function handleAllowance(
+  interaction: ChatInputCommandInteraction,
+  mojangApi: MojangApi,
+  moderation: ModerationInstance,
+  type: HeatType
+): Promise<boolean> {
+  const issuerUser = await findAboutUser(mojangApi, interaction, interaction.user.username, false, false)
+  const actionAllowance = moderation.commandsHeat.tryAdd(issuerUser, type)
+
+  switch (actionAllowance) {
+    case HeatResult.Allowed: {
+      return false
+    }
+    case HeatResult.Warn: {
+      await handleHeatWarning(interaction)
+      return false
+    }
+    case HeatResult.Denied: {
+      await handleHeatDenied(interaction)
+      return true
+    }
+  }
+}
+
+async function handleHeatWarning(interaction: ChatInputCommandInteraction): Promise<void> {
+  const embed: APIEmbed = {
+    title: 'Guild Protection',
+    description:
+      'You are taking too many actions in a short notice.\n' +
+      'At this rate, you will be temporarily blocked from taking any more actions.\n' +
+      'If you believe the actions you are taking are urgent, contact other staff to do the actions on your behalf.\n' +
+      'If the actions you have taken so far are not drastic, ask the bridge admin to increase the limit.',
+    color: Color.Info,
+    footer: {
+      text: DefaultCommandFooter
+    }
+  }
+  await interaction.followUp({ embeds: [embed] })
+}
+
+async function handleHeatDenied(interaction: ChatInputCommandInteraction): Promise<void> {
+  const embed: APIEmbed = {
+    title: 'Guild Protection',
+    description:
+      'You have taken too many actions in a short notice.\n' +
+      'Wait around 24 hours before trying again.\n' +
+      'If you believe the actions you are taking are urgent, contact other staff to do the actions on your behalf.\n' +
+      'If the actions you have taken so far are not drastic, ask the bridge admin to increase the limit.',
+    color: Color.Bad,
+    footer: {
+      text: DefaultCommandFooter
+    }
+  }
+
+  await interaction.editReply({ embeds: [embed] })
+}
+
 async function findAboutUser(
   mojangApi: MojangApi,
   interaction: ChatInputCommandInteraction,
   username: string,
   noDiscordCheck: boolean,
   noUuidCheck: boolean
-): Promise<{
-  discordUserId: string | undefined
-  userUuid: string | undefined
-  userName: string
-}> {
+): Promise<UserIdentifier> {
   const resultedUser = noDiscordCheck
     ? undefined
     : await interaction.guild?.members
@@ -580,7 +646,7 @@ async function findAboutUser(
   const mojangProfile = noUuidCheck ? undefined : await mojangApi.profileByUsername(username).catch(() => undefined)
 
   return {
-    discordUserId: resultedUser?.id,
+    userDiscordId: resultedUser?.id,
     userName: mojangProfile?.name ?? username,
     userUuid: mojangProfile?.id
   }

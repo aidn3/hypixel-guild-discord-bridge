@@ -49,6 +49,7 @@ commands:
 
 moderation:
   heatPunishment: true
+  mutesPerDay: 10
   kicksPerDay: 5
   profanity:
     enabled: true

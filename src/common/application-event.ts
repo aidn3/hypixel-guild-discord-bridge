@@ -543,15 +543,7 @@ export interface MinecraftSelfBroadcast extends InformEvent {
  */
 export type InstanceSelfBroadcast = InformEvent
 
-/**
- * Event sent every time synchronization is required.
- * The event is used to informs other application clients about any existing punishments.
- */
-export interface PunishmentAddEvent extends InformEvent {
-  /**
-   * The punishment type
-   */
-  readonly type: PunishmentType
+export interface UserIdentifier {
   /**
    * The name of the punished user
    */
@@ -564,7 +556,16 @@ export interface PunishmentAddEvent extends InformEvent {
    * The Discord ID of the punished user if exists
    */
   readonly userDiscordId: string | undefined
-
+}
+/**
+ * Event sent every time synchronization is required.
+ * The event is used to informs other application clients about any existing punishments.
+ */
+export interface PunishmentAddEvent extends InformEvent, UserIdentifier {
+  /**
+   * The punishment type
+   */
+  readonly type: PunishmentType
   /**
    * The reason for the punishment
    */

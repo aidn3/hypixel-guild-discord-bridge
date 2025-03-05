@@ -38,6 +38,7 @@ export const CommandsConfig = t.iface([], {
 
 export const ModerationConfig = t.iface([], {
   "heatPunishment": "boolean",
+  "mutesPerDay": "number",
   "kicksPerDay": "number",
   "immune": t.array("string"),
   "profanity": "ProfanityConfig",

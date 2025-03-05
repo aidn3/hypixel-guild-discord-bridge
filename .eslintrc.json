@@ -181,7 +181,6 @@
               "src/instance/logger",
               "src/instance/metrics",
               "src/instance/minecraft",
-              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"

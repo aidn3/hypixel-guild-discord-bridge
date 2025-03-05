@@ -2,15 +2,18 @@ import BadWords from 'bad-words'
 
 import type { ModerationConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
+import { InstanceType, type UserIdentifier } from '../../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type { MojangApi } from '../../util/mojang.js'
 
+import { CommandsHeat } from './commands-heat.js'
 import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
+import { matchUserIdentifier } from './util.js'
 
 export default class ModerationInstance extends Instance<ModerationConfig, InstanceType.Moderation> {
   public readonly punishments: Punishments
+  public readonly commandsHeat: CommandsHeat
   private readonly enforcer: PunishmentsEnforcer
 
   public readonly profanityFilter: BadWords.BadWords | undefined
@@ -34,6 +37,14 @@ export default class ModerationInstance extends Instance<ModerationConfig, Insta
     }
 
     this.punishments = new Punishments(application)
+    this.commandsHeat = new CommandsHeat(
+      application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
@@ -56,16 +67,8 @@ export default class ModerationInstance extends Instance<ModerationConfig, Insta
     return { filteredMessage: filtered, changed: message !== filtered }
   }
 
-  public immune(...identifiers: string[]): boolean {
-    for (const immuneUser of this.config.immune) {
-      for (const identifier of identifiers) {
-        if (immuneUser.toLowerCase() === identifier.toLowerCase()) {
-          return true
-        }
-      }
-    }
-
-    return false
+  public immune(identifiers: UserIdentifier): boolean {
+    return matchUserIdentifier(identifiers, this.config.immune)
   }
 
   async getMinecraftIdentifiers(username: string): Promise<string[]> {

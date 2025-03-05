@@ -8,6 +8,7 @@ import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../../common/ap
 import { PunishmentType } from '../../common/application-event.js'
 
 import ApplicationEventTi from './application-event-ti.js'
+import { matchUserIdentifier } from './util.js'
 
 const ApplicationEventChecker = createCheckers({
   ...ApplicationEventTi,
@@ -51,7 +52,7 @@ export default class Punishments {
     const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter((id) => id !== undefined)
 
     const modifiedList = originalList.filter(
-      (punishment) => punishment.till < currentTime || !this.matchIdentifier(punishment, identifiers)
+      (punishment) => punishment.till < currentTime || !matchUserIdentifier(punishment, identifiers)
     )
 
     modifiedList.push(event)
@@ -68,7 +69,7 @@ export default class Punishments {
     for (const type of Object.keys(this.records) as PunishmentType[]) {
       this.records[type] = this.records[type].filter((punishment) => {
         if (punishment.till < currentTime) return false
-        const shouldDelete = this.matchIdentifier(punishment, event.userIdentifiers)
+        const shouldDelete = matchUserIdentifier(punishment, event.userIdentifiers)
         if (shouldDelete) {
           result.push(punishment)
           return false
@@ -85,7 +86,7 @@ export default class Punishments {
     const allPunishments = this.records[type]
 
     const current = Date.now()
-    const punishment = allPunishments.find((p) => p.till > current && this.matchIdentifier(p, identifiers))
+    const punishment = allPunishments.find((p) => p.till > current && matchUserIdentifier(p, identifiers))
 
     if (punishment) {
       return punishment.till
@@ -98,7 +99,7 @@ export default class Punishments {
     const result: PunishmentAddEvent[] = []
 
     for (const [, events] of Object.entries(this.records)) {
-      result.push(...events.filter((event) => event.till > current && this.matchIdentifier(event, identifiers)))
+      result.push(...events.filter((event) => event.till > current && matchUserIdentifier(event, identifiers)))
     }
 
     return result
@@ -132,15 +133,5 @@ export default class Punishments {
   private saveConfig(): void {
     const dataRaw = JSON.stringify(this.records, undefined, 4)
     fs.writeFileSync(this.configFilePath, dataRaw, { encoding: 'utf8' })
-  }
-
-  private matchIdentifier(punishment: PunishmentAddEvent, identifiers: string[]): boolean {
-    return identifiers.some((identifier) => {
-      return (
-        punishment.userName.toLowerCase() === identifier.toLowerCase() ||
-        punishment.userUuid?.toLowerCase() === identifier.toLowerCase() ||
-        punishment.userDiscordId?.toLowerCase() === identifier.toLowerCase()
-      )
-    })
   }
 }

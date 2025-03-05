@@ -34,6 +34,7 @@ export interface CommandsConfig {
 
 export interface ModerationConfig {
   heatPunishment: boolean
+  mutesPerDay: number
   kicksPerDay: number
   immune: string[]
   profanity: ProfanityConfig
