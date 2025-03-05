@@ -34,7 +34,7 @@ export default {
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
           .setName('ban')
-          .setDescription('Add a member to banned list')
+          .setDescription('Add a member to the ban list')
           .addStringOption((option) =>
             option
               .setName('username')
@@ -58,7 +58,7 @@ export default {
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
           .setName('mute')
-          .setDescription('Add a member to muted list')
+          .setDescription('Add a member to the mute list')
           .addStringOption((option) =>
             option
               .setName('username')
@@ -304,7 +304,7 @@ async function handleKickInteraction(
   // noinspection DuplicatedCode
   const username: string = interaction.options.getString('user', true)
   const reason: string = interaction.options.getString('reason', true)
-  const command = `/g kick ${username} ${reason}`
+  const command = `/guild kick ${username} ${reason}`
 
   const result = await checkChatTriggers(application, eventHelper, KickChat, undefined, command, username)
   const formatted = formatChatTriggerResponse(result, `Kick ${escapeMarkdown(username)}`)
@@ -485,13 +485,13 @@ function formatPunishmentAdd(event: PunishmentAddEvent, noUuidCheck: boolean): A
 
   if (event.userDiscordId !== undefined) {
     description +=
-      `\n__**Notice: Discord user <@${event.userDiscordId}> seem to have the same name.\n` +
-      'The person is added to the punishment**__\n'
+      `\n__**Notice: Discord user <@${event.userDiscordId}> seems to have the same name.\n` +
+      'The person has been added to the punishment**__\n'
   }
 
   if (event.userUuid == undefined && !noUuidCheck) {
     description +=
-      "\n**__Warning:__** The username doesn't seem to have a Minecraft account to mark it as well.\n" +
+      "\n**__Warning:__** The username doesn't seem to have a Minecraft account associated.\n" +
       'The username itself has been added as it is.\n' +
       'The user can evade in-game punishment if they change their username.\n'
   }
@@ -604,8 +604,8 @@ function generateHeatWarning(): APIEmbed {
   return {
     title: 'Guild Protection',
     description:
-      'You are taking too many actions in a short notice.\n' +
-      'At this rate, you will be temporarily blocked from taking any more actions.\n' +
+      'You are taking too many actions in a short period.\n' +
+      'If you continue, you will be temporarily blocked from taking any more actions.\n' +
       'If you believe the actions you are taking are urgent, contact other staff to do the actions on your behalf.\n' +
       'If the actions you have taken so far are not drastic, ask the bridge admin to increase the limit.',
     color: Color.Info,
@@ -619,7 +619,7 @@ async function handleHeatDenied(interaction: ChatInputCommandInteraction): Promi
   const embed: APIEmbed = {
     title: 'Guild Protection',
     description:
-      'You have taken too many actions in a short notice.\n' +
+      'You have taken too many actions in a short period.\n' +
       'Wait around 24 hours before trying again.\n' +
       'If you believe the actions you are taking are urgent, contact other staff to do the actions on your behalf.\n' +
       'If the actions you have taken so far are not drastic, ask the bridge admin to increase the limit.',

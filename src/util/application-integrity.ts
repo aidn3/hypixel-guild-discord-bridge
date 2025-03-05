@@ -13,7 +13,7 @@ import { Instance, InternalInstancePrefix } from '../common/instance.js'
  * This utility can be used before adding a new instance to the application
  * to ensure that an instance identifier is only being used by one instance.
  * Instances include all exposed and internal instances as well as plugins
- * and utilities.Instances across websockets are also included.
+ * and utilities. Instances across websockets are also included.
  *
  * Integrity checks:
  * - {@link #ensureInstanceUniqueness} checks if a given <code>instanceName</code> already exists
@@ -68,7 +68,7 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
     const checkedInstances: InstanceIdentifier[] = []
     this.remoteApplications.set(applicationId, checkedInstances)
 
-    const registeredInstances = [...this.localInstanceIdentifier, ...this.remoteApplications.values().toArray().flat()]
+    const registeredInstances = [...this.localInstanceIdentifier, ...[...this.remoteApplications.values()].flat()]
     for (const instance of instances) {
       this.ensureInstanceName(instance)
       this.ensureInstanceUniqueness(registeredInstances, instance)
