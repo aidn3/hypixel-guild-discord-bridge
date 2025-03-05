@@ -82,7 +82,7 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
   public addLocalInstance(instance: InstanceIdentifier): void {
     this.ensureInstanceName(instance)
 
-    const registeredInstances = [...this.localInstanceIdentifier, ...this.remoteApplications.values().toArray().flat()]
+    const registeredInstances = [...this.localInstanceIdentifier, ...[...this.remoteApplications.values()].flat()]
     this.ensureInstanceUniqueness(registeredInstances, instance)
     this.localInstanceIdentifier.push({ instanceName: instance.instanceName, instanceType: instance.instanceType })
     this.cachedInvalidated = true
