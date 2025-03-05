@@ -113,12 +113,14 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     await this.commandsLimiter.wait()
     if (this.clientSession?.client.state !== states.PLAY) return
 
-    const chatPrefix = ['/ac', '/pc', '/gc', '/oc', '/msg', '/whisper', '/w', 'tell']
+    const chatPrefix = ['/ac', '/pc', '/gc', '/gchat', '/oc', '/ochat', '/msg', '/whisper', '/w', 'tell']
     const guildPrefix = [
       '/g ',
       '/guild',
       '/gc',
+      'gchat',
       '/oc',
+      'ochat',
       '/chat guild',
       '/chat g',
       '/chat officer',
