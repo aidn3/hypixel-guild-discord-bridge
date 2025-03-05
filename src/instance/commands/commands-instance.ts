@@ -33,7 +33,7 @@ import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
 import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
-import Vengeance from './triggers/vengence.js'
+import Vengeance from './triggers/vengeance.js'
 import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
@@ -43,11 +43,11 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, true, config)
 
     this.commands = [
-      new EightBallCommand(),
+      new Bits(),
       new Calculate(),
       new Catacomb(),
-      new RunsToClassAverage(),
       new DarkAuction(),
+      new EightBallCommand(),
       new Explain(),
       new Guild(),
       new Help(),
@@ -62,6 +62,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       new RockPaperScissors(),
       new Roulette(),
       new Runs(),
+      new RunsToClassAverage(),
       new Secrets(),
       new Skills(),
       new Slayer(),
@@ -69,8 +70,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       new StatusCommand(),
       new Toggle(),
       new Vengeance(),
-      new Weight(),
-      new Bits()
+      new Weight()
     ]
 
     const disabled = config.disabledCommand
@@ -117,7 +117,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     const command = this.commands.find((c) => c.triggers.includes(commandName))
     if (command == undefined) return
 
-    // officer chat and application owner can bypass enabled flag
+    // Disabled commands can only be used by officers and admins, regular users cannot use them
     if (!command.enabled && permission === Permission.Anyone) {
       return
     }
@@ -150,7 +150,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       this.reply(event, command.triggers[0], commandResponse)
     } catch (error) {
       this.logger.error('Error while handling command', error)
-      this.reply(event, command.triggers[0], `${event.username}, error trying to execute ${command.triggers[0]}.`)
+      this.reply(event, command.triggers[0], `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`)
     }
   }
 
