@@ -146,7 +146,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
 
     for (const heatAction of heatActions) {
       const expirationTime = this.resolveType(heatAction.type).expire
-      if (heatAction.timestamp + expirationTime > currentTimestamp) continue
+      if (heatAction.timestamp + expirationTime < currentTimestamp) continue
       results.push(heatAction)
     }
 
