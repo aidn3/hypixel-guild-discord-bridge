@@ -16,7 +16,6 @@ export const DiscordConfig = t.iface([], {
   "officerChannelIds": t.array("string"),
   "helperRoleIds": t.array("string"),
   "officerRoleIds": t.array("string"),
-  "deleteTempEventAfter": "number",
 });
 
 export const MinecraftConfig = t.iface([], {

@@ -11,8 +11,6 @@ export interface DiscordConfig {
   officerChannelIds: string[]
   helperRoleIds: string[]
   officerRoleIds: string[]
-
-  deleteTempEventAfter: number
 }
 
 export interface MinecraftConfig {

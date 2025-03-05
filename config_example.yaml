@@ -16,8 +16,6 @@ discord:
   helperRoleIds: ['803266248652835111', 'another_role']
   # Discord ID of the role who will have OFFICER permission
   officerRoleIds: ['803266248652835111', 'another_role']
-  # Delete spam events from discord after x minutes
-  deleteTempEventAfter: 15
 
 minecraft:
   # Put in front of every message.

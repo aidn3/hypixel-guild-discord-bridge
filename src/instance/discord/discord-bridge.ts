@@ -33,6 +33,7 @@ import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridge extends Bridge<DiscordInstance> {
+  private static readonly DeleteTempEventAfter = 15 * 60 * 1000
   private readonly messageAssociation: MessageAssociation
   private readonly config
 
@@ -272,13 +273,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       })
 
       if (removeLater) {
-        const deleteAfter = this.config.deleteTempEventAfter
-        setTimeout(
-          () => {
-            void message.delete().catch(this.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
-          },
-          deleteAfter * 60 * 1000
-        )
+        setTimeout(() => {
+          void message.delete().catch(this.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
+        }, DiscordBridge.DeleteTempEventAfter)
       }
     }
   }
