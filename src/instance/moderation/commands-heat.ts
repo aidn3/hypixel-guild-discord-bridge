@@ -99,10 +99,10 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
 
   private resolveUser(identifiers: UserIdentifier): HeatUser {
     const identifiedUsers = this.configManager.data.filter((user) => matchUserIdentifier(identifiers, user.identifiers))
-    const newIdentifiers = [
+    const newIdentifiers = new Set<string>([
       ...identifiedUsers.flatMap((user) => user.identifiers),
       ...userIdentifiersToList(identifiers)
-    ]
+    ])
     const userHeatActions = identifiedUsers.flatMap((user) => user.heatActions)
 
     const lastWarning = new Map<HeatType, number>()
@@ -114,7 +114,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     }
 
     return {
-      identifiers: newIdentifiers,
+      identifiers: [...newIdentifiers],
       heatActions: this.deleteExpiredActions(userHeatActions),
       lastWarning: lastWarning
     } satisfies HeatUser
