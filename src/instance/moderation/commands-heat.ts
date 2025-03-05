@@ -107,7 +107,12 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
 
     const lastWarning = new Map<HeatType, number>()
     for (const identifiedUser of identifiedUsers) {
-      for (const [type, timestamp] of identifiedUser.lastWarning.entries()) {
+      const entries =
+        identifiedUser.lastWarning instanceof Map
+          ? [...identifiedUser.lastWarning.entries()]
+          : (Object.entries(identifiedUser.lastWarning) as [HeatType, number][])
+
+      for (const [type, timestamp] of entries) {
         const savedTimestamp = lastWarning.get(type) ?? 0
         if (timestamp > savedTimestamp) lastWarning.set(type, timestamp)
       }
