@@ -156,21 +156,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if (replyIds.length === 0) {
       await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
     } else {
-      const sentChannels: string[] = []
       for (const replyId of replyIds) {
         try {
           await this.replyWithEmbed(event, replyId)
-          sentChannels.push(replyId.channelId)
         } catch (error: unknown) {
           this.logger.error(error, 'can not reply to message. sending the event independently')
           await this.sendEmbedToChannels(event, false, [replyId.channelId], undefined)
         }
       }
-
-      const remainingChannels = this.resolveChannels(event.channels).filter(
-        (channelId) => !sentChannels.includes(channelId)
-      )
-      await this.sendEmbedToChannels(event, false, remainingChannels, undefined)
     }
   }
 
