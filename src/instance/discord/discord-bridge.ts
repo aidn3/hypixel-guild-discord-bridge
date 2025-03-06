@@ -196,33 +196,28 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async generateEmbed(
-    event: {
-      generic?: BaseInGameEvent<string> | BroadcastEvent
-      guild?: GuildPlayerEvent
-      ingame?: MinecraftChatEvent
-      command?: CommandEvent
-    },
+    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftChatEvent,
     guildId: string | undefined
   ): Promise<APIEmbed> {
-    const allEvent = event.generic ?? event.guild ?? event.ingame
-    assert(allEvent)
-
     const embed: APIEmbed = {
-      description: escapeMarkdown(allEvent.message),
+      description: escapeMarkdown(event.message),
 
-      color: allEvent.color,
-      footer: { text: beautifyInstanceName(allEvent.instanceName) }
+      color: event.color,
+      footer: { text: beautifyInstanceName(event.instanceName) }
     } satisfies APIEmbed
-    if (event.guild?.username != undefined) {
+    if ('username' in event && event.username != undefined) {
       const extra = {
-        title: escapeMarkdown(event.guild.username),
-        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.guild.username)}`,
-        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.guild.username)}.png` }
+        title: escapeMarkdown(event.username),
+        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
       }
       Object.assign(embed, extra)
     }
 
-    if (event.ingame?.type === MinecraftChatEventType.RequireGuild && guildId !== undefined) {
+    // all enums are unique and must unique for this to work.
+    // the other solutions is just too complicated
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    if ('type' in event && event.type === MinecraftChatEventType.RequireGuild && guildId !== undefined) {
       const commands = await this.clientInstance.client.guilds.fetch(guildId).then((guild) => guild.commands.fetch())
       const joinCommand = commands.find((command) => command.name === 'join')
       const setupCommand = commands.find((command) => command.name === 'setup')
@@ -241,7 +236,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     assert(channel != undefined)
     assert(channel.isSendable())
 
-    const embed = await this.generateEmbed({ ingame: event }, replyId.guildId)
+    const embed = await this.generateEmbed(event, replyId.guildId)
 
     const result = await channel.send({ embeds: [embed], reply: { messageReference: replyId.messageId } })
     this.messageAssociation.addMessageId(event.eventId, {
@@ -264,7 +259,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const embed =
         preGeneratedEmbed ??
         // commands always have a preGenerated embed
-        (await this.generateEmbed({ generic: event as BaseInGameEvent<string> | BroadcastEvent }, channel.guildId))
+        (await this.generateEmbed(event as BaseInGameEvent<string> | BroadcastEvent, channel.guildId))
       const message = await channel.send({ embeds: [embed] })
       this.messageAssociation.addMessageId(event.eventId, {
         guildId: message.inGuild() ? message.guildId : undefined,
