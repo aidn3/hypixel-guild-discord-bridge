@@ -4,11 +4,11 @@ import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
-import RateLimiter from '../../util/rate-limiter.js'
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
+import { CommandType, SendQueue } from './common/send-queue.js'
 import ErrorHandler from './handlers/error-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
@@ -26,16 +26,16 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   readonly bridgePrefix: string
 
   private readonly bridge: MinecraftBridge
-  private readonly commandsLimiter = new RateLimiter(1, 1000)
-  private readonly eventIdLimiter = new RateLimiter(1, 3000)
-  private lastEventIdForChatMessage: string | undefined = undefined
-  private lastEventIdForGuildAction: string | undefined = undefined
+  private readonly sendQueue: SendQueue
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
     super(app, instanceName, InstanceType.Minecraft, true, config)
 
     this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
     this.bridgePrefix = bridgePrefix
+    this.sendQueue = new SendQueue(this.errorHandler, (command) => {
+      this.sendNow(command)
+    })
   }
 
   connect(): void {
@@ -85,7 +85,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
    * Sent commands that aren't messages will NOT change this value.
    */
   getLastEventIdForSentChatMessage(): string | undefined {
-    return this.lastEventIdForChatMessage
+    return this.sendQueue.lastId.get(CommandType.ChatMessage)
   }
 
   /**
@@ -94,7 +94,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
    * commands the type are: guild chat message, guild change settings, guild info, etc.
    */
   getLastEventIdForSentGuildAction(): string | undefined {
-    return this.lastEventIdForGuildAction
+    return this.sendQueue.lastId.get(CommandType.GuildCommand)
   }
 
   /**
@@ -109,47 +109,18 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
       .map((chunk) => chunk.trim())
       .join(' ')
 
-    this.logger.debug(`Queuing message to send: ${message}`)
-    await this.commandsLimiter.wait()
-    if (this.clientSession?.client.state !== states.PLAY) return
-
-    const chatPrefix = ['/ac', '/pc', '/gc', '/gchat', '/oc', '/ochat', '/msg', '/whisper', '/w', 'tell']
-    const guildPrefix = [
-      '/g ',
-      '/guild',
-      '/gc',
-      'gchat',
-      '/oc',
-      'ochat',
-      '/chat guild',
-      '/chat g',
-      '/chat officer',
-      '/chat o',
-      '/c g',
-      '/c guild',
-      '/c o',
-      '/c officer'
-    ]
-
-    const loweredCaseMessage = message.toLowerCase()
-    if (
-      chatPrefix.some((prefix) => loweredCaseMessage.startsWith(prefix)) ||
-      !loweredCaseMessage.startsWith('/') // normal chat on default channel and not a command
-    ) {
-      await this.eventIdLimiter.wait()
-      this.lastEventIdForChatMessage = originEventId
-    }
-
-    if (guildPrefix.some((prefix) => loweredCaseMessage.startsWith(prefix))) {
-      await this.eventIdLimiter.wait()
-      this.lastEventIdForGuildAction = originEventId
-    }
-
     if (message.length > 250) {
       message = message.slice(0, 250) + '...'
       this.logger.warn(`Long message truncated: ${message}`)
     }
 
-    this.clientSession.client.chat(message)
+    this.logger.debug(`Queuing message to send: ${message}`)
+    await this.sendQueue.queue(message, originEventId)
+  }
+
+  private sendNow(message: string) {
+    if (this.clientSession?.client.state === states.PLAY) {
+      this.clientSession.client.chat(message)
+    }
   }
 }
