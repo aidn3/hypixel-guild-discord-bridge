@@ -4,29 +4,29 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/util.js'
 
 const LossMessages = [
-  '%s tried to blast %u but epically failed into blasting themselves!',
+  '%s tried to blast %u but failed epically and ended up blasting themself!',
   '%s unlucky, wrong choice.',
   '%s, this is what you get for trying to blast %u!',
   '%s died',
   '%s tried to mute %u but got muted instead, haha!',
   '%s better luck next time. Or not...',
-  '%s attempts at %u was met with a disappointment.',
-  '%s, aya, you still trying to mute %u? How petty.'
+  '%s was punished for trying to mute %u',
+  '%s, aya, are you still trying to mute %u? How petty.'
 ]
 
 const DrawMessages = [
-  '%s Click. click. click. It is empty!',
-  '%s, reminds me what the plan was again?',
+  '%s Click. Click. Click. It is empty!',
+  '%s, remind me what the plan was again?',
   '%s, I forgot to take vengeance.',
   '%s, I was supposed to take vengeance against %u but I changed my mind :P',
-  '%s, tried to kill %u but %u dodged all bullets like matrix!'
+  '%s tried to kill %u but they dodged every bullet like Neo!'
 ]
 
 const WinMessages = [
-  '%s I am batman!',
-  '%s survival never was an option',
-  '%s, I am hitman code 47',
-  '%u? Dead? That is the only possible outcome.'
+  '%s is Batman!',
+  '%u survival was never an option',
+  '%s, I am Agent 47. The job is done.',
+  '%u? Dead? That was the only possible outcome.'
 ]
 
 export default class Vengeance extends ChatCommandHandler {
@@ -63,11 +63,13 @@ export default class Vengeance extends ChatCommandHandler {
         .replaceAll('%s', context.username)
         .replaceAll('%u', givenUsername)
     } else if (this.lose()) {
+      this.countSinceLastWin++
       this.mute(context, context.username)
       return LossMessages[Math.floor(Math.random() * LossMessages.length)]
         .replaceAll('%s', context.username)
         .replaceAll('%u', givenUsername)
     } else {
+      this.countSinceLastWin++
       return DrawMessages[Math.floor(Math.random() * DrawMessages.length)]
         .replaceAll('%s', context.username)
         .replaceAll('%u', givenUsername)
