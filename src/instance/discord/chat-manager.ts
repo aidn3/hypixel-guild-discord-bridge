@@ -16,7 +16,10 @@ import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
+  private static readonly WarnMuteEvery = 3 * 60 * 1000
+
   private readonly messageAssociation: MessageAssociation
+  private readonly lastMuteWarn = new Map<string, number>()
   private readonly config
 
   constructor(
@@ -125,12 +128,17 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
     if (mutedTill != undefined) {
-      await message.reply({
-        content:
-          '*Looks like you are muted on the chat-bridge.*\n' +
-          "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your mute expires <t:${Math.floor(mutedTill / 1000)}:R>!*`
-      })
+      const currentTimestamp = Date.now()
+      if ((this.lastMuteWarn.get(message.author.id) ?? 0) + ChatManager.WarnMuteEvery < currentTimestamp) {
+        this.lastMuteWarn.set(message.author.id, currentTimestamp)
+        await message.reply({
+          content:
+            '*Looks like you are muted on the chat-bridge.*\n' +
+            "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
+            `*Your mute expires <t:${Math.floor(mutedTill / 1000)}:R>!*`
+        })
+      }
+
       return true
     }
 
