@@ -47,6 +47,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
 
+  private readonly rootDirectory
   private readonly configsDirectory
   private readonly config: ApplicationConfig
 
@@ -75,6 +76,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     emitAll(this, this.applicationIntegrity) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
+    this.rootDirectory = rootDirectory
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
@@ -133,6 +135,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async start(): Promise<void> {
+    this.plugins.push(...(await this.loadPlugins(this.rootDirectory)))
     this.syncBroadcast()
 
     for (const instance of this.getAllInstances()) {
@@ -196,7 +199,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
         newPath = `file:///${newPath}`
       }
 
-      const pluginName = path.basename(pluginPath)
+      const pluginName = path.basename(pluginPath).replaceAll('.ts', '')
       const plugin = import(newPath)
         .then((resolved: { default: typeof PluginInstance }) => resolved.default)
         // @ts-expect-error although it says it is an abstract, the class isn't since it is extended.
