@@ -103,7 +103,8 @@ export default class LoggerInstance extends Instance<void, InstanceType.Logger> 
   private async send(message: string): Promise<void> {
     await this.client.send({
       username: this.instanceName,
-      content: escapeMarkdown(message)
+      content: escapeMarkdown(message),
+      allowedMentions: { parse: [] }
     })
   }
 }

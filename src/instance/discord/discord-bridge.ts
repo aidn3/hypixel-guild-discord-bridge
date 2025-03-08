@@ -76,7 +76,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             description: escapeMarkdown(event.message),
             color: Color.Info
           }
-        ]
+        ],
+        allowedMentions: { parse: [] }
       })
       this.messageAssociation.addMessageId(event.eventId, {
         guildId: message.guildId ?? undefined,
@@ -109,7 +110,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const message = await webhook.send({
         content: escapeMarkdown(event.message),
         username: displayUsername,
-        avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`
+        avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`,
+        allowedMentions: { parse: [] }
       })
 
       this.messageAssociation.addMessageId(event.eventId, {
@@ -238,7 +240,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     const embed = await this.generateEmbed(event, replyId.guildId)
 
-    const result = await channel.send({ embeds: [embed], reply: { messageReference: replyId.messageId } })
+    const result = await channel.send({
+      embeds: [embed],
+      reply: { messageReference: replyId.messageId },
+      allowedMentions: { parse: [] }
+    })
     this.messageAssociation.addMessageId(event.eventId, {
       guildId: result.guildId ?? undefined,
       channelId: result.channelId,
@@ -260,7 +266,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         preGeneratedEmbed ??
         // commands always have a preGenerated embed
         (await this.generateEmbed(event as BaseInGameEvent<string> | BroadcastEvent, channel.guildId))
-      const message = await channel.send({ embeds: [embed] })
+      const message = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } })
       this.messageAssociation.addMessageId(event.eventId, {
         guildId: message.inGuild() ? message.guildId : undefined,
         channelId: message.channelId,
