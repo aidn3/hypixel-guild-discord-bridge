@@ -45,17 +45,16 @@ export interface ApplicationEvents {
    */
   command: (event: Readonly<CommandEvent>) => void
   /**
-   * When a plugin or a component wishes to broadcast a message to all instances.
-   */
-  broadcast: (event: Readonly<BroadcastEvent>) => void
-
-  /**
    * Command sending a followup responses.
    * This can be used to send multiple responses.
    * Useful when working with long term commands that takes time to finish.
    * It provides a way to give feedback on the command.
    */
   commandFeedback: (event: Readonly<CommandFeedbackEvent>) => void
+  /**
+   * When a plugin or a component wishes to broadcast a message to all instances.
+   */
+  broadcast: (event: Readonly<BroadcastEvent>) => void
 
   /**
    * Internal instance start/connect/disconnect/etc
@@ -65,6 +64,10 @@ export interface ApplicationEvents {
    * Broadcast instance to inform other bridges in the cluster about its existence
    */
   selfBroadcast: (event: Readonly<InstanceSelfBroadcast>) => void
+  /**
+   * Display a useful message coming from the internal components
+   */
+  statusMessage: (event: Readonly<StatusMessageEvent>) => void
   /**
    * Signal used to shut down/restart an instance.
    *
@@ -86,6 +89,10 @@ export interface ApplicationEvents {
    *  @internal
    */
   punishmentForgive: (event: Readonly<PunishmentForgiveEvent>) => void
+  /**
+   * Reports an occurrence of a profanity filtering that occurred.
+   */
+  profanityWarning: (event: Readonly<ProfanityWarningEvent>) => void
 
   /**
    * Used to broadcast which in-game username/uuid belongs to which bot.
@@ -100,15 +107,6 @@ export interface ApplicationEvents {
    * Command used to send a chat message/command through a minecraft instance
    */
   minecraftSend: (event: Readonly<MinecraftSendChat>) => void
-  /**
-   * Display a useful message coming from the internal components
-   */
-  statusMessage: (event: Readonly<StatusMessageEvent>) => void
-
-  /**
-   * Reports an occurrence of a profanity filtering that occurred.
-   */
-  profanityWarning: (event: Readonly<ProfanityWarningEvent>) => void
 }
 
 /**
