@@ -1,3 +1,4 @@
+import type { MinecraftSendChatPriority } from '../common/application-event.js'
 import PluginInstance from '../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
 import ChatManager from '../instance/minecraft/chat-manager.js'
@@ -37,6 +38,7 @@ export default class StufPlugin extends PluginInstance {
 
     MinecraftInstance.prototype.send = async function (
       message: string,
+      priority: MinecraftSendChatPriority,
       originEventId: string | undefined
     ): Promise<void> {
       const modifiedMessage = message
@@ -51,7 +53,7 @@ export default class StufPlugin extends PluginInstance {
         })
         .join(' ')
 
-      await sendMessage.call(this, modifiedMessage, originEventId)
+      await sendMessage.call(this, modifiedMessage, priority, originEventId)
     }
   }
 }

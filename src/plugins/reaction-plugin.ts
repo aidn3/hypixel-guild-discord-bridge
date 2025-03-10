@@ -1,4 +1,4 @@
-import { GuildPlayerEventType } from '../common/application-event.js'
+import { GuildPlayerEventType, InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
 import PluginInstance from '../common/plugin-instance.js'
 
 /* NOTICE
@@ -38,19 +38,34 @@ export default class ReactionPlugin extends PluginInstance {
       if (event.type === GuildPlayerEventType.Join) {
         let message = ReactionPlugin.JoinMessages[Math.floor(Math.random() * ReactionPlugin.JoinMessages.length)]
         message = message.replaceAll('%s', event.username)
-        this.application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, `/gc ${message}`)
+        this.application.emit('minecraftSend', {
+          ...this.eventHelper.fillBaseEvent(),
+          targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          priority: MinecraftSendChatPriority.High,
+          command: `/gc ${message}`
+        })
       }
 
       if (event.type === GuildPlayerEventType.Leave) {
         let message = ReactionPlugin.LeaveMessages[Math.floor(Math.random() * ReactionPlugin.LeaveMessages.length)]
         message = message.replaceAll('%s', event.username)
-        this.application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, `/gc ${message}`)
+        this.application.emit('minecraftSend', {
+          ...this.eventHelper.fillBaseEvent(),
+          targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          priority: MinecraftSendChatPriority.High,
+          command: `/gc ${message}`
+        })
       }
 
       if (event.type === GuildPlayerEventType.Kick) {
         let message = ReactionPlugin.KickMessages[Math.floor(Math.random() * ReactionPlugin.KickMessages.length)]
         message = message.replaceAll('%s', event.username)
-        this.application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, `/gc ${message}`)
+        this.application.emit('minecraftSend', {
+          ...this.eventHelper.fillBaseEvent(),
+          targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          priority: MinecraftSendChatPriority.High,
+          command: `/gc ${message}`
+        })
       }
     })
   }

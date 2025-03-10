@@ -1,5 +1,5 @@
 import type Application from '../application.js'
-import { InstanceType } from '../common/application-event.js'
+import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../common/instance.js'
 
 export default class Autocomplete extends Instance<void, InstanceType.Util> {
@@ -39,7 +39,12 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
     // MetricsInstance also fetches guild list all the time
     // This will make the minecraftChat event spams a lot
     setInterval(() => {
-      application.clusterHelper.sendCommandToAllMinecraft(this.eventHelper, '/guild list')
+      application.emit('minecraftSend', {
+        ...this.eventHelper.fillBaseEvent(),
+        targetInstanceName: application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        priority: MinecraftSendChatPriority.Default,
+        command: '/guild list'
+      })
     }, 60_000)
 
     const ranksResolver = setTimeout(() => {

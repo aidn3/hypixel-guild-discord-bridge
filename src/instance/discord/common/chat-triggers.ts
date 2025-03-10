@@ -2,7 +2,12 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 
 import type Application from '../../../application.js'
-import { Color, type InstanceType, type MinecraftRawChatEvent } from '../../../common/application-event.js'
+import {
+  Color,
+  type InstanceType,
+  type MinecraftRawChatEvent,
+  MinecraftSendChatPriority
+} from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
@@ -148,6 +153,7 @@ export async function checkChatTriggers(
   app.emit('minecraftSend', {
     ...eventHelper.fillBaseEvent(),
     targetInstanceName: targetInstance,
+    priority: MinecraftSendChatPriority.High,
     command
   })
   await new Promise((resolve) => setTimeout(resolve, 5000))

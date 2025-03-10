@@ -3,7 +3,7 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color } from '../../../common/application-event.js'
+import { Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
@@ -139,11 +139,12 @@ async function getGuildLog(
 
     app.on('minecraftChat', chatListener)
 
-    app.clusterHelper.sendCommandToMinecraft(
-      eventHelper,
-      targetInstance,
-      `/guild log ${selectedUsername ? selectedUsername + ' ' : ''}${page}`
-    )
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: [targetInstance],
+      priority: MinecraftSendChatPriority.High,
+      command: `/guild log ${selectedUsername ? selectedUsername + ' ' : ''}${page}`
+    })
   })
 }
 

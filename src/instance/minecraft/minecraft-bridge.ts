@@ -19,7 +19,8 @@ import {
   GuildPlayerEventType,
   InstanceSignalType,
   InstanceType,
-  MinecraftChatEventType
+  MinecraftChatEventType,
+  MinecraftSendChatPriority
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -58,11 +59,19 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
     if (event.channelType === ChannelType.Public) {
       void this.clientInstance
-        .send(this.formatChatMessage('gc', event.username, replyUsername, event.message), event.eventId)
+        .send(
+          this.formatChatMessage('gc', event.username, replyUsername, event.message),
+          MinecraftSendChatPriority.Default,
+          event.eventId
+        )
         .catch(this.errorHandler.promiseCatch('sending public chat message'))
     } else if (event.channelType === ChannelType.Officer) {
       void this.clientInstance
-        .send(this.formatChatMessage('oc', event.username, replyUsername, event.message), event.eventId)
+        .send(
+          this.formatChatMessage('oc', event.username, replyUsername, event.message),
+          MinecraftSendChatPriority.Default,
+          event.eventId
+        )
         .catch(this.errorHandler.promiseCatch('sending officer chat message'))
     }
   }
@@ -90,16 +99,32 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`, event.eventId)
+      await this.clientInstance.send(
+        `/gc @[${event.instanceName}]: ${event.message}`,
+        MinecraftSendChatPriority.Default,
+        event.eventId
+      )
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`, event.eventId)
+      await this.clientInstance.send(
+        `/oc @[${event.instanceName}]: ${event.message}`,
+        MinecraftSendChatPriority.Default,
+        event.eventId
+      )
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(`/gc @[${event.instanceName}]: ${event.message}`, event.eventId)
+      await this.clientInstance.send(
+        `/gc @[${event.instanceName}]: ${event.message}`,
+        MinecraftSendChatPriority.Default,
+        event.eventId
+      )
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(`/oc @[${event.instanceName}]: ${event.message}`, event.eventId)
+      await this.clientInstance.send(
+        `/oc @[${event.instanceName}]: ${event.message}`,
+        MinecraftSendChatPriority.Default,
+        event.eventId
+      )
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {
@@ -116,12 +141,12 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
       if (event.type === InstanceSignalType.Restart) {
         void this.clientInstance
-          .send(`/gc @Instance restarting...`, event.eventId)
+          .send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (event.type === InstanceSignalType.Shutdown) {
         void this.clientInstance
-          .send(`/gc @Instance shutting down...`, event.eventId)
+          .send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
       }
     }
@@ -130,7 +155,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
     // undefined is strictly checked due to api specification
     if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      await this.clientInstance.send(event.command, event.eventId)
+      await this.clientInstance.send(event.command, MinecraftSendChatPriority.Default, event.eventId)
     }
   }
 
@@ -147,13 +172,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     switch (event.channelType) {
       case ChannelType.Public: {
         void this.clientInstance
-          .send(`/gc ${finalResponse}`, event.eventId)
+          .send(`/gc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling public command response display'))
         break
       }
       case ChannelType.Officer: {
         void this.clientInstance
-          .send(`/oc ${finalResponse}`, event.eventId)
+          .send(`/oc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }
@@ -161,7 +186,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
         void this.clientInstance
-          .send(`/msg ${event.username} ${finalResponse}`, event.eventId)
+          .send(`/msg ${event.username} ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)
           .catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }

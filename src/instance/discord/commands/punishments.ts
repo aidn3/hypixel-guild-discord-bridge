@@ -5,7 +5,7 @@ import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } fr
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent, UserIdentifier } from '../../../common/application-event.js'
-import { Color, InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { Color, InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
@@ -286,10 +286,12 @@ async function handleMuteAddInteraction(
   const result = await checkChatTriggers(application, eventHelper, MuteChat, instances, command, username)
   const formatted = formatChatTriggerResponse(result, `Mute ${escapeMarkdown(username)}`)
 
-  application.clusterHelper.sendCommandToAllMinecraft(
-    eventHelper,
-    `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
-  )
+  application.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
+  })
 
   await interaction.editReply({ embeds: [formatPunishmentAdd(event, noUuidCheck), formatted] })
   if (allowance !== 'allow') await interaction.followUp({ embeds: [allowance] })

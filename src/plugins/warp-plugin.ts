@@ -1,5 +1,5 @@
 import type Application from '../application.js'
-import { InstanceType, type MinecraftRawChatEvent } from '../common/application-event.js'
+import { InstanceType, type MinecraftRawChatEvent, MinecraftSendChatPriority } from '../common/application-event.js'
 import type { ChatCommandContext } from '../common/commands.js'
 import { ChatCommandHandler } from '../common/commands.js'
 import { Status } from '../common/connectable-instance.js'
@@ -43,7 +43,7 @@ export default class WarpPlugin extends PluginInstance {
 
   private async limbo(clientInstance: MinecraftInstance): Promise<void> {
     this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
-    await clientInstance.send('§', undefined)
+    await clientInstance.send('§', MinecraftSendChatPriority.Default, undefined)
   }
 
   async warpPlayer(
@@ -55,38 +55,93 @@ export default class WarpPlugin extends PluginInstance {
     this.disableLimboTrapping = true
 
     // exit limbo and go to main lobby. Can't warp from limbo
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/lobby')
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: '/lobby'
+    })
 
     // Go to Skyblock first before warping.
     // Person can rejoin if warped to the main lobby
     await sleep(2000)
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/skyblock')
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: '/skyblock'
+    })
 
     // ensure the account is in the hub and not on private island
     // to prevent being banned for "profile boosting"
     await sleep(12_000) // need higher cooldown to change between lobbies
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/hub')
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: '/hub'
+    })
 
     await sleep(2000)
 
     const errorMessage = await awaitPartyStatus(app, eventHelper, minecraftInstanceName, username)
     if (errorMessage != undefined) {
       this.disableLimboTrapping = false
-      app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
+      this.application.emit('minecraftSend', {
+        ...this.eventHelper.fillBaseEvent(),
+        targetInstanceName: [minecraftInstanceName],
+        priority: MinecraftSendChatPriority.High,
+        command: '§'
+      })
 
-      app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
-      app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
+      this.application.emit('minecraftSend', {
+        ...this.eventHelper.fillBaseEvent(),
+        targetInstanceName: [minecraftInstanceName],
+        priority: MinecraftSendChatPriority.High,
+        command: '/party disband'
+      })
+      this.application.emit('minecraftSend', {
+        ...this.eventHelper.fillBaseEvent(),
+        targetInstanceName: [minecraftInstanceName],
+        priority: MinecraftSendChatPriority.High,
+        command: '/party leave'
+      })
 
       return errorMessage
     }
 
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party warp')
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/pc Blame the gods on your luck`)
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party disband')
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '/party leave')
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.Instant,
+      command: '/party warp'
+    })
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: `/pc Blame the gods on your luck`
+    })
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: '/party disband'
+    })
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: '/party leave'
+    })
 
     this.disableLimboTrapping = false
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, '§')
+    this.application.emit('minecraftSend', {
+      ...this.eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: '§'
+    })
 
     return 'Player has been warped out!'
   }
@@ -141,9 +196,24 @@ async function awaitPartyStatus(
     }
 
     app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/party invite ${username}`)
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/party disband`)
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, minecraftInstanceName, `/party invite ${username}`)
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.Instant,
+      command: `/party invite ${username}`
+    })
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.Instant,
+      command: `/party disband`
+    })
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: [minecraftInstanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: `/party invite ${username}`
+    })
   })
 }
 

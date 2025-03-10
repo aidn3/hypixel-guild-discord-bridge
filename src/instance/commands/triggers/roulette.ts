@@ -1,4 +1,4 @@
-import { InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
@@ -59,7 +59,12 @@ export default class Roulette extends ChatCommandHandler {
     if (Math.random() < currentChance) {
       this.countSinceLastLose = 0
 
-      context.app.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/g mute ${context.username} 15m`)
+      context.app.emit('minecraftSend', {
+        ...context.eventHelper.fillBaseEvent(),
+        targetInstanceName: context.app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        priority: MinecraftSendChatPriority.High,
+        command: `/g mute ${context.username} 15m`
+      })
       context.app.moderation.punishments.add({
         ...context.eventHelper.fillBaseEvent(),
 

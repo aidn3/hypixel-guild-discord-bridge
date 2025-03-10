@@ -1,4 +1,4 @@
-import { InstanceType, PunishmentType } from '../../../common/application-event.js'
+import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/util.js'
@@ -116,7 +116,12 @@ export default class Vengeance extends ChatCommandHandler {
   }
 
   private mute(context: ChatCommandContext, username: string): void {
-    context.app.clusterHelper.sendCommandToAllMinecraft(context.eventHelper, `/g mute ${username} 15m`)
+    context.app.emit('minecraftSend', {
+      ...context.eventHelper.fillBaseEvent(),
+      targetInstanceName: context.app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+      priority: MinecraftSendChatPriority.High,
+      command: `/g mute ${username} 15m`
+    })
 
     context.app.moderation.punishments.add({
       ...context.eventHelper.fillBaseEvent(),

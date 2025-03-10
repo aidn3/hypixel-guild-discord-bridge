@@ -1,4 +1,4 @@
-import { InstanceType } from '../common/application-event.js'
+import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
 import { Status } from '../common/connectable-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
@@ -31,6 +31,6 @@ export default class LimboPlugin extends PluginInstance {
 
   private async limbo(clientInstance: MinecraftInstance): Promise<void> {
     this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
-    await clientInstance.send('§', undefined)
+    await clientInstance.send('§', MinecraftSendChatPriority.Default, undefined)
   }
 }

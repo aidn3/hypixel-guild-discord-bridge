@@ -1,4 +1,4 @@
-import { InstanceType } from '../../../common/application-event.js'
+import { InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler, Permission } from '../../../common/commands.js'
 
@@ -26,7 +26,13 @@ export default class Override extends ChatCommandHandler {
       return this.getExample(context.commandPrefix)
     }
 
-    context.app.clusterHelper.sendCommandToMinecraft(context.eventHelper, context.instanceName, context.args.join(' '))
+    context.app.emit('minecraftSend', {
+      ...context.eventHelper.fillBaseEvent(),
+      targetInstanceName: [context.instanceName],
+      priority: MinecraftSendChatPriority.High,
+      command: context.args.join(' ')
+    })
+
     return `Override command executed.`
   }
 }

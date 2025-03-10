@@ -607,8 +607,36 @@ export interface MinecraftSendChat extends SignalEvent {
    * The command to send
    */
   readonly command: string
+  /**
+   * When to handle the command.
+   *
+   * Warning: spamming multiple commands using <code>instant</code>
+   * can result in the client being throttled, which can not be properly detected
+   * due to the nature of <code>instant</code> not leaving room to such detections.
+   *
+   * Warning: Any priority other than <code>default</code> can lead to inaccurate detections,
+   * be it regarding {@link InformEvent#eventId} or whether the command even succeed in execution.
+   */
+  readonly priority: MinecraftSendChatPriority
 }
 
+export enum MinecraftSendChatPriority {
+  /**
+   * let the instance decide when to handle the command.
+   */
+  Default = 'default',
+  /**
+   * Only use <code>high</code> for responsive interactions,
+   * since it will put the command at the top of the queue
+   * and disregard any high cooldown to send the command as soon as possible.
+   */
+  High = 'high',
+  /**
+   * Only use <code>instant</code> for critical actions,
+   * since it will completely disregard any queue and cooldown instantly sending it.
+   */
+  Instant = 'instant'
+}
 /**
  * Signal event used to control the application and instances
  */

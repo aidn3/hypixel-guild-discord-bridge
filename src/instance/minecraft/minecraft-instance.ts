@@ -2,6 +2,7 @@ import { createClient, states } from 'minecraft-protocol'
 
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
+import type { MinecraftSendChatPriority } from '../../common/application-event.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
@@ -104,11 +105,13 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   /**
    * Send a message/command via minecraft client.
-   * The command will be queued to be sent in the future
+   * The command will be queued to be sent in the future.
+   *
    * @param message the message/command to send
+   * @param priority when to handle the command
    * @param originEventId {@link BaseEvent#eventId} that resulted in this send. <code>undefined</code> if none.
    */
-  async send(message: string, originEventId: string | undefined): Promise<void> {
+  async send(message: string, priority: MinecraftSendChatPriority, originEventId: string | undefined): Promise<void> {
     message = message
       .split('\n')
       .map((chunk) => chunk.trim())
@@ -120,7 +123,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     }
 
     this.logger.debug(`Queuing message to send: ${message}`)
-    await this.sendQueue.queue(message, originEventId)
+    await this.sendQueue.queue(message, priority, originEventId)
   }
 
   private sendNow(message: string) {

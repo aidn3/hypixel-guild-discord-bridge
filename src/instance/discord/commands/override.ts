@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 
@@ -20,7 +21,12 @@ export default {
     const command: string = context.interaction.options.getString('command', true)
     const instance: string = context.interaction.options.getString('instance', true)
 
-    context.application.clusterHelper.sendCommandToMinecraft(context.eventHelper, instance, command)
+    context.application.emit('minecraftSend', {
+      ...context.eventHelper.fillBaseEvent(),
+      targetInstanceName: [instance],
+      priority: MinecraftSendChatPriority.High,
+      command: command
+    })
     await context.interaction.editReply(`Command executed: ${command}`)
   }
 } satisfies DiscordCommandHandler

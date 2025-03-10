@@ -1,8 +1,15 @@
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { GuildPlayerEvent, InstanceType } from '../../../common/application-event.js'
-import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
+import type { GuildPlayerEvent } from '../../../common/application-event.js'
+import {
+  ChannelType,
+  Color,
+  GuildPlayerEventType,
+  InstanceType,
+  MinecraftSendChatPriority,
+  PunishmentType
+} from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
@@ -48,10 +55,12 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
     const mutedTill = this.clientInstance.punishments.punishedTill(identifiers, PunishmentType.Mute)
 
     if (mutedTill) {
-      this.application.clusterHelper.sendCommandToAllMinecraft(
-        this.eventHelper,
-        `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
-      )
+      this.application.emit('minecraftSend', {
+        ...this.eventHelper.fillBaseEvent(),
+        targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        priority: MinecraftSendChatPriority.High,
+        command: `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
+      })
     }
   }
 

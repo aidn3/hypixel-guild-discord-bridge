@@ -3,7 +3,7 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color, InstanceType } from '../../../common/application-event.js'
+import { Color, InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
@@ -92,11 +92,32 @@ async function checkConnectivity(
 
   app.on('minecraftChat', chatListener)
 
-  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, `/ac ${queryWords[0]}`)
-  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, `/gc ${queryWords[1]}`)
-  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, `/oc ${queryWords[2]}`)
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/ac ${queryWords[0]}`
+  })
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/gc ${queryWords[1]}`
+  })
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/oc ${queryWords[2]}`
+  })
+
   for (const bot of app.clusterHelper.getMinecraftBots()) {
-    app.clusterHelper.sendCommandToMinecraft(eventHelper, bot.instanceName, `/msg ${bot.username} ${queryWords[3]}`)
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+      priority: MinecraftSendChatPriority.High,
+      command: `/msg ${bot.username} ${queryWords[3]}`
+    })
   }
 
   await new Promise((resolve) => setTimeout(resolve, 5000))

@@ -6,7 +6,7 @@ import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color, InstanceType } from '../../../common/application-event.js'
+import { Color, InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
@@ -185,7 +185,12 @@ async function getOnlineMembers(
   }
 
   app.on('minecraftChat', chatListener)
-  app.clusterHelper.sendCommandToAllMinecraft(eventHelper, '/guild online')
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: '/guild online'
+  })
   await new Promise((resolve) => setTimeout(resolve, 3000))
   app.removeListener('minecraftChat', chatListener)
 
