@@ -65,6 +65,14 @@ export interface ApplicationEvents {
    * Broadcast instance to inform other bridges in the cluster about its existence
    */
   selfBroadcast: (event: Readonly<InstanceSelfBroadcast>) => void
+  /**
+   * Signal used to shut down/restart an instance.
+   *
+   * Signaling to shut down the application is possible.
+   * It will take some time for the application to shut down.
+   * Application will auto restart if a process monitor is used.
+   */
+  instanceSignal: (event: Readonly<InstanceSignal>) => void
 
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
@@ -78,18 +86,6 @@ export interface ApplicationEvents {
    *  @internal
    */
   punishmentForgive: (event: Readonly<PunishmentForgiveEvent>) => void
-
-  /**
-   * Command used to restart an instance.
-   * Note: This is currently only registered in Minecraft instances
-   */
-  reconnectSignal: (event: Readonly<ReconnectSignal>) => void
-  /**
-   * Command used to shut down the bridge.
-   * It will take some time for the bridge to shut down.
-   * Bridge will auto restart if a process monitor is used.
-   */
-  shutdownSignal: (event: Readonly<ShutdownSignal>) => void
 
   /**
    * Used to broadcast which in-game username/uuid belongs to which bot.
@@ -220,7 +216,7 @@ export interface SignalEvent extends BaseEvent {
    * The instance name to send the signal to.
    * Use `undefined` to send to all instances.
    */
-  readonly targetInstanceName: string | undefined
+  readonly targetInstanceName: string[]
 }
 
 /**
@@ -616,16 +612,16 @@ export interface MinecraftSendChat extends SignalEvent {
 }
 
 /**
- * Signal event used to command an instance to reconnect
+ * Signal event used to control the application and instances
  */
-export type ReconnectSignal = SignalEvent
-
-/**
- * Signal event used to shut down the application
- */
-export interface ShutdownSignal extends SignalEvent {
+export interface InstanceSignal extends SignalEvent {
   /**
-   * A flag whether to restart after or not
+   * A flag indicating the signal
    */
-  readonly restart: boolean
+  readonly type: InstanceSignalType
+}
+
+export enum InstanceSignalType {
+  Shutdown = 'shutdown',
+  Restart = 'restart'
 }

@@ -1,5 +1,6 @@
 import type Application from './application.js'
-import type { InstanceType, MinecraftSelfBroadcast } from './common/application-event.js'
+import type { MinecraftSelfBroadcast } from './common/application-event.js'
+import { InstanceType } from './common/application-event.js'
 import type EventHelper from './common/event-helper.js'
 
 export default class ClusterHelper {
@@ -22,7 +23,7 @@ export default class ClusterHelper {
   public sendCommandToMinecraft(eventHelper: EventHelper<InstanceType>, instanceName: string, command: string): void {
     this.app.emit('minecraftSend', {
       ...eventHelper.fillBaseEvent(),
-      targetInstanceName: instanceName,
+      targetInstanceName: [instanceName],
       command
     })
   }
@@ -30,7 +31,7 @@ export default class ClusterHelper {
   public sendCommandToAllMinecraft(eventHelper: EventHelper<InstanceType>, command: string): void {
     this.app.emit('minecraftSend', {
       ...eventHelper.fillBaseEvent(),
-      targetInstanceName: undefined,
+      targetInstanceName: this.getInstancesNames(InstanceType.Minecraft),
       command
     })
   }

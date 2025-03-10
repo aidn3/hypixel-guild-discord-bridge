@@ -110,7 +110,7 @@ export async function checkChatTriggers(
   app: Application,
   eventHelper: EventHelper<InstanceType.Discord>,
   regexList: RegexChat,
-  targetInstance: string | undefined,
+  targetInstance: string[],
   command: string,
   username: string
 ): Promise<ChatTriggerResult> {

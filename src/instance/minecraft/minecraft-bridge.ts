@@ -9,14 +9,15 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
+  InstanceSignal,
   InstanceStatusEvent,
   MinecraftChatEvent,
-  MinecraftSendChat,
-  ReconnectSignal
+  MinecraftSendChat
 } from '../../common/application-event.js'
 import {
   ChannelType,
   GuildPlayerEventType,
+  InstanceSignalType,
   InstanceType,
   MinecraftChatEventType
 } from '../../common/application-event.js'
@@ -35,8 +36,8 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   ) {
     super(application, clientInstance, logger, errorHandler)
 
-    this.application.on('reconnectSignal', (event) => {
-      this.onReconnectSignal(event)
+    this.application.on('instanceSignal', (event) => {
+      this.onInstanceSignal(event)
     })
 
     this.application.on('minecraftSend', (event) => {
@@ -109,22 +110,26 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.handleCommand(event, true)
   }
 
-  private onReconnectSignal(event: ReconnectSignal) {
-    // undefined is strictly checked due to api specification
-    if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
-      this.logger.log('instance has received restart signal')
-      void this.clientInstance
-        .send(`/gc @Instance restarting...`, event.eventId)
-        .then(() => {
-          this.clientInstance.connect()
-        })
-        .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
+  private onInstanceSignal(event: InstanceSignal) {
+    if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
+      this.logger.log(`instance has received signal type ${event.type}`)
+
+      if (event.type === InstanceSignalType.Restart) {
+        void this.clientInstance
+          .send(`/gc @Instance restarting...`, event.eventId)
+          .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      } else if (event.type === InstanceSignalType.Shutdown) {
+        void this.clientInstance
+          .send(`/gc @Instance shutting down...`, event.eventId)
+          .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
+      }
     }
   }
 
   private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
     // undefined is strictly checked due to api specification
-    if (event.targetInstanceName === undefined || event.targetInstanceName === this.clientInstance.instanceName) {
+    if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
       await this.clientInstance.send(event.command, event.eventId)
     }
   }

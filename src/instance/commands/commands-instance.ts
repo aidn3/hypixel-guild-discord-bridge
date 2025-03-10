@@ -106,8 +106,12 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     this.checkCommandsIntegrity()
     this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
   }
+  disconnect(): Promise<void> | void {
+    this.setAndBroadcastNewStatus(Status.Ended, 'chat commands have been disabled')
+  }
 
   async handle(event: ChatEvent): Promise<void> {
+    if (this.currentStatus() !== Status.Connected) return
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
     const permission = this.resolvePermission(event)

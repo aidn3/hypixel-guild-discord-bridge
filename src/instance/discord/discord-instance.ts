@@ -103,4 +103,9 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
     await this.client.login(this.config.key)
   }
+
+  async disconnect(): Promise<void> {
+    await this.client.destroy()
+    this.setAndBroadcastNewStatus(Status.Ended, 'discord instance has disconnected')
+  }
 }

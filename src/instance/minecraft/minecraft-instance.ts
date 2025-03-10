@@ -71,6 +71,11 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
 
+  disconnect(): Promise<void> | void {
+    this.clientSession?.client.end(QuitOwnVolition)
+    this.setAndBroadcastNewStatus(Status.Ended, 'Minecraft instance has been disconnected')
+  }
+
   username(): string | undefined {
     return this.clientSession?.client.username
   }

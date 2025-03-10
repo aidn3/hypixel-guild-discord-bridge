@@ -30,7 +30,7 @@ export default {
       context.application,
       context.eventHelper,
       InviteAcceptChat,
-      instance,
+      [instance],
       command,
       name
     )

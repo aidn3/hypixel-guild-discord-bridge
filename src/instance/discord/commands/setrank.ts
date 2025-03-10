@@ -1,5 +1,6 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
+import { InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
@@ -22,6 +23,7 @@ export default {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
+    const instances = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const rank: string = context.interaction.options.getString('rank', true)
 
     const command = `/g setrank ${username} ${rank}`
@@ -29,7 +31,7 @@ export default {
       context.application,
       context.eventHelper,
       RankChat,
-      undefined,
+      instances,
       command,
       username
     )

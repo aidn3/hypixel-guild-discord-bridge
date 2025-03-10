@@ -13,7 +13,7 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import type { ApplicationConfig } from './application-config.js'
 import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
-import { InstanceType } from './common/application-event.js'
+import { InstanceSignalType, InstanceType } from './common/application-event.js'
 import { ConnectableInstance } from './common/connectable-instance.js'
 import type { Instance } from './common/instance.js'
 import { InternalInstancePrefix } from './common/instance.js'
@@ -113,10 +113,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.socketInstance = this.config.socket.enabled ? new SocketInstance(this, this.config.socket) : undefined
     this.commandsInstance = this.config.commands.enabled ? new CommandsInstance(this, this.config.commands) : undefined
 
-    this.on('shutdownSignal', (event) => {
-      if (event.targetInstanceName === undefined) {
+    this.on('instanceSignal', (event) => {
+      if (event.targetInstanceName.includes(this.instanceName)) {
         this.logger.info('Shutdown signal has been received. Shutting down this node.')
-        if (event.restart) {
+        if (event.type === InstanceSignalType.Restart) {
           this.logger.info('Node should auto restart if a process monitor service is used.')
         }
 
@@ -125,7 +125,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
           .then(async () => {
             await gracefullyExitProcess(2)
           })
-          .catch(this.errorHandler.promiseCatch('shutting down application with shutdownSignal'))
+          .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
       }
     })
   }

@@ -1,6 +1,6 @@
 import { uptime } from 'node:process'
 
-import { ChannelType, Color } from '../common/application-event.js'
+import { ChannelType, Color, InstanceSignalType } from '../common/application-event.js'
 import PluginInstance from '../common/plugin-instance.js'
 
 /* WARNING
@@ -30,11 +30,11 @@ export default class AutoRestartPlugin extends PluginInstance {
           message: 'Application Restarting: Scheduled restart'
         })
 
-        this.application.emit('shutdownSignal', {
+        this.application.emit('instanceSignal', {
           ...this.eventHelper.fillBaseEvent(),
 
-          restart: true,
-          targetInstanceName: undefined
+          type: InstanceSignalType.Restart,
+          targetInstanceName: [this.application.instanceName]
         })
       }
     }, AutoRestartPlugin.CheckEvery)

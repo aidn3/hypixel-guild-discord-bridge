@@ -74,15 +74,10 @@ export default class LoggerInstance extends Instance<void, InstanceType.Logger> 
       )
     })
 
-    this.application.on('reconnectSignal', (event) => {
-      void this.send(`[reconnectSignal][target=${event.targetInstanceName}] Reconnect signal has been sent.`).catch(
-        this.errorHandler.promiseCatch('handling reconnectSignal event')
-      )
-    })
-    this.application.on('shutdownSignal', (event) => {
+    this.application.on('instanceSignal', (event) => {
       void this.send(
-        `[shutdownSignal][target=${event.targetInstanceName}, restart=${event.restart}] Restart signal has been sent.`
-      ).catch(this.errorHandler.promiseCatch('handling shutdownSignal event'))
+        `[instanceSignal][target=${event.targetInstanceName.join(', ')}] instance signal has been sent with flag=${event.type}.`
+      ).catch(this.errorHandler.promiseCatch('handling instanceSignal event'))
     })
 
     this.application.on('minecraftSelfBroadcast', (event) => {
@@ -94,7 +89,7 @@ export default class LoggerInstance extends Instance<void, InstanceType.Logger> 
       // Too spammy events that are automatically sent every half a minute
       if (event.command === '/guild list' || event.command === '/guild online') return
 
-      void this.send(`[minecraftSend][target=${event.targetInstanceName}] ${event.command}`).catch(
+      void this.send(`[minecraftSend][target=${event.targetInstanceName.join(', ')}] ${event.command}`).catch(
         this.errorHandler.promiseCatch('handling minecraftSend event')
       )
     })

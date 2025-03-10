@@ -1,5 +1,6 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
+import { InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
@@ -19,13 +20,14 @@ export default {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
+    const instances = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const command = `/g demote ${username}`
 
     const result = await checkChatTriggers(
       context.application,
       context.eventHelper,
       RankChat,
-      undefined,
+      instances,
       command,
       username
     )
