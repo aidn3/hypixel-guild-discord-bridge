@@ -47,7 +47,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
       auth: 'microsoft',
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
-        this.application.emit('statusMessage', {
+        this.application.emit('instanceMessage', {
           ...this.eventHelper.fillBaseEvent(),
 
           message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`

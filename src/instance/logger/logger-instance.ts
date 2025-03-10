@@ -68,9 +68,9 @@ export default class LoggerInstance extends Instance<void, InstanceType.Logger> 
         this.errorHandler.promiseCatch('handling instanceAnnouncement event')
       )
     })
-    this.application.on('statusMessage', (event) => {
-      void this.send(`[statusMessage][${event.instanceName}] ${event.message}`).catch(
-        this.errorHandler.promiseCatch('handling statusMessage event')
+    this.application.on('instanceMessage', (event) => {
+      void this.send(`[instanceMessage][${event.instanceName}] ${event.message}`).catch(
+        this.errorHandler.promiseCatch('handling instanceMessage event')
       )
     })
 

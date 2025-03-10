@@ -67,7 +67,7 @@ export interface ApplicationEvents {
   /**
    * Display a useful message coming from the internal components
    */
-  statusMessage: (event: Readonly<StatusMessageEvent>) => void
+  instanceMessage: (event: Readonly<InstanceMessage>) => void
   /**
    * Signal used to shut down/restart an instance.
    *
@@ -592,7 +592,7 @@ export enum PunishmentType {
  * Event that contains information that might prove useful.
  * Used to display internal status of the application internal components to the user outside the console.
  */
-export interface StatusMessageEvent extends InformEvent {
+export interface InstanceMessage extends InformEvent {
   /**
    * The message content that explains the status
    */
