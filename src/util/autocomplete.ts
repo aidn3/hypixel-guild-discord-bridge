@@ -48,7 +48,7 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
     application.on('minecraftSelfBroadcast', (): void => {
       ranksResolver.refresh()
     })
-    application.on('selfBroadcast', (event): void => {
+    application.on('instanceAnnouncement', (event): void => {
       if (event.instanceType === InstanceType.Minecraft) {
         ranksResolver.refresh()
       }

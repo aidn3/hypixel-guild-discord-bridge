@@ -156,7 +156,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public syncBroadcast(): void {
     this.logger.debug('Informing instances of each other')
     for (const instance of this.getAllInstances()) {
-      instance.selfBroadcast()
+      instance.announceExistence()
     }
 
     this.logger.debug('Broadcasting all Minecraft bots')

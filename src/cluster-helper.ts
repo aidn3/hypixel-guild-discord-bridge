@@ -15,7 +15,7 @@ export default class ClusterHelper {
     this.app.on('instanceStatus', (event) => {
       this.instanceBroadcast(event.instanceName, event.instanceType)
     })
-    this.app.on('selfBroadcast', (event) => {
+    this.app.on('instanceAnnouncement', (event) => {
       this.instanceBroadcast(event.instanceName, event.instanceType)
     })
   }

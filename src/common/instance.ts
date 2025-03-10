@@ -37,8 +37,8 @@ export abstract class Instance<K, T extends InstanceType> implements InstanceIde
     this.eventHelper = new EventHelper<T>(this.instanceName, this.instanceType)
   }
 
-  public selfBroadcast(): void {
-    this.application.emit('selfBroadcast', {
+  public announceExistence(): void {
+    this.application.emit('instanceAnnouncement', {
       ...this.eventHelper.fillBaseEvent()
     })
   }

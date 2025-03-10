@@ -85,7 +85,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     this.application.on('minecraftSelfBroadcast', (): void => {
       timeoutId.refresh()
     })
-    this.application.on('selfBroadcast', (event): void => {
+    this.application.on('instanceAnnouncement', (event): void => {
       if (event.instanceType === InstanceType.Minecraft) {
         timeoutId.refresh()
       }

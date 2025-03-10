@@ -61,9 +61,9 @@ export interface ApplicationEvents {
    */
   instanceStatus: (event: Readonly<InstanceStatusEvent>) => void
   /**
-   * Broadcast instance to inform other bridges in the cluster about its existence
+   * Announce instance existence to other instances
    */
-  selfBroadcast: (event: Readonly<InstanceSelfBroadcast>) => void
+  instanceAnnouncement: (event: Readonly<InstanceAnnouncement>) => void
   /**
    * Display a useful message coming from the internal components
    */
@@ -535,7 +535,7 @@ export interface MinecraftSelfBroadcast extends InformEvent {
  * Event sent every time synchronization is required.
  * The event is used to informs other application clients about any existing instance.
  */
-export type InstanceSelfBroadcast = InformEvent
+export type InstanceAnnouncement = InformEvent
 
 export interface UserIdentifier {
   /**
