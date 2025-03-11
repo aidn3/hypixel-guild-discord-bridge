@@ -141,11 +141,7 @@ export class SendQueue {
       types.push(CommandType.GuildCommand)
       priority = 5
     }
-    if (
-      chatPrefix.some((prefix) => loweredCaseCommand.startsWith(prefix)) ||
-      // normal chat on default channel and not a command
-      (!loweredCaseCommand.startsWith('/') && !loweredCaseCommand.startsWith('§'))
-    ) {
+    if (chatPrefix.some((prefix) => loweredCaseCommand.startsWith(prefix)) || !loweredCaseCommand.startsWith('/')) {
       types.push(CommandType.ChatMessage)
       priority = 10
     }

@@ -27,14 +27,18 @@ export default class WarpPlugin extends PluginInstance {
         const localInstance = this.application.minecraftInstances.find(
           (instance) => instance.instanceName === event.instanceName
         )
+
         if (localInstance != undefined) {
-          const clientInstance = localInstance
+          if (!this.disableLimboTrapping) {
+            void this.limbo(localInstance).catch(this.errorHandler.promiseCatch('handling /limbo command'))
+          }
+
           // "login" packet is also first spawn packet containing world metadata
-          clientInstance.clientSession?.client.on('login', async () => {
-            if (!this.disableLimboTrapping) await this.limbo(clientInstance)
+          localInstance.clientSession?.client.on('login', async () => {
+            if (!this.disableLimboTrapping) await this.limbo(localInstance)
           })
-          clientInstance.clientSession?.client.on('respawn', async () => {
-            if (!this.disableLimboTrapping) await this.limbo(clientInstance)
+          localInstance.clientSession?.client.on('respawn', async () => {
+            if (!this.disableLimboTrapping) await this.limbo(localInstance)
           })
         }
       }
@@ -43,7 +47,7 @@ export default class WarpPlugin extends PluginInstance {
 
   private async limbo(clientInstance: MinecraftInstance): Promise<void> {
     this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
-    await clientInstance.send('§', MinecraftSendChatPriority.Default, undefined)
+    await clientInstance.send('/limbo', MinecraftSendChatPriority.Default, undefined)
   }
 
   async warpPlayer(
@@ -91,7 +95,7 @@ export default class WarpPlugin extends PluginInstance {
         ...this.eventHelper.fillBaseEvent(),
         targetInstanceName: [minecraftInstanceName],
         priority: MinecraftSendChatPriority.High,
-        command: '§'
+        command: '/limbo'
       })
 
       this.application.emit('minecraftSend', {
@@ -140,7 +144,7 @@ export default class WarpPlugin extends PluginInstance {
       ...this.eventHelper.fillBaseEvent(),
       targetInstanceName: [minecraftInstanceName],
       priority: MinecraftSendChatPriority.High,
-      command: '§'
+      command: '/limbo'
     })
 
     return 'Player has been warped out!'

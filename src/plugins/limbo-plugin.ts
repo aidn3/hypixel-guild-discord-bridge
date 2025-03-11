@@ -16,13 +16,13 @@ export default class LimboPlugin extends PluginInstance {
           (instance) => instance.instanceName === event.instanceName
         )
         if (localInstance != undefined) {
-          const clientInstance = localInstance
+          void this.limbo(localInstance).catch(this.errorHandler.promiseCatch('handling /limbo command'))
           // "login" packet is also first spawn packet containing world metadata
-          clientInstance.clientSession?.client.on('login', async () => {
-            await this.limbo(clientInstance)
+          localInstance.clientSession?.client.on('login', async () => {
+            await this.limbo(localInstance)
           })
-          clientInstance.clientSession?.client.on('respawn', async () => {
-            await this.limbo(clientInstance)
+          localInstance.clientSession?.client.on('respawn', async () => {
+            await this.limbo(localInstance)
           })
         }
       }
@@ -31,6 +31,6 @@ export default class LimboPlugin extends PluginInstance {
 
   private async limbo(clientInstance: MinecraftInstance): Promise<void> {
     this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
-    await clientInstance.send('§', MinecraftSendChatPriority.Default, undefined)
+    await clientInstance.send('/limbo', MinecraftSendChatPriority.Default, undefined)
   }
 }
