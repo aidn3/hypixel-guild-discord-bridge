@@ -1,4 +1,3 @@
-import Axios, { type AxiosResponse } from 'axios'
 import type { Message, TextChannel } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import EmojisMap from 'emoji-name-map'
@@ -66,7 +65,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     const readableReplyUsername =
       replyUsername == undefined ? undefined : this.getReadableName(replyUsername, replyUsername)
 
-    const content = await this.cleanMessage(event)
+    const content = this.cleanMessage(event)
     if (content.length === 0) return
     const truncatedContent = await this.truncateText(event, content)
 
@@ -195,7 +194,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     return message
   }
 
-  private async cleanMessage(messageEvent: Message): Promise<string> {
+  private cleanMessage(messageEvent: Message): string {
     let content = messageEvent.cleanContent
 
     content = this.cleanGuildEmoji(content)
@@ -205,8 +204,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       for (const [, attachment] of messageEvent.attachments) {
         if (attachment.contentType?.includes('image') === true) {
           const link = attachment.url
-          const linkWithoutTracking = await this.uploadToImgur(link)
-          content += ` ${linkWithoutTracking ?? link}`
+          content += ` ${link}`
         } else {
           content += ' (ATTACHMENT)'
         }
@@ -215,33 +213,4 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
     return content
   }
-
-  private async uploadToImgur(link: string): Promise<string | undefined> {
-    // This is encoded just to prevent automated tools from extracting it.
-    // It is NOT a secret key
-    const encoded = 'Q-2-x-p-Z-W-5-0-L-U-l-E-I-D-Y-0-O-W-Y-y-Z-m-I-0-O-G-U-1-O-T-c-2-N-w-=-='
-    const decoded = Buffer.from(encoded.replaceAll('-', ''), 'base64').toString('utf8')
-
-    const result = await Axios.post(
-      'https://api.imgur.com/3/image',
-      {
-        image: link,
-        type: 'url'
-      },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      { headers: { Authorization: decoded } }
-    )
-      .then((response: AxiosResponse<ImgurResponse, unknown>) => {
-        return response.data.data.link
-      })
-      .catch((error: unknown) => {
-        this.logger.error(error)
-      })
-
-    return result || undefined
-  }
-}
-
-interface ImgurResponse {
-  data: { link: string }
 }
