@@ -12,7 +12,7 @@ export default class Toggle extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.permission !== Permission.Officer && context.permission !== Permission.Admin) {
+    if (context.permission < Permission.Helper) {
       return `${context.username}, Command can only be executed in officer chat or by the bridge admin`
     }
 
