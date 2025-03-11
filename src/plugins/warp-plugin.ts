@@ -126,6 +126,8 @@ export default class WarpPlugin extends PluginInstance {
       priority: MinecraftSendChatPriority.High,
       command: `/pc Blame the gods on your luck`
     })
+
+    await sleep(2000)
     this.application.emit('minecraftSend', {
       ...this.eventHelper.fillBaseEvent(),
       targetInstanceName: [minecraftInstanceName],
