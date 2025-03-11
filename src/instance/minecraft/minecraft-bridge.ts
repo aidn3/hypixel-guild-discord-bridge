@@ -155,7 +155,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
     // undefined is strictly checked due to api specification
     if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      await this.clientInstance.send(event.command, MinecraftSendChatPriority.Default, event.eventId)
+      await this.clientInstance.send(event.command, event.priority, event.eventId)
     }
   }
 
