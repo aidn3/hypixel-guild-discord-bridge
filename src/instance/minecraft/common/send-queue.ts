@@ -88,7 +88,7 @@ export class SendQueue {
     let sleptSoFar = 0
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
     while (true) {
-      let maxSleep
+      let maxSleep: number
       if (this.queuedEntries.length === 0) {
         maxSleep = Math.max(...allTimes)
       } else {
