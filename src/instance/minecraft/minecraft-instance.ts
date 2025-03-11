@@ -128,7 +128,10 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   private sendNow(message: string) {
     if (this.clientSession?.client.state === states.PLAY) {
+      this.logger.debug(`Sending message now: ${message}`)
       this.clientSession.client.chat(message)
+    } else {
+      this.logger.warn(`Dropping message due to client not being connected and ready: ${message}`)
     }
   }
 }
