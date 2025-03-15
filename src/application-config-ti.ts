@@ -19,7 +19,7 @@ export const DiscordConfig = t.iface([], {
 });
 
 export const MinecraftConfig = t.iface([], {
-  "bridgePrefix": "string",
+  "adminUsername": "string",
   "instances": t.array("MinecraftInstanceConfig"),
 });
 
@@ -31,7 +31,6 @@ export const MinecraftInstanceConfig = t.iface([], {
 
 export const CommandsConfig = t.iface([], {
   "enabled": "boolean",
-  "adminUsername": "string",
   "commandPrefix": "string",
   "disabledCommand": t.array("string"),
 });
