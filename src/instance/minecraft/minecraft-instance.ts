@@ -23,23 +23,14 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   clientSession: ClientSession | undefined
 
-  readonly bridgePrefix: string
-
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
   private readonly adminUsername: string
 
-  constructor(
-    app: Application,
-    instanceName: string,
-    config: MinecraftInstanceConfig,
-    bridgePrefix: string,
-    adminUsername: string
-  ) {
+  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, adminUsername: string) {
     super(app, instanceName, InstanceType.Minecraft, true, config)
 
     this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
-    this.bridgePrefix = bridgePrefix
     this.adminUsername = adminUsername
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
       this.sendNow(command)

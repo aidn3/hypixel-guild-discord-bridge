@@ -15,7 +15,6 @@ export interface DiscordConfig {
 
 export interface MinecraftConfig {
   adminUsername: string
-  bridgePrefix: string
   instances: MinecraftInstanceConfig[]
 }
 

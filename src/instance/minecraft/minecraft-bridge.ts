@@ -202,7 +202,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     replyUsername: string | undefined,
     message: string
   ): string {
-    let full = `/${prefix} ${this.clientInstance.bridgePrefix}`
+    let full = `/${prefix} `
 
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`

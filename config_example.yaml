@@ -20,10 +20,6 @@ discord:
 minecraft:
   # In-game USERNAME of the user who will have ADMIN permission
   adminUsername: 'Steve'
-  # Put in front of every message.
-  # Helpful if more than one bridge exists in same guild
-  # So they ignore each other messages
-  bridgePrefix: '.'
   # Minecraft account details
   instances:
     # instanceName displayed on discord side

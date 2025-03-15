@@ -20,13 +20,6 @@ export default {
       const guildRank = match[3]
       const playerMessage = match[4].trim()
 
-      if (
-        context.clientInstance.bridgePrefix.length > 0 &&
-        playerMessage.startsWith(context.clientInstance.bridgePrefix)
-      ) {
-        return
-      }
-
       const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
       const identifiers = [username]
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)

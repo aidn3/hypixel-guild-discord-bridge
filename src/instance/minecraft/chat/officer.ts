@@ -13,11 +13,6 @@ export default {
       const guildRank = match[3]
       const playerMessage = match[4].trim()
 
-      if (
-        context.clientInstance.bridgePrefix.length > 0 &&
-        playerMessage.startsWith(context.clientInstance.bridgePrefix)
-      )
-        return
       if (context.application.clusterHelper.isMinecraftBot(username)) return
 
       const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
