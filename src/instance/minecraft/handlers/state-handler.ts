@@ -12,6 +12,7 @@ import type MinecraftInstance from '../minecraft-instance.js'
 
 export const QuitOwnVolition = 'disconnect.quitting'
 
+export const QuitProxyError = 'Proxy encountered a problem while connecting'
 export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
   private static readonly MaxLoginAttempts = 5
   private loginAttempts
@@ -59,6 +60,10 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
       this.onKicked(formattedReason.toString())
       this.loggedIn = false
     })
+
+    clientSession.client.on('error', (error: Error) => {
+      this.onError(error)
+    })
   }
 
   private onLogin(): void {
@@ -84,30 +89,9 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
       this.logger.debug(reason)
       this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
       return
-    } else if (this.loginAttempts > StateHandler.MaxLoginAttempts) {
-      const reason = `Client failed to connect too many times. No further trying to reconnect.`
-
-      this.logger.error(reason)
-      this.clientInstance.setAndBroadcastNewStatus(Status.Failed, reason)
     }
 
-    let loginDelay = this.exactDelay
-    if (loginDelay === 0) {
-      loginDelay = (this.loginAttempts + 1) * 5000
-
-      if (loginDelay > 60_000) {
-        loginDelay = 60_000
-      }
-    }
-
-    this.clientInstance.setAndBroadcastNewStatus(
-      Status.Disconnected,
-      `Minecraft bot disconnected from server, attempting reconnect in ${loginDelay / 1000} seconds`
-    )
-
-    setTimeout(() => {
-      this.clientInstance.connect()
-    }, loginDelay)
+    this.tryRestarting()
   }
 
   private onKicked(reason: string): void {
@@ -138,5 +122,72 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
           reason.toString()
       )
     }
+  }
+
+  private onError(error: Error & { code?: string }): void {
+    this.logger.error('Minecraft Bot Error: ', error)
+    this.loginAttempts++
+
+    if (error.code === 'EAI_AGAIN') {
+      this.logger.error('Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...')
+      this.tryRestarting()
+    } else if (error.message.includes('socket disconnected before secure TLS connection')) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Failed to establish secure connection. Trying again in 30 seconds...'
+      )
+      this.tryRestarting()
+    } else if (error.message.includes('Too Many Requests')) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Microsoft XBOX service throttled due to too many requests. Trying again in 30 seconds...'
+      )
+      this.tryRestarting()
+    } else if (error.message.includes('does the account own minecraft')) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Error: does the account own minecraft? changing skin (and deleting cache) and reconnecting might help fix the problem.'
+      )
+      this.tryRestarting()
+    } else if (error.message.includes('Profile not found')) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Error: Minecraft Profile not found. Deleting cache and reconnecting might help fix the problem.'
+      )
+      this.tryRestarting()
+    } else if (error.message.includes(QuitProxyError)) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Error: Encountered problem while working with proxy.'
+      )
+      this.tryRestarting()
+    }
+  }
+
+  private tryRestarting(): void {
+    if (this.loginAttempts > StateHandler.MaxLoginAttempts) {
+      const reason = `Client failed to connect too many times. No further trying to reconnect.`
+
+      this.logger.error(reason)
+      this.clientInstance.setAndBroadcastNewStatus(Status.Failed, reason)
+    }
+
+    let loginDelay = this.exactDelay
+    if (loginDelay === 0) {
+      loginDelay = (this.loginAttempts + 1) * 5000
+
+      if (loginDelay > 60_000) {
+        loginDelay = 60_000
+      }
+    }
+
+    this.clientInstance.setAndBroadcastNewStatus(
+      Status.Disconnected,
+      `Minecraft bot disconnected from server, attempting reconnect in ${loginDelay / 1000} seconds`
+    )
+
+    setTimeout(() => {
+      this.clientInstance.connect()
+    }, loginDelay)
   }
 }

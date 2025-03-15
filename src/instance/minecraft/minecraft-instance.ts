@@ -10,7 +10,6 @@ import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
-import ErrorHandler from './handlers/error-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
@@ -59,7 +58,6 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     this.clientSession = new ClientSession(client)
 
     const handlers = [
-      new ErrorHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
       new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
       new SelfbroadcastHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
       new ChatManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)

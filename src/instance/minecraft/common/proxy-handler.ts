@@ -6,7 +6,7 @@ import { SocksClient } from 'socks'
 
 import type { ProxyConfig } from '../../../application-config.js'
 import { ProxyProtocol } from '../../../application-config.js'
-import { QuitProxyError } from '../handlers/error-handler.js'
+import { QuitProxyError } from '../handlers/state-handler.js'
 
 export function resolveProxyIfExist(
   logger: Logger,
