@@ -1,6 +1,6 @@
-import { InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
+import { InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler, Permission } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Override extends ChatCommandHandler {
   constructor() {
@@ -15,9 +15,6 @@ export default class Override extends ChatCommandHandler {
   handler(context: ChatCommandContext): string {
     if (context.instanceType !== InstanceType.Minecraft) {
       return 'Can only be executed from Minecraft'
-    }
-    if (context.username !== context.adminUsername) {
-      return `You are not ${context.adminUsername}.`
     }
     if (context.permission !== Permission.Admin) {
       return 'You are not a Bridge Admin!'

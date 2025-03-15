@@ -1,7 +1,8 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>

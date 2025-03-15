@@ -14,6 +14,7 @@ export interface DiscordConfig {
 }
 
 export interface MinecraftConfig {
+  adminUsername: string
   bridgePrefix: string
   instances: MinecraftInstanceConfig[]
 }
@@ -27,7 +28,6 @@ export interface MinecraftInstanceConfig {
 export interface CommandsConfig {
   enabled: boolean
 
-  adminUsername: string
   commandPrefix: string
   disabledCommand: string[]
 }

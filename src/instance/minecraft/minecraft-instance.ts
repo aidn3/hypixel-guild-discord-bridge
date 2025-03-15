@@ -3,7 +3,7 @@ import { createClient, states } from 'minecraft-protocol'
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { MinecraftSendChatPriority } from '../../common/application-event.js'
-import { InstanceType } from '../../common/application-event.js'
+import { InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
@@ -27,15 +27,28 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
+  private readonly adminUsername: string
 
-  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, bridgePrefix: string) {
+  constructor(
+    app: Application,
+    instanceName: string,
+    config: MinecraftInstanceConfig,
+    bridgePrefix: string,
+    adminUsername: string
+  ) {
     super(app, instanceName, InstanceType.Minecraft, true, config)
 
     this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
     this.bridgePrefix = bridgePrefix
+    this.adminUsername = adminUsername
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
       this.sendNow(command)
     })
+  }
+
+  public resolvePermission(username: string, defaultPermission: Permission): Permission {
+    if (username.toLowerCase() === this.adminUsername.toLowerCase()) return Permission.Admin
+    return defaultPermission
   }
 
   connect(): void {

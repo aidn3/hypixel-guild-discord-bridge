@@ -1,4 +1,5 @@
 import type { Status } from './connectable-instance.js'
+
 /*
  All events must be immutable.
  Events can be transferred over IPC or websockets. Immutability can ensure defined and repeatable behaviour.
@@ -217,13 +218,28 @@ export interface SignalEvent extends BaseEvent {
   readonly targetInstanceName: string[]
 }
 
+// values must be numbers to be comparable
+export enum Permission {
+  Anyone,
+  Helper,
+  Officer,
+  Admin
+}
+
 /**
  * A chat event coming from any instance. e.g. from Discord, Minecraft, or even internally, etc.
  *
  * The event has all the fields formatted and never raw.
  * For example {@link #message} will contain the message content only and will never include any prefix of any kind.
  */
-export type ChatEvent = MinecraftGuildChat | MinecraftPrivateChat | DiscordChat
+export type ChatEvent = ChatLike & {
+  /**
+   * The permission level the user sending the chat message has.
+   */
+  readonly permission: Permission
+}
+
+export type ChatLike = MinecraftGuildChat | MinecraftPrivateChat | DiscordChat
 
 export interface BaseChat extends InformEvent {
   /**

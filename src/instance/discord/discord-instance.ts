@@ -4,7 +4,7 @@ import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
+import { InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
@@ -83,6 +83,20 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
     if (this.config.officerRoleIds.length === 0) {
       this.logger.info('no Discord officer roles found')
     }
+  }
+
+  public resolvePrivilegeLevel(userId: string, roles: string[]): Permission {
+    if (userId === this.config.adminId) return Permission.Admin
+
+    if (roles.some((role) => this.config.officerRoleIds.includes(role))) {
+      return Permission.Officer
+    }
+
+    if (roles.some((role) => this.config.helperRoleIds.includes(role))) {
+      return Permission.Helper
+    }
+
+    return Permission.Anyone
   }
 
   async connect(): Promise<void> {

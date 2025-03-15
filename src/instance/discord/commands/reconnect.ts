@@ -2,9 +2,9 @@ import assert from 'node:assert'
 
 import { SlashCommandBuilder } from 'discord.js'
 
-import { InstanceSignalType } from '../../../common/application-event.js'
+import { InstanceSignalType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('reconnect minecraft clients'),

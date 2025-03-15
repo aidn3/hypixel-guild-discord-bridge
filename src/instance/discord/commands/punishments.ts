@@ -5,9 +5,15 @@ import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } fr
 
 import type Application from '../../../application.js'
 import type { PunishmentAddEvent, UserIdentifier } from '../../../common/application-event.js'
-import { Color, InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
+import {
+  Color,
+  InstanceType,
+  MinecraftSendChatPriority,
+  Permission,
+  PunishmentType
+} from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
@@ -135,7 +141,7 @@ export default {
 
     switch (context.interaction.options.getSubcommand()) {
       case 'ban': {
-        if (context.privilege < Permission.Officer) {
+        if (context.permission < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -158,7 +164,7 @@ export default {
         return
       }
       case 'kick': {
-        if (context.privilege < Permission.Officer) {
+        if (context.permission < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }
@@ -171,7 +177,7 @@ export default {
         return
       }
       case 'forgive': {
-        if (context.privilege < Permission.Officer) {
+        if (context.permission < Permission.Officer) {
           await context.showPermissionDenied()
           return
         }

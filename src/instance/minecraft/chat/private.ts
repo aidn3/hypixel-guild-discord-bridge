@@ -1,4 +1,4 @@
-import { ChannelType } from '../../../common/application-event.js'
+import { ChannelType, Permission } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -19,6 +19,7 @@ export default {
 
         channelType: ChannelType.Private,
 
+        permission: context.clientInstance.resolvePermission(username, Permission.Anyone),
         username,
         hypixelRank: hypixelRank,
 

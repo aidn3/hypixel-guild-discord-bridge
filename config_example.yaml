@@ -18,6 +18,8 @@ discord:
   officerRoleIds: ['803266248652835111', 'another_role']
 
 minecraft:
+  # In-game USERNAME of the user who will have ADMIN permission
+  adminUsername: 'Steve'
   # Put in front of every message.
   # Helpful if more than one bridge exists in same guild
   # So they ignore each other messages
@@ -41,8 +43,6 @@ loggers:
 commands:
   # Enable chat commands such as !cata, etc.
   enabled: true
-  # In-game USERNAME of the user who will have ADMIN permission
-  adminUsername: 'Steve'
   # change the prefix for chat command
   commandPrefix: '!'
   disabledCommand: ['somecommand']

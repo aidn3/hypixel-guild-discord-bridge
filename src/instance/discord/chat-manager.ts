@@ -97,6 +97,11 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
       channelType: channelType,
       channelId: event.channel.id,
+
+      permission: this.clientInstance.resolvePrivilegeLevel(
+        event.author.id,
+        event.member ? [...event.member.roles.cache.keys()] : []
+      ),
       username: readableName,
       replyUsername: readableReplyUsername,
       message: filteredMessage

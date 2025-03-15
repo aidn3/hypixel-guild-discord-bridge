@@ -1,8 +1,8 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { InstanceType } from '../../../common/application-event.js'
+import { InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
 
 export default {

@@ -2,6 +2,7 @@ import {
   ChannelType,
   InstanceType,
   MinecraftSendChatPriority,
+  Permission,
   PunishmentType
 } from '../../../common/application-event.js'
 import { durationToMinecraftDuration } from '../../../util/shared-util.js'
@@ -62,6 +63,7 @@ export default {
 
         channelType: ChannelType.Public,
 
+        permission: context.clientInstance.resolvePermission(username, Permission.Anyone),
         username,
         hypixelRank: hypixelRank,
         guildRank: guildRank,

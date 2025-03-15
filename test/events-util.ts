@@ -1,6 +1,6 @@
 import type Application from '../src/application.js'
 import type { InstanceIdentifier } from '../src/common/application-event.js'
-import { ChannelType, InstanceType } from '../src/common/application-event.js'
+import { ChannelType, InstanceType, Permission } from '../src/common/application-event.js'
 import EventHelper from '../src/common/event-helper.js'
 import { InternalInstancePrefix } from '../src/common/instance.js'
 
@@ -19,6 +19,7 @@ export class EventsUtil implements InstanceIdentifier {
       channelId: '0',
       channelType: ChannelType.Public,
 
+      permission: Permission.Anyone,
       username: username,
       replyUsername: undefined,
       message: message

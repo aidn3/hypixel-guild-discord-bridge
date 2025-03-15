@@ -105,7 +105,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
     for (const instanceConfig of this.config.minecraft.instances) {
       this.minecraftInstances.push(
-        new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig, this.config.minecraft.bridgePrefix)
+        new MinecraftInstance(
+          this,
+          instanceConfig.instanceName,
+          instanceConfig,
+          this.config.minecraft.bridgePrefix,
+          this.config.minecraft.adminUsername
+        )
       )
     }
 

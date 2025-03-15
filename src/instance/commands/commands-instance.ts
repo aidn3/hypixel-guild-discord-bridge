@@ -1,9 +1,8 @@
 import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
-import { ChannelType, InstanceType } from '../../common/application-event.js'
+import { InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
-import { Permission } from '../../common/commands.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
 
@@ -114,7 +113,6 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     if (this.currentStatus() !== Status.Connected) return
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
-    const permission = this.resolvePermission(event)
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
@@ -122,7 +120,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     if (command == undefined) return
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
-    if (!command.enabled && permission === Permission.Anyone) {
+    if (!command.enabled && event.permission === Permission.Anyone) {
       return
     }
 
@@ -136,14 +134,13 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
 
         allCommands: this.commands,
         commandPrefix: this.config.commandPrefix,
-        adminUsername: this.config.adminUsername,
 
         instanceName: event.instanceName,
         instanceType: event.instanceType,
         channelType: event.channelType,
 
         username: event.username,
-        permission: permission,
+        permission: event.permission,
         args: commandsArguments,
 
         sendFeedback: (feedbackResponse) => {
@@ -160,16 +157,6 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
         `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`
       )
     }
-  }
-
-  private resolvePermission(event: ChatEvent): Permission {
-    if (event.username === this.config.adminUsername && event.instanceType === InstanceType.Minecraft) {
-      return Permission.Admin
-    } else if (event.instanceType === InstanceType.Minecraft && event.channelType === ChannelType.Officer) {
-      return Permission.Helper
-    }
-
-    return Permission.Anyone
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {

@@ -2,7 +2,6 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
-  GuildMemberRoleManager,
   Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
@@ -11,9 +10,9 @@ import type { Logger } from 'log4js'
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { ChannelType, Color, InstanceType } from '../../common/application-event.js'
+import { ChannelType, Color, InstanceType, Permission } from '../../common/application-event.js'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
-import { OptionToAddMinecraftInstances, Permission } from '../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../common/commands.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -130,7 +129,10 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
-        privilege: this.resolvePrivilegeLevel(interaction),
+        permission: this.clientInstance.resolvePrivilegeLevel(
+          interaction.user.id,
+          interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+        ),
         interaction: interaction
       }
 
@@ -218,7 +220,10 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           logger: this.logger,
           errorHandler: this.errorHandler,
           instanceName: this.clientInstance.instanceName,
-          privilege: this.resolvePrivilegeLevel(interaction),
+          permission: this.clientInstance.resolvePrivilegeLevel(
+            interaction.user.id,
+            interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+          ),
           interaction: interaction,
 
           showPermissionDenied: async () => {
@@ -277,24 +282,12 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
   private memberAllowed(interaction: Interaction, permissionLevel: Permission): boolean {
     if (permissionLevel === Permission.Anyone) return true
 
-    return this.resolvePrivilegeLevel(interaction) >= permissionLevel
-  }
-
-  private resolvePrivilegeLevel(interaction: Interaction): Permission {
-    if (interaction.user.id === this.config.adminId) return Permission.Admin
-
-    const roles = interaction.member?.roles as GuildMemberRoleManager | undefined
-    if (roles == undefined) return Permission.Anyone
-
-    if (roles.cache.some((role) => this.config.officerRoleIds.includes(role.id))) {
-      return Permission.Officer
-    }
-
-    if (roles.cache.some((role) => this.config.helperRoleIds.includes(role.id))) {
-      return Permission.Helper
-    }
-
-    return Permission.Anyone
+    return (
+      this.clientInstance.resolvePrivilegeLevel(
+        interaction.user.id,
+        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+      ) >= permissionLevel
+    )
   }
 
   private getChannelType(channelId: string): ChannelType | undefined {

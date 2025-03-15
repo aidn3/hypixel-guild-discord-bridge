@@ -1,9 +1,9 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Color } from '../../../common/application-event.js'
+import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances, Permission } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {

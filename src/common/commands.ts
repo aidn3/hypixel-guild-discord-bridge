@@ -3,7 +3,7 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 
-import type { ChannelType, InstanceType } from './application-event.js'
+import type { ChannelType, InstanceType, Permission } from './application-event.js'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
@@ -37,7 +37,6 @@ export interface ChatCommandContext {
 
   allCommands: ChatCommandHandler[]
   commandPrefix: string
-  adminUsername: string
 
   instanceName: string
   instanceType: InstanceType
@@ -48,14 +47,6 @@ export interface ChatCommandContext {
   args: string[]
 
   sendFeedback: (feedback: string) => void
-}
-
-// values must be numbers to be comparable
-export enum Permission {
-  Anyone,
-  Helper,
-  Officer,
-  Admin
 }
 
 export interface DiscordCommandHandler {
@@ -78,7 +69,7 @@ interface DiscordContext {
   logger: Logger
   instanceName: string
 
-  privilege: Permission
+  permission: Permission
   errorHandler: UnexpectedErrorHandler
 }
 
