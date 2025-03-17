@@ -5,14 +5,13 @@ import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-rebor
 import type { MojangApi } from '../../../util/mojang.js'
 
 export async function getUuidIfExists(mojangApi: MojangApi, username: string): Promise<string | undefined> {
-  const result = await mojangApi
+  return await mojangApi
     .profileByUsername(username)
     .then((mojangProfile) => mojangProfile.id)
     .catch(() => {
-      /* return undefined */
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      return undefined
     })
-
-  return result || undefined
 }
 
 export async function getSelectedSkyblockProfileRaw(

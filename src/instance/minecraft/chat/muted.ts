@@ -1,4 +1,4 @@
-import { ChannelType, EventType, InstanceType, Severity } from '../../../common/application-event.js'
+import { Color, MinecraftChatEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 let lastWarning = 0
@@ -9,16 +9,15 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined && lastWarning + 300_000 < Date.now()) {
-      context.application.emit('event', {
-        localEvent: true,
-        instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.MUTED,
-        username: undefined,
-        severity: Severity.BAD,
-        message: `Account has been muted. ${context.message}`,
-        removeLater: false
+      context.application.emit('minecraftChatEvent', {
+        ...context.eventHelper.fillBaseEvent(),
+
+        color: Color.Bad,
+        channels: [],
+
+        type: MinecraftChatEventType.Muted,
+        originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
+        message: `Account has been muted. ${context.message}`
       })
       lastWarning = Date.now()
     }

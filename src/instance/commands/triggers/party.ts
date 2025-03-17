@@ -2,9 +2,9 @@
 import Moment from 'moment'
 
 import { ChannelType, InstanceType } from '../../../common/application-event.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import { getDuration } from '../../../util/shared-util.js'
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
 
 interface Party {
   username: string
@@ -31,9 +31,9 @@ export default class PartyManager {
   }
 
   allowedExecution(context: ChatCommandContext): string | undefined {
-    if (context.channelType === ChannelType.OFFICER || context.channelType === ChannelType.PUBLIC) {
-      if (context.instanceType === InstanceType.MINECRAFT) return undefined
-      if (context.instanceType === InstanceType.DISCORD) return undefined
+    if (context.channelType === ChannelType.Officer || context.channelType === ChannelType.Public) {
+      if (context.instanceType === InstanceType.Minecraft) return undefined
+      if (context.instanceType === InstanceType.Discord) return undefined
     }
 
     return 'Parties commands can only be executed in public and officer chat of either minecraft or discord.'

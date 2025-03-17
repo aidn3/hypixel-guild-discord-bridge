@@ -4,26 +4,30 @@ import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
 
 import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
+import { InstanceType, Permission } from '../../common/application-event.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
-import BridgeHandler from './bridge-handler.js'
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
+import MessageAssociation from './common/message-association.js'
+import DiscordBridge from './discord-bridge.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
-export default class DiscordInstance extends ClientInstance<DiscordConfig> {
+export default class DiscordInstance extends ConnectableInstance<DiscordConfig, InstanceType.Discord> {
+  readonly commandsManager: CommandManager
+  readonly client: Client
+
   private readonly stateHandler: StateHandler
   private readonly statusHandler: StatusHandler
   private readonly chatManager: ChatManager
-  readonly commandsManager: CommandManager
-  readonly client: Client
+
+  private readonly bridge: DiscordBridge
+  private readonly messageAssociation: MessageAssociation = new MessageAssociation()
   private connected = false
 
   constructor(app: Application, instanceName: string, config: DiscordConfig) {
-    super(app, instanceName, InstanceType.DISCORD, config)
-    this.status = Status.FRESH
+    super(app, instanceName, InstanceType.Discord, true, config)
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),
@@ -37,24 +41,62 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
       partials: [Partials.Channel, Partials.Message]
     })
 
-    this.stateHandler = new StateHandler(this)
-    this.statusHandler = new StatusHandler(this)
-    this.chatManager = new ChatManager(this)
-    this.commandsManager = new CommandManager(this)
+    this.client.on('error', (error: Error) => {
+      this.logger.error(error)
+    })
+
+    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.chatManager = new ChatManager(
+      this.application,
+      this,
+      this.messageAssociation,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
+    this.commandsManager = new CommandManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
+
+    this.bridge = new DiscordBridge(
+      this.application,
+      this,
+      this.messageAssociation,
+      this.logger,
+      this.errorHandler,
+      this.config
+    )
 
     if (this.config.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')
     }
-
     if (this.config.officerChannelIds.length === 0) {
       this.logger.info('no Discord officer channels found')
     }
-
     if (this.config.officerRoleIds.length === 0) {
       this.logger.info('no Discord officer roles found')
     }
+  }
 
-    new BridgeHandler(app, this)
+  public resolvePrivilegeLevel(userId: string, roles: string[]): Permission {
+    if (userId === this.config.adminId) return Permission.Admin
+
+    if (roles.some((role) => this.config.officerRoleIds.includes(role))) {
+      return Permission.Officer
+    }
+
+    if (roles.some((role) => this.config.helperRoleIds.includes(role))) {
+      return Permission.Helper
+    }
+
+    return Permission.Anyone
   }
 
   async connect(): Promise<void> {
@@ -66,11 +108,18 @@ export default class DiscordInstance extends ClientInstance<DiscordConfig> {
     }
     this.connected = true
 
+    this.setAndBroadcastNewStatus(Status.Connecting, 'Discord connecting')
+
     this.stateHandler.registerEvents()
     this.statusHandler.registerEvents()
     this.chatManager.registerEvents()
     this.commandsManager.registerEvents()
 
     await this.client.login(this.config.key)
+  }
+
+  async disconnect(): Promise<void> {
+    await this.client.destroy()
+    this.setAndBroadcastNewStatus(Status.Ended, 'discord instance has disconnected')
   }
 }

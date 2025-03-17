@@ -1,12 +1,13 @@
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Severity, InstanceType } from '../../../common/application-event.js'
-import { antiSpamString, escapeDiscord } from '../../../util/shared-util.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import { Color, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type EventHelper from '../../../common/event-helper.js'
+import { antiSpamString } from '../../../util/shared-util.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed {
@@ -19,7 +20,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
     '- Bot does not have permission to send/receive messages in that channel\n\n'
 
   for (const [instanceName, list] of instances) {
-    content += `**${escapeDiscord(instanceName)}**\n`
+    content += `**${escapeMarkdown(instanceName)}**\n`
 
     if (list.length > 0) {
       content += '```'
@@ -35,7 +36,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
   }
 
   return {
-    color: Severity.DEFAULT,
+    color: Color.Default,
     title: `Mute/Connectivity Check`,
     description: content,
     footer: {
@@ -48,13 +49,13 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('connectivity').setDescription('Check connectivity to Minecraft instances'),
   permission: Permission.Anyone,
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
-    const lists: Map<string, string[]> = await checkConnectivity(context.application)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+    const lists: Map<string, string[]> = await checkConnectivity(context.application, context.eventHelper)
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
@@ -62,9 +63,12 @@ export default {
 
     await context.interaction.editReply({ embeds: [createEmbed(lists)] })
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
-async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
+async function checkConnectivity(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>
+): Promise<Map<string, string[]>> {
   const receivedResponses = new Map<string, string[]>()
   const queryWords = [
     `Testing Connectivity 1 - @${antiSpamString()}`,
@@ -88,11 +92,32 @@ async function checkConnectivity(app: Application): Promise<Map<string, string[]
 
   app.on('minecraftChat', chatListener)
 
-  app.clusterHelper.sendCommandToAllMinecraft(`/ac ${queryWords[0]}`)
-  app.clusterHelper.sendCommandToAllMinecraft(`/gc ${queryWords[1]}`)
-  app.clusterHelper.sendCommandToAllMinecraft(`/oc ${queryWords[2]}`)
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/ac ${queryWords[0]}`
+  })
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/gc ${queryWords[1]}`
+  })
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: `/oc ${queryWords[2]}`
+  })
+
   for (const bot of app.clusterHelper.getMinecraftBots()) {
-    app.clusterHelper.sendCommandToMinecraft(bot.instanceName, `/msg ${bot.username} ${queryWords[3]}`)
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+      priority: MinecraftSendChatPriority.High,
+      command: `/msg ${bot.username} ${queryWords[3]}`
+    })
   }
 
   await new Promise((resolve) => setTimeout(resolve, 5000))

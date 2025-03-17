@@ -11,12 +11,10 @@ export interface DiscordConfig {
   officerChannelIds: string[]
   helperRoleIds: string[]
   officerRoleIds: string[]
-
-  deleteTempEventAfter: number
 }
 
 export interface MinecraftConfig {
-  bridgePrefix: string
+  adminUsername: string
   instances: MinecraftInstanceConfig[]
 }
 
@@ -29,14 +27,22 @@ export interface MinecraftInstanceConfig {
 export interface CommandsConfig {
   enabled: boolean
 
-  adminUsername: string
   commandPrefix: string
   disabledCommand: string[]
 }
 
-export interface ProfanityFilterConfig {
+export interface ModerationConfig {
+  heatPunishment: boolean
+  mutesPerDay: number
+  kicksPerDay: number
+  immune: string[]
+  profanity: ProfanityConfig
+}
+
+export interface ProfanityConfig {
   enabled: boolean
-  whitelisted: string[]
+  whitelist: string[]
+  blacklist: string[]
 }
 
 export interface MetricsConfig {
@@ -74,7 +80,7 @@ export interface ApplicationConfig {
   loggers: string[]
 
   commands: CommandsConfig
-  profanity: ProfanityFilterConfig
+  moderation: ModerationConfig
   metrics: MetricsConfig
   socket: SocketConfig
 
