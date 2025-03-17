@@ -151,6 +151,17 @@ export default class StateHandler extends EventHandler<MinecraftInstance> {
         type: InstanceEventType.end,
         message: 'Account has been banned/blocked.\n' + "Won't try to re-login.\n"
       })
+    } else if (reason.includes('Your account is temporarily blocked')) {
+      this.clientInstance.logger.fatal('Instance will shut off since the account has been temporarily blocked')
+      this.clientInstance.status = Status.FAILED
+
+      this.clientInstance.app.emit('instance', {
+        localEvent: true,
+        instanceName: this.clientInstance.instanceName,
+        instanceType: InstanceType.MINECRAFT,
+        type: InstanceEventType.end,
+        message: "Account has been temporarily blocked.\nWon't try to re-login.\n\n" + reason.toString()
+      })
     } else {
       this.clientInstance.app.emit('instance', {
         localEvent: true,
