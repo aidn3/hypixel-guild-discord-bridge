@@ -7,6 +7,7 @@ import { ConnectableInstance, Status } from '../../common/connectable-instance.j
 import { InternalInstancePrefix } from '../../common/instance.js'
 
 import EightBallCommand from './triggers/8ball.js'
+import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
@@ -43,6 +44,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
 
     this.commands = [
       new Bits(),
+      new Bedwars(),
       new Calculate(),
       new Catacomb(),
       new DarkAuction(),
