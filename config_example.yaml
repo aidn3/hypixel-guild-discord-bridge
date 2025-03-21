@@ -46,6 +46,7 @@ moderation:
   heatPunishment: true
   mutesPerDay: 10
   kicksPerDay: 5
+  immune: []
   profanity:
     enabled: true
     whitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard']
