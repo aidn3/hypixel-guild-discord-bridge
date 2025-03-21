@@ -28,6 +28,7 @@ export default class Toggle extends ChatCommandHandler {
     }
 
     command.enabled = !command.enabled
+    context.saveConfigChanges()
     return `Command ${command.triggers[0]} is now ${command.enabled ? 'enabled' : 'disabled'}.`
   }
 }

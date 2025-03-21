@@ -26,9 +26,7 @@ export interface MinecraftInstanceConfig {
 
 export interface CommandsConfig {
   enabled: boolean
-
   commandPrefix: string
-  disabledCommand: string[]
 }
 
 export interface ModerationConfig {

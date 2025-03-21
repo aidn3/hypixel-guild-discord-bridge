@@ -37,6 +37,7 @@ export interface ChatCommandContext {
 
   allCommands: ChatCommandHandler[]
   commandPrefix: string
+  saveConfigChanges: () => void
 
   instanceName: string
   instanceType: InstanceType

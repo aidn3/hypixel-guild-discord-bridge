@@ -3,6 +3,7 @@ import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
+import { ConfigManager } from '../../common/config-manager.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
 
@@ -38,9 +39,15 @@ import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
+  private readonly internalConfig
 
   constructor(app: Application, config: CommandsConfig) {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, true, config)
+
+    this.internalConfig = new ConfigManager<InternalConfig>(app, app.getConfigFilePath('commands.json'), {
+      disabledCommands: []
+    })
+    this.internalConfig.loadFromConfig()
 
     this.commands = [
       new Bits(),
@@ -74,7 +81,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       new Weight()
     ]
 
-    const disabled = config.disabledCommand
+    const disabled = this.internalConfig.data.disabledCommands
     for (const command of this.commands) {
       if (command.triggers.some((trigger: string) => disabled.includes(trigger.toLowerCase()))) {
         command.enabled = false
@@ -136,6 +143,9 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
 
         allCommands: this.commands,
         commandPrefix: this.config.commandPrefix,
+        saveConfigChanges: () => {
+          this.saveConfig()
+        },
 
         instanceName: event.instanceName,
         instanceType: event.instanceType,
@@ -188,4 +198,15 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       alreadyReplied: false
     })
   }
+
+  private saveConfig(): void {
+    this.internalConfig.data.disabledCommands = this.commands
+      .filter((command) => !command.enabled)
+      .map((command) => command.triggers[0])
+    this.internalConfig.saveConfig()
+  }
+}
+
+export interface InternalConfig {
+  disabledCommands: string[]
 }

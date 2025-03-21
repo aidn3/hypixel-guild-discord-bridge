@@ -41,7 +41,6 @@ commands:
   enabled: true
   # change the prefix for chat command
   commandPrefix: '!'
-  disabledCommand: ['somecommand']
 
 moderation:
   heatPunishment: true
