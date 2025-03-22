@@ -37,15 +37,14 @@ if (!fs.existsSync(File)) {
   await gracefullyExitProcess(1)
 }
 
-const RootDirectory = import.meta.dirname
-const ConfigsDirectory = path.resolve(RootDirectory, 'config')
-const App = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
-
-App.on('all', (name, event) => {
-  Logger.log(`[${name}] ${JSON.stringify(event)}`)
-})
-
 try {
+  const RootDirectory = import.meta.dirname
+  const ConfigsDirectory = path.resolve(RootDirectory, 'config')
+  const App = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
+
+  App.on('all', (name, event) => {
+    Logger.log(`[${name}] ${JSON.stringify(event)}`)
+  })
   await App.start()
   Logger.info('App is connected')
 } catch (error: unknown) {
