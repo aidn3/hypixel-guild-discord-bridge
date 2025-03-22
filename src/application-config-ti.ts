@@ -24,8 +24,7 @@ export const MinecraftConfig = t.iface([], {
 });
 
 export const MinecraftInstanceConfig = t.iface([], {
-  "instanceName": "string",
-  "email": "string",
+  "name": "string",
   "proxy": t.union("ProxyConfig", "null"),
 });
 

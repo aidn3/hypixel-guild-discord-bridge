@@ -19,8 +19,7 @@ export interface MinecraftConfig {
 }
 
 export interface MinecraftInstanceConfig {
-  instanceName: string
-  email: string
+  name: string
   proxy: ProxyConfig | null
 }
 

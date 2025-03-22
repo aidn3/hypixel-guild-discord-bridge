@@ -56,7 +56,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     const client = createClient({
       ...this.defaultBotConfig,
-      username: this.config.email,
+      username: this.config.name,
       auth: 'microsoft',
       profilesFolder: this.sessionDirectory,
 
