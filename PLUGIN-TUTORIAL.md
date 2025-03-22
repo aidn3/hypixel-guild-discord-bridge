@@ -3,16 +3,16 @@
 ## Getting Started
 
 To start, create a file in the application root directory `example-plugin.ts`.  
-Import the plugin interface and implement it as the default export in the file:
+Import the plugin interface and implement it as **the default export** in the file:
 
 ```typescript
-import type { PluginInterface, PluginContext } from './src/common/plugins.js'
+import PluginInstance from './src/common/plugin-instance.js'
 
-export default {
-  onRun(context: PluginContext): void {
-    context.logger.log('Plugin loaded!')
+export default class ExamplePlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
+    this.logger.info('hello world')
   }
-} satisfies PluginInterface
+}
 ```
 
 Register the newly created plugin in the `config.yaml` file in `plugins` section:
@@ -23,111 +23,102 @@ plugins:
   - './example-plugin.ts'
 ```
 
-## Application API
+## Example Usage
 
-Application provides both high level API and direct access to control and fine tune everything.
-
-### High Level API
-
-The high level API abstracts all different type of instances and simplifies the interactions making it easy to create
-new behaviours such as new commands, new chat/event detection, etc.
-The api is accessed via the `PluginContext` provided when the plugin function `onRun(...)` is called from the
+The application provides a high level API that abstracts all different type of instances and simplifies the interactions
+making it easy to create new behaviours such as new commands, new chat/event detection, etc.
+The API is accessed via the `this` when the plugin function `onReady()` is called from the
 application.
 
-The entire high level API is event driven making it easy to work with. The event names and their interfaces are stored
-in `./src/common/application-event`.
-
-> Warning: All events are immutable objects. Forcefully modifying them will result in an undefined behaviour.
-> The only way to change a behaviour is to use the Direct Access.
+The entire API is event-driven making it easy to work with. The event names and their interfaces are stored
+in `./src/common/application-event.ts`.
 
 Example of a plugin that logs any chat message from anywhere:
 
 ```typescript
-import type { PluginInterface, PluginContext } from './src/common/plugins.js'
+import PluginInstance from './src/common/plugin-instance.js'
 
-export default {
-  onRun(context: PluginContext): void {
-    context.application.on('chat', (event) => {
-      context.logger.log(event.message)
+export default class ExamplePlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
+    this.application.on('chat', (event) => {
+      this.logger.log(event.message)
     })
   }
-} satisfies PluginInterface
+}
 ```
 
 Example of a plugin that reads raw Minecraft chat and replies back when a certain message is detected:
 
 ```typescript
-import type { PluginContext, PluginInterface } from './src/common/plugins'
+import { MinecraftSendChatPriority } from './src/common/application-event.js'
+import PluginInstance from './src/common/plugin-instance.js'
 
-export default {
-  onRun(context: PluginContext): void {
-    context.application.on('minecraftChat', (event) => {
+export default class ExamplePlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
+    this.application.on('minecraftChat', (event) => {
       if (event.message.includes('secret-word')) {
-        context.application.clusterHelper.sendCommandToMinecraft(event.instanceName, 'secret response!')
+        this.application.emit('minecraftSend', {
+          ...this.eventHelper.fillBaseEvent(),
+          targetInstanceName: [event.instanceName],
+          priority: MinecraftSendChatPriority.Default,
+          command: 'secret response!'
+        })
       }
     })
   }
-} satisfies PluginInterface
+}
 ```
 
 Example of a plugin that creates and sends a notification to officer chat when anyone joins the guild in-game:
 
 ```typescript
-import { ChannelType, EventType, InstanceType, Severity } from './src/common/application-event.js'
-import type { PluginInterface, PluginContext } from './src/common/plugins.js'
+import { ChannelType, Color, GuildPlayerEventType } from './src/common/application-event.js'
+import PluginInstance from './src/common/plugin-instance.js'
 
-export default {
-  onRun(context: PluginContext): void {
-    context.application.on('event', (event) => {
-      // if a join event occours
-      if (event.eventType === EventType.JOIN) {
-        // send an event as a reply
-        context.application.emit('event', {
-          // always set to true. This helps when synchronizing a cluster of applications
-          localEvent: true,
-
-          // where the event is coming from. This helps other plugins and application components
+export default class ExamplePlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
+    this.application.on('guildPlayer', (event) => {
+      if (event.type === GuildPlayerEventType.Join) {
+        this.application.emit('broadcast', {
+          // autofill mundane metadata like where the event is coming from, etc.
+          // This helps other plugins and application components
           // when deciding how to deal with the event
-          instanceType: InstanceType.PLUGIN,
-          instanceName: context.pluginName,
+          ...this.eventHelper.fillBaseEvent(),
 
           // How should it be handled by the application components
-          severity: Severity.INFO,
-          removeLater: false,
-          channelType: ChannelType.OFFICER,
+          color: Color.Info,
+          channels: [ChannelType.Officer],
 
           // the info of the event
-          eventType: EventType.AUTOMATED,
           username: event.username,
           message: `${event.username} has just joined!`
         })
       }
     })
   }
-} satisfies PluginInterface
+}
 ```
 
-### Direct Access
+## Things To Lookout For
 
-This is used to modify the application behaviour by accessing the application internal objects on runtime.
-It is done by accessing `PluginContext.localInstances`, which contains all internal running instances.
+Plugins have the same level of access as any other internal `Instance` object. It is powerful, but also has many limitations and pitfalls.
+Doing something not the way it is intended can lead to undefined behaviour. That means undetectable bugs and other problems such as desync can occur. This is an incomperhinsible list of things to lookout for:
 
-> Although it is officially provided by the application, it is not recommended at all
-> since the plugin can break with any minor update that changes the internal code.
-> The better solution would be to just clone the source code and modify it to the targeted behaviour instead.
+- API docs is mainly stored in `./src/common/`.
+- API is defined in `./src/common/**` (recursively) and in `./src/*` (NOT recursively). Plugins can only access these paths freely.
+- Do NOT access or modify anything related to the application prior to calling this `onReady()` by using `constructor()` or other methods.
+- All events are immutable objects. Forcefully modifying them will result in an undefined behaviour.
 
-Example of accessing minecraft internal bot clients:
+## Changing Existing Code
 
-```typescript
-import type { PluginContext, PluginInterface } from './src/common/plugins.js'
-import MinecraftInstance from './src/instance/minecraft/minecraft-instance.js'
+It is possible to modify existing code via javascript `prototype` or by accessing and modifying `private readonly` variables.
+Some official plugins such as `./src/plugins/limbo-plugin.ts` actively use it too.
+However, although it is officially used by the application in officially maintained plugins, it is not recommended at all
+since the plugin can break with any PATCH version update that changes the internal code.
 
-export default {
-  onRun(context: PluginContext): void {
-    const minecraftInstances = context.localInstances.filter((instance) => instance instanceof MinecraftInstance)
-    for (const minecraftInstance of minecraftInstances as MinecraftInstance[]) {
-      context.logger.log(minecraftInstance.client?.session?.accessToken ?? 'not found')
-    }
-  }
-} satisfies PluginInterface
-```
+The better solution would be to just clone the source code and modify it to the targeted behaviour instead.
+All officially created plugins in `./src/plugins/` will always work even if they access the internal code directly.
+
+## Future Compatibility
+
+See [Compatibility](./COMPATIBILITY.md) for more info.
