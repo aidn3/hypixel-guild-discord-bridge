@@ -1,8 +1,15 @@
 import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
-import { getDungeonLevelWithOverflow, getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import {
+  getDungeonLevelWithOverflow,
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedDungeons,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 export default class Catacomb extends ChatCommandHandler {
   constructor() {
@@ -18,12 +25,16 @@ export default class Catacomb extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `No such username! (given: ${givenUsername})`
+    if (uuid == undefined) return usernameNotExists(givenUsername)
+
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+
+    const dungeons = selectedProfile.dungeons
+    if (!dungeons) {
+      return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const parsedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    const dungeons = parsedProfile.dungeons
     const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
 
     return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${this.formatClass(dungeons)}.`

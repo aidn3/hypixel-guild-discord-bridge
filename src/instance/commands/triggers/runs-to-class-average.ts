@@ -1,8 +1,15 @@
 import assert from 'node:assert'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
-import { getDungeonLevelWithOverflow, getUuidIfExists } from '../common/util.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import {
+  getDungeonLevelWithOverflow,
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedDungeons,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 const FloorsBaseExp = {
   m6: 105_000,
@@ -26,30 +33,24 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const targetAverage = context.args[1] ? Number.parseInt(context.args[1], 10) : 50
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `No such username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const selectedFloor = 'm7'.toLowerCase()
-    if (!(selectedFloor in FloorsBaseExp)) {
-      return `Invalid floor selected: ${selectedFloor}`
-    }
+    if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
     const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
-    const parsedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles.find((p) => p.selected)?.members[uuid])
-    assert(parsedProfile)
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    if (parsedProfile.dungeons.player_classes === undefined) {
-      return `${givenUsername} never played dungeons before?`
+    if (selectedProfile.dungeons?.player_classes === undefined) {
+      return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const heartOfGold = parsedProfile.essence?.perks?.heart_of_gold ?? 0
-    const unbridledRage = parsedProfile.essence?.perks?.unbridled_rage ?? 0
-    const coldEfficiency = parsedProfile.essence?.perks?.cold_efficiency ?? 0
-    const toxophilite = parsedProfile.essence?.perks?.toxophilite ?? 0
-    const diamondInTheRough = parsedProfile.essence?.perks?.diamond_in_the_rough ?? 0
+    const heartOfGold = selectedProfile.essence?.perks?.heart_of_gold ?? 0
+    const unbridledRage = selectedProfile.essence?.perks?.unbridled_rage ?? 0
+    const coldEfficiency = selectedProfile.essence?.perks?.cold_efficiency ?? 0
+    const toxophilite = selectedProfile.essence?.perks?.toxophilite ?? 0
+    const diamondInTheRough = selectedProfile.essence?.perks?.diamond_in_the_rough ?? 0
 
     const classExpBoosts = {
       healer: (heartOfGold * 2) / 100 + 1,
@@ -75,7 +76,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       tank: 0
     } as Record<ClassName, number>
 
-    for (const [className, classObject] of Object.entries(parsedProfile.dungeons.player_classes)) {
+    for (const [className, classObject] of Object.entries(selectedProfile.dungeons.player_classes)) {
       classesExperiences[className as ClassName] = classObject?.experience ?? 0
     }
 

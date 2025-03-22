@@ -1,6 +1,12 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
-import { getSelectedSkyblockProfileRaw, getUuidIfExists } from '../common/util.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  playerNeverPlayedDungeons,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/util.js'
 
 export default class Secrets extends ChatCommandHandler {
   constructor() {
@@ -15,15 +21,17 @@ export default class Secrets extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) {
-      return `${context.username}, Invalid username! (given: ${givenUsername})`
-    }
+    if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const hypixelProfile = await context.app.hypixelApi.getPlayer(uuid)
     const skyblockProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!skyblockProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const catacombRuns = skyblockProfile.dungeons.dungeon_types.catacombs.tier_completions
-    const mastermodeRuns = skyblockProfile.dungeons.dungeon_types.master_catacombs.tier_completions
+    const dungeon = skyblockProfile.dungeons?.dungeon_types
+    if (!dungeon) return playerNeverPlayedDungeons(givenUsername)
+
+    const catacombRuns = dungeon.catacombs.tier_completions
+    const mastermodeRuns = dungeon.master_catacombs.tier_completions
 
     const totalRuns = this.getTotalRuns(catacombRuns) + this.getTotalRuns(mastermodeRuns)
 
@@ -33,10 +41,12 @@ export default class Secrets extends ChatCommandHandler {
     return `${givenUsername}'s secrets: ${secrets.toLocaleString() || 0} Total ${averageSecrets} Average`
   }
 
-  private getTotalRuns(runs: Record<string, number>): number {
+  private getTotalRuns(runs: Record<string, number | undefined> | undefined): number {
+    if (runs === undefined) return 0
     return Object.entries(runs)
       .filter(([key]) => key !== 'total')
       .map(([, value]) => value)
+      .filter((value) => value !== undefined)
       .reduce((sum, c) => sum + c, 0)
   }
 }

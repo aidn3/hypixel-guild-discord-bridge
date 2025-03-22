@@ -6,36 +6,20 @@ export default class ClusterHelper {
   private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
   private readonly instancesNames = new Map<InstanceType, Set<string>>()
 
-  constructor(app: Application) {
+  public constructor(app: Application) {
     this.app = app
 
     this.app.on('minecraftSelfBroadcast', (event) => this.minecraftBots.set(event.instanceName, event))
-    this.app.on('instance', (event) => {
+    this.app.on('instanceStatus', (event) => {
       this.instanceBroadcast(event.instanceName, event.instanceType)
     })
-    this.app.on('selfBroadcast', (event) => {
+    this.app.on('instanceAnnouncement', (event) => {
       this.instanceBroadcast(event.instanceName, event.instanceType)
     })
   }
 
-  sendCommandToMinecraft(instanceName: string, command: string): void {
-    this.app.emit('minecraftSend', {
-      localEvent: true,
-      targetInstanceName: instanceName,
-      command
-    })
-  }
-
-  sendCommandToAllMinecraft(command: string): void {
-    this.app.emit('minecraftSend', {
-      localEvent: true,
-      targetInstanceName: undefined,
-      command
-    })
-  }
-
-  getInstancesNames(location: InstanceType): string[] {
-    const instanceNames = this.instancesNames.get(location)
+  public getInstancesNames(instanceType: InstanceType): string[] {
+    const instanceNames = this.instancesNames.get(instanceType)
     if (instanceNames == undefined) return []
 
     const result: string[] = []
@@ -45,7 +29,7 @@ export default class ClusterHelper {
     return result
   }
 
-  isMinecraftBot(username: string): boolean {
+  public isMinecraftBot(username: string): boolean {
     for (const value of this.minecraftBots.values()) {
       if (username === value.username) return true
     }
@@ -53,7 +37,7 @@ export default class ClusterHelper {
     return false
   }
 
-  getMinecraftBots(): MinecraftSelfBroadcast[] {
+  public getMinecraftBots(): MinecraftSelfBroadcast[] {
     return Array.from(this.minecraftBots, ([, value]) => value)
   }
 

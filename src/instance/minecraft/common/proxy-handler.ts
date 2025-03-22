@@ -6,6 +6,7 @@ import { SocksClient } from 'socks'
 
 import type { ProxyConfig } from '../../../application-config.js'
 import { ProxyProtocol } from '../../../application-config.js'
+import { QuitProxyError } from '../handlers/state-handler.js'
 
 export function resolveProxyIfExist(
   logger: Logger,
@@ -64,14 +65,10 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
     })
 
     request.once('error', (error) => {
-      logger.error('proxy encountered a problem')
-      logger.error(error)
+      client.emit('error', new Error('proxy encountered a problem', { cause: error }))
 
       logger.error('destroying proxy socket')
       request.destroy(error)
-
-      logger.warn('ending minecraft session if any exist')
-      client.end()
     })
   }
 }
@@ -98,8 +95,16 @@ function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort
         client.emit('connect')
       })
       .catch((error: unknown) => {
-        logger.error('proxy encountered a problem')
-        console.error(error)
+        /*
+         * This is a workaround to problems with proxy.
+         * When proxy encounters a problem DURING the connecting phase,
+         * the instance will just enter a deadlock.
+         * The only resolution is to pass an error
+         * and detect that specific error from the error handler side.
+         *
+         * This specific error message is detected and handled at: ../handlers/error-handler.ts
+         */
+        client.emit('error', new Error(QuitProxyError, { cause: error }))
 
         logger.warn('ending minecraft session if any exist')
         client.end()

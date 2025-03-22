@@ -16,14 +16,10 @@ discord:
   helperRoleIds: ['803266248652835111', 'another_role']
   # Discord ID of the role who will have OFFICER permission
   officerRoleIds: ['803266248652835111', 'another_role']
-  # Delete spam events from discord after x minutes
-  deleteTempEventAfter: 15
 
 minecraft:
-  # Put in front of every message.
-  # Helpful if more than one bridge exists in same guild
-  # So they ignore each other messages
-  bridgePrefix: '.'
+  # In-game USERNAME of the user who will have ADMIN permission
+  adminUsername: 'Steve'
   # Minecraft account details
   instances:
     # instanceName displayed on discord side
@@ -33,7 +29,7 @@ minecraft:
       # Example: proxy: {protocol: "socks5", host: "example.com", port: 123}
       proxy: null
 
-# Webhooks to log all internal events and metadata of the app
+# Webhooks to log all internal events and metadata of the application
 # for staff to preserve and inspect at later date
 # This is an alternative to the log files
 # since sometimes staff don't have access to system files
@@ -43,22 +39,18 @@ loggers:
 commands:
   # Enable chat commands such as !cata, etc.
   enabled: true
-  # In-game USERNAME of the user who will have ADMIN permission
-  adminUsername: 'Steve'
   # change the prefix for chat command
   commandPrefix: '!'
-  disabledCommand: ['somecommand']
 
-profanity:
-  enabled: true
-  whitelisted:
-    - 'sadist'
-    - 'hell'
-    - 'damn'
-    - 'god'
-    - 'shit'
-    - 'balls'
-    - 'retard'
+moderation:
+  heatPunishment: true
+  mutesPerDay: 10
+  kicksPerDay: 5
+  immune: []
+  profanity:
+    enabled: true
+    whitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard']
+    blacklist: []
 
 metrics:
   enabled: false
@@ -91,7 +83,7 @@ plugins:
   - './src/plugins/reaction-plugin.ts'
   - './src/plugins/dark-auction-plugin.ts'
   - './src/plugins/starfall-cult-plugin.ts'
-  - './src/plugins/punishment-plugin.ts'
   - './src/plugins/auto-restart-plugin.ts'
+#  - './src/plugins/stuf-plugin.ts'
 # Only enable after disabling limbo-plugin
 #  - './src/plugins/warp-plugin.ts'

@@ -16,11 +16,10 @@ export const DiscordConfig = t.iface([], {
   "officerChannelIds": t.array("string"),
   "helperRoleIds": t.array("string"),
   "officerRoleIds": t.array("string"),
-  "deleteTempEventAfter": "number",
 });
 
 export const MinecraftConfig = t.iface([], {
-  "bridgePrefix": "string",
+  "adminUsername": "string",
   "instances": t.array("MinecraftInstanceConfig"),
 });
 
@@ -32,14 +31,21 @@ export const MinecraftInstanceConfig = t.iface([], {
 
 export const CommandsConfig = t.iface([], {
   "enabled": "boolean",
-  "adminUsername": "string",
   "commandPrefix": "string",
-  "disabledCommand": t.array("string"),
 });
 
-export const ProfanityFilterConfig = t.iface([], {
+export const ModerationConfig = t.iface([], {
+  "heatPunishment": "boolean",
+  "mutesPerDay": "number",
+  "kicksPerDay": "number",
+  "immune": t.array("string"),
+  "profanity": "ProfanityConfig",
+});
+
+export const ProfanityConfig = t.iface([], {
   "enabled": "boolean",
-  "whitelisted": t.array("string"),
+  "whitelist": t.array("string"),
+  "blacklist": t.array("string"),
 });
 
 export const MetricsConfig = t.iface([], {
@@ -66,7 +72,7 @@ export const ProxyConfig = t.iface([], {
 
 export const ProxyProtocol = t.enumtype({
   "Http": "http",
-  "Socks5": "Socks5",
+  "Socks5": "socks5",
 });
 
 export const ApplicationConfig = t.iface([], {
@@ -75,7 +81,7 @@ export const ApplicationConfig = t.iface([], {
   "minecraft": "MinecraftConfig",
   "loggers": t.array("string"),
   "commands": "CommandsConfig",
-  "profanity": "ProfanityFilterConfig",
+  "moderation": "ModerationConfig",
   "metrics": "MetricsConfig",
   "socket": "SocketConfig",
   "plugins": t.array("string"),
@@ -87,7 +93,8 @@ const exportedTypeSuite: t.ITypeSuite = {
   MinecraftConfig,
   MinecraftInstanceConfig,
   CommandsConfig,
-  ProfanityFilterConfig,
+  ModerationConfig,
+  ProfanityConfig,
   MetricsConfig,
   SocketConfig,
   ProxyConfig,

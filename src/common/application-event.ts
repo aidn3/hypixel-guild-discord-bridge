@@ -1,5 +1,14 @@
-// TODO: remove on major update
-/* eslint-disable @typescript-eslint/naming-convention */
+import type { Status } from './connectable-instance.js'
+
+/*
+ All events must be immutable.
+ Events can be transferred over IPC or websockets. Immutability can ensure defined and repeatable behaviour.
+ All events are set with Readonly<?>
+
+ All communication with other instances must be done via events.
+ This is to ensure full synchronization with other processes over IPC/websockets.
+ */
+
 /**
  * All available High Level events
  */
@@ -9,111 +18,148 @@ export interface ApplicationEvents {
    * @param name event name
    * @param event event object
    */
-  '*': (name: string, event: BaseEvent) => void
+  all: (name: keyof ApplicationEvents, event: Readonly<BaseEvent>) => void
 
   /**
    * User sending messages
    */
-  chat: (event: ChatEvent) => void
+  chat: (event: Readonly<ChatEvent>) => void
   /**
    * User join/leave/offline/online/mute/kick/etc
    */
-  event: (event: ClientEvent) => void
+  guildPlayer: (event: Readonly<GuildPlayerEvent>) => void
   /**
-   * User executing a command
+   * When a guild emits an event that isn't specific for any player or user.
+   * Events such as reach a general guild quest goal.
    */
-  command: (event: CommandEvent) => void
+  guildGeneral: (event: Readonly<GuildGeneralEvent>) => void
+  /**
+   * In-game events such as interactions blocked/etc.
+   *
+   * @see MinecraftChatEventType
+   */
+  minecraftChatEvent: (event: Readonly<MinecraftChatEvent>) => void
+  /**
+   * User executing a command.
+   * Each command execution can send only one command event.
+   * If multiple response is needed, either format the text using blank lines/etc. or use {@linkcode CommandFeedbackEvent}
+   */
+  command: (event: Readonly<CommandEvent>) => void
+  /**
+   * Command sending a followup responses.
+   * This can be used to send multiple responses.
+   * Useful when working with long term commands that takes time to finish.
+   * It provides a way to give feedback on the command.
+   */
+  commandFeedback: (event: Readonly<CommandFeedbackEvent>) => void
+  /**
+   * When a plugin or a component wishes to broadcast a message to all instances.
+   */
+  broadcast: (event: Readonly<BroadcastEvent>) => void
 
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  instance: (event: InstanceEvent) => void
+  instanceStatus: (event: Readonly<InstanceStatusEvent>) => void
   /**
-   * Broadcast instance to inform other bridges in the cluster about its existence
+   * Announce instance existence to other instances
    */
-  selfBroadcast: (event: InstanceSelfBroadcast) => void
+  instanceAnnouncement: (event: Readonly<InstanceAnnouncement>) => void
+  /**
+   * Display a useful message coming from the internal components
+   */
+  instanceMessage: (event: Readonly<InstanceMessage>) => void
+  /**
+   * Signal used to shut down/restart an instance.
+   *
+   * Signaling to shut down the application is possible.
+   * It will take some time for the application to shut down.
+   * Application will auto restart if a process monitor is used.
+   */
+  instanceSignal: (event: Readonly<InstanceSignal>) => void
 
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
-  punishmentAdd: (event: PunishmentAddEvent) => void
+  punishmentAdd: (event: Readonly<PunishmentAddEvent>) => void
   /**
    *  Broadcast any punishments removed to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
-  punishmentForgive: (event: PunishmentForgiveEvent) => void
-
+  punishmentForgive: (event: Readonly<PunishmentForgiveEvent>) => void
   /**
-   * Command used to restart an instance.
-   * Note: This is currently only registered in Minecraft instances
+   * Reports an occurrence of a profanity filtering that occurred.
    */
-  reconnectSignal: (event: ReconnectSignal) => void
-  /**
-   * Command used to shut down the bridge.
-   * It will take some time for the bridge to shut down.
-   * Bridge will auto restart if a process monitor is used.
-   */
-  shutdownSignal: (event: ShutdownSignal) => void
+  profanityWarning: (event: Readonly<ProfanityWarningEvent>) => void
 
   /**
    * Used to broadcast which in-game username/uuid belongs to which bot.
    * Useful to distinguish in-game between players and bots
    */
-  minecraftSelfBroadcast: (event: MinecraftSelfBroadcast) => void
+  minecraftSelfBroadcast: (event: Readonly<MinecraftSelfBroadcast>) => void
   /**
    * Minecraft instance raw chat
    */
-  minecraftChat: (event: MinecraftRawChatEvent) => void
+  minecraftChat: (event: Readonly<MinecraftRawChatEvent>) => void
   /**
    * Command used to send a chat message/command through a minecraft instance
    */
-  minecraftSend: (event: MinecraftSendChat) => void
-  /**
-   * Display a useful message coming from the internal components
-   */
-  statusMessage: (event: StatusMessageEvent) => void
-
-  /**
-   * Reports an occurrence of a profanity filtering that occurred.
-   */
-  profanityWarning: (event: ProfanityWarningEvent) => void
+  minecraftSend: (event: Readonly<MinecraftSendChat>) => void
 }
 
 /**
  * The instance type the event was created from
  */
 export enum InstanceType {
-  MAIN = 'main',
-  PLUGIN = 'plugin',
+  Main = 'main',
 
-  METRICS = 'metrics',
-  SOCKET = 'socket',
-  COMMANDS = 'commands',
+  Plugin = 'plugin',
+  Commands = 'commands',
+  Moderation = 'moderation',
 
-  DISCORD = 'discord',
-  MINECRAFT = 'minecraft',
+  Metrics = 'metrics',
+  Socket = 'socket',
+
+  Discord = 'discord',
+  Minecraft = 'minecraft',
 
   Logger = 'webhook',
-  STATISTICS = 'statistics'
+  /**
+   * Used for when utils broadcast events
+   */
+  Util = 'util'
 }
 
 /**
  * The channel the event is targeting/coming from
  */
 export enum ChannelType {
-  OFFICER = 'officer',
-  PUBLIC = 'public',
-  PRIVATE = 'private'
+  Officer = 'officer',
+  Public = 'public',
+  Private = 'private'
+}
+
+/**
+ * The severity of the event.
+ * This is also used to choose an embed color when displaying messages in discord.
+ * Although this is discord specific. This is exposed here for plugins to take advantage of.
+ */
+export enum Color {
+  Good = 0x00_8a_00,
+  Info = 0x84_84_00,
+  Bad = 0x8a_2d_00,
+  Error = 0xff_00_00,
+  Default = 0x09_0a_16
 }
 
 /**
  * The base interface for every event.
  * There are two main types of events: {@link InformEvent} and {@link SignalEvent}.
  */
-export interface BaseEvent {
+export interface BaseEvent extends InstanceIdentifier {
   /**
    * Always set to `true`.
 
@@ -121,13 +167,29 @@ export interface BaseEvent {
    * It is used to prevent an infinite loop when sharing events between each other.
    */
   localEvent: boolean
+  /**
+   * Every event has unique id usually generated by {@link EventHelper}.
+   *
+   * Usage example:
+   * - a discord user sends a message
+   *  - an id is generated and assigned to {@link #eventId}
+   *  - the event is forwarded to minecraft instance
+   *  - minecraft client shows an error message such as {@link MinecraftChatEventType#Repeat}
+   *  - minecraft instance sends {@link MinecraftChatEvent} with a {@link MinecraftChatEvent#originEventId} being the generated id
+   *  - discord instance can use that to associate the event with the message the user sent
+   */
+  eventId: string
 }
 
 /**
- * One of the two types events.
- * Inform event is when an instance/component is informing other ones about an event happening.
+ * Identifiers every instance MUST have.
+ *
+ * The different between an instance and a utility is that an instance:
+ * - can emit events on its own.
+ * - can be stateful
+ * - has the ability to interact with other instances
  */
-interface InformEvent extends BaseEvent {
+export interface InstanceIdentifier {
   /**
    * The instance name the event is happening in
    */
@@ -140,14 +202,28 @@ interface InformEvent extends BaseEvent {
 
 /**
  * One of the two types events.
+ * Inform event is when an instance/component is informing other ones about an event happening.
+ */
+export type InformEvent = BaseEvent
+
+/**
+ * One of the two types events.
  * Send a signal as an event to all (or targeted) instance/component to command them.
  */
-interface SignalEvent extends BaseEvent {
+export interface SignalEvent extends BaseEvent {
   /**
    * The instance name to send the signal to.
    * Use `undefined` to send to all instances.
    */
-  readonly targetInstanceName: string | undefined
+  readonly targetInstanceName: string[]
+}
+
+// values must be numbers to be comparable
+export enum Permission {
+  Anyone,
+  Helper,
+  Officer,
+  Admin
 }
 
 /**
@@ -156,30 +232,58 @@ interface SignalEvent extends BaseEvent {
  * The event has all the fields formatted and never raw.
  * For example {@link #message} will contain the message content only and will never include any prefix of any kind.
  */
-export interface ChatEvent extends InformEvent {
+export type ChatEvent = ChatLike & {
+  /**
+   * The permission level the user sending the chat message has.
+   */
+  readonly permission: Permission
+}
+
+export type ChatLike = MinecraftGuildChat | MinecraftPrivateChat | DiscordChat
+
+export interface BaseChat extends InformEvent {
   /**
    * The channel type the message is coming from
    * @see ChannelType
    */
   readonly channelType: ChannelType
-  /**
-   * The channel id if exists.
-   * This is only set if the message is coming from a discord channel.
-   */
-  readonly channelId: string | undefined
+
   /**
    * The name of the message sender
    */
   readonly username: string
+
+  /**
+   * The message content without any prefix or formatting
+   */
+  readonly message: string
+}
+
+export interface MinecraftChat extends BaseChat {
+  readonly instanceType: InstanceType.Minecraft
+  readonly hypixelRank: string
+}
+
+export interface MinecraftPrivateChat extends MinecraftChat {
+  readonly channelType: ChannelType.Private
+}
+
+export interface MinecraftGuildChat extends MinecraftChat {
+  readonly channelType: ChannelType.Public | ChannelType.Officer
+  readonly guildRank: string
+}
+
+export interface DiscordChat extends BaseChat {
+  readonly instanceType: InstanceType.Discord
   /**
    * The name of the user the message is sent as a reply to.
    * Used if someone is replying to another user's message
    */
   readonly replyUsername: string | undefined
   /**
-   * The message content without any prefix or formatting
+   * The channel id if exists.
    */
-  readonly message: string
+  readonly channelId: string
 }
 
 export interface ProfanityWarningEvent extends InformEvent {
@@ -207,122 +311,161 @@ export interface ProfanityWarningEvent extends InformEvent {
 /**
  * In-game guild events such as joining/leaving/online/offline/etc.
  */
-export enum EventType {
-  // noinspection JSUnusedGlobalSymbols
-  /**
-   * Indicates an automated response/action.
-   * Used for custom plugins, etc.
-   */
-  AUTOMATED = 'automated',
+export enum GuildPlayerEventType {
   /**
    * When a player is requesting to join a guild
    */
-  REQUEST = 'request',
+  Request = 'request',
   /**
    * When a player joins a guild
    */
-  JOIN = 'join',
+  Join = 'join',
   /**
    * When a player leaves a guild
    */
-  LEAVE = 'leave',
+  Leave = 'leave',
   /**
    * When a player is kicked out of a guild
    */
-  KICK = 'kick',
-
-  /**
-   * When a guild quest completion message is shown
-   */
-  QUEST = 'quest',
+  Kick = 'kick',
 
   /**
    * When a player is promoted in a guild
    */
-  PROMOTE = 'promote',
+  Promote = 'promote',
   /**
    * When a player is demoted in a guild.
    */
-  DEMOTE = 'demote',
+  Demote = 'demote',
   /**
    * When a player gets muted in a guild
    */
-  MUTE = 'mute',
+  Mute = 'mute',
   /**
    * When a player is unmuted in a guild
    */
-  UNMUTE = 'unmute',
+  Unmute = 'unmute',
 
   /**
    * When a player goes offline
    */
-  OFFLINE = 'offline',
+  Offline = 'offline',
   /**
    * When a player comes online
    */
-  ONLINE = 'online',
-
-  /**
-   * When a Minecraft server blocks a message due to it being repetitive
-   */
-  REPEAT = 'repeat',
-  /**
-   * When a Minecraft server blocks a message due to it being harmful/abusive/etc.
-   */
-  BLOCK = 'block',
-
-  /**
-   * When the Minecraft account itself is muted by the server.
-   * Not to be confused with {@link #MUTE}
-   */
-  MUTED = 'muted'
+  Online = 'online'
 }
 
-/**
- * The severity of the event.
- * This is used to choose an embed color when displaying in discord
- */
-export enum Severity {
-  GOOD = 0x00_8a_00,
-  INFO = 0x84_84_00,
-  BAD = 0x8a_2d_00,
-  ERROR = 0xff_00_00,
-  DEFAULT = 0x09_0a_16
-}
-
-/**
- * In-game guild events such as joining/leaving/online/offline/etc.
- *
- * @see EventType
- */
-export interface ClientEvent extends InformEvent {
-  /**
-   * The channel type the message is coming from
-   * @see ChannelType
-   */
-  readonly channelType: ChannelType
+export interface BaseInGameEvent<K extends string> extends InformEvent {
   /**
    * Which event has occurred
    */
-  readonly eventType: EventType
-  /**
-   * The name of the user who fired that event.
-   * If there is no username, `undefined` is used instead
-   */
-  readonly username: string | undefined
-  /**
-   * @see Severity
-   */
-  readonly severity: Severity
+  readonly type: K
   /**
    * The message that fired that event
    */
   readonly message: string
   /**
-   * Whether to delete any notification that has been sent due to this event.
-   * Used to reduce spam if an event occurs too often.
+   * The color to display the message at if the receiver supports it.
    */
-  readonly removeLater: boolean
+  readonly color: Color
+  /**
+   * The channels type to broadcast the message at.
+   * @see ChannelType
+   */
+  readonly channels: (ChannelType.Public | ChannelType.Officer)[]
+}
+
+/**
+ * In-game guild events such as joining/leaving/online/offline/etc.
+ *
+ * @see GuildPlayerEventType
+ */
+export interface GuildPlayerEvent extends BaseInGameEvent<GuildPlayerEventType> {
+  /**
+   * The name of the user who fired that event.
+   */
+  readonly username: string
+}
+
+export enum GuildGeneralEventType {
+  /**
+   * When a guild quest completion message is shown
+   */
+  Quest = 'quest'
+}
+
+/**
+ * When a guild emits an event that isn't specific for any player or user.
+ * Events such as reach a general guild quest goal.
+ *
+ * @see GuildGeneralEventType
+ */
+export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType>
+
+export enum MinecraftChatEventType {
+  /**
+   * When a Minecraft server blocks a message due to it being repetitive
+   */
+  Repeat = 'repeat',
+  /**
+   * When a Minecraft server blocks a message due to it being harmful/abusive/etc.
+   */
+  Block = 'block',
+  /**
+   * When a Minecraft server blocks a message due to it being considered a form of advertising
+   */
+  Advertise = 'advertise',
+  /**
+   * When the Minecraft account itself is muted by the server.
+   * Not to be confused with {@link GuildPlayerEventType#Mute}
+   */
+  Muted = 'muted',
+  /**
+   * When the Minecraft account not in a guild.
+   */
+  RequireGuild = 'require_guild',
+  /**
+   * Minecraft account is in a guild but does not have permission to access officer chat.
+   */
+  NoOfficer = 'no_officer'
+}
+
+/**
+ * In-game events such as interactions blocked/etc.
+ *
+ * @see MinecraftChatEventType
+ */
+export interface MinecraftChatEvent extends BaseInGameEvent<MinecraftChatEventType> {
+  /**
+   * The original event id {@link BaseEvent#eventId} this event is mentioning.
+   *  @see {@link BaseEvent#eventId}
+   */
+  readonly originEventId: string | undefined
+}
+
+/**
+ * When a plugin or a component wishes to broadcast a message to all instances.
+ */
+export interface BroadcastEvent extends InformEvent {
+  /**
+   * The message to broadcast
+   */
+  readonly message: string
+  /**
+   * The color to display the message at if the receiver supports it.
+   */
+  readonly color: Color
+  /**
+   * The name of the user associated with the event.
+   * If there is no username, `undefined` is used instead.
+   */
+  readonly username: string | undefined
+  /**
+   * The channels to broadcast the message to.
+   * @see ChannelType
+   */
+  readonly channels: (ChannelType.Public | ChannelType.Officer)[]
 }
 
 /**
@@ -330,11 +473,12 @@ export interface ClientEvent extends InformEvent {
  */
 export interface CommandEvent extends InformEvent {
   readonly channelType: ChannelType
+
   /**
    * Only available if the message comes from a DM.
    * Used to reply to the message
    */
-  readonly discordChannelId?: string
+  readonly discordChannelId: string | undefined
   /**
    * Whether the command response has already been sent.
    * If not, then each instance will handle the replying themselves instead.
@@ -360,48 +504,19 @@ export interface CommandEvent extends InformEvent {
 }
 
 /**
- * Enum containing all available instance statuses
+ * Used to send feedback messages when a command takes time to execute.
+ * Can be used to send multiple responses as well.
  */
-export enum InstanceEventType {
-  /**
-   * When an instance is freshly created
-   */
-  create,
-  /**
-   * When an instance is starting but not connected yet
-   */
-  start,
-  /**
-   * When an instance has gracefully ended
-   */
-  end,
-  /**
-   * When an instance is connecting
-   */
-  connect,
-  /**
-   * When an instance is temporarily disconnected
-   */
-  disconnect,
-  /**
-   * When an instance has conflicted with another instance.
-   * Receiving this event means the instance won't retry to reconnect.
-   */
-  conflict,
-  /**
-   * when an instance is kicked from a server
-   */
-  kick
-}
+export type CommandFeedbackEvent = CommandEvent
 
 /**
  * Events used when an instance changes its status
  */
-export interface InstanceEvent extends InformEvent {
+export interface InstanceStatusEvent extends InformEvent {
   /**
    * The instance event status
    */
-  readonly type: InstanceEventType
+  readonly status: Status
   /**
    * Humanly formatted message of the situation
    */
@@ -436,17 +551,9 @@ export interface MinecraftSelfBroadcast extends InformEvent {
  * Event sent every time synchronization is required.
  * The event is used to informs other application clients about any existing instance.
  */
-export type InstanceSelfBroadcast = InformEvent
+export type InstanceAnnouncement = InformEvent
 
-/**
- * Event sent every time synchronization is required.
- * The event is used to informs other application clients about any existing punishments.
- */
-export interface PunishmentAddEvent extends InformEvent {
-  /**
-   * The punishment type
-   */
-  readonly type: PunishmentType
+export interface UserIdentifier {
   /**
    * The name of the punished user
    */
@@ -459,7 +566,16 @@ export interface PunishmentAddEvent extends InformEvent {
    * The Discord ID of the punished user if exists
    */
   readonly userDiscordId: string | undefined
-
+}
+/**
+ * Event sent every time synchronization is required.
+ * The event is used to informs other application clients about any existing punishments.
+ */
+export interface PunishmentAddEvent extends InformEvent, UserIdentifier {
+  /**
+   * The punishment type
+   */
+  readonly type: PunishmentType
   /**
    * The reason for the punishment
    */
@@ -467,7 +583,6 @@ export interface PunishmentAddEvent extends InformEvent {
   /**
    * Time when the punishment expires.
    * Unix Epoch in milliseconds.
-   // TODO: change to "expiresAt"
    */
   readonly till: number
 }
@@ -485,15 +600,15 @@ export interface PunishmentForgiveEvent extends InformEvent {
 }
 
 export enum PunishmentType {
-  MUTE = 'mute',
-  BAN = 'ban'
+  Mute = 'mute',
+  Ban = 'ban'
 }
 
 /**
  * Event that contains information that might prove useful.
  * Used to display internal status of the application internal components to the user outside the console.
  */
-export interface StatusMessageEvent extends InformEvent {
+export interface InstanceMessage extends InformEvent {
   /**
    * The message content that explains the status
    */
@@ -508,21 +623,47 @@ export interface MinecraftSendChat extends SignalEvent {
    * The command to send
    */
   readonly command: string
-}
-
-/**
- * Signal event used to command an instance to reconnect
- */
-export type ReconnectSignal = SignalEvent
-
-/**
- * Signal event used to shut down the application
- */
-export interface ShutdownSignal extends SignalEvent {
   /**
-   * A flag whether to restart after or not
+   * When to handle the command.
+   *
+   * Warning: spamming multiple commands using <code>instant</code>
+   * can result in the client being throttled, which can not be properly detected
+   * due to the nature of <code>instant</code> not leaving room to such detections.
+   *
+   * Warning: Any priority other than <code>default</code> can lead to inaccurate detections,
+   * be it regarding {@link InformEvent#eventId} or whether the command even succeed in execution.
    */
-  readonly restart: boolean
+  readonly priority: MinecraftSendChatPriority
 }
 
-/* eslint-enable @typescript-eslint/naming-convention */
+export enum MinecraftSendChatPriority {
+  /**
+   * let the instance decide when to handle the command.
+   */
+  Default = 'default',
+  /**
+   * Only use <code>high</code> for responsive interactions,
+   * since it will put the command at the top of the queue
+   * and disregard any high cooldown to send the command as soon as possible.
+   */
+  High = 'high',
+  /**
+   * Only use <code>instant</code> for critical actions,
+   * since it will completely disregard any queue and cooldown instantly sending it.
+   */
+  Instant = 'instant'
+}
+/**
+ * Signal event used to control the application and instances
+ */
+export interface InstanceSignal extends SignalEvent {
+  /**
+   * A flag indicating the signal
+   */
+  readonly type: InstanceSignalType
+}
+
+export enum InstanceSignalType {
+  Shutdown = 'shutdown',
+  Restart = 'restart'
+}

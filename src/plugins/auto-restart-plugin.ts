@@ -1,47 +1,42 @@
 import { uptime } from 'node:process'
 
-import { ChannelType, EventType, InstanceType, Severity } from '../common/application-event.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import { ChannelType, Color, InstanceSignalType } from '../common/application-event.js'
+import PluginInstance from '../common/plugin-instance.js'
 
 /* WARNING
 THIS PLUGIN IS NOT ESSENTIAL BUT IS HEAVILY RECOMMENDED.
 BRIDGE WILL USE MORE RAM THE LONGER IT IS LEFT WITHOUT RESTARTING
 */
+export default class AutoRestartPlugin extends PluginInstance {
+  private static readonly MaxLifeTillRestart = 24 * 60 * 60 // 24 hour in seconds
+  private static readonly CheckEvery = 5 * 60 * 1000 // 5 minutes in milliseconds
 
-const MaxLifeTillRestart = 24 * 60 * 60 // 24 hour in seconds
-const CheckEvery = 5 * 60 * 1000 // 5 minutes in milliseconds
-
-export default {
-  onRun(context: PluginContext): void {
+  onReady(): Promise<void> | void {
     let shuttingDown = false
 
     setInterval(() => {
       if (shuttingDown) return
 
-      if (MaxLifeTillRestart < uptime()) {
+      if (AutoRestartPlugin.MaxLifeTillRestart < uptime()) {
         shuttingDown = true
 
-        context.application.emit('event', {
-          localEvent: true,
+        this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
 
-          instanceType: InstanceType.PLUGIN,
-          instanceName: context.pluginName,
-
-          channelType: ChannelType.PUBLIC,
-          severity: Severity.INFO,
-          eventType: EventType.AUTOMATED,
-          removeLater: false,
+          channels: [ChannelType.Public],
+          color: Color.Info,
 
           username: undefined,
           message: 'Application Restarting: Scheduled restart'
         })
 
-        context.application.emit('shutdownSignal', {
-          localEvent: true,
-          restart: true,
-          targetInstanceName: undefined
+        this.application.emit('instanceSignal', {
+          ...this.eventHelper.fillBaseEvent(),
+
+          type: InstanceSignalType.Restart,
+          targetInstanceName: [this.application.instanceName]
         })
       }
-    }, CheckEvery)
+    }, AutoRestartPlugin.CheckEvery)
   }
-} satisfies PluginInterface
+}

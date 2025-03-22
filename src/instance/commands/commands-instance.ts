@@ -1,11 +1,14 @@
 import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
-import { ChannelType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { InstanceType, Permission } from '../../common/application-event.js'
+import type { ChatCommandHandler } from '../../common/commands.js'
+import { ConfigManager } from '../../common/config-manager.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import { InternalInstancePrefix } from '../../common/instance.js'
 
-import type { ChatCommandHandler } from './common/command-interface.js'
 import EightBallCommand from './triggers/8ball.js'
+import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
@@ -16,8 +19,11 @@ import Help from './triggers/help.js'
 import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
+import MagicalPower from './triggers/magicalpower.js'
 import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
+import PartyManager from './triggers/party.js'
+import PersonalBest from './triggers/personal-best.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
@@ -26,42 +32,56 @@ import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
+import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
+import Vengeance from './triggers/vengeance.js'
 import Weight from './triggers/weight.js'
 
-export class CommandsInstance extends ClientInstance<CommandsConfig> {
+export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
+  private readonly internalConfig
 
-  constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, InstanceType.COMMANDS, config)
+  constructor(app: Application, config: CommandsConfig) {
+    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, true, config)
+
+    this.internalConfig = new ConfigManager<InternalConfig>(app, app.getConfigFilePath('commands.json'), {
+      disabledCommands: []
+    })
+    this.internalConfig.loadFromConfig()
 
     this.commands = [
-      new EightBallCommand(),
+      new Bits(),
+      new Bedwars(),
       new Calculate(),
       new Catacomb(),
-      new RunsToClassAverage(),
       new DarkAuction(),
+      new EightBallCommand(),
       new Explain(),
       new Guild(),
       new Help(),
       new Iq(),
       new Kuudra(),
       new Level(),
+      new MagicalPower(),
       new Networth(),
       new Override(),
+      ...new PartyManager().resolveCommands(),
+      new PersonalBest(),
       new RockPaperScissors(),
       new Roulette(),
       new Runs(),
+      new RunsToClassAverage(),
       new Secrets(),
       new Skills(),
       new Slayer(),
       new Soopy(),
+      new StatusCommand(),
       new Toggle(),
-      new Weight(),
-      new Bits()
+      new Vengeance(),
+      new Weight()
     ]
 
-    const disabled = config.disabledCommand
+    const disabled = this.internalConfig.data.disabledCommands
     for (const command of this.commands) {
       if (command.triggers.some((trigger: string) => disabled.includes(trigger.toLowerCase()))) {
         command.enabled = false
@@ -69,8 +89,8 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
     this.checkCommandsIntegrity()
 
-    this.app.on('chat', (event) => {
-      void this.handle(event)
+    this.application.on('chat', (event) => {
+      void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
@@ -90,53 +110,103 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
   }
 
-  connect(): Promise<void> | void {
+  connect(): void {
     this.checkCommandsIntegrity()
+    this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
+  }
+  disconnect(): Promise<void> | void {
+    this.setAndBroadcastNewStatus(Status.Ended, 'chat commands have been disabled')
   }
 
   async handle(event: ChatEvent): Promise<void> {
+    if (this.currentStatus() !== Status.Connected) return
     if (!event.message.startsWith(this.config.commandPrefix)) return
 
-    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.MINECRAFT
     const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
     if (command == undefined) return
 
-    // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.OFFICER) {
+    // Disabled commands can only be used by officers and admins, regular users cannot use them
+    if (!command.enabled && event.permission === Permission.Anyone) {
       return
     }
 
-    const commandResponse = await command.handler({
-      app: this.app,
+    try {
+      const commandResponse = await command.handler({
+        app: this.application,
 
-      logger: this.logger,
-      allCommands: this.commands,
-      commandPrefix: this.config.commandPrefix,
-      adminUsername: this.config.adminUsername,
+        eventHelper: this.eventHelper,
+        logger: this.logger,
+        errorHandler: this.errorHandler,
 
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+        allCommands: this.commands,
+        commandPrefix: this.config.commandPrefix,
+        saveConfigChanges: () => {
+          this.saveConfig()
+        },
+
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+        channelType: event.channelType,
+
+        username: event.username,
+        permission: event.permission,
+        args: commandsArguments,
+
+        sendFeedback: (feedbackResponse) => {
+          this.feedback(event, command.triggers[0], feedbackResponse)
+        }
+      })
+
+      this.reply(event, command.triggers[0], commandResponse)
+    } catch (error) {
+      this.logger.error('Error while handling command', error)
+      this.reply(
+        event,
+        command.triggers[0],
+        `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`
+      )
+    }
+  }
+
+  private reply(event: ChatEvent, commandName: string, response: string): void {
+    this.application.emit('command', {
+      ...this.eventHelper.fillBaseEvent(),
+
       channelType: event.channelType,
-
-      username: event.username,
-      isAdmin: isAdmin,
-      args: commandsArguments
-    })
-
-    this.app.emit('command', {
-      localEvent: true,
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
-      channelType: event.channelType,
-      discordChannelId: event.channelId,
+      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
       fullCommand: event.message,
-      commandName: command.triggers[0],
-      commandResponse: commandResponse,
+      commandName: commandName,
+      commandResponse: response,
       alreadyReplied: false
     })
   }
+
+  private feedback(event: ChatEvent, commandName: string, response: string): void {
+    this.application.emit('commandFeedback', {
+      ...this.eventHelper.fillBaseEvent(),
+
+      channelType: event.channelType,
+      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
+      username: event.username,
+      fullCommand: event.message,
+      commandName: commandName,
+      commandResponse: response,
+      alreadyReplied: false
+    })
+  }
+
+  private saveConfig(): void {
+    this.internalConfig.data.disabledCommands = this.commands
+      .filter((command) => !command.enabled)
+      .map((command) => command.triggers[0])
+    this.internalConfig.saveConfig()
+  }
+}
+
+export interface InternalConfig {
+  disabledCommands: string[]
 }

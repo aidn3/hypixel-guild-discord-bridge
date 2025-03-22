@@ -1,37 +1,36 @@
-import { InstanceEventType, InstanceType } from '../common/application-event.js'
-import type { PluginInterface, PluginContext } from '../common/plugins.js'
-import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
+import { Status } from '../common/connectable-instance.js'
+import PluginInstance from '../common/plugin-instance.js'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 /* WARNING
 THIS IS AN ESSENTIAL PLUGIN! EDITING IT MAY HAVE ADVERSE AFFECTS ON THE APPLICATION
 */
-
-async function limbo(clientInstance: MinecraftInstance): Promise<void> {
-  clientInstance.logger.debug('Spawn event triggered. sending to limbo...')
-  await clientInstance.send('§')
-}
-
-/*
- * Permanently trap Minecraft client in limbo and prevent it from leaving
- */
-export default {
-  onRun(context: PluginContext): void {
-    context.application.on('instance', (event) => {
-      if (event.type === InstanceEventType.create && event.instanceType === InstanceType.MINECRAFT) {
-        const localInstance = context.localInstances.find(
-          (instance) => instance instanceof MinecraftInstance && instance.instanceName === event.instanceName
+export default class LimboPlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
+    this.application.on('instanceStatus', (event) => {
+      if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
+        // @ts-expect-error minecraft instances are private
+        const localInstance = this.application.minecraftInstances.find(
+          (instance) => instance.instanceName === event.instanceName
         )
         if (localInstance != undefined) {
-          const clientInstance = localInstance as MinecraftInstance
+          void this.limbo(localInstance).catch(this.errorHandler.promiseCatch('handling /limbo command'))
           // "login" packet is also first spawn packet containing world metadata
-          clientInstance.client?.on('login', async () => {
-            await limbo(clientInstance)
+          localInstance.clientSession?.client.on('login', async () => {
+            await this.limbo(localInstance)
           })
-          clientInstance.client?.on('respawn', async () => {
-            await limbo(clientInstance)
+          localInstance.clientSession?.client.on('respawn', async () => {
+            await this.limbo(localInstance)
           })
         }
       }
     })
   }
-} satisfies PluginInterface
+
+  private async limbo(clientInstance: MinecraftInstance): Promise<void> {
+    this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
+    await clientInstance.send('/limbo', MinecraftSendChatPriority.Default, undefined)
+  }
+}

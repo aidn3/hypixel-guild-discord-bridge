@@ -1,16 +1,16 @@
 import assert from 'node:assert'
 
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { InstanceType, Severity } from '../../../common/application-event.js'
+import { Color, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type EventHelper from '../../../common/event-helper.js'
 import type { MojangApi, MojangProfile } from '../../../util/mojang.js'
-import { escapeDiscord } from '../../../util/shared-util.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'
 
@@ -21,7 +21,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   for (const [instanceName, list] of instances) {
     total += list.length
 
-    entries.push(`**${escapeDiscord(instanceName)} (${list.length})**\n`)
+    entries.push(`**${escapeMarkdown(instanceName)} (${list.length})**\n`)
 
     if (list.length > 0) {
       for (const user of list) {
@@ -43,7 +43,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
       currentLength = 0
 
       pages.push({
-        color: Severity.DEFAULT,
+        color: Color.Default,
         title: `Guild Online Players (${total}):`,
         description: '',
         footer: {
@@ -64,14 +64,15 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
   permission: Permission.Anyone,
-  allowInstance: false,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
+    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
     const lists: Map<string, string[]> = await listMembers(
       context.application,
+      context.eventHelper,
       context.application.mojangApi,
       context.application.hypixelApi
     )
@@ -80,12 +81,17 @@ export default {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
     }
 
-    await pageMessage(context.interaction, createEmbed(lists))
+    await pageMessage(context.interaction, createEmbed(lists), context.errorHandler)
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
-async function listMembers(app: Application, mojangApi: MojangApi, hypixelApi: Client): Promise<Map<string, string[]>> {
-  const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app)
+async function listMembers(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>,
+  mojangApi: MojangApi,
+  hypixelApi: Client
+): Promise<Map<string, string[]>> {
+  const onlineProfiles: Map<string, string[]> = await getOnlineMembers(app, eventHelper)
 
   for (const [instanceName, members] of onlineProfiles) {
     const fetchedMembers = await look(mojangApi, hypixelApi, unique(members))
@@ -143,20 +149,23 @@ async function lookupProfiles(
 }
 
 function formatLocation(username: string, session: Status | undefined): string {
-  let message = `- **${escapeDiscord(username)}** `
+  let message = `- **${escapeMarkdown(username)}** `
 
   if (session === undefined) return message + ' is *__unknown?__*'
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  if (session.game != undefined) message += `playing __${escapeDiscord(session.game.name)}__`
-  if (session.mode != undefined) message += ` in ${escapeDiscord(session.mode.toLowerCase())}`
+  if (session.game != undefined) message += `playing __${escapeMarkdown(session.game.name)}__`
+  if (session.mode != undefined) message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
   message += '*' // END discord markdown. italic
 
   return message
 }
 
-async function getOnlineMembers(app: Application): Promise<Map<string, string[]>> {
+async function getOnlineMembers(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>
+): Promise<Map<string, string[]>> {
   const resolvedNames = new Map<string, string[]>()
   const regexOnline = /(\w{3,16}) \u25CF/g
 
@@ -176,7 +185,12 @@ async function getOnlineMembers(app: Application): Promise<Map<string, string[]>
   }
 
   app.on('minecraftChat', chatListener)
-  app.clusterHelper.sendCommandToAllMinecraft('/guild online')
+  app.emit('minecraftSend', {
+    ...eventHelper.fillBaseEvent(),
+    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    priority: MinecraftSendChatPriority.High,
+    command: '/guild online'
+  })
   await new Promise((resolve) => setTimeout(resolve, 3000))
   app.removeListener('minecraftChat', chatListener)
 

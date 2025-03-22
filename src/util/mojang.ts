@@ -17,6 +17,20 @@ export class MojangApi {
     return result
   }
 
+  async profileByUuid(uuid: string): Promise<MojangProfile> {
+    for (const cachedUsername of this.cache.keys()) {
+      const cachedProfile: MojangProfile | undefined = this.cache.get(cachedUsername)
+      if (cachedProfile?.id === uuid) return cachedProfile
+    }
+
+    const result = await Axios.get(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`).then(
+      (response: AxiosResponse<MojangProfile, unknown>) => response.data
+    )
+
+    this.cache.set(result.name.toLowerCase(), { ...result, fetchedAt: Date.now() })
+    return result
+  }
+
   async profilesByUsername(usernames: string[]): Promise<MojangProfile[]> {
     const partialResult = usernames
       .map((username) => this.cache.get<MojangProfile>(username.toLowerCase()))

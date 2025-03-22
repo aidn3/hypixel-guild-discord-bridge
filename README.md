@@ -129,9 +129,11 @@ A shorter version can also be used: `!- rtca`
 | !kuudra      | Get a player's kuudra completions `!kuudra hot`            | Anyone     |
 | !level       | Get a player's skyblock level                              | Anyone     |
 | !networth    | Calculate the in-game networth of a player                 | Anyone     |
+| !startparty  | Create public !parties to be viewed by guild members       | Anyone     |
+| !pb          | Returns a players best dungeon run time `!pb aidn5 m7`     | Anyone     |
 | !rps         | Play rock paper scissors `!rps rock`                       | Anyone     |
 | !roulette    | Has a chance of muting a player                            | Anyone     |
-| !runs        | Return a plauer's floor completions `!runs m7`             | Anyone     |
+| !runs        | Return a player's floor completions `!runs m7`             | Anyone     |
 | !rtca        | Return runs count to reach an average class level          | Anyone     |
 | !secrets     | Return a player's total dungeon secrets                    | Anyone     |
 | !skill       | Return player's skill level `!skill mining`                | Anyone     |
@@ -144,20 +146,21 @@ A shorter version can also be used: `!- rtca`
 ### Available Plugins
 
 Application has an official public API and supports custom plugins to enhance potential.  
-Loaded plugins can be configured in the `config.yaml` file when [configuring the app](#configure).  
+Loaded plugins can be configured in the `config.yaml` file when [configuring the application](#configure).  
 To create custom plugins see [Documentation And Tutorials](#documentation-and-tutorials).
 
 These are the supported official plugins that come bundled with the application:
 
-| Plugin            | Description                                                                             | Importance      | Notice                                                                                                                                |
-| ----------------- | --------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| auto-restart      | Schedule restarting every 24 hours                                                      | Essential       | A process monitor is required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage. |
-| limbo-plugin      | Forces Minecraft client to stay in Hypixel limbo                                        | Essential       | Being outside of limbo for prolonged periods can lead to the account being banned. Only disable if required.                          |
-| punishment-plugin | Enforces punishments and prevents punishment evasion                                    | Recommended     | Plugin will mute users but won't ban them, instead it will send a notification in officer chat.                                       |
-| warp-plugin       | Warp players out of their lobbies                                                       | Quality of Life | Incompatible with `limbo-plugin`. Disable one before enabling the other one.                                                          |
-| reaction-plugin   | Send a greeting/reaction message when a member joins/leaves or is kicked from the guild | Quality of Life | N/A                                                                                                                                   |
-| dark-auction      | Send a reminder when a skyblock dark auction is starting                                | Quality of Life | Sends a reminder 5 minutes and 1 minute before the dark auction.                                                                      |
-| starfall-cult     | Send a reminder when the skyblock starfall cult gathers                                 | Quality of Life | N/A                                                                                                                                   |
+| Plugin            | Description                                                                             | Importance      | Notice                                                                                                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| auto-restart      | Schedule restarting every 24 hours                                                      | Essential       | A process monitor is required to restart the application after it shuts down. Not periodically restarting can lead to high RAM usage.                                                              |
+| limbo-plugin      | Forces Minecraft client to stay in Hypixel limbo                                        | Essential       | Being outside of limbo for prolonged periods can lead to the account being banned. Only disable if required.                                                                                       |
+| punishment-plugin | Enforces punishments and prevents punishment evasion                                    | Recommended     | Plugin will mute users but won't ban them, instead it will send a notification in officer chat.                                                                                                    |
+| warp-plugin       | Warp players out of their lobbies                                                       | Quality of Life | Incompatible with `limbo-plugin`. Disable one before enabling the other one.                                                                                                                       |
+| reaction-plugin   | Send a greeting/reaction message when a member joins/leaves or is kicked from the guild | Quality of Life | N/A                                                                                                                                                                                                |
+| dark-auction      | Send a reminder when a skyblock dark auction is starting                                | Quality of Life | Sends a reminder 5 minutes and 1 minute before the dark auction.                                                                                                                                   |
+| starfall-cult     | Send a reminder when the skyblock starfall cult gathers                                 | Quality of Life | N/A                                                                                                                                                                                                |
+| STuF              | Bypass Hypixel restriction on hyperlinks                                                | Optional        | Requires the installation of a minecraft client mod/module that supports [STuF](https://github.com/stuffyerface/STuF) such as [ImageLinkFix](https://www.chattriggers.com/modules/v/ImageLinkFix). |
 
 ### How to use override
 

@@ -1,13 +1,12 @@
-import { ChannelType, Severity, EventType, InstanceType } from '../common/application-event.js'
-import type { PluginContext, PluginInterface } from '../common/plugins.js'
+import { ChannelType, Color } from '../common/application-event.js'
+import PluginInstance from '../common/plugin-instance.js'
 import { antiSpamString } from '../util/shared-util.js'
 
 /* NOTICE
 THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
 */
-
-export default {
-  onRun(context: PluginContext): void {
+export default class DarkAuctionPlugin extends PluginInstance {
+  onReady(): Promise<void> | void {
     let lastHourCheck = -1
     let lastMinuteCheck = -1
 
@@ -21,18 +20,16 @@ export default {
       lastMinuteCheck = currentMinute
 
       if ([50, 54].includes(currentMinute)) {
-        context.application.emit('event', {
-          localEvent: true,
-          instanceType: InstanceType.MAIN,
-          instanceName: InstanceType.MAIN,
-          eventType: EventType.AUTOMATED,
-          severity: Severity.GOOD,
-          channelType: ChannelType.PUBLIC,
+        this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
+
+          channels: [ChannelType.Public],
+          color: Color.Good,
+
           username: undefined,
-          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`,
-          removeLater: false
+          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`
         })
       }
     }, 5000)
   }
-} satisfies PluginInterface
+}

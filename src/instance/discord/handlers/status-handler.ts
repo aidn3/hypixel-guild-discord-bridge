@@ -2,10 +2,11 @@ import assert from 'node:assert'
 
 import { ActivityType } from 'discord.js'
 
+import type { InstanceType } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
 import type DiscordInstance from '../discord-instance.js'
 
-export default class StatusHandler extends EventHandler<DiscordInstance> {
+export default class StatusHandler extends EventHandler<DiscordInstance, InstanceType.Discord> {
   registerEvents(): void {
     this.clientInstance.client.on('ready', () => {
       this.onReady()

@@ -1,6 +1,6 @@
 {
   "name": "hypixel-guild-discord-bridge",
-  "version": "3.2.0",
+  "version": "3.3.1",
   "description": "A Hypixel guild chat and Discord chat bridge",
   "type": "module",
   "main": "index.ts",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node --import tsx/esm index.ts",
-    "generate": "npx ts-interface-builder src/application-config.ts src/common/application-event.ts",
+    "generate": "npx ts-interface-builder src/application-config.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --import tsx/esm index.ts test-run",
@@ -36,6 +36,7 @@
     "log4js": "^6.9.1",
     "minecraft-data": "^3.66.0",
     "minecraft-protocol": "^1.47.0",
+    "moment": "^2.30.1",
     "node-cache": "^5.1.2",
     "prismarine-chat": "^1.10.1",
     "prismarine-registry": "^1.7.0",
@@ -54,17 +55,17 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.2.2",
     "eslint-plugin-json": "^4.0.1",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-require-extensions": "^0.1.3",
     "eslint-plugin-unicorn": "^55.0.0",
-    "prettier": "^3.0.3",
+    "prettier": "^3.3.3",
     "prismarine-nbt": "^2.5.0",
     "ts-interface-builder": "^0.3.3",
-    "type-coverage": "^2.27.1",
-    "typescript": "^5.2.2"
+    "type-coverage": "^2.29.7",
+    "typescript": "^5.6.3"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
