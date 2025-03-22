@@ -1,6 +1,9 @@
 general:
   # Get Hypixel API key by creating one via dashboard.hypixel.net
   hypixelApiKey: '55adcfd6-abcd-477d-1234-12341234123a'
+  # Share basic anonymous metrics to display on the project main page as a way to show its popularity.
+  # All metrics are anonymous and are limited to counting and never about anything specific
+  shareMetrics: true
 
 discord:
   instanceName: 'Discord'

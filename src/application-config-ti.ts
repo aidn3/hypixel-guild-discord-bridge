@@ -6,6 +6,7 @@ import * as t from "ts-interface-checker";
 
 export const GeneralConfig = t.iface([], {
   "hypixelApiKey": "string",
+  "shareMetrics": "boolean",
 });
 
 export const DiscordConfig = t.iface([], {

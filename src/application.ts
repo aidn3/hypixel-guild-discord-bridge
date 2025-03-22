@@ -27,6 +27,7 @@ import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import SocketInstance from './instance/socket/socket-instance.js'
+import StatisticsInstance from './instance/statistics/statistics-instance.js'
 import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
 import { MojangApi } from './util/mojang.js'
@@ -59,6 +60,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly metricsInstance: MetricsInstance | undefined
   private readonly minecraftInstances: MinecraftInstance[] = []
   private readonly socketInstance: SocketInstance | undefined
+  private readonly statisticsInstance: StatisticsInstance | undefined
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
@@ -112,6 +114,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.metricsInstance = this.config.metrics.enabled ? new MetricsInstance(this, this.config.metrics) : undefined
     this.socketInstance = this.config.socket.enabled ? new SocketInstance(this, this.config.socket) : undefined
     this.commandsInstance = this.config.commands.enabled ? new CommandsInstance(this, this.config.commands) : undefined
+    this.statisticsInstance = this.config.general.shareMetrics ? new StatisticsInstance(this) : undefined
 
     this.on('instanceSignal', (event) => {
       if (event.targetInstanceName.includes(this.instanceName)) {
@@ -228,6 +231,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       this.metricsInstance,
       this.commandsInstance,
       ...this.minecraftInstances,
+      this.statisticsInstance,
 
       this.socketInstance // socket last. so other instances are ready when connecting to other clients
     ].filter((instance) => instance != undefined)
