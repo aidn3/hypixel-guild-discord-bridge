@@ -1,5 +1,6 @@
 export interface GeneralConfig {
   hypixelApiKey: string
+  shareMetrics: boolean
 }
 
 export interface DiscordConfig {
