@@ -38,7 +38,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     const sessionDirectoryName = 'minecraft-sessions'
     this.sessionDirectory = this.application.getConfigFilePath(sessionDirectoryName)
-    fs.mkdirSync(this.sessionDirectory)
+    fs.mkdirSync(this.sessionDirectory, { recursive: true })
     this.application.applicationIntegrity.addConfigPath(sessionDirectoryName)
 
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
