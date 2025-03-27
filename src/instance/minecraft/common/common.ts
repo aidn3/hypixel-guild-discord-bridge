@@ -1,3 +1,4 @@
+import type { UserIdentifier } from '../../../common/application-event.js'
 import { ChannelType, Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { HeatType } from '../../moderation/commands-heat.js'
@@ -6,13 +7,17 @@ import { HeatResult } from '../../moderation/commands-heat.js'
 
 import type { MinecraftChatContext } from './chat-interface.js'
 
-export async function checkHeat(context: MinecraftChatContext, issuedBy: string, heatType: HeatType) {
+export async function checkHeat(context: MinecraftChatContext, issuedBy: string, heatType: HeatType): Promise<void> {
   const mojangProfile = await context.application.mojangApi.profileByUsername(issuedBy).catch(() => undefined)
 
-  const heatResult = context.application.moderation.commandsHeat.add(
-    { userName: mojangProfile?.name ?? issuedBy, userUuid: mojangProfile?.id, userDiscordId: undefined },
-    heatType
-  )
+  const identifier: UserIdentifier = {
+    userName: mojangProfile?.name ?? issuedBy,
+    userUuid: mojangProfile?.id,
+    userDiscordId: undefined
+  }
+
+  if (context.application.moderation.immune(identifier)) return
+  const heatResult = context.application.moderation.commandsHeat.add(identifier, heatType)
 
   if (heatResult === HeatResult.Warn) {
     context.application.emit('broadcast', {
