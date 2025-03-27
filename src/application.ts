@@ -2,6 +2,7 @@
 // @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
 
 import type Events from 'node:events'
+import fs from 'node:fs'
 import path from 'node:path'
 import * as process from 'node:process'
 
@@ -103,9 +104,20 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       )
     }
 
+    const sessionDirectoryName = 'minecraft-sessions'
+    const sessionDirectory = this.getConfigFilePath(sessionDirectoryName)
+    fs.mkdirSync(sessionDirectory, { recursive: true })
+    this.applicationIntegrity.addConfigPath(sessionDirectoryName)
+
     for (const instanceConfig of this.config.minecraft.instances) {
       this.minecraftInstances.push(
-        new MinecraftInstance(this, instanceConfig.name, instanceConfig, this.config.minecraft.adminUsername)
+        new MinecraftInstance(
+          this,
+          instanceConfig.name,
+          instanceConfig,
+          sessionDirectory,
+          this.config.minecraft.adminUsername
+        )
       )
     }
 

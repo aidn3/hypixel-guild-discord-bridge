@@ -1,5 +1,3 @@
-import fs from 'node:fs'
-
 import { createClient, states } from 'minecraft-protocol'
 
 import type { MinecraftInstanceConfig } from '../../application-config.js'
@@ -30,17 +28,19 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   private readonly adminUsername: string
   private readonly sessionDirectory: string
 
-  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, adminUsername: string) {
+  constructor(
+    app: Application,
+    instanceName: string,
+    config: MinecraftInstanceConfig,
+    sessionDirectory: string,
+    adminUsername: string
+  ) {
     super(app, instanceName, InstanceType.Minecraft, true, config)
 
-    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
     this.adminUsername = adminUsername
+    this.sessionDirectory = sessionDirectory
 
-    const sessionDirectoryName = 'minecraft-sessions'
-    this.sessionDirectory = this.application.getConfigFilePath(sessionDirectoryName)
-    fs.mkdirSync(this.sessionDirectory, { recursive: true })
-    this.application.applicationIntegrity.addConfigPath(sessionDirectoryName)
-
+    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
       this.sendNow(command)
     })
