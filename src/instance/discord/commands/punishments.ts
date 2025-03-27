@@ -596,6 +596,8 @@ async function handleAllowance(
   type: HeatType
 ): Promise<'denied' | 'allow' | APIEmbed> {
   const issuerUser = await findAboutUser(mojangApi, interaction, interaction.user.username, false, false)
+  if (moderation.immune(issuerUser)) return 'allow'
+
   const actionAllowance = moderation.commandsHeat.tryAdd(issuerUser, type)
 
   switch (actionAllowance) {
