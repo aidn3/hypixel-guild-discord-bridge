@@ -31,7 +31,7 @@
     "axios": "^1.7.2",
     "bad-words": "3.0.4",
     "discord.js": "^14.15.3",
-    "emoji-name-map": "^1.2.9",
+    "emoji-name-map": "^2.0.1",
     "hypixel-api-reborn": "^11.2.1",
     "log4js": "^6.9.1",
     "minecraft-data": "^3.66.0",
