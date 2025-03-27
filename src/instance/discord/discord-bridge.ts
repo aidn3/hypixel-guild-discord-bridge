@@ -328,7 +328,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     const webhooks = await channel.fetchWebhooks()
 
     let webhook = webhooks.find((h) => h.owner?.id === this.clientInstance.client.user?.id)
-    if (webhook == undefined) webhook = await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
+    webhook ??= await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
     return webhook
   }
 }

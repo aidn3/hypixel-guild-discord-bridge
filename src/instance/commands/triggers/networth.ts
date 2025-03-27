@@ -62,14 +62,12 @@ export default class Networth extends ChatCommandHandler {
   }
 
   private async tryUpdatePrices(errorHandler: UnexpectedErrorHandler): Promise<void> {
-    if (!this.priceUpdater) {
-      this.priceUpdater = setInterval(
-        () => {
-          void this.updatePrices().catch(errorHandler.promiseCatch('periodical price updating'))
-        },
-        1000 * 60 * 5
-      ) // 5 minutes
-    }
+    this.priceUpdater ??= setInterval(
+      () => {
+        void this.updatePrices().catch(errorHandler.promiseCatch('periodical price updating'))
+      },
+      1000 * 60 * 5
+    ) // 5 minutes
 
     if (!this.prices) await this.updatePrices()
   }

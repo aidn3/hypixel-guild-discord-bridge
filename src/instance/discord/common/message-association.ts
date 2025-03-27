@@ -11,7 +11,7 @@ export default class MessageAssociation {
 
   public addMessageId(eventId: string, options: DiscordAssociatedMessage): void {
     let list: DiscordAssociatedMessage[] | undefined = this.messageIds.get(eventId)
-    if (list === undefined) list = []
+    list ??= []
 
     list = list.filter((item) => item.channelId !== options.channelId)
     list.push(options)

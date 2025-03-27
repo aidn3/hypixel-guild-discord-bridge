@@ -324,7 +324,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
         switch (command.addMinecraftInstancesToOptions) {
           case OptionToAddMinecraftInstances.Required: {
-            if (commandBuilder.options === undefined) commandBuilder.options = []
+            commandBuilder.options ??= []
 
             // splice is just fancy push at certain index
             commandBuilder.options.splice(index + 1, 0, {
@@ -337,7 +337,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
             break
           }
           case OptionToAddMinecraftInstances.Optional: {
-            if (commandBuilder.options === undefined) commandBuilder.options = []
+            commandBuilder.options ??= []
             commandBuilder.options.push({
               type: 3,
               name: instanceCommandName,
