@@ -1,6 +1,9 @@
 import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
 import { sufficeToTime } from '../../../util/shared-util.js'
+// eslint-disable-next-line import/no-restricted-paths
+import { HeatType } from '../../moderation/commands-heat.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+import { checkHeat } from '../common/common.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -13,6 +16,8 @@ export default {
       const target = match[2]
       const muteTime = Number(match[3])
       const muteSuffice = match[4]
+
+      await checkHeat(context, responsible, HeatType.Mute)
 
       const mojangProfile = await context.application.mojangApi.profileByUsername(target).catch(() => undefined)
 
