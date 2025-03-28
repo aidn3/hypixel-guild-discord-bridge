@@ -16,7 +16,6 @@ export const QuitProxyError = 'Proxy encountered a problem while connecting'
 export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
   private static readonly MaxLoginAttempts = 5
   private loginAttempts
-  private exactDelay
   private loggedIn
 
   constructor(
@@ -29,7 +28,6 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
     this.loginAttempts = 0
-    this.exactDelay = 0
     this.loggedIn = false
   }
 
@@ -72,7 +70,6 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     this.logger.info('Minecraft client ready, logged in')
 
     this.loginAttempts = 0
-    this.exactDelay = 0
     this.clientInstance.setAndBroadcastNewStatus(Status.Connected, 'Minecraft instance has connected')
   }
 
@@ -178,14 +175,8 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
       this.clientInstance.setAndBroadcastNewStatus(Status.Failed, reason)
     }
 
-    let loginDelay = this.exactDelay
-    if (loginDelay === 0) {
-      loginDelay = (this.loginAttempts + 1) * 5000
-
-      if (loginDelay > 60_000) {
-        loginDelay = 60_000
-      }
-    }
+    let loginDelay = (this.loginAttempts + 1) * 5000
+    if (loginDelay > 60_000) loginDelay = 60_000
 
     this.clientInstance.setAndBroadcastNewStatus(
       Status.Disconnected,
