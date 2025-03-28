@@ -4,18 +4,13 @@
  Minecraft username: _aura
 */
 import Axios, { type AxiosResponse } from 'axios'
-import { getNetworth, getPrices } from 'skyhelper-networth'
+import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
 
 export default class Networth extends ChatCommandHandler {
-  private prices: object | undefined
-
-  private priceUpdater: NodeJS.Timeout | undefined
-
   constructor() {
     super({
       name: 'Networth',
@@ -46,34 +41,23 @@ export default class Networth extends ChatCommandHandler {
       return `${context.username}, error fetching museum data?`
     }
 
-    await this.tryUpdatePrices(context.errorHandler)
-
-    const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
-      v2Endpoint: true,
-      prices: this.prices,
-      museumData: museumData,
-      onlyNetworth: true
-    })
+    const calculator = new ProfileNetworthCalculator(
+      selectedProfile.members[uuid],
+      museumData,
+      selectedProfile.banking?.balance ?? 0
+    )
+    const networth = await calculator
+      .getNetworth({ onlyNetworth: true })
       .then((response) => response.networth)
       .catch(() => undefined)
     if (networth === undefined) return `${context.username}, cannot calculate the networth?`
+    const nonCosmetic = await calculator
+      .getNonCosmeticNetworth({ onlyNetworth: true })
+      .then((response) => response.networth)
+      .catch(() => undefined)
+    if (nonCosmetic === undefined) return `${context.username}, cannot calculate the non-cosmetic networth?`
 
-    return `${givenUsername}'s networth: ${this.localizedNetworth(networth)}`
-  }
-
-  private async tryUpdatePrices(errorHandler: UnexpectedErrorHandler): Promise<void> {
-    this.priceUpdater ??= setInterval(
-      () => {
-        void this.updatePrices().catch(errorHandler.promiseCatch('periodical price updating'))
-      },
-      1000 * 60 * 5
-    ) // 5 minutes
-
-    if (!this.prices) await this.updatePrices()
-  }
-
-  private async updatePrices(): Promise<void> {
-    this.prices = await getPrices()
+    return `${givenUsername}'s networth: ${this.localizedNetworth(nonCosmetic)}, non-cosmetic: ${this.localizedNetworth(nonCosmetic)}`
   }
 
   private localizedNetworth(coins: number): string {
