@@ -18,7 +18,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   readonly defaultBotConfig = {
     host: 'me.hypixel.net',
     port: 25_565,
-    version: '1.17.1'
+    version: '1.8.9'
   }
 
   clientSession: ClientSession | undefined
