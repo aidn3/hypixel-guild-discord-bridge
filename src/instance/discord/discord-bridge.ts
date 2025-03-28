@@ -38,6 +38,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   private static readonly DeleteTempEventAfter = 15 * 60 * 1000
   private readonly messageAssociation: MessageAssociation
   private readonly config
+  /*
+     Queue all sending chat messages. So, when a command event comes.
+     All currently outgoing messages can be awaited before the reply is sent to one of them.
+
+     Before this: Chat message containing a chat command is sent, then the command is sent after independently.
+     Now, it is possible to make it as a reply.
+   */
+  private outgoingChat = new Map<string, Promise<unknown>>()
 
   constructor(
     application: Application,
@@ -94,6 +102,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onChat(event: ChatEvent): Promise<void> {
+    const promise = this.queueChat(event).catch(this.errorHandler.promiseCatch('handling event chat'))
+
+    this.outgoingChat.set(event.eventId, promise)
+    await promise
+    this.outgoingChat.delete(event.eventId)
+  }
+
+  private async queueChat(event: ChatEvent): Promise<void> {
     let channels: string[]
     if (event.channelType === ChannelType.Public) {
       channels = this.config.publicChannelIds
@@ -168,7 +184,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     } else {
       for (const replyId of replyIds) {
         try {
-          await this.replyWithEmbed(event, replyId)
+          await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
         } catch (error: unknown) {
           this.logger.error(error, 'can not reply to message. sending the event independently')
           await this.sendEmbedToChannels(event, false, [replyId.channelId], undefined)
@@ -219,7 +235,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     for (const replyId of replyIds) {
       try {
-        await this.replyWithEmbed(event, replyId)
+        await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message. sending the event independently')
         await this.sendEmbedToChannels(event, false, [replyId.channelId], undefined)
@@ -267,22 +283,17 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return embed
   }
 
-  private async replyWithEmbed(
-    event: MinecraftChatEvent | InstanceMessage,
-    replyId: DiscordAssociatedMessage
-  ): Promise<void> {
+  private async replyWithEmbed(eventId: string, replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
     const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
     assert(channel != undefined)
     assert(channel.isSendable())
-
-    const embed = await this.generateEmbed(event, replyId.guildId)
 
     const result = await channel.send({
       embeds: [embed],
       reply: { messageReference: replyId.messageId },
       allowedMentions: { parse: [] }
     })
-    this.messageAssociation.addMessageId(event.eventId, {
+    this.messageAssociation.addMessageId(eventId, {
       guildId: result.guildId ?? undefined,
       channelId: result.channelId,
       messageId: result.id
@@ -319,6 +330,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
+    const outgoingPromises = this.outgoingChat
+    this.outgoingChat = new Map()
+    await Promise.all(outgoingPromises.values())
+
     let channels: string[] = []
 
     switch (event.channelType) {
@@ -338,23 +353,47 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
+    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
+
     if (event.instanceName === this.clientInstance.instanceName && event.discordChannelId && event.alreadyReplied) {
       channels = channels.filter((id) => id !== event.discordChannelId)
     }
     if (channels.length === 0) return
 
-    const embed = {
+    const replyEmbed: APIEmbed = {
+      color: Color.Good,
+      description: `**${escapeMarkdown(event.commandResponse)}**`,
+      footer: {
+        text: feedback ? ' (command feedback)' : ''
+      }
+    }
+
+    const noReplyEmbed: APIEmbed = {
+      color: Color.Good,
       title: escapeMarkdown(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      color: Color.Good,
       description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`,
       footer: {
         text: `${beautifyInstanceName(event.instanceName)}${feedback ? ' (command feedback)' : ''}`
       }
-    } satisfies APIEmbed
+    }
 
-    await this.sendEmbedToChannels(event, false, channels, embed)
+    if (replyIds.length === 0) {
+      await this.sendEmbedToChannels(event, false, channels, noReplyEmbed)
+    } else {
+      for (const replyId of replyIds) {
+        try {
+          await this.replyWithEmbed(event.eventId, replyId, replyEmbed)
+        } catch (error: unknown) {
+          this.logger.error(error, 'can not reply to message. sending the event independently')
+          await this.sendEmbedToChannels(event, false, [replyId.channelId], noReplyEmbed)
+        }
+      }
+
+      const remainingChannels = channels.filter((id) => !replyIds.map((reply) => reply.channelId).includes(id))
+      await this.sendEmbedToChannels(event, false, remainingChannels, noReplyEmbed)
+    }
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {
