@@ -57,7 +57,7 @@ export default class Networth extends ChatCommandHandler {
       .catch(() => undefined)
     if (nonCosmetic === undefined) return `${context.username}, cannot calculate the non-cosmetic networth?`
 
-    return `${givenUsername}'s networth: ${this.localizedNetworth(nonCosmetic)}, non-cosmetic: ${this.localizedNetworth(nonCosmetic)}`
+    return `${givenUsername}'s networth: ${this.localizedNetworth(networth)}, non-cosmetic: ${this.localizedNetworth(nonCosmetic)}`
   }
 
   private localizedNetworth(coins: number): string {
