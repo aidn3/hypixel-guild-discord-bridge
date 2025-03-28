@@ -38,8 +38,6 @@ loggers:
 commands:
   # Enable chat commands such as !cata, etc.
   enabled: true
-  # change the prefix for chat command
-  commandPrefix: '!'
 
 moderation:
   heatPunishment: true

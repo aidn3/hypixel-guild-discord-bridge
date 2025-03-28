@@ -38,6 +38,7 @@ import Vengeance from './triggers/vengeance.js'
 import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
+  private static readonly CommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
   private readonly internalConfig
 
@@ -120,9 +121,9 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
 
   async handle(event: ChatEvent): Promise<void> {
     if (this.currentStatus() !== Status.Connected) return
-    if (!event.message.startsWith(this.config.commandPrefix)) return
+    if (!event.message.startsWith(CommandsInstance.CommandPrefix)) return
 
-    const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
+    const commandName = event.message.slice(CommandsInstance.CommandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
@@ -142,7 +143,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
         errorHandler: this.errorHandler,
 
         allCommands: this.commands,
-        commandPrefix: this.config.commandPrefix,
+        commandPrefix: CommandsInstance.CommandPrefix,
         saveConfigChanges: () => {
           this.saveConfig()
         },

@@ -30,7 +30,6 @@ export const MinecraftInstanceConfig = t.iface([], {
 
 export const CommandsConfig = t.iface([], {
   "enabled": "boolean",
-  "commandPrefix": "string",
 });
 
 export const ModerationConfig = t.iface([], {
