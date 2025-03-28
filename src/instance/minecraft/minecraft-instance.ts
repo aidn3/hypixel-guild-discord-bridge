@@ -23,6 +23,10 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   clientSession: ClientSession | undefined
 
+  private stateHandler: StateHandler
+  private selfbroadcastHandler: SelfbroadcastHandler
+  private chatManager: ChatManager
+
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
   private readonly adminUsername: string
@@ -44,6 +48,16 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
       this.sendNow(command)
     })
+
+    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.selfbroadcastHandler = new SelfbroadcastHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler
+    )
+    this.chatManager = new ChatManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
@@ -72,15 +86,9 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     this.clientSession = new ClientSession(client)
 
-    const handlers = [
-      new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
-      new SelfbroadcastHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
-      new ChatManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    ]
-
-    for (const handler of handlers) {
-      handler.registerEvents()
-    }
+    this.selfbroadcastHandler.registerEvents()
+    this.stateHandler.registerEvents()
+    this.chatManager.registerEvents()
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
