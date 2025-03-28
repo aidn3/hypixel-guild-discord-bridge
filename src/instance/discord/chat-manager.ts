@@ -67,7 +67,6 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
     const content = this.cleanMessage(event)
     if (content.length === 0) return
-    const truncatedContent = await this.truncateText(event, content)
 
     const fillBaseEvent = this.eventHelper.fillBaseEvent()
     this.messageAssociation.addMessageId(fillBaseEvent.eventId, {
@@ -76,7 +75,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       messageId: event.id
     })
 
-    const { filteredMessage, changed } = this.application.moderation.filterProfanity(truncatedContent)
+    const { filteredMessage, changed } = this.application.moderation.filterProfanity(content)
     if (changed) {
       this.application.emit('profanityWarning', {
         ...fillBaseEvent,
@@ -84,7 +83,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
         channelType: channelType,
 
         username: discordName,
-        originalMessage: truncatedContent,
+        originalMessage: content,
         filteredMessage: filteredMessage
       })
       await event.reply({
@@ -106,24 +105,6 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       replyUsername: readableReplyUsername,
       message: filteredMessage
     })
-  }
-
-  private async truncateText(message: Message, content: string): Promise<string> {
-    /*
-      minecraft has a limit of 256 chars per message
-      256 - 232 = 24
-      we reserve these 24 spare chars for username, prefix and ...
-    */
-    const length = 232
-    if (content.length <= length) {
-      return content
-    }
-
-    await message.reply({
-      content: `Message too long! It has been shortened to ${length} characters.`
-    })
-
-    return content.slice(0, length) + '...'
   }
 
   private async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {

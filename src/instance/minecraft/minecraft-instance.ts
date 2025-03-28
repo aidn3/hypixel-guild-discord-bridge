@@ -3,7 +3,7 @@ import { createClient, states } from 'minecraft-protocol'
 import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { MinecraftSendChatPriority } from '../../common/application-event.js'
-import { InstanceType, Permission } from '../../common/application-event.js'
+import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
@@ -79,6 +79,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
         this.application.emit('instanceMessage', {
           ...this.eventHelper.fillBaseEvent(),
 
+          type: InstanceMessageType.MinecraftAuthenticationCode,
           message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
         })
       }
@@ -138,9 +139,16 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
       .map((chunk) => chunk.trim())
       .join(' ')
 
-    if (message.length > 250) {
-      message = message.slice(0, 250) + '...'
-      this.logger.warn(`Long message truncated: ${message}`)
+    if (message.length > 256) {
+      message = message.slice(0, 253) + '...'
+
+      this.application.emit('instanceMessage', {
+        ...this.eventHelper.fillBaseEvent(),
+
+        originEventId: originEventId,
+        type: InstanceMessageType.MinecraftTruncateMessage,
+        message: `Message is too long! It has been shortened to fit minecraft message`
+      })
     }
 
     this.logger.debug(`Queuing message to send: ${message}`)

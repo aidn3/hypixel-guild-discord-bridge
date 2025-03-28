@@ -175,7 +175,7 @@ export interface BaseEvent extends InstanceIdentifier {
    *  - an id is generated and assigned to {@link #eventId}
    *  - the event is forwarded to minecraft instance
    *  - minecraft client shows an error message such as {@link MinecraftChatEventType#Repeat}
-   *  - minecraft instance sends {@link MinecraftChatEvent} with a {@link MinecraftChatEvent#originEventId} being the generated id
+   *  - minecraft instance sends {@link MinecraftChatEvent} with a {@link ReplyEvent#originEventId} being the generated id
    *  - discord instance can use that to associate the event with the message the user sent
    */
   eventId: string
@@ -216,6 +216,18 @@ export interface SignalEvent extends BaseEvent {
    * Use `undefined` to send to all instances.
    */
   readonly targetInstanceName: string[]
+}
+
+/**
+ * Used to associate an event with a previous one
+ * @see BaseEvent#eventId
+ */
+export interface ReplyEvent extends BaseEvent {
+  /**
+   * The original event id {@link BaseEvent#eventId} this event is mentioning.
+   *  @see {@link BaseEvent#eventId}
+   */
+  readonly originEventId: string
 }
 
 // values must be numbers to be comparable
@@ -436,13 +448,9 @@ export enum MinecraftChatEventType {
  *
  * @see MinecraftChatEventType
  */
-export interface MinecraftChatEvent extends BaseInGameEvent<MinecraftChatEventType> {
-  /**
-   * The original event id {@link BaseEvent#eventId} this event is mentioning.
-   *  @see {@link BaseEvent#eventId}
-   */
-  readonly originEventId: string | undefined
-}
+export type MinecraftChatEvent =
+  | BaseInGameEvent<MinecraftChatEventType>
+  | (BaseInGameEvent<MinecraftChatEventType> & ReplyEvent)
 
 /**
  * When a plugin or a component wishes to broadcast a message to all instances.
@@ -567,6 +575,7 @@ export interface UserIdentifier {
    */
   readonly userDiscordId: string | undefined
 }
+
 /**
  * Event sent every time synchronization is required.
  * The event is used to informs other application clients about any existing punishments.
@@ -604,16 +613,27 @@ export enum PunishmentType {
   Ban = 'ban'
 }
 
+export enum InstanceMessageType {
+  MinecraftAuthenticationCode = 'minecraft-authentication-code',
+  MinecraftTruncateMessage = 'minecraft-truncate-message'
+}
+
 /**
  * Event that contains information that might prove useful.
  * Used to display internal status of the application internal components to the user outside the console.
  */
-export interface InstanceMessage extends InformEvent {
+interface BaseInstanceMessage extends InformEvent {
+  /**
+   * Type of the message
+   */
+  type: InstanceMessageType
   /**
    * The message content that explains the status
    */
   readonly message: string
 }
+
+export type InstanceMessage = BaseInstanceMessage | (BaseInstanceMessage & ReplyEvent)
 
 /**
  * Signal event used to command a Minecraft instance to send a command through chat
@@ -653,6 +673,7 @@ export enum MinecraftSendChatPriority {
    */
   Instant = 'instant'
 }
+
 /**
  * Signal event used to control the application and instances
  */

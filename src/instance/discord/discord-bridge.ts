@@ -14,6 +14,8 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
+  InstanceMessage,
+  InstanceMessageType,
   InstanceStatusEvent,
   MinecraftChatEvent
 } from '../../common/application-event.js'
@@ -49,6 +51,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     this.messageAssociation = messageAssociation
     this.config = config
+
+    this.application.on('instanceMessage', (event) => {
+      void this.onInstanceMessageEvent(event).catch(this.errorHandler.promiseCatch('handling event instanceMessage'))
+    })
   }
 
   async onInstance(event: InstanceStatusEvent): Promise<void> {
@@ -143,7 +149,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
   }
 
-  private lastEvent = new Map<MinecraftChatEventType, number>()
+  private lastMinecraftEvent = new Map<MinecraftChatEventType, number>()
 
   async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
     if (
@@ -152,10 +158,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    if ((this.lastEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
-    this.lastEvent.set(event.type, Date.now())
+    if ((this.lastMinecraftEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
+    this.lastMinecraftEvent.set(event.type, Date.now())
 
-    const replyIds = this.messageAssociation.getMessageId(event.originEventId)
+    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
 
     if (replyIds.length === 0) {
       await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
@@ -197,16 +203,44 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.sendCommandResponse(event, true)
   }
 
+  private lastInstanceEvent = new Map<InstanceMessageType, number>()
+
+  async onInstanceMessageEvent(event: InstanceMessage): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+
+    if ((this.lastInstanceEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
+    this.lastInstanceEvent.set(event.type, Date.now())
+
+    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
+
+    for (const replyId of replyIds) {
+      try {
+        await this.replyWithEmbed(event, replyId)
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message. sending the event independently')
+        await this.sendEmbedToChannels(event, false, [replyId.channelId], undefined)
+      }
+    }
+  }
+
   private async generateEmbed(
-    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftChatEvent,
+    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftChatEvent | InstanceMessage,
     guildId: string | undefined
   ): Promise<APIEmbed> {
     const embed: APIEmbed = {
       description: escapeMarkdown(event.message),
 
-      color: event.color,
       footer: { text: beautifyInstanceName(event.instanceName) }
     } satisfies APIEmbed
+
+    if ('color' in event) {
+      embed.color = event.color
+    }
+
     if ('username' in event && event.username != undefined) {
       const extra = {
         title: escapeMarkdown(event.username),
@@ -233,7 +267,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return embed
   }
 
-  private async replyWithEmbed(event: MinecraftChatEvent, replyId: DiscordAssociatedMessage): Promise<void> {
+  private async replyWithEmbed(
+    event: MinecraftChatEvent | InstanceMessage,
+    replyId: DiscordAssociatedMessage
+  ): Promise<void> {
     const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
     assert(channel != undefined)
     assert(channel.isSendable())
@@ -253,7 +290,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendEmbedToChannels(
-    event: BaseInGameEvent<string> | BroadcastEvent | CommandEvent,
+    event: BaseInGameEvent<string> | BroadcastEvent | CommandEvent | InstanceMessage,
     removeLater: boolean,
     channels: string[],
     preGeneratedEmbed: APIEmbed | undefined
