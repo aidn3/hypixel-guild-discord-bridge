@@ -118,6 +118,8 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
         "Account has been temporarily blocked.\nWon't try to re-login.\n\n" + reason.toString()
       )
     } else {
+      // possible kick messages that are accounted for
+      // "Your version (1.17.1) of Minecraft is disabled on Hypixel due to compatibility issues."
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Disconnected,
         `Client ${this.clientInstance.instanceName} has been kicked.\n` +
