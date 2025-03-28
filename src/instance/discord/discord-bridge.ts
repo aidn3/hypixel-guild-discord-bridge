@@ -30,8 +30,8 @@ import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { beautifyInstanceName } from '../../util/shared-util.js'
 
-import type { DiscordAssociatedMessage } from './common/message-association.js'
 import type MessageAssociation from './common/message-association.js'
+import type { DiscordAssociatedMessage } from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridge extends Bridge<DiscordInstance> {
@@ -360,23 +360,25 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
     if (channels.length === 0) return
 
-    const replyEmbed: APIEmbed = {
+    const basic: APIEmbed = {
       color: Color.Good,
-      description: `**${escapeMarkdown(event.commandResponse)}**`,
+
+      title: escapeMarkdown(event.username),
+      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+      thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
       footer: {
         text: feedback ? ' (command feedback)' : ''
       }
     }
 
+    const replyEmbed: APIEmbed = {
+      ...basic,
+      description: `**${escapeMarkdown(event.commandResponse)}**`
+    }
+
     const noReplyEmbed: APIEmbed = {
-      color: Color.Good,
-      title: escapeMarkdown(event.username),
-      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
-      thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`,
-      footer: {
-        text: `${beautifyInstanceName(event.instanceName)}${feedback ? ' (command feedback)' : ''}`
-      }
+      ...basic,
+      description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`
     }
 
     if (replyIds.length === 0) {
