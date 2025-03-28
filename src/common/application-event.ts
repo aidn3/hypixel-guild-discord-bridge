@@ -479,7 +479,7 @@ export interface BroadcastEvent extends InformEvent {
 /**
  * Used when a command has been executed
  */
-export interface CommandEvent extends InformEvent {
+export interface BaseCommandEvent extends InformEvent {
   readonly channelType: ChannelType
 
   /**
@@ -510,12 +510,16 @@ export interface CommandEvent extends InformEvent {
    */
   readonly commandResponse: string
 }
+/**
+ * Used when a command has been executed
+ */
+export type CommandEvent = BaseCommandEvent | (BaseCommandEvent & ReplyEvent)
 
 /**
  * Used to send feedback messages when a command takes time to execute.
  * Can be used to send multiple responses as well.
  */
-export type CommandFeedbackEvent = CommandEvent
+export type CommandFeedbackEvent = BaseCommandEvent | (BaseCommandEvent & ReplyEvent)
 
 /**
  * Events used when an instance changes its status

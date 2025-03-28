@@ -175,6 +175,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     this.application.emit('command', {
       ...this.eventHelper.fillBaseEvent(),
 
+      originEventId: event.eventId,
       channelType: event.channelType,
       discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
@@ -189,6 +190,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
     this.application.emit('commandFeedback', {
       ...this.eventHelper.fillBaseEvent(),
 
+      originEventId: event.eventId,
       channelType: event.channelType,
       discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
