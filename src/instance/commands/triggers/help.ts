@@ -13,7 +13,7 @@ export default class Help extends ChatCommandHandler {
 
   handler(context: ChatCommandContext): string {
     if (context.args.length <= 0) {
-      return `Commands: ${context.allCommands.map((command) => command.name).join(', ')}`
+      return `Commands: ${context.allCommands.map((command) => command.triggers[0]).join(', ')}`
     }
 
     const query = context.args[0].toLowerCase()
