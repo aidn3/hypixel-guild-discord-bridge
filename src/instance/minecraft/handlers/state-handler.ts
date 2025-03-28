@@ -168,6 +168,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
   }
 
   private tryRestarting(): void {
+    this.logger.info(`minecraft attempt ${this.loginAttempts}`)
     if (this.loginAttempts > StateHandler.MaxLoginAttempts) {
       const reason = `Client failed to connect too many times. No further trying to reconnect.`
 
