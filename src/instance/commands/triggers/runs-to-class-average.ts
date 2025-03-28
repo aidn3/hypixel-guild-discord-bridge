@@ -80,7 +80,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       classesExperiences[className as ClassName] = classObject?.experience ?? 0
     }
 
-    let currentClassAverage = this.getClassAverage(classesExperiences)
+    let currentClassAverage = this.getClassAverage(classesExperiences, targetAverage)
     const classes = Object.keys(runsDone) as ClassName[]
 
     while (currentClassAverage < targetAverage) {
@@ -96,7 +96,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       classesExperiences[currentClassPlaying] += xpPerRun * 0.75 * classExpBoosts[currentClassPlaying]
       runsDone[currentClassPlaying]++
 
-      currentClassAverage = this.getClassAverage(classesExperiences)
+      currentClassAverage = this.getClassAverage(classesExperiences, targetAverage)
       totalRuns++
 
       if (totalRuns > 15_000) {
@@ -107,8 +107,13 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     return `${givenUsername} is ${totalRuns} ${selectedFloor.toUpperCase()} away from c.a. ${targetAverage}: ${classes.map((c) => `${c}: ${runsDone[c]}`).join(', ')}`
   }
 
-  private getClassAverage(classData: Record<string, number>): number {
+  private getClassAverage(classData: Record<string, number>, targetAverage: number): number {
     const classesXp = Object.values(classData)
-    return classesXp.map((xp) => getDungeonLevelWithOverflow(xp)).reduce((a, b) => a + b, 0) / classesXp.length
+    return (
+      classesXp
+        .map((xp) => getDungeonLevelWithOverflow(xp))
+        .map((level) => Math.min(level, targetAverage))
+        .reduce((a, b) => a + b, 0) / classesXp.length
+    )
   }
 }
