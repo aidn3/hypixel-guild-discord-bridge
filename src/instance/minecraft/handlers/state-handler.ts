@@ -176,6 +176,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
 
       this.logger.error(reason)
       this.clientInstance.setAndBroadcastNewStatus(Status.Failed, reason)
+      return
     }
 
     let loginDelay = (this.loginAttempts + 1) * 5000
