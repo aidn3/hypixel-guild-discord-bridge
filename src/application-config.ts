@@ -3,8 +3,7 @@ export interface GeneralConfig {
 }
 
 export interface DiscordConfig {
-  instanceName: string
-  key: string | null
+  key: string
   adminId: string
 
   publicChannelIds: string[]

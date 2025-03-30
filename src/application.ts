@@ -55,7 +55,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly plugins: PluginInstance[] = []
 
   private readonly commandsInstance: CommandsInstance | undefined
-  private readonly discordInstance: DiscordInstance | undefined
+  private readonly discordInstance: DiscordInstance
   private readonly loggerInstances: LoggerInstance[] = []
   private readonly metricsInstance: MetricsInstance | undefined
   private readonly minecraftInstances: MinecraftInstance[] = []
@@ -89,10 +89,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.clusterHelper = new ClusterHelper(this)
     this.autoComplete = new Autocomplete(this)
 
-    this.discordInstance =
-      this.config.discord.key == undefined
-        ? undefined
-        : new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
+    this.discordInstance = new DiscordInstance(this, this.config.discord)
 
     for (let index = 0; index < this.config.loggers.length; index++) {
       this.loggerInstances.push(
@@ -201,9 +198,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     const addChatCommand: AddChatCommand | undefined = this.commandsInstance
       ? (command) => this.commandsInstance?.commands.push(command)
       : undefined
-    const addDiscordCommand: AddDiscordCommand | undefined = this.discordInstance
-      ? (command) => this.discordInstance?.commandsManager.commands.set(command.getCommandBuilder().name, command)
-      : undefined
+    const addDiscordCommand: AddDiscordCommand = (command) =>
+      this.discordInstance.commandsManager.commands.set(command.getCommandBuilder().name, command)
 
     for (const pluginPath of this.config.plugins) {
       let newPath: string = path.resolve(rootDirectory, pluginPath)

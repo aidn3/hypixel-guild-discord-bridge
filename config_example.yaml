@@ -3,7 +3,6 @@ general:
   hypixelApiKey: '55adcfd6-abcd-477d-1234-12341234123a'
 
 discord:
-  instanceName: 'Discord'
   # Create new discord bot from https://discordapp.com/developers and generate a secret key
   key: 'sgasihdgfiasgdiagsidiiagsd.sdfsaedf.aohdfoasfoieofi'
   # Discord ID of the USER who will have ADMIN permission

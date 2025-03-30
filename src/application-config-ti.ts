@@ -9,8 +9,7 @@ export const GeneralConfig = t.iface([], {
 });
 
 export const DiscordConfig = t.iface([], {
-  "instanceName": "string",
-  "key": t.union("string", "null"),
+  "key": "string",
   "adminId": "string",
   "publicChannelIds": t.array("string"),
   "officerChannelIds": t.array("string"),
