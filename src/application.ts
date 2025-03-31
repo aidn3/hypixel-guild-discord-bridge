@@ -89,7 +89,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.clusterHelper = new ClusterHelper(this)
     this.autoComplete = new Autocomplete(this)
 
-    this.discordInstance = new DiscordInstance(this, this.instanceName, this.config.discord)
+    this.discordInstance = new DiscordInstance(this, this.config.discord)
 
     for (let index = 0; index < this.config.loggers.length; index++) {
       this.loggerInstances.push(
@@ -192,15 +192,17 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }))
   }
 
-  private readonly addDiscordCommand: AddDiscordCommand = (command) =>
-    this.discordInstance.commandsManager.commands.set(command.getCommandBuilder().name, command)
-
   private async loadPlugins<T extends PluginInstance>(rootDirectory: string): Promise<T[]> {
     const result: Promise<T>[] = []
 
     const addChatCommand: AddChatCommand | undefined = this.commandsInstance
       ? (command) => this.commandsInstance?.commands.push(command)
       : undefined
+
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    const addDiscordCommand: AddDiscordCommand = (command) =>
+      // eslint-disable-next-line unicorn/consistent-function-scoping
+      this.discordInstance.commandsManager.commands.set(command.getCommandBuilder().name, command)
 
     for (const pluginPath of this.config.plugins) {
       let newPath: string = path.resolve(rootDirectory, pluginPath)
