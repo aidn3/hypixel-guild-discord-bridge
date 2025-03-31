@@ -89,7 +89,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.clusterHelper = new ClusterHelper(this)
     this.autoComplete = new Autocomplete(this)
 
-    this.discordInstance = new DiscordInstance(this, this.instanceName, this.config.discord)
+    this.discordInstance = new DiscordInstance(this, this.config.discord)
 
     for (let index = 0; index < this.config.loggers.length; index++) {
       this.loggerInstances.push(
