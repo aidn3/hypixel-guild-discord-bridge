@@ -118,7 +118,7 @@ A shorter version can also be used: `!- rtca`
 | Command       | Description                                                | Permission |
 | ------------- | ---------------------------------------------------------- | ---------- |
 | !8ball        | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
-| !bedwars      | Returns a player's bedwars final kill/death                | Anyone     |
+| !bedwars      | Returns a player's bedwars common stats                    | Anyone     |
 | !bits         | Returns the best bit items to purchase for the most profit | Anyone     |
 | !calculate    | Calculate a math expression: `!calculate 1+2*3`            | Anyone     |
 | !catacomb     | Get a player's catacombs and class level                   | Anyone     |
