@@ -59,20 +59,6 @@ metrics:
   # Time in seconds to collect metrics from api/ingame commands
   interval: 60
 
-# Used to connect multiple applications together to share all their events
-socket:
-  enabled: false
-  # Key used like a password.
-  key: 'SECRET-KEY'
-  # IP address or URL to connect to the server as the Client
-  uri: 'ws://localhost:6090'
-  # type could either be "client" or "server"
-  # Server: The main application core that runs everything and control other nodes
-  # Client: A node with single connection to main application
-  type: 'client'
-  # Port to listen as Server or to connect to as Client
-  port: 6090
-
 plugins:
   - './src/plugins/example-plugin.ts'
   - './src/plugins/limbo-plugin.ts'

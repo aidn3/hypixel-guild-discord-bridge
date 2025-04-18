@@ -53,14 +53,6 @@ export const MetricsConfig = t.iface([], {
   "interval": "number",
 });
 
-export const SocketConfig = t.iface([], {
-  "enabled": "boolean",
-  "key": "string",
-  "uri": "string",
-  "type": t.union(t.lit('server'), t.lit('client')),
-  "port": "number",
-});
-
 export const ProxyConfig = t.iface([], {
   "host": "string",
   "port": "number",
@@ -80,7 +72,6 @@ export const ApplicationConfig = t.iface([], {
   "commands": "CommandsConfig",
   "moderation": "ModerationConfig",
   "metrics": "MetricsConfig",
-  "socket": "SocketConfig",
   "plugins": t.array("string"),
 });
 
@@ -93,7 +84,6 @@ const exportedTypeSuite: t.ITypeSuite = {
   ModerationConfig,
   ProfanityConfig,
   MetricsConfig,
-  SocketConfig,
   ProxyConfig,
   ProxyProtocol,
   ApplicationConfig,

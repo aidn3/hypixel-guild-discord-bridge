@@ -27,7 +27,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
   private connected = false
 
   constructor(app: Application, config: DiscordConfig) {
-    super(app, InstanceType.Discord, InstanceType.Discord, true, config)
+    super(app, InstanceType.Discord, InstanceType.Discord, config)
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),

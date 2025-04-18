@@ -21,7 +21,7 @@ export default class ModerationInstance extends Instance<ModerationConfig, Insta
   private readonly mojangApi: MojangApi
 
   constructor(application: Application, mojangApi: MojangApi, config: ModerationConfig) {
-    super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation, true, config)
+    super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation, config)
 
     this.mojangApi = mojangApi
 

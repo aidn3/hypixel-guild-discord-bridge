@@ -9,7 +9,7 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
   private readonly guildRanks: string[] = []
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'Autocomplete', InstanceType.Util, true)
+    super(application, InternalInstancePrefix + 'Autocomplete', InstanceType.Util)
 
     application.on('chat', (event) => {
       this.addUsername(event.username)

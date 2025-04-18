@@ -8,7 +8,7 @@ export default class LoggerInstance extends Instance<void, InstanceType.Logger> 
   private readonly client: WebhookClient
 
   constructor(app: Application, instanceName: string, sendUrl: string) {
-    super(app, instanceName, InstanceType.Logger, true)
+    super(app, instanceName, InstanceType.Logger)
     this.client = new WebhookClient({ url: sendUrl })
 
     this.application.on('chat', (event) => {

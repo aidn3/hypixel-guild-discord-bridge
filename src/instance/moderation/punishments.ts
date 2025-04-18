@@ -33,19 +33,10 @@ export default class Punishments {
     this.configFilePath = app.getConfigFilePath(Punishments.ConfigName)
     this.app.applicationIntegrity.addConfigPath(this.configFilePath)
     this.loadFromConfig()
-
-    app.on('punishmentAdd', (event) => {
-      if (event.localEvent) return
-      this.add(event)
-    })
-    app.on('punishmentForgive', (event) => {
-      if (event.localEvent) return
-      this.remove(event)
-    })
   }
 
   public add(event: PunishmentAddEvent): void {
-    if (event.localEvent) this.app.emit('punishmentAdd', event)
+    this.app.emit('punishmentAdd', event)
 
     const originalList = this.records[event.type]
     const currentTime = Date.now()
@@ -61,7 +52,7 @@ export default class Punishments {
   }
 
   public remove(event: PunishmentForgiveEvent): PunishmentAddEvent[] {
-    if (event.localEvent) this.app.emit('punishmentForgive', event)
+    this.app.emit('punishmentForgive', event)
 
     const result: PunishmentAddEvent[] = []
 

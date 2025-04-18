@@ -21,36 +21,19 @@ import { Instance, InternalInstancePrefix } from '../common/instance.js'
  *   (with {@link InternalInstancePrefix} being allowed as a prefix)
  */
 export default class ApplicationIntegrity extends Instance<void, InstanceType.Util> {
-  private readonly localInstanceIdentifier: InstanceIdentifier[] = []
-  private readonly remoteApplications = new Map<number, InstanceIdentifier[]>()
-  private lastApplicationId = -1
-
-  private remoteEventsIntegrity = true
-  private cachedInstances: InstanceIdentifier[] | undefined
-  private cachedInvalidated = true
-
   private configPaths: string[] = []
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'ApplicationIntegrity', InstanceType.Util, false)
-    this.addLocalInstance(this)
-  }
-
-  public enableRemoteEventsIntegrity(enabled: boolean): void {
-    this.remoteEventsIntegrity = enabled
+    super(application, InternalInstancePrefix + 'ApplicationIntegrity', InstanceType.Util)
   }
 
   public checkEventIntegrity(name: string, event: BaseEvent): void {
-    if (!event.localEvent && !this.remoteEventsIntegrity) return
+    this.ensureInstanceName(event)
 
-    if (this.cachedInstances === undefined || this.cachedInvalidated) {
-      this.cachedInvalidated = false
-      this.cachedInstances = [...this.localInstanceIdentifier, ...[...this.remoteApplications.values()].flat()]
-    }
+    const instances = this.application.getAllInstancesIdentifiers()
+    this.checkLocalInstancesIntegrity(instances)
 
-    if (
-      !this.cachedInstances.some((instance) => instance.instanceName.toLowerCase() === event.instanceName.toLowerCase())
-    ) {
+    if (!instances.some((instance) => instance.instanceName.toLowerCase() === event.instanceName.toLowerCase())) {
       const message =
         `Instance type=${event.instanceType},name=${event.instanceName} has sent an event type=${name}` +
         ` without first registering its identifiers by ${this.instanceName}.` +
@@ -62,32 +45,12 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
     }
   }
 
-  public addRemoteApplication(applicationId: number, instances: InstanceIdentifier[]): number {
-    if (applicationId < 0) applicationId = ++this.lastApplicationId
-
-    const checkedInstances: InstanceIdentifier[] = []
-    this.remoteApplications.set(applicationId, checkedInstances)
-
-    const registeredInstances = [...this.localInstanceIdentifier, ...[...this.remoteApplications.values()].flat()]
-    for (const instance of instances) {
-      this.ensureInstanceName(instance)
-      this.ensureInstanceUniqueness(registeredInstances, instance)
-
-      checkedInstances.push(instance)
-      registeredInstances.push(instance)
-      this.cachedInvalidated = true
+  public checkLocalInstancesIntegrity(localInstances: InstanceIdentifier[]): void {
+    for (const localInstance of localInstances) {
+      this.ensureInstanceName(localInstance)
     }
 
-    return applicationId
-  }
-
-  public addLocalInstance(instance: InstanceIdentifier): void {
-    this.ensureInstanceName(instance)
-
-    const registeredInstances = [...this.localInstanceIdentifier, ...[...this.remoteApplications.values()].flat()]
-    this.ensureInstanceUniqueness(registeredInstances, instance)
-    this.localInstanceIdentifier.push({ instanceName: instance.instanceName, instanceType: instance.instanceType })
-    this.cachedInvalidated = true
+    this.ensureInstanceUniqueness(localInstances)
   }
 
   public addConfigPath(configPath: string): void {
@@ -99,19 +62,21 @@ export default class ApplicationIntegrity extends Instance<void, InstanceType.Ut
     this.configPaths.push(loweredCase)
   }
 
-  private ensureInstanceUniqueness(
-    registeredInstances: InstanceIdentifier[],
-    targetInstance: InstanceIdentifier
-  ): void {
-    const foundInstance = registeredInstances.find(
-      (instance) => instance.instanceName.toLowerCase() === targetInstance.instanceName.toLowerCase()
-    )
+  private ensureInstanceUniqueness(instances: InstanceIdentifier[]): void {
+    if (instances.length <= 1) return
 
-    if (foundInstance !== undefined) {
-      throw new Error(
-        `Instance type=${targetInstance.instanceType},name=${targetInstance.instanceName} violates the application integrity` +
-          ` due to the name already being used by type=${foundInstance.instanceType},name=${foundInstance.instanceName}`
-      )
+    for (let firstIndex = 0; firstIndex < instances.length - 1; firstIndex++) {
+      for (let secondIndex = firstIndex + 1; secondIndex < instances.length; secondIndex++) {
+        const firstInstance = instances[firstIndex]
+        const instanceComparedTo = instances[secondIndex]
+
+        if (firstInstance.instanceName.toLowerCase() === instanceComparedTo.instanceName.toLowerCase()) {
+          throw new Error(
+            `Instance type=${instanceComparedTo.instanceType},name=${instanceComparedTo.instanceName} violates the application integrity` +
+              ` due to the name already being used by type=${firstInstance.instanceType},name=${firstInstance.instanceName}`
+          )
+        }
+      }
     }
   }
 

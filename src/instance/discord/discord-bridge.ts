@@ -71,7 +71,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       case InstanceType.Commands:
       case InstanceType.Metrics:
       case InstanceType.Plugin:
-      case InstanceType.Socket:
       case InstanceType.Logger:
       case InstanceType.Util:
       case InstanceType.Moderation: {

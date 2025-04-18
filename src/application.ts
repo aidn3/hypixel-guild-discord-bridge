@@ -27,7 +27,6 @@ import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
-import SocketInstance from './instance/socket/socket-instance.js'
 import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
 import { MojangApi } from './util/mojang.js'
@@ -59,7 +58,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly loggerInstances: LoggerInstance[] = []
   private readonly metricsInstance: MetricsInstance | undefined
   private readonly minecraftInstances: MinecraftInstance[] = []
-  private readonly socketInstance: SocketInstance | undefined
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
@@ -69,10 +67,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.logger.trace('Application initiating')
 
     this.applicationIntegrity = new ApplicationIntegrity(this)
-    // only check for integrity if this application is the main one that distributes events
-    // applications cross-sockets only have to worry about themselves
-    this.applicationIntegrity.enableRemoteEventsIntegrity(config.socket.enabled && config.socket.type === 'server')
-    this.applicationIntegrity.addLocalInstance(this)
 
     emitAll(this, this.applicationIntegrity) // first thing to redirect all events
     this.config = config
@@ -119,7 +113,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }
 
     this.metricsInstance = this.config.metrics.enabled ? new MetricsInstance(this, this.config.metrics) : undefined
-    this.socketInstance = this.config.socket.enabled ? new SocketInstance(this, this.config.socket) : undefined
     this.commandsInstance = this.config.commands.enabled ? new CommandsInstance(this, this.config.commands) : undefined
 
     this.on('instanceSignal', (event) => {
@@ -145,7 +138,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public async start(): Promise<void> {
     this.plugins.push(...(await this.loadPlugins(this.rootDirectory)))
-    this.syncBroadcast()
 
     for (const instance of this.getAllInstances()) {
       // must cast first before using due to typescript limitation
@@ -159,25 +151,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
         this.logger.debug(`Signaling plugin instance type=${instance.instanceType},name=${instance.instanceName}`)
         await instance.onReady()
       }
-    }
-  }
-
-  public syncBroadcast(): void {
-    this.logger.debug('Informing instances of each other')
-    for (const instance of this.getAllInstances()) {
-      instance.announceExistence()
-    }
-
-    this.logger.debug('Broadcasting all Minecraft bots')
-    for (const minecraftBot of this.clusterHelper.getMinecraftBots()) {
-      minecraftBot.localEvent = true
-      this.emit('minecraftSelfBroadcast', minecraftBot)
-    }
-
-    this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.moderation.punishments.all()) {
-      punishment.localEvent = true
-      this.emit('punishmentAdd', punishment)
     }
   }
 
@@ -227,7 +200,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     | ConnectableInstance<unknown, InstanceType>
     | PluginInstance
   )[] {
-    return [
+    const instances = [
       ...this.plugins,
       this.autoComplete,
       this.applicationIntegrity,
@@ -238,10 +211,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       this.moderation,
       this.metricsInstance,
       this.commandsInstance,
-      ...this.minecraftInstances,
-
-      this.socketInstance // socket last. so other instances are ready when connecting to other clients
+      ...this.minecraftInstances
     ].filter((instance) => instance != undefined)
+
+    this.applicationIntegrity.checkLocalInstancesIntegrity(instances)
+    return instances
   }
 }
 
@@ -256,4 +230,5 @@ function emitAll(emitter: Events, applicationIntegrity: ApplicationIntegrity): v
     return old.call(emitter, event, ...callerArguments)
   }
 }
+
 /* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */

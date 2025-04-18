@@ -39,7 +39,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     sessionDirectory: string,
     adminUsername: string
   ) {
-    super(app, instanceName, InstanceType.Minecraft, true, config)
+    super(app, instanceName, InstanceType.Minecraft, config)
 
     this.adminUsername = adminUsername
     this.sessionDirectory = sessionDirectory

@@ -6,14 +6,9 @@ import { Instance } from './instance.js'
 
 export abstract class ConnectableInstance<K, T extends InstanceType> extends Instance<K, T> {
   private status: Status = Status.Fresh
-  protected constructor(
-    app: Application,
-    instanceName: string,
-    instanceType: T,
-    addToApplicationIntegrity = true,
-    config: K
-  ) {
-    super(app, instanceName, instanceType, addToApplicationIntegrity, config)
+
+  protected constructor(app: Application, instanceName: string, instanceType: T, config: K) {
+    super(app, instanceName, instanceType, config)
 
     this.application.on('instanceSignal', (event) => {
       if (event.targetInstanceName.includes(this.instanceName)) {

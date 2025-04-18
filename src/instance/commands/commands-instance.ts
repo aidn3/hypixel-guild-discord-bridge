@@ -43,7 +43,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
   private readonly internalConfig
 
   constructor(app: Application, config: CommandsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, true, config)
+    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, config)
 
     this.internalConfig = new ConfigManager<InternalConfig>(app, app.getConfigFilePath('commands.json'), {
       disabledCommands: []

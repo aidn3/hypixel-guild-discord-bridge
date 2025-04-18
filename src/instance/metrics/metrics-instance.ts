@@ -20,7 +20,7 @@ export default class MetricsInstance extends Instance<MetricsConfig, InstanceTyp
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
   constructor(app: Application, config: MetricsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics, true, config)
+    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics, config)
 
     assert(config.enabled)
 

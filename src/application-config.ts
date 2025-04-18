@@ -48,14 +48,6 @@ export interface MetricsConfig {
   interval: number
 }
 
-export interface SocketConfig {
-  enabled: boolean
-  key: string
-  uri: string
-  type: 'server' | 'client'
-  port: number
-}
-
 export interface ProxyConfig {
   host: string
   port: number
@@ -77,7 +69,6 @@ export interface ApplicationConfig {
   commands: CommandsConfig
   moderation: ModerationConfig
   metrics: MetricsConfig
-  socket: SocketConfig
 
   plugins: string[]
 }

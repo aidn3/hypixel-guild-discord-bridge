@@ -48,10 +48,6 @@ Breaking changes:
   - [Install](#install)
   - [Run](#Run)
 - [Run Via Docker](#run-via-docker)
-- [Advanced](#advanced)
-  - [Sockets And Cluster Nodes](#sockets-and-cluster-nodes)
-  - [Node Modes](#node-modes)
-  - [Setup Cluster](#setup-cluster)
 - [Documentation and Tutorials](#documentation-and-tutorials)
 - [Credits](#credits)
 
@@ -297,43 +293,6 @@ Alternatively, providing the path as an argument to the docker container is also
 ```shell
 sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
 ```
-
----
-
-## Advanced
-
-This section is for advanced users who wish to run a bridge that supports thousands of online players with dozens of
-connected guilds.
-
-### Sockets And Cluster Nodes
-
-Bridge supports cluster mode. That means, the bridge can be divided into smaller parts and be hosted on different servers
-and all be connected via sockets.  
-When to use cluster mode:
-
-- If more than 2 Minecraft accounts are connected from same host server. Hypixel will IP ban all accounts for "
-  compromised account" or "suspicious activity"
-- If a Minecraft account owner wishes to hold the login details by hosting a part of the bridge on their server
-
-### Node Modes
-
-Each node supports two modes: `client` and `server`.
-Only one server can exist and all clients will connect to it (Server must also not be behind a firewall).
-
-- Server mode is just an extension of client mode. It supports instances as well as Discord bridge and minecraft bots
-- Server's goal is to only forward all events and data and distribute it to all clients
-- Server will not wait for client to reconnect when forwarding events. Clients however will wait to re-sync with server
-
-### Setup Cluster
-
-All configurations will be in `config.yaml` under `socket` section.
-
-- Follow the [Setup](#installing-and-running) process for each node, but don't start them yet
-- Set config `enabled` to true.
-- Choose a secure password and set it under `key`. (Security: Anyone can hijack the bridge if it is easily guessable)
-- Choose which node shall act as the "Server" and set it under config `type`
-- Set the config `uri` to the server node socket to connect to
-- Start all nodes
 
 ---
 

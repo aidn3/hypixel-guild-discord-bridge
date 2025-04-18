@@ -10,7 +10,7 @@ export class EventsUtil implements InstanceIdentifier {
   public readonly eventHelper = new EventHelper<InstanceType.Discord>(this.instanceName, this.instanceType)
 
   constructor(private readonly application: Application) {
-    this.application.applicationIntegrity.addLocalInstance(this)
+    //this.application.applicationIntegrity.addLocalInstance(this)
   }
   public simulateChat(username: string, message: string) {
     this.application.emit('chat', {
