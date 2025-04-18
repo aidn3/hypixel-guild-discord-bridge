@@ -38,9 +38,11 @@ export default class WarpPlugin extends PluginInstance {
           }
 
           // "login" packet is also first spawn packet containing world metadata
+          // @ts-expect-error client is private variable
           localInstance.clientSession?.client.on('login', async () => {
             if (!this.disableLimboTrapping) await this.limbo(localInstance)
           })
+          // @ts-expect-error client is private variable
           localInstance.clientSession?.client.on('respawn', async () => {
             if (!this.disableLimboTrapping) await this.limbo(localInstance)
           })

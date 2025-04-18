@@ -1,5 +1,3 @@
-import assert from 'node:assert'
-
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
@@ -8,12 +6,13 @@ import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export const QuitOwnVolition = 'disconnect.quitting'
 
 export const QuitProxyError = 'Proxy encountered a problem while connecting'
-export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
+export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private static readonly MaxLoginAttempts = 5
   private loginAttempts
   private loggedIn
@@ -31,10 +30,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     this.loggedIn = false
   }
 
-  registerEvents(): void {
-    const clientSession = this.clientInstance.clientSession
-    assert(clientSession)
-
+  registerEvents(clientSession: ClientSession): void {
     // this will only be called after the player receives spawn packet
     clientSession.client.on('login', () => {
       this.onLogin()

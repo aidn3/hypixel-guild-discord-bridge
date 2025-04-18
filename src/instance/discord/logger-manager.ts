@@ -1,3 +1,4 @@
+import type { Client } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import type { Logger } from 'log4js'
 
@@ -10,7 +11,7 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 
 import type DiscordInstance from './discord-instance.js'
 
-export default class LoggerManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
+export default class LoggerManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
@@ -103,6 +104,8 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
     const channels = this.application.applicationInternalConfig.data.discord.loggerChannelIds
     for (const channelId of channels) {
       try {
+        // TODO: properly reference client
+        // @ts-expect-error client is private variable
         const channel = await this.clientInstance.client.channels.fetch(channelId)
         if (!channel?.isSendable()) continue
         await channel.send({ content: escapeMarkdown(message), allowedMentions: { parse: [] } })

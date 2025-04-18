@@ -16,7 +16,7 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 import { durationToMinecraftDuration } from '../../../util/shared-util.js'
 import type ModerationInstance from '../moderation-instance.js'
 
-export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation> {
+export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation, void> {
   constructor(
     application: Application,
     system: ModerationInstance,

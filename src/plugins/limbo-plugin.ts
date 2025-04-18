@@ -25,9 +25,11 @@ export default class LimboPlugin extends PluginInstance {
         if (localInstance != undefined) {
           void this.limbo(localInstance).catch(this.errorHandler.promiseCatch('handling /limbo command'))
           // "login" packet is also first spawn packet containing world metadata
+          // @ts-expect-error client is private variable
           localInstance.clientSession?.client.on('login', async () => {
             await this.limbo(localInstance)
           })
+          // @ts-expect-error client is private variable
           localInstance.clientSession?.client.on('respawn', async () => {
             await this.limbo(localInstance)
           })

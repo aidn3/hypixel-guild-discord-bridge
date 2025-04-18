@@ -10,7 +10,8 @@ import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 export default abstract class EventHandler<
   K extends ConnectableInstance<unknown, T> | Instance<unknown, T>,
-  T extends InstanceType
+  T extends InstanceType,
+  O
 > {
   protected application: Application
   protected clientInstance: K
@@ -39,7 +40,8 @@ export default abstract class EventHandler<
    * This function will be called multiple times with every reconstruct of the instance.
    * Use constructors functions if you want to register an event once
    */
-  public registerEvents(): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public registerEvents(option: O): void {
     // optional to implement
   }
 }

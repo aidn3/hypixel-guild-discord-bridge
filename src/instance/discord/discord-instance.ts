@@ -17,7 +17,7 @@ import LoggerManager from './logger-manager.js'
 
 export default class DiscordInstance extends ConnectableInstance<DiscordConfig, InstanceType.Discord> {
   readonly commandsManager: CommandManager
-  readonly client: Client
+  private readonly client: Client
 
   private readonly stateHandler: StateHandler
   private readonly statusHandler: StatusHandler
@@ -105,11 +105,11 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Discord connecting')
 
-    this.stateHandler.registerEvents()
-    this.statusHandler.registerEvents()
-    this.chatManager.registerEvents()
-    this.commandsManager.registerEvents()
-    this.loggerManager.registerEvents()
+    this.stateHandler.registerEvents(this.client)
+    this.statusHandler.registerEvents(this.client)
+    this.chatManager.registerEvents(this.client)
+    this.commandsManager.registerEvents(this.client)
+    this.loggerManager.registerEvents(this.client)
 
     await this.client.login(this.config.key)
   }

@@ -1,4 +1,4 @@
-import type { Message, TextChannel } from 'discord.js'
+import type { Client, Message, TextChannel } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import EmojisMap from 'emoji-name-map'
 import type { Logger } from 'log4js'
@@ -13,7 +13,7 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
+export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly WarnMuteEvery = 3 * 60 * 1000
 
   private readonly messageAssociation: MessageAssociation
@@ -31,8 +31,8 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     this.messageAssociation = messageAssociation
   }
 
-  registerEvents(): void {
-    this.clientInstance.client.on('messageCreate', (message) => {
+  registerEvents(client: Client): void {
+    client.on('messageCreate', (message) => {
       void this.onMessage(message).catch(
         this.errorHandler.promiseCatch('handling incoming discord messageCreate event')
       )

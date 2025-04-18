@@ -35,7 +35,7 @@ import SettingsCommand from './commands/settings.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
-export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
+export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
 
   constructor(
@@ -50,15 +50,15 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     this.addDefaultCommands()
   }
 
-  registerEvents(): void {
+  registerEvents(client: Client): void {
     let listenerStarted = false
-    this.clientInstance.client.on('ready', (client) => {
+    client.on('ready', (client) => {
       if (listenerStarted) return
       listenerStarted = true
       this.listenToRegisterCommands(client)
     })
 
-    this.clientInstance.client.on('interactionCreate', (interaction) => {
+    client.on('interactionCreate', (interaction) => {
       if (interaction.isChatInputCommand()) {
         void this.onCommand(interaction).catch(
           this.errorHandler.promiseCatch('handling incoming ChatInputCommand event')
@@ -304,10 +304,10 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       }))
 
     /*
-    options are added after converting to json. 
+    options are added after converting to json.
     This is done to specifically insert the "instance" option directly after the required options
     the official api doesn't support this. So JSON manipulation is used instead.
-    This is mainly used for "Required" option. 
+    This is mainly used for "Required" option.
     Discord will throw an error with "invalid body" otherwise.
      */
     for (const command of this.commands.values()) {

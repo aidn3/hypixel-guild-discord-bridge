@@ -21,7 +21,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     version: '1.8.9'
   }
 
-  clientSession: ClientSession | undefined
+  private clientSession: ClientSession | undefined
 
   private stateHandler: StateHandler
   private selfbroadcastHandler: SelfbroadcastHandler
@@ -80,9 +80,9 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     this.clientSession = new ClientSession(client)
 
-    this.selfbroadcastHandler.registerEvents()
-    this.stateHandler.registerEvents()
-    this.chatManager.registerEvents()
+    this.selfbroadcastHandler.registerEvents(this.clientSession)
+    this.stateHandler.registerEvents(this.clientSession)
+    this.chatManager.registerEvents(this.clientSession)
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }

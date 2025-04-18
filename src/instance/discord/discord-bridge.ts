@@ -71,7 +71,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       case InstanceType.Commands:
       case InstanceType.Metrics:
       case InstanceType.Plugin:
-      case InstanceType.Logger:
       case InstanceType.Util:
       case InstanceType.Moderation: {
         return
@@ -80,6 +79,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     const config = this.application.applicationInternalConfig.data.discord
     for (const channelId of config.publicChannelIds) {
+      // TODO: properly reference client
+      // @ts-expect-error client is private variable
       const channel = await this.clientInstance.client.channels.fetch(channelId)
       if (!channel?.isSendable()) continue
 
@@ -274,6 +275,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // the other solutions is just too complicated
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if ('type' in event && event.type === MinecraftChatEventType.RequireGuild && guildId !== undefined) {
+      // TODO: properly reference client
+      // @ts-expect-error client is private variable
       const commands = await this.clientInstance.client.guilds.fetch(guildId).then((guild) => guild.commands.fetch())
       const joinCommand = commands.find((command) => command.name === 'join')
       const setupCommand = commands.find((command) => command.name === 'setup')
@@ -288,6 +291,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async replyWithEmbed(eventId: string, replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
     const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
     assert(channel != undefined)
     assert(channel.isSendable())
@@ -311,6 +316,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     preGeneratedEmbed: APIEmbed | undefined
   ): Promise<void> {
     for (const channelId of channels) {
+      // TODO: properly reference client
+      // @ts-expect-error client is private variable
       const channel = (await this.clientInstance.client.channels.fetch(channelId)) as unknown as TextChannel | null
       if (channel == undefined) return
 
@@ -404,12 +411,16 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
     const channel = (await this.clientInstance.client.channels.fetch(
       channelId
     )) as unknown as TextBasedChannelFields | null
     if (channel == undefined) throw new Error(`no access to channel ${channelId}?`)
     const webhooks = await channel.fetchWebhooks()
 
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
     let webhook = webhooks.find((h) => h.owner?.id === this.clientInstance.client.user?.id)
     webhook ??= await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
     return webhook

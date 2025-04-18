@@ -34,7 +34,7 @@ import type ClientSession from './client-session.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
-export default class ChatManager extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
+export default class ChatManager extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private readonly chatModules: MinecraftChatMessage[]
   private readonly minecraftData
 
@@ -74,14 +74,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
     ]
   }
 
-  registerEvents(): void {
-    const clientSession = this.clientInstance.clientSession
-    assert(clientSession)
-
-    this.listenForMessages(clientSession)
-  }
-
-  private listenForMessages(clientSession: ClientSession): void {
+  registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
       this.onMessage(chatMessage.toString())
