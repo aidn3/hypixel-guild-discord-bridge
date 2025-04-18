@@ -28,12 +28,6 @@ export abstract class Instance<K, T extends InstanceType> implements InstanceIde
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.eventHelper = new EventHelper<T>(this.instanceName, this.instanceType)
   }
-
-  public announceExistence(): void {
-    this.application.emit('instanceAnnouncement', {
-      ...this.eventHelper.fillBaseEvent()
-    })
-  }
 }
 
 export const InternalInstancePrefix = 'internal/'
