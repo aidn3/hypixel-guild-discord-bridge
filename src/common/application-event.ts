@@ -169,7 +169,7 @@ export interface BaseEvent extends InstanceIdentifier {
    *  - minecraft instance sends {@link MinecraftChatEvent} with a {@link ReplyEvent#originEventId} being the generated id
    *  - discord instance can use that to associate the event with the message the user sent
    */
-  eventId: string
+  readonly eventId: string
 }
 
 /**
