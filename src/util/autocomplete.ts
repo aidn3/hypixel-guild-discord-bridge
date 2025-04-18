@@ -41,7 +41,7 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
     setInterval(() => {
       application.emit('minecraftSend', {
         ...this.eventHelper.fillBaseEvent(),
-        targetInstanceName: application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        targetInstanceName: application.getInstancesNames(InstanceType.Minecraft),
         priority: MinecraftSendChatPriority.Default,
         command: '/guild list'
       })
@@ -110,7 +110,7 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
   private async resolveGuildRanks(): Promise<void> {
     this.logger.debug('Resolving guild ranks from server')
 
-    const guildsResolver = this.application.clusterHelper
+    const guildsResolver = this.application.minecraftManager
       .getMinecraftBots()
       .map((bots) => bots.uuid)
       .map((uuid) => this.application.hypixelApi.getGuild('player', uuid).catch(() => undefined))

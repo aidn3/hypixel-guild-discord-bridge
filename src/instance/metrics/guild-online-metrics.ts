@@ -66,7 +66,7 @@ export default class GuildOnlineMetrics {
     app.on('minecraftChat', chatListener)
     app.emit('minecraftSend', {
       ...eventHelper.fillBaseEvent(),
-      targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+      targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
       priority: MinecraftSendChatPriority.High,
       command: '/guild online'
     })

@@ -12,7 +12,7 @@ export default {
       const username = match[2]
       const playerMessage = match[3].trim()
 
-      if (context.application.clusterHelper.isMinecraftBot(username)) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) return
 
       context.application.emit('chat', {
         ...context.eventHelper.fillBaseEvent(),

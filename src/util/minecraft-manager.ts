@@ -5,7 +5,7 @@ import path from 'node:path'
 import { setImmediate } from 'node:timers/promises'
 
 import type Application from '../application.js'
-import { InstanceType } from '../common/application-event.js'
+import { InstanceType, type MinecraftSelfBroadcast } from '../common/application-event.js'
 import type { MinecraftInstanceConfig } from '../common/application-internal-config.js'
 import { Instance, InternalInstancePrefix } from '../common/instance.js'
 // eslint-disable-next-line import/no-restricted-paths
@@ -13,6 +13,8 @@ import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 export class MinecraftManager extends Instance<void, InstanceType.Util> {
   private readonly instances = new Set<MinecraftInstance>()
+  private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
+
   private readonly sessionDirectory
 
   constructor(application: Application) {
@@ -22,6 +24,22 @@ export class MinecraftManager extends Instance<void, InstanceType.Util> {
     this.sessionDirectory = this.application.getConfigFilePath(sessionDirectoryName)
     fs.mkdirSync(this.sessionDirectory, { recursive: true })
     this.application.applicationIntegrity.addConfigPath(sessionDirectoryName)
+
+    this.application.on('minecraftSelfBroadcast', (event) => {
+      this.minecraftBots.set(event.instanceName, event)
+    })
+  }
+
+  public isMinecraftBot(username: string): boolean {
+    for (const value of this.minecraftBots.values()) {
+      if (username === value.username) return true
+    }
+
+    return false
+  }
+
+  public getMinecraftBots(): MinecraftSelfBroadcast[] {
+    return Array.from(this.minecraftBots, ([, value]) => value)
   }
 
   public loadInstances(): void {
@@ -82,6 +100,7 @@ export class MinecraftManager extends Instance<void, InstanceType.Util> {
     await setImmediate()
     for (const instance of instances) {
       assert(this.instances.delete(instance))
+      this.minecraftBots.delete(instance.instanceName)
     }
     result.instanceRemoved += instances.length
 

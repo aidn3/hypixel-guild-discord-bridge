@@ -28,7 +28,7 @@ export default {
       if (mutedTill) {
         context.application.emit('minecraftSend', {
           ...context.eventHelper.fillBaseEvent(),
-          targetInstanceName: context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          targetInstanceName: context.application.getInstancesNames(InstanceType.Minecraft),
           priority: MinecraftSendChatPriority.High,
           command: `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
         })
@@ -36,7 +36,7 @@ export default {
 
       // if any other punishments active
       if (context.application.moderation.punishments.findByUser(identifiers).length > 0) return
-      if (context.application.clusterHelper.isMinecraftBot(username)) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) return
 
       const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {

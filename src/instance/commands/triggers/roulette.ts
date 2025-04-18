@@ -61,7 +61,7 @@ export default class Roulette extends ChatCommandHandler {
 
       context.app.emit('minecraftSend', {
         ...context.eventHelper.fillBaseEvent(),
-        targetInstanceName: context.app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
         priority: MinecraftSendChatPriority.High,
         command: `/g mute ${context.username} 15m`
       })

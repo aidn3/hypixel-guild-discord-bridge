@@ -185,7 +185,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       } else if (
         (command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Required ||
           command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Optional) &&
-        this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft).length === 0
+        this.application.getInstancesNames(InstanceType.Minecraft).length === 0
       ) {
         await interaction.reply({
           embeds: [
@@ -296,12 +296,9 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
-    const instanceChoices = this.application.clusterHelper
+    const instanceChoices = this.application
       .getInstancesNames(InstanceType.Minecraft)
-      .map((choice: string) => ({
-        name: choice,
-        value: choice
-      }))
+      .map((choice: string) => ({ name: choice, value: choice }))
 
     /*
     options are added after converting to json.

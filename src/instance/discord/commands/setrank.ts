@@ -23,7 +23,7 @@ export default {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
-    const instances = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+    const instances = context.application.getInstancesNames(InstanceType.Minecraft)
     const rank: string = context.interaction.options.getString('rank', true)
 
     const command = `/g setrank ${username} ${rank}`

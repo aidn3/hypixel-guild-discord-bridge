@@ -132,7 +132,7 @@ export default {
       context.interaction.options.getSubcommandGroup() === 'minecraft' &&
       context.interaction.options.getSubcommand() === MinecraftRemove
     ) {
-      const response = context.application.clusterHelper
+      const response = context.application
         .getInstancesNames(InstanceType.Minecraft)
         .filter((instance) => instance.toLowerCase().startsWith(option.value.toLowerCase()))
         .slice(0, 25)

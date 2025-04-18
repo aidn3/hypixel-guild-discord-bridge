@@ -245,7 +245,7 @@ async function handleBanAddInteraction(
 
   application.moderation.punishments.add(event)
   const command = `/guild kick ${username} Banned for ${duration}. Reason: ${reason}`
-  const instances = application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+  const instances = application.getInstancesNames(InstanceType.Minecraft)
 
   const result = await checkChatTriggers(application, eventHelper, KickChat, instances, command, username)
   const formatted = formatChatTriggerResponse(result, `Ban ${escapeMarkdown(username)}`)
@@ -287,14 +287,14 @@ async function handleMuteAddInteraction(
 
   application.moderation.punishments.add(event)
   const command = `/guild mute ${username} ${durationToMinecraftDuration(muteDuration)}`
-  const instances = application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+  const instances = application.getInstancesNames(InstanceType.Minecraft)
 
   const result = await checkChatTriggers(application, eventHelper, MuteChat, instances, command, username)
   const formatted = formatChatTriggerResponse(result, `Mute ${escapeMarkdown(username)}`)
 
   application.emit('minecraftSend', {
     ...eventHelper.fillBaseEvent(),
-    targetInstanceName: application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    targetInstanceName: application.getInstancesNames(InstanceType.Minecraft),
     priority: MinecraftSendChatPriority.High,
     command: `/msg ${username} [AUTOMATED. DO NOT REPLY] Muted for: ${event.reason}`
   })
@@ -315,7 +315,7 @@ async function handleKickInteraction(
   const username: string = interaction.options.getString('user', true)
   const reason: string = interaction.options.getString('reason', true)
   const command = `/guild kick ${username} ${reason}`
-  const instances = application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+  const instances = application.getInstancesNames(InstanceType.Minecraft)
 
   const result = await checkChatTriggers(application, eventHelper, KickChat, instances, command, username)
   const formatted = formatChatTriggerResponse(result, `Kick ${escapeMarkdown(username)}`)
@@ -374,7 +374,7 @@ async function handleForgiveInteraction(
   })
 
   const command = `/guild unmute ${userResolvedData.userName}`
-  const instances = application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+  const instances = application.getInstancesNames(InstanceType.Minecraft)
 
   const result = await checkChatTriggers(application, eventHelper, UnmuteChat, instances, command, username)
   const formatted = formatChatTriggerResponse(result, `Unmute/Unban ${escapeMarkdown(username)}`)

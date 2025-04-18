@@ -10,7 +10,6 @@ import Logger4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
-import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
 import type { ApplicationInternalConfig } from './common/application-internal-config.js'
@@ -36,7 +35,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly instanceType: InstanceType = InstanceType.Main
 
   public readonly applicationInternalConfig: ConfigManager<ApplicationInternalConfig>
-  public readonly clusterHelper: ClusterHelper
   public readonly autoComplete: Autocomplete
   public readonly applicationIntegrity: ApplicationIntegrity
   public readonly moderation: ModerationInstance
@@ -84,7 +82,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     })
     this.mojangApi = new MojangApi()
     this.moderation = new ModerationInstance(this, this.mojangApi)
-    this.clusterHelper = new ClusterHelper(this)
     this.autoComplete = new Autocomplete(this)
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
@@ -134,6 +131,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
         await instance.onReady()
       }
     }
+  }
+
+  public getInstancesNames(instanceType: InstanceType): string[] {
+    return this.getAllInstancesIdentifiers()
+      .filter((instance) => instance.instanceType === instanceType)
+      .map((instance) => instance.instanceName)
   }
 
   /**

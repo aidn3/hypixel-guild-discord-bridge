@@ -20,7 +20,7 @@ export default {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
-    const instances = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+    const instances = context.application.getInstancesNames(InstanceType.Minecraft)
     const command = `/g demote ${username}`
 
     const result = await checkChatTriggers(

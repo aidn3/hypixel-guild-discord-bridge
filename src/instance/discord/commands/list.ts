@@ -69,7 +69,7 @@ export default {
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+    const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
     const lists: Map<string, string[]> = await listMembers(
       context.application,
       context.eventHelper,
@@ -187,7 +187,7 @@ async function getOnlineMembers(
   app.on('minecraftChat', chatListener)
   app.emit('minecraftSend', {
     ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
     priority: MinecraftSendChatPriority.High,
     command: '/guild online'
   })

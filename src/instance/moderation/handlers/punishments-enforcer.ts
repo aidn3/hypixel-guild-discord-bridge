@@ -57,7 +57,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
     if (mutedTill) {
       this.application.emit('minecraftSend', {
         ...this.eventHelper.fillBaseEvent(),
-        targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
         priority: MinecraftSendChatPriority.High,
         command: `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
       })
@@ -72,7 +72,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
     if (banned) {
       this.application.emit('minecraftSend', {
         ...this.eventHelper.fillBaseEvent(),
-        targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
         priority: MinecraftSendChatPriority.High,
         command: `/guild kick ${username} ${banned.reason}`
       })

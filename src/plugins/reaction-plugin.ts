@@ -51,7 +51,7 @@ export default class ReactionPlugin extends PluginInstance {
         message = message.replaceAll('%s', event.username)
         this.application.emit('minecraftSend', {
           ...this.eventHelper.fillBaseEvent(),
-          targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
           priority: MinecraftSendChatPriority.High,
           command: `/gc ${message}`
         })
@@ -62,7 +62,7 @@ export default class ReactionPlugin extends PluginInstance {
         message = message.replaceAll('%s', event.username)
         this.application.emit('minecraftSend', {
           ...this.eventHelper.fillBaseEvent(),
-          targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
           priority: MinecraftSendChatPriority.High,
           command: `/gc ${message}`
         })
@@ -73,7 +73,7 @@ export default class ReactionPlugin extends PluginInstance {
         message = message.replaceAll('%s', event.username)
         this.application.emit('minecraftSend', {
           ...this.eventHelper.fillBaseEvent(),
-          targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+          targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
           priority: MinecraftSendChatPriority.High,
           command: `/gc ${message}`
         })
