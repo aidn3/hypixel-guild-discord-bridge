@@ -1,6 +1,5 @@
 import BadWords from 'bad-words'
 
-import type { ModerationConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType, type UserIdentifier } from '../../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
@@ -11,7 +10,7 @@ import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
 import { matchUserIdentifier } from './util.js'
 
-export default class ModerationInstance extends Instance<ModerationConfig, InstanceType.Moderation> {
+export default class ModerationInstance extends Instance<void, InstanceType.Moderation> {
   public readonly punishments: Punishments
   public readonly commandsHeat: CommandsHeat
   private readonly enforcer: PunishmentsEnforcer
@@ -20,31 +19,25 @@ export default class ModerationInstance extends Instance<ModerationConfig, Insta
 
   private readonly mojangApi: MojangApi
 
-  constructor(application: Application, mojangApi: MojangApi, config: ModerationConfig) {
-    super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation, config)
+  constructor(application: Application, mojangApi: MojangApi) {
+    super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation)
 
     this.mojangApi = mojangApi
 
+    const config = application.applicationInternalConfig.data.moderation
     if (config.profanity.enabled) {
       this.profanityFilter = new BadWords({
-        emptyList: !this.config.profanity.enabled
+        emptyList: !config.profanity.enabled
       })
-      this.logger.info(this.config.profanity.blacklist)
-      this.profanityFilter.removeWords(...this.config.profanity.whitelist)
-      this.profanityFilter.addWords(...this.config.profanity.blacklist)
+      this.logger.info(config.profanity.blacklist)
+      this.profanityFilter.removeWords(...config.profanity.whitelist)
+      this.profanityFilter.addWords(...config.profanity.blacklist)
     } else {
       this.profanityFilter = undefined
     }
 
     this.punishments = new Punishments(application)
-    this.commandsHeat = new CommandsHeat(
-      application,
-      this,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler,
-      this.config
-    )
+    this.commandsHeat = new CommandsHeat(application, this, this.eventHelper, this.logger, this.errorHandler)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
@@ -68,7 +61,7 @@ export default class ModerationInstance extends Instance<ModerationConfig, Insta
   }
 
   public immune(identifiers: UserIdentifier): boolean {
-    return matchUserIdentifier(identifiers, this.config.immune)
+    return matchUserIdentifier(identifiers, this.application.applicationInternalConfig.data.moderation.immune)
   }
 
   async getMinecraftIdentifiers(username: string): Promise<string[]> {

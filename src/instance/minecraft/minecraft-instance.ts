@@ -1,9 +1,9 @@
 import { createClient, states } from 'minecraft-protocol'
 
-import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { MinecraftSendChatPriority } from '../../common/application-event.js'
 import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
+import type { MinecraftInstanceConfig } from '../../common/application-internal-config.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
@@ -29,19 +29,11 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
-  private readonly adminUsername: string
   private readonly sessionDirectory: string
 
-  constructor(
-    app: Application,
-    instanceName: string,
-    config: MinecraftInstanceConfig,
-    sessionDirectory: string,
-    adminUsername: string
-  ) {
+  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, sessionDirectory: string) {
     super(app, instanceName, InstanceType.Minecraft, config)
 
-    this.adminUsername = adminUsername
     this.sessionDirectory = sessionDirectory
 
     this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
@@ -61,7 +53,8 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
-    if (username.toLowerCase() === this.adminUsername.toLowerCase()) return Permission.Admin
+    const adminUsername = this.application.applicationInternalConfig.data.minecraft.adminUsername
+    if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
   }
 
@@ -94,7 +87,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
 
-  disconnect(): Promise<void> | void {
+  disconnect(): void {
     this.clientSession?.client.end(QuitOwnVolition)
     this.setAndBroadcastNewStatus(Status.Ended, 'Minecraft instance has been disconnected')
   }

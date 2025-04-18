@@ -1,16 +1,26 @@
+import type Application from '../application.js'
 import { ChannelType, Color } from '../common/application-event.js'
+import { OfficialPlugins } from '../common/application-internal-config.js'
+import type { PluginInfo } from '../common/plugin-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
 import { antiSpamString } from '../util/shared-util.js'
 
-/* NOTICE
-THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
-*/
 export default class DarkAuctionPlugin extends PluginInstance {
+  constructor(application: Application) {
+    super(application, OfficialPlugins.DarkAuctionReminder)
+  }
+
+  pluginInfo(): PluginInfo {
+    return { description: 'Send a reminder when a skyblock dark auction is starting' }
+  }
+
   onReady(): Promise<void> | void {
     let lastHourCheck = -1
     let lastMinuteCheck = -1
 
     setInterval(() => {
+      if (!this.enabled()) return
+
       const date = new Date()
       const currentHour = date.getHours()
       const currentMinute = date.getMinutes()

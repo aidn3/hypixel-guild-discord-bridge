@@ -2,13 +2,11 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
-  Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
 import { Collection, escapeMarkdown, REST, Routes } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { ChannelType, Color, InstanceType, Permission } from '../../common/application-event.js'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
@@ -33,24 +31,21 @@ import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
+import SettingsCommand from './commands/settings.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
 
-  private readonly config
-
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler,
-    config: DiscordConfig
+    errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = config
 
     this.addDefaultCommands()
   }
@@ -96,6 +91,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     const toAdd = [
       AboutCommand,
       AcceptCommand,
+      SettingsCommand,
       ConnectivityCommand,
       DemoteCommand,
       DisconnectCommand,
@@ -151,7 +147,12 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     const command = this.commands.get(interaction.commandName)
 
     try {
-      const channelType = this.getChannelType(interaction.channelId)
+      let channelType = this.getChannelType(interaction.channelId)
+      const permission = this.clientInstance.resolvePrivilegeLevel(
+        interaction.user.id,
+        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+      )
+
       if (command == undefined) {
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
@@ -160,6 +161,9 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ephemeral: true
         })
         return
+      }
+      if (permission === Permission.Admin) {
+        channelType ??= ChannelType.Private
       } else if (!channelType) {
         this.logger.debug(`can't execute in channel ${interaction.channelId}`)
 
@@ -168,7 +172,9 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ephemeral: true
         })
         return
-      } else if (!this.memberAllowed(interaction, command.permission)) {
+      }
+
+      if (permission < command.permission) {
         this.logger.debug('No permission to execute this command')
 
         await interaction.reply({
@@ -181,7 +187,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Optional) &&
         this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft).length === 0
       ) {
-        await interaction.editReply({
+        await interaction.reply({
           embeds: [
             {
               title: `Command ${escapeMarkdown(command.getCommandBuilder().name)}`,
@@ -281,20 +287,10 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     }
   }
 
-  private memberAllowed(interaction: Interaction, permissionLevel: Permission): boolean {
-    if (permissionLevel === Permission.Anyone) return true
-
-    return (
-      this.clientInstance.resolvePrivilegeLevel(
-        interaction.user.id,
-        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-      ) >= permissionLevel
-    )
-  }
-
   private getChannelType(channelId: string): ChannelType | undefined {
-    if (this.config.publicChannelIds.includes(channelId)) return ChannelType.Public
-    if (this.config.officerChannelIds.includes(channelId)) return ChannelType.Officer
+    const config = this.application.applicationInternalConfig.data.discord
+    if (config.publicChannelIds.includes(channelId)) return ChannelType.Public
+    if (config.officerChannelIds.includes(channelId)) return ChannelType.Officer
     return undefined
   }
 

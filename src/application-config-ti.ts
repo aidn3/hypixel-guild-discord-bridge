@@ -11,38 +11,6 @@ export const GeneralConfig = t.iface([], {
 export const DiscordConfig = t.iface([], {
   "key": "string",
   "adminId": "string",
-  "publicChannelIds": t.array("string"),
-  "officerChannelIds": t.array("string"),
-  "helperRoleIds": t.array("string"),
-  "officerRoleIds": t.array("string"),
-});
-
-export const MinecraftConfig = t.iface([], {
-  "adminUsername": "string",
-  "instances": t.array("MinecraftInstanceConfig"),
-});
-
-export const MinecraftInstanceConfig = t.iface([], {
-  "name": "string",
-  "proxy": t.union("ProxyConfig", "null"),
-});
-
-export const CommandsConfig = t.iface([], {
-  "enabled": "boolean",
-});
-
-export const ModerationConfig = t.iface([], {
-  "heatPunishment": "boolean",
-  "mutesPerDay": "number",
-  "kicksPerDay": "number",
-  "immune": t.array("string"),
-  "profanity": "ProfanityConfig",
-});
-
-export const ProfanityConfig = t.iface([], {
-  "enabled": "boolean",
-  "whitelist": t.array("string"),
-  "blacklist": t.array("string"),
 });
 
 export const MetricsConfig = t.iface([], {
@@ -53,24 +21,9 @@ export const MetricsConfig = t.iface([], {
   "interval": "number",
 });
 
-export const ProxyConfig = t.iface([], {
-  "host": "string",
-  "port": "number",
-  "protocol": "ProxyProtocol",
-});
-
-export const ProxyProtocol = t.enumtype({
-  "Http": "http",
-  "Socks5": "socks5",
-});
-
 export const ApplicationConfig = t.iface([], {
   "general": "GeneralConfig",
   "discord": "DiscordConfig",
-  "minecraft": "MinecraftConfig",
-  "loggers": t.array("string"),
-  "commands": "CommandsConfig",
-  "moderation": "ModerationConfig",
   "metrics": "MetricsConfig",
   "plugins": t.array("string"),
 });
@@ -78,14 +31,7 @@ export const ApplicationConfig = t.iface([], {
 const exportedTypeSuite: t.ITypeSuite = {
   GeneralConfig,
   DiscordConfig,
-  MinecraftConfig,
-  MinecraftInstanceConfig,
-  CommandsConfig,
-  ModerationConfig,
-  ProfanityConfig,
   MetricsConfig,
-  ProxyConfig,
-  ProxyProtocol,
   ApplicationConfig,
 };
 export default exportedTypeSuite;

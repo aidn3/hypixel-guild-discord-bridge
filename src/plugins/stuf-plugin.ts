@@ -1,22 +1,36 @@
+import type Application from '../application.js'
 import type { MinecraftSendChatPriority } from '../common/application-event.js'
+import { OfficialPlugins } from '../common/application-internal-config.js'
+import type { PluginInfo } from '../common/plugin-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
 import ChatManager from '../instance/minecraft/chat-manager.js'
 // eslint-disable-next-line import/no-restricted-paths
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
-/* WARNING
-THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
-*/
-
 export default class StufPlugin extends PluginInstance {
+  constructor(application: Application) {
+    super(application, OfficialPlugins.Stuf)
+  }
+
+  pluginInfo(): PluginInfo {
+    return { description: 'Bypass Hypixel restriction on hyperlinks' }
+  }
+
   onReady(): Promise<void> | void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias,unicorn/no-this-assignment
+    const self = this
     // @ts-expect-error onMessage is private
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const onMessage = ChatManager.prototype.onMessage
 
     // @ts-expect-error onMessage is private
     ChatManager.prototype.onMessage = function (message: string): void {
+      if (!self.enabled()) {
+        onMessage.call(this, message)
+        return
+      }
+
       const modifiedMessage = message
         .split(' ')
         .map((part) => {
@@ -41,6 +55,11 @@ export default class StufPlugin extends PluginInstance {
       priority: MinecraftSendChatPriority,
       originEventId: string | undefined
     ): Promise<void> {
+      if (!self.enabled()) {
+        await sendMessage.call(this, message, priority, originEventId)
+        return
+      }
+
       const modifiedMessage = message
         .split(' ')
         .map((part) => {

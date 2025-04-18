@@ -72,7 +72,7 @@
         "selector": ["import"],
         "filter": {
           "match": false,
-          "regex": "(fs|http|console|process|path|assert)"
+          "regex": "(fs|http|console|process|path|assert|crypto)"
         },
         "format": null,
         "custom": {
@@ -155,7 +155,7 @@
           },
           {
             "target": "src/util",
-            "from": ["src/instance", "src/plugins", "src/types"],
+            "from": ["src/instance", "src/types"],
             "message": "Util must only reference other common files. Specific util can be put in their respective instance common dir."
           },
           {

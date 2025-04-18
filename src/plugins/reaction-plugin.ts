@@ -1,9 +1,9 @@
+import type Application from '../application.js'
 import { GuildPlayerEventType, InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
+import { OfficialPlugins } from '../common/application-internal-config.js'
+import type { PluginInfo } from '../common/plugin-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
 
-/* NOTICE
-THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
-*/
 export default class ReactionPlugin extends PluginInstance {
   private static readonly JoinMessages = [
     'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',
@@ -33,8 +33,19 @@ export default class ReactionPlugin extends PluginInstance {
     "%s wasn't welcome here.",
     'Goodbye %s. Forever.'
   ]
+
+  constructor(application: Application) {
+    super(application, OfficialPlugins.Reaction)
+  }
+
+  pluginInfo(): PluginInfo {
+    return { description: 'Send a greeting/reaction message when a member joins/leaves or is kicked from the guild' }
+  }
+
   onReady(): Promise<void> | void {
     this.application.on('guildPlayer', (event) => {
+      if (!this.enabled()) return
+
       if (event.type === GuildPlayerEventType.Join) {
         let message = ReactionPlugin.JoinMessages[Math.floor(Math.random() * ReactionPlugin.JoinMessages.length)]
         message = message.replaceAll('%s', event.username)

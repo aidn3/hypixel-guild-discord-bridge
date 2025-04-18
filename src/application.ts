@@ -2,9 +2,7 @@
 // @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
 
 import type Events from 'node:events'
-import fs from 'node:fs'
 import path from 'node:path'
-import * as process from 'node:process'
 
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
@@ -15,27 +13,29 @@ import type { ApplicationConfig } from './application-config.js'
 import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
+import type { ApplicationInternalConfig } from './common/application-internal-config.js'
+import { DefaultApplicationInternalConfig } from './common/application-internal-config.js'
+import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance } from './common/connectable-instance.js'
 import type { Instance } from './common/instance.js'
-import { InternalInstancePrefix } from './common/instance.js'
-import type { AddChatCommand, AddDiscordCommand } from './common/plugin-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
-import LoggerInstance from './instance/logger/logger-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
-import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
+import { MinecraftManager } from './util/minecraft-manager.js'
 import { MojangApi } from './util/mojang.js'
+import { PluginsManager } from './util/plugins-manager.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
 export default class Application extends TypedEmitter<ApplicationEvents> implements InstanceIdentifier {
   public readonly instanceName: string = InstanceType.Main
   public readonly instanceType: InstanceType = InstanceType.Main
 
+  public readonly applicationInternalConfig: ConfigManager<ApplicationInternalConfig>
   public readonly clusterHelper: ClusterHelper
   public readonly autoComplete: Autocomplete
   public readonly applicationIntegrity: ApplicationIntegrity
@@ -49,15 +49,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   private readonly rootDirectory
   private readonly configsDirectory
-  private readonly config: ApplicationConfig
+  private readonly config: Readonly<ApplicationConfig>
 
-  private readonly plugins: PluginInstance[] = []
-
-  private readonly commandsInstance: CommandsInstance | undefined
-  private readonly discordInstance: DiscordInstance
-  private readonly loggerInstances: LoggerInstance[] = []
+  public readonly commandsInstance: CommandsInstance
+  public readonly discordInstance: DiscordInstance
+  public readonly minecraftManager: MinecraftManager
+  public readonly pluginsManager: PluginsManager
   private readonly metricsInstance: MetricsInstance | undefined
-  private readonly minecraftInstances: MinecraftInstance[] = []
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
@@ -72,6 +70,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.config = config
     this.configsDirectory = configsDirectory
     this.rootDirectory = rootDirectory
+    this.applicationInternalConfig = new ConfigManager<ApplicationInternalConfig>(
+      this,
+      this.getConfigFilePath('application.json'),
+      DefaultApplicationInternalConfig
+    )
+    this.applicationInternalConfig.loadFromConfig()
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
@@ -79,41 +83,19 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.moderation = new ModerationInstance(this, this.mojangApi, config.moderation)
+    this.moderation = new ModerationInstance(this, this.mojangApi)
     this.clusterHelper = new ClusterHelper(this)
     this.autoComplete = new Autocomplete(this)
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
 
-    for (let index = 0; index < this.config.loggers.length; index++) {
-      this.loggerInstances.push(
-        new LoggerInstance(
-          this,
-          `${InternalInstancePrefix}${InstanceType.Logger}-${index + 1}`,
-          this.config.loggers[index]
-        )
-      )
-    }
+    this.minecraftManager = new MinecraftManager(this)
+    this.minecraftManager.loadInstances()
 
-    const sessionDirectoryName = 'minecraft-sessions'
-    const sessionDirectory = this.getConfigFilePath(sessionDirectoryName)
-    fs.mkdirSync(sessionDirectory, { recursive: true })
-    this.applicationIntegrity.addConfigPath(sessionDirectoryName)
-
-    for (const instanceConfig of this.config.minecraft.instances) {
-      this.minecraftInstances.push(
-        new MinecraftInstance(
-          this,
-          instanceConfig.name,
-          instanceConfig,
-          sessionDirectory,
-          this.config.minecraft.adminUsername
-        )
-      )
-    }
+    this.pluginsManager = new PluginsManager(this)
 
     this.metricsInstance = this.config.metrics.enabled ? new MetricsInstance(this, this.config.metrics) : undefined
-    this.commandsInstance = this.config.commands.enabled ? new CommandsInstance(this, this.config.commands) : undefined
+    this.commandsInstance = new CommandsInstance(this)
 
     this.on('instanceSignal', (event) => {
       if (event.targetInstanceName.includes(this.instanceName)) {
@@ -137,7 +119,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async start(): Promise<void> {
-    this.plugins.push(...(await this.loadPlugins(this.rootDirectory)))
+    await this.pluginsManager.loadPlugins(this.rootDirectory, this.config.plugins)
 
     for (const instance of this.getAllInstances()) {
       // must cast first before using due to typescript limitation
@@ -165,53 +147,22 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }))
   }
 
-  private async loadPlugins<T extends PluginInstance>(rootDirectory: string): Promise<T[]> {
-    const result: Promise<T>[] = []
-
-    const addChatCommand: AddChatCommand | undefined = this.commandsInstance
-      ? (command) => this.commandsInstance?.commands.push(command)
-      : undefined
-
-    // eslint-disable-next-line unicorn/consistent-function-scoping
-    const addDiscordCommand: AddDiscordCommand = (command) =>
-      // eslint-disable-next-line unicorn/consistent-function-scoping
-      this.discordInstance.commandsManager.commands.set(command.getCommandBuilder().name, command)
-
-    for (const pluginPath of this.config.plugins) {
-      let newPath: string = path.resolve(rootDirectory, pluginPath)
-      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
-        newPath = `file:///${newPath}`
-      }
-
-      const pluginName = path.basename(pluginPath).replaceAll('.ts', '')
-      const plugin = import(newPath)
-        .then((resolved: { default: typeof PluginInstance }) => resolved.default)
-        // @ts-expect-error although it says it is an abstract, the class isn't since it is extended.
-        .then((clazz) => new clazz(this, pluginName, pluginPath, addChatCommand, addDiscordCommand) as T)
-
-      result.push(plugin)
-    }
-
-    return await Promise.all(result)
-  }
-
   private getAllInstances(): (
     | Instance<unknown, InstanceType>
     | ConnectableInstance<unknown, InstanceType>
     | PluginInstance
   )[] {
     const instances = [
-      ...this.plugins,
+      ...this.pluginsManager.getAllInstances(),
       this.autoComplete,
       this.applicationIntegrity,
 
-      ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
       this.discordInstance, // discord second to send any notification about connecting
 
       this.moderation,
       this.metricsInstance,
       this.commandsInstance,
-      ...this.minecraftInstances
+      ...this.minecraftManager.getAllInstances()
     ].filter((instance) => instance != undefined)
 
     this.applicationIntegrity.checkLocalInstancesIntegrity(instances)

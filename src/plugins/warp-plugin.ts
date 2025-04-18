@@ -1,32 +1,36 @@
 import type Application from '../application.js'
 import { InstanceType, type MinecraftRawChatEvent, MinecraftSendChatPriority } from '../common/application-event.js'
+import { OfficialPlugins } from '../common/application-internal-config.js'
 import type { ChatCommandContext } from '../common/commands.js'
 import { ChatCommandHandler } from '../common/commands.js'
 import { Status } from '../common/connectable-instance.js'
 import type EventHelper from '../common/event-helper.js'
+import type { PluginInfo } from '../common/plugin-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import type { MinecraftManager } from '../util/minecraft-manager.js'
 import { sleep } from '../util/shared-util.js'
 
-/* NOTICE
-THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS.
-THIS PLUGIN IS INCOMPATIBLE WITH `limbo-plugin`. DISABLE ONE BEFORE ENABLING THE OTHER ONE.
-*/
 export default class WarpPlugin extends PluginInstance {
   private disableLimboTrapping = false
-  onReady(): Promise<void> | void {
-    // @ts-expect-error onMessage is private
-    const minecraftInstances = this.application.minecraftInstances
 
-    if (this.addChatCommand) this.addChatCommand(new WarpCommand(this, minecraftInstances))
+  constructor(application: Application) {
+    super(application, OfficialPlugins.Warp)
+  }
+
+  pluginInfo(): PluginInfo {
+    return { description: 'Add !warp command to warp players out of a lobby', conflicts: [OfficialPlugins.Limbo] }
+  }
+
+  onReady(): Promise<void> | void {
+    this.addChatCommand(new WarpCommand(this))
 
     this.application.on('instanceStatus', (event) => {
       if (event.status === Status.Connected && event.instanceType === InstanceType.Minecraft) {
-        // @ts-expect-error onMessage is private
-        const localInstance = this.application.minecraftInstances.find(
-          (instance) => instance.instanceName === event.instanceName
-        )
+        const localInstance = this.application.minecraftManager
+          .getAllInstances()
+          .find((instance) => instance.instanceName === event.instanceName)
 
         if (localInstance != undefined) {
           if (!this.disableLimboTrapping) {
@@ -46,6 +50,8 @@ export default class WarpPlugin extends PluginInstance {
   }
 
   private async limbo(clientInstance: MinecraftInstance): Promise<void> {
+    if (!this.enabled()) return
+
     this.logger.debug(`Spawn event triggered on ${clientInstance.instanceName}. sending to limbo...`)
     await clientInstance.send('/limbo', MinecraftSendChatPriority.Default, undefined)
   }
@@ -226,10 +232,9 @@ async function awaitPartyStatus(
 class WarpCommand extends ChatCommandHandler {
   private static readonly CommandCoolDown = 60_000
   private lastCommandExecutionAt = 0
-  private readonly minecraftInstances: MinecraftInstance[]
   private readonly warpPlugin: WarpPlugin
 
-  constructor(warpPlugin: WarpPlugin, minecraftInstances: MinecraftInstance[]) {
+  constructor(warpPlugin: WarpPlugin) {
     super({
       name: 'Warp',
       triggers: ['warp'],
@@ -238,10 +243,13 @@ class WarpCommand extends ChatCommandHandler {
     })
 
     this.warpPlugin = warpPlugin
-    this.minecraftInstances = minecraftInstances
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    if (!this.warpPlugin.enabled()) {
+      return 'Warp plugin is disabled.'
+    }
+
     if (context.args.length === 0) {
       return this.getExample(context.commandPrefix)
     }
@@ -253,7 +261,9 @@ class WarpCommand extends ChatCommandHandler {
 
     const username = context.args[0]
     const minecraftInstanceName =
-      context.instanceType === InstanceType.Minecraft ? context.instanceName : this.getActiveMinecraftInstanceName()
+      context.instanceType === InstanceType.Minecraft
+        ? context.instanceName
+        : this.getActiveMinecraftInstanceName(context.app.minecraftManager)
     if (minecraftInstanceName === undefined) {
       return `No active connected Minecraft account exists to use`
     }
@@ -264,7 +274,8 @@ class WarpCommand extends ChatCommandHandler {
     return await this.warpPlugin.warpPlayer(context.app, context.eventHelper, minecraftInstanceName, username)
   }
 
-  private getActiveMinecraftInstanceName(): string | undefined {
-    return this.minecraftInstances.find((instance) => instance.currentStatus() === Status.Connected)?.instanceName
+  private getActiveMinecraftInstanceName(minecraftManager: MinecraftManager): string | undefined {
+    return minecraftManager.getAllInstances().find((instance) => instance.currentStatus() === Status.Connected)
+      ?.instanceName
   }
 }

@@ -7,46 +7,10 @@ discord:
   key: 'sgasihdgfiasgdiagsidiiagsd.sdfsaedf.aohdfoasfoieofi'
   # Discord ID of the USER who will have ADMIN permission
   adminId: '730667783180493755'
-  # Show Chat and public events in this channel id
-  publicChannelIds: ['876718702164050860', 'another_channel']
-  # Show Officer Chat and events in this channel id
-  officerChannelIds: ['841257267059646432', 'another_channel']
-  # Discord ID of the role who will have HELPER permission
-  helperRoleIds: ['803266248652835111', 'another_role']
-  # Discord ID of the role who will have OFFICER permission
-  officerRoleIds: ['803266248652835111', 'another_role']
 
-minecraft:
-  # In-game USERNAME of the user who will have ADMIN permission
-  adminUsername: 'Steve'
-  # Minecraft account details
-  instances:
-    # name displayed on discord side
-    - name: 'Good-Name'
-      # This will only be used when initiating connection to minecraft server
-      # Example: proxy: {protocol: "socks5", host: "example.com", port: 123}
-      proxy: null
-
-# Webhooks to log all internal events and metadata of the application
-# for staff to preserve and inspect at later date
-# This is an alternative to the log files
-# since sometimes staff don't have access to system files
-loggers:
-  - 'https://discord.com/api/webhooks/...'
-
-commands:
-  # Enable chat commands such as !cata, etc.
-  enabled: true
-
-moderation:
-  heatPunishment: true
-  mutesPerDay: 10
-  kicksPerDay: 5
-  immune: []
-  profanity:
-    enabled: true
-    whitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard']
-    blacklist: []
+# Add custom plugins
+plugins:
+  - './src/plugins/example-plugin.ts'
 
 metrics:
   enabled: false
@@ -58,14 +22,3 @@ metrics:
   useIngameCommand: false
   # Time in seconds to collect metrics from api/ingame commands
   interval: 60
-
-plugins:
-  - './src/plugins/example-plugin.ts'
-  - './src/plugins/limbo-plugin.ts'
-  - './src/plugins/reaction-plugin.ts'
-  - './src/plugins/dark-auction-plugin.ts'
-  - './src/plugins/starfall-cult-plugin.ts'
-  - './src/plugins/auto-restart-plugin.ts'
-#  - './src/plugins/stuf-plugin.ts'
-# Only enable after disabling limbo-plugin
-#  - './src/plugins/warp-plugin.ts'

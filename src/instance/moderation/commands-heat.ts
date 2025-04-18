@@ -1,6 +1,5 @@
 import type { Logger } from 'log4js'
 
-import type { ModerationConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { InstanceType, UserIdentifier } from '../../common/application-event.js'
 import { ConfigManager } from '../../common/config-manager.js'
@@ -23,8 +22,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     clientInstance: ModerationInstance,
     eventHelper: EventHelper<InstanceType.Moderation>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler,
-    private readonly config: ModerationConfig
+    errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
     this.configManager = new ConfigManager<HeatUser[]>(application, 'commands-heat.json', [])
@@ -126,13 +124,14 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   }
 
   private resolveType(type: HeatType): { expire: number; maxLimit: number; warnLimit: number; warnEvery: number } {
+    const config = this.application.applicationInternalConfig.data.moderation
     const common = { expire: CommandsHeat.ActionExpiresAfter, warnEvery: CommandsHeat.WarnEvery }
     switch (type) {
       case HeatType.Mute: {
-        return { ...common, ...CommandsHeat.resolveLimits(this.config.mutesPerDay) }
+        return { ...common, ...CommandsHeat.resolveLimits(config.mutesPerDay) }
       }
       case HeatType.Kick: {
-        return { ...common, ...CommandsHeat.resolveLimits(this.config.kicksPerDay) }
+        return { ...common, ...CommandsHeat.resolveLimits(config.kicksPerDay) }
       }
     }
 

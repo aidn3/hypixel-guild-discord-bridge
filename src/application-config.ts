@@ -5,39 +5,6 @@ export interface GeneralConfig {
 export interface DiscordConfig {
   key: string
   adminId: string
-
-  publicChannelIds: string[]
-  officerChannelIds: string[]
-  helperRoleIds: string[]
-  officerRoleIds: string[]
-}
-
-export interface MinecraftConfig {
-  adminUsername: string
-  instances: MinecraftInstanceConfig[]
-}
-
-export interface MinecraftInstanceConfig {
-  name: string
-  proxy: ProxyConfig | null
-}
-
-export interface CommandsConfig {
-  enabled: boolean
-}
-
-export interface ModerationConfig {
-  heatPunishment: boolean
-  mutesPerDay: number
-  kicksPerDay: number
-  immune: string[]
-  profanity: ProfanityConfig
-}
-
-export interface ProfanityConfig {
-  enabled: boolean
-  whitelist: string[]
-  blacklist: string[]
 }
 
 export interface MetricsConfig {
@@ -48,27 +15,9 @@ export interface MetricsConfig {
   interval: number
 }
 
-export interface ProxyConfig {
-  host: string
-  port: number
-  protocol: ProxyProtocol
-}
-
-export enum ProxyProtocol {
-  Http = 'http',
-  Socks5 = 'socks5'
-}
-
 export interface ApplicationConfig {
   general: GeneralConfig
-
   discord: DiscordConfig
-  minecraft: MinecraftConfig
-  loggers: string[]
-
-  commands: CommandsConfig
-  moderation: ModerationConfig
   metrics: MetricsConfig
-
   plugins: string[]
 }

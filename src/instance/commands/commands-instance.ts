@@ -1,4 +1,3 @@
-import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
@@ -37,13 +36,13 @@ import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
 import Weight from './triggers/weight.js'
 
-export class CommandsInstance extends ConnectableInstance<CommandsConfig, InstanceType.Commands> {
+export class CommandsInstance extends ConnectableInstance<void, InstanceType.Commands> {
   private static readonly CommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
   private readonly internalConfig
 
-  constructor(app: Application, config: CommandsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands, config)
+  constructor(app: Application) {
+    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
 
     this.internalConfig = new ConfigManager<InternalConfig>(app, app.getConfigFilePath('commands.json'), {
       disabledCommands: []

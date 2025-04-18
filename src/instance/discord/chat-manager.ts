@@ -3,7 +3,6 @@ import { escapeMarkdown } from 'discord.js'
 import EmojisMap from 'emoji-name-map'
 import type { Logger } from 'log4js'
 
-import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { InstanceType } from '../../common/application-event.js'
 import { ChannelType, PunishmentType } from '../../common/application-event.js'
@@ -19,7 +18,6 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
   private readonly messageAssociation: MessageAssociation
   private readonly lastMuteWarn = new Map<string, number>()
-  private readonly config
 
   constructor(
     application: Application,
@@ -27,12 +25,10 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     messageAssociation: MessageAssociation,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler,
-    config: DiscordConfig
+    errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
     this.messageAssociation = messageAssociation
-    this.config = config
   }
 
   registerEvents(): void {
@@ -46,10 +42,11 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
+    const config = this.application.applicationInternalConfig.data.discord
     let channelType: ChannelType
-    if (this.config.publicChannelIds.includes(event.channel.id)) {
+    if (config.publicChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Public
-    } else if (this.config.officerChannelIds.includes(event.channel.id)) {
+    } else if (config.officerChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Officer
     } else if (event.guildId) {
       return

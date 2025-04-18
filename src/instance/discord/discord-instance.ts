@@ -13,6 +13,7 @@ import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
+import LoggerManager from './logger-manager.js'
 
 export default class DiscordInstance extends ConnectableInstance<DiscordConfig, InstanceType.Discord> {
   readonly commandsManager: CommandManager
@@ -21,6 +22,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
   private readonly stateHandler: StateHandler
   private readonly statusHandler: StatusHandler
   private readonly chatManager: ChatManager
+  private readonly loggerManager: LoggerManager
 
   private readonly bridge: DiscordBridge
   private readonly messageAssociation: MessageAssociation = new MessageAssociation()
@@ -53,17 +55,10 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
       this.messageAssociation,
       this.eventHelper,
       this.logger,
-      this.errorHandler,
-      this.config
+      this.errorHandler
     )
-    this.commandsManager = new CommandManager(
-      this.application,
-      this,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler,
-      this.config
-    )
+    this.commandsManager = new CommandManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.loggerManager = new LoggerManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.bridge = new DiscordBridge(
       this.application,
@@ -74,13 +69,13 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
       this.config
     )
 
-    if (this.config.publicChannelIds.length === 0) {
+    if (this.application.applicationInternalConfig.data.discord.publicChannelIds.length === 0) {
       this.logger.info('no Discord public channels found')
     }
-    if (this.config.officerChannelIds.length === 0) {
+    if (this.application.applicationInternalConfig.data.discord.officerChannelIds.length === 0) {
       this.logger.info('no Discord officer channels found')
     }
-    if (this.config.officerRoleIds.length === 0) {
+    if (this.application.applicationInternalConfig.data.discord.officerRoleIds.length === 0) {
       this.logger.info('no Discord officer roles found')
     }
   }
@@ -88,11 +83,11 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
   public resolvePrivilegeLevel(userId: string, roles: string[]): Permission {
     if (userId === this.config.adminId) return Permission.Admin
 
-    if (roles.some((role) => this.config.officerRoleIds.includes(role))) {
+    if (roles.some((role) => this.application.applicationInternalConfig.data.discord.officerRoleIds.includes(role))) {
       return Permission.Officer
     }
 
-    if (roles.some((role) => this.config.helperRoleIds.includes(role))) {
+    if (roles.some((role) => this.application.applicationInternalConfig.data.discord.helperRoleIds.includes(role))) {
       return Permission.Helper
     }
 
@@ -114,6 +109,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
     this.statusHandler.registerEvents()
     this.chatManager.registerEvents()
     this.commandsManager.registerEvents()
+    this.loggerManager.registerEvents()
 
     await this.client.login(this.config.key)
   }

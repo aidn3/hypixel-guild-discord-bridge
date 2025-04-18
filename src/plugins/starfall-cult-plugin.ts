@@ -1,14 +1,24 @@
+import type Application from '../application.js'
 import { ChannelType, Color } from '../common/application-event.js'
+import { OfficialPlugins } from '../common/application-internal-config.js'
+import type { PluginInfo } from '../common/plugin-instance.js'
 import PluginInstance from '../common/plugin-instance.js'
 
-/* NOTICE
-THIS IS AN OPTIONAL PLUGIN. TO DISABLE IT, REMOVE THE PATH FROM 'config.yaml' PLUGINS
-*/
 export default class StarfallCultPlugin extends PluginInstance {
+  constructor(application: Application) {
+    super(application, OfficialPlugins.StarfallCultReminder)
+  }
+
+  pluginInfo(): PluginInfo {
+    return { description: 'Send a reminder when the skyblock starfall cult gathers' }
+  }
+
   onReady(): Promise<void> | void {
     let lastSkyblockDay = -1
 
     setInterval(() => {
+      if (!this.enabled()) return
+
       const date = StarfallCultPlugin.getSkyblockTime()
       const currentSkyblockDay = date.day
 

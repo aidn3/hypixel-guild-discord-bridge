@@ -78,7 +78,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    for (const channelId of this.config.publicChannelIds) {
+    const config = this.application.applicationInternalConfig.data.discord
+    for (const channelId of config.publicChannelIds) {
       const channel = await this.clientInstance.client.channels.fetch(channelId)
       if (!channel?.isSendable()) continue
 
@@ -109,11 +110,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async queueChat(event: ChatEvent): Promise<void> {
+    const config = this.application.applicationInternalConfig.data.discord
+
     let channels: string[]
     if (event.channelType === ChannelType.Public) {
-      channels = this.config.publicChannelIds
+      channels = config.publicChannelIds
     } else if (event.channelType === ChannelType.Officer) {
-      channels = this.config.officerChannelIds
+      channels = config.officerChannelIds
     } else {
       return
     }
@@ -203,9 +206,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   resolveChannels(channels: ChannelType[]): string[] {
+    const config = this.application.applicationInternalConfig.data.discord
+
     const results: string[] = []
-    if (channels.includes(ChannelType.Public)) results.push(...this.config.publicChannelIds)
-    if (channels.includes(ChannelType.Officer)) results.push(...this.config.officerChannelIds)
+    if (channels.includes(ChannelType.Public)) results.push(...config.publicChannelIds)
+    if (channels.includes(ChannelType.Officer)) results.push(...config.officerChannelIds)
 
     return results
   }
@@ -335,13 +340,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     let channels: string[] = []
 
+    const config = this.application.applicationInternalConfig.data.discord
     switch (event.channelType) {
       case ChannelType.Public: {
-        channels = this.config.publicChannelIds
+        channels = config.publicChannelIds
         break
       }
       case ChannelType.Officer: {
-        channels = this.config.officerChannelIds
+        channels = config.officerChannelIds
         break
       }
       case ChannelType.Private: {
