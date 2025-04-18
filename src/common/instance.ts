@@ -17,8 +17,8 @@ export abstract class Instance<K, T extends InstanceType> implements InstanceIde
   protected readonly errorHandler: UnexpectedErrorHandler
   protected readonly eventHelper: EventHelper<T>
 
-  protected constructor(app: Application, instanceName: string, instanceType: T, config: K) {
-    this.application = app
+  protected constructor(application: Application, instanceName: string, instanceType: T, config: K) {
+    this.application = application
     this.instanceName = instanceName
     this.instanceType = instanceType
 
