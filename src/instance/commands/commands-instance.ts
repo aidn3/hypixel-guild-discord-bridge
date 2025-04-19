@@ -173,7 +173,9 @@ export class CommandsInstance extends ConnectableInstance<void, InstanceType.Com
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
     this.application.emit('command', {
-      ...this.eventHelper.fillBaseEvent(),
+      eventId: this.eventHelper.generate(),
+      instanceName: event.instanceName,
+      instanceType: event.instanceType,
 
       originEventId: event.eventId,
       channelType: event.channelType,
@@ -188,7 +190,9 @@ export class CommandsInstance extends ConnectableInstance<void, InstanceType.Com
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
     this.application.emit('commandFeedback', {
-      ...this.eventHelper.fillBaseEvent(),
+      eventId: this.eventHelper.generate(),
+      instanceName: event.instanceName,
+      instanceType: event.instanceType,
 
       originEventId: event.eventId,
       channelType: event.channelType,
