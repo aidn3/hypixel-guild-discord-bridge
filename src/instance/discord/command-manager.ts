@@ -142,12 +142,18 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     }
   }
 
+  /*
+   * - allow when channel registered and permitted
+   * - allow if channel not registered but command requires admin and user is permitted
+   * - disallow if not permitted
+   * - disallow if not in proper channel
+   */
   private async onCommand(interaction: ChatInputCommandInteraction): Promise<void> {
     this.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
     const command = this.commands.get(interaction.commandName)
 
     try {
-      let channelType = this.getChannelType(interaction.channelId)
+      const channelType = this.getChannelType(interaction.channelId)
       const permission = this.clientInstance.resolvePrivilegeLevel(
         interaction.user.id,
         interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
@@ -157,18 +163,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
         await interaction.reply({
-          content: 'Command is not implemented somehow. Maybe there is new version?',
-          ephemeral: true
-        })
-        return
-      }
-      if (permission === Permission.Admin) {
-        channelType ??= ChannelType.Private
-      } else if (!channelType) {
-        this.logger.debug(`can't execute in channel ${interaction.channelId}`)
-
-        await interaction.reply({
-          content: 'You can only use commands in public/officer bridge channels!',
+          content: 'Command is not implemented somehow. Maybe there is new a version?',
           ephemeral: true
         })
         return
@@ -182,7 +177,20 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ephemeral: true
         })
         return
-      } else if (
+      }
+
+      // enforce right channel OR allow exception if user is admin and executing admin command
+      if (channelType === undefined && !(permission === Permission.Admin && command.permission === Permission.Admin)) {
+        this.logger.debug(`can't execute in channel ${interaction.channelId}`)
+
+        await interaction.reply({
+          content: 'You can only use commands in public/officer bridge channels!',
+          ephemeral: true
+        })
+        return
+      }
+
+      if (
         (command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Required ||
           command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Optional) &&
         this.application.getInstancesNames(InstanceType.Minecraft).length === 0
@@ -211,7 +219,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         this.application.emit('command', {
           ...this.eventHelper.fillBaseEvent(),
 
-          channelType: channelType,
+          channelType: channelType ?? ChannelType.Private,
           discordChannelId: interaction.channelId,
           username,
           fullCommand: interaction.options.data.map((option) => `${option.name}:${option.value}`).join(' '),
