@@ -91,7 +91,7 @@ export default {
               .setDescription('Select features to enable on the application')
           )
       ) as SlashCommandBuilder,
-  permission: Permission.Anyone,
+  permission: Permission.Admin,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
