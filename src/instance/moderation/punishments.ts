@@ -1,20 +1,10 @@
 import fs from 'node:fs'
 
-import * as TypescriptChecker from 'ts-interface-checker'
-import { createCheckers } from 'ts-interface-checker'
-
 import type Application from '../../application.js'
 import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../../common/application-event.js'
 import { PunishmentType } from '../../common/application-event.js'
 
-import ApplicationEventTi from './application-event-ti.js'
 import { matchUserIdentifier } from './util.js'
-
-const ApplicationEventChecker = createCheckers({
-  ...ApplicationEventTi,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  PunishmentList: TypescriptChecker.array('PunishmentAddEvent')
-})
 
 type PunishmentsRecord = Record<PunishmentType, PunishmentAddEvent[]>
 
@@ -111,14 +101,7 @@ export default class Punishments {
     if (!fs.existsSync(this.configFilePath)) return
 
     const fileData = fs.readFileSync(this.configFilePath, 'utf8')
-    const punishmentsRecord = JSON.parse(fileData) as PunishmentsRecord
-
-    for (const [type, punishments] of Object.entries(punishmentsRecord)) {
-      ApplicationEventChecker.PunishmentType.check(type)
-      ApplicationEventChecker.PunishmentList.check(punishments)
-    }
-
-    this.records = punishmentsRecord
+    this.records = JSON.parse(fileData) as PunishmentsRecord
   }
 
   private saveConfig(): void {
