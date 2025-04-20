@@ -154,10 +154,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
-    const clickableUsername = hyperlink(
-      escapeMarkdown(event.username),
-      `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`
-    )
+    const clickableUsername = hyperlink(event.username, `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`)
 
     const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
 
