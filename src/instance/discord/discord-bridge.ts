@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { APIEmbed, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
-import { escapeMarkdown } from 'discord.js'
+import { escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type { DiscordConfig } from '../../application-config.js'
@@ -154,8 +154,22 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
+    const clickableUsername = hyperlink(
+      escapeMarkdown(event.username),
+      `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`
+    )
 
-    await this.sendEmbedToChannels(event, removeLater, this.resolveChannels(event.channels), undefined)
+    const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
+
+    const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(event.username), clickableUsername)}`
+
+    const embed = {
+      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+      description: newMessage,
+      color: event.color
+    } satisfies APIEmbed
+
+    await this.sendEmbedToChannels(event, removeLater, this.resolveChannels(event.channels), embed)
   }
 
   async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
