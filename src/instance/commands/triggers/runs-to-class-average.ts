@@ -12,7 +12,7 @@ import {
 } from '../common/util.js'
 
 const FloorsBaseExp = {
-  m6: 105_000,
+  m6: 120_000,
   m7: 360_000
 }
 
