@@ -13,7 +13,7 @@ import {
 
 const FloorsBaseExp = {
   m6: 105_000,
-  m7: 340_000
+  m7: 360_000
 }
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
