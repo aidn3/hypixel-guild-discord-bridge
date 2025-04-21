@@ -24,18 +24,18 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       name: 'Runs to class average',
       triggers: ['rtca'],
       description: 'Returns the number of runs needed to reach the average class level specified',
-      example: `rtca 50 Steve`
+      example: `rtca Steve 50 m7`
     })
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
     const targetAverage = context.args[1] ? Number.parseInt(context.args[1], 10) : 50
+    const selectedFloor = context.args[2]?.toLowerCase() ?? 'm7'
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedFloor = 'm7'.toLowerCase()
     if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
     const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
