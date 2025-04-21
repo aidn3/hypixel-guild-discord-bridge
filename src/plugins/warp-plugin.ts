@@ -61,10 +61,12 @@ export default class WarpPlugin extends PluginInstance {
   async warpPlayer(
     app: Application,
     eventHelper: EventHelper<InstanceType>,
+    context: ChatCommandContext,
     minecraftInstanceName: string,
     username: string
   ): Promise<string> {
     this.disableLimboTrapping = true
+    context.sendFeedback(`Preparing to warp ${username}`)
 
     // exit limbo and go to main lobby. Can't warp from limbo
     this.application.emit('minecraftSend', {
@@ -96,7 +98,7 @@ export default class WarpPlugin extends PluginInstance {
 
     await sleep(2000)
 
-    const errorMessage = await awaitPartyStatus(app, eventHelper, minecraftInstanceName, username)
+    const errorMessage = await awaitPartyStatus(app, eventHelper, context, minecraftInstanceName, username)
     if (errorMessage != undefined) {
       this.disableLimboTrapping = false
       this.application.emit('minecraftSend', {
@@ -167,12 +169,14 @@ export default class WarpPlugin extends PluginInstance {
  *
  * @param app the application instance
  * @param eventHelper used to send commands with context for other instances
+ * @param context chat command that executed the warp command
  * @param minecraftInstanceName the target minecraft instance to use to execute commands
  * @param username the target to party
  */
 async function awaitPartyStatus(
   app: Application,
   eventHelper: EventHelper<InstanceType>,
+  context: ChatCommandContext,
   minecraftInstanceName: string,
   username: string
 ): Promise<string | undefined> {
@@ -209,6 +213,7 @@ async function awaitPartyStatus(
       }
     }
 
+    context.sendFeedback(`Sending party invite to warp ${username}`)
     app.on('minecraftChat', chatListener)
     app.emit('minecraftSend', {
       ...eventHelper.fillBaseEvent(),
@@ -272,8 +277,7 @@ class WarpCommand extends ChatCommandHandler {
 
     this.lastCommandExecutionAt = currentTime
 
-    context.sendFeedback(`Attempting to warp ${username}`)
-    return await this.warpPlugin.warpPlayer(context.app, context.eventHelper, minecraftInstanceName, username)
+    return await this.warpPlugin.warpPlayer(context.app, context.eventHelper, context, minecraftInstanceName, username)
   }
 
   private getActiveMinecraftInstanceName(minecraftManager: MinecraftManager): string | undefined {
