@@ -10,7 +10,7 @@ export const GeneralConfig = t.iface([], {
 
 export const DiscordConfig = t.iface([], {
   "key": "string",
-  "adminId": "string",
+  "adminIds": t.array("string"),
 });
 
 export const MetricsConfig = t.iface([], {

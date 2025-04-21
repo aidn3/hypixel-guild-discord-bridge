@@ -307,9 +307,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const joinCommand = commands.find((command) => command.name === 'join')
       const setupCommand = commands.find((command) => command.name === 'setup')
 
+      const adminList = this.config.adminIds.map((adminId) => `<@${adminId}>`)
       embed.description =
         `Looks like the Minecraft account is not in a guild for this to work.\n` +
-        `You can ask <@${this.config.adminId}> or any staff who has access\n` +
+        `You can ask ${adminList.join(', ')} or any staff who has access\n` +
         `to set it up using </join:${joinCommand?.id}> before using </setup:${setupCommand?.id}> right after.`
     }
 

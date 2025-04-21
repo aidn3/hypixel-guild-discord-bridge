@@ -4,7 +4,7 @@ export interface GeneralConfig {
 
 export interface DiscordConfig {
   key: string
-  adminId: string
+  adminIds: string[]
 }
 
 export interface MetricsConfig {

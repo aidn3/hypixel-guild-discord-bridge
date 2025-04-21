@@ -6,7 +6,7 @@ discord:
   # Create new discord bot from https://discordapp.com/developers and generate a secret key
   key: 'sgasihdgfiasgdiagsidiiagsd.sdfsaedf.aohdfoasfoieofi'
   # Discord ID of the USER who will have ADMIN permission
-  adminId: '730667783180493755'
+  adminIds: ['730667783180493755']
 
 # Add custom plugins
 plugins:

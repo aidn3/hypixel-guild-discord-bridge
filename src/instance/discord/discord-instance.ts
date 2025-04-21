@@ -81,7 +81,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
   }
 
   public resolvePrivilegeLevel(userId: string, roles: string[]): Permission {
-    if (userId === this.config.adminId) return Permission.Admin
+    if (this.config.adminIds.includes(userId)) return Permission.Admin
 
     if (roles.some((role) => this.application.applicationInternalConfig.data.discord.officerRoleIds.includes(role))) {
       return Permission.Officer
