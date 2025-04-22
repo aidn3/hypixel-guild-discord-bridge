@@ -45,6 +45,8 @@ export async function sleep(ms: number): Promise<void> {
 
 export async function gracefullyExitProcess(exitCode: number): Promise<void> {
   const timeout = sleep(30_000).then(() => {
+    // fallback to normal console if it fails to flush logs
+    // eslint-disable-next-line no-restricted-syntax
     console.warn('Logger flush timed out. Exiting...')
     process.exit(exitCode)
   })

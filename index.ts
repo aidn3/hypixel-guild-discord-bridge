@@ -1,4 +1,3 @@
-import * as console from 'node:console'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -10,7 +9,6 @@ import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { gracefullyExitProcess } from './src/util/shared-util.js'
 
-console.log('Loading Logger...')
 // eslint-disable-next-line import/no-named-as-default-member
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
 

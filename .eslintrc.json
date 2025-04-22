@@ -23,6 +23,13 @@
     "project": true
   },
   "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "CallExpression[callee.object.name='console']",
+        "message": "usage of console object is not allowed. use node:assert or logger4j instead"
+      }
+    ],
     "unicorn/no-process-exit": 0,
     "unicorn/filename-case": 2,
     "no-use-before-define": 0,
