@@ -25,6 +25,7 @@ import MetricsInstance from './instance/metrics/metrics-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
+import { GuildManager } from './util/guild-manager.js'
 import { MinecraftManager } from './util/minecraft-manager.js'
 import { MojangApi } from './util/mojang.js'
 import { PluginsManager } from './util/plugins-manager.js'
@@ -35,9 +36,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly instanceType: InstanceType = InstanceType.Main
 
   public readonly applicationInternalConfig: ConfigManager<ApplicationInternalConfig>
+  public readonly guildManager: GuildManager
   public readonly autoComplete: Autocomplete
   public readonly applicationIntegrity: ApplicationIntegrity
-  public readonly moderation: ModerationInstance
 
   public readonly hypixelApi: HypixelClient
   public readonly mojangApi: MojangApi
@@ -49,10 +50,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly configsDirectory
   private readonly config: Readonly<ApplicationConfig>
 
-  public readonly commandsInstance: CommandsInstance
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
   public readonly pluginsManager: PluginsManager
+  public readonly moderation: ModerationInstance
+  public readonly commandsInstance: CommandsInstance
   private readonly metricsInstance: MetricsInstance | undefined
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
@@ -82,6 +84,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     })
     this.mojangApi = new MojangApi()
     this.moderation = new ModerationInstance(this, this.mojangApi)
+    this.guildManager = new GuildManager(this)
     this.autoComplete = new Autocomplete(this)
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
@@ -157,6 +160,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   )[] {
     const instances = [
       ...this.pluginsManager.getAllInstances(),
+      this.guildManager,
       this.autoComplete,
       this.applicationIntegrity,
 

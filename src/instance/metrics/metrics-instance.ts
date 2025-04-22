@@ -88,7 +88,7 @@ export default class MetricsInstance extends Instance<MetricsConfig, InstanceTyp
     this.logger.debug('Collecting metrics')
 
     if (this.config.useIngameCommand) {
-      await this.guildOnlineMetrics.collectMetrics(this.application, this.eventHelper)
+      await this.guildOnlineMetrics.collectMetrics(this.application)
     }
   }
 }

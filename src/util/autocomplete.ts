@@ -1,5 +1,5 @@
 import type Application from '../application.js'
-import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
+import { InstanceType } from '../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../common/instance.js'
 
 export default class Autocomplete extends Instance<void, InstanceType.Util> {
@@ -24,27 +24,8 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
       this.addUsername(event.username)
     })
 
-    const regexOnline = /(\w{3,16}) \u25CF/g
-    application.on('minecraftChat', (event) => {
-      if (event.message.length === 0) return
-
-      let match = regexOnline.exec(event.message)
-      while (match != undefined) {
-        const username = match[1]
-        this.addUsername(username)
-
-        match = regexOnline.exec(event.message)
-      }
-    })
-    // MetricsInstance also fetches guild list all the time
-    // This will make the minecraftChat event spams a lot
     setInterval(() => {
-      application.emit('minecraftSend', {
-        ...this.eventHelper.fillBaseEvent(),
-        targetInstanceName: application.getInstancesNames(InstanceType.Minecraft),
-        priority: MinecraftSendChatPriority.Default,
-        command: '/guild list'
-      })
+      void this.fetchGuildInfo().catch(this.errorHandler.promiseCatch('fetching guild info for autocomplete'))
     }, 60_000)
 
     const ranksResolver = setTimeout(() => {
@@ -107,6 +88,33 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
     this.usernames.push(username)
   }
 
+  private addRank(rank: string): void {
+    if (!this.guildRanks.includes(rank)) {
+      this.guildRanks.push(rank)
+    }
+  }
+
+  private async fetchGuildInfo(): Promise<void> {
+    const tasks = []
+    for (const instancesName of this.application.getInstancesNames(InstanceType.Minecraft)) {
+      const task = this.application.guildManager
+        .listMembers(instancesName, 60_000)
+        .then((members) => {
+          for (const { rank, usernames } of members) {
+            this.addRank(rank)
+            for (const username of usernames) {
+              this.addUsername(username)
+            }
+          }
+        })
+        .catch(() => undefined)
+
+      tasks.push(task)
+    }
+
+    await Promise.all(tasks)
+  }
+
   private async resolveGuildRanks(): Promise<void> {
     this.logger.debug('Resolving guild ranks from server')
 
@@ -121,10 +129,7 @@ export default class Autocomplete extends Instance<void, InstanceType.Util> {
 
       for (const rank of guild.ranks) {
         const rankName = rank.name
-
-        if (!this.guildRanks.includes(rankName)) {
-          this.guildRanks.push(rankName)
-        }
+        this.addRank(rankName)
       }
     }
   }
