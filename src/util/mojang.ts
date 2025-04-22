@@ -31,18 +31,48 @@ export class MojangApi {
     return result
   }
 
-  async profilesByUsername(usernames: string[]): Promise<MojangProfile[]> {
-    const partialResult = usernames
-      .map((username) => this.cache.get<MojangProfile>(username.toLowerCase()))
-      .filter((entry) => entry !== undefined)
+  async profilesByUsername(usernames: Set<string>): Promise<Map<string, string | undefined>> {
+    const result = new Map<string, string | undefined>()
 
-    const leftUsernames = usernames.filter(
-      (username) => !partialResult.some((result) => username.toLowerCase() === result.name.toLowerCase())
-    )
+    const requests: Promise<void>[] = []
 
-    if (leftUsernames.length === 0) return partialResult
+    const queue = (usernamesChunk: string[]) =>
+      this.lookupUsernames(usernamesChunk)
+        .then((profiles) => {
+          for (const profile of profiles) {
+            result.set(profile.name, profile.id)
+          }
+        })
+        .catch(() => {
+          for (const username of usernames) {
+            result.set(username, undefined)
+          }
+        })
 
-    const result = await Axios.post(`https://api.mojang.com/profiles/minecraft`, leftUsernames).then(
+    const chunkSize = 10 // Mojang only allow up to 10 usernames per lookup
+    let chunk: string[] = []
+    for (const username of usernames) {
+      const cachedProfile = this.cache.get<MojangProfile>(username.toLowerCase())
+      if (cachedProfile !== undefined) {
+        result.set(username, cachedProfile.id)
+        continue
+      }
+
+      chunk.push(username)
+      if (chunk.length >= chunkSize) {
+        requests.push(queue(chunk))
+        chunk = []
+      }
+    }
+    if (chunk.length > 0) requests.push(queue(chunk))
+
+    await Promise.all(requests)
+
+    return result
+  }
+
+  private async lookupUsernames(usernames: string[]): Promise<MojangProfile[]> {
+    const result = await Axios.post(`https://api.mojang.com/profiles/minecraft`, usernames).then(
       (response: AxiosResponse<MojangProfile[], unknown>) => response.data
     )
 
@@ -50,7 +80,7 @@ export class MojangApi {
       this.cache.set<MojangProfile>(mojangProfile.name.toLowerCase(), mojangProfile)
     }
 
-    return [...result, ...partialResult]
+    return result
   }
 }
 
