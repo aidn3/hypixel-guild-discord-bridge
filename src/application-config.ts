@@ -16,6 +16,7 @@ export interface MetricsConfig {
 }
 
 export interface ApplicationConfig {
+  version: number
   general: GeneralConfig
   discord: DiscordConfig
   metrics: MetricsConfig
