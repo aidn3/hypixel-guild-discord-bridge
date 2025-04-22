@@ -14,7 +14,7 @@ export default class StufPlugin extends PluginInstance {
   }
 
   pluginInfo(): PluginInfo {
-    return { description: 'Bypass Hypixel restriction on hyperlinks' }
+    return { description: 'Bypass Hypixel restriction on hyperlinks', conflicts: [OfficialPlugins.HideLinks] }
   }
 
   onReady(): Promise<void> | void {

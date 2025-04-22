@@ -38,6 +38,7 @@ export enum OfficialPlugins {
   Reaction = 'reaction',
   StarfallCultReminder = 'starfall-cult-reminder',
   Stuf = 'stuf',
+  HideLinks = 'hide-links',
   Warp = 'warp'
 }
 

@@ -7,6 +7,7 @@ import { Instance, InternalInstancePrefix } from '../common/instance.js'
 import type PluginInstance from '../common/plugin-instance.js'
 import AutoRestartPlugin from '../plugins/auto-restart-plugin.js'
 import DarkAuctionPlugin from '../plugins/dark-auction-plugin.js'
+import HideLinksPlugin from '../plugins/hide-links-plugin.js'
 import LimboPlugin from '../plugins/limbo-plugin.js'
 import ReactionPlugin from '../plugins/reaction-plugin.js'
 import StarfallCultPlugin from '../plugins/starfall-cult-plugin.js'
@@ -22,6 +23,7 @@ export class PluginsManager extends Instance<void, InstanceType.Util> {
     this.instances.push(
       new AutoRestartPlugin(application),
       new DarkAuctionPlugin(application),
+      new HideLinksPlugin(application),
       new LimboPlugin(application),
       new ReactionPlugin(application),
       new StarfallCultPlugin(application),
