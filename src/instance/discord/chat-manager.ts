@@ -10,11 +10,12 @@ import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
+import { FilteredReaction, MutedReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
-  private static readonly WarnMuteEvery = 3 * 60 * 1000
+  private static readonly WarnMuteEvery = 10 * 60 * 1000
 
   private readonly messageAssociation: MessageAssociation
   private readonly lastMuteWarn = new Map<string, number>()
@@ -83,9 +84,14 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
         originalMessage: content,
         filteredMessage: filteredMessage
       })
-      await event.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
-      })
+
+      const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === FilteredReaction.name)
+      if (emoji !== undefined) await event.react(emoji)
+      if (emoji === undefined || this.application.applicationInternalConfig.data.discord.alwaysReplyReaction) {
+        await event.reply({
+          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
+        })
+      }
     }
 
     this.application.emit('chat', {
@@ -110,6 +116,9 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
     if (mutedTill != undefined) {
+      const emoji = message.client.application.emojis.cache.find((emoji) => emoji.name === MutedReaction.name)
+      if (emoji !== undefined) await message.react(emoji)
+
       const currentTimestamp = Date.now()
       if ((this.lastMuteWarn.get(message.author.id) ?? 0) + ChatManager.WarnMuteEvery < currentTimestamp) {
         this.lastMuteWarn.set(message.author.id, currentTimestamp)

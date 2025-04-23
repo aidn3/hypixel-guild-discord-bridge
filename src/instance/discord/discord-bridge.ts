@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, Message, TextBasedChannelFields, Webhook } from 'discord.js'
+import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook } from 'discord.js'
 import { ChannelType as DiscordChannelType, escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
@@ -30,6 +30,7 @@ import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { beautifyInstanceName } from '../../util/shared-util.js'
 
+import { BlockReaction, RepeatReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type { DiscordAssociatedMessage } from './common/message-association.js'
 import MessageDeleter from './common/message-deletor.js'
@@ -200,9 +201,36 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if ((this.lastMinecraftEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
     this.lastMinecraftEvent.set(event.type, Date.now())
 
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
+    const client = this.clientInstance.client
+
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
     for (const replyId of replyIds) {
       try {
+        const channel = await client.channels.fetch(replyId.channelId)
+        if (channel?.type === DiscordChannelType.GuildText) {
+          const message = await channel.messages.fetch(replyId.messageId)
+
+          let emoji: ApplicationEmoji | undefined = undefined
+          switch (event.type) {
+            case MinecraftReactiveEventType.Repeat: {
+              emoji = client.application?.emojis.cache.find((emoji) => emoji.name === RepeatReaction.name)
+              break
+            }
+            case MinecraftReactiveEventType.Advertise:
+            case MinecraftReactiveEventType.Block: {
+              emoji = client.application?.emojis.cache.find((emoji) => emoji.name === BlockReaction.name)
+              break
+            }
+          }
+
+          if (emoji != undefined) {
+            await message.react(emoji)
+            continue
+          }
+        }
+
         await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message')

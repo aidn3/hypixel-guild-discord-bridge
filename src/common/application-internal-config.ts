@@ -49,6 +49,8 @@ export interface DiscordConfig {
   officerRoleIds: string[]
 
   loggerChannelIds: string[]
+
+  alwaysReplyReaction: boolean
 }
 
 export interface CommandsConfig {
@@ -76,7 +78,9 @@ export const DefaultApplicationInternalConfig: ApplicationInternalConfig = {
     helperRoleIds: [],
     officerRoleIds: [],
 
-    loggerChannelIds: []
+    loggerChannelIds: [],
+
+    alwaysReplyReaction: false
   },
   minecraft: { adminUsername: 'Steve', instances: [] },
 

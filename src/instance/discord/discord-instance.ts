@@ -11,6 +11,7 @@ import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
+import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 import LoggerManager from './logger-manager.js'
@@ -21,6 +22,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
   private readonly stateHandler: StateHandler
   private readonly statusHandler: StatusHandler
+  private readonly emojiHandler: EmojiHandler
   private readonly chatManager: ChatManager
   private readonly loggerManager: LoggerManager
 
@@ -49,6 +51,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
     this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.emojiHandler = new EmojiHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.chatManager = new ChatManager(
       this.application,
       this,
@@ -107,6 +110,7 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
     this.stateHandler.registerEvents(this.client)
     this.statusHandler.registerEvents(this.client)
+    this.emojiHandler.registerEvents(this.client)
     this.chatManager.registerEvents(this.client)
     this.commandsManager.registerEvents(this.client)
     this.loggerManager.registerEvents(this.client)
