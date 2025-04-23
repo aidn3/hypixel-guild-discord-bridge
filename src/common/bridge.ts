@@ -11,7 +11,7 @@ import type {
   GuildPlayerEvent,
   InstanceStatusEvent,
   InstanceType,
-  MinecraftChatEvent
+  MinecraftReactiveEvent
 } from './application-event.js'
 import type { Instance } from './instance.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
@@ -84,7 +84,7 @@ export default abstract class Bridge<K extends Instance<unknown, InstanceType>> 
 
   protected abstract onGuildGeneral(event: GuildGeneralEvent): void | Promise<void>
 
-  protected abstract onMinecraftChatEvent(event: MinecraftChatEvent): void | Promise<void>
+  protected abstract onMinecraftChatEvent(event: MinecraftReactiveEvent): void | Promise<void>
 
   protected abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
 

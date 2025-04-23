@@ -114,6 +114,7 @@ export class CommandsInstance extends ConnectableInstance<void, InstanceType.Com
     this.checkCommandsIntegrity()
     this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
   }
+
   disconnect(): Promise<void> | void {
     this.setAndBroadcastNewStatus(Status.Ended, 'chat commands have been disabled')
   }
@@ -178,13 +179,9 @@ export class CommandsInstance extends ConnectableInstance<void, InstanceType.Com
       instanceType: event.instanceType,
 
       originEventId: event.eventId,
-      channelType: event.channelType,
-      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
-      fullCommand: event.message,
       commandName: commandName,
-      commandResponse: response,
-      alreadyReplied: false
+      commandResponse: response
     })
   }
 
@@ -195,13 +192,9 @@ export class CommandsInstance extends ConnectableInstance<void, InstanceType.Com
       instanceType: event.instanceType,
 
       originEventId: event.eventId,
-      channelType: event.channelType,
-      discordChannelId: event.instanceType === InstanceType.Discord ? event.channelId : undefined,
       username: event.username,
-      fullCommand: event.message,
       commandName: commandName,
-      commandResponse: response,
-      alreadyReplied: false
+      commandResponse: response
     })
   }
 

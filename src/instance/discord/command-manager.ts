@@ -214,22 +214,6 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       } else {
         this.logger.debug('execution granted.')
 
-        const username = interaction.inCachedGuild() ? interaction.member.displayName : interaction.user.displayName
-
-        this.application.emit('command', {
-          ...this.eventHelper.fillBaseEvent(),
-
-          channelType: channelType ?? ChannelType.Private,
-          discordChannelId: interaction.channelId,
-          username,
-          fullCommand: interaction.options.data.map((option) => `${option.name}:${option.value}`).join(' '),
-          commandName: interaction.commandName,
-          // discord commands response are long
-          // and not useful for others across platform to read
-          commandResponse: `[${interaction.user.username}] /${interaction.commandName}`,
-          alreadyReplied: true
-        })
-
         const commandContext: DiscordCommandContext = {
           application: this.application,
           eventHelper: this.eventHelper,

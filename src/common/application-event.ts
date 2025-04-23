@@ -36,9 +36,9 @@ export interface ApplicationEvents {
   /**
    * In-game events such as interactions blocked/etc.
    *
-   * @see MinecraftChatEventType
+   * @see MinecraftReactiveEventType
    */
-  minecraftChatEvent: (event: Readonly<MinecraftChatEvent>) => void
+  minecraftChatEvent: (event: Readonly<MinecraftReactiveEvent>) => void
   /**
    * User executing a command.
    * Each command execution can send only one command event.
@@ -165,8 +165,8 @@ export interface BaseEvent extends InstanceIdentifier {
    * - a discord user sends a message
    *  - an id is generated and assigned to {@link #eventId}
    *  - the event is forwarded to minecraft instance
-   *  - minecraft client shows an error message such as {@link MinecraftChatEventType#Repeat}
-   *  - minecraft instance sends {@link MinecraftChatEvent} with a {@link ReplyEvent#originEventId} being the generated id
+   *  - minecraft client shows an error message such as {@link MinecraftReactiveEventType#Repeat}
+   *  - minecraft instance sends {@link MinecraftReactiveEvent} with a {@link ReplyEvent#originEventId} being the generated id
    *  - discord instance can use that to associate the event with the message the user sent
    */
   readonly eventId: string
@@ -406,7 +406,7 @@ export enum GuildGeneralEventType {
  */
 export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType>
 
-export enum MinecraftChatEventType {
+export enum MinecraftReactiveEventType {
   /**
    * When a Minecraft server blocks a message due to it being repetitive
    */
@@ -437,11 +437,22 @@ export enum MinecraftChatEventType {
 /**
  * In-game events such as interactions blocked/etc.
  *
- * @see MinecraftChatEventType
+ * @see MinecraftReactiveEventType
  */
-export type MinecraftChatEvent =
-  | BaseInGameEvent<MinecraftChatEventType>
-  | (BaseInGameEvent<MinecraftChatEventType> & ReplyEvent)
+export interface MinecraftReactiveEvent extends ReplyEvent {
+  /**
+   * Which event has occurred
+   */
+  readonly type: MinecraftReactiveEventType
+  /**
+   * The message that fired that event
+   */
+  readonly message: string
+  /**
+   * The color to display the message at if the receiver supports it.
+   */
+  readonly color: Color
+}
 
 /**
  * When a plugin or a component wishes to broadcast a message to all instances.
@@ -470,19 +481,7 @@ export interface BroadcastEvent extends InformEvent {
 /**
  * Used when a command has been executed
  */
-export interface BaseCommandEvent extends InformEvent {
-  readonly channelType: ChannelType
-
-  /**
-   * Only available if the message comes from a DM.
-   * Used to reply to the message
-   */
-  readonly discordChannelId: string | undefined
-  /**
-   * Whether the command response has already been sent.
-   * If not, then each instance will handle the replying themselves instead.
-   */
-  readonly alreadyReplied: boolean
+export interface BaseCommandEvent extends InformEvent, ReplyEvent {
   /**
    * The name of the user who executed the command
    */
@@ -492,25 +491,22 @@ export interface BaseCommandEvent extends InformEvent {
    */
   readonly commandName: string
   /**
-   * The full command line that has been executed including its arguments
-   */
-  readonly fullCommand: string
-  /**
    * The command response after the execution.
    * Used if @{link #alreadyReplied} is set to `false`
    */
   readonly commandResponse: string
 }
+
 /**
  * Used when a command has been executed
  */
-export type CommandEvent = BaseCommandEvent | (BaseCommandEvent & ReplyEvent)
+export type CommandEvent = BaseCommandEvent
 
 /**
  * Used to send feedback messages when a command takes time to execute.
  * Can be used to send multiple responses as well.
  */
-export type CommandFeedbackEvent = BaseCommandEvent | (BaseCommandEvent & ReplyEvent)
+export type CommandFeedbackEvent = BaseCommandEvent
 
 /**
  * Events used when an instance changes its status

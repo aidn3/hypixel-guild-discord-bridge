@@ -8,6 +8,7 @@ import { ConnectableInstance, Status } from '../../common/connectable-instance.j
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
+import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
@@ -27,6 +28,7 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   private selfbroadcastHandler: SelfbroadcastHandler
   private chatManager: ChatManager
 
+  private readonly messageAssociation: MessageAssociation
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
   private readonly sessionDirectory: string
@@ -36,7 +38,8 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     this.sessionDirectory = sessionDirectory
 
-    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
+    this.messageAssociation = new MessageAssociation()
+    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler, this.messageAssociation)
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
       this.sendNow(command)
     })
@@ -49,7 +52,14 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
       this.logger,
       this.errorHandler
     )
-    this.chatManager = new ChatManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.chatManager = new ChatManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.messageAssociation
+    )
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {

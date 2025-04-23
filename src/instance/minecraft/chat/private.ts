@@ -14,8 +14,10 @@ export default {
 
       if (context.application.minecraftManager.isMinecraftBot(username)) return
 
+      const event = context.eventHelper.fillBaseEvent()
+      context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Private, username: username })
       context.application.emit('chat', {
-        ...context.eventHelper.fillBaseEvent(),
+        ...event,
 
         channelType: ChannelType.Private,
 

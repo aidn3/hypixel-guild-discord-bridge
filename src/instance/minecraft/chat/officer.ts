@@ -28,8 +28,10 @@ export default {
         })
       }
 
+      const event = context.eventHelper.fillBaseEvent()
+      context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Officer })
       context.application.emit('chat', {
-        ...context.eventHelper.fillBaseEvent(),
+        ...event,
 
         channelType: ChannelType.Officer,
 

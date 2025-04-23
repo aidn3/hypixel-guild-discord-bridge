@@ -17,14 +17,14 @@ import type {
   InstanceMessage,
   InstanceMessageType,
   InstanceStatusEvent,
-  MinecraftChatEvent
+  MinecraftReactiveEvent
 } from '../../common/application-event.js'
 import {
   ChannelType,
   Color,
   GuildPlayerEventType,
   InstanceType,
-  MinecraftChatEventType
+  MinecraftReactiveEventType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -194,30 +194,18 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), undefined)
   }
 
-  private lastMinecraftEvent = new Map<MinecraftChatEventType, number>()
+  private lastMinecraftEvent = new Map<MinecraftReactiveEventType, number>()
 
-  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
-    if (
-      event.instanceType === this.clientInstance.instanceType &&
-      event.instanceName === this.clientInstance.instanceName
-    )
-      return
-
+  async onMinecraftChatEvent(event: MinecraftReactiveEvent): Promise<void> {
     if ((this.lastMinecraftEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
     this.lastMinecraftEvent.set(event.type, Date.now())
 
-    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
-
-    if (replyIds.length === 0) {
-      await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), undefined)
-    } else {
-      for (const replyId of replyIds) {
-        try {
-          await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
-        } catch (error: unknown) {
-          this.logger.error(error, 'can not reply to message. sending the event independently')
-          await this.sendEmbedToChannels(event, [replyId.channelId], undefined)
-        }
+    const replyIds = this.messageAssociation.getMessageId(event.originEventId)
+    for (const replyId of replyIds) {
+      try {
+        await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message')
       }
     }
   }
@@ -275,7 +263,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async generateEmbed(
-    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftChatEvent | InstanceMessage,
+    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftReactiveEvent | InstanceMessage,
     guildId: string | undefined
   ): Promise<APIEmbed> {
     const embed: APIEmbed = {
@@ -300,7 +288,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // all enums are unique and must unique for this to work.
     // the other solutions is just too complicated
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    if ('type' in event && event.type === MinecraftChatEventType.RequireGuild && guildId !== undefined) {
+    if ('type' in event && event.type === MinecraftReactiveEventType.RequireGuild && guildId !== undefined) {
       // TODO: properly reference client
       // @ts-expect-error client is private variable
       const commands = await this.clientInstance.client.guilds.fetch(guildId).then((guild) => guild.commands.fetch())
@@ -377,35 +365,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.outgoingChat = new Map()
     await Promise.all(outgoingPromises.values())
 
-    let channels: string[] = []
-
-    const config = this.application.applicationInternalConfig.data.discord
-    switch (event.channelType) {
-      case ChannelType.Public: {
-        channels = config.publicChannelIds
-        break
-      }
-      case ChannelType.Officer: {
-        channels = config.officerChannelIds
-        break
-      }
-      case ChannelType.Private: {
-        if (event.discordChannelId) {
-          channels = [event.discordChannelId]
-        }
-        break
-      }
-    }
-
-    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
-
-    if (event.instanceName === this.clientInstance.instanceName && event.discordChannelId && event.alreadyReplied) {
-      channels = channels.filter((id) => id !== event.discordChannelId)
-    }
-    if (channels.length === 0) return
-
-    const basic: APIEmbed = {
+    const replyEmbed: APIEmbed = {
       color: Color.Good,
+      description: `**${escapeMarkdown(event.commandResponse)}**`,
 
       title: escapeMarkdown(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
@@ -415,30 +377,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    const replyEmbed: APIEmbed = {
-      ...basic,
-      description: `**${escapeMarkdown(event.commandResponse)}**`
-    }
-
-    const noReplyEmbed: APIEmbed = {
-      ...basic,
-      description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`
-    }
-
-    if (replyIds.length === 0) {
-      await this.sendEmbedToChannels(event, channels, noReplyEmbed)
-    } else {
-      for (const replyId of replyIds) {
-        try {
-          await this.replyWithEmbed(event.eventId, replyId, replyEmbed)
-        } catch (error: unknown) {
-          this.logger.error(error, 'can not reply to message. sending the event independently')
-          await this.sendEmbedToChannels(event, [replyId.channelId], noReplyEmbed)
-        }
+    const replyIds = this.messageAssociation.getMessageId(event.originEventId)
+    for (const replyId of replyIds) {
+      try {
+        await this.replyWithEmbed(event.eventId, replyId, replyEmbed)
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message')
       }
-
-      const remainingChannels = channels.filter((id) => !replyIds.map((reply) => reply.channelId).includes(id))
-      await this.sendEmbedToChannels(event, remainingChannels, noReplyEmbed)
     }
   }
 
