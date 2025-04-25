@@ -16,7 +16,7 @@ import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 import LoggerManager from './logger-manager.js'
 
-export default class DiscordInstance extends ConnectableInstance<DiscordConfig, InstanceType.Discord> {
+export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
   readonly commandsManager: CommandManager
   private readonly client: Client
 
@@ -28,10 +28,14 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
   private readonly bridge: DiscordBridge
   private readonly messageAssociation: MessageAssociation = new MessageAssociation()
+
+  private readonly config: DiscordConfig
   private connected = false
 
   constructor(app: Application, config: DiscordConfig) {
-    super(app, InstanceType.Discord, InstanceType.Discord, config)
+    super(app, InstanceType.Discord, InstanceType.Discord)
+
+    this.config = config
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),

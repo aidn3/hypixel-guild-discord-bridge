@@ -20,7 +20,7 @@ import { Instance, InternalInstancePrefix } from '../common/instance.js'
  * - {@link #ensureInstanceName} checks if a given <code>instanceName</code> isn't conformed to regex <code>[\w-]+</code>
  *   (with {@link InternalInstancePrefix} being allowed as a prefix)
  */
-export default class ApplicationIntegrity extends Instance<void, InstanceType.Util> {
+export default class ApplicationIntegrity extends Instance<InstanceType.Util> {
   private configPaths: string[] = []
 
   constructor(application: Application) {

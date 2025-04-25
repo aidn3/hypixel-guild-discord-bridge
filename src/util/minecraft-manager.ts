@@ -11,7 +11,7 @@ import { Instance, InternalInstancePrefix } from '../common/instance.js'
 // eslint-disable-next-line import/no-restricted-paths
 import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
-export class MinecraftManager extends Instance<void, InstanceType.Util> {
+export class MinecraftManager extends Instance<InstanceType.Util> {
   private readonly instances = new Set<MinecraftInstance>()
   private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
 

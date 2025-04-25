@@ -15,7 +15,7 @@ import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
 
-export default class MinecraftInstance extends ConnectableInstance<MinecraftInstanceConfig, InstanceType.Minecraft> {
+export default class MinecraftInstance extends ConnectableInstance<InstanceType.Minecraft> {
   readonly defaultBotConfig = {
     host: 'me.hypixel.net',
     port: 25_565,
@@ -31,12 +31,15 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
   private readonly messageAssociation: MessageAssociation
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
+
   private readonly sessionDirectory: string
+  private readonly config: MinecraftInstanceConfig
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, sessionDirectory: string) {
-    super(app, instanceName, InstanceType.Minecraft, config)
+    super(app, instanceName, InstanceType.Minecraft)
 
     this.sessionDirectory = sessionDirectory
+    this.config = config
 
     this.messageAssociation = new MessageAssociation()
     this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler, this.messageAssociation)

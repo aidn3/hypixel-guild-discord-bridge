@@ -4,11 +4,11 @@ import type { InstanceStatusEvent, InstanceType } from './application-event.js'
 import { InstanceSignalType } from './application-event.js'
 import { Instance } from './instance.js'
 
-export abstract class ConnectableInstance<K, T extends InstanceType> extends Instance<K, T> {
+export abstract class ConnectableInstance<T extends InstanceType> extends Instance<T> {
   private status: Status = Status.Fresh
 
-  protected constructor(app: Application, instanceName: string, instanceType: T, config: K) {
-    super(app, instanceName, instanceType, config)
+  protected constructor(app: Application, instanceName: string, instanceType: T) {
+    super(app, instanceName, instanceType)
 
     this.application.on('instanceSignal', (event) => {
       if (event.targetInstanceName.includes(this.instanceName)) {

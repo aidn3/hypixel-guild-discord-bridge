@@ -10,7 +10,7 @@ import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
 import { matchUserIdentifier } from './util.js'
 
-export default class ModerationInstance extends Instance<void, InstanceType.Moderation> {
+export default class ModerationInstance extends Instance<InstanceType.Moderation> {
   public readonly punishments: Punishments
   public readonly commandsHeat: CommandsHeat
   private readonly enforcer: PunishmentsEnforcer

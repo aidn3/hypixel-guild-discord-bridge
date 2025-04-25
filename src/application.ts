@@ -16,12 +16,12 @@ import type { ApplicationInternalConfig } from './common/application-internal-co
 import { DefaultApplicationInternalConfig } from './common/application-internal-config.js'
 import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance } from './common/connectable-instance.js'
-import type { Instance } from './common/instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
+import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import ApplicationIntegrity from './util/application-integrity.js'
 import Autocomplete from './util/autocomplete.js'
@@ -30,6 +30,19 @@ import { MinecraftManager } from './util/minecraft-manager.js'
 import { MojangApi } from './util/mojang.js'
 import { PluginsManager } from './util/plugins-manager.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
+
+export type AllInstances =
+  | CommandsInstance
+  | DiscordInstance
+  | MetricsInstance
+  | MinecraftInstance
+  | ModerationInstance
+  | PluginInstance
+  | ApplicationIntegrity
+  | Autocomplete
+  | GuildManager
+  | MinecraftManager
+  | PluginsManager
 
 export default class Application extends TypedEmitter<ApplicationEvents> implements InstanceIdentifier {
   public readonly instanceName: string = InstanceType.Main
@@ -153,11 +166,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }))
   }
 
-  private getAllInstances(): (
-    | Instance<unknown, InstanceType>
-    | ConnectableInstance<unknown, InstanceType>
-    | PluginInstance
-  )[] {
+  private getAllInstances(): AllInstances[] {
     const instances = [
       ...this.pluginsManager.getAllInstances(),
       this.guildManager,

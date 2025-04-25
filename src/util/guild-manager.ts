@@ -7,7 +7,7 @@ import { Instance, InternalInstancePrefix } from '../common/instance.js'
 
 import { Timeout } from './timeout.js'
 
-export class GuildManager extends Instance<void, InstanceType.Util> {
+export class GuildManager extends Instance<InstanceType.Util> {
   public static readonly DefaultDataExpire = 30 * 1000
   private readonly guildInfo = new Map<string, GuildInformation>()
 

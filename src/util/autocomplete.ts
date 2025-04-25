@@ -2,7 +2,7 @@ import type Application from '../application.js'
 import { InstanceType } from '../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../common/instance.js'
 
-export default class Autocomplete extends Instance<void, InstanceType.Util> {
+export default class Autocomplete extends Instance<InstanceType.Util> {
   private readonly usernames: string[] = []
   private readonly loweredCaseUsernames = new Set<string>()
 

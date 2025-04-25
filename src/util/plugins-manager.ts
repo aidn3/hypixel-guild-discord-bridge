@@ -14,7 +14,7 @@ import StarfallCultPlugin from '../plugins/starfall-cult-plugin.js'
 import StufPlugin from '../plugins/stuf-plugin.js'
 import WarpPlugin from '../plugins/warp-plugin.js'
 
-export class PluginsManager extends Instance<void, InstanceType.Util> {
+export class PluginsManager extends Instance<InstanceType.Util> {
   private readonly instances: PluginInstance[] = []
 
   constructor(application: Application) {

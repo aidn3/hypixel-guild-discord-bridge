@@ -36,7 +36,7 @@ import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
 import Weight from './triggers/weight.js'
 
-export class CommandsInstance extends ConnectableInstance<void, InstanceType.Commands> {
+export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
   private static readonly CommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
   private readonly internalConfig

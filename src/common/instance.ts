@@ -7,24 +7,22 @@ import type { InstanceIdentifier, InstanceType } from './application-event.js'
 import EventHelper from './event-helper.js'
 import UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export abstract class Instance<K, T extends InstanceType> implements InstanceIdentifier {
+export abstract class Instance<T extends InstanceType> implements InstanceIdentifier {
   public readonly instanceName: string
   public readonly instanceType: T
 
   protected readonly application: Application
   protected readonly logger: Logger
-  protected readonly config: K
   protected readonly errorHandler: UnexpectedErrorHandler
   protected readonly eventHelper: EventHelper<T>
 
-  protected constructor(application: Application, instanceName: string, instanceType: T, config: K) {
+  protected constructor(application: Application, instanceName: string, instanceType: T) {
     this.application = application
     this.instanceName = instanceName
     this.instanceType = instanceType
 
     // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger(instanceName)
-    this.config = config
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.eventHelper = new EventHelper<T>(this.instanceName, this.instanceType)
   }

@@ -4,7 +4,7 @@ import { InstanceType } from './application-event.js'
 import type { ChatCommandHandler, DiscordCommandHandler } from './commands.js'
 import { Instance } from './instance.js'
 
-export default abstract class PluginInstance extends Instance<void, InstanceType.Plugin> {
+export default abstract class PluginInstance extends Instance<InstanceType.Plugin> {
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
   /**
    * Do NOT supersede the function and change its signature.

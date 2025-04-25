@@ -12,17 +12,20 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class MetricsInstance extends Instance<MetricsConfig, InstanceType.Metrics> {
+export default class MetricsInstance extends Instance<InstanceType.Metrics> {
   private readonly httpServer
   private readonly register
 
   private readonly applicationMetrics: ApplicationMetrics
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
+  private readonly config: MetricsConfig
+
   constructor(app: Application, config: MetricsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics, config)
+    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics)
 
     assert(config.enabled)
+    this.config = config
 
     this.register = new Client.Registry()
     this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
