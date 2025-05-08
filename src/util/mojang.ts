@@ -42,6 +42,13 @@ export class MojangApi {
           for (const profile of profiles) {
             result.set(profile.name, profile.id)
           }
+
+          const resolvedProfileNames = new Set(profiles.map((profile) => profile.name.toLowerCase()))
+          for (const username of usernamesChunk) {
+            if (!resolvedProfileNames.has(username.toLowerCase())) {
+              result.set(username, undefined)
+            }
+          }
         })
         .catch(() => {
           for (const username of usernames) {
