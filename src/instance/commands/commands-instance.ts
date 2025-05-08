@@ -33,6 +33,7 @@ import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
+import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
@@ -78,6 +79,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       new Skills(),
       new Slayer(),
       new Soopy(),
+      new Starfall(),
       new StatusCommand(),
       new Toggle(),
       new Vengeance(),

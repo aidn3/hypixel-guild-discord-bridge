@@ -141,6 +141,7 @@ A shorter version can also be used: `!- rtca`
 | !secrets        | Return a player's total dungeon secrets                    | Anyone     |
 | !skill          | Return player's skill level `!skill mining`                | Anyone     |
 | !slayer         | Return a player's slayer stats `!slayer wolf`              | Anyone     |
+| !starfall       | When is the next Skyblock Starfall event`                  | Anyone     |
 | !soopy          | Use Soopy API to execute commands `!- purse`               | Anyone     |
 | !status         | Show a player's Hypixel status and current location        | Anyone     |
 | !vengeance      | Try your luck against another player for a 15 minute mute  | Anyone     |
