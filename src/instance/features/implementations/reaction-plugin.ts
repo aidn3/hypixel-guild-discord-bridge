@@ -1,8 +1,9 @@
-import type Application from '../application.js'
-import { GuildPlayerEventType, InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import { GuildPlayerEventType, InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class ReactionPlugin extends PluginInstance {
   private static readonly JoinMessages = [
@@ -34,8 +35,8 @@ export default class ReactionPlugin extends PluginInstance {
     'Goodbye %s. Forever.'
   ]
 
-  constructor(application: Application) {
-    super(application, OfficialPlugins.Reaction)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.Reaction)
   }
 
   pluginInfo(): PluginInfo {

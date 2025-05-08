@@ -4,9 +4,10 @@ import type { Logger } from 'log4js'
 import type { Client } from 'minecraft-protocol'
 import { SocksClient } from 'socks'
 
-import type { ProxyConfig } from '../../../common/application-internal-config.js'
-import { ProxyProtocol } from '../../../common/application-internal-config.js'
 import { QuitProxyError } from '../handlers/state-handler.js'
+
+import type { ProxyConfig } from './config.js'
+import { ProxyProtocol } from './config.js'
 
 export function resolveProxyIfExist(
   logger: Logger,

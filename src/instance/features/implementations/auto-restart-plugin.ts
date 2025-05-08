@@ -1,16 +1,17 @@
 import { uptime } from 'node:process'
 
-import type Application from '../application.js'
-import { ChannelType, Color, InstanceSignalType } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import { ChannelType, Color, InstanceSignalType } from '../../../common/application-event.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class AutoRestartPlugin extends PluginInstance {
   private static readonly MaxLifeTillRestart = 24 * 60 * 60 // 24 hour in seconds
   private static readonly CheckEvery = 5 * 60 * 1000 // 5 minutes in milliseconds
-  constructor(application: Application) {
-    super(application, OfficialPlugins.AutoRestart)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.AutoRestart)
   }
 
   pluginInfo(): PluginInfo {

@@ -1,14 +1,15 @@
-import type Application from '../application.js'
-import type { MinecraftSendChatPriority } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import type { MinecraftSendChatPriority } from '../../../common/application-event.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import MinecraftInstance from '../../minecraft/minecraft-instance.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class HideLinksPlugin extends PluginInstance {
-  constructor(application: Application) {
-    super(application, OfficialPlugins.HideLinks)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.HideLinks)
   }
 
   pluginInfo(): PluginInfo {

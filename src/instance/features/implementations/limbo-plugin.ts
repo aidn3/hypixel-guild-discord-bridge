@@ -1,15 +1,16 @@
-import type Application from '../application.js'
-import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import { Status } from '../common/connectable-instance.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import { InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
+import { Status } from '../../../common/connectable-instance.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class LimboPlugin extends PluginInstance {
-  constructor(application: Application) {
-    super(application, OfficialPlugins.Limbo)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.Limbo)
   }
 
   pluginInfo(): PluginInfo {

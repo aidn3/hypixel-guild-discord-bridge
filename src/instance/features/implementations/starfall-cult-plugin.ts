@@ -1,12 +1,13 @@
-import type Application from '../application.js'
-import { ChannelType, Color } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import { ChannelType, Color } from '../../../common/application-event.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class StarfallCultPlugin extends PluginInstance {
-  constructor(application: Application) {
-    super(application, OfficialPlugins.StarfallCultReminder)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.StarfallCultReminder)
   }
 
   pluginInfo(): PluginInfo {

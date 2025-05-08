@@ -4,14 +4,17 @@ import * as fs from 'node:fs'
 import path from 'node:path'
 import { setImmediate } from 'node:timers/promises'
 
-import type Application from '../application.js'
-import { InstanceType, type MinecraftSelfBroadcast } from '../common/application-event.js'
-import type { MinecraftInstanceConfig } from '../common/application-internal-config.js'
-import { Instance, InternalInstancePrefix } from '../common/instance.js'
-// eslint-disable-next-line import/no-restricted-paths
-import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
+import type Application from '../../application.js'
+import { InstanceType, type MinecraftSelfBroadcast } from '../../common/application-event.js'
+import { ConfigManager } from '../../common/config-manager.js'
+import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+
+import type { MinecraftConfig, MinecraftInstanceConfig } from './common/config.js'
+import MinecraftInstance from './minecraft-instance.js'
 
 export class MinecraftManager extends Instance<InstanceType.Util> {
+  private readonly config: ConfigManager<MinecraftConfig>
+
   private readonly instances = new Set<MinecraftInstance>()
   private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
 
@@ -19,6 +22,11 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
 
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'MinecraftManager', InstanceType.Util)
+
+    this.config = new ConfigManager(application, application.getConfigFilePath('minecraft-manager.json'), {
+      adminUsername: 'Steve',
+      instances: []
+    })
 
     const sessionDirectoryName = 'minecraft-sessions'
     this.sessionDirectory = this.application.getConfigFilePath(sessionDirectoryName)
@@ -28,6 +36,10 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
     this.application.on('minecraftSelfBroadcast', (event) => {
       this.minecraftBots.set(event.instanceName, event)
     })
+  }
+
+  public getConfig(): ConfigManager<MinecraftConfig> {
+    return this.config
   }
 
   public isMinecraftBot(username: string): boolean {
@@ -43,10 +55,10 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
   }
 
   public loadInstances(): void {
-    const config = this.application.applicationInternalConfig.data.minecraft
+    const config = this.config.data
     for (const instanceConfig of config.instances) {
       this.instances.add(
-        new MinecraftInstance(this.application, instanceConfig.name, instanceConfig, this.sessionDirectory)
+        new MinecraftInstance(this.application, this, instanceConfig.name, instanceConfig, this.sessionDirectory)
       )
     }
   }
@@ -56,7 +68,7 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
       throw new Error('Minecraft instance name already exists')
     }
 
-    const instance = new MinecraftInstance(this.application, config.name, config, this.sessionDirectory)
+    const instance = new MinecraftInstance(this.application, this, config.name, config, this.sessionDirectory)
     this.instances.add(instance)
 
     instance.connect()
@@ -71,25 +83,25 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
       deletedSessionFiles: 0
     }
 
-    const config = this.application.applicationInternalConfig
+    const config = this.config
     const instances = this.getAllInstances().filter(
       (instance) => instance.instanceName.toLowerCase() === instanceName.toLowerCase()
     )
 
     // remove cached files
-    const potentialNames = config.data.minecraft.instances
+    const potentialNames = config.data.instances
       .filter((instance) => instance.name.toLowerCase() === instanceName.toLowerCase())
       .map((instance) => instance.name)
     potentialNames.push(instanceName, ...instances.map((instance) => instance.instanceName))
     result.deletedSessionFiles = this.deleteSessionFiles(potentialNames)
 
     // remove related configs
-    const newConfig = config.data.minecraft.instances.filter(
+    const newConfig = config.data.instances.filter(
       (instanceConfig) => instanceConfig.name.toLowerCase() !== instanceName.toLowerCase()
     )
-    result.deletedConfig = config.data.minecraft.instances.length - newConfig.length
-    config.data.minecraft.instances = newConfig
-    config.saveConfig()
+    result.deletedConfig = config.data.instances.length - newConfig.length
+    config.data.instances = newConfig
+    config.save()
 
     // remove initialed instances
     for (const instance of instances) {

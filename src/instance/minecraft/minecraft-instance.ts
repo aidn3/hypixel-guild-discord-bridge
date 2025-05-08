@@ -3,17 +3,18 @@ import { createClient, states } from 'minecraft-protocol'
 import type Application from '../../application.js'
 import type { MinecraftSendChatPriority } from '../../common/application-event.js'
 import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
-import type { MinecraftInstanceConfig } from '../../common/application-internal-config.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
+import type { MinecraftInstanceConfig } from './common/config.js'
 import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
+import type { MinecraftManager } from './minecraft-manager.js'
 
 export default class MinecraftInstance extends ConnectableInstance<InstanceType.Minecraft> {
   readonly defaultBotConfig = {
@@ -22,6 +23,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     version: '1.8.9'
   }
 
+  private readonly minecraftManager: MinecraftManager
   private clientSession: ClientSession | undefined
 
   private stateHandler: StateHandler
@@ -35,9 +37,16 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private readonly sessionDirectory: string
   private readonly config: MinecraftInstanceConfig
 
-  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, sessionDirectory: string) {
+  constructor(
+    app: Application,
+    minecraftManager: MinecraftManager,
+    instanceName: string,
+    config: MinecraftInstanceConfig,
+    sessionDirectory: string
+  ) {
     super(app, instanceName, InstanceType.Minecraft)
 
+    this.minecraftManager = minecraftManager
     this.sessionDirectory = sessionDirectory
     this.config = config
 
@@ -66,7 +75,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
-    const adminUsername = this.application.applicationInternalConfig.data.minecraft.adminUsername
+    const adminUsername = this.minecraftManager.getConfig().data.adminUsername
     if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
   }

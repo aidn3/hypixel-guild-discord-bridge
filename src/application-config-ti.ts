@@ -8,7 +8,7 @@ export const GeneralConfig = t.iface([], {
   "hypixelApiKey": "string",
 });
 
-export const DiscordConfig = t.iface([], {
+export const StaticDiscordConfig = t.iface([], {
   "key": "string",
   "adminIds": t.array("string"),
 });
@@ -24,14 +24,14 @@ export const MetricsConfig = t.iface([], {
 export const ApplicationConfig = t.iface([], {
   "version": "number",
   "general": "GeneralConfig",
-  "discord": "DiscordConfig",
+  "discord": "StaticDiscordConfig",
   "metrics": "MetricsConfig",
   "plugins": t.array("string"),
 });
 
 const exportedTypeSuite: t.ITypeSuite = {
   GeneralConfig,
-  DiscordConfig,
+  StaticDiscordConfig,
   MetricsConfig,
   ApplicationConfig,
 };

@@ -12,23 +12,20 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
-import type { ApplicationInternalConfig } from './common/application-internal-config.js'
-import { DefaultApplicationInternalConfig } from './common/application-internal-config.js'
-import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
+import ApplicationIntegrity from './instance/application-integrity.js'
+import Autocomplete from './instance/autocomplete.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
+import { PluginsManager } from './instance/features/plugins-manager.js'
+import { GuildManager } from './instance/guild-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
-import ApplicationIntegrity from './util/application-integrity.js'
-import Autocomplete from './util/autocomplete.js'
-import { GuildManager } from './util/guild-manager.js'
-import { MinecraftManager } from './util/minecraft-manager.js'
 import { MojangApi } from './util/mojang.js'
-import { PluginsManager } from './util/plugins-manager.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
 export type AllInstances =
@@ -48,7 +45,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly instanceName: string = InstanceType.Main
   public readonly instanceType: InstanceType = InstanceType.Main
 
-  public readonly applicationInternalConfig: ConfigManager<ApplicationInternalConfig>
   public readonly guildManager: GuildManager
   public readonly autoComplete: Autocomplete
   public readonly applicationIntegrity: ApplicationIntegrity
@@ -83,12 +79,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.config = config
     this.configsDirectory = configsDirectory
     this.rootDirectory = rootDirectory
-    this.applicationInternalConfig = new ConfigManager<ApplicationInternalConfig>(
-      this,
-      this.getConfigFilePath('application.json'),
-      DefaultApplicationInternalConfig
-    )
-    this.applicationInternalConfig.loadFromConfig()
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
