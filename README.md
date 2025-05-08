@@ -111,37 +111,39 @@ This includes guild/officer chat as well as private `/msg` and direct messaging 
 Most [Soopy commands](https://soopy.dev/commands) are supported and can be used by executing `!soopy rtca`.
 A shorter version can also be used: `!- rtca`
 
-| Command       | Description                                                | Permission |
-| ------------- | ---------------------------------------------------------- | ---------- |
-| !8ball        | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
-| !bedwars      | Returns a player's bedwars common stats                    | Anyone     |
-| !bits         | Returns the best bit items to purchase for the most profit | Anyone     |
-| !calculate    | Calculate a math expression: `!calculate 1+2*3`            | Anyone     |
-| !catacomb     | Get a player's catacombs and class level                   | Anyone     |
-| !darkauction  | Show the remaining time till next dark auction             | Anyone     |
-| !explain      | Explain what the bridge does and how it works              | Anyone     |
-| !guild        | Give a summary of the guild of a given user                | Anyone     |
-| !help         | Show a command usage `!help runs`                          | Anyone     |
-| !iq           | Give a random IQ number to the guild member                | Anyone     |
-| !kuudra       | Get a player's kuudra completions `!kuudra hot`            | Anyone     |
-| !level        | Get a player's skyblock level                              | Anyone     |
-| !magicalpower | Returns a player's highest recorded skyblock Magical Power | Anyone     |
-| !networth     | Calculate the in-game networth of a player                 | Anyone     |
-| !startparty   | Create public !parties to be viewed by guild members       | Anyone     |
-| !pb           | Returns a players best dungeon run time `!pb aidn5 m7`     | Anyone     |
-| !rps          | Play rock paper scissors `!rps rock`                       | Anyone     |
-| !roulette     | Has a chance of muting a player                            | Anyone     |
-| !runs         | Return a player's floor completions `!runs m7`             | Anyone     |
-| !rtca         | Return runs count to reach an average class level          | Anyone     |
-| !secrets      | Return a player's total dungeon secrets                    | Anyone     |
-| !skill        | Return player's skill level `!skill mining`                | Anyone     |
-| !slayer       | Return a player's slayer stats `!slayer wolf`              | Anyone     |
-| !soopy        | Use Soopy API to execute commands `!- purse`               | Anyone     |
-| !status       | Show a player's Hypixel status and current location        | Anyone     |
-| !vengeance    | Try your luck against another player for a 15 minute mute  | Anyone     |
-| !weight       | Calculate the **Senither Weight** of a player              | Anyone     |
-| !toggle       | Enable/disable commands `!toggle 8ball`                    | Officer    |
-| !override     | Run a command directly `!overide /guild party`             | Admin      |
+| Command         | Description                                                | Permission |
+| --------------- | ---------------------------------------------------------- | ---------- |
+| !8ball          | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
+| !bedwars        | Returns a player's bedwars common stats                    | Anyone     |
+| !bits           | Returns the best bit items to purchase for the most profit | Anyone     |
+| !calculate      | Calculate a math expression: `!calculate 1+2*3`            | Anyone     |
+| !currentdungeon | Returns a player's last dungeon run                        | Anyone     |
+| !catacomb       | Get a player's catacombs and class level                   | Anyone     |
+| !darkauction    | Show the remaining time till next dark auction             | Anyone     |
+| !explain        | Explain what the bridge does and how it works              | Anyone     |
+| !guild          | Give a summary of the guild of a given user                | Anyone     |
+| !help           | Show a command usage `!help runs`                          | Anyone     |
+| !iq             | Give a random IQ number to the guild member                | Anyone     |
+| !kuudra         | Get a player's kuudra completions `!kuudra hot`            | Anyone     |
+| !level          | Get a player's skyblock level                              | Anyone     |
+| !magicalpower   | Returns a player's highest recorded skyblock Magical Power | Anyone     |
+| !networth       | Calculate the in-game networth of a player                 | Anyone     |
+| !startparty     | Create public !parties to be viewed by guild members       | Anyone     |
+| !pb             | Returns a players best dungeon run time `!pb aidn5 m7`     | Anyone     |
+| !rps            | Play rock paper scissors `!rps rock`                       | Anyone     |
+| !roulette       | Has a chance of muting a player                            | Anyone     |
+| !runs           | Return a player's floor completions `!runs m7`             | Anyone     |
+| !rtca           | Return runs count to reach an average class level          | Anyone     |
+| !secrets        | Return a player's total dungeon secrets                    | Anyone     |
+| !skill          | Return player's skills levels `!skill`                     | Anyone     |
+| !slayer         | Return a player's slayer stats `!slayer wolf`              | Anyone     |
+| !starfall       | When is the next Skyblock Starfall event`                  | Anyone     |
+| !soopy          | Use Soopy API to execute commands `!- purse`               | Anyone     |
+| !status         | Show a player's Hypixel status and current location        | Anyone     |
+| !vengeance      | Try your luck against another player for a 15 minute mute  | Anyone     |
+| !weight         | Calculate the **Senither Weight** of a player              | Anyone     |
+| !toggle         | Enable/disable commands `!toggle 8ball`                    | Officer    |
+| !override       | Run a command directly `!overide /guild party`             | Admin      |
 
 ### Available Plugins
 

@@ -11,6 +11,7 @@ import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
+import CurrentDungeon from './triggers/current-dungeon.js'
 import DarkAuction from './triggers/darkauction.js'
 import Explain from './triggers/explain.js'
 import Guild from './triggers/guild.js'
@@ -31,6 +32,7 @@ import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
+import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
@@ -54,6 +56,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Bedwars(),
       new Calculate(),
       new Catacomb(),
+      new CurrentDungeon(),
       new DarkAuction(),
       new EightBallCommand(),
       new Explain(),
@@ -75,6 +78,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Skills(),
       new Slayer(),
       new Soopy(),
+      new Starfall(),
       new StatusCommand(),
       new Toggle(),
       new Vengeance(),
