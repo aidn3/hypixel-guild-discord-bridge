@@ -54,6 +54,7 @@ declare module 'hypixel-api-reborn' {
   export interface SkyblockV2Dungeons {
     dungeon_types: SkyblockV2DungeonsTypes
     player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockV2DungeonsClass | undefined>
+    treasures?: { runs?: SkyblockV2DungeonRun[] }
   }
 
   export interface SkyblockV2DungeonsTypes {
@@ -81,6 +82,13 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2DungeonsClass {
     experience?: number
+  }
+
+  export interface SkyblockV2DungeonRun {
+    completion_ts: number
+    dungeon_Type: 'catacombs' | 'master_catacombs'
+    dungeon_tier: number
+    participants: { player_uuid: string; display_name: string }[]
   }
 
   export interface SlayerProfile {

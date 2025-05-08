@@ -12,6 +12,7 @@ import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
+import CurrentDungeon from './triggers/current-dungeon.js'
 import DarkAuction from './triggers/darkauction.js'
 import Explain from './triggers/explain.js'
 import Guild from './triggers/guild.js'
@@ -55,6 +56,7 @@ export class CommandsInstance extends ConnectableInstance<CommandsConfig, Instan
       new Bedwars(),
       new Calculate(),
       new Catacomb(),
+      new CurrentDungeon(),
       new DarkAuction(),
       new EightBallCommand(),
       new Explain(),
