@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import process from 'node:process'
 
 import Defaults from 'defaults'
 
@@ -25,7 +24,7 @@ export class ConfigManager<T> {
       this.saveIfDirty()
     }, ConfigManager.CheckDirtyEvery)
 
-    process.on('exit', () => {
+    application.addShutdownListener(() => {
       this.saveIfDirty()
     })
 
