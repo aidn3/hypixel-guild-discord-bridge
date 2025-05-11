@@ -1,3 +1,5 @@
+import { setImmediate } from 'node:timers/promises'
+
 import { createClient, states } from 'minecraft-protocol'
 
 import type Application from '../../application.js'
@@ -109,8 +111,11 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
 
-  disconnect(): void {
+  async disconnect(): Promise<void> {
     this.clientSession?.client.end(QuitOwnVolition)
+
+    // wait till next cycle to let the clients close properly
+    await setImmediate()
     this.setAndBroadcastNewStatus(Status.Ended, 'Minecraft instance has been disconnected')
   }
 
