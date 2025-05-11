@@ -11,8 +11,6 @@ export interface MetricsConfig {
   enabled: boolean
   port: number
   prefix: string
-  useIngameCommand: boolean
-  interval: number
 }
 
 export interface ApplicationConfig {

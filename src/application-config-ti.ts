@@ -17,8 +17,6 @@ export const MetricsConfig = t.iface([], {
   "enabled": "boolean",
   "port": "number",
   "prefix": "string",
-  "useIngameCommand": "boolean",
-  "interval": "number",
 });
 
 export const ApplicationConfig = t.iface([], {

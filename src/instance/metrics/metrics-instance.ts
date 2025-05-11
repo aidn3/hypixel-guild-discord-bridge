@@ -50,10 +50,6 @@ export default class MetricsInstance extends Instance<InstanceType.Metrics> {
       this.applicationMetrics.onCommandEvent(event)
     })
 
-    setInterval(() => {
-      void this.collectMetrics().catch(this.errorHandler.promiseCatch('collecting metrics'))
-    }, config.interval * 1000)
-
     this.httpServer = http.createServer((request, response) => {
       if (request.url == undefined) {
         response.writeHead(HttpStatusCode.NotFound)
@@ -66,11 +62,10 @@ export default class MetricsInstance extends Instance<InstanceType.Metrics> {
         this.logger.debug('Metrics scrap is called on /metrics')
         response.setHeader('Content-Type', this.register.contentType)
 
-        void (async () => {
-          response.end(await this.register.metrics())
-        })().catch(() => {
-          response.end()
-        })
+        void this.collectMetrics()
+          .then(() => this.register.metrics())
+          .then((metrics) => response.end(metrics))
+          .catch(() => response.end())
       } else if (route === '/ping') {
         this.logger.debug('Ping received')
         response.writeHead(HttpStatusCode.Ok)
@@ -89,9 +84,6 @@ export default class MetricsInstance extends Instance<InstanceType.Metrics> {
 
   private async collectMetrics(): Promise<void> {
     this.logger.debug('Collecting metrics')
-
-    if (this.config.useIngameCommand) {
-      await this.guildOnlineMetrics.collectMetrics(this.application)
-    }
+    await this.guildOnlineMetrics.collectMetrics(this.application)
   }
 }
