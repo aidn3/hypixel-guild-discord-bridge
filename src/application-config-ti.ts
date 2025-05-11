@@ -20,7 +20,7 @@ export const MetricsConfig = t.iface([], {
 });
 
 export const ApplicationConfig = t.iface([], {
-  "version": "number",
+  "version": t.lit(2),
   "general": "GeneralConfig",
   "discord": "StaticDiscordConfig",
   "metrics": "MetricsConfig",

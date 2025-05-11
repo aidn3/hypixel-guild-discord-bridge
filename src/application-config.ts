@@ -1,3 +1,5 @@
+export const ApplicationConfigVersion = 2
+
 export interface GeneralConfig {
   hypixelApiKey: string
 }
@@ -14,7 +16,7 @@ export interface MetricsConfig {
 }
 
 export interface ApplicationConfig {
-  version: number
+  version: 2 // typeof ApplicationConfigVersion
   general: GeneralConfig
   discord: StaticDiscordConfig
   metrics: MetricsConfig
