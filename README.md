@@ -45,8 +45,8 @@ This project is made to be fully flexible and customisable, offering a high qual
 
 - [Nodejs version 1.20 or later](https://nodejs.dev/download)
 - [npm](https://nodejs.org/en/download/) (usually installed by default with `Nodejs`)
+- [Git](https://git-scm.com/downloads)
 - Minecraft alt account
-- (Optional) [Git](https://git-scm.com/downloads)
 
 ### Download
 
@@ -56,9 +56,6 @@ Clone and download the complete project by using `Git` tool:
 git clone https://github.com/aidn3/hypixel-guild-discord-bridge
 ```
 
-Alternatively, [download the source code](https://github.com/aidn3/hypixel-guild-discord-bridge/archive/refs/heads/master.zip)
-directly without any revisions. (Updating the service will be difficult)
-
 ### Configure
 
 - Explore the project files and copy the contents of `config_example.yaml` into `config.yaml`
@@ -66,21 +63,19 @@ directly without any revisions. (Updating the service will be difficult)
 - In `config.yaml` fill out `general.hypixelApiKey` and `discord.key` and `discord.adminIds`
 - (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
 
-### Install
+### Install And Run
 
-Install dependencies and libraries by executing the command:
+If you are on linux, execute this command to auto download all libraries and start the application.
+It will also keep the application up to date:
+
+```shell
+./start.sh
+```
+
+If you are running the application on Windows operating system:
 
 ```shell
 npm install
-```
-
-New directory `node_modules` will be generated containing all required files.
-
-### Run
-
-Start the service by executing command:
-
-```shell
 npm start
 ```
 
