@@ -28,10 +28,13 @@ import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { antiSpamString } from '../../util/shared-util.js'
 
+import ArabicFixer from './common/arabic-fixer.js'
 import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
+  private readonly arabicFixer = new ArabicFixer()
+
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
@@ -60,12 +63,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
+    const message = this.arabicFixer.encode(event.message)
 
     if (event.channelType === ChannelType.Public) {
       this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
       void this.clientInstance
         .send(
-          this.formatChatMessage('gc', event.username, replyUsername, event.message),
+          this.formatChatMessage('gc', event.username, replyUsername, message),
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -74,7 +78,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
       void this.clientInstance
         .send(
-          this.formatChatMessage('oc', event.username, replyUsername, event.message),
+          this.formatChatMessage('oc', event.username, replyUsername, message),
           MinecraftSendChatPriority.Default,
           event.eventId
         )
