@@ -1,16 +1,17 @@
-import type Application from '../application.js'
-import type { MinecraftSendChatPriority } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import type { MinecraftSendChatPriority } from '../../../common/application-event.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import ChatManager from '../instance/minecraft/chat-manager.js'
+import ChatManager from '../../minecraft/chat-manager.js'
+import MinecraftInstance from '../../minecraft/minecraft-instance.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 // eslint-disable-next-line import/no-restricted-paths
-import MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 export default class StufPlugin extends PluginInstance {
-  constructor(application: Application) {
-    super(application, OfficialPlugins.Stuf)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.Stuf)
   }
 
   pluginInfo(): PluginInfo {

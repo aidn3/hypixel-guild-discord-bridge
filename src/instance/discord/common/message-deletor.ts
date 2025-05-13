@@ -9,7 +9,6 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 export default class MessageDeleter {
   private static readonly CheckEveryMilliseconds = 5 * 1000
   private readonly config
-  private needSave = false
 
   constructor(
     application: Application,
@@ -28,16 +27,12 @@ export default class MessageDeleter {
 
     setInterval(() => {
       this.clean()
-      if (this.needSave) {
-        this.config.saveConfig()
-        this.needSave = false
-      }
     }, MessageDeleter.CheckEveryMilliseconds)
   }
 
   public add(messages: DiscordMessage): void {
     this.config.data.interactions.push(messages)
-    this.needSave = true
+    this.config.markDirty()
   }
 
   public clean(): void {
@@ -65,7 +60,7 @@ export default class MessageDeleter {
 
     if (newArray.length !== this.config.data.interactions.length) {
       this.config.data.interactions = newArray
-      this.needSave = true
+      this.config.markDirty()
     }
 
     void Promise.all(tasks).catch(this.errorHandler.promiseCatch('deleting old interactions'))

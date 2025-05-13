@@ -6,10 +6,12 @@ import type { Logger } from 'log4js'
 import type Application from '../../application.js'
 import type { InstanceType } from '../../common/application-event.js'
 import { ChannelType, PunishmentType } from '../../common/application-event.js'
+import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
+import type { DiscordConfig } from './common/discord-config.js'
 import { FilteredReaction, MutedReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
@@ -19,16 +21,19 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
   private readonly messageAssociation: MessageAssociation
   private readonly lastMuteWarn = new Map<string, number>()
+  private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    config: ConfigManager<DiscordConfig>,
     messageAssociation: MessageAssociation,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
+    this.config = config
     this.messageAssociation = messageAssociation
   }
 
@@ -43,7 +48,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    const config = this.application.applicationInternalConfig.data.discord
+    const config = this.config.data
     let channelType: ChannelType
     if (config.publicChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Public
@@ -87,7 +92,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === FilteredReaction.name)
       if (emoji !== undefined) await event.react(emoji)
-      if (emoji === undefined || this.application.applicationInternalConfig.data.discord.alwaysReplyReaction) {
+      if (emoji === undefined || this.config.data.alwaysReplyReaction) {
         await event.reply({
           content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
         })

@@ -4,10 +4,12 @@ import { type APIEmbed, type APIEmbedField, escapeMarkdown, italic } from 'disco
 
 import type { ApplicationEvents } from '../../../../common/application-event.js'
 import { Color, InstanceType } from '../../../../common/application-event.js'
-import type { ProxyConfig } from '../../../../common/application-internal-config.js'
-import { ProxyProtocol } from '../../../../common/application-internal-config.js'
 import type { DiscordCommandContext } from '../../../../common/commands.js'
 import { Timeout } from '../../../../util/timeout.js'
+// eslint-disable-next-line import/no-restricted-paths
+import type { ProxyConfig } from '../../../minecraft/common/config.js'
+// eslint-disable-next-line import/no-restricted-paths
+import { ProxyProtocol } from '../../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../../common/discord-config.js'
 
 export const MinecraftSetAdmin = 'set-admin'
@@ -39,15 +41,15 @@ export async function handleMinecraftInteraction(context: DiscordCommandContext)
 }
 
 async function handleSetAdmin(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.minecraftManager.getConfig()
   const username = context.interaction.options.getString('username', true)
   let description: string
-  if (config.data.minecraft.adminUsername === username) {
+  if (config.data.adminUsername === username) {
     description = `\`${username}\` is already set as the admin.`
   } else {
     description = `\`${username}\` has been set as the admin.`
-    config.data.minecraft.adminUsername = username
-    config.saveConfig()
+    config.data.adminUsername = username
+    config.save()
   }
 
   await context.interaction.reply({
@@ -56,7 +58,7 @@ async function handleSetAdmin(context: DiscordCommandContext): Promise<void> {
 }
 
 async function handleStatus(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig.data.minecraft
+  const config = context.application.minecraftManager.getConfig().data
   const instances = context.application.minecraftManager.getAllInstances()
 
   const embed: APIEmbed = {
@@ -215,12 +217,12 @@ async function handleAddInstance(context: DiscordCommandContext): Promise<void> 
     embed.description += `- Creating a fresh Minecraft instance\n`
     context.application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
 
-    const config = context.application.applicationInternalConfig
-    config.data.minecraft.instances.push({
+    const config = context.application.minecraftManager.getConfig()
+    config.data.instances.push({
       name: instanceName,
       proxy: proxy
     })
-    config.saveConfig()
+    config.save()
     embed.description += `- Instance has been added to settings for future reboot\n`
   } catch (error: unknown) {
     embed.description += `- ERROR: Failed to add minecraft instance. ${errorMessage(error)}\n`

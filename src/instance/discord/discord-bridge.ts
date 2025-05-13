@@ -4,7 +4,7 @@ import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webho
 import { ChannelType as DiscordChannelType, escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type { DiscordConfig } from '../../application-config.js'
+import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type {
   BaseInGameEvent,
@@ -27,9 +27,11 @@ import {
   MinecraftReactiveEventType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
+import type { ConfigManager } from '../../common/config-manager.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { beautifyInstanceName } from '../../util/shared-util.js'
 
+import type { DiscordConfig } from './common/discord-config.js'
 import { BlockReaction, RepeatReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type { DiscordAssociatedMessage } from './common/message-association.js'
@@ -39,7 +41,8 @@ import type DiscordInstance from './discord-instance.js'
 export default class DiscordBridge extends Bridge<DiscordInstance> {
   private readonly messageAssociation: MessageAssociation
   private readonly messageDeleter: MessageDeleter
-  private readonly config
+  private readonly staticConfig: Readonly<StaticDiscordConfig>
+  private readonly config: ConfigManager<DiscordConfig>
   /*
      Queue all sending chat messages. So, when a command event comes.
      All currently outgoing messages can be awaited before the reply is sent to one of them.
@@ -52,15 +55,17 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    config: ConfigManager<DiscordConfig>,
     messageAssociation: MessageAssociation,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
-    config: DiscordConfig
+    staticDiscordConfig: StaticDiscordConfig
   ) {
     super(application, clientInstance, logger, errorHandler)
 
-    this.messageAssociation = messageAssociation
     this.config = config
+    this.messageAssociation = messageAssociation
+    this.staticConfig = staticDiscordConfig
 
     // TODO: properly reference client
     // @ts-expect-error client is private variable
@@ -83,7 +88,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    const config = this.application.applicationInternalConfig.data.discord
+    const config = this.config.data
     for (const channelId of config.publicChannelIds) {
       // TODO: properly reference client
       // @ts-expect-error client is private variable
@@ -117,7 +122,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async queueChat(event: ChatEvent): Promise<void> {
-    const config = this.application.applicationInternalConfig.data.discord
+    const config = this.config.data
 
     let channels: string[]
     if (event.channelType === ChannelType.Public) {
@@ -249,7 +254,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   resolveChannels(channels: ChannelType[]): string[] {
-    const config = this.application.applicationInternalConfig.data.discord
+    const config = this.config.data
 
     const results: string[] = []
     if (channels.includes(ChannelType.Public)) results.push(...config.publicChannelIds)
@@ -323,7 +328,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const joinCommand = commands.find((command) => command.name === 'join')
       const setupCommand = commands.find((command) => command.name === 'setup')
 
-      const adminList = this.config.adminIds.map((adminId) => `<@${adminId}>`)
+      const adminList = this.staticConfig.adminIds.map((adminId) => `<@${adminId}>`)
       embed.description =
         `Looks like the Minecraft account is not in a guild for this to work.\n` +
         `You can ask ${adminList.join(', ')} or any staff who has access\n` +

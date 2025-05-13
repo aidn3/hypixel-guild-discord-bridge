@@ -1,13 +1,14 @@
-import type Application from '../application.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 /* NOTICE
 THIS PLUGIN DOES NOTHING. ITS PURPOSE IS TO PROVIDE AN EXAMPLE SYNTAX.
 */
 export default class ExamplePlugin extends PluginInstance {
-  constructor(application: Application) {
-    super(application, 'example-plugin')
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, 'example-plugin')
   }
 
   onReady(): Promise<void> | void {

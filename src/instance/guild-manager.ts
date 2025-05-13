@@ -4,8 +4,7 @@ import type Application from '../application.js'
 import type { MinecraftRawChatEvent } from '../common/application-event.js'
 import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../common/instance.js'
-
-import { Timeout } from './timeout.js'
+import { Timeout } from '../util/timeout.js'
 
 export class GuildManager extends Instance<InstanceType.Util> {
   public static readonly DefaultDataExpire = 30 * 1000

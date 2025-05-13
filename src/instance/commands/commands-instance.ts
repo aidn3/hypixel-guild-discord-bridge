@@ -41,15 +41,15 @@ import Weight from './triggers/weight.js'
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
   private static readonly CommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
-  private readonly internalConfig
+  private readonly config: ConfigManager<CommandsConfig>
 
   constructor(app: Application) {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
 
-    this.internalConfig = new ConfigManager<InternalConfig>(app, app.getConfigFilePath('commands.json'), {
+    this.config = new ConfigManager(app, app.getConfigFilePath('commands.json'), {
+      enabled: true,
       disabledCommands: []
     })
-    this.internalConfig.loadFromConfig()
 
     this.commands = [
       new Bits(),
@@ -85,12 +85,6 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Weight()
     ]
 
-    const disabled = this.internalConfig.data.disabledCommands
-    for (const command of this.commands) {
-      if (command.triggers.some((trigger: string) => disabled.includes(trigger.toLowerCase()))) {
-        command.enabled = false
-      }
-    }
     this.checkCommandsIntegrity()
 
     this.application.on('chat', (event) => {
@@ -134,7 +128,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     if (command == undefined) return
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
-    if (!command.enabled && event.permission === Permission.Anyone) {
+    if (!this.config.data.disabledCommands.includes(command.triggers[0]) && event.permission === Permission.Anyone) {
       return
     }
 
@@ -147,10 +141,23 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         errorHandler: this.errorHandler,
 
         allCommands: this.commands,
-        commandPrefix: CommandsInstance.CommandPrefix,
-        saveConfigChanges: () => {
-          this.saveConfig()
+        toggleCommand: (trigger) => {
+          const command = this.commands.find((c) => c.triggers.includes(trigger.toLowerCase()))
+          if (command == undefined) return 'not-found'
+
+          const config = this.config.data
+          if (config.disabledCommands.includes(command.triggers[0].toLowerCase())) {
+            config.disabledCommands = config.disabledCommands.filter(
+              (disabledCommand) => disabledCommand !== command.triggers[0].toLowerCase()
+            )
+            this.config.markDirty()
+            return 'profanityEnabled'
+          } else {
+            config.disabledCommands.push(command.triggers[0].toLowerCase())
+            return 'disabled'
+          }
         },
+        commandPrefix: CommandsInstance.CommandPrefix,
 
         instanceName: event.instanceName,
         instanceType: event.instanceType,
@@ -201,15 +208,9 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       commandResponse: response
     })
   }
-
-  private saveConfig(): void {
-    this.internalConfig.data.disabledCommands = this.commands
-      .filter((command) => !command.enabled)
-      .map((command) => command.triggers[0])
-    this.internalConfig.saveConfig()
-  }
 }
 
-export interface InternalConfig {
+export interface CommandsConfig {
+  enabled: boolean
   disabledCommands: string[]
 }

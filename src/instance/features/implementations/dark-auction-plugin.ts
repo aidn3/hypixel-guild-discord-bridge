@@ -1,13 +1,14 @@
-import type Application from '../application.js'
-import { ChannelType, Color } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
-import { antiSpamString } from '../util/shared-util.js'
+import type Application from '../../../application.js'
+import { ChannelType, Color } from '../../../common/application-event.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
+import { antiSpamString } from '../../../util/shared-util.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class DarkAuctionPlugin extends PluginInstance {
-  constructor(application: Application) {
-    super(application, OfficialPlugins.DarkAuctionReminder)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.DarkAuctionReminder)
   }
 
   pluginInfo(): PluginInfo {

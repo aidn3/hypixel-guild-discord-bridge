@@ -5,8 +5,8 @@ import { ActionRowBuilder, escapeMarkdown, StringSelectMenuBuilder } from 'disco
 
 import type Application from '../../../../application.js'
 import { Color, InstanceType } from '../../../../common/application-event.js'
-import type { ApplicationInternalConfig } from '../../../../common/application-internal-config.js'
 import type { DiscordCommandContext } from '../../../../common/commands.js'
+import type { PluginConfig } from '../../../features/common/plugins-config.js'
 import { DefaultCommandFooter } from '../../common/discord-config.js'
 
 const PluginsSelection = 'toggle'
@@ -21,7 +21,7 @@ export async function handlePluginsInteraction(context: DiscordCommandContext): 
 }
 
 export async function handlePluginsToggle(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.pluginsManager.getConfig()
 
   const reply = await context.interaction.reply({
     embeds: [{ description: 'Select Features to enable.', footer: { text: DefaultCommandFooter } }],
@@ -61,8 +61,8 @@ export async function handlePluginsToggle(context: DiscordCommandContext): Promi
         return
       }
 
-      config.data.plugin.enabledPlugins = interaction.values
-      config.saveConfig()
+      config.data.enabledPlugins = interaction.values
+      config.save()
       void interaction
         .update({
           embeds: [
@@ -83,7 +83,7 @@ export async function handlePluginsToggle(context: DiscordCommandContext): Promi
     })
 }
 
-function generateEnabledPlugins(application: Application, config: ApplicationInternalConfig) {
+function generateEnabledPlugins(application: Application, config: PluginConfig) {
   const localPlugins = application.pluginsManager.getAllInstances()
   const options: APISelectMenuOption[] = []
 
@@ -93,7 +93,7 @@ function generateEnabledPlugins(application: Application, config: ApplicationInt
       label: plugin.instanceName,
       value: plugin.instanceName,
       description: plugin.pluginInfo().description,
-      default: config.plugin.enabledPlugins.includes(plugin.instanceName)
+      default: config.enabledPlugins.includes(plugin.instanceName)
     })),
     ...application
       .getAllInstancesIdentifiers()
@@ -103,7 +103,7 @@ function generateEnabledPlugins(application: Application, config: ApplicationInt
         label: plugin.instanceName,
         value: plugin.instanceName,
         description: 'Unknown plugin. Do NOT toggle unless you know what you are doing!',
-        default: config.plugin.enabledPlugins.includes(plugin.instanceName)
+        default: config.enabledPlugins.includes(plugin.instanceName)
       }))
   )
 

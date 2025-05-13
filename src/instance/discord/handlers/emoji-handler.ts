@@ -30,7 +30,6 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
       application.getConfigFilePath('discord-registered-emoji.json'),
       { savedEmojis: [] }
     )
-    this.registeredEmoji.loadFromConfig()
   }
 
   registerEvents(client: Client): void {
@@ -80,7 +79,7 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
       this.registeredEmoji.data.savedEmojis = savedEmojis
     }
 
-    this.registeredEmoji.saveConfig()
+    this.registeredEmoji.save()
   }
 }
 

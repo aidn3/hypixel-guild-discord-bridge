@@ -57,7 +57,7 @@ export default class Autocomplete extends Instance<InstanceType.Util> {
    * - matching any part of a username with the query
    *
    * @param query the usernames to look for
-   * @param collection collection to lookup the query in
+   * @param collection collection to look up the query in
    */
   private search(query: string, collection: string[]): string[] {
     const copy = [...collection]

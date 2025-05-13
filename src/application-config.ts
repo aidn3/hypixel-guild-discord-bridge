@@ -2,7 +2,7 @@ export interface GeneralConfig {
   hypixelApiKey: string
 }
 
-export interface DiscordConfig {
+export interface StaticDiscordConfig {
   key: string
   adminIds: string[]
 }
@@ -18,7 +18,7 @@ export interface MetricsConfig {
 export interface ApplicationConfig {
   version: number
   general: GeneralConfig
-  discord: DiscordConfig
+  discord: StaticDiscordConfig
   metrics: MetricsConfig
   plugins: string[]
 }

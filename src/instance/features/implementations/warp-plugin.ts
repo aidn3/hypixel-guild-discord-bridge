@@ -1,22 +1,28 @@
-import type Application from '../application.js'
-import { InstanceType, type MinecraftRawChatEvent, MinecraftSendChatPriority } from '../common/application-event.js'
-import { OfficialPlugins } from '../common/application-internal-config.js'
-import type { ChatCommandContext } from '../common/commands.js'
-import { ChatCommandHandler } from '../common/commands.js'
-import { Status } from '../common/connectable-instance.js'
-import type EventHelper from '../common/event-helper.js'
-import type { PluginInfo } from '../common/plugin-instance.js'
-import PluginInstance from '../common/plugin-instance.js'
+import type Application from '../../../application.js'
+import {
+  InstanceType,
+  type MinecraftRawChatEvent,
+  MinecraftSendChatPriority
+} from '../../../common/application-event.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import { Status } from '../../../common/connectable-instance.js'
+import type EventHelper from '../../../common/event-helper.js'
+import type { PluginInfo } from '../../../common/plugin-instance.js'
+import PluginInstance from '../../../common/plugin-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
-import type { MinecraftManager } from '../util/minecraft-manager.js'
-import { sleep } from '../util/shared-util.js'
+// eslint-disable-next-line import/no-restricted-paths
+import { sleep } from '../../../util/shared-util.js'
+import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
+import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
+import { OfficialPlugins } from '../common/plugins-config.js'
+import type { PluginsManager } from '../plugins-manager.js'
 
 export default class WarpPlugin extends PluginInstance {
   private disableLimboTrapping = false
 
-  constructor(application: Application) {
-    super(application, OfficialPlugins.Warp)
+  constructor(application: Application, pluginsManager: PluginsManager) {
+    super(application, pluginsManager, OfficialPlugins.Warp)
   }
 
   pluginInfo(): PluginInfo {

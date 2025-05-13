@@ -1,35 +1,54 @@
 import path from 'node:path'
 import process from 'node:process'
 
-import type Application from '../application.js'
-import { InstanceType } from '../common/application-event.js'
-import { Instance, InternalInstancePrefix } from '../common/instance.js'
-import type PluginInstance from '../common/plugin-instance.js'
-import AutoRestartPlugin from '../plugins/auto-restart-plugin.js'
-import DarkAuctionPlugin from '../plugins/dark-auction-plugin.js'
-import HideLinksPlugin from '../plugins/hide-links-plugin.js'
-import LimboPlugin from '../plugins/limbo-plugin.js'
-import ReactionPlugin from '../plugins/reaction-plugin.js'
-import StarfallCultPlugin from '../plugins/starfall-cult-plugin.js'
-import StufPlugin from '../plugins/stuf-plugin.js'
-import WarpPlugin from '../plugins/warp-plugin.js'
+import type Application from '../../application.js'
+import { InstanceType } from '../../common/application-event.js'
+import { ConfigManager } from '../../common/config-manager.js'
+import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import type PluginInstance from '../../common/plugin-instance.js'
+
+import type { PluginConfig } from './common/plugins-config.js'
+import { OfficialPlugins } from './common/plugins-config.js'
+import AutoRestartPlugin from './implementations/auto-restart-plugin.js'
+import DarkAuctionPlugin from './implementations/dark-auction-plugin.js'
+import HideLinksPlugin from './implementations/hide-links-plugin.js'
+import LimboPlugin from './implementations/limbo-plugin.js'
+import ReactionPlugin from './implementations/reaction-plugin.js'
+import StarfallCultPlugin from './implementations/starfall-cult-plugin.js'
+import StufPlugin from './implementations/stuf-plugin.js'
+import WarpPlugin from './implementations/warp-plugin.js'
 
 export class PluginsManager extends Instance<InstanceType.Util> {
+  private readonly config: ConfigManager<PluginConfig>
   private readonly instances: PluginInstance[] = []
 
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Util)
 
+    this.config = new ConfigManager(application, application.getConfigFilePath('features-manager.json'), {
+      enabledPlugins: [
+        OfficialPlugins.AutoRestart,
+        OfficialPlugins.DarkAuctionReminder,
+        OfficialPlugins.Limbo,
+        OfficialPlugins.Reaction,
+        OfficialPlugins.StarfallCultReminder
+      ]
+    })
+
     this.instances.push(
-      new AutoRestartPlugin(application),
-      new DarkAuctionPlugin(application),
-      new HideLinksPlugin(application),
-      new LimboPlugin(application),
-      new ReactionPlugin(application),
-      new StarfallCultPlugin(application),
-      new StufPlugin(application),
-      new WarpPlugin(application)
+      new AutoRestartPlugin(application, this),
+      new DarkAuctionPlugin(application, this),
+      new HideLinksPlugin(application, this),
+      new LimboPlugin(application, this),
+      new ReactionPlugin(application, this),
+      new StarfallCultPlugin(application, this),
+      new StufPlugin(application, this),
+      new WarpPlugin(application, this)
     )
+  }
+
+  public getConfig(): ConfigManager<PluginConfig> {
+    return this.config
   }
 
   public checkConflicts(pluginsNames: string[]): { pluginName: string; incompatibleWith: string }[] {

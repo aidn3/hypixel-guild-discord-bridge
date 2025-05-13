@@ -8,8 +8,8 @@ import {
   RoleSelectMenuBuilder
 } from 'discord.js'
 
-import type { ApplicationInternalConfig } from '../../../../common/application-internal-config.js'
 import type { DiscordCommandContext } from '../../../../common/commands.js'
+import type { DiscordConfig } from '../../common/discord-config.js'
 
 export const LogChannel = 'log-channel'
 export const PublicChannel = 'public-channel'
@@ -43,14 +43,14 @@ export async function handleDiscordInteraction(context: DiscordCommandContext): 
 }
 
 async function handleDiscordLogChannels(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.discordInstance.getConfig()
 
   const menu = new ChannelSelectMenuBuilder()
     .setCustomId(LogChannel)
     .setMinValues(0)
     .setMaxValues(5)
     .addChannelTypes(ChannelType.GuildText)
-    .addDefaultChannels(config.data.discord.loggerChannelIds)
+    .addDefaultChannels(config.data.loggerChannelIds)
 
   const reply = await context.interaction.reply({
     embeds: [
@@ -71,8 +71,8 @@ async function handleDiscordLogChannels(context: DiscordCommandContext): Promise
       if (interaction.customId !== LogChannel) return
       assert(interaction.isChannelSelectMenu())
 
-      config.data.discord.loggerChannelIds = interaction.values
-      config.saveConfig()
+      config.data.loggerChannelIds = interaction.values
+      config.save()
       void interaction
         .update({ embeds: [generateDiscordSettings(config.data)] })
         .catch(context.errorHandler.promiseCatch('selecting log channels'))
@@ -83,14 +83,14 @@ async function handleDiscordLogChannels(context: DiscordCommandContext): Promise
 }
 
 async function handleDiscordPublicChannels(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.discordInstance.getConfig()
 
   const menu = new ChannelSelectMenuBuilder()
     .setCustomId(PublicChannel)
     .setMinValues(0)
     .setMaxValues(5)
     .addChannelTypes(ChannelType.GuildText)
-    .addDefaultChannels(config.data.discord.publicChannelIds)
+    .addDefaultChannels(config.data.publicChannelIds)
 
   const reply = await context.interaction.reply({
     embeds: [
@@ -112,8 +112,8 @@ async function handleDiscordPublicChannels(context: DiscordCommandContext): Prom
       if (interaction.customId !== PublicChannel) return
       assert(interaction.isChannelSelectMenu())
 
-      config.data.discord.publicChannelIds = interaction.values
-      config.saveConfig()
+      config.data.publicChannelIds = interaction.values
+      config.save()
       void interaction
         .update({ embeds: [generateDiscordSettings(config.data)] })
         .catch(context.errorHandler.promiseCatch('selecting public channels'))
@@ -124,14 +124,14 @@ async function handleDiscordPublicChannels(context: DiscordCommandContext): Prom
 }
 
 async function handleDiscordOfficerChannels(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.discordInstance.getConfig()
 
   const menu = new ChannelSelectMenuBuilder()
     .setCustomId(OfficerChannel)
     .setMinValues(0)
     .setMaxValues(5)
     .addChannelTypes(ChannelType.GuildText)
-    .addDefaultChannels(config.data.discord.officerChannelIds)
+    .addDefaultChannels(config.data.officerChannelIds)
 
   const reply = await context.interaction.reply({
     embeds: [
@@ -152,8 +152,8 @@ async function handleDiscordOfficerChannels(context: DiscordCommandContext): Pro
       if (interaction.customId !== OfficerChannel) return
       assert(interaction.isChannelSelectMenu())
 
-      config.data.discord.officerChannelIds = interaction.values
-      config.saveConfig()
+      config.data.officerChannelIds = interaction.values
+      config.save()
       void interaction
         .update({ embeds: [generateDiscordSettings(config.data)] })
         .catch(context.errorHandler.promiseCatch('selecting officer channels'))
@@ -164,13 +164,13 @@ async function handleDiscordOfficerChannels(context: DiscordCommandContext): Pro
 }
 
 async function handleDiscordHelperRoles(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.discordInstance.getConfig()
 
   const menu = new RoleSelectMenuBuilder()
     .setCustomId(HelperRoles)
     .setMinValues(0)
     .setMaxValues(5)
-    .addDefaultRoles(config.data.discord.helperRoleIds)
+    .addDefaultRoles(config.data.helperRoleIds)
 
   const reply = await context.interaction.reply({
     embeds: [
@@ -191,8 +191,8 @@ async function handleDiscordHelperRoles(context: DiscordCommandContext): Promise
       if (interaction.customId !== HelperRoles) return
       assert(interaction.isRoleSelectMenu())
 
-      config.data.discord.helperRoleIds = interaction.values
-      config.saveConfig()
+      config.data.helperRoleIds = interaction.values
+      config.save()
       void interaction
         .update({ embeds: [generateDiscordSettings(config.data)] })
         .catch(context.errorHandler.promiseCatch('selecting helper roles'))
@@ -203,13 +203,13 @@ async function handleDiscordHelperRoles(context: DiscordCommandContext): Promise
 }
 
 async function handleDiscordOfficerRoles(context: DiscordCommandContext): Promise<void> {
-  const config = context.application.applicationInternalConfig
+  const config = context.application.discordInstance.getConfig()
 
   const menu = new RoleSelectMenuBuilder()
     .setCustomId(OfficerRoles)
     .setMinValues(0)
     .setMaxValues(5)
-    .addDefaultRoles(config.data.discord.officerRoleIds)
+    .addDefaultRoles(config.data.officerRoleIds)
 
   const reply = await context.interaction.reply({
     embeds: [
@@ -230,8 +230,8 @@ async function handleDiscordOfficerRoles(context: DiscordCommandContext): Promis
       if (interaction.customId !== OfficerRoles) return
       assert(interaction.isRoleSelectMenu())
 
-      config.data.discord.officerRoleIds = interaction.values
-      config.saveConfig()
+      config.data.officerRoleIds = interaction.values
+      config.save()
       void interaction
         .update({ embeds: [generateDiscordSettings(config.data)] })
         .catch(context.errorHandler.promiseCatch('selecting officer roles'))
@@ -241,7 +241,7 @@ async function handleDiscordOfficerRoles(context: DiscordCommandContext): Promis
     })
 }
 
-function generateDiscordSettings(config: ApplicationInternalConfig): APIEmbed {
+function generateDiscordSettings(config: DiscordConfig): APIEmbed {
   return {
     title: 'Discord Settings',
     fields: [
@@ -249,41 +249,32 @@ function generateDiscordSettings(config: ApplicationInternalConfig): APIEmbed {
         name: 'Public Channels',
         inline: true,
         value:
-          config.discord.publicChannelIds.length === 0
-            ? '(none)'
-            : config.discord.publicChannelIds.map((id) => `- <#${id}>`).join('\n')
+          config.publicChannelIds.length === 0 ? '(none)' : config.publicChannelIds.map((id) => `- <#${id}>`).join('\n')
       },
       {
         name: 'Officer Channels',
         inline: true,
         value:
-          config.discord.officerChannelIds.length === 0
+          config.officerChannelIds.length === 0
             ? '(none)'
-            : config.discord.officerChannelIds.map((id) => `- <#${id}>`).join('\n')
+            : config.officerChannelIds.map((id) => `- <#${id}>`).join('\n')
       },
       {
         name: 'Log Channels',
         inline: true,
         value:
-          config.discord.loggerChannelIds.length === 0
-            ? '(none)'
-            : config.discord.loggerChannelIds.map((id) => `- <#${id}>`).join('\n')
+          config.loggerChannelIds.length === 0 ? '(none)' : config.loggerChannelIds.map((id) => `- <#${id}>`).join('\n')
       },
       {
         name: 'Helper Roles',
         inline: true,
-        value:
-          config.discord.helperRoleIds.length === 0
-            ? '(none)'
-            : config.discord.helperRoleIds.map((id) => `- <@&${id}>`).join('\n')
+        value: config.helperRoleIds.length === 0 ? '(none)' : config.helperRoleIds.map((id) => `- <@&${id}>`).join('\n')
       },
       {
         name: 'Officer Roles',
         inline: true,
         value:
-          config.discord.officerRoleIds.length === 0
-            ? '(none)'
-            : config.discord.officerRoleIds.map((id) => `- <@&${id}>`).join('\n')
+          config.officerRoleIds.length === 0 ? '(none)' : config.officerRoleIds.map((id) => `- <@&${id}>`).join('\n')
       }
     ]
   }
