@@ -1,16 +1,10 @@
-import type { APIEmbed } from 'discord.js'
-import { escapeMarkdown } from 'discord.js'
-
-import type Application from '../../../application.js'
+import type Application from '../application.js'
 import {
-  Color,
   type InstanceType,
   type MinecraftRawChatEvent,
   MinecraftSendChatPriority
-} from '../../../common/application-event.js'
-import type EventHelper from '../../../common/event-helper.js'
-
-import { DefaultCommandFooter } from './discord-config.js'
+} from '../common/application-event.js'
+import type EventHelper from '../common/event-helper.js'
 
 export interface RegexChat {
   success: RegExp[]
@@ -108,12 +102,12 @@ export const InviteAcceptChat: RegexChat = {
 
 export interface ChatTriggerResult {
   status: 'success' | 'failed' | 'error'
-  message: string[]
+  message: { instanceName: string; content: string }[]
 }
 
 export async function checkChatTriggers(
   app: Application,
-  eventHelper: EventHelper<InstanceType.Discord>,
+  eventHelper: EventHelper<InstanceType>,
   regexList: RegexChat,
   targetInstance: string[],
   command: string,
@@ -134,7 +128,7 @@ export async function checkChatTriggers(
 
       if (result.status !== 'success') result.message = []
       result.status = 'success'
-      result.message.push(`[${event.instanceName}] ${match[0]}`)
+      result.message.push({ instanceName: event.instanceName, content: match[0] })
     }
 
     if (result.status !== 'success') {
@@ -144,7 +138,7 @@ export async function checkChatTriggers(
         if (match.length > 1 && match[1].toLowerCase() !== username.toLowerCase()) continue
 
         result.status = 'failed'
-        result.message.push(`[${event.instanceName}] ${match[0]}`)
+        result.message.push({ instanceName: event.instanceName, content: match[0] })
       }
     }
   }
@@ -160,55 +154,4 @@ export async function checkChatTriggers(
   app.removeListener('minecraftChat', chatListener)
 
   return result
-}
-
-export function formatChatTriggerResponse(results: ChatTriggerResult, title: string): APIEmbed {
-  let color: Color
-  switch (results.status) {
-    case 'success': {
-      color = Color.Good
-      break
-    }
-    case 'failed': {
-      color = Color.Info
-      break
-    }
-    case 'error': {
-      color = Color.Bad
-    }
-  }
-
-  return {
-    title: title,
-    color: color,
-    description: formatBody(results),
-    footer: {
-      text: DefaultCommandFooter
-    }
-  }
-}
-
-function formatBody(results: ChatTriggerResult): string {
-  let message = ''
-
-  switch (results.status) {
-    case 'error': {
-      return 'No response returned while executing the command.'
-    }
-    case 'failed': {
-      message += '_Executing command failed._\n\n'
-    }
-  }
-
-  if (results.message.length === 0) {
-    message += '**No response returned while executing the command.**'
-    return message
-  } else if (results.message.length === 1) {
-    message += `> ${escapeMarkdown(results.message[0])}`
-    return message
-  } else {
-    message += `**Multiple responses have been detected but cannot tell which belong to this command:**\n`
-    message += '```' + results.message.join('\n') + '```'
-    return message
-  }
 }

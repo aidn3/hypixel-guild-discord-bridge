@@ -16,18 +16,13 @@ import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { checkChatTriggers, KickChat, MuteChat, UnmuteChat } from '../../../util/chat-triggers.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { durationToMinecraftDuration, getDuration } from '../../../util/shared-util.js'
 import { HeatResult, HeatType } from '../../moderation/commands-heat.js'
 import type ModerationInstance from '../../moderation/moderation-instance.js'
 import { userIdentifiersToList } from '../../moderation/util.js'
-import {
-  checkChatTriggers,
-  formatChatTriggerResponse,
-  KickChat,
-  MuteChat,
-  UnmuteChat
-} from '../common/chat-triggers.js'
+import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../discord-pager.js'
 

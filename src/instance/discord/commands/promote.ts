@@ -3,7 +3,8 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import { InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
-import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
+import { checkChatTriggers, RankChat } from '../../../util/chat-triggers.js'
+import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 
 export default {
   getCommandBuilder: () =>
