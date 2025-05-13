@@ -6,6 +6,8 @@ import {
 } from '../common/application-event.js'
 import type EventHelper from '../common/event-helper.js'
 
+import { Timeout } from './timeout.js'
+
 export interface RegexChat {
   success: RegExp[]
   failure: RegExp[]
@@ -118,10 +120,16 @@ export async function checkChatTriggers(
   command: string,
   username: string
 ): Promise<ChatTriggerResult> {
+  const timeout = new Timeout<void>(5000)
   const result: ChatTriggerResult = {
     status: 'error',
     message: []
   }
+  /*
+  Only success is counted, so failure and any error message
+  can properly propagate for diagnostic purposes
+   */
+  let successCount = 0
 
   const chatListener = function (event: MinecraftRawChatEvent): void {
     if (event.message.length === 0) return
@@ -134,6 +142,9 @@ export async function checkChatTriggers(
       if (result.status !== 'success') result.message = []
       result.status = 'success'
       result.message.push({ instanceName: event.instanceName, content: match[0] })
+
+      successCount++
+      if (targetInstance.length >= successCount) timeout.resolve()
     }
 
     if (result.status !== 'success') {
@@ -155,7 +166,7 @@ export async function checkChatTriggers(
     priority: MinecraftSendChatPriority.High,
     command
   })
-  await new Promise((resolve) => setTimeout(resolve, 5000))
+  await timeout.wait()
   app.removeListener('minecraftChat', chatListener)
 
   return result
