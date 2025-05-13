@@ -17,12 +17,10 @@ export const MetricsConfig = t.iface([], {
   "enabled": "boolean",
   "port": "number",
   "prefix": "string",
-  "useIngameCommand": "boolean",
-  "interval": "number",
 });
 
 export const ApplicationConfig = t.iface([], {
-  "version": "number",
+  "version": t.lit(2),
   "general": "GeneralConfig",
   "discord": "StaticDiscordConfig",
   "metrics": "MetricsConfig",

@@ -1,3 +1,5 @@
+export const ApplicationConfigVersion = 2
+
 export interface GeneralConfig {
   hypixelApiKey: string
 }
@@ -11,12 +13,10 @@ export interface MetricsConfig {
   enabled: boolean
   port: number
   prefix: string
-  useIngameCommand: boolean
-  interval: number
 }
 
 export interface ApplicationConfig {
-  version: number
+  version: 2 // typeof ApplicationConfigVersion
   general: GeneralConfig
   discord: StaticDiscordConfig
   metrics: MetricsConfig

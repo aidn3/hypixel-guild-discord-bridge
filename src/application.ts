@@ -4,6 +4,7 @@
 import type Events from 'node:events'
 import path from 'node:path'
 
+import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 import { default as Logger4js } from 'log4js'
@@ -54,6 +55,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
+  private readonly shutdownListeners: (() => void)[] = []
 
   private readonly rootDirectory
   private readonly configsDirectory
@@ -108,9 +110,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
         void sleep(5000)
-          .then(async () => {
-            await gracefullyExitProcess(2)
+          .then(() => {
+            this.logger.debug('shutting down application')
+            return this.shutdown()
           })
+          .then(() => gracefullyExitProcess(2))
           .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
       }
     })
@@ -118,6 +122,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
+  }
+
+  public addShutdownListener(listener: () => void): void {
+    this.shutdownListeners.push(listener)
   }
 
   public async start(): Promise<void> {
@@ -136,6 +144,22 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
         await instance.onReady()
       }
     }
+  }
+
+  public async shutdown(): Promise<void> {
+    for (const shutdownListener of this.shutdownListeners) {
+      shutdownListener()
+    }
+
+    const tasks: Awaitable<unknown>[] = []
+    for (const instance of this.getAllInstances().reverse()) {
+      // reversed to go backward of `start()`
+      if (instance instanceof ConnectableInstance) {
+        this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)
+        tasks.push(instance.disconnect())
+      }
+    }
+    await Promise.all(tasks)
   }
 
   public getInstancesNames(instanceType: InstanceType): string[] {

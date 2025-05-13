@@ -2,7 +2,6 @@ import assert from 'node:assert'
 import * as crypto from 'node:crypto'
 import * as fs from 'node:fs'
 import path from 'node:path'
-import { setImmediate } from 'node:timers/promises'
 
 import type Application from '../../application.js'
 import { InstanceType, type MinecraftSelfBroadcast } from '../../common/application-event.js'
@@ -105,11 +104,9 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
 
     // remove initialed instances
     for (const instance of instances) {
-      instance.disconnect()
+      await instance.disconnect()
     }
-    // wait till next cycle to let the clients close properly
-    // and send their remaining events before deleting them from the registry
-    await setImmediate()
+
     for (const instance of instances) {
       assert(this.instances.delete(instance))
       this.minecraftBots.delete(instance.instanceName)

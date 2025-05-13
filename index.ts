@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 
 import { default as Logger4js } from 'log4js'
 
@@ -10,11 +11,24 @@ import { loadApplicationConfig } from './src/configuration-parser.js'
 import { gracefullyExitProcess } from './src/util/shared-util.js'
 
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
+let app: Application | undefined
 
 Logger.debug('Setting up process...')
 process.on('uncaughtException', function (error) {
   Logger.fatal(error)
   process.exitCode = 1
+})
+process.on('SIGINT', (signal) => {
+  Logger.info(`Process has caught ${signal} signal.`)
+  if (app !== undefined) {
+    Logger.debug('Shutting down application')
+    void app
+      .shutdown()
+      .then(() => gracefullyExitProcess(0))
+      .catch(() => {
+        process.exit(1)
+      })
+  }
 })
 
 process.title = PackageJson.name
@@ -37,12 +51,12 @@ if (!fs.existsSync(File)) {
 try {
   const RootDirectory = import.meta.dirname
   const ConfigsDirectory = path.resolve(RootDirectory, 'config')
-  const App = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
+  app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
 
-  App.on('all', (name, event) => {
+  app.on('all', (name, event) => {
     Logger.log(`[${name}] ${JSON.stringify(event)}`)
   })
-  await App.start()
+  await app.start()
   Logger.info('App is connected')
 } catch (error: unknown) {
   Logger.fatal(error)
