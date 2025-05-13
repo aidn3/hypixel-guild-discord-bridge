@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-named-as-default
-import Moment from 'moment'
+import { default as Moment } from 'moment'
 
 import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
@@ -66,7 +65,6 @@ class PartyList extends ChatCommandHandler {
     let response = `${context.username}, parties: `
     for (const [index, party] of this.partyManager.activeParties.entries()) {
       // utc() is not directly exported
-      // eslint-disable-next-line import/no-named-as-default-member
       response += `${index + 1}. ${party.username}, ${party.count} players, ${party.purpose}, with ${Moment.utc(party.expiresAt).fromNow(true)} left\n`
     }
 

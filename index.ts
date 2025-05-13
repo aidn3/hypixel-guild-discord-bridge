@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import Logger4js from 'log4js'
+import { default as Logger4js } from 'log4js'
 
 import LoggerConfig from './config/log4js-config.json' with { type: 'json' }
 import PackageJson from './package.json' with { type: 'json' }
@@ -9,7 +9,6 @@ import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { gracefullyExitProcess } from './src/util/shared-util.js'
 
-// eslint-disable-next-line import/no-named-as-default-member
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
 
 Logger.debug('Setting up process...')

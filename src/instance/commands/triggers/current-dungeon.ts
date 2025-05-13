@@ -1,7 +1,6 @@
 import assert from 'node:assert'
 
-// eslint-disable-next-line import/no-named-as-default
-import Moment from 'moment'
+import { default as Moment } from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'

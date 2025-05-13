@@ -6,7 +6,7 @@ import path from 'node:path'
 
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
-import Logger4js from 'log4js'
+import { default as Logger4js } from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
@@ -68,7 +68,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
-    // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')

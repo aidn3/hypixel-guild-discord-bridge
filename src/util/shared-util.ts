@@ -1,4 +1,4 @@
-import Logger4js from 'log4js'
+import { default as Logger4js } from 'log4js'
 
 import { InternalInstancePrefix } from '../common/instance.js'
 
@@ -51,7 +51,6 @@ export async function gracefullyExitProcess(exitCode: number): Promise<void> {
     process.exit(exitCode)
   })
 
-  // eslint-disable-next-line import/no-named-as-default-member
   Logger4js.shutdown(() => {
     process.exit(exitCode)
   })

@@ -1,5 +1,5 @@
 import type { Logger } from 'log4js'
-import Logger4js from 'log4js'
+import { default as Logger4Js } from 'log4js'
 
 import type Application from '../application.js'
 
@@ -21,8 +21,7 @@ export abstract class Instance<T extends InstanceType> implements InstanceIdenti
     this.instanceName = instanceName
     this.instanceType = instanceType
 
-    // eslint-disable-next-line import/no-named-as-default-member
-    this.logger = Logger4js.getLogger(instanceName)
+    this.logger = Logger4Js.getLogger(instanceName)
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.eventHelper = new EventHelper<T>(this.instanceName, this.instanceType)
   }
