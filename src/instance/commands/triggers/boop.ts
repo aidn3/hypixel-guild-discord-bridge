@@ -40,7 +40,7 @@ export default class Boop extends ChatCommandHandler {
       context.eventHelper,
       PrivateMessageChat,
       [minecraftInstanceName],
-      `/boop ${givenUsername} @${antiSpamString()}`,
+      `/boop ${givenUsername} @${antiSpamString()} @${antiSpamString()} @${antiSpamString()} @${antiSpamString()}`,
       givenUsername
     )
     switch (result.status) {
