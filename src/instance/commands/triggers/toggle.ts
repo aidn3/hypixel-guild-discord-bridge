@@ -27,11 +27,11 @@ export default class Toggle extends ChatCommandHandler {
       case 'not-found': {
         return `Command does not exist`
       }
-      case 'profanityEnabled': {
+      case 'enabled': {
         return `Command ${query} is now enabled.`
       }
       case 'disabled': {
-        return `Command ${query} is now enabled.`
+        return `Command ${query} is now disabled.`
       }
     }
   }

@@ -36,7 +36,7 @@ export interface ChatCommandContext {
 
   allCommands: ChatCommandHandler[]
   commandPrefix: string
-  toggleCommand: (trigger: string) => 'profanityEnabled' | 'disabled' | 'not-found'
+  toggleCommand: (trigger: string) => 'enabled' | 'disabled' | 'not-found'
 
   instanceName: string
   instanceType: InstanceType

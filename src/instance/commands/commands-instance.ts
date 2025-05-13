@@ -128,7 +128,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     if (command == undefined) return
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
-    if (!this.config.data.disabledCommands.includes(command.triggers[0]) && event.permission === Permission.Anyone) {
+    if (this.config.data.disabledCommands.includes(command.triggers[0].toLowerCase()) && event.permission === Permission.Anyone) {
       return
     }
 
@@ -151,9 +151,10 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
               (disabledCommand) => disabledCommand !== command.triggers[0].toLowerCase()
             )
             this.config.markDirty()
-            return 'profanityEnabled'
+            return 'enabled'
           } else {
             config.disabledCommands.push(command.triggers[0].toLowerCase())
+            this.config.markDirty()
             return 'disabled'
           }
         },
