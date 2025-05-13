@@ -9,6 +9,7 @@ import { InternalInstancePrefix } from '../../common/instance.js'
 import EightBallCommand from './triggers/8ball.js'
 import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
+import Boop from './triggers/boop.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
@@ -54,6 +55,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     this.commands = [
       new Bits(),
       new Bedwars(),
+      new Boop(),
       new Calculate(),
       new Catacomb(),
       new CurrentDungeon(),
@@ -128,7 +130,10 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     if (command == undefined) return
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
-    if (this.config.data.disabledCommands.includes(command.triggers[0].toLowerCase()) && event.permission === Permission.Anyone) {
+    if (
+      this.config.data.disabledCommands.includes(command.triggers[0].toLowerCase()) &&
+      event.permission === Permission.Anyone
+    ) {
       return
     }
 
