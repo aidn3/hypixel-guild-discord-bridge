@@ -154,7 +154,7 @@ export class GuildManager extends Instance<InstanceType.Util> {
     let usernames: Set<string> = new Set<string>()
 
     const nameRegex = /^Guild Name: ([\W\w]{1,64})/g
-    const rankRegex = /^\W+-- (Guild Master|\w+) --$/g
+    const rankRegex = /^\W+-- (Guild Master|[\w-]+) --$/g
     const memberRegex = /(\w{2,16}) \u25CF/g
     const totalRegex = /^Total Members: (\d+)$/g
     const onlineRegex = /^Online Members: (\d+)$/g
