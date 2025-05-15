@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@hkh12/node-calc": "^4.2.1",
-    "axios": "^1.7.2",
+    "axios": "^1.8.2",
     "bad-words": "3.0.4",
     "discord.js": "^14.15.3",
     "emoji-name-map": "^1.2.9",
