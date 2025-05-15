@@ -29,6 +29,7 @@ export class ConfigManager<T> {
     })
 
     this.reload()
+    this.save() // to write any new default configs into the file
   }
 
   private reload(): void {
