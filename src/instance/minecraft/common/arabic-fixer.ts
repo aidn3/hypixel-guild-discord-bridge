@@ -1,10 +1,73 @@
+import assert from 'node:assert'
+
 import { default as esrever } from 'esrever'
 
 export default class ArabicFixer {
-  public encode(message: string): string {
-    const arabicLanguage = /^[ \u0600-\u06FF\u200C\u200F\uFB8A]+$/g
-    if (!arabicLanguage.test(message)) return message
+  private static readonly ArabicLanguage = /[\u0600-\u06FF\u200C\u200F\uFB8A]+/g
 
+  public encode(message: string): string {
+    if (!ArabicFixer.ArabicLanguage.test(message)) return message
+
+    return this.smartReverse(message)
+  }
+
+  private regexSegment(message: string): { content: string; isArabic: boolean }[] {
+    message = message.trim() // needed to simplify detecting "filler"
+
+    const segments: { content: string; isArabic: boolean }[] = []
+    const regex = /[\s\u0600-\u06FF\u200C\u200F\uFB8A]+/gm
+    // eslint-disable-next-line unicorn/no-null
+    let match: RegExpMatchArray | null = null
+    let totalLength = 0
+    while ((match = regex.exec(message)) !== null) {
+      const lastSegment = segments.at(-1)
+      const segment = match[0]
+      const index = match.index
+      const length = segment.length
+      assert(index !== undefined)
+
+      if (totalLength < index) {
+        const missedSegment = message.slice(totalLength, index)
+        if (lastSegment?.isArabic) {
+          lastSegment.content += missedSegment
+        } else {
+          segments.push({ content: missedSegment, isArabic: false })
+        }
+      }
+
+      if (/^\s+$/.test(segment) && lastSegment !== undefined) {
+        lastSegment.content += segment
+      } else {
+        segments.push({ content: message.slice(index, index + length), isArabic: true })
+      }
+
+      totalLength = index + length
+    }
+
+    if (totalLength < message.length) {
+      segments.push({ content: message.slice(totalLength), isArabic: false })
+    }
+
+    return segments
+  }
+
+  private smartReverse(message: string): string {
+    const segments = this.regexSegment(message)
+
+    let reversedMessage = ''
+    for (const segment of segments.reverse()) {
+      if (segment.isArabic) {
+        const translatedSegment = this.translate(segment.content)
+        reversedMessage += esrever.reverse(translatedSegment)
+      } else {
+        reversedMessage += segment.content
+      }
+    }
+
+    return reversedMessage
+  }
+
+  private translate(message: string): string {
     let changed = false
     let newMessage = message
     do {
@@ -18,7 +81,7 @@ export default class ArabicFixer {
       }
     } while (changed)
 
-    return esrever.reverse(newMessage)
+    return newMessage
   }
 
   // Credit: https://github.com/omd0/Arabic-Fixer
