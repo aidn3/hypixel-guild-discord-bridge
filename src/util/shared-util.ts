@@ -85,6 +85,9 @@ export function beautifyInstanceName(instanceName: string): string {
     ? instanceName.slice(InternalInstancePrefix.length)
     : instanceName
 
-  instanceName = instanceName.slice(0, 1).toUpperCase() + instanceName.slice(1).toLowerCase()
+  if (instanceName === instanceName.toLowerCase()) {
+    instanceName = instanceName.slice(0, 1).toUpperCase() + instanceName.slice(1).toLowerCase()
+  }
+
   return instanceName
 }
