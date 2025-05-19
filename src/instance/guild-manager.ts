@@ -161,6 +161,7 @@ export class GuildManager extends Instance<InstanceType.Util> {
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
       if (event.message.length === 0) return
+      if (event.instanceName !== instanceName) return
 
       const nameMatch = nameRegex.exec(event.message)
       if (nameMatch != undefined) {
