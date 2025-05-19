@@ -154,7 +154,7 @@ export class GuildManager extends Instance<InstanceType.Util> {
     let usernames: Set<string> = new Set<string>()
 
     const nameRegex = /^Guild Name: ([\W\w]{1,64})/g
-    const rankRegex = /^\W+-- (Guild Master|[\w-]+) --$/g
+    const rankRegex = /^\W+-- (Guild Master|[\w -]+) --$/g
     const memberRegex = /(\w{2,16}) \u25CF/g
     const totalRegex = /^Total Members: (\d+)$/g
     const onlineRegex = /^Online Members: (\d+)$/g
@@ -172,7 +172,8 @@ export class GuildManager extends Instance<InstanceType.Util> {
       const rankMatch = rankRegex.exec(event.message)
       if (rankMatch != undefined) {
         if (currentRank !== undefined) {
-          members.push({ rank: currentRank, usernames: usernames })
+          // ranks can end with space but will not show up in chat messages
+          members.push({ rank: currentRank.trim(), usernames: usernames })
           usernames = new Set<string>()
         }
         currentRank = rankMatch[1]
