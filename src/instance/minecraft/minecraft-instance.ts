@@ -85,6 +85,11 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   connect(): void {
     this.clientSession?.client.end(QuitOwnVolition)
 
+    this.stateHandler.resetLoginAttempts()
+    this.automaticReconnect()
+  }
+
+  public automaticReconnect(): void {
     const client = createClient({
       ...this.defaultBotConfig,
       username: this.config.name,

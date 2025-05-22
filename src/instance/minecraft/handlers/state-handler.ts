@@ -30,6 +30,10 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     this.loggedIn = false
   }
 
+  public resetLoginAttempts() {
+    this.loginAttempts = 0
+  }
+
   registerEvents(clientSession: ClientSession): void {
     // this will only be called after the player receives spawn packet
     clientSession.client.on('login', () => {
@@ -184,7 +188,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     )
 
     setTimeout(() => {
-      this.clientInstance.connect()
+      this.clientInstance.automaticReconnect()
     }, loginDelay)
   }
 }
