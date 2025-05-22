@@ -105,6 +105,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     }
 
     return `${givenUsername} is ${totalRuns} ${selectedFloor.toUpperCase()} away from c.a. ${targetAverage} (${classes
+      .filter((c) => runsDone[c] > 0)
       .map((c) => `${c} ${runsDone[c]}`)
       .join(' | ')})`
   }
