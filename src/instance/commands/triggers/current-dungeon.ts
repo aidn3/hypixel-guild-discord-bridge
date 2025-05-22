@@ -4,6 +4,7 @@ import { default as Moment } from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type { MojangApi } from '../../../util/mojang.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
@@ -51,7 +52,11 @@ export default class CurrentDungeon extends ChatCommandHandler {
     let foundPlayer = false
     for (const participant of lastRun.participants) {
       if (participant.player_uuid === uuid) {
-        message += this.parseDisplayMessage(participant.display_name)
+        message += await this.parseDisplayMessage(
+          context.app.mojangApi,
+          participant.display_name,
+          participant.player_uuid
+        )
         foundPlayer = true
       }
     }
@@ -67,23 +72,36 @@ export default class CurrentDungeon extends ChatCommandHandler {
       message += `solo.`
     } else {
       message += `with `
-      message += lastRun.participants
-        .filter((participant) => participant.player_uuid !== uuid)
-        .map((participant) => this.parseDisplayMessage(participant.display_name))
-        .join(', ')
+
+      const participants = await Promise.all(
+        lastRun.participants
+          .filter((participant) => participant.player_uuid !== uuid)
+          .map((participant) =>
+            this.parseDisplayMessage(context.app.mojangApi, participant.display_name, participant.player_uuid)
+          )
+      )
+      message += participants.join(', ')
+
       message += '.'
     }
 
     return message
   }
 
-  private parseDisplayMessage(message: string): string {
+  private async parseDisplayMessage(mojangApi: MojangApi, message: string, uuid: string): Promise<string> {
     const cleanMessage = message.trim().replaceAll(/§./g, '')
     const regex = /^(\w{2,16}): (\w+) \((\d+)\)$/g
     const match = regex.exec(cleanMessage)
-    if (match) {
-      return `${match[1]} (${match[2]} ${match[3]})`
-    }
-    return cleanMessage
+
+    if (!match) return message
+    const oldUsername = match[1]
+    const className = match[2]
+    const classLevel = match[3]
+
+    const updatedUsername = await mojangApi
+      .profileByUuid(uuid)
+      .then((profile) => profile.name)
+      .catch(() => oldUsername)
+    return `${updatedUsername} (${className} ${classLevel})`
   }
 }
