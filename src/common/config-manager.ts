@@ -14,7 +14,7 @@ export class ConfigManager<T> {
   private readonly configFilePath: string
 
   public constructor(application: Application, filepath: string, data: T) {
-    this.configFilePath = application.getConfigFilePath(filepath)
+    this.configFilePath = filepath
     this.data = data
     this.defaultConfig = Defaults({ data }, undefined).data // deep clone
 

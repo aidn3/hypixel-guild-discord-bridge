@@ -29,7 +29,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
     this.config = config
-    this.heats = new ConfigManager<HeatUser[]>(application, 'commands-heat.json', [])
+    this.heats = new ConfigManager<HeatUser[]>(application, application.getConfigFilePath('commands-heat.json'), [])
   }
 
   public status(identifiers: UserIdentifier, type: HeatType): HeatResult {
