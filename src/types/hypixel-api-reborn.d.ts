@@ -86,7 +86,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2DungeonRun {
     completion_ts: number
-    dungeon_Type: 'catacombs' | 'master_catacombs'
+    dungeon_type: 'catacombs' | 'master_catacombs'
     dungeon_tier: number
     participants: { player_uuid: string; display_name: string }[]
   }

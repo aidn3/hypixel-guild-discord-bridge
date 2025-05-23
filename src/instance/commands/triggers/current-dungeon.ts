@@ -46,7 +46,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
     }
 
     const lastRun = runs[0]
-    const floorDisplayName = `${lastRun.dungeon_Type === 'catacombs' ? 'F' : 'M'}${lastRun.dungeon_tier}`
+    const floorDisplayName = `${lastRun.dungeon_type === 'catacombs' ? 'F' : 'M'}${lastRun.dungeon_tier}`
 
     let message = ''
     let foundPlayer = false
