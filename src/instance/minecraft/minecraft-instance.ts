@@ -13,6 +13,7 @@ import type { MinecraftInstanceConfig } from './common/config.js'
 import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
+import GameTogglesHandler from './handlers/game-toggles-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
@@ -31,6 +32,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private stateHandler: StateHandler
   private selfbroadcastHandler: SelfbroadcastHandler
   private chatManager: ChatManager
+  private gameToggle: GameTogglesHandler
 
   private readonly messageAssociation: MessageAssociation
   private readonly bridge: MinecraftBridge
@@ -74,6 +76,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       this.errorHandler,
       this.messageAssociation
     )
+    this.gameToggle = new GameTogglesHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
@@ -112,6 +115,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.selfbroadcastHandler.registerEvents(this.clientSession)
     this.stateHandler.registerEvents(this.clientSession)
     this.chatManager.registerEvents(this.clientSession)
+    this.gameToggle.registerEvents(this.clientSession)
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
