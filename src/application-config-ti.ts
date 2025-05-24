@@ -14,7 +14,7 @@ export const StaticDiscordConfig = t.iface([], {
   "adminIds": t.array("string"),
 });
 
-export const MetricsConfig = t.iface([], {
+export const PrometheusConfig = t.iface([], {
   "enabled": "boolean",
   "port": "number",
   "prefix": "string",
@@ -24,14 +24,14 @@ export const ApplicationConfig = t.iface([], {
   "version": t.lit(2),
   "general": "GeneralConfig",
   "discord": "StaticDiscordConfig",
-  "metrics": "MetricsConfig",
+  "prometheus": "PrometheusConfig",
   "plugins": t.array("string"),
 });
 
 const exportedTypeSuite: t.ITypeSuite = {
   GeneralConfig,
   StaticDiscordConfig,
-  MetricsConfig,
+  PrometheusConfig,
   ApplicationConfig,
 };
 export default exportedTypeSuite;

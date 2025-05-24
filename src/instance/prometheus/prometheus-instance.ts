@@ -4,7 +4,7 @@ import http from 'node:http'
 import { HttpStatusCode } from 'axios'
 import * as Client from 'prom-client'
 
-import type { MetricsConfig } from '../../application-config.js'
+import type { PrometheusConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
@@ -12,17 +12,17 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class MetricsInstance extends Instance<InstanceType.Metrics> {
+export default class PrometheusInstance extends Instance<InstanceType.Prometheus> {
   private readonly httpServer
   private readonly register
 
   private readonly applicationMetrics: ApplicationMetrics
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
-  private readonly config: MetricsConfig
+  private readonly config: PrometheusConfig
 
-  constructor(app: Application, config: MetricsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics)
+  constructor(app: Application, config: PrometheusConfig) {
+    super(app, InternalInstancePrefix + InstanceType.Prometheus, InstanceType.Prometheus)
 
     assert(config.enabled)
     this.config = config
@@ -59,7 +59,7 @@ export default class MetricsInstance extends Instance<InstanceType.Metrics> {
 
       const route = request.url.split('?')[0]
       if (route === '/metrics') {
-        this.logger.debug('Metrics scrap is called on /metrics')
+        this.logger.debug('Prometheus scrap is called on /metrics')
         response.setHeader('Content-Type', this.register.contentType)
 
         void this.collectMetrics()

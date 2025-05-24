@@ -22,7 +22,7 @@ import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
 import { GuildManager } from './instance/guild-manager.js'
-import MetricsInstance from './instance/metrics/metrics-instance.js'
+import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
@@ -32,7 +32,7 @@ import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 export type AllInstances =
   | CommandsInstance
   | DiscordInstance
-  | MetricsInstance
+  | PrometheusInstance
   | MinecraftInstance
   | ModerationInstance
   | PluginInstance
@@ -66,7 +66,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly pluginsManager: PluginsManager
   public readonly moderation: ModerationInstance
   public readonly commandsInstance: CommandsInstance
-  private readonly metricsInstance: MetricsInstance | undefined
+  private readonly prometheusInstance: PrometheusInstance | undefined
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
@@ -98,7 +98,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
     this.pluginsManager = new PluginsManager(this)
 
-    this.metricsInstance = this.config.metrics.enabled ? new MetricsInstance(this, this.config.metrics) : undefined
+    this.prometheusInstance = this.config.prometheus.enabled
+      ? new PrometheusInstance(this, this.config.prometheus)
+      : undefined
     this.commandsInstance = new CommandsInstance(this)
 
     this.on('instanceSignal', (event) => {
@@ -189,7 +191,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       this.discordInstance, // discord second to send any notification about connecting
 
       this.moderation,
-      this.metricsInstance,
+      this.prometheusInstance,
       this.commandsInstance,
       ...this.minecraftManager.getAllInstances()
     ].filter((instance) => instance != undefined)

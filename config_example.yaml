@@ -17,7 +17,7 @@ discord:
 plugins:
   - './src/plugins/example-plugin.ts'
 
-metrics:
+prometheus:
   enabled: false
   port: 9095
   # Prefix for prometheus metrics database
