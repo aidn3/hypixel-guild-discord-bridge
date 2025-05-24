@@ -118,7 +118,7 @@ export default class Vengeance extends ChatCommandHandler {
   private mute(context: ChatCommandContext, username: string): void {
     context.app.emit('minecraftSend', {
       ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: context.app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+      targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
       priority: MinecraftSendChatPriority.High,
       command: `/g mute ${username} 15m`
     })

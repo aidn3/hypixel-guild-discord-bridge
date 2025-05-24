@@ -16,7 +16,7 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 import { durationToMinecraftDuration } from '../../../util/shared-util.js'
 import type ModerationInstance from '../moderation-instance.js'
 
-export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation> {
+export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation, void> {
   constructor(
     application: Application,
     system: ModerationInstance,
@@ -57,7 +57,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
     if (mutedTill) {
       this.application.emit('minecraftSend', {
         ...this.eventHelper.fillBaseEvent(),
-        targetInstanceName: this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+        targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
         priority: MinecraftSendChatPriority.High,
         command: `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
       })
@@ -65,9 +65,18 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
   }
 
   private enforceBan(username: string, identifiers: string[]): void {
-    const bannedTill = this.clientInstance.punishments.punishedTill(identifiers, PunishmentType.Ban)
+    const banned = this.clientInstance.punishments
+      .findByUser(identifiers)
+      .find((punishment) => punishment.type === PunishmentType.Ban)
 
-    if (bannedTill) {
+    if (banned) {
+      this.application.emit('minecraftSend', {
+        ...this.eventHelper.fillBaseEvent(),
+        targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
+        priority: MinecraftSendChatPriority.High,
+        command: `/guild kick ${username} ${banned.reason}`
+      })
+
       this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
 
@@ -75,7 +84,7 @@ export default class PunishmentsEnforcer extends EventHandler<ModerationInstance
         color: Color.Bad,
 
         username: username,
-        message: `Punishments-System tried to kick ${username} since they are banned.`
+        message: `Punishments-System tried to kick ${username} since they are banned.\n${banned.reason}`
       })
     }
   }

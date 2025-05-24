@@ -13,7 +13,6 @@ export default class EventHelper<K extends InstanceType> {
 
   public fillBaseEvent(): BaseEvent & { instanceType: K } {
     return {
-      localEvent: true,
       eventId: this.generate(),
 
       instanceType: this.instanceType,

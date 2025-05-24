@@ -1,7 +1,12 @@
 import type { Registry } from 'prom-client'
 import { Counter } from 'prom-client'
 
-import type { BaseInGameEvent, ChatEvent, CommandEvent } from '../../common/application-event.js'
+import type {
+  BaseInGameEvent,
+  ChatEvent,
+  CommandEvent,
+  MinecraftReactiveEvent
+} from '../../common/application-event.js'
 
 // location and scope keys are preserved and not renamed like the rest for backwards compatibility
 export default class ApplicationMetrics {
@@ -20,7 +25,7 @@ export default class ApplicationMetrics {
     this.commandMetrics = new Counter({
       name: prefix + 'command',
       help: 'Commands executed in guild-bridge.',
-      labelNames: ['location', 'scope', 'instance', 'command']
+      labelNames: ['location', 'instance', 'command']
     })
     register.registerMetric(this.commandMetrics)
 
@@ -43,13 +48,12 @@ export default class ApplicationMetrics {
   onCommandEvent(event: CommandEvent): void {
     this.commandMetrics.inc({
       location: event.instanceType,
-      scope: event.channelType,
       instance: event.instanceName,
       command: event.commandName
     })
   }
 
-  onClientEvent(event: BaseInGameEvent<string>): void {
+  onClientEvent(event: BaseInGameEvent<string> | MinecraftReactiveEvent): void {
     this.eventMetrics.inc({
       location: event.instanceType,
       instance: event.instanceName,

@@ -1,7 +1,7 @@
 import NodeCache from 'node-cache'
 
 export default class MessageAssociation {
-  private readonly messageIds = new NodeCache({ stdTTL: 60 })
+  private readonly messageIds = new NodeCache({ stdTTL: 300 })
 
   public getMessageId(eventId: string | undefined): DiscordAssociatedMessage[] {
     if (eventId === undefined) return []
@@ -11,7 +11,7 @@ export default class MessageAssociation {
 
   public addMessageId(eventId: string, options: DiscordAssociatedMessage): void {
     let list: DiscordAssociatedMessage[] | undefined = this.messageIds.get(eventId)
-    if (list === undefined) list = []
+    list ??= []
 
     list = list.filter((item) => item.channelId !== options.channelId)
     list.push(options)

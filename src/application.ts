@@ -3,77 +3,78 @@
 
 import type Events from 'node:events'
 import path from 'node:path'
-import * as process from 'node:process'
 
+import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
-import Logger4js from 'log4js'
+import { default as Logger4js } from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
-import ClusterHelper from './cluster-helper.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
 import { ConnectableInstance } from './common/connectable-instance.js'
-import type { Instance } from './common/instance.js'
-import { InternalInstancePrefix } from './common/instance.js'
-import type { AddChatCommand, AddDiscordCommand } from './common/plugin-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
+import ApplicationIntegrity from './instance/application-integrity.js'
+import Autocomplete from './instance/autocomplete.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
-import LoggerInstance from './instance/logger/logger-instance.js'
+import { PluginsManager } from './instance/features/plugins-manager.js'
+import { GuildManager } from './instance/guild-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
-import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
-import SocketInstance from './instance/socket/socket-instance.js'
-import StatisticsInstance from './instance/statistics/statistics-instance.js'
-import ApplicationIntegrity from './util/application-integrity.js'
-import Autocomplete from './util/autocomplete.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
+
+export type AllInstances =
+  | CommandsInstance
+  | DiscordInstance
+  | MetricsInstance
+  | MinecraftInstance
+  | ModerationInstance
+  | PluginInstance
+  | ApplicationIntegrity
+  | Autocomplete
+  | GuildManager
+  | MinecraftManager
+  | PluginsManager
 
 export default class Application extends TypedEmitter<ApplicationEvents> implements InstanceIdentifier {
   public readonly instanceName: string = InstanceType.Main
   public readonly instanceType: InstanceType = InstanceType.Main
 
-  public readonly clusterHelper: ClusterHelper
+  public readonly guildManager: GuildManager
   public readonly autoComplete: Autocomplete
   public readonly applicationIntegrity: ApplicationIntegrity
-  public readonly moderation: ModerationInstance
 
   public readonly hypixelApi: HypixelClient
   public readonly mojangApi: MojangApi
 
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
+  private readonly shutdownListeners: (() => void)[] = []
 
   private readonly rootDirectory
   private readonly configsDirectory
-  private readonly config: ApplicationConfig
+  private readonly config: Readonly<ApplicationConfig>
 
-  private readonly plugins: PluginInstance[] = []
-
-  private readonly commandsInstance: CommandsInstance | undefined
-  private readonly discordInstance: DiscordInstance | undefined
-  private readonly loggerInstances: LoggerInstance[] = []
+  public readonly discordInstance: DiscordInstance
+  public readonly minecraftManager: MinecraftManager
+  public readonly pluginsManager: PluginsManager
+  public readonly moderation: ModerationInstance
+  public readonly commandsInstance: CommandsInstance
   private readonly metricsInstance: MetricsInstance | undefined
-  private readonly minecraftInstances: MinecraftInstance[] = []
-  private readonly socketInstance: SocketInstance | undefined
-  private readonly statisticsInstance: StatisticsInstance | undefined
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
-    // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
 
     this.applicationIntegrity = new ApplicationIntegrity(this)
-    // only check for integrity if this application is the main one that distributes events
-    // applications cross-sockets only have to worry about themselves
-    this.applicationIntegrity.enableRemoteEventsIntegrity(config.socket.enabled && config.socket.type === 'server')
-    this.applicationIntegrity.addLocalInstance(this)
 
     emitAll(this, this.applicationIntegrity) // first thing to redirect all events
     this.config = config
@@ -86,35 +87,19 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.moderation = new ModerationInstance(this, this.mojangApi, config.moderation)
-    this.clusterHelper = new ClusterHelper(this)
+    this.moderation = new ModerationInstance(this, this.mojangApi)
+    this.guildManager = new GuildManager(this)
     this.autoComplete = new Autocomplete(this)
 
-    this.discordInstance =
-      this.config.discord.key == undefined
-        ? undefined
-        : new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
+    this.discordInstance = new DiscordInstance(this, this.config.discord)
 
-    for (let index = 0; index < this.config.loggers.length; index++) {
-      this.loggerInstances.push(
-        new LoggerInstance(
-          this,
-          `${InternalInstancePrefix}${InstanceType.Logger}-${index + 1}`,
-          this.config.loggers[index]
-        )
-      )
-    }
+    this.minecraftManager = new MinecraftManager(this)
+    this.minecraftManager.loadInstances()
 
-    for (const instanceConfig of this.config.minecraft.instances) {
-      this.minecraftInstances.push(
-        new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig, this.config.minecraft.adminUsername)
-      )
-    }
+    this.pluginsManager = new PluginsManager(this)
 
     this.metricsInstance = this.config.metrics.enabled ? new MetricsInstance(this, this.config.metrics) : undefined
-    this.socketInstance = this.config.socket.enabled ? new SocketInstance(this, this.config.socket) : undefined
-    this.commandsInstance = this.config.commands.enabled ? new CommandsInstance(this, this.config.commands) : undefined
-    this.statisticsInstance = this.config.general.shareMetrics ? new StatisticsInstance(this) : undefined
+    this.commandsInstance = new CommandsInstance(this)
 
     this.on('instanceSignal', (event) => {
       if (event.targetInstanceName.includes(this.instanceName)) {
@@ -125,9 +110,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
         void sleep(5000)
-          .then(async () => {
-            await gracefullyExitProcess(2)
+          .then(() => {
+            this.logger.debug('shutting down application')
+            return this.shutdown()
           })
+          .then(() => gracefullyExitProcess(2))
           .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
       }
     })
@@ -137,9 +124,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
 
+  public addShutdownListener(listener: () => void): void {
+    this.shutdownListeners.push(listener)
+  }
+
   public async start(): Promise<void> {
-    this.plugins.push(...(await this.loadPlugins(this.rootDirectory)))
-    this.syncBroadcast()
+    await this.pluginsManager.loadPlugins(this.rootDirectory, this.config.plugins)
 
     for (const instance of this.getAllInstances()) {
       // must cast first before using due to typescript limitation
@@ -156,23 +146,26 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }
   }
 
-  public syncBroadcast(): void {
-    this.logger.debug('Informing instances of each other')
-    for (const instance of this.getAllInstances()) {
-      instance.announceExistence()
+  public async shutdown(): Promise<void> {
+    for (const shutdownListener of this.shutdownListeners) {
+      shutdownListener()
     }
 
-    this.logger.debug('Broadcasting all Minecraft bots')
-    for (const minecraftBot of this.clusterHelper.getMinecraftBots()) {
-      minecraftBot.localEvent = true
-      this.emit('minecraftSelfBroadcast', minecraftBot)
+    const tasks: Awaitable<unknown>[] = []
+    for (const instance of this.getAllInstances().reverse()) {
+      // reversed to go backward of `start()`
+      if (instance instanceof ConnectableInstance) {
+        this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)
+        tasks.push(instance.disconnect())
+      }
     }
+    await Promise.all(tasks)
+  }
 
-    this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.moderation.punishments.all()) {
-      punishment.localEvent = true
-      this.emit('punishmentAdd', punishment)
-    }
+  public getInstancesNames(instanceType: InstanceType): string[] {
+    return this.getAllInstancesIdentifiers()
+      .filter((instance) => instance.instanceType === instanceType)
+      .map((instance) => instance.instanceName)
   }
 
   /**
@@ -186,55 +179,23 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }))
   }
 
-  private async loadPlugins<T extends PluginInstance>(rootDirectory: string): Promise<T[]> {
-    const result: Promise<T>[] = []
-
-    const addChatCommand: AddChatCommand | undefined = this.commandsInstance
-      ? (command) => this.commandsInstance?.commands.push(command)
-      : undefined
-    const addDiscordCommand: AddDiscordCommand | undefined = this.discordInstance
-      ? (command) => this.discordInstance?.commandsManager.commands.set(command.getCommandBuilder().name, command)
-      : undefined
-
-    for (const pluginPath of this.config.plugins) {
-      let newPath: string = path.resolve(rootDirectory, pluginPath)
-      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
-        newPath = `file:///${newPath}`
-      }
-
-      const pluginName = path.basename(pluginPath).replaceAll('.ts', '')
-      const plugin = import(newPath)
-        .then((resolved: { default: typeof PluginInstance }) => resolved.default)
-        // @ts-expect-error although it says it is an abstract, the class isn't since it is extended.
-        .then((clazz) => new clazz(this, pluginName, pluginPath, addChatCommand, addDiscordCommand) as T)
-
-      result.push(plugin)
-    }
-
-    return await Promise.all(result)
-  }
-
-  private getAllInstances(): (
-    | Instance<unknown, InstanceType>
-    | ConnectableInstance<unknown, InstanceType>
-    | PluginInstance
-  )[] {
-    return [
-      ...this.plugins,
+  private getAllInstances(): AllInstances[] {
+    const instances = [
+      ...this.pluginsManager.getAllInstances(),
+      this.guildManager,
       this.autoComplete,
       this.applicationIntegrity,
 
-      ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
       this.discordInstance, // discord second to send any notification about connecting
 
       this.moderation,
       this.metricsInstance,
       this.commandsInstance,
-      ...this.minecraftInstances,
-      this.statisticsInstance,
-
-      this.socketInstance // socket last. so other instances are ready when connecting to other clients
+      ...this.minecraftManager.getAllInstances()
     ].filter((instance) => instance != undefined)
+
+    this.applicationIntegrity.checkLocalInstancesIntegrity(instances)
+    return instances
   }
 }
 
@@ -249,4 +210,5 @@ function emitAll(emitter: Events, applicationIntegrity: ApplicationIntegrity): v
     return old.call(emitter, event, ...callerArguments)
   }
 }
+
 /* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */

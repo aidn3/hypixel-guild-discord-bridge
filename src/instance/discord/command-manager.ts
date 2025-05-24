@@ -2,17 +2,16 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
-  Interaction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
 import { Collection, escapeMarkdown, REST, Routes } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { ChannelType, Color, InstanceType, Permission } from '../../common/application-event.js'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../common/commands.js'
+import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -21,6 +20,7 @@ import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
 import ConnectivityCommand from './commands/connectivity.js'
 import DemoteCommand from './commands/demote.js'
+import DisconnectCommand from './commands/disconnect.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import ListCommand from './commands/list.js'
@@ -32,37 +32,37 @@ import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
+import SettingsCommand from './commands/settings.js'
+import type { DiscordConfig } from './common/discord-config.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
-export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
+export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
-
-  private readonly config
+  private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    config: ConfigManager<DiscordConfig>,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler,
-    config: DiscordConfig
+    errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
     this.config = config
-
     this.addDefaultCommands()
   }
 
-  registerEvents(): void {
+  registerEvents(client: Client): void {
     let listenerStarted = false
-    this.clientInstance.client.on('ready', (client) => {
+    client.on('ready', (client) => {
       if (listenerStarted) return
       listenerStarted = true
       this.listenToRegisterCommands(client)
     })
 
-    this.clientInstance.client.on('interactionCreate', (interaction) => {
+    client.on('interactionCreate', (interaction) => {
       if (interaction.isChatInputCommand()) {
         void this.onCommand(interaction).catch(
           this.errorHandler.promiseCatch('handling incoming ChatInputCommand event')
@@ -95,8 +95,10 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     const toAdd = [
       AboutCommand,
       AcceptCommand,
+      SettingsCommand,
       ConnectivityCommand,
       DemoteCommand,
+      DisconnectCommand,
       InviteCommand,
       JoinCommand,
       ListCommand,
@@ -144,29 +146,34 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     }
   }
 
+  /*
+   * - allow when channel registered and permitted
+   * - allow if channel not registered but command requires admin and user is permitted
+   * - disallow if not permitted
+   * - disallow if not in proper channel
+   */
   private async onCommand(interaction: ChatInputCommandInteraction): Promise<void> {
     this.logger.debug(`${interaction.user.tag} executing ${interaction.commandName}`)
     const command = this.commands.get(interaction.commandName)
 
     try {
       const channelType = this.getChannelType(interaction.channelId)
+      const permission = this.clientInstance.resolvePrivilegeLevel(
+        interaction.user.id,
+        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+      )
+
       if (command == undefined) {
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
 
         await interaction.reply({
-          content: 'Command is not implemented somehow. Maybe there is new version?',
+          content: 'Command is not implemented somehow. Maybe there is new a version?',
           ephemeral: true
         })
         return
-      } else if (!channelType) {
-        this.logger.debug(`can't execute in channel ${interaction.channelId}`)
+      }
 
-        await interaction.reply({
-          content: 'You can only use commands in public/officer bridge channels!',
-          ephemeral: true
-        })
-        return
-      } else if (!this.memberAllowed(interaction, command.permission)) {
+      if (permission < command.permission) {
         this.logger.debug('No permission to execute this command')
 
         await interaction.reply({
@@ -174,12 +181,25 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ephemeral: true
         })
         return
-      } else if (
+      }
+
+      // enforce right channel OR allow exception if user is admin and executing admin command
+      if (channelType === undefined && !(permission === Permission.Admin && command.permission === Permission.Admin)) {
+        this.logger.debug(`can't execute in channel ${interaction.channelId}`)
+
+        await interaction.reply({
+          content: 'You can only use commands in public/officer bridge channels!',
+          ephemeral: true
+        })
+        return
+      }
+
+      if (
         (command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Required ||
           command.addMinecraftInstancesToOptions === OptionToAddMinecraftInstances.Optional) &&
-        this.application.clusterHelper.getInstancesNames(InstanceType.Minecraft).length === 0
+        this.application.getInstancesNames(InstanceType.Minecraft).length === 0
       ) {
-        await interaction.editReply({
+        await interaction.reply({
           embeds: [
             {
               title: `Command ${escapeMarkdown(command.getCommandBuilder().name)}`,
@@ -197,22 +217,6 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         return
       } else {
         this.logger.debug('execution granted.')
-
-        const username = interaction.inCachedGuild() ? interaction.member.displayName : interaction.user.displayName
-
-        this.application.emit('command', {
-          ...this.eventHelper.fillBaseEvent(),
-
-          channelType: channelType,
-          discordChannelId: interaction.channelId,
-          username,
-          fullCommand: interaction.options.data.map((option) => `${option.name}:${option.value}`).join(' '),
-          commandName: interaction.commandName,
-          // discord commands response are long
-          // and not useful for others across platform to read
-          commandResponse: `[${interaction.user.username}] /${interaction.commandName}`,
-          alreadyReplied: true
-        })
 
         const commandContext: DiscordCommandContext = {
           application: this.application,
@@ -279,37 +283,24 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
     }
   }
 
-  private memberAllowed(interaction: Interaction, permissionLevel: Permission): boolean {
-    if (permissionLevel === Permission.Anyone) return true
-
-    return (
-      this.clientInstance.resolvePrivilegeLevel(
-        interaction.user.id,
-        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-      ) >= permissionLevel
-    )
-  }
-
   private getChannelType(channelId: string): ChannelType | undefined {
-    if (this.config.publicChannelIds.includes(channelId)) return ChannelType.Public
-    if (this.config.officerChannelIds.includes(channelId)) return ChannelType.Officer
+    const config = this.config.data
+    if (config.publicChannelIds.includes(channelId)) return ChannelType.Public
+    if (config.officerChannelIds.includes(channelId)) return ChannelType.Officer
     return undefined
   }
 
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
     const commandsJson: RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
-    const instanceChoices = this.application.clusterHelper
+    const instanceChoices = this.application
       .getInstancesNames(InstanceType.Minecraft)
-      .map((choice: string) => ({
-        name: choice,
-        value: choice
-      }))
+      .map((choice: string) => ({ name: choice, value: choice }))
 
     /*
-    options are added after converting to json. 
+    options are added after converting to json.
     This is done to specifically insert the "instance" option directly after the required options
     the official api doesn't support this. So JSON manipulation is used instead.
-    This is mainly used for "Required" option. 
+    This is mainly used for "Required" option.
     Discord will throw an error with "invalid body" otherwise.
      */
     for (const command of this.commands.values()) {
@@ -322,7 +313,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
         switch (command.addMinecraftInstancesToOptions) {
           case OptionToAddMinecraftInstances.Required: {
-            if (commandBuilder.options === undefined) commandBuilder.options = []
+            commandBuilder.options ??= []
 
             // splice is just fancy push at certain index
             commandBuilder.options.splice(index + 1, 0, {
@@ -335,7 +326,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
             break
           }
           case OptionToAddMinecraftInstances.Optional: {
-            if (commandBuilder.options === undefined) commandBuilder.options = []
+            commandBuilder.options ??= []
             commandBuilder.options.push({
               type: 3,
               name: instanceCommandName,

@@ -12,7 +12,6 @@ export abstract class ChatCommandHandler {
   public readonly triggers: string[]
   public readonly description: string
   public readonly example: string
-  public enabled = true
 
   protected constructor(options: { name: string; triggers: string[]; description: string; example: string }) {
     this.name = options.name
@@ -37,7 +36,7 @@ export interface ChatCommandContext {
 
   allCommands: ChatCommandHandler[]
   commandPrefix: string
-  saveConfigChanges: () => void
+  toggleCommand: (trigger: string) => 'enabled' | 'disabled' | 'not-found'
 
   instanceName: string
   instanceType: InstanceType

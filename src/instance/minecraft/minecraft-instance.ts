@@ -1,59 +1,110 @@
+import { setImmediate } from 'node:timers/promises'
+
 import { createClient, states } from 'minecraft-protocol'
 
-import type { MinecraftInstanceConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { MinecraftSendChatPriority } from '../../common/application-event.js'
-import { InstanceType, Permission } from '../../common/application-event.js'
+import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
+import type { MinecraftInstanceConfig } from './common/config.js'
+import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
+import GameTogglesHandler from './handlers/game-toggles-handler.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
+import type { MinecraftManager } from './minecraft-manager.js'
 
-export default class MinecraftInstance extends ConnectableInstance<MinecraftInstanceConfig, InstanceType.Minecraft> {
+export default class MinecraftInstance extends ConnectableInstance<InstanceType.Minecraft> {
   readonly defaultBotConfig = {
     host: 'me.hypixel.net',
     port: 25_565,
-    version: '1.17.1'
+    version: '1.8.9'
   }
 
-  clientSession: ClientSession | undefined
+  private readonly minecraftManager: MinecraftManager
+  private clientSession: ClientSession | undefined
 
+  private stateHandler: StateHandler
+  private selfbroadcastHandler: SelfbroadcastHandler
+  private chatManager: ChatManager
+  private gameToggle: GameTogglesHandler
+
+  private readonly messageAssociation: MessageAssociation
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
-  private readonly adminUsername: string
 
-  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig, adminUsername: string) {
-    super(app, instanceName, InstanceType.Minecraft, true, config)
+  private readonly sessionDirectory: string
+  private readonly config: MinecraftInstanceConfig
 
-    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler)
-    this.adminUsername = adminUsername
+  constructor(
+    app: Application,
+    minecraftManager: MinecraftManager,
+    instanceName: string,
+    config: MinecraftInstanceConfig,
+    sessionDirectory: string
+  ) {
+    super(app, instanceName, InstanceType.Minecraft)
+
+    this.minecraftManager = minecraftManager
+    this.sessionDirectory = sessionDirectory
+    this.config = config
+
+    this.messageAssociation = new MessageAssociation()
+    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler, this.messageAssociation)
     this.sendQueue = new SendQueue(this.errorHandler, (command) => {
       this.sendNow(command)
     })
+
+    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.selfbroadcastHandler = new SelfbroadcastHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler
+    )
+    this.chatManager = new ChatManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.messageAssociation
+    )
+    this.gameToggle = new GameTogglesHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
-    if (username.toLowerCase() === this.adminUsername.toLowerCase()) return Permission.Admin
+    const adminUsername = this.minecraftManager.getConfig().data.adminUsername
+    if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
   }
 
   connect(): void {
     this.clientSession?.client.end(QuitOwnVolition)
 
+    this.stateHandler.resetLoginAttempts()
+    this.automaticReconnect()
+  }
+
+  public automaticReconnect(): void {
     const client = createClient({
       ...this.defaultBotConfig,
-      username: this.config.email,
+      username: this.config.name,
       auth: 'microsoft',
+      profilesFolder: this.sessionDirectory,
+
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
         this.application.emit('instanceMessage', {
           ...this.eventHelper.fillBaseEvent(),
 
+          type: InstanceMessageType.MinecraftAuthenticationCode,
           message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
         })
       }
@@ -61,21 +112,19 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
 
     this.clientSession = new ClientSession(client)
 
-    const handlers = [
-      new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
-      new SelfbroadcastHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler),
-      new ChatManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    ]
-
-    for (const handler of handlers) {
-      handler.registerEvents()
-    }
+    this.selfbroadcastHandler.registerEvents(this.clientSession)
+    this.stateHandler.registerEvents(this.clientSession)
+    this.chatManager.registerEvents(this.clientSession)
+    this.gameToggle.registerEvents(this.clientSession)
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }
 
-  disconnect(): Promise<void> | void {
+  async disconnect(): Promise<void> {
     this.clientSession?.client.end(QuitOwnVolition)
+
+    // wait till next cycle to let the clients close properly
+    await setImmediate()
     this.setAndBroadcastNewStatus(Status.Ended, 'Minecraft instance has been disconnected')
   }
 
@@ -119,9 +168,16 @@ export default class MinecraftInstance extends ConnectableInstance<MinecraftInst
       .map((chunk) => chunk.trim())
       .join(' ')
 
-    if (message.length > 250) {
-      message = message.slice(0, 250) + '...'
-      this.logger.warn(`Long message truncated: ${message}`)
+    if (message.length > 256) {
+      message = message.slice(0, 253) + '...'
+
+      this.application.emit('instanceMessage', {
+        ...this.eventHelper.fillBaseEvent(),
+
+        originEventId: originEventId,
+        type: InstanceMessageType.MinecraftTruncateMessage,
+        message: `Message is too long! It has been shortened to fit minecraft message`
+      })
     }
 
     this.logger.debug(`Queuing message to send: ${message}`)

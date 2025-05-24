@@ -1,20 +1,10 @@
 import fs from 'node:fs'
 
-import * as TypescriptChecker from 'ts-interface-checker'
-import { createCheckers } from 'ts-interface-checker'
-
 import type Application from '../../application.js'
 import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../../common/application-event.js'
 import { PunishmentType } from '../../common/application-event.js'
 
-import ApplicationEventTi from './application-event-ti.js'
 import { matchUserIdentifier } from './util.js'
-
-const ApplicationEventChecker = createCheckers({
-  ...ApplicationEventTi,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  PunishmentList: TypescriptChecker.array('PunishmentAddEvent')
-})
 
 type PunishmentsRecord = Record<PunishmentType, PunishmentAddEvent[]>
 
@@ -33,19 +23,10 @@ export default class Punishments {
     this.configFilePath = app.getConfigFilePath(Punishments.ConfigName)
     this.app.applicationIntegrity.addConfigPath(this.configFilePath)
     this.loadFromConfig()
-
-    app.on('punishmentAdd', (event) => {
-      if (event.localEvent) return
-      this.add(event)
-    })
-    app.on('punishmentForgive', (event) => {
-      if (event.localEvent) return
-      this.remove(event)
-    })
   }
 
   public add(event: PunishmentAddEvent): void {
-    if (event.localEvent) this.app.emit('punishmentAdd', event)
+    this.app.emit('punishmentAdd', event)
 
     const originalList = this.records[event.type]
     const currentTime = Date.now()
@@ -61,7 +42,7 @@ export default class Punishments {
   }
 
   public remove(event: PunishmentForgiveEvent): PunishmentAddEvent[] {
-    if (event.localEvent) this.app.emit('punishmentForgive', event)
+    this.app.emit('punishmentForgive', event)
 
     const result: PunishmentAddEvent[] = []
 
@@ -120,14 +101,7 @@ export default class Punishments {
     if (!fs.existsSync(this.configFilePath)) return
 
     const fileData = fs.readFileSync(this.configFilePath, 'utf8')
-    const punishmentsRecord = JSON.parse(fileData) as PunishmentsRecord
-
-    for (const [type, punishments] of Object.entries(punishmentsRecord)) {
-      ApplicationEventChecker.PunishmentType.check(type)
-      ApplicationEventChecker.PunishmentList.check(punishments)
-    }
-
-    this.records = punishmentsRecord
+    this.records = JSON.parse(fileData) as PunishmentsRecord
   }
 
   private saveConfig(): void {

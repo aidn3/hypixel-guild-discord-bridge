@@ -54,7 +54,7 @@ export default {
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.Minecraft)
+    const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
     const lists: Map<string, string[]> = await checkConnectivity(context.application, context.eventHelper)
 
     for (const instancesName of instancesNames) {
@@ -94,27 +94,27 @@ async function checkConnectivity(
 
   app.emit('minecraftSend', {
     ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
     priority: MinecraftSendChatPriority.High,
     command: `/ac ${queryWords[0]}`
   })
   app.emit('minecraftSend', {
     ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
     priority: MinecraftSendChatPriority.High,
     command: `/gc ${queryWords[1]}`
   })
   app.emit('minecraftSend', {
     ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
     priority: MinecraftSendChatPriority.High,
     command: `/oc ${queryWords[2]}`
   })
 
-  for (const bot of app.clusterHelper.getMinecraftBots()) {
+  for (const bot of app.minecraftManager.getMinecraftBots()) {
     app.emit('minecraftSend', {
       ...eventHelper.fillBaseEvent(),
-      targetInstanceName: app.clusterHelper.getInstancesNames(InstanceType.Minecraft),
+      targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
       priority: MinecraftSendChatPriority.High,
       command: `/msg ${bot.username} ${queryWords[3]}`
     })

@@ -7,7 +7,7 @@ export default class Bedwars extends ChatCommandHandler {
     super({
       name: 'Bedwars',
       triggers: ['bedwars', 'bw'],
-      description: "Returns a player's bedwars final kill/death",
+      description: "Returns a player's bedwars common stats",
       example: `bw %s`
     })
   }
@@ -23,9 +23,9 @@ export default class Bedwars extends ChatCommandHandler {
     })
     if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
 
-    const stat = player.stats?.bedwars?.finalKDRatio
+    const stat = player.stats?.bedwars
     if (stat === undefined) return `${givenUsername} has never played Bedwars before?`
 
-    return `${givenUsername}'s bedwars FKDR is ${stat.toFixed(2)}.`
+    return `${givenUsername}'s bedwars level is ${stat.level.toFixed(0)}✫ with FKDR of ${stat.finalKDRatio.toFixed(2)}.`
   }
 }

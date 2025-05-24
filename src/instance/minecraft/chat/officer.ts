@@ -13,7 +13,7 @@ export default {
       const guildRank = match[3]
       const playerMessage = match[4].trim()
 
-      if (context.application.clusterHelper.isMinecraftBot(username)) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) return
 
       const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {
@@ -28,8 +28,10 @@ export default {
         })
       }
 
+      const event = context.eventHelper.fillBaseEvent()
+      context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Officer })
       context.application.emit('chat', {
-        ...context.eventHelper.fillBaseEvent(),
+        ...event,
 
         channelType: ChannelType.Officer,
 

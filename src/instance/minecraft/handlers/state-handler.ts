@@ -1,5 +1,3 @@
-import assert from 'node:assert'
-
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
@@ -8,15 +6,15 @@ import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export const QuitOwnVolition = 'disconnect.quitting'
 
 export const QuitProxyError = 'Proxy encountered a problem while connecting'
-export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft> {
+export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private static readonly MaxLoginAttempts = 5
   private loginAttempts
-  private exactDelay
   private loggedIn
 
   constructor(
@@ -29,14 +27,14 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
     this.loginAttempts = 0
-    this.exactDelay = 0
     this.loggedIn = false
   }
 
-  registerEvents(): void {
-    const clientSession = this.clientInstance.clientSession
-    assert(clientSession)
+  public resetLoginAttempts() {
+    this.loginAttempts = 0
+  }
 
+  registerEvents(clientSession: ClientSession): void {
     // this will only be called after the player receives spawn packet
     clientSession.client.on('login', () => {
       this.onLogin()
@@ -72,7 +70,6 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     this.logger.info('Minecraft client ready, logged in')
 
     this.loginAttempts = 0
-    this.exactDelay = 0
     this.clientInstance.setAndBroadcastNewStatus(Status.Connected, 'Minecraft instance has connected')
   }
 
@@ -121,6 +118,8 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
         "Account has been temporarily blocked.\nWon't try to re-login.\n\n" + reason.toString()
       )
     } else {
+      // possible kick messages that are accounted for
+      // "Your version (1.17.1) of Minecraft is disabled on Hypixel due to compatibility issues."
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Disconnected,
         `Client ${this.clientInstance.instanceName} has been kicked.\n` +
@@ -171,21 +170,17 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
   }
 
   private tryRestarting(): void {
+    this.logger.info(`minecraft attempt ${this.loginAttempts}`)
     if (this.loginAttempts > StateHandler.MaxLoginAttempts) {
       const reason = `Client failed to connect too many times. No further trying to reconnect.`
 
       this.logger.error(reason)
       this.clientInstance.setAndBroadcastNewStatus(Status.Failed, reason)
+      return
     }
 
-    let loginDelay = this.exactDelay
-    if (loginDelay === 0) {
-      loginDelay = (this.loginAttempts + 1) * 5000
-
-      if (loginDelay > 60_000) {
-        loginDelay = 60_000
-      }
-    }
+    let loginDelay = (this.loginAttempts + 1) * 5000
+    if (loginDelay > 60_000) loginDelay = 60_000
 
     this.clientInstance.setAndBroadcastNewStatus(
       Status.Disconnected,
@@ -193,7 +188,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     )
 
     setTimeout(() => {
-      this.clientInstance.connect()
+      this.clientInstance.automaticReconnect()
     }, loginDelay)
   }
 }

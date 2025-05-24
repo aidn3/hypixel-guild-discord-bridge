@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, TextBasedChannelFields, TextChannel, Webhook } from 'discord.js'
-import { escapeMarkdown } from 'discord.js'
+import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook } from 'discord.js'
+import { ChannelType as DiscordChannelType, escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type { DiscordConfig } from '../../application-config.js'
+import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type {
   BaseInGameEvent,
@@ -14,41 +14,66 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
+  InstanceMessage,
+  InstanceMessageType,
   InstanceStatusEvent,
-  MinecraftChatEvent
+  MinecraftReactiveEvent
 } from '../../common/application-event.js'
 import {
   ChannelType,
   Color,
   GuildPlayerEventType,
   InstanceType,
-  MinecraftChatEventType
+  MinecraftReactiveEventType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
+import type { ConfigManager } from '../../common/config-manager.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { beautifyInstanceName } from '../../util/shared-util.js'
 
-import type { DiscordAssociatedMessage } from './common/message-association.js'
+import type { DiscordConfig } from './common/discord-config.js'
+import { BlockReaction, RepeatReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
+import type { DiscordAssociatedMessage } from './common/message-association.js'
+import MessageDeleter from './common/message-deletor.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridge extends Bridge<DiscordInstance> {
-  private static readonly DeleteTempEventAfter = 15 * 60 * 1000
   private readonly messageAssociation: MessageAssociation
-  private readonly config
+  private readonly messageDeleter: MessageDeleter
+  private readonly staticConfig: Readonly<StaticDiscordConfig>
+  private readonly config: ConfigManager<DiscordConfig>
+  /*
+     Queue all sending chat messages. So, when a command event comes.
+     All currently outgoing messages can be awaited before the reply is sent to one of them.
+
+     Before this: Chat message containing a chat command is sent, then the command is sent after independently.
+     Now, it is possible to make it as a reply.
+   */
+  private outgoingChat = new Map<string, Promise<unknown>>()
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    config: ConfigManager<DiscordConfig>,
     messageAssociation: MessageAssociation,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
-    config: DiscordConfig
+    staticDiscordConfig: StaticDiscordConfig
   ) {
     super(application, clientInstance, logger, errorHandler)
 
-    this.messageAssociation = messageAssociation
     this.config = config
+    this.messageAssociation = messageAssociation
+    this.staticConfig = staticDiscordConfig
+
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
+    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.client)
+
+    this.application.on('instanceMessage', (event) => {
+      void this.onInstanceMessageEvent(event).catch(this.errorHandler.promiseCatch('handling event instanceMessage'))
+    })
   }
 
   async onInstance(event: InstanceStatusEvent): Promise<void> {
@@ -57,15 +82,16 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       case InstanceType.Commands:
       case InstanceType.Metrics:
       case InstanceType.Plugin:
-      case InstanceType.Socket:
-      case InstanceType.Logger:
       case InstanceType.Util:
       case InstanceType.Moderation: {
         return
       }
     }
 
-    for (const channelId of this.config.publicChannelIds) {
+    const config = this.config.data
+    for (const channelId of config.publicChannelIds) {
+      // TODO: properly reference client
+      // @ts-expect-error client is private variable
       const channel = await this.clientInstance.client.channels.fetch(channelId)
       if (!channel?.isSendable()) continue
 
@@ -88,11 +114,21 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onChat(event: ChatEvent): Promise<void> {
+    const promise = this.queueChat(event).catch(this.errorHandler.promiseCatch('handling event chat'))
+
+    this.outgoingChat.set(event.eventId, promise)
+    await promise
+    this.outgoingChat.delete(event.eventId)
+  }
+
+  private async queueChat(event: ChatEvent): Promise<void> {
+    const config = this.config.data
+
     let channels: string[]
     if (event.channelType === ChannelType.Public) {
-      channels = this.config.publicChannelIds
+      channels = config.publicChannelIds
     } else if (event.channelType === ChannelType.Officer) {
-      channels = this.config.officerChannelIds
+      channels = config.officerChannelIds
     } else {
       return
     }
@@ -129,8 +165,29 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
+    const clickableUsername = hyperlink(
+      event.username,
+      `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`
+    )
 
-    await this.sendEmbedToChannels(event, removeLater, this.resolveChannels(event.channels), undefined)
+    const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
+
+    const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(event.username), clickableUsername)}`
+
+    const embed = {
+      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+      description: newMessage,
+      color: event.color
+    } satisfies APIEmbed
+
+    const messages = await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), embed)
+
+    if (removeLater) {
+      this.messageDeleter.add({
+        createdAt: Date.now(),
+        messages: messages.map((message) => ({ channelId: message.channelId, messageId: message.id }))
+      })
+    }
   }
 
   async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
@@ -140,33 +197,48 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
+    await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), undefined)
   }
 
-  private lastEvent = new Map<MinecraftChatEventType, number>()
+  private lastMinecraftEvent = new Map<MinecraftReactiveEventType, number>()
 
-  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
-    if (
-      event.instanceType === this.clientInstance.instanceType &&
-      event.instanceName === this.clientInstance.instanceName
-    )
-      return
+  async onMinecraftChatEvent(event: MinecraftReactiveEvent): Promise<void> {
+    if ((this.lastMinecraftEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
+    this.lastMinecraftEvent.set(event.type, Date.now())
 
-    if ((this.lastEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
-    this.lastEvent.set(event.type, Date.now())
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
+    const client = this.clientInstance.client
 
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
+    for (const replyId of replyIds) {
+      try {
+        const channel = await client.channels.fetch(replyId.channelId)
+        if (channel?.type === DiscordChannelType.GuildText) {
+          const message = await channel.messages.fetch(replyId.messageId)
 
-    if (replyIds.length === 0) {
-      await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
-    } else {
-      for (const replyId of replyIds) {
-        try {
-          await this.replyWithEmbed(event, replyId)
-        } catch (error: unknown) {
-          this.logger.error(error, 'can not reply to message. sending the event independently')
-          await this.sendEmbedToChannels(event, false, [replyId.channelId], undefined)
+          let emoji: ApplicationEmoji | undefined = undefined
+          switch (event.type) {
+            case MinecraftReactiveEventType.Repeat: {
+              emoji = client.application?.emojis.cache.find((emoji) => emoji.name === RepeatReaction.name)
+              break
+            }
+            case MinecraftReactiveEventType.Advertise:
+            case MinecraftReactiveEventType.Block: {
+              emoji = client.application?.emojis.cache.find((emoji) => emoji.name === BlockReaction.name)
+              break
+            }
+          }
+
+          if (emoji != undefined) {
+            await message.react(emoji)
+            continue
+          }
         }
+
+        await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message')
       }
     }
   }
@@ -178,13 +250,15 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    await this.sendEmbedToChannels(event, false, this.resolveChannels(event.channels), undefined)
+    await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), undefined)
   }
 
   resolveChannels(channels: ChannelType[]): string[] {
+    const config = this.config.data
+
     const results: string[] = []
-    if (channels.includes(ChannelType.Public)) results.push(...this.config.publicChannelIds)
-    if (channels.includes(ChannelType.Officer)) results.push(...this.config.officerChannelIds)
+    if (channels.includes(ChannelType.Public)) results.push(...config.publicChannelIds)
+    if (channels.includes(ChannelType.Officer)) results.push(...config.officerChannelIds)
 
     return results
   }
@@ -197,16 +271,44 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.sendCommandResponse(event, true)
   }
 
+  private lastInstanceEvent = new Map<InstanceMessageType, number>()
+
+  async onInstanceMessageEvent(event: InstanceMessage): Promise<void> {
+    if (
+      event.instanceType === this.clientInstance.instanceType &&
+      event.instanceName === this.clientInstance.instanceName
+    )
+      return
+
+    if ((this.lastInstanceEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
+    this.lastInstanceEvent.set(event.type, Date.now())
+
+    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
+
+    for (const replyId of replyIds) {
+      try {
+        await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message. sending the event independently')
+        await this.sendEmbedToChannels(event, [replyId.channelId], undefined)
+      }
+    }
+  }
+
   private async generateEmbed(
-    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftChatEvent,
+    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftReactiveEvent | InstanceMessage,
     guildId: string | undefined
   ): Promise<APIEmbed> {
     const embed: APIEmbed = {
       description: escapeMarkdown(event.message),
 
-      color: event.color,
       footer: { text: beautifyInstanceName(event.instanceName) }
     } satisfies APIEmbed
+
+    if ('color' in event) {
+      embed.color = event.color
+    }
+
     if ('username' in event && event.username != undefined) {
       const extra = {
         title: escapeMarkdown(event.username),
@@ -219,33 +321,36 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // all enums are unique and must unique for this to work.
     // the other solutions is just too complicated
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    if ('type' in event && event.type === MinecraftChatEventType.RequireGuild && guildId !== undefined) {
+    if ('type' in event && event.type === MinecraftReactiveEventType.RequireGuild && guildId !== undefined) {
+      // TODO: properly reference client
+      // @ts-expect-error client is private variable
       const commands = await this.clientInstance.client.guilds.fetch(guildId).then((guild) => guild.commands.fetch())
       const joinCommand = commands.find((command) => command.name === 'join')
       const setupCommand = commands.find((command) => command.name === 'setup')
 
+      const adminList = this.staticConfig.adminIds.map((adminId) => `<@${adminId}>`)
       embed.description =
         `Looks like the Minecraft account is not in a guild for this to work.\n` +
-        `You can ask <@${this.config.adminId}> or any staff who has access\n` +
+        `You can ask ${adminList.join(', ')} or any staff who has access\n` +
         `to set it up using </join:${joinCommand?.id}> before using </setup:${setupCommand?.id}> right after.`
     }
 
     return embed
   }
 
-  private async replyWithEmbed(event: MinecraftChatEvent, replyId: DiscordAssociatedMessage): Promise<void> {
+  private async replyWithEmbed(eventId: string, replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
     const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
     assert(channel != undefined)
     assert(channel.isSendable())
-
-    const embed = await this.generateEmbed(event, replyId.guildId)
 
     const result = await channel.send({
       embeds: [embed],
       reply: { messageReference: replyId.messageId },
       allowedMentions: { parse: [] }
     })
-    this.messageAssociation.addMessageId(event.eventId, {
+    this.messageAssociation.addMessageId(eventId, {
       guildId: result.guildId ?? undefined,
       channelId: result.channelId,
       messageId: result.id
@@ -253,82 +358,81 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendEmbedToChannels(
-    event: BaseInGameEvent<string> | BroadcastEvent | CommandEvent,
-    removeLater: boolean,
+    event: BaseInGameEvent<string> | BroadcastEvent | CommandEvent | InstanceMessage,
     channels: string[],
     preGeneratedEmbed: APIEmbed | undefined
-  ): Promise<void> {
+  ): Promise<Message<true>[]> {
+    const messages: Message<true>[] = []
+
     for (const channelId of channels) {
-      const channel = (await this.clientInstance.client.channels.fetch(channelId)) as unknown as TextChannel | null
-      if (channel == undefined) return
+      try {
+        // TODO: properly reference client
+        // @ts-expect-error client is private variable
+        const channel = await this.clientInstance.client.channels.fetch(channelId)
+        if (channel == undefined) continue
+        assert(channel.isSendable())
+        assert(channel.type === DiscordChannelType.GuildText)
 
-      const embed =
-        preGeneratedEmbed ??
-        // commands always have a preGenerated embed
-        (await this.generateEmbed(event as BaseInGameEvent<string> | BroadcastEvent, channel.guildId))
-      const message = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } })
-      this.messageAssociation.addMessageId(event.eventId, {
-        guildId: message.inGuild() ? message.guildId : undefined,
-        channelId: message.channelId,
-        messageId: message.id
-      })
+        const embed =
+          preGeneratedEmbed ??
+          // commands always have a preGenerated embed
+          (await this.generateEmbed(event as BaseInGameEvent<string> | BroadcastEvent, channel.guildId))
+        const message = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } })
 
-      if (removeLater) {
-        setTimeout(() => {
-          void message.delete().catch(this.errorHandler.promiseCatch('sending event embed and queuing for deletion'))
-        }, DiscordBridge.DeleteTempEventAfter)
+        messages.push(message)
+        this.messageAssociation.addMessageId(event.eventId, {
+          guildId: message.inGuild() ? message.guildId : undefined,
+          channelId: message.channelId,
+          messageId: message.id
+        })
+      } catch (error: unknown) {
+        this.logger.error(`error sending to ${channelId}`, error)
       }
     }
+
+    return messages
   }
 
   private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
-    let channels: string[] = []
+    const outgoingPromises = this.outgoingChat
+    this.outgoingChat = new Map()
+    await Promise.all(outgoingPromises.values())
 
-    switch (event.channelType) {
-      case ChannelType.Public: {
-        channels = this.config.publicChannelIds
-        break
-      }
-      case ChannelType.Officer: {
-        channels = this.config.officerChannelIds
-        break
-      }
-      case ChannelType.Private: {
-        if (event.discordChannelId) {
-          channels = [event.discordChannelId]
-        }
-        break
-      }
-    }
+    const replyEmbed: APIEmbed = {
+      color: Color.Good,
+      description: `**${escapeMarkdown(event.commandResponse)}**`,
 
-    if (event.instanceName === this.clientInstance.instanceName && event.discordChannelId && event.alreadyReplied) {
-      channels = channels.filter((id) => id !== event.discordChannelId)
-    }
-    if (channels.length === 0) return
-
-    const embed = {
       title: escapeMarkdown(event.username),
       url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
       thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
-      color: Color.Good,
-      description: `${escapeMarkdown(event.fullCommand)}\n**${escapeMarkdown(event.commandResponse)}**`,
       footer: {
-        text: `${beautifyInstanceName(event.instanceName)}${feedback ? ' (command feedback)' : ''}`
+        text: feedback ? ' (command feedback)' : ''
       }
-    } satisfies APIEmbed
+    }
 
-    await this.sendEmbedToChannels(event, false, channels, embed)
+    const replyIds = this.messageAssociation.getMessageId(event.originEventId)
+    for (const replyId of replyIds) {
+      try {
+        await this.replyWithEmbed(event.eventId, replyId, replyEmbed)
+      } catch (error: unknown) {
+        this.logger.error(error, 'can not reply to message')
+      }
+    }
   }
 
   private async getWebhook(channelId: string): Promise<Webhook> {
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
     const channel = (await this.clientInstance.client.channels.fetch(
       channelId
     )) as unknown as TextBasedChannelFields | null
     if (channel == undefined) throw new Error(`no access to channel ${channelId}?`)
     const webhooks = await channel.fetchWebhooks()
 
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
     let webhook = webhooks.find((h) => h.owner?.id === this.clientInstance.client.user?.id)
-    if (webhook == undefined) webhook = await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
+    webhook ??= await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
     return webhook
   }
 }

@@ -1,4 +1,4 @@
-import { Color, MinecraftChatEventType } from '../../../common/application-event.js'
+import { Color, MinecraftReactiveEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -7,14 +7,17 @@ export default {
 
     const match = regex.exec(context.message)
     if (match != undefined) {
+      const originEventId = context.clientInstance.getLastEventIdForSentChatMessage()
+      if (originEventId === undefined) {
+        context.logger.warn('No originEventId detected. Dropping the event')
+        return
+      }
       context.application.emit('minecraftChatEvent', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,
-        channels: [],
-
-        type: MinecraftChatEventType.NoOfficer,
-        originEventId: context.clientInstance.getLastEventIdForSentChatMessage(),
+        type: MinecraftReactiveEventType.NoOfficer,
+        originEventId: originEventId,
         message: context.message
       })
     }

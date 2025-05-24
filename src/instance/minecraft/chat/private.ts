@@ -12,10 +12,12 @@ export default {
       const username = match[2]
       const playerMessage = match[3].trim()
 
-      if (context.application.clusterHelper.isMinecraftBot(username)) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) return
 
+      const event = context.eventHelper.fillBaseEvent()
+      context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Private, username: username })
       context.application.emit('chat', {
-        ...context.eventHelper.fillBaseEvent(),
+        ...event,
 
         channelType: ChannelType.Private,
 

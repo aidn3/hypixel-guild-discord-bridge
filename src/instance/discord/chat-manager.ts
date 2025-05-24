@@ -1,42 +1,44 @@
-import type { Message, TextChannel } from 'discord.js'
+import type { Client, Message, TextChannel } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import EmojisMap from 'emoji-name-map'
 import type { Logger } from 'log4js'
 
-import type { DiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { InstanceType } from '../../common/application-event.js'
 import { ChannelType, PunishmentType } from '../../common/application-event.js'
+import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
+import type { DiscordConfig } from './common/discord-config.js'
+import { FilteredReaction, MutedReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord> {
-  private static readonly WarnMuteEvery = 3 * 60 * 1000
+export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+  private static readonly WarnMuteEvery = 10 * 60 * 1000
 
   private readonly messageAssociation: MessageAssociation
   private readonly lastMuteWarn = new Map<string, number>()
-  private readonly config
+  private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
+    config: ConfigManager<DiscordConfig>,
     messageAssociation: MessageAssociation,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler,
-    config: DiscordConfig
+    errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.messageAssociation = messageAssociation
     this.config = config
+    this.messageAssociation = messageAssociation
   }
 
-  registerEvents(): void {
-    this.clientInstance.client.on('messageCreate', (message) => {
+  registerEvents(client: Client): void {
+    client.on('messageCreate', (message) => {
       void this.onMessage(message).catch(
         this.errorHandler.promiseCatch('handling incoming discord messageCreate event')
       )
@@ -46,10 +48,11 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
+    const config = this.config.data
     let channelType: ChannelType
-    if (this.config.publicChannelIds.includes(event.channel.id)) {
+    if (config.publicChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Public
-    } else if (this.config.officerChannelIds.includes(event.channel.id)) {
+    } else if (config.officerChannelIds.includes(event.channel.id)) {
       channelType = ChannelType.Officer
     } else if (event.guildId) {
       return
@@ -67,7 +70,6 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
     const content = this.cleanMessage(event)
     if (content.length === 0) return
-    const truncatedContent = await this.truncateText(event, content)
 
     const fillBaseEvent = this.eventHelper.fillBaseEvent()
     this.messageAssociation.addMessageId(fillBaseEvent.eventId, {
@@ -76,7 +78,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       messageId: event.id
     })
 
-    const { filteredMessage, changed } = this.application.moderation.filterProfanity(truncatedContent)
+    const { filteredMessage, changed } = this.application.moderation.filterProfanity(content)
     if (changed) {
       this.application.emit('profanityWarning', {
         ...fillBaseEvent,
@@ -84,12 +86,17 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
         channelType: channelType,
 
         username: discordName,
-        originalMessage: truncatedContent,
+        originalMessage: content,
         filteredMessage: filteredMessage
       })
-      await event.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
-      })
+
+      const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === FilteredReaction.name)
+      if (emoji !== undefined) await event.react(emoji)
+      if (emoji === undefined || this.config.data.alwaysReplyReaction) {
+        await event.reply({
+          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
+        })
+      }
     }
 
     this.application.emit('chat', {
@@ -108,30 +115,15 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     })
   }
 
-  private async truncateText(message: Message, content: string): Promise<string> {
-    /*
-      minecraft has a limit of 256 chars per message
-      256 - 232 = 24
-      we reserve these 24 spare chars for username, prefix and ...
-    */
-    const length = 232
-    if (content.length <= length) {
-      return content
-    }
-
-    await message.reply({
-      content: `Message too long! It has been shortened to ${length} characters.`
-    })
-
-    return content.slice(0, length) + '...'
-  }
-
   private async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
     const punishments = this.application.moderation.punishments
     const userIdentifiers = [discordName, readableName, message.author.id]
     const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
     if (mutedTill != undefined) {
+      const emoji = message.client.application.emojis.cache.find((emoji) => emoji.name === MutedReaction.name)
+      if (emoji !== undefined) await message.react(emoji)
+
       const currentTimestamp = Date.now()
       if ((this.lastMuteWarn.get(message.author.id) ?? 0) + ChatManager.WarnMuteEvery < currentTimestamp) {
         this.lastMuteWarn.set(message.author.id, currentTimestamp)

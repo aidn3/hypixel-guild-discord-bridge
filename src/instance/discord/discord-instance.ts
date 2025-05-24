@@ -2,32 +2,54 @@ import assert from 'node:assert'
 
 import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
 
-import type { DiscordConfig } from '../../application-config.js'
+import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
+import { ConfigManager } from '../../common/config-manager.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
+import type { DiscordConfig } from './common/discord-config.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
+import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
+import LoggerManager from './logger-manager.js'
 
-export default class DiscordInstance extends ConnectableInstance<DiscordConfig, InstanceType.Discord> {
+export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
   readonly commandsManager: CommandManager
-  readonly client: Client
+  private readonly config: ConfigManager<DiscordConfig>
+  private readonly client: Client
 
   private readonly stateHandler: StateHandler
   private readonly statusHandler: StatusHandler
+  private readonly emojiHandler: EmojiHandler
   private readonly chatManager: ChatManager
+  private readonly loggerManager: LoggerManager
 
   private readonly bridge: DiscordBridge
   private readonly messageAssociation: MessageAssociation = new MessageAssociation()
+
+  private readonly staticConfig: Readonly<StaticDiscordConfig>
   private connected = false
 
-  constructor(app: Application, instanceName: string, config: DiscordConfig) {
-    super(app, instanceName, InstanceType.Discord, true, config)
+  constructor(app: Application, config: StaticDiscordConfig) {
+    super(app, InstanceType.Discord, InstanceType.Discord)
+
+    this.staticConfig = config
+    this.config = new ConfigManager(app, app.getConfigFilePath('discord.json'), {
+      publicChannelIds: [],
+      officerChannelIds: [],
+      helperRoleIds: [],
+      officerRoleIds: [],
+
+      loggerChannelIds: [],
+
+      alwaysReplyReaction: false,
+      enforceVerification: false
+    })
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),
@@ -47,60 +69,64 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
     this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.emojiHandler = new EmojiHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.chatManager = new ChatManager(
       this.application,
       this,
+      this.config,
       this.messageAssociation,
       this.eventHelper,
       this.logger,
-      this.errorHandler,
-      this.config
+      this.errorHandler
     )
     this.commandsManager = new CommandManager(
       this.application,
       this,
+      this.config,
       this.eventHelper,
       this.logger,
-      this.errorHandler,
-      this.config
+      this.errorHandler
+    )
+    this.loggerManager = new LoggerManager(
+      this.application,
+      this,
+      this.config,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler
     )
 
     this.bridge = new DiscordBridge(
       this.application,
       this,
+      this.config,
       this.messageAssociation,
       this.logger,
       this.errorHandler,
-      this.config
+      this.staticConfig
     )
-
-    if (this.config.publicChannelIds.length === 0) {
-      this.logger.info('no Discord public channels found')
-    }
-    if (this.config.officerChannelIds.length === 0) {
-      this.logger.info('no Discord officer channels found')
-    }
-    if (this.config.officerRoleIds.length === 0) {
-      this.logger.info('no Discord officer roles found')
-    }
   }
 
   public resolvePrivilegeLevel(userId: string, roles: string[]): Permission {
-    if (userId === this.config.adminId) return Permission.Admin
+    if (this.staticConfig.adminIds.includes(userId)) return Permission.Admin
 
-    if (roles.some((role) => this.config.officerRoleIds.includes(role))) {
+    if (roles.some((role) => this.config.data.officerRoleIds.includes(role))) {
       return Permission.Officer
     }
 
-    if (roles.some((role) => this.config.helperRoleIds.includes(role))) {
+    if (roles.some((role) => this.config.data.helperRoleIds.includes(role))) {
       return Permission.Helper
     }
 
     return Permission.Anyone
   }
 
+  public getConfig(): ConfigManager<DiscordConfig> {
+    return this.config
+  }
+
   async connect(): Promise<void> {
-    assert(this.config.key)
+    assert(this.staticConfig.key)
 
     if (this.connected) {
       this.logger.error('Instance already connected once. Calling connect() again will bug it. Returning...')
@@ -110,12 +136,14 @@ export default class DiscordInstance extends ConnectableInstance<DiscordConfig, 
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Discord connecting')
 
-    this.stateHandler.registerEvents()
-    this.statusHandler.registerEvents()
-    this.chatManager.registerEvents()
-    this.commandsManager.registerEvents()
+    this.stateHandler.registerEvents(this.client)
+    this.statusHandler.registerEvents(this.client)
+    this.emojiHandler.registerEvents(this.client)
+    this.chatManager.registerEvents(this.client)
+    this.commandsManager.registerEvents(this.client)
+    this.loggerManager.registerEvents(this.client)
 
-    await this.client.login(this.config.key)
+    await this.client.login(this.staticConfig.key)
   }
 
   async disconnect(): Promise<void> {

@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
@@ -11,7 +13,8 @@ import type {
   GuildPlayerEvent,
   InstanceSignal,
   InstanceStatusEvent,
-  MinecraftChatEvent,
+  MinecraftReactiveEvent,
+  MinecraftReactiveEventType,
   MinecraftSendChat
 } from '../../common/application-event.js'
 import {
@@ -19,21 +22,25 @@ import {
   GuildPlayerEventType,
   InstanceSignalType,
   InstanceType,
-  MinecraftChatEventType,
   MinecraftSendChatPriority
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { antiSpamString } from '../../util/shared-util.js'
 
+import ArabicFixer from './common/arabic-fixer.js'
+import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
+  private readonly arabicFixer = new ArabicFixer()
+
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    private readonly messageAssociation: MessageAssociation
   ) {
     super(application, clientInstance, logger, errorHandler)
 
@@ -56,19 +63,22 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
+    const message = this.arabicFixer.encode(event.message)
 
     if (event.channelType === ChannelType.Public) {
+      this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
       void this.clientInstance
         .send(
-          this.formatChatMessage('gc', event.username, replyUsername, event.message),
+          this.formatChatMessage('gc', event.username, replyUsername, message),
           MinecraftSendChatPriority.Default,
           event.eventId
         )
         .catch(this.errorHandler.promiseCatch('sending public chat message'))
     } else if (event.channelType === ChannelType.Officer) {
+      this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
       void this.clientInstance
         .send(
-          this.formatChatMessage('oc', event.username, replyUsername, event.message),
+          this.formatChatMessage('oc', event.username, replyUsername, message),
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -89,12 +99,48 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     await this.handleInGameEvent(event)
   }
 
-  async onMinecraftChatEvent(event: MinecraftChatEvent): Promise<void> {
-    if (event.type === MinecraftChatEventType.Advertise) return
-    if (event.type === MinecraftChatEventType.Block) return
-    if (event.type === MinecraftChatEventType.Repeat) return
-    if (event.type === MinecraftChatEventType.RequireGuild) return
-    await this.handleInGameEvent(event)
+  private readonly lastMinecraftEvent = new Map<MinecraftReactiveEventType, Map<ChannelType, number>>()
+
+  async onMinecraftChatEvent(event: MinecraftReactiveEvent): Promise<void> {
+    const reply = this.messageAssociation.getMessageId(event.originEventId)
+    if (reply === undefined) return
+
+    let map = this.lastMinecraftEvent.get(event.type)
+    if (map === undefined) {
+      map = new Map<ChannelType, number>()
+      this.lastMinecraftEvent.set(event.type, map)
+    }
+
+    if ((map.get(reply.channel) ?? 0) + 5000 > Date.now()) return
+    map.set(reply.channel, Date.now())
+
+    this.messageAssociation.addMessageId(event.eventId, reply)
+    switch (reply.channel) {
+      case ChannelType.Public: {
+        await this.clientInstance.send(
+          `/gc @[${event.instanceName}]: ${event.message}`,
+          MinecraftSendChatPriority.Default,
+          event.eventId
+        )
+        break
+      }
+
+      case ChannelType.Officer: {
+        await this.clientInstance.send(
+          `/oc @[${event.instanceName}]: ${event.message}`,
+          MinecraftSendChatPriority.Default,
+          event.eventId
+        )
+        break
+      }
+      case ChannelType.Private: {
+        await this.clientInstance.send(
+          `/msg ${reply.username} @[${event.instanceName}]: ${event.message}`,
+          MinecraftSendChatPriority.Default,
+          event.eventId
+        )
+      }
+    }
   }
 
   async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
@@ -114,17 +160,9 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(
-        `/gc @[${event.instanceName}]: ${event.message}`,
-        MinecraftSendChatPriority.Default,
-        event.eventId
-      )
+      await this.clientInstance.send(`/gc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(
-        `/oc @[${event.instanceName}]: ${event.message}`,
-        MinecraftSendChatPriority.Default,
-        event.eventId
-      )
+      await this.clientInstance.send(`/oc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {
@@ -159,17 +197,20 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     }
   }
 
-  private handleCommand(event: CommandFeedbackEvent, feedback: boolean) {
-    if (
-      event.instanceType === InstanceType.Minecraft &&
-      event.instanceName === this.clientInstance.instanceName &&
-      event.alreadyReplied
-    ) {
+  private handleCommand(event: CommandEvent, feedback: boolean) {
+    const reply = this.messageAssociation.getMessageId(event.originEventId)
+    if (reply === undefined) {
+      this.logger.error(
+        `could not find the reply eventId for eventId ${event.eventId} with origin event id of ${event.originEventId}`
+      )
       return
     }
 
+    if (reply.channel === ChannelType.Private) assert(reply.username === event.username)
+    this.messageAssociation.addMessageId(event.eventId, reply)
+
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
-    switch (event.channelType) {
+    switch (reply.channel) {
       case ChannelType.Public: {
         void this.clientInstance
           .send(`/gc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)

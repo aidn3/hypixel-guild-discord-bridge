@@ -12,17 +12,20 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class MetricsInstance extends Instance<MetricsConfig, InstanceType.Metrics> {
+export default class MetricsInstance extends Instance<InstanceType.Metrics> {
   private readonly httpServer
   private readonly register
 
   private readonly applicationMetrics: ApplicationMetrics
   private readonly guildOnlineMetrics: GuildOnlineMetrics
 
+  private readonly config: MetricsConfig
+
   constructor(app: Application, config: MetricsConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics, true, config)
+    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics)
 
     assert(config.enabled)
+    this.config = config
 
     this.register = new Client.Registry()
     this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
@@ -47,10 +50,6 @@ export default class MetricsInstance extends Instance<MetricsConfig, InstanceTyp
       this.applicationMetrics.onCommandEvent(event)
     })
 
-    setInterval(() => {
-      void this.collectMetrics().catch(this.errorHandler.promiseCatch('collecting metrics'))
-    }, config.interval * 1000)
-
     this.httpServer = http.createServer((request, response) => {
       if (request.url == undefined) {
         response.writeHead(HttpStatusCode.NotFound)
@@ -63,11 +62,10 @@ export default class MetricsInstance extends Instance<MetricsConfig, InstanceTyp
         this.logger.debug('Metrics scrap is called on /metrics')
         response.setHeader('Content-Type', this.register.contentType)
 
-        void (async () => {
-          response.end(await this.register.metrics())
-        })().catch(() => {
-          response.end()
-        })
+        void this.collectMetrics()
+          .then(() => this.register.metrics())
+          .then((metrics) => response.end(metrics))
+          .catch(() => response.end())
       } else if (route === '/ping') {
         this.logger.debug('Ping received')
         response.writeHead(HttpStatusCode.Ok)
@@ -86,9 +84,6 @@ export default class MetricsInstance extends Instance<MetricsConfig, InstanceTyp
 
   private async collectMetrics(): Promise<void> {
     this.logger.debug('Collecting metrics')
-
-    if (this.config.useIngameCommand) {
-      await this.guildOnlineMetrics.collectMetrics(this.application, this.eventHelper)
-    }
+    await this.guildOnlineMetrics.collectMetrics(this.application)
   }
 }
