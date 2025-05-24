@@ -54,7 +54,9 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
     }
 
     // TODO: enable metrics back when finished
-    this.logger.debug("No metrics will be sent for the time being since the server that is meant to receive the metrics isn't prepared yet.")
+    this.logger.debug(
+      "No metrics will be sent for the time being since the server that is meant to receive the metrics isn't prepared yet."
+    )
     /*
         this.intervalId = setInterval(() => {
           void this.send().catch(this.errorHandler.promiseCatch('sending anonymous metrics'))
