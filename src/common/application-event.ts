@@ -119,8 +119,9 @@ export enum InstanceType {
   Plugin = 'plugin',
   Commands = 'commands',
   Moderation = 'moderation',
-
   Metrics = 'metrics',
+
+  Prometheus = 'prometheus',
 
   Discord = 'discord',
   Minecraft = 'minecraft',

@@ -2,6 +2,7 @@ export const ApplicationConfigVersion = 2
 
 export interface GeneralConfig {
   hypixelApiKey: string
+  shareMetrics: boolean
 }
 
 export interface StaticDiscordConfig {
@@ -9,7 +10,7 @@ export interface StaticDiscordConfig {
   adminIds: string[]
 }
 
-export interface MetricsConfig {
+export interface PrometheusConfig {
   enabled: boolean
   port: number
   prefix: string
@@ -19,6 +20,6 @@ export interface ApplicationConfig {
   version: 2 // typeof ApplicationConfigVersion
   general: GeneralConfig
   discord: StaticDiscordConfig
-  metrics: MetricsConfig
+  prometheus: PrometheusConfig
   plugins: string[]
 }
