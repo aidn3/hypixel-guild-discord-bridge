@@ -13,7 +13,7 @@ interface Stats {
   events: Map<keyof ApplicationEvents, number>
 }
 
-export default class StatisticsInstance extends ConnectableInstance<void, InstanceType.Statistics> {
+export default class MetricsInstance extends ConnectableInstance<InstanceType.Metrics> {
   private static readonly SendEvery = 20 * 60 * 1000
   private static readonly Host = 'https://bridge-stats.aidn5.com/metrics'
 
@@ -22,7 +22,7 @@ export default class StatisticsInstance extends ConnectableInstance<void, Instan
   private intervalId: NodeJS.Timeout | undefined
 
   constructor(app: Application) {
-    super(app, InternalInstancePrefix + InstanceType.Statistics, InstanceType.Statistics, true)
+    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics)
 
     this.stats = {
       id: '',
@@ -40,7 +40,7 @@ export default class StatisticsInstance extends ConnectableInstance<void, Instan
     this.logger.debug('collecting anonymous metrics to send')
     this.stats.instancesUsed = this.application.getAllInstancesIdentifiers().map((instance) => instance.instanceType)
 
-    await Axios.post(StatisticsInstance.Host, this.stats)
+    await Axios.post(MetricsInstance.Host, this.stats)
       .then((response: AxiosResponse<{ id: string }, unknown>) => response.data)
       .then((response) => {
         this.stats.id = response.id // ID is used to ensure no duplicates entries when sharing metrics
@@ -54,13 +54,15 @@ export default class StatisticsInstance extends ConnectableInstance<void, Instan
 
     this.intervalId = setInterval(() => {
       void this.send().catch(this.errorHandler.promiseCatch('sending anonymous metrics'))
-    }, StatisticsInstance.SendEvery)
+    }, MetricsInstance.SendEvery)
 
     this.setAndBroadcastNewStatus(Status.Connected, 'instance ready and will be sending periodical anonymous metrics')
   }
 
   disconnect(): Promise<void> | void {
-    if (this.intervalId !== undefined) {
+    if (this.intervalId === undefined) {
+      this.logger.warn('Received disconnect() request but instance already disconnected')
+    } else {
       clearInterval(this.intervalId)
     }
 

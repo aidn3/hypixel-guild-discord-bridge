@@ -22,10 +22,11 @@ import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
 import { GuildManager } from './instance/guild-manager.js'
-import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
+import MetricsInstance from './instance/metrics/metrics-instance.js'
 import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
+import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
@@ -33,6 +34,7 @@ export type AllInstances =
   | CommandsInstance
   | DiscordInstance
   | PrometheusInstance
+  | MetricsInstance
   | MinecraftInstance
   | ModerationInstance
   | PluginInstance
@@ -67,6 +69,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly moderation: ModerationInstance
   public readonly commandsInstance: CommandsInstance
   private readonly prometheusInstance: PrometheusInstance | undefined
+  private readonly metricsInstance: MetricsInstance
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
@@ -101,6 +104,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.prometheusInstance = this.config.prometheus.enabled
       ? new PrometheusInstance(this, this.config.prometheus)
       : undefined
+    this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
 
     this.on('instanceSignal', (event) => {
@@ -138,7 +142,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       // https://github.com/microsoft/TypeScript/issues/30650#issuecomment-486680485
       const checkedInstance = instance
 
-      if (checkedInstance instanceof ConnectableInstance) {
+      if (checkedInstance instanceof MetricsInstance) {
+        if (this.config.general.shareMetrics) {
+          checkedInstance.connect()
+        }
+      } else if (checkedInstance instanceof ConnectableInstance) {
         this.logger.debug(`Connecting instance type=${instance.instanceType},name=${instance.instanceName}`)
         await checkedInstance.connect()
       } else if (instance instanceof PluginInstance) {
@@ -192,6 +200,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
       this.moderation,
       this.prometheusInstance,
+      this.metricsInstance,
       this.commandsInstance,
       ...this.minecraftManager.getAllInstances()
     ].filter((instance) => instance != undefined)
