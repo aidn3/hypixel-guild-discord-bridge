@@ -47,7 +47,6 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
     this.toggleDirectory = this.application.getConfigFilePath('minecraft-toggles')
-    this.logger.error(this.toggleDirectory)
     fs.mkdirSync(this.toggleDirectory, { recursive: true })
 
     setInterval(() => {
