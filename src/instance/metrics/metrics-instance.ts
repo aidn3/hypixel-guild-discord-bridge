@@ -48,13 +48,18 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
   }
 
   connect(): void {
+    this.logger.info('Thank you for enabling metrics!')
     if (this.intervalId !== undefined) {
       clearInterval(this.intervalId)
     }
 
-    this.intervalId = setInterval(() => {
-      void this.send().catch(this.errorHandler.promiseCatch('sending anonymous metrics'))
-    }, MetricsInstance.SendEvery)
+    // TODO: enable metrics back when finished
+    this.logger.debug("No metrics will be sent for the time being since the server that is meant to receive the metrics isn't prepared yet.")
+    /*
+        this.intervalId = setInterval(() => {
+          void this.send().catch(this.errorHandler.promiseCatch('sending anonymous metrics'))
+        }, MetricsInstance.SendEvery)
+    */
 
     this.setAndBroadcastNewStatus(Status.Connected, 'instance ready and will be sending periodical anonymous metrics')
   }
@@ -64,6 +69,7 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
       this.logger.warn('Received disconnect() request but instance already disconnected')
     } else {
       clearInterval(this.intervalId)
+      this.intervalId = undefined
     }
 
     this.setAndBroadcastNewStatus(Status.Ended, 'instance has stopped')
