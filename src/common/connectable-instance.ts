@@ -43,15 +43,23 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
    *
    * @param status The status to set
    * @param reason Any message to supply for other instances in case of displaying a human-readable message.
+   * @param visibility whether to broadcast the status change and how to broadcast it
    * @protected
    */
-  public setAndBroadcastNewStatus(status: Status, reason: string): void {
+  public setAndBroadcastNewStatus(
+    status: Status,
+    reason: string,
+    visibility: StatusVisibility = StatusVisibility.Show
+  ): void {
     if (this.status === status) return
     this.status = status
+    if (visibility === StatusVisibility.Hidden) return
     this.application.emit('instanceStatus', {
       ...this.eventHelper.fillBaseEvent(),
 
       status: status,
+      visibility: visibility,
+
       message: reason
     } satisfies InstanceStatusEvent)
   }
@@ -75,6 +83,21 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
    * Not disposing of the old client may result in double listeners.
    */
   public abstract disconnect(): Promise<void> | void
+}
+
+export enum StatusVisibility {
+  /**
+   * Broadcast the status and instruct all instances to display it everywhere
+   */
+  Show = 'show',
+  /**
+   * Broadcast the status and instruct all instances to process them but not display anything
+   */
+  Silent = 'silent',
+  /**
+   * Do not broadcast the event anywhere
+   */
+  Hidden = 'hidden'
 }
 
 export enum Status {

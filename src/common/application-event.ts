@@ -1,4 +1,4 @@
-import type { Status } from './connectable-instance.js'
+import type { Status, StatusVisibility } from './connectable-instance.js'
 
 /*
  All events must be immutable.
@@ -517,6 +517,10 @@ export interface InstanceStatusEvent extends InformEvent {
    * The instance event status
    */
   readonly status: Status
+  /**
+   * Whether the event should be shown to the end user
+   */
+  readonly visibility: StatusVisibility.Show | StatusVisibility.Silent
   /**
    * Humanly formatted message of the situation
    */

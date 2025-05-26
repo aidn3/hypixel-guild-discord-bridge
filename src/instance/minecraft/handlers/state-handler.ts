@@ -2,7 +2,7 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
-import { Status } from '../../../common/connectable-instance.js'
+import { Status, StatusVisibility } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
@@ -43,7 +43,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
 
     // this will always be called when connection closes
     clientSession.client.on('end', (reason: string) => {
-      this.onEnd(reason)
+      this.onEnd(clientSession, reason)
       this.loggedIn = false
     })
 
@@ -73,18 +73,26 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     this.clientInstance.setAndBroadcastNewStatus(Status.Connected, 'Minecraft instance has connected')
   }
 
-  private onEnd(reason: string): void {
+  private onEnd(clientSession: ClientSession, reason: string): void {
     if (this.clientInstance.currentStatus() === Status.Failed) {
       const reason = `Status is ${this.clientInstance.currentStatus()}. No further trying to reconnect.`
 
       this.logger.warn(reason)
-      this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
+      if (clientSession.silentQuit) {
+        this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason, StatusVisibility.Silent)
+      } else {
+        this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
+      }
       return
     } else if (reason === QuitOwnVolition) {
       const reason = 'Client quit on its own volition. No further trying to reconnect.'
 
       this.logger.debug(reason)
-      this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
+      if (clientSession.silentQuit) {
+        this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason, StatusVisibility.Silent)
+      } else {
+        this.clientInstance.setAndBroadcastNewStatus(Status.Ended, reason)
+      }
       return
     }
 

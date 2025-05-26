@@ -28,6 +28,7 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type { ConfigManager } from '../../common/config-manager.js'
+import { StatusVisibility } from '../../common/connectable-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import { beautifyInstanceName } from '../../util/shared-util.js'
 
@@ -78,6 +79,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
   async onInstance(event: InstanceStatusEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
+    if (event.visibility === StatusVisibility.Silent) return
     switch (event.instanceType) {
       case InstanceType.Commands:
       case InstanceType.Prometheus:

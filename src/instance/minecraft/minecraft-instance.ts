@@ -86,7 +86,10 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   }
 
   connect(): void {
-    this.clientSession?.client.end(QuitOwnVolition)
+    if (this.clientSession !== undefined) {
+      this.clientSession.silentQuit = true
+      this.clientSession.client.end(QuitOwnVolition)
+    }
 
     this.stateHandler.resetLoginAttempts()
     this.automaticReconnect()
