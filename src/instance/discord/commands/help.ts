@@ -84,7 +84,7 @@ function createField(guildCommands: Collection<string, ApplicationCommand>, comm
       message += formatGroupCommand(guildCommands, commandName, commandDescription, groupCommands)
     }
     if (subCommands.length > 0) {
-      message += formatSubCommands(guildCommands, [commandName], commandDescription, 1, subCommands)
+      message += formatSubCommands(guildCommands, [commandName], commandDescription, 0, subCommands)
     }
 
     if (groupCommands.length === 0 && subCommands.length === 0) {
@@ -104,7 +104,7 @@ function formatGroupCommand(
   groupCommands: APIApplicationCommandSubcommandGroupOption[]
 ): string {
   let message = ''
-  message += `${'  '.repeat(1)}- ${description}\n`
+  message += `${'  '.repeat(0)}- ${description}\n`
 
   for (const groupCommand of groupCommands) {
     if (groupCommand.options !== undefined && groupCommand.options.length > 0) {
@@ -112,7 +112,7 @@ function formatGroupCommand(
         guildCommands,
         [commandName, groupCommand.name],
         groupCommand.description,
-        2,
+        1,
         groupCommand.options
       )
     }
