@@ -28,6 +28,7 @@ import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
 import OverrideCommand from './commands/override.js'
 import PingCommand from './commands/ping.js'
+import ProfanityCommand from './commands/profanity.js'
 import PromoteCommand from './commands/promote.js'
 import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
@@ -107,6 +108,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       LogCommand,
       OverrideCommand,
       PingCommand,
+      ProfanityCommand,
       PromoteCommand,
       PunishmentsCommand,
       ReconnectCommand,

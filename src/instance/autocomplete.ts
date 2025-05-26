@@ -42,11 +42,11 @@ export default class Autocomplete extends Instance<InstanceType.Util> {
   }
 
   public username(query: string): string[] {
-    return this.search(query, this.usernames)
+    return Autocomplete.search(query, this.usernames)
   }
 
   public rank(query: string): string[] {
-    return this.search(query, this.guildRanks)
+    return Autocomplete.search(query, this.guildRanks)
   }
 
   /**
@@ -59,7 +59,7 @@ export default class Autocomplete extends Instance<InstanceType.Util> {
    * @param query the usernames to look for
    * @param collection collection to look up the query in
    */
-  private search(query: string, collection: string[]): string[] {
+  public static search(query: string, collection: string[]): string[] {
     const copy = [...collection]
     copy.sort((a, b) => a.localeCompare(b))
 

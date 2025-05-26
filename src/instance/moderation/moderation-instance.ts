@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import BadWords from 'bad-words'
 
 import type Application from '../../application.js'
@@ -16,7 +18,7 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
   public readonly commandsHeat: CommandsHeat
   private readonly enforcer: PunishmentsEnforcer
 
-  public readonly profanityFilter: BadWords.BadWords | undefined
+  public profanityFilter: BadWords.BadWords | undefined
   private readonly config: ConfigManager<ModerationConfig>
 
   private readonly mojangApi: MojangApi
@@ -35,13 +37,8 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
     })
     this.mojangApi = mojangApi
 
-    if (this.config.data.profanityEnabled) {
-      this.profanityFilter = new BadWords()
-      this.profanityFilter.removeWords(...this.config.data.profanityWhitelist)
-      this.profanityFilter.addWords(...this.config.data.profanityBlacklist)
-    } else {
-      this.profanityFilter = undefined
-    }
+    this.reloadProfanity()
+    assert(this.profanityFilter !== undefined)
 
     this.punishments = new Punishments(application)
     this.commandsHeat = new CommandsHeat(
@@ -59,8 +56,15 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
     return this.config
   }
 
+  public reloadProfanity(): void {
+    this.profanityFilter = new BadWords()
+    this.profanityFilter.removeWords(...this.config.data.profanityWhitelist)
+    this.profanityFilter.addWords(...this.config.data.profanityBlacklist)
+  }
+
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
-    if (this.profanityFilter === undefined) return { filteredMessage: message, changed: false }
+    if (!this.config.data.profanityEnabled) return { filteredMessage: message, changed: false }
+    assert(this.profanityFilter)
 
     let filtered: string
     try {
