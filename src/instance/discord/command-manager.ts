@@ -21,6 +21,7 @@ import AcceptCommand from './commands/accept.js'
 import ConnectivityCommand from './commands/connectivity.js'
 import DemoteCommand from './commands/demote.js'
 import DisconnectCommand from './commands/disconnect.js'
+import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import ListCommand from './commands/list.js'
@@ -99,6 +100,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       ConnectivityCommand,
       DemoteCommand,
       DisconnectCommand,
+      HelpCommand,
       InviteCommand,
       JoinCommand,
       ListCommand,
@@ -135,7 +137,8 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           interaction.user.id,
           interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
         ),
-        interaction: interaction
+        interaction: interaction,
+        allCommands: [...this.commands.values()]
       }
 
       try {
@@ -229,6 +232,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
             interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
           ),
           interaction: interaction,
+          allCommands: [...this.commands.values()],
 
           showPermissionDenied: async () => {
             if (interaction.deferred || interaction.replied) {

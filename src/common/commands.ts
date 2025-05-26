@@ -1,4 +1,9 @@
-import type { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import type {
+  AutocompleteInteraction,
+  ChatInputCommandInteraction,
+  SlashCommandBuilder,
+  SlashCommandSubcommandsOnlyBuilder
+} from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
@@ -50,11 +55,11 @@ export interface ChatCommandContext {
 }
 
 export interface DiscordCommandHandler {
-  getCommandBuilder: () => SlashCommandBuilder
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances
-  permission: Permission
-  handler: (context: DiscordCommandContext) => Promise<void>
-  autoComplete?: (context: DiscordAutoCompleteContext) => Promise<void>
+  readonly getCommandBuilder: () => SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder
+  readonly addMinecraftInstancesToOptions: OptionToAddMinecraftInstances
+  readonly permission: Permission
+  readonly handler: (context: Readonly<DiscordCommandContext>) => Promise<void>
+  readonly autoComplete?: (context: Readonly<DiscordAutoCompleteContext>) => Promise<void>
 }
 
 export enum OptionToAddMinecraftInstances {
@@ -71,6 +76,8 @@ interface DiscordContext {
 
   permission: Permission
   errorHandler: UnexpectedErrorHandler
+
+  allCommands: DiscordCommandHandler[]
 }
 
 export interface DiscordCommandContext extends DiscordContext {
