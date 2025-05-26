@@ -66,7 +66,10 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
 
     this.application.on('minecraftChat', (event: MinecraftRawChatEvent) => {
       if (event.message.length === 0 || event.instanceName !== this.clientInstance.instanceName) return
-      assert(this.config)
+      if (this.config === undefined) {
+        this.logger.warn("minecraftChat event was received while the handler isn't ready yet. Ignoring this event.")
+        return
+      }
 
       if (event.message.startsWith('Your online status has been set to Online')) {
         this.config.data.playerOnlineStatusEnabled = true
