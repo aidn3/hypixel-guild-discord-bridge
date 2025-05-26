@@ -15,12 +15,11 @@ export default class ArabicFixer {
     message = message.trim() // needed to simplify detecting "filler"
 
     const segments: { content: string; isArabic: boolean }[] = []
-    const regex = /[\s\u0600-\u06FF\u200C\u200F\uFB8A]+/gm
+    const regex = /(?!\s)[\s\u0600-\u06FF\u200C\u200F\uFB8A]+(?![\u0600-\u06FF\u200C\u200F\uFB8A])/gm
     // eslint-disable-next-line unicorn/no-null
     let match: RegExpMatchArray | null = null
     let totalLength = 0
     while ((match = regex.exec(message)) !== null) {
-      const lastSegment = segments.at(-1)
       const segment = match[0]
       const index = match.index
       const length = segment.length
@@ -28,19 +27,10 @@ export default class ArabicFixer {
 
       if (totalLength < index) {
         const missedSegment = message.slice(totalLength, index)
-        if (lastSegment?.isArabic) {
-          lastSegment.content += missedSegment
-        } else {
-          segments.push({ content: missedSegment, isArabic: false })
-        }
+        segments.push({ content: missedSegment, isArabic: false })
       }
 
-      if (/^\s+$/.test(segment) && lastSegment !== undefined) {
-        lastSegment.content += segment
-      } else {
-        segments.push({ content: message.slice(index, index + length), isArabic: true })
-      }
-
+      segments.push({ content: message.slice(index, index + length), isArabic: true })
       totalLength = index + length
     }
 
@@ -58,13 +48,13 @@ export default class ArabicFixer {
     for (const segment of segments.reverse()) {
       if (segment.isArabic) {
         const translatedSegment = this.translate(segment.content)
-        reversedMessage += esrever.reverse(translatedSegment)
+        reversedMessage += esrever.reverse(translatedSegment).trim() + ' '
       } else {
-        reversedMessage += segment.content
+        reversedMessage += segment.content.trim() + ' '
       }
     }
 
-    return reversedMessage
+    return reversedMessage.trim()
   }
 
   private translate(message: string): string {
