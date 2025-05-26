@@ -81,6 +81,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     switch (event.instanceType) {
       case InstanceType.Commands:
       case InstanceType.Prometheus:
+      case InstanceType.Metrics:
       case InstanceType.Plugin:
       case InstanceType.Util:
       case InstanceType.Moderation: {
