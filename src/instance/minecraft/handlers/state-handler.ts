@@ -150,6 +150,12 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
         'Failed to establish secure connection. Trying again in 30 seconds...'
       )
       this.tryRestarting()
+    } else if (error.message.includes('503 Service Unavailable')) {
+      this.clientInstance.setAndBroadcastNewStatus(
+        Status.Disconnected,
+        'Microsoft XBOX service is down. Trying again in 30 seconds...'
+      )
+      this.tryRestarting()
     } else if (error.message.includes('Too Many Requests')) {
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Disconnected,
