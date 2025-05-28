@@ -5,10 +5,10 @@ import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '
 export default class MagicalPower extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'magicalpower',
-      triggers: ['magicalpower', 'mp'],
-      description: "Returns a player's highest recorded skyblock Magical Power",
-      example: `mp %s`
+      name: 'hotm',
+      triggers: ['hotm', 'powder'],
+      description: "Returns a player's hotm and powder",
+      example: `hotm %s`
     })
   }
 
@@ -19,8 +19,8 @@ export default class MagicalPower extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
-    const magicalPower = selectedProfile.highestMagicalPower
-
-    return `${givenUsername}'s highest Magical Power: ${magicalPower}`
+    const hotm = selectedProfile.hotm
+    const powder = selectedProfile.powder
+    return `${givenUsername} is hotm: ${hotm} with ${powder}'
   }
 }
