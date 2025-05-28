@@ -69,18 +69,9 @@ export default class Skills extends ChatCommandHandler {
   }
 
   private formatLevel(level: number, progress: number): string {
-    let formattedLevel = 0
+    if (Number.isNaN(progress) || progress === 100) return level.toFixed(0)
 
-    formattedLevel += level
-
-    const decimal = progress / 100
-
-    if (decimal === 1) {
-      return formattedLevel.toFixed(0)
-    }
-
-    formattedLevel += decimal
-
+    const formattedLevel = level + progress / 100
     return formattedLevel.toFixed(1)
   }
 }
