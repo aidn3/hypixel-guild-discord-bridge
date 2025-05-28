@@ -36,7 +36,10 @@ export default {
 
       // if any other punishments active
       if (context.application.moderation.punishments.findByUser(identifiers).length > 0) return
-      if (context.application.minecraftManager.isMinecraftBot(username)) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) {
+        context.clientInstance.notifyChatEvent(ChannelType.Public, playerMessage)
+        return
+      }
 
       const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {

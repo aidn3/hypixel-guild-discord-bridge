@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 
-import { MinecraftSendChatPriority } from '../../../common/application-event.js'
+import { ChannelType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { sleep } from '../../../util/shared-util.js'
+import { Timeout } from '../../../util/timeout.js'
 
 export enum CommandType {
   Generic = 'generic',
@@ -18,15 +18,47 @@ const CommandTypeSleep: Record<CommandType, number> = {
   [CommandType.GuildCommand]: 2000
 }
 
+// noinspection InfiniteLoopJS
 export class SendQueue {
-  private readonly queuedEntries: QueueEntry[] = []
-  private cycleStarted = false
+  private priorityQueue = new PriorityQueue()
+
   public readonly lastId = new Map<CommandType, string>()
+  private entryContext: EntryContext | undefined
+
+  private threadSleep: Timeout<void> | undefined
 
   constructor(
     private readonly errorHandler: UnexpectedErrorHandler,
     private readonly sender: (command: string) => void
-  ) {}
+  ) {
+    void new Promise(async () => {
+      try {
+        await this.startCycle()
+      } catch (error: unknown) {
+        errorHandler.promiseCatch('queuing commands via minecraft instance')(error)
+      }
+    })
+  }
+
+  public notifyChatEvent(channel: ChannelType, message: string): void {
+    if (this.entryContext === undefined) return
+    const channels = [
+      { type: ChannelType.Public, prefix: '/gc ' },
+      { type: ChannelType.Officer, prefix: '/oc ' }
+    ]
+
+    const entryCommand = this.entryContext.entry.command
+    for (const potentialChannel of channels) {
+      if (channel !== potentialChannel.type) continue
+      if (!entryCommand.toLowerCase().startsWith(potentialChannel.prefix)) continue
+
+      const entryMessage = entryCommand.slice(potentialChannel.prefix.length)
+      if (entryMessage === message) {
+        this.entryContext.skip = true
+        this.entryContext.sleep?.resolve()
+      }
+    }
+  }
 
   public async queue(command: string, priority: MinecraftSendChatPriority, eventId: string | undefined): Promise<void> {
     const commandTypes = SendQueue.resolveTypes(command, priority)
@@ -43,24 +75,25 @@ export class SendQueue {
 
     return new Promise((resolve) => {
       const entry: QueueEntry = { resolve, command, eventId, ...commandTypes }
-
-      this.queuedEntries.push(entry)
-      this.queuedEntries.sort((a, b) => a.priority - b.priority)
-
-      if (!this.cycleStarted) {
-        this.cycleStarted = true
-        void this.startCycle().catch((error: unknown) => {
-          this.cycleStarted = false
-          this.errorHandler.promiseCatch('queuing commands via minecraft instance')(error)
-        })
-      }
+      this.priorityQueue.add(entry)
+      this.notify()
     })
   }
 
+  private notify(): void {
+    if (this.threadSleep !== undefined) this.threadSleep.resolve()
+    if (this.entryContext !== undefined) this.entryContext.sleep?.resolve()
+  }
+
   private async startCycle(): Promise<void> {
-    while (this.queuedEntries.length > 0) {
-      const entryToExecute = this.queuedEntries.shift()
-      assert(entryToExecute)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
+    while (true) {
+      while (this.priorityQueue.empty()) {
+        this.threadSleep = new Timeout(~(1 << 31)) // max 32bit integer
+        await this.threadSleep.wait()
+      }
+
+      const entryToExecute = this.priorityQueue.pop()
 
       if (entryToExecute.eventId !== undefined) {
         for (const type of entryToExecute.types) {
@@ -72,27 +105,22 @@ export class SendQueue {
 
       await this.sleepBetweenCommands(entryToExecute)
     }
-
-    this.cycleStarted = false
   }
 
-  /**
-   * Sleep max 500millisecond before checking again
-   * if the queue has changed and require less sleep overall.
-   *
-   */
   private async sleepBetweenCommands(currentEntry: QueueEntry): Promise<void> {
-    const checkEvery = 500
+    const context: EntryContext = { sleep: undefined, skip: false, entry: currentEntry }
+    this.entryContext = context
+
     const allTimes = currentEntry.types.map((type) => CommandTypeSleep[type]).sort((a, b) => a - b)
 
     let sleptSoFar = 0
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
     while (true) {
       let maxSleep: number
-      if (this.queuedEntries.length === 0) {
+      if (this.priorityQueue.empty()) {
         maxSleep = Math.max(...allTimes)
       } else {
-        const nextEntry = this.queuedEntries[0]
+        const nextEntry = this.priorityQueue.peek()
         maxSleep =
           SendQueue.requireId(currentEntry) === SendQueue.requireId(nextEntry) &&
           !nextEntry.types.includes(CommandType.HighPriority)
@@ -100,12 +128,13 @@ export class SendQueue {
             : Math.min(...allTimes)
       }
 
+      if (context.skip) maxSleep = Math.min(...allTimes)
       if (sleptSoFar >= maxSleep) return
-      const sleepTime = Math.min(checkEvery, maxSleep - sleptSoFar)
 
       // timestamp used to account for async/await lag
       const currentTimestamp = Date.now()
-      await sleep(sleepTime - sleptSoFar)
+      context.sleep = new Timeout<void>(maxSleep - sleptSoFar)
+      await context.sleep.wait()
       sleptSoFar += Date.now() - currentTimestamp
     }
   }
@@ -159,10 +188,41 @@ export class SendQueue {
   }
 }
 
+class PriorityQueue {
+  private readonly entries: QueueEntry[] = []
+
+  public add(entry: QueueEntry): void {
+    this.entries.push(entry)
+    this.entries.sort((a, b) => a.priority - b.priority)
+  }
+
+  public pop(): QueueEntry {
+    const entry = this.entries.shift()
+    assert(entry !== undefined)
+    return entry
+  }
+
+  public empty(): boolean {
+    return this.entries.length === 0
+  }
+
+  public peek(): QueueEntry {
+    assert(this.entries.length > 0)
+    return this.entries[0]
+  }
+}
+
 interface QueueEntry {
   resolve: () => void
   priority: number
   command: string
   eventId: string | undefined
+
   types: CommandType[]
+}
+
+interface EntryContext {
+  entry: QueueEntry
+  sleep: Timeout<void> | undefined
+  skip: boolean
 }

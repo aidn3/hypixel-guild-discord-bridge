@@ -13,7 +13,10 @@ export default {
       const guildRank = match[3]
       const playerMessage = match[4].trim()
 
-      if (context.application.minecraftManager.isMinecraftBot(username)) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) {
+        context.clientInstance.notifyChatEvent(ChannelType.Officer, playerMessage)
+        return
+      }
 
       const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {

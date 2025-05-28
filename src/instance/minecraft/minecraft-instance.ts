@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises'
 import { createClient, states } from 'minecraft-protocol'
 
 import type Application from '../../application.js'
-import type { MinecraftSendChatPriority } from '../../common/application-event.js'
+import type { ChannelType, MinecraftSendChatPriority } from '../../common/application-event.js'
 import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 
@@ -138,6 +138,10 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   uuid(): string | undefined {
     const uuid = this.clientSession?.client.uuid
     return uuid == undefined ? undefined : uuid.split('-').join('')
+  }
+
+  notifyChatEvent(channel: ChannelType, message: string): void {
+    this.sendQueue.notifyChatEvent(channel, message)
   }
 
   /**
