@@ -8,6 +8,8 @@ declare module 'hypixel-api-reborn' {
       query: string,
       options: Partial<skyblockMemberOptions> & { raw: true }
     ): Promise<SkyblockV2ProfilesRaw>
+
+    getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
   }
 
   export interface SkyblockV2ProfilesRaw {
@@ -109,6 +111,26 @@ declare module 'hypixel-api-reborn' {
     boss_kills_tier_2?: number
     boss_kills_tier_3?: number
     boss_kills_tier_4?: number
+  }
+
+  export interface MayorV2 {
+    mayor: MayorCandidateV2 & { minister: { name: string; perk: MayorPerkV2 }; election: MayorElectionV2 }
+    current: MayorElectionV2
+  }
+
+  export interface MayorElectionV2 {
+    candidates: MayorCandidateV2[]
+  }
+
+  export interface MayorCandidateV2 {
+    name: string
+    perks: MayorPerkV2[]
+    votes?: number
+  }
+
+  export interface MayorPerkV2 {
+    name: string
+    minister: boolean
   }
 }
 /* eslint-enable @typescript-eslint/naming-convention */

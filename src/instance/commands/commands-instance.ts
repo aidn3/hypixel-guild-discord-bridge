@@ -14,6 +14,7 @@ import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DarkAuction from './triggers/darkauction.js'
+import Election from './triggers/election.js'
 import Explain from './triggers/explain.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
@@ -21,6 +22,7 @@ import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import MagicalPower from './triggers/magicalpower.js'
+import Mayor from './triggers/mayor.js'
 import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
 import PartyManager from './triggers/party.js'
@@ -60,6 +62,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Catacomb(),
       new CurrentDungeon(),
       new DarkAuction(),
+      new Election(),
       new EightBallCommand(),
       new Explain(),
       new Guild(),
@@ -68,6 +71,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Kuudra(),
       new Level(),
       new MagicalPower(),
+      new Mayor(),
       new Networth(),
       new Override(),
       ...new PartyManager().resolveCommands(),
