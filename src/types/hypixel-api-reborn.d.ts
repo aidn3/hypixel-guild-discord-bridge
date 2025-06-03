@@ -115,7 +115,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface MayorV2 {
     mayor: MayorCandidateV2 & { minister: { name: string; perk: MayorPerkV2 }; election: MayorElectionV2 }
-    current: MayorElectionV2
+    current?: MayorElectionV2
   }
 
   export interface MayorElectionV2 {

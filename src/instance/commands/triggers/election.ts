@@ -15,6 +15,8 @@ export default class Election extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     const mayor = await context.app.hypixelApi.getSkyblockGovernment({ raw: true })
+    if (mayor.current === undefined) return 'Election booth not opened yet!'
+
     const candidates = mayor.current.candidates
     const resultsHidden = candidates[0].votes === undefined
     if (resultsHidden) {
