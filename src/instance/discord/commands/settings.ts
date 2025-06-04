@@ -22,7 +22,7 @@ import type { ProxyConfig } from '../../minecraft/common/config.js'
 // eslint-disable-next-line import/no-restricted-paths
 import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import type { CategoryOption } from '../common/options-handler.js'
+import type { CategoryOption, EmbedCategoryOption } from '../common/options-handler.js'
 import { OptionsHandler, OptionType } from '../common/options-handler.js'
 
 const Essential = ':shield:'
@@ -40,7 +40,7 @@ export default {
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
-    const options: CategoryOption = {
+    const options: EmbedCategoryOption = {
       type: OptionType.EmbedCategory,
       id: 'main-options',
       name: 'Main',
@@ -280,6 +280,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         type: OptionType.Category,
         name: 'Staff Options',
         id: 'discord-staff-options',
+        description: 'Assign staff channels and roles, so the application can integrate with them.',
         header: 'These are dangerous permissions. Make sure you know what you are doing!',
         options: [
           {

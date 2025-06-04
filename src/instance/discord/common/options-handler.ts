@@ -41,6 +41,7 @@ export enum OptionType {
 
 export type OptionItem =
   | CategoryOption
+  | EmbedCategoryOption
   | LabelOption
   | TextOption
   | NumberOption
@@ -57,7 +58,14 @@ interface BaseOption {
 }
 
 export interface CategoryOption extends Omit<BaseOption, 'description'> {
-  type: OptionType.Category | OptionType.EmbedCategory
+  type: OptionType.Category
+  description?: string
+  header: string | undefined
+  options: OptionItem[]
+}
+
+export interface EmbedCategoryOption extends Omit<BaseOption, 'description'> {
+  type: OptionType.EmbedCategory
   header: string | undefined
   options: OptionItem[]
 }
@@ -116,7 +124,7 @@ export class OptionsHandler {
   private enabled = true
   private path: string[] = []
 
-  constructor(private readonly mainCategory: CategoryOption) {
+  constructor(private readonly mainCategory: CategoryOption | EmbedCategoryOption) {
     const uniqueId = new Set<string>()
 
     const allComponents = this.flattenOptions([this.mainCategory])
@@ -189,7 +197,10 @@ export class OptionsHandler {
     } satisfies ContainerComponentData
   }
 
-  private createCategoryView(context: ViewBuildContext, categoryOption: CategoryOption): ComponentInContainerData[] {
+  private createCategoryView(
+    context: ViewBuildContext,
+    categoryOption: CategoryOption | EmbedCategoryOption
+  ): ComponentInContainerData[] {
     const components: ComponentInContainerData[] = []
 
     if (!context.titleCreated) {
@@ -234,7 +245,12 @@ export class OptionsHandler {
 
           components.push({
             type: ComponentType.Section,
-            components: [{ type: ComponentType.TextDisplay, content: bold(option.name) }],
+            components: [
+              {
+                type: ComponentType.TextDisplay,
+                content: `${bold(option.name)}${option.description === undefined ? '' : `\n-# ${option.description}`}`
+              }
+            ],
             accessory: {
               type: ComponentType.Button,
               disabled: !this.enabled,
@@ -593,7 +609,7 @@ export class OptionsHandler {
     return false
   }
 
-  private getOption(): CategoryOption {
+  private getOption(): CategoryOption | EmbedCategoryOption {
     let currentCategory = this.mainCategory
     for (const path of this.path) {
       let found = false
