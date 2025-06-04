@@ -290,7 +290,12 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         continue
       }
 
-      const response = await Axios.head(part)
+      const response = await Axios.head(part).catch(() => undefined)
+      if (response === undefined) {
+        newMessage.push('(link)')
+        continue
+      }
+
       const contentType = response.headers['content-type'] as undefined as string | undefined
       if (typeof contentType !== 'string') {
         newMessage.push('(link)')
