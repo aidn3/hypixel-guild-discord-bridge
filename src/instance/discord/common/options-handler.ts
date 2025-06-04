@@ -51,7 +51,6 @@ export type OptionItem =
 
 interface BaseOption {
   type: OptionType
-  id: string
 
   name: string
   description: string
@@ -117,23 +116,19 @@ export class OptionsHandler {
   private originalReply: InteractionResponse | undefined
   private enabled = true
   private path: string[] = []
+  private ids = new Map<string, OptionItem>()
 
   constructor(private readonly mainCategory: CategoryOption | EmbedCategoryOption) {
-    const uniqueId = new Set<string>()
-
+    let currentId = 0
     const allComponents = this.flattenOptions([this.mainCategory])
     for (const component of allComponents) {
-      if (uniqueId.has(component.id)) {
-        throw new Error(`Duplicate component id: ${component.id}`)
-      }
-
-      uniqueId.add(component.id)
+      this.ids.set(`component-${currentId++}`, component)
     }
   }
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
     this.originalReply = await interaction.reply({
-      components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
@@ -151,7 +146,7 @@ export class OptionsHandler {
             await (alreadyReplied
               ? this.updateView()
               : messageInteraction.update({
-                  components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+                  components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
                   flags: MessageFlags.IsComponentsV2,
                   allowedMentions: { parse: [] }
                 }))
@@ -167,7 +162,7 @@ export class OptionsHandler {
   private async updateView(interaction?: ModalMessageModalSubmitInteraction): Promise<void> {
     if (interaction !== undefined) {
       await interaction.update({
-        components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+        components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [] }
       })
@@ -176,7 +171,7 @@ export class OptionsHandler {
 
     assert(this.originalReply)
     await this.originalReply.edit({
-      components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
@@ -191,8 +186,7 @@ export class OptionsHandler {
       return false
     }
 
-    const modifiableOptions = this.flattenOptions([this.mainCategory])
-    const option = modifiableOptions.find((option) => option.id === interaction.customId)
+    const option = this.ids.get(interaction.customId)
     assert(option !== undefined)
 
     if (option.type === OptionType.Category) {
@@ -219,7 +213,7 @@ export class OptionsHandler {
     if (option.type === OptionType.Text) {
       assert(interaction.isButton())
       await interaction.showModal({
-        customId: option.id,
+        customId: interaction.customId,
         title: `Setting ${option.name}`,
         components: [
           {
@@ -227,7 +221,7 @@ export class OptionsHandler {
             components: [
               {
                 type: ComponentType.TextInput,
-                customId: option.id,
+                customId: interaction.customId,
                 style: TextInputStyle.Short,
                 label: option.name,
 
@@ -249,11 +243,11 @@ export class OptionsHandler {
         .then(async (modalInteraction) => {
           assert(modalInteraction.isFromMessage())
 
-          const value = modalInteraction.fields.getTextInputValue(option.id)
+          const value = modalInteraction.fields.getTextInputValue(interaction.customId)
           option.setOption(value)
           await this.updateView(modalInteraction)
         })
-        .catch(errorHandler.promiseCatch(`handling modal submit for ${option.id}`))
+        .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
 
       return true
     }
@@ -261,7 +255,7 @@ export class OptionsHandler {
     if (option.type === OptionType.Number) {
       assert(interaction.isButton())
       await interaction.showModal({
-        customId: option.id,
+        customId: interaction.customId,
         title: `Setting ${option.name}`,
         components: [
           {
@@ -269,7 +263,7 @@ export class OptionsHandler {
             components: [
               {
                 type: ComponentType.TextInput,
-                customId: option.id,
+                customId: interaction.customId,
                 style: TextInputStyle.Short,
                 label: option.name,
 
@@ -290,7 +284,7 @@ export class OptionsHandler {
         .then(async (modalInteraction) => {
           assert(modalInteraction.isFromMessage())
 
-          const value = modalInteraction.fields.getTextInputValue(option.id).trim()
+          const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
           const intValue = Number.parseInt(value)
           if (intValue < option.min || intValue > option.max || value !== intValue.toString(10)) {
             await modalInteraction.reply({
@@ -302,7 +296,7 @@ export class OptionsHandler {
             await this.updateView(modalInteraction)
           }
         })
-        .catch(errorHandler.promiseCatch(`handling modal submit for ${option.id}`))
+        .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
 
       return true
     }
@@ -346,6 +340,7 @@ class ViewBuilder {
 
   constructor(
     private readonly mainCategory: CategoryOption | EmbedCategoryOption,
+    private readonly ids: Map<string, OptionItem>,
     private readonly path: string[],
     private readonly enabled: boolean
   ) {}
@@ -451,7 +446,7 @@ class ViewBuilder {
         disabled: !this.enabled,
         label: 'Open',
         style: ButtonStyle.Primary,
-        customId: option.id
+        customId: this.getId(option)
       }
     } satisfies SectionComponentData)
   }
@@ -484,7 +479,7 @@ class ViewBuilder {
         disabled: !this.enabled,
         label: option.getOption() ? 'ON' : 'OFF',
         style: option.getOption() ? ButtonStyle.Success : ButtonStyle.Secondary,
-        customId: option.id
+        customId: this.getId(option)
       }
     })
   }
@@ -499,7 +494,7 @@ class ViewBuilder {
       components: [
         {
           type: ComponentType.ChannelSelect,
-          customId: option.id,
+          customId: this.getId(option),
           disabled: !this.enabled,
           minValues: option.min,
           maxValues: option.max,
@@ -518,7 +513,7 @@ class ViewBuilder {
       components: [
         {
           type: ComponentType.RoleSelect,
-          customId: option.id,
+          customId: this.getId(option),
           disabled: !this.enabled,
           minValues: option.min,
           maxValues: option.max,
@@ -537,7 +532,7 @@ class ViewBuilder {
         disabled: !this.enabled,
         label: option.getOption(),
         style: ButtonStyle.Primary,
-        customId: option.id
+        customId: this.getId(option)
       }
     })
   }
@@ -551,7 +546,7 @@ class ViewBuilder {
         disabled: !this.enabled,
         label: option.getOption().toString(10),
         style: ButtonStyle.Primary,
-        customId: option.id
+        customId: this.getId(option)
       }
     })
   }
@@ -565,7 +560,7 @@ class ViewBuilder {
         disabled: !this.enabled,
         label: option.label,
         style: option.style,
-        customId: option.id
+        customId: this.getId(option)
       }
     })
   }
@@ -591,45 +586,34 @@ class ViewBuilder {
   }
 
   private getOption(): CategoryOption | EmbedCategoryOption {
-    let currentCategory = this.mainCategory
-    for (const path of this.path) {
-      let found = false
-      for (const categoryOption of currentCategory.options) {
-        if (categoryOption.id === path) {
-          assert(categoryOption.type === OptionType.Category)
+    if (this.path.length === 0) return this.mainCategory
 
-          currentCategory = categoryOption
-          found = true
-          break
-        }
-      }
+    const lastPath = this.path.at(-1)
+    assert(lastPath)
 
-      if (!found) throw new Error(`Can not find path to the category. Given: ${this.path.join(', ')}`)
-    }
+    const category = this.ids.get(lastPath)
+    assert(category !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
+    assert(category.type === OptionType.Category || category.type === OptionType.EmbedCategory)
 
-    return currentCategory
+    return category
   }
 
   private createTitle(): string {
-    let currentCategory = this.mainCategory
-    let title = `# ${escapeMarkdown(currentCategory.name)}`
+    let title = `# ${escapeMarkdown(this.mainCategory.name)}`
 
     for (const path of this.path) {
-      let found = false
-      for (const categoryOption of currentCategory.options) {
-        if (categoryOption.id === path) {
-          assert(categoryOption.type === OptionType.Category)
-
-          currentCategory = categoryOption
-          found = true
-          title += ` > ${escapeMarkdown(categoryOption.name)}`
-          break
-        }
-      }
-
-      if (!found) throw new Error(`Can not find path to the category. Given: ${this.path.join(', ')}`)
+      const categoryOption = this.ids.get(path)
+      assert(categoryOption !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
+      title += ` > ${escapeMarkdown(categoryOption.name)}`
     }
 
     return title
+  }
+
+  private getId(option: OptionItem): string {
+    for (const [id, optionEntry] of this.ids.entries()) {
+      if (option === optionEntry) return id
+    }
+    throw new Error(`could not find id for option name ${option.name}`)
   }
 }

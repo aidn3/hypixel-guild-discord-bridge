@@ -42,7 +42,6 @@ export default {
   handler: async function (context) {
     const options: EmbedCategoryOption = {
       type: OptionType.EmbedCategory,
-      id: 'main-options',
       name: 'Main',
       header:
         'Welcome to Application options!\n' +
@@ -52,7 +51,6 @@ export default {
       options: [
         {
           type: OptionType.Label,
-          id: 'admins-list',
           name: 'Admins',
           description:
             'Users who have admin permission on the application. Check `/help` for all commands admins can use.',
@@ -81,13 +79,11 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 
   return {
     type: OptionType.Category,
-    id: 'general',
     name: 'General',
     header: CategoryLabel,
     options: [
       {
         type: OptionType.Boolean,
-        id: 'autoRestart',
         name: `Auto Restart ${Recommended}`,
         description: 'Schedule restarting every 24 hours.',
         getOption: () => plugins.data.autoRestart,
@@ -105,19 +101,16 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
   return {
     type: OptionType.Category,
-    id: 'moderation',
     name: 'Moderation',
     header: CategoryLabel,
     options: [
       {
         type: OptionType.EmbedCategory,
-        id: 'heat-punishments-category',
         name: `Heat Punishments`,
         header: undefined,
         options: [
           {
             type: OptionType.Boolean,
-            id: 'heatPunishment',
             name: `Enable Heat Punishment ${Essential}`,
             description: 'Enable to set limits to the amount of actions staff can take before being blocked.',
             getOption: () => moderation.data.heatPunishment,
@@ -128,7 +121,6 @@ function fetchModerationOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Number,
-            id: 'kicksPerDay',
             name: 'Kicks Per Day',
             description: 'Allowed kicks per Day for staff before they are blocked from doing any more.',
 
@@ -142,7 +134,6 @@ function fetchModerationOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Number,
-            id: 'mutesPerDay',
             name: 'Mutes Per Day',
             description: 'Allowed mutes per Day for staff before they are blocked from doing any more.',
 
@@ -156,7 +147,6 @@ function fetchModerationOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Label,
-            id: 'immunity-list',
             name: 'Immunity List',
             description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
             getOption: () => (moderation.data.immune.length === 0 ? 'None' : moderation.data.immune.join(', '))
@@ -165,13 +155,11 @@ function fetchModerationOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.EmbedCategory,
-        id: 'profanity-category',
         name: `Profanity Filter`,
         header: undefined,
         options: [
           {
             type: OptionType.Boolean,
-            id: 'profanityEnabled',
             name: `Profanity Filter ${Essential}`,
             description: 'Enable to filter and censor users chat messages of any profanity.',
             getOption: () => moderation.data.profanityEnabled,
@@ -182,7 +170,6 @@ function fetchModerationOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Label,
-            id: 'profanity-list',
             name: 'Profanity List',
             description: 'Use command `/profanity` to fine tune the list.',
             getOption: undefined
@@ -198,13 +185,11 @@ function fetchQualityOptions(application: Application): CategoryOption {
 
   return {
     type: OptionType.Category,
-    id: 'quality',
     name: 'Quality Of Life',
     header: CategoryLabel,
     options: [
       {
         type: OptionType.Boolean,
-        id: 'darkAuctionReminder',
         name: 'Darkauction Reminder',
         description: 'Send a reminder when a skyblock dark auction is starting.',
         getOption: () => plugins.data.darkAuctionReminder,
@@ -215,7 +200,6 @@ function fetchQualityOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.Boolean,
-        id: 'starfallCultReminder',
         name: 'Starfall Cult Reminder',
         description: 'Send a reminder when the skyblock starfall cult gathers.',
         getOption: () => plugins.data.starfallCultReminder,
@@ -234,12 +218,10 @@ function fetchDiscordOptions(application: Application): CategoryOption {
   return {
     type: OptionType.Category,
     name: 'Discord',
-    id: 'discord',
     header: CategoryLabel,
     options: [
       {
         type: OptionType.Channel,
-        id: 'discord-public-channels',
 
         name: `Public Channels ${Essential}`,
         description: 'Manage public channels',
@@ -255,7 +237,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.Boolean,
-        id: 'alwaysReplyReaction',
         name: 'Always Reply',
         description:
           'Enable to always send a text reply instead of reactions when a problem occurs when sending a discord user message.',
@@ -267,7 +248,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.Boolean,
-        id: 'enforceVerification',
         name: 'Enforce Verification',
         description: 'Enable to always require verification via `/verify` to chat in the application.',
         getOption: () => discord.data.enforceVerification,
@@ -279,7 +259,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
       {
         type: OptionType.Category,
         name: 'Minecraft Events',
-        id: 'discord-minecraft-events',
         description: 'Advanced options for fine tuning public chat channels.',
         header:
           CategoryLabel +
@@ -288,7 +267,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         options: [
           {
             type: OptionType.Boolean,
-            id: 'guildOnline',
             name: `Member Online ${Recommended}`,
             description:
               'Show a temporarily message in the designated public discord channels when a guild member comes online.',
@@ -300,7 +278,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Boolean,
-            id: 'guildOffline',
             name: `Member Offline ${Recommended}`,
             description:
               'Show a temporarily message in the designated public discord channels when a guild member goes offline.',
@@ -315,13 +292,11 @@ function fetchDiscordOptions(application: Application): CategoryOption {
       {
         type: OptionType.Category,
         name: 'Staff Options',
-        id: 'discord-staff-options',
         description: 'Assign staff channels and roles, so the application can integrate with them.',
         header: 'These are dangerous permissions. Make sure you know what you are doing!',
         options: [
           {
             type: OptionType.Channel,
-            id: 'discord-officer-channels',
 
             name: 'Officer Channels',
             description: 'Manage officer channels',
@@ -337,7 +312,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Channel,
-            id: 'discord-logs-channels',
 
             name: 'Logs Channels',
             description: 'Channels where application logs are sent. This is for staff only!',
@@ -353,7 +327,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Role,
-            id: 'discord-helper-roles',
 
             name: 'Helper Roles',
             description: 'Staff roles that have permissions to do commands such as `!toggle` and `/invite`',
@@ -369,7 +342,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Role,
-            id: 'discord-officer-roles',
 
             name: 'Officer Roles',
             description: 'Staff roles that have permissions to do destructive commands such as `/kick`.',
@@ -395,13 +367,11 @@ function fetchCommandsOptions(application: Application): CategoryOption {
 
   return {
     type: OptionType.Category,
-    id: 'chat-commands',
     name: 'Chat Commands',
     header: CategoryLabel,
     options: [
       {
         type: OptionType.Boolean,
-        id: 'chat-commands-enabled',
         name: `Enable Chat Commands ${Recommended}`,
         description: 'Enable commands such as `!cata` and `!iq`',
         getOption: () => commands.data.enabled,
@@ -412,14 +382,12 @@ function fetchCommandsOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.Label,
-        id: 'chat-commands-admin-username',
         name: 'Admin Username',
         description: 'You can change admin username from **Minecraft** category.',
         getOption: () => minecraft.data.adminUsername
       },
       {
         type: OptionType.Label,
-        id: 'disabled-chat-commands',
         name: 'Disabled Chat Commands',
         description: 'This can only be changed via `!toggle`.',
         getOption: () =>
@@ -434,13 +402,11 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
 
   return {
     type: OptionType.Category,
-    id: 'minecraft',
     name: 'Minecraft',
     header: undefined,
     options: [
       {
         type: OptionType.Boolean,
-        id: 'stuf',
         name: 'STuF',
         description: 'Bypass Hypixel restriction on hyperlinks using STuF encoding.',
         getOption: () => minecraft.data.stuf,
@@ -451,7 +417,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.Boolean,
-        id: 'resolveLinks',
         name: `Resolve Links ${Recommended}`,
         description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
         getOption: () => minecraft.data.resolveLinks,
@@ -462,13 +427,11 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.EmbedCategory,
-        id: 'guildReactions',
         name: 'Guild Reaction',
         header: 'Auto replying and reacting to various in-game guild events.',
         options: [
           {
             type: OptionType.Boolean,
-            id: 'joinGuildReaction',
             name: 'Guild Join Reaction',
             description: 'Send a greeting message when a member joins the guild.',
             getOption: () => minecraft.data.joinGuildReaction,
@@ -479,7 +442,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Boolean,
-            id: 'leaveGuildReaction',
             name: 'Guild Leave Reaction',
             description: 'Send a reaction message when a member leaves the guild.',
             getOption: () => minecraft.data.leaveGuildReaction,
@@ -490,7 +452,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Boolean,
-            id: 'kickGuildReaction',
             name: 'Guild Kick Reaction',
             description: 'Send a reaction message when a member is kicked from the guild.',
             getOption: () => minecraft.data.kickGuildReaction,
@@ -503,13 +464,11 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.EmbedCategory,
-        id: 'minecraft-dangerous-options',
         name: 'Staff Options',
         header: 'These are dangerous permissions. Make sure you know what you are doing!',
         options: [
           {
             type: OptionType.Text,
-            id: 'minecraft-admin-username',
 
             name: 'Admin Username',
             description: 'In-game username of the person who has full permission over the application.',
@@ -527,13 +486,11 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.EmbedCategory,
-        id: 'minecraft-instances',
         name: 'Instances',
         header: undefined,
         options: [
           {
             type: OptionType.Action,
-            id: 'minecraft-instance-status',
 
             name: 'Instances Status',
             description: 'Fetch Minecraft instances status.',
@@ -544,7 +501,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Action,
-            id: 'minecraft-instance-add',
 
             name: 'Instance Add',
             description: 'Add a Minecraft instance.',
@@ -555,7 +511,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Action,
-            id: 'minecraft-instance-remove',
 
             name: 'Instance Remove',
             description: 'Remove a Minecraft instance.',
