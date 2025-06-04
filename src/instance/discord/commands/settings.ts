@@ -413,6 +413,17 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Boolean,
+        id: 'resolveLinks',
+        name: 'Resolve Links',
+        description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
+        getOption: () => minecraft.data.resolveLinks,
+        toggleOption: () => {
+          minecraft.data.resolveLinks = !minecraft.data.resolveLinks
+          minecraft.markDirty()
+        }
+      },
+      {
         type: OptionType.EmbedCategory,
         id: 'guildReactions',
         name: 'Guild Reaction',

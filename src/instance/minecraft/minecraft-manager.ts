@@ -27,6 +27,7 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
       instances: [],
 
       stuf: false,
+      resolveLinks: true,
       joinGuildReaction: true,
       leaveGuildReaction: true,
       kickGuildReaction: true

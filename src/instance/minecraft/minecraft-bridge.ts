@@ -1,7 +1,9 @@
 import assert from 'node:assert'
 
+import Axios from 'axios'
 import EmojisMap from 'emoji-name-map'
 import type { Logger } from 'log4js'
+import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application.js'
 import type {
@@ -36,6 +38,7 @@ import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   private readonly arabicFixer = new ArabicFixer()
+  private readonly sendingQueue = new PromiseQueue()
 
   constructor(
     application: Application,
@@ -64,27 +67,19 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
-    const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
+    if (event.channelType === ChannelType.Private) return
 
-    if (event.channelType === ChannelType.Public) {
-      this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
-      void this.clientInstance
-        .send(
-          this.formatChatMessage('gc', event.username, replyUsername, event.message),
-          MinecraftSendChatPriority.Default,
-          event.eventId
-        )
-        .catch(this.errorHandler.promiseCatch('sending public chat message'))
-    } else if (event.channelType === ChannelType.Officer) {
-      this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
-      void this.clientInstance
-        .send(
-          this.formatChatMessage('oc', event.username, replyUsername, event.message),
-          MinecraftSendChatPriority.Default,
-          event.eventId
-        )
-        .catch(this.errorHandler.promiseCatch('sending officer chat message'))
-    }
+    const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
+    const prefix = event.channelType === ChannelType.Public ? 'gc' : 'oc'
+
+    this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
+
+    this.sendingQueue
+      .add(async () => {
+        const message = await this.formatChatMessage(prefix, event.username, replyUsername, event.message)
+        await this.clientInstance.send(message, MinecraftSendChatPriority.Default, event.eventId)
+      })
+      .catch(this.errorHandler.promiseCatch('sending chat message'))
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
@@ -238,19 +233,19 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     }
   }
 
-  private formatChatMessage(
+  private async formatChatMessage(
     prefix: string,
     username: string,
     replyUsername: string | undefined,
     message: string
-  ): string {
+  ): Promise<string> {
     let full = `/${prefix} `
 
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`
     full += ': '
 
-    message = this.encodeMessage(message)
+    message = await this.encodeMessage(message)
     full += message
       .split('\n')
       .map((s) => s.trim())
@@ -260,26 +255,56 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     return full
   }
 
-  private encodeMessage(message: string): string {
-    message = this.application.minecraftManager.getConfig().data.stuf
-      ? stufEncode(message)
-      : message
-          .split(' ')
-          .map((part) => {
-            try {
-              if (part.startsWith('https:') || part.startsWith('http')) return '(link)'
-            } catch {
-              /* ignored */
-            }
-            return part
-          })
-          .join(' ')
+  private async encodeMessage(message: string): Promise<string> {
+    if (this.application.minecraftManager.getConfig().data.stuf) {
+      message = stufEncode(message)
+    } else if (this.application.minecraftManager.getConfig().data.resolveLinks) {
+      message = await this.resolveLinkHide(message)
+    } else {
+      message = message
+        .split(' ')
+        .map((part) => {
+          try {
+            if (part.startsWith('https:') || part.startsWith('http')) return '(link)'
+          } catch {
+            /* ignored */
+          }
+          return part
+        })
+        .join(' ')
+    }
 
     message = this.arabicFixer.encode(message)
     message = this.substituteEmoji(message)
     message = this.cleanStandardEmoji(message)
 
     return message
+  }
+
+  private async resolveLinkHide(message: string): Promise<string> {
+    const newMessage: string[] = []
+
+    for (const part of message.split(' ')) {
+      if (!part.startsWith('https:') && !part.startsWith('http')) {
+        newMessage.push(part)
+        continue
+      }
+
+      const response = await Axios.head(part)
+      const contentType = response.headers['content-type'] as undefined as string | undefined
+      if (typeof contentType !== 'string') {
+        newMessage.push('(link)')
+        continue
+      }
+
+      const type = contentType.split('/')[0]
+      if (type === 'image') newMessage.push('(image)')
+      else if (type === 'video') newMessage.push('(video)')
+      else if (contentType.includes('application/pdf')) newMessage.push('(pdf)')
+      else newMessage.push('(link)')
+    }
+
+    return newMessage.join(' ')
   }
 
   private substituteEmoji(message: string): string {
