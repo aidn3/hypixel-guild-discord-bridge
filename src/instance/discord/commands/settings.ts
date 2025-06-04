@@ -241,7 +241,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         type: OptionType.Channel,
         id: 'discord-public-channels',
 
-        name: 'Public Channels',
+        name: `Public Channels ${Essential}`,
         description: 'Manage public channels',
 
         min: 0,
@@ -402,7 +402,7 @@ function fetchCommandsOptions(application: Application): CategoryOption {
       {
         type: OptionType.Boolean,
         id: 'chat-commands-enabled',
-        name: 'Enable Chat Commands',
+        name: `Enable Chat Commands ${Recommended}`,
         description: 'Enable commands such as `!cata` and `!iq`',
         getOption: () => commands.data.enabled,
         toggleOption: () => {
@@ -452,7 +452,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       {
         type: OptionType.Boolean,
         id: 'resolveLinks',
-        name: 'Resolve Links',
+        name: `Resolve Links ${Recommended}`,
         description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
         getOption: () => minecraft.data.resolveLinks,
         toggleOption: () => {
