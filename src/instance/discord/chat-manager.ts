@@ -1,6 +1,5 @@
 import type { Client, Message, TextChannel } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
-import EmojisMap from 'emoji-name-map'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
@@ -183,19 +182,10 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     })
   }
 
-  private cleanStandardEmoji(message: string): string {
-    for (const [emojiReadable, emojiUnicode] of Object.entries(EmojisMap.emoji)) {
-      message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
-    }
-
-    return message
-  }
-
   private cleanMessage(messageEvent: Message): string {
     let content = messageEvent.cleanContent
 
-    content = this.cleanGuildEmoji(content)
-    content = this.cleanStandardEmoji(content).trim()
+    content = this.cleanGuildEmoji(content).trim()
 
     if (messageEvent.attachments.size > 0) {
       for (const [, attachment] of messageEvent.attachments) {
