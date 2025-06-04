@@ -8,15 +8,9 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type PluginInstance from '../../common/plugin-instance.js'
 
 import type { PluginConfig } from './common/plugins-config.js'
-import { OfficialPlugins } from './common/plugins-config.js'
 import AutoRestartPlugin from './implementations/auto-restart-plugin.js'
 import DarkAuctionPlugin from './implementations/dark-auction-plugin.js'
-import HideLinksPlugin from './implementations/hide-links-plugin.js'
-import LimboPlugin from './implementations/limbo-plugin.js'
-import ReactionPlugin from './implementations/reaction-plugin.js'
 import StarfallCultPlugin from './implementations/starfall-cult-plugin.js'
-import StufPlugin from './implementations/stuf-plugin.js'
-import WarpPlugin from './implementations/warp-plugin.js'
 
 export class PluginsManager extends Instance<InstanceType.Util> {
   private readonly config: ConfigManager<PluginConfig>
@@ -26,24 +20,15 @@ export class PluginsManager extends Instance<InstanceType.Util> {
     super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Util)
 
     this.config = new ConfigManager(application, application.getConfigFilePath('features-manager.json'), {
-      enabledPlugins: [
-        OfficialPlugins.AutoRestart,
-        OfficialPlugins.DarkAuctionReminder,
-        OfficialPlugins.Limbo,
-        OfficialPlugins.Reaction,
-        OfficialPlugins.StarfallCultReminder
-      ]
+      darkAuctionReminder: true,
+      starfallCultReminder: true,
+      autoRestart: false
     })
 
     this.instances.push(
       new AutoRestartPlugin(application, this),
       new DarkAuctionPlugin(application, this),
-      new HideLinksPlugin(application, this),
-      new LimboPlugin(application, this),
-      new ReactionPlugin(application, this),
-      new StarfallCultPlugin(application, this),
-      new StufPlugin(application, this),
-      new WarpPlugin(application, this)
+      new StarfallCultPlugin(application, this)
     )
   }
 

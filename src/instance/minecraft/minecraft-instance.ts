@@ -6,6 +6,7 @@ import type Application from '../../application.js'
 import type { ChannelType, MinecraftSendChatPriority } from '../../common/application-event.js'
 import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import type { Timeout } from '../../util/timeout.js'
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
@@ -14,6 +15,8 @@ import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
 import GameTogglesHandler from './handlers/game-toggles-handler.js'
+import LimboHandler from './handlers/limbo-handler.js'
+import Reaction from './handlers/reaction.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
@@ -33,6 +36,8 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private selfbroadcastHandler: SelfbroadcastHandler
   private chatManager: ChatManager
   private gameToggle: GameTogglesHandler
+  private reactionHandler: Reaction
+  private limboHandler: LimboHandler
 
   private readonly messageAssociation: MessageAssociation
   private readonly bridge: MinecraftBridge
@@ -77,12 +82,18 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       this.messageAssociation
     )
     this.gameToggle = new GameTogglesHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.limboHandler = new LimboHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.reactionHandler = new Reaction(this.application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
     const adminUsername = this.minecraftManager.getConfig().data.adminUsername
     if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
+  }
+
+  public async acquireLimbo(): Promise<Timeout<void>> {
+    return this.limboHandler.acquire()
   }
 
   connect(): void {
@@ -119,6 +130,8 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.stateHandler.registerEvents(this.clientSession)
     this.chatManager.registerEvents(this.clientSession)
     this.gameToggle.registerEvents(this.clientSession)
+    this.limboHandler.registerEvents(this.clientSession)
+    this.reactionHandler.registerEvents(this.clientSession)
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }

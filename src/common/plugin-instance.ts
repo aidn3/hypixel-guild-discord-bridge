@@ -9,7 +9,7 @@ import { Instance } from './instance.js'
 export default abstract class PluginInstance extends Instance<InstanceType.Plugin> {
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
 
-  private readonly pluginsManager: PluginsManager
+  protected readonly pluginsManager: PluginsManager
 
   /**
    * Do NOT supersede the function and change its signature.
@@ -24,10 +24,6 @@ export default abstract class PluginInstance extends Instance<InstanceType.Plugi
   public abstract onReady(): Promise<void> | void
 
   public abstract pluginInfo(): PluginInfo
-
-  public enabled(): boolean {
-    return this.pluginsManager.getConfig().data.enabledPlugins.includes(this.instanceName)
-  }
 
   protected addChatCommand(command: ChatCommandHandler): void {
     this.application.commandsInstance.commands.push(command)

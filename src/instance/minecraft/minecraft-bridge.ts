@@ -30,6 +30,7 @@ import { antiSpamString } from '../../util/shared-util.js'
 
 import ArabicFixer from './common/arabic-fixer.js'
 import type MessageAssociation from './common/message-association.js'
+import { stufEncode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
@@ -63,13 +64,12 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   onChat(event: ChatEvent): void | Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
-    const message = this.arabicFixer.encode(event.message)
 
     if (event.channelType === ChannelType.Public) {
       this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
       void this.clientInstance
         .send(
-          this.formatChatMessage('gc', event.username, replyUsername, message),
+          this.formatChatMessage('gc', event.username, replyUsername, event.message),
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -78,7 +78,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
       void this.clientInstance
         .send(
-          this.formatChatMessage('oc', event.username, replyUsername, message),
+          this.formatChatMessage('oc', event.username, replyUsername, event.message),
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -248,6 +248,8 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`
     full += ': '
+
+    message = this.encodeMessage(message)
     full += message
       .split('\n')
       .map((s) => s.trim())
@@ -255,5 +257,25 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       .trim()
 
     return full
+  }
+
+  private encodeMessage(message: string): string {
+    message = this.application.minecraftManager.getConfig().data.stuf
+      ? stufEncode(message)
+      : message
+          .split(' ')
+          .map((part) => {
+            try {
+              if (part.startsWith('https:') || part.startsWith('http')) return '(link)'
+            } catch {
+              /* ignored */
+            }
+            return part
+          })
+          .join(' ')
+
+    message = this.arabicFixer.encode(message)
+
+    return message
   }
 }

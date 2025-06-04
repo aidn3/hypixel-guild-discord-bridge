@@ -33,6 +33,7 @@ import UnmuteChat from './chat/unmute.js'
 import type ClientSession from './client-session.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
 import type MessageAssociation from './common/message-association.js'
+import { stufDecode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class ChatManager extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
@@ -128,6 +129,8 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
   }
 
   private onMessage(message: string): void {
+    message = stufDecode(message)
+
     for (const module of this.chatModules) {
       void Promise.resolve(
         module.onChat({

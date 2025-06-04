@@ -1,14 +1,11 @@
 export interface PluginConfig {
-  enabledPlugins: string[]
+  autoRestart: boolean
+  starfallCultReminder: boolean
+  darkAuctionReminder: boolean
 }
 
 export enum OfficialPlugins {
   AutoRestart = 'auto-restart',
   DarkAuctionReminder = 'dark-auction-reminder',
-  Limbo = 'limbo',
-  Reaction = 'reaction',
-  StarfallCultReminder = 'starfall-cult-reminder',
-  Stuf = 'stuf',
-  HideLinks = 'hide-links',
-  Warp = 'warp'
+  StarfallCultReminder = 'starfall-cult-reminder'
 }

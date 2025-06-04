@@ -1,81 +1,30 @@
-import type Application from '../../../application.js'
-import type { MinecraftSendChatPriority } from '../../../common/application-event.js'
-import type { PluginInfo } from '../../../common/plugin-instance.js'
-import PluginInstance from '../../../common/plugin-instance.js'
-// eslint-disable-next-line import/no-restricted-paths
-import ChatManager from '../../minecraft/chat-manager.js'
-import MinecraftInstance from '../../minecraft/minecraft-instance.js'
-import { OfficialPlugins } from '../common/plugins-config.js'
-import type { PluginsManager } from '../plugins-manager.js'
-// eslint-disable-next-line import/no-restricted-paths
+export function stufEncode(message: string): string {
+  return message
+    .split(' ')
+    .map((part) => {
+      try {
+        if (part.startsWith('https:') || part.startsWith('http')) return encode(part)
+      } catch {
+        /* ignored */
+      }
+      return part
+    })
+    .join(' ')
+}
 
-export default class StufPlugin extends PluginInstance {
-  constructor(application: Application, pluginsManager: PluginsManager) {
-    super(application, pluginsManager, OfficialPlugins.Stuf)
-  }
-
-  pluginInfo(): PluginInfo {
-    return { description: 'Bypass Hypixel restriction on hyperlinks', conflicts: [OfficialPlugins.HideLinks] }
-  }
-
-  onReady(): Promise<void> | void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias,unicorn/no-this-assignment
-    const self = this
-    // @ts-expect-error onMessage is private
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const onMessage = ChatManager.prototype.onMessage
-
-    // @ts-expect-error onMessage is private
-    ChatManager.prototype.onMessage = function (message: string): void {
-      if (!self.enabled()) {
-        onMessage.call(this, message)
-        return
+export function stufDecode(message: string): string {
+  return message
+    .split(' ')
+    .map((part) => {
+      try {
+        if (part.startsWith('l$')) return decode(part)
+      } catch {
+        /* ignored */
       }
 
-      const modifiedMessage = message
-        .split(' ')
-        .map((part) => {
-          try {
-            if (part.startsWith('l$')) return decode(part)
-          } catch {
-            /* ignored */
-          }
-
-          return part
-        })
-        .join(' ')
-
-      onMessage.call(this, modifiedMessage)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const sendMessage = MinecraftInstance.prototype.send
-
-    MinecraftInstance.prototype.send = async function (
-      message: string,
-      priority: MinecraftSendChatPriority,
-      originEventId: string | undefined
-    ): Promise<void> {
-      if (!self.enabled()) {
-        await sendMessage.call(this, message, priority, originEventId)
-        return
-      }
-
-      const modifiedMessage = message
-        .split(' ')
-        .map((part) => {
-          try {
-            if (part.startsWith('https:') || part.startsWith('http')) return encode(part)
-          } catch {
-            /* ignored */
-          }
-          return part
-        })
-        .join(' ')
-
-      await sendMessage.call(this, modifiedMessage, priority, originEventId)
-    }
-  }
+      return part
+    })
+    .join(' ')
 }
 
 // Modified version of https://github.com/stuffyerface/STuF

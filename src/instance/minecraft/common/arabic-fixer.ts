@@ -3,10 +3,9 @@ import assert from 'node:assert'
 import { default as esrever } from 'esrever'
 
 export default class ArabicFixer {
-  private static readonly ArabicLanguage = /[\u0600-\u06FF\u200C\u200F\uFB8A]+/g
-
   public encode(message: string): string {
-    if (!ArabicFixer.ArabicLanguage.test(message)) return message
+    const ArabicLanguage = /[\u0600-\u06FF\u200C\u200F\uFB8A]+/g
+    if (!ArabicLanguage.test(message)) return message
 
     return this.smartReverse(message)
   }
@@ -83,7 +82,6 @@ export default class ArabicFixer {
     const isnonJoinerRegex = String.raw`(?<=\s|^|$|[` + nonJoinerLetters + '])'
     const JoinerRegex = String.raw`(?<!\s\w[^` + nonJoinerLetters + '])'
 
-    /* eslint-disable unicorn/no-array-push-push */
     const allRules: { regex: RegExp; replace: string }[] = []
     allRules.push({ regex: new RegExp(spaceAfter + 'الله', 'g'), replace: 'ﷲ' }) //الله
     allRules.push({ regex: new RegExp(spaceAfter + 'الله' + spaceAfter, 'g'), replace: 'ﷲ' }) //الله
@@ -188,7 +186,6 @@ export default class ArabicFixer {
     allRules.push({ regex: new RegExp(nonJoinerRegex + 'ي' + nospaceAfter, 'g'), replace: 'ﺌ' })
     allRules.push({ regex: new RegExp(JoinerRegex + 'ي' + nospaceAfter, 'g'), replace: 'ﺋ' })
     allRules.push({ regex: new RegExp(nonJoinerRegex + 'ي' + spaceAfter, 'g'), replace: 'ﺊ' })
-    /* eslint-enable unicorn/no-array-push-push */
 
     return allRules
   }

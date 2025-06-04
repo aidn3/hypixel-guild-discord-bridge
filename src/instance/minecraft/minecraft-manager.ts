@@ -24,7 +24,12 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
 
     this.config = new ConfigManager(application, application.getConfigFilePath('minecraft-manager.json'), {
       adminUsername: 'Steve',
-      instances: []
+      instances: [],
+
+      stuf: false,
+      joinGuildReaction: true,
+      leaveGuildReaction: true,
+      kickGuildReaction: true
     })
 
     const sessionDirectoryName = 'minecraft-sessions'

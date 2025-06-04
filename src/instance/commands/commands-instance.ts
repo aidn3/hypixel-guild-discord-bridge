@@ -39,6 +39,7 @@ import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
+import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
@@ -88,6 +89,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new StatusCommand(),
       new Toggle(),
       new Vengeance(),
+      new Warp(),
       new Weight()
     ]
 

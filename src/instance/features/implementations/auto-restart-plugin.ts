@@ -48,4 +48,8 @@ export default class AutoRestartPlugin extends PluginInstance {
       }
     }, AutoRestartPlugin.CheckEvery)
   }
+
+  private enabled(): boolean {
+    return this.pluginsManager.getConfig().data.autoRestart
+  }
 }

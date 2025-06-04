@@ -39,6 +39,11 @@ export default class StarfallCultPlugin extends PluginInstance {
       }
     }, 5000)
   }
+
+  private enabled(): boolean {
+    return this.pluginsManager.getConfig().data.starfallCultReminder
+  }
+
   private static getSkyblockTime(): { day: number } {
     const HourInMillisecond = 50_000
     const DayInMilliseconds = 24 * HourInMillisecond

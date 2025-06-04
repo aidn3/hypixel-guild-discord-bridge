@@ -31,6 +31,7 @@
       }
     ],
     "unicorn/no-process-exit": 0,
+    "unicorn/no-array-push-push": 0,
     "unicorn/filename-case": 2,
     "no-use-before-define": 0,
     "import/order": [

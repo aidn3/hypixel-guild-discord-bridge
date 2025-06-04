@@ -17,4 +17,9 @@ export enum ProxyProtocol {
 export interface MinecraftConfig {
   adminUsername: string
   instances: MinecraftInstanceConfig[]
+
+  stuf: boolean
+  joinGuildReaction: boolean
+  leaveGuildReaction: boolean
+  kickGuildReaction: boolean
 }
