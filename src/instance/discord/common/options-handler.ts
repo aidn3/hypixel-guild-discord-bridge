@@ -149,9 +149,9 @@ export class OptionsHandler {
             await (alreadyReplied
               ? this.updateView()
               : messageInteraction.update({
-                components: [this.createView()],
-                flags: MessageFlags.IsComponentsV2
-              }))
+                  components: [this.createView()],
+                  flags: MessageFlags.IsComponentsV2
+                }))
           })
           .catch(errorHandler.promiseCatch('updating container'))
       })

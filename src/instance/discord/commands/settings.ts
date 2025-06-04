@@ -22,7 +22,8 @@ import type { ProxyConfig } from '../../minecraft/common/config.js'
 // eslint-disable-next-line import/no-restricted-paths
 import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { CategoryOption, OptionsHandler, OptionType } from '../common/options-handler.js'
+import type { CategoryOption } from '../common/options-handler.js'
+import { OptionsHandler, OptionType } from '../common/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'
@@ -38,7 +39,7 @@ export default {
   permission: Permission.Admin,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
-  handler: async function(context) {
+  handler: async function (context) {
     const options: CategoryOption = {
       type: OptionType.EmbedCategory,
       id: 'main-options',
@@ -53,8 +54,13 @@ export default {
           type: OptionType.Label,
           id: 'admins-list',
           name: 'Admins',
-          description: 'Users who have admin permission on the application. Check `/help` for all commands admins can use.',
-          getOption: () => context.application.discordInstance.getStaticConfig().adminIds.map(adminId => `<@${adminId}>`).join(', ')
+          description:
+            'Users who have admin permission on the application. Check `/help` for all commands admins can use.',
+          getOption: () =>
+            context.application.discordInstance
+              .getStaticConfig()
+              .adminIds.map((adminId) => `<@${adminId}>`)
+              .join(', ')
         },
         fetchGeneralOptions(context.application),
         fetchDiscordOptions(context.application),
@@ -538,8 +544,8 @@ async function minecraftInstancesStatus(application: Application, interaction: B
     value:
       registeredInstances.length > 0
         ? registeredInstances
-          .map((instance) => `- **${instance.instanceName}:** ${instance.currentStatus()}`)
-          .join('\n')
+            .map((instance) => `- **${instance.instanceName}:** ${instance.currentStatus()}`)
+            .join('\n')
         : '(none registered)'
   } satisfies APIEmbedField)
 
@@ -823,9 +829,9 @@ async function minecraftInstanceRemove(
     embed.color = Color.Error
     embed.description += italic(
       'An error occurred while trying to remove Minecraft instance\n' +
-      'The results are inconclusive.\n' +
-      'Check the console logs for further  details\n' +
-      'Tread carefully when trying anything else.'
+        'The results are inconclusive.\n' +
+        'Check the console logs for further  details\n' +
+        'Tread carefully when trying anything else.'
     )
   }
 
