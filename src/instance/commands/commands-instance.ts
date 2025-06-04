@@ -116,6 +116,10 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     }
   }
 
+  public getConfig(): ConfigManager<CommandsConfig> {
+    return this.config
+  }
+
   connect(): void {
     this.checkCommandsIntegrity()
     this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')

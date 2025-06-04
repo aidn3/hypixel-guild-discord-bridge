@@ -13,4 +13,8 @@ export default class UnexpectedErrorHandler {
       this.logger.error(`Unexpected error: ${handlerName}`, error)
     }
   }
+
+  public error(handlerName: string, error: unknown): void {
+    this.promiseCatch(handlerName)(error)
+  }
 }

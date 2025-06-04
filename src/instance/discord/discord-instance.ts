@@ -125,6 +125,10 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     return this.config
   }
 
+  public getStaticConfig(): Readonly<StaticDiscordConfig> {
+    return this.staticConfig
+  }
+
   async connect(): Promise<void> {
     assert(this.staticConfig.key)
 
