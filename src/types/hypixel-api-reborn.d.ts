@@ -38,6 +38,8 @@ declare module 'hypixel-api-reborn' {
       }
     }
     slayer: SlayerProfile | undefined
+    jacobs_contest?: Partial<{ perks: { farming_level_cap: number } }>
+    pets_data?: Partial<{ pet_care: { pet_types_sacrificed: string[] } }>
     essence?: SkyblockV2Essence
   }
 
