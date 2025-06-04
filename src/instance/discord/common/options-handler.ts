@@ -67,7 +67,7 @@ export interface CategoryOption extends Omit<BaseOption, 'description'> {
 export interface EmbedCategoryOption extends Omit<BaseOption, 'description'> {
   type: OptionType.EmbedCategory
   header: string | undefined
-  options: OptionItem[]
+  options: Exclude<OptionItem, EmbedCategoryOption>[]
 }
 
 export interface LabelOption extends BaseOption {
@@ -112,14 +112,8 @@ export interface ActionOption extends BaseOption {
   onInteraction: (interaction: ButtonInteraction, errorHandler: UnexpectedErrorHandler) => Promise<boolean>
 }
 
-interface ViewBuildContext {
-  titleCreated: boolean
-  separatorApplied: boolean
-  categoryEnded: boolean
-}
-
 export class OptionsHandler {
-  private static readonly BackButton = 'back-button'
+  public static readonly BackButton = 'back-button'
   private originalReply: InteractionResponse | undefined
   private enabled = true
   private path: string[] = []
@@ -139,7 +133,7 @@ export class OptionsHandler {
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
     this.originalReply = await interaction.reply({
-      components: [this.createView()],
+      components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
@@ -157,8 +151,9 @@ export class OptionsHandler {
             await (alreadyReplied
               ? this.updateView()
               : messageInteraction.update({
-                  components: [this.createView()],
-                  flags: MessageFlags.IsComponentsV2
+                  components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+                  flags: MessageFlags.IsComponentsV2,
+                  allowedMentions: { parse: [] }
                 }))
           })
           .catch(errorHandler.promiseCatch('updating container'))
@@ -172,308 +167,19 @@ export class OptionsHandler {
   private async updateView(interaction?: ModalMessageModalSubmitInteraction): Promise<void> {
     if (interaction !== undefined) {
       await interaction.update({
-        components: [this.createView()],
-        flags: MessageFlags.IsComponentsV2
+        components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { parse: [] }
       })
       return
     }
 
     assert(this.originalReply)
     await this.originalReply.edit({
-      components: [this.createView()],
-      flags: MessageFlags.IsComponentsV2
+      components: [new ViewBuilder(this.mainCategory, this.path, this.enabled).create()],
+      flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { parse: [] }
     })
-  }
-
-  private createView(): ContainerComponentData {
-    const components: ComponentInContainerData[] = []
-
-    const context: ViewBuildContext = { titleCreated: false, separatorApplied: false, categoryEnded: false }
-    components.push(...this.createCategoryView(context, this.getOption()))
-
-    return {
-      type: ComponentType.Container,
-      components: components
-    } satisfies ContainerComponentData
-  }
-
-  private createCategoryView(
-    context: ViewBuildContext,
-    categoryOption: CategoryOption | EmbedCategoryOption
-  ): ComponentInContainerData[] {
-    const components: ComponentInContainerData[] = []
-
-    if (!context.titleCreated) {
-      context.titleCreated = true
-
-      const title = { type: ComponentType.TextDisplay, content: this.createTitle() }
-      if (this.path.length === 0) {
-        components.push(title)
-      } else {
-        components.push({
-          type: ComponentType.Section,
-          components: [title],
-          accessory: {
-            type: ComponentType.Button,
-
-            label: 'Back',
-            customId: OptionsHandler.BackButton,
-
-            style: ButtonStyle.Secondary,
-            disabled: !this.enabled
-          }
-        })
-      }
-      if (categoryOption.header !== undefined) {
-        components.push({ type: ComponentType.TextDisplay, content: categoryOption.header })
-      }
-
-      components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Large })
-      context.separatorApplied = true
-    }
-
-    for (const option of categoryOption.options) {
-      switch (option.type) {
-        case OptionType.Category: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.Section,
-            components: [
-              {
-                type: ComponentType.TextDisplay,
-                content: `${bold(option.name)}${option.description === undefined ? '' : `\n-# ${option.description}`}`
-              }
-            ],
-            accessory: {
-              type: ComponentType.Button,
-              disabled: !this.enabled,
-              label: 'Open',
-              style: ButtonStyle.Primary,
-              customId: option.id
-            }
-          } satisfies SectionComponentData)
-          context.separatorApplied = false
-
-          break
-        }
-        case OptionType.EmbedCategory: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          if (!context.separatorApplied) {
-            components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-            context.separatorApplied = true
-          }
-          components.push({ type: ComponentType.TextDisplay, content: `## ${option.name}` })
-          context.separatorApplied = false
-          if (option.header !== undefined) {
-            components.push({ type: ComponentType.TextDisplay, content: `-# ${option.header}` })
-          }
-
-          components.push(...this.createCategoryView(context, option))
-          context.categoryEnded = true
-
-          break
-        }
-        case OptionType.Label: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          let message = `**${option.name}**\n-# ${option.description}`
-          if (option.getOption !== undefined) message += `\n-# **Current Value:** ${escapeMarkdown(option.getOption())}`
-          components.push({ type: ComponentType.TextDisplay, content: message })
-          context.separatorApplied = false
-
-          break
-        }
-        case OptionType.Boolean: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.Section,
-            components: [
-              { type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }
-            ],
-            accessory: {
-              type: ComponentType.Button,
-              disabled: !this.enabled,
-              label: option.getOption() ? 'ON' : 'OFF',
-              style: option.getOption() ? ButtonStyle.Success : ButtonStyle.Secondary,
-              customId: option.id
-            }
-          } satisfies SectionComponentData)
-          context.separatorApplied = false
-
-          break
-        }
-        case OptionType.Channel: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.TextDisplay,
-            content: `${bold(option.name)}\n-# ${option.description}`
-          })
-          context.separatorApplied = false
-
-          components.push({
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.ChannelSelect,
-                customId: option.id,
-                disabled: !this.enabled,
-                minValues: option.min,
-                maxValues: option.max,
-                channelTypes: [ChannelType.GuildText],
-                defaultValues: option.getOption().map((o) => ({ id: o, type: SelectMenuDefaultValueType.Channel }))
-              }
-            ]
-          })
-
-          break
-        }
-        case OptionType.Role: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.TextDisplay,
-            content: `${bold(option.name)}\n-# ${option.description}`
-          })
-          context.separatorApplied = false
-          components.push({
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.RoleSelect,
-                customId: option.id,
-                disabled: !this.enabled,
-                minValues: option.min,
-                maxValues: option.max,
-                defaultValues: option.getOption().map((o) => ({ id: o, type: SelectMenuDefaultValueType.Role }))
-              }
-            ]
-          })
-
-          break
-        }
-        case OptionType.Text: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.Section,
-            components: [
-              { type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }
-            ],
-            accessory: {
-              type: ComponentType.Button,
-              disabled: !this.enabled,
-              label: option.getOption(),
-              style: ButtonStyle.Primary,
-              customId: option.id
-            }
-          })
-          context.separatorApplied = false
-
-          break
-        }
-        case OptionType.Number: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.Section,
-            components: [
-              { type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }
-            ],
-            accessory: {
-              type: ComponentType.Button,
-              disabled: !this.enabled,
-              label: option.getOption().toString(10),
-              style: ButtonStyle.Primary,
-              customId: option.id
-            }
-          })
-          context.separatorApplied = false
-
-          break
-        }
-        case OptionType.Action: {
-          if (context.categoryEnded) {
-            context.categoryEnded = false
-            if (!context.separatorApplied) {
-              components.push({ type: ComponentType.Separator, spacing: SeparatorSpacingSize.Small })
-              context.separatorApplied = true
-            }
-          }
-
-          components.push({
-            type: ComponentType.Section,
-            components: [
-              { type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }
-            ],
-            accessory: {
-              type: ComponentType.Button,
-              disabled: !this.enabled,
-              label: option.label,
-              style: option.style,
-              customId: option.id
-            }
-          } satisfies SectionComponentData)
-          context.separatorApplied = false
-
-          break
-        }
-        // No default
-      }
-    }
-
-    return components
   }
 
   private async handleInteraction(
@@ -609,6 +315,281 @@ export class OptionsHandler {
     return false
   }
 
+  private flattenOptions(options: OptionItem[]): OptionItem[] {
+    const flatOptions: OptionItem[] = []
+    for (const option of options) {
+      switch (option.type) {
+        case OptionType.Category:
+        case OptionType.EmbedCategory: {
+          flatOptions.push(option)
+          flatOptions.push(...this.flattenOptions(option.options))
+          break
+        }
+        default: {
+          flatOptions.push(option)
+          break
+        }
+      }
+    }
+
+    return flatOptions
+  }
+}
+
+class ViewBuilder {
+  private hasCreated = false
+
+  private titleCreated = false
+  private separatorApplied = false
+  private categoryEnded = false
+  private components: ComponentInContainerData[] = []
+
+  constructor(
+    private readonly mainCategory: CategoryOption | EmbedCategoryOption,
+    private readonly path: string[],
+    private readonly enabled: boolean
+  ) {}
+
+  public create(): ContainerComponentData {
+    if (this.hasCreated) throw new Error('This instance has already been used to create a view.')
+    this.hasCreated = true
+
+    this.createCategoryView(this.getOption())
+    return { type: ComponentType.Container, components: this.components } satisfies ContainerComponentData
+  }
+
+  private createCategoryView(categoryOption: CategoryOption | EmbedCategoryOption): void {
+    this.addTitleIfPossible(categoryOption)
+
+    for (const option of categoryOption.options) {
+      this.handleEndCategory()
+
+      switch (option.type) {
+        case OptionType.Category: {
+          this.addCategory(option)
+          break
+        }
+        case OptionType.EmbedCategory: {
+          this.addEmbedCategory(option)
+          break
+        }
+        case OptionType.Label: {
+          this.addLabel(option)
+
+          break
+        }
+        case OptionType.Boolean: {
+          this.addBoolean(option)
+          break
+        }
+        case OptionType.Channel: {
+          this.addChannel(option)
+          break
+        }
+        case OptionType.Role: {
+          this.addRole(option)
+          break
+        }
+        case OptionType.Text: {
+          this.addText(option)
+          break
+        }
+        case OptionType.Number: {
+          this.addNumber(option)
+          break
+        }
+        case OptionType.Action: {
+          this.addAction(option)
+          break
+        }
+        // No default
+      }
+    }
+  }
+
+  private addTitleIfPossible(currentCategory: CategoryOption | EmbedCategoryOption) {
+    if (!this.titleCreated) {
+      this.titleCreated = true
+
+      const title = { type: ComponentType.TextDisplay, content: this.createTitle() }
+      if (this.path.length === 0) {
+        this.append(title)
+      } else {
+        this.append({
+          type: ComponentType.Section,
+          components: [title],
+          accessory: {
+            type: ComponentType.Button,
+
+            label: 'Back',
+            customId: OptionsHandler.BackButton,
+
+            style: ButtonStyle.Secondary,
+            disabled: !this.enabled
+          }
+        })
+      }
+      if (currentCategory.header !== undefined) {
+        this.append({ type: ComponentType.TextDisplay, content: currentCategory.header })
+      }
+
+      this.tryApplySeperator(SeparatorSpacingSize.Large)
+    }
+  }
+
+  private addCategory(option: CategoryOption): void {
+    this.append({
+      type: ComponentType.Section,
+      components: [
+        {
+          type: ComponentType.TextDisplay,
+          content: `${bold(option.name)}${option.description === undefined ? '' : `\n-# ${option.description}`}`
+        }
+      ],
+      accessory: {
+        type: ComponentType.Button,
+        disabled: !this.enabled,
+        label: 'Open',
+        style: ButtonStyle.Primary,
+        customId: option.id
+      }
+    } satisfies SectionComponentData)
+  }
+
+  private addEmbedCategory(option: EmbedCategoryOption): void {
+    this.tryApplySeperator(SeparatorSpacingSize.Small)
+
+    this.append({ type: ComponentType.TextDisplay, content: `## ${option.name}` })
+
+    if (option.header !== undefined) {
+      this.append({ type: ComponentType.TextDisplay, content: `-# ${option.header}` })
+    }
+
+    this.createCategoryView(option)
+    this.categoryEnded = true
+  }
+
+  private addLabel(option: LabelOption): void {
+    let message = `**${option.name}**\n-# ${option.description}`
+    if (option.getOption !== undefined) message += `\n-# **Current Value:** ${escapeMarkdown(option.getOption())}`
+    this.append({ type: ComponentType.TextDisplay, content: message })
+  }
+
+  private addBoolean(option: BooleanOption): void {
+    this.append({
+      type: ComponentType.Section,
+      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      accessory: {
+        type: ComponentType.Button,
+        disabled: !this.enabled,
+        label: option.getOption() ? 'ON' : 'OFF',
+        style: option.getOption() ? ButtonStyle.Success : ButtonStyle.Secondary,
+        customId: option.id
+      }
+    })
+  }
+
+  private addChannel(option: DiscordSelectOption): void {
+    assert(option.type === OptionType.Channel)
+
+    this.append({ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` })
+
+    this.append({
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.ChannelSelect,
+          customId: option.id,
+          disabled: !this.enabled,
+          minValues: option.min,
+          maxValues: option.max,
+          channelTypes: [ChannelType.GuildText],
+          defaultValues: option.getOption().map((o) => ({ id: o, type: SelectMenuDefaultValueType.Channel }))
+        }
+      ]
+    })
+  }
+
+  private addRole(option: DiscordSelectOption): void {
+    this.append({ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` })
+
+    this.append({
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.RoleSelect,
+          customId: option.id,
+          disabled: !this.enabled,
+          minValues: option.min,
+          maxValues: option.max,
+          defaultValues: option.getOption().map((o) => ({ id: o, type: SelectMenuDefaultValueType.Role }))
+        }
+      ]
+    })
+  }
+
+  private addText(option: TextOption): void {
+    this.append({
+      type: ComponentType.Section,
+      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      accessory: {
+        type: ComponentType.Button,
+        disabled: !this.enabled,
+        label: option.getOption(),
+        style: ButtonStyle.Primary,
+        customId: option.id
+      }
+    })
+  }
+
+  private addNumber(option: NumberOption): void {
+    this.append({
+      type: ComponentType.Section,
+      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      accessory: {
+        type: ComponentType.Button,
+        disabled: !this.enabled,
+        label: option.getOption().toString(10),
+        style: ButtonStyle.Primary,
+        customId: option.id
+      }
+    })
+  }
+
+  private addAction(option: ActionOption): void {
+    this.append({
+      type: ComponentType.Section,
+      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      accessory: {
+        type: ComponentType.Button,
+        disabled: !this.enabled,
+        label: option.label,
+        style: option.style,
+        customId: option.id
+      }
+    })
+  }
+
+  private handleEndCategory(): void {
+    if (this.categoryEnded) {
+      this.categoryEnded = false
+      this.tryApplySeperator(SeparatorSpacingSize.Small)
+    }
+  }
+
+  private append(component: ComponentInContainerData): void {
+    assert(component.type !== ComponentType.Separator, 'use applySeperator() instead')
+
+    this.components.push(component)
+    this.separatorApplied = false
+  }
+
+  private tryApplySeperator(size: SeparatorSpacingSize): void {
+    if (this.separatorApplied) return
+    this.components.push({ type: ComponentType.Separator, spacing: size })
+    this.separatorApplied = true
+  }
+
   private getOption(): CategoryOption | EmbedCategoryOption {
     let currentCategory = this.mainCategory
     for (const path of this.path) {
@@ -650,25 +631,5 @@ export class OptionsHandler {
     }
 
     return title
-  }
-
-  private flattenOptions(options: OptionItem[]): OptionItem[] {
-    const flatOptions: OptionItem[] = []
-    for (const option of options) {
-      switch (option.type) {
-        case OptionType.Category:
-        case OptionType.EmbedCategory: {
-          flatOptions.push(option)
-          flatOptions.push(...this.flattenOptions(option.options))
-          break
-        }
-        default: {
-          flatOptions.push(option)
-          break
-        }
-      }
-    }
-
-    return flatOptions
   }
 }
