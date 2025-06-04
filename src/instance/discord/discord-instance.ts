@@ -48,7 +48,10 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
       loggerChannelIds: [],
 
       alwaysReplyReaction: false,
-      enforceVerification: false
+      enforceVerification: false,
+
+      guildOnline: true,
+      guildOffline: true
     })
 
     this.client = new Client({

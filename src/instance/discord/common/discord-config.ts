@@ -10,6 +10,9 @@ export interface DiscordConfig {
 
   alwaysReplyReaction: boolean
   enforceVerification: boolean
+
+  guildOnline: boolean
+  guildOffline: boolean
 }
 
 export const RepeatReaction: Emoji = { name: 'can_not_repeat_message', path: './resources/x.webp' }

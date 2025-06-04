@@ -278,6 +278,42 @@ function fetchDiscordOptions(application: Application): CategoryOption {
       },
       {
         type: OptionType.Category,
+        name: 'Minecraft Events',
+        id: 'discord-minecraft-events',
+        description: 'Advanced options for fine tuning public chat channels.',
+        header:
+          CategoryLabel +
+          '\n\n**These events are recommended for best user experience.**\n' +
+          'Do not turn off any unless you know what you are doing.',
+        options: [
+          {
+            type: OptionType.Boolean,
+            id: 'guildOnline',
+            name: `Member Online ${Recommended}`,
+            description:
+              'Show a temporarily message in the designated public discord channels when a guild member comes online.',
+            getOption: () => discord.data.guildOnline,
+            toggleOption: () => {
+              discord.data.guildOnline = !discord.data.guildOnline
+              discord.markDirty()
+            }
+          },
+          {
+            type: OptionType.Boolean,
+            id: 'guildOffline',
+            name: `Member Offline ${Recommended}`,
+            description:
+              'Show a temporarily message in the designated public discord channels when a guild member goes offline.',
+            getOption: () => discord.data.guildOffline,
+            toggleOption: () => {
+              discord.data.guildOffline = !discord.data.guildOffline
+              discord.markDirty()
+            }
+          }
+        ]
+      },
+      {
+        type: OptionType.Category,
         name: 'Staff Options',
         id: 'discord-staff-options',
         description: 'Assign staff channels and roles, so the application can integrate with them.',

@@ -167,6 +167,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       event.instanceName === this.clientInstance.instanceName
     )
       return
+
+    if (event.type === GuildPlayerEventType.Online && !this.config.data.guildOnline) return
+    if (event.type === GuildPlayerEventType.Offline && !this.config.data.guildOffline) return
+
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
     const clickableUsername = hyperlink(
       event.username,
