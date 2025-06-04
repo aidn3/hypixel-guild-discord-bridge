@@ -139,7 +139,7 @@ export class OptionsHandler {
     this.originalReply
       .createMessageComponentCollector({
         time: 300_000,
-        filter: (messageInteraction) => messageInteraction.user.id === messageInteraction.user.id
+        filter: (messageInteraction) => messageInteraction.user.id === interaction.user.id
       })
       .on('collect', (messageInteraction) => {
         void Promise.resolve()
