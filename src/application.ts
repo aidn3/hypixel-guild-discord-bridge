@@ -13,7 +13,7 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
-import { ConnectableInstance } from './common/connectable-instance.js'
+import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
@@ -164,7 +164,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     const tasks: Awaitable<unknown>[] = []
     for (const instance of this.getAllInstances().reverse()) {
       // reversed to go backward of `start()`
-      if (instance instanceof ConnectableInstance) {
+      if (instance instanceof ConnectableInstance && instance.currentStatus() !== Status.Fresh) {
         this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)
         tasks.push(instance.disconnect())
       }
