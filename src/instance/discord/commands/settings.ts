@@ -22,8 +22,8 @@ import type { ProxyConfig } from '../../minecraft/common/config.js'
 // eslint-disable-next-line import/no-restricted-paths
 import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import type { CategoryOption, EmbedCategoryOption } from '../common/options-handler.js'
-import { OptionsHandler, OptionType } from '../common/options-handler.js'
+import type { CategoryOption, EmbedCategoryOption } from '../util/options-handler.js'
+import { OptionsHandler, OptionType } from '../util/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'

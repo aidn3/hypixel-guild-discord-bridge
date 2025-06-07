@@ -8,10 +8,9 @@ import type {
 } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-import { Color } from '../../common/application-event.js'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-
-import { DefaultCommandFooter } from './common/discord-config.js'
+import { Color } from '../../../common/application-event.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
 
 enum Button {
   Next = 'next',

@@ -24,7 +24,7 @@ import type ModerationInstance from '../../moderation/moderation-instance.js'
 import { userIdentifiersToList } from '../../moderation/util.js'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { pageMessage } from '../discord-pager.js'
+import { pageMessage } from '../util/discord-pager.js'
 
 export default {
   getCommandBuilder: () =>

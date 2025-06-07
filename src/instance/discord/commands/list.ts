@@ -11,7 +11,7 @@ import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { pageMessage } from '../discord-pager.js'
+import { pageMessage } from '../util/discord-pager.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   const entries: string[] = []
