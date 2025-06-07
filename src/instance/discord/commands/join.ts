@@ -17,7 +17,7 @@ export default {
           .setDescription('Username of the player or name of the guild')
           .setRequired(true)
           .setAutocomplete(true)
-      ) as SlashCommandBuilder,
+      ),
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
   permission: Permission.Helper,
 

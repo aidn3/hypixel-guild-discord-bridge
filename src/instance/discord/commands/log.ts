@@ -47,7 +47,7 @@ export default {
       .addNumberOption((option) => option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75))
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setAutocomplete(true)
-      ) as SlashCommandBuilder,
+      ),
   permission: Permission.Helper,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
 

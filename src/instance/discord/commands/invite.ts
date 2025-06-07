@@ -13,7 +13,7 @@ export default {
       .setDescription('invite player to the guild in-game')
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
-      ) as SlashCommandBuilder,
+      ),
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
 
   permission: Permission.Helper,

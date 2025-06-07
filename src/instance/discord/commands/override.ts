@@ -11,7 +11,7 @@ export default {
       .setDescription('execute command to all clients in-game')
       .addStringOption((option) =>
         option.setName('command').setDescription('command to execute. e.g. "/guild party"').setRequired(true)
-      ) as SlashCommandBuilder,
+      ),
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
   permission: Permission.Admin,
 

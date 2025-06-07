@@ -16,7 +16,7 @@ export default {
       )
       .addStringOption((option) =>
         option.setName('rank').setDescription('rank to change to').setRequired(true).setAutocomplete(true)
-      ) as SlashCommandBuilder,
+      ),
   permission: Permission.Helper,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 

@@ -2,6 +2,7 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   SlashCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
   SlashCommandSubcommandsOnlyBuilder
 } from 'discord.js'
 import type { Logger } from 'log4js'
@@ -55,7 +56,10 @@ export interface ChatCommandContext {
 }
 
 export interface DiscordCommandHandler {
-  readonly getCommandBuilder: () => SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder
+  readonly getCommandBuilder: () =>
+    | SlashCommandBuilder
+    | SlashCommandSubcommandsOnlyBuilder
+    | SlashCommandOptionsOnlyBuilder
   readonly addMinecraftInstancesToOptions: OptionToAddMinecraftInstances
   readonly permission: Permission
   readonly handler: (context: Readonly<DiscordCommandContext>) => Promise<void>

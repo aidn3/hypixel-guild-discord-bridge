@@ -125,9 +125,7 @@ export default {
               .setAutocomplete(true)
           )
       )
-      .addSubcommand(
-        new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments')
-      ) as SlashCommandBuilder,
+      .addSubcommand(new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments')),
   permission: Permission.Helper,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 

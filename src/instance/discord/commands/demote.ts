@@ -13,7 +13,7 @@ export default {
       .setDescription('demote guild member in-game')
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
-      ) as SlashCommandBuilder,
+      ),
   permission: Permission.Helper,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
