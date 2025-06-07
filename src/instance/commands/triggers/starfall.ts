@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { formatTime } from '../../../util/shared-util.js'
 
 export default class Starfall extends ChatCommandHandler {
   constructor() {
@@ -40,30 +41,6 @@ export default class Starfall extends ChatCommandHandler {
       timeTillStarfall += DayInMilliseconds
     }
 
-    return `${context.username}, Cult of the Fallen Star is starting in ${this.formatTime(timeTillStarfall)}.`
-  }
-
-  private formatTime(time: number): string {
-    let result = ''
-    let variablesSet = 0
-    let remaining = Math.floor(time / 1000) // milli to seconds
-
-    const hours = Math.floor(remaining / 3600)
-    if (hours > 0) {
-      variablesSet++
-      result += `${hours}h`
-    }
-    remaining = remaining % 3600
-
-    const minutes = Math.floor(remaining / 60)
-    if (minutes > 0) {
-      variablesSet++
-      result += `${minutes}m`
-    }
-    remaining = remaining % 60
-
-    if (variablesSet <= 1) result += `${remaining}s`
-
-    return result
+    return `${context.username}, Cult of the Fallen Star is starting in ${formatTime(timeTillStarfall)}.`
   }
 }

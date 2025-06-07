@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import { default as Logger4js } from 'log4js'
 
 import { InternalInstancePrefix } from '../common/instance.js'
@@ -37,6 +39,38 @@ export function antiSpamString(): string {
   }
 
   return randomString
+}
+
+export function formatTime(time: number, maxPrecision = 2): string {
+  assert(maxPrecision >= 1, 'Minimum precision is 1')
+
+  let result = ''
+  let variablesSet = 0
+  let remaining = Math.floor(time / 1000) // milli to seconds
+
+  const days = Math.floor(remaining / 86_400)
+  if (days > 0) {
+    result += `${days}d`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % 86_400
+
+  const hours = Math.floor(remaining / 3600)
+  if (hours > 0) {
+    result += `${hours}h`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % 3600
+
+  const minutes = Math.floor(remaining / 60)
+  if (minutes > 0) {
+    result += `${minutes}m`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % 60
+
+  if (remaining > 0) result += `${remaining}s`
+  return result
 }
 
 export async function sleep(ms: number): Promise<void> {
