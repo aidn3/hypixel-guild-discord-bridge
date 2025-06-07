@@ -2,19 +2,19 @@ import type { Client } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
-import type { ConfigManager } from '../../common/config-manager.js'
-import { Status } from '../../common/connectable-instance.js'
-import EventHandler from '../../common/event-handler.js'
-import type EventHelper from '../../common/event-helper.js'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-
-import type { DiscordConfig } from './common/discord-config.js'
-import type DiscordInstance from './discord-instance.js'
+import type Application from '../../../application.js'
+import { InstanceType } from '../../../common/application-event.js'
+import type { ConfigManager } from '../../../common/config-manager.js'
+import { Status } from '../../../common/connectable-instance.js'
+import EventHandler from '../../../common/event-handler.js'
+import type EventHelper from '../../../common/event-helper.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { DiscordConfig } from '../common/discord-config.js'
+import type DiscordInstance from '../discord-instance.js'
 
 export default class LoggerManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   private readonly config: ConfigManager<DiscordConfig>
+
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
@@ -100,7 +100,9 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
   }
 
   private async send(message: string): Promise<void> {
-    if (this.clientInstance.currentStatus() !== Status.Connected) {
+    const currentStatus = this.clientInstance.currentStatus()
+    if (currentStatus !== Status.Connected) {
+      if (currentStatus === Status.Ended) return
       this.logger.warn(
         `Dropping log message due to discord not being connected. current status: ${this.clientInstance.currentStatus()}`
       )

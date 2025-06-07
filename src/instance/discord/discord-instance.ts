@@ -13,10 +13,10 @@ import { CommandManager } from './command-manager.js'
 import type { DiscordConfig } from './common/discord-config.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
+import LoggerManager from './features/logger-manager.js'
 import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
-import LoggerManager from './logger-manager.js'
 
 export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
   readonly commandsManager: CommandManager
