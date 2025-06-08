@@ -40,8 +40,8 @@ import MessageDeleter from './common/message-deletor.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridge extends Bridge<DiscordInstance> {
+  public readonly messageDeleter: MessageDeleter
   private readonly messageAssociation: MessageAssociation
-  private readonly messageDeleter: MessageDeleter
   private readonly staticConfig: Readonly<StaticDiscordConfig>
   private readonly config: ConfigManager<DiscordConfig>
   /*

@@ -216,6 +216,7 @@ function fetchQualityOptions(application: Application): CategoryOption {
 function fetchDiscordOptions(application: Application): CategoryOption {
   const discord = application.discordInstance.getConfig()
   const leaderboard = application.discordInstance.leaderboard.getConfig()
+  const deleterConfig = application.discordInstance.getDeleterConfig()
 
   return {
     type: OptionType.Category,
@@ -311,6 +312,30 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             toggleOption: () => {
               discord.data.guildOffline = !discord.data.guildOffline
               discord.markDirty()
+            }
+          },
+          {
+            type: OptionType.Number,
+            name: 'Delete Temporarily Events After (In Seconds)',
+            description: 'Temporarily events are `Online` and `Offline` events.',
+            min: 1,
+            max: 43_200,
+            getOption: () => deleterConfig.data.expireSeconds,
+            setOption: (value) => {
+              deleterConfig.data.expireSeconds = value
+              deleterConfig.markDirty()
+            }
+          },
+          {
+            type: OptionType.Number,
+            name: 'Max Temporarily Events',
+            description: 'How many to keep in a channel before starting to delete the older ones.',
+            min: 1,
+            max: 1000,
+            getOption: () => deleterConfig.data.maxInteractions,
+            setOption: (value) => {
+              deleterConfig.data.maxInteractions = value
+              deleterConfig.markDirty()
             }
           }
         ]

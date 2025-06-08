@@ -7,6 +7,7 @@ import { ConfigManager } from '../../../common/config-manager.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 
 export default class MessageDeleter {
+  private static readonly DefaultExpiresSeconds = 15 * 60
   private static readonly CheckEveryMilliseconds = 5 * 1000
   private readonly config
 
@@ -19,7 +20,7 @@ export default class MessageDeleter {
       application,
       application.getConfigFilePath('discord-temp-events.json'),
       {
-        deleteTempEventAfter: 15 * 60 * 1000,
+        expireSeconds: MessageDeleter.DefaultExpiresSeconds,
         maxInteractions: 5,
         interactions: []
       }
@@ -28,6 +29,10 @@ export default class MessageDeleter {
     setInterval(() => {
       this.clean()
     }, MessageDeleter.CheckEveryMilliseconds)
+  }
+
+  public getConfig(): ConfigManager<MessageDeleterConfig> {
+    return this.config
   }
 
   public add(messages: DiscordMessage): void {
@@ -42,7 +47,7 @@ export default class MessageDeleter {
 
     // discard expired interactions first
     for (const interaction of this.config.data.interactions) {
-      if (interaction.createdAt + this.config.data.deleteTempEventAfter >= currentTime) {
+      if (interaction.createdAt + this.config.data.expireSeconds * 1000 >= currentTime) {
         newArray.push(interaction)
         continue
       }
@@ -89,8 +94,8 @@ export default class MessageDeleter {
   }
 }
 
-interface MessageDeleterConfig {
-  deleteTempEventAfter: number
+export interface MessageDeleterConfig {
+  expireSeconds: number
   maxInteractions: number
   interactions: DiscordMessage[]
 }
