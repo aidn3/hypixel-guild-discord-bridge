@@ -20,6 +20,7 @@ export class EventsUtil implements InstanceIdentifier {
       channelType: ChannelType.Public,
 
       permission: Permission.Anyone,
+      userId: '123',
       username: username,
       replyUsername: undefined,
       message: message

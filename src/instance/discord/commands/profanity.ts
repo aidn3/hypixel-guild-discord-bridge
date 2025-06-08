@@ -10,7 +10,7 @@ import {
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
-import Autocomplete from '../../autocomplete.js'
+import Autocomplete from '../../users/features/autocomplete.js'
 import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
 
 const IncludeCommand = 'include'

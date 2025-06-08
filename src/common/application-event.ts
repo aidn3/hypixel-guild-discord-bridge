@@ -280,6 +280,10 @@ export interface MinecraftGuildChat extends MinecraftChat {
 export interface DiscordChat extends BaseChat {
   readonly instanceType: InstanceType.Discord
   /**
+   * The unique id of the user provided by Discord
+   */
+  readonly userId: string
+  /**
    * The name of the user the message is sent as a reply to.
    * Used if someone is replying to another user's message
    */

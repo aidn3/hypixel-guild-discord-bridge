@@ -172,7 +172,7 @@ async function getOnlineMembers(
 
   const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
     try {
-      const members = await app.guildManager.onlineMembers(instanceName)
+      const members = await app.usersManager.guildManager.onlineMembers(instanceName)
       resolvedNames.set(instanceName, members)
     } catch (error: unknown) {
       errorHandler.promiseCatch('fetching members')(error)

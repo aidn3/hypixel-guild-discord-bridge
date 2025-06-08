@@ -108,6 +108,8 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
         event.author.id,
         event.member ? [...event.member.roles.cache.keys()] : []
       ),
+
+      userId: event.author.id,
       username: readableName,
       replyUsername: readableReplyUsername,
       message: filteredMessage

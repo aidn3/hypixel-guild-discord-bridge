@@ -17,16 +17,15 @@ import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
-import Autocomplete from './instance/autocomplete.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
-import { GuildManager } from './instance/guild-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
+import UsersManager from './instance/users/users-manager.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
@@ -35,12 +34,11 @@ export type AllInstances =
   | DiscordInstance
   | PrometheusInstance
   | MetricsInstance
+  | UsersManager
   | MinecraftInstance
   | ModerationInstance
   | PluginInstance
   | ApplicationIntegrity
-  | Autocomplete
-  | GuildManager
   | MinecraftManager
   | PluginsManager
 
@@ -48,8 +46,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly instanceName: string = InstanceType.Main
   public readonly instanceType: InstanceType = InstanceType.Main
 
-  public readonly guildManager: GuildManager
-  public readonly autoComplete: Autocomplete
   public readonly applicationIntegrity: ApplicationIntegrity
 
   public readonly hypixelApi: HypixelClient
@@ -68,6 +64,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly pluginsManager: PluginsManager
   public readonly moderation: ModerationInstance
   public readonly commandsInstance: CommandsInstance
+  public readonly usersManager: UsersManager
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
@@ -91,8 +88,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     })
     this.mojangApi = new MojangApi()
     this.moderation = new ModerationInstance(this, this.mojangApi)
-    this.guildManager = new GuildManager(this)
-    this.autoComplete = new Autocomplete(this)
+    this.usersManager = new UsersManager(this)
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
 
@@ -192,8 +188,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private getAllInstances(): AllInstances[] {
     const instances = [
       ...this.pluginsManager.getAllInstances(),
-      this.guildManager,
-      this.autoComplete,
+      this.usersManager,
       this.applicationIntegrity,
 
       this.discordInstance, // discord second to send any notification about connecting

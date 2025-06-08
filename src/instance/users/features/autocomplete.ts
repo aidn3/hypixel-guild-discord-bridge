@@ -1,15 +1,26 @@
-import type Application from '../application.js'
-import { InstanceType } from '../common/application-event.js'
-import { Instance, InternalInstancePrefix } from '../common/instance.js'
+import type { Logger } from 'log4js'
 
-export default class Autocomplete extends Instance<InstanceType.Util> {
+import type Application from '../../../application.js'
+import { InstanceType } from '../../../common/application-event.js'
+import EventHandler from '../../../common/event-handler.js'
+import type EventHelper from '../../../common/event-helper.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type UsersManager from '../users-manager.js'
+
+export default class Autocomplete extends EventHandler<UsersManager, InstanceType.Util, void> {
   private readonly usernames: string[] = []
   private readonly loweredCaseUsernames = new Set<string>()
 
   private readonly guildRanks: string[] = []
 
-  constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'Autocomplete', InstanceType.Util)
+  constructor(
+    application: Application,
+    clientInstance: UsersManager,
+    eventHelper: EventHelper<InstanceType.Util>,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
+    super(application, clientInstance, eventHelper, logger, errorHandler)
 
     application.on('chat', (event) => {
       this.addUsername(event.username)
@@ -97,7 +108,7 @@ export default class Autocomplete extends Instance<InstanceType.Util> {
   private async fetchGuildInfo(): Promise<void> {
     const tasks = []
     for (const instancesName of this.application.getInstancesNames(InstanceType.Minecraft)) {
-      const task = this.application.guildManager
+      const task = this.application.usersManager.guildManager
         .listMembers(instancesName, 60_000)
         .then((members) => {
           for (const { rank, usernames } of members) {

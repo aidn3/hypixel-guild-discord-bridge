@@ -13,6 +13,7 @@ import { CommandManager } from './command-manager.js'
 import type { DiscordConfig } from './common/discord-config.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
+import Leaderboard from './features/leaderboard.js'
 import LoggerManager from './features/logger-manager.js'
 import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
@@ -20,6 +21,8 @@ import StatusHandler from './handlers/status-handler.js'
 
 export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
   readonly commandsManager: CommandManager
+  readonly leaderboard: Leaderboard
+
   private readonly config: ConfigManager<DiscordConfig>
   private readonly client: Client
 
@@ -98,6 +101,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
       this.logger,
       this.errorHandler
     )
+    this.leaderboard = new Leaderboard(this.application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.bridge = new DiscordBridge(
       this.application,
@@ -148,6 +152,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     this.emojiHandler.registerEvents(this.client)
     this.chatManager.registerEvents(this.client)
     this.commandsManager.registerEvents(this.client)
+    this.leaderboard.registerEvents(this.client)
     this.loggerManager.registerEvents(this.client)
 
     await this.client.login(this.staticConfig.key)

@@ -19,11 +19,13 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
 import ConnectivityCommand from './commands/connectivity.js'
+import CreateLeaderboardCommand from './commands/create-leaderboard.js'
 import DemoteCommand from './commands/demote.js'
 import DisconnectCommand from './commands/disconnect.js'
 import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
+import LeaderboardCommand from './commands/leaderboard.js'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
 import OverrideCommand from './commands/override.js'
@@ -99,11 +101,13 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       AcceptCommand,
       SettingsCommand,
       ConnectivityCommand,
+      CreateLeaderboardCommand,
       DemoteCommand,
       DisconnectCommand,
       HelpCommand,
       InviteCommand,
       JoinCommand,
+      LeaderboardCommand,
       ListCommand,
       LogCommand,
       OverrideCommand,

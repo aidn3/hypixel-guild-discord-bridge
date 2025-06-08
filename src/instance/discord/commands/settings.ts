@@ -63,8 +63,9 @@ export default {
         fetchGeneralOptions(context.application),
         fetchDiscordOptions(context.application),
         fetchMinecraftOptions(context.application),
-        fetchQualityOptions(context.application),
         fetchModerationOptions(context.application),
+        fetchQualityOptions(context.application),
+        fetchMetricsOptions(context.application),
         fetchCommandsOptions(context.application)
       ]
     }
@@ -214,6 +215,7 @@ function fetchQualityOptions(application: Application): CategoryOption {
 
 function fetchDiscordOptions(application: Application): CategoryOption {
   const discord = application.discordInstance.getConfig()
+  const leaderboard = application.discordInstance.leaderboard.getConfig()
 
   return {
     type: OptionType.Category,
@@ -255,6 +257,30 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           discord.data.enforceVerification = !discord.data.enforceVerification
           discord.markDirty()
         }
+      },
+      {
+        type: OptionType.Category,
+        name: 'Leaderboards',
+        description: 'How leaderboards are displayed.',
+        header:
+          CategoryLabel +
+          '\n\n**These events are recommended for best user experience.**\n' +
+          'Do not turn off any unless you know what you are doing.',
+        options: [
+          {
+            type: OptionType.Number,
+            name: `Update Frequency (In Minutes)`,
+            description:
+              'How frequent to update the displayed leaderboards. WARNING: Fast update might introduce instability!',
+            min: 1,
+            max: 43_200,
+            getOption: () => leaderboard.data.updateEveryMinutes,
+            setOption: (value) => {
+              leaderboard.data.updateEveryMinutes = value
+              leaderboard.markDirty()
+            }
+          }
+        ]
       },
       {
         type: OptionType.Category,
@@ -356,6 +382,43 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             }
           }
         ]
+      }
+    ]
+  }
+}
+
+function fetchMetricsOptions(application: Application): CategoryOption {
+  const scoresManager = application.usersManager.scoresManager.config
+  return {
+    type: OptionType.Category,
+    name: 'Metrics',
+    header: CategoryLabel,
+    options: [
+      {
+        type: OptionType.Number,
+        name: `Messages Persistence (In Days)`,
+        description:
+          'How long to keep records of members messages stats. WARNING: High persistence will increase storage usage and might introduce lags.',
+        min: 1,
+        max: 1068,
+        getOption: () => scoresManager.data.deleteMessagesOlderThan,
+        setOption: (value) => {
+          scoresManager.data.deleteMessagesOlderThan = value
+          scoresManager.markDirty()
+        }
+      },
+      {
+        type: OptionType.Number,
+        name: `Members Persistence (In Days)`,
+        description:
+          'How long to keep records of members being in the guild or online, etc. WARNING: High persistence will increase storage usage and might introduce lags.',
+        min: 1,
+        max: 1068,
+        getOption: () => scoresManager.data.deleteMembersOlderThan,
+        setOption: (value) => {
+          scoresManager.data.deleteMembersOlderThan = value
+          scoresManager.markDirty()
+        }
       }
     ]
   }

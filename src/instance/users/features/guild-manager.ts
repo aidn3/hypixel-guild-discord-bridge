@@ -1,18 +1,14 @@
 import assert from 'node:assert'
 
-import type Application from '../application.js'
-import type { MinecraftRawChatEvent } from '../common/application-event.js'
-import { InstanceType, MinecraftSendChatPriority } from '../common/application-event.js'
-import { Instance, InternalInstancePrefix } from '../common/instance.js'
-import { Timeout } from '../util/timeout.js'
+import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
+import { MinecraftSendChatPriority } from '../../../common/application-event.js'
+import EventHandler from '../../../common/event-handler.js'
+import { Timeout } from '../../../util/timeout.js'
+import type UsersManager from '../users-manager.js'
 
-export class GuildManager extends Instance<InstanceType.Util> {
+export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, void> {
   public static readonly DefaultDataExpire = 30 * 1000
   private readonly guildInfo = new Map<string, GuildInformation>()
-
-  public constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'GuildManager', InstanceType.Util)
-  }
 
   public async totalMembers(instanceName: string, newerThan: number = GuildManager.DefaultDataExpire): Promise<number> {
     const guildInfo = this.getGuildInfo(instanceName)
