@@ -18,6 +18,7 @@ import Election from './triggers/election.js'
 import Explain from './triggers/explain.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
+import HeartOfTheMountain from './triggers/hotm.js'
 import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
@@ -68,6 +69,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Explain(),
       new Guild(),
       new Help(),
+      new HeartOfTheMountain(),
       new Iq(),
       new Kuudra(),
       new Level(),

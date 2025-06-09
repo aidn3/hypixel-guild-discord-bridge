@@ -1,8 +1,8 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/util.js'
 
-export default class MagicalPower extends ChatCommandHandler {
+export default class HeartOfTheMountain extends ChatCommandHandler {
   constructor() {
     super({
       name: 'hotm',
@@ -20,7 +20,15 @@ export default class MagicalPower extends ChatCommandHandler {
 
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     const hotm = selectedProfile.hotm
-    const powder = selectedProfile.powder
-    return `${givenUsername} is hotm: ${hotm} with ${powder}'
+
+    let response = `${givenUsername} is hotm ${hotm.experience.level}`
+
+    const powders: string[] = []
+    if (hotm.powder.mithril.total > 0) powders.push(`${hotm.powder.mithril.total.toLocaleString('en-US')} mithril`)
+    if (hotm.powder.gemstone.total > 0) powders.push(`${hotm.powder.gemstone.total.toLocaleString('en-US')} gemstone`)
+    if (hotm.powder.glacite.total > 0) powders.push(`${hotm.powder.glacite.total.toLocaleString('en-US')} galacite`)
+    if (powders.length > 0) response += ` with (${powders.join(' | ')})`
+
+    return response
   }
 }
