@@ -119,9 +119,15 @@ export function beautifyInstanceName(instanceName: string): string {
     ? instanceName.slice(InternalInstancePrefix.length)
     : instanceName
 
-  if (instanceName === instanceName.toLowerCase()) {
-    instanceName = instanceName.slice(0, 1).toUpperCase() + instanceName.slice(1).toLowerCase()
-  }
+  if (instanceName !== instanceName.toLowerCase()) return instanceName
+
+  instanceName = instanceName
+    .replaceAll('-',' ')
+    .split(' ')
+    .map(part=>part.trim())
+    .filter((part) => part !== '')
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ')
 
   return instanceName
 }
