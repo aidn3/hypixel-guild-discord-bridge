@@ -63,6 +63,8 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
     })
 
     this.application.on('instanceStatus', (event) => {
+      if (event.instanceName === this.clientInstance.instanceName) return
+
       void this.send(`Instance > ${event.instanceName}: ${event.status}, ${event.message}`).catch(
         this.errorHandler.promiseCatch('handling instance event')
       )
