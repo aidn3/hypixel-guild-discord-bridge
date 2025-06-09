@@ -27,10 +27,12 @@ import { OptionsHandler, OptionType } from '../util/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'
+const Warning = ':warning:'
 
 const CategoryLabel =
   `Options marked with ${Essential} are Essential. Disable at your own risk.\n` +
   `Options marked with ${Recommended} are recommended for quality of life.\n` +
+  `Options marked with ${Warning} are only to be messed with if you know what you are doing.\n` +
   `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/4.0-pre1/docs/FEATURES.md#available-plugins) for more information.`
 
 export default {
@@ -526,32 +528,13 @@ function fetchCommandsOptions(application: Application): CategoryOption {
 
 function fetchMinecraftOptions(application: Application): CategoryOption {
   const minecraft = application.minecraftManager.getConfig()
+  const sanitizer = application.minecraftManager.sanitizer.getConfig()
 
   return {
     type: OptionType.Category,
     name: 'Minecraft',
     header: CategoryLabel,
     options: [
-      {
-        type: OptionType.Boolean,
-        name: 'STuF',
-        description: 'Bypass Hypixel restriction on hyperlinks using STuF encoding.',
-        getOption: () => minecraft.data.stuf,
-        toggleOption: () => {
-          minecraft.data.stuf = !minecraft.data.stuf
-          minecraft.markDirty()
-        }
-      },
-      {
-        type: OptionType.Boolean,
-        name: `Resolve Links ${Recommended}`,
-        description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
-        getOption: () => minecraft.data.resolveLinks,
-        toggleOption: () => {
-          minecraft.data.resolveLinks = !minecraft.data.resolveLinks
-          minecraft.markDirty()
-        }
-      },
       {
         type: OptionType.EmbedCategory,
         name: 'Staff Options',
@@ -571,6 +554,97 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
               minecraft.data.adminUsername = username
               minecraft.markDirty()
             }
+          }
+        ]
+      },
+      {
+        type: OptionType.Category,
+        name: 'Chat Processing',
+        description: 'Fine tune how chat messages are sent to the game.',
+        header: 'nFine tune how chat messages are sent to the game.\n\n' + CategoryLabel,
+        options: [
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Links Processor',
+            header: 'How to handle links sent to Minecraft.',
+            options: [
+              {
+                type: OptionType.Boolean,
+                name: 'STuF',
+                description:
+                  'Bypass Hypixel restriction on hyperlinks using STuF encoding. Only use if you know what is STuF!',
+                getOption: () => sanitizer.data.hideLinksViaStuf,
+                toggleOption: () => {
+                  sanitizer.data.hideLinksViaStuf = !sanitizer.data.hideLinksViaStuf
+                  sanitizer.markDirty()
+                }
+              },
+              {
+                type: OptionType.Boolean,
+                name: `Resolve Links ${Recommended}`,
+                description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
+                getOption: () => sanitizer.data.resolveHideLinks,
+                toggleOption: () => {
+                  sanitizer.data.resolveHideLinks = !sanitizer.data.resolveHideLinks
+                  sanitizer.markDirty()
+                }
+              }
+            ]
+          },
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Anti Spam',
+            header: 'Techniques used to avoid messages being blocked for "can not repeat".',
+            options: [
+              {
+                type: OptionType.Boolean,
+                name: `Enable Antispam ${Essential}`,
+                description:
+                  'Use techniques to avoid hypixel blocking a message for "`You cannot say the same message twice!`".',
+                getOption: () => sanitizer.data.antispamEnabled,
+                toggleOption: () => {
+                  sanitizer.data.antispamEnabled = !sanitizer.data.antispamEnabled
+                  sanitizer.markDirty()
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: `Account For Previous Messages ${Recommended}`,
+                description: 'Number of previous messages to account for when calculating the similarity score.',
+                min: 1,
+                max: 10,
+                getOption: () => sanitizer.data.antispamMaxHistory,
+                setOption: (value) => {
+                  sanitizer.data.antispamMaxHistory = value
+                  sanitizer.markDirty()
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: `Safe Similarity Score ${Warning}`,
+                description:
+                  'Decide when a message is similar enough but still possible to send. Score 1.0 means the message is exactly identical and 0.0 where the message has no similarity at all.',
+                min: 0,
+                max: 1,
+                getOption: () => sanitizer.data.antispamSafeScore,
+                setOption: (value) => {
+                  sanitizer.data.antispamSafeScore = value
+                  sanitizer.markDirty()
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: 'Max Additions',
+                description: 'How many letters to add at most to combat anti spam.',
+                min: 1,
+                max: 100,
+                getOption: () => sanitizer.data.antispamMaxAdditions,
+                setOption: (value) => {
+                  sanitizer.data.antispamMaxAdditions = value
+                  sanitizer.markDirty()
+                }
+              }
+            ]
           }
         ]
       },

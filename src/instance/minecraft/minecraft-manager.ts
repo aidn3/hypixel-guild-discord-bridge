@@ -10,8 +10,10 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 
 import type { MinecraftConfig, MinecraftInstanceConfig } from './common/config.js'
 import MinecraftInstance from './minecraft-instance.js'
+import { Sanitizer } from './util/sanitizer.js'
 
 export class MinecraftManager extends Instance<InstanceType.Util> {
+  public sanitizer: Sanitizer
   private readonly config: ConfigManager<MinecraftConfig>
 
   private readonly instances = new Set<MinecraftInstance>()
@@ -26,8 +28,6 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
       adminUsername: 'Steve',
       instances: [],
 
-      stuf: false,
-      resolveLinks: true,
       joinGuildReaction: true,
       leaveGuildReaction: true,
       kickGuildReaction: true
@@ -37,6 +37,8 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
     this.sessionDirectory = this.application.getConfigFilePath(sessionDirectoryName)
     fs.mkdirSync(this.sessionDirectory, { recursive: true })
     this.application.applicationIntegrity.addConfigPath(sessionDirectoryName)
+
+    this.sanitizer = new Sanitizer(application)
 
     this.application.on('minecraftSelfBroadcast', (event) => {
       this.minecraftBots.set(event.instanceName, event)

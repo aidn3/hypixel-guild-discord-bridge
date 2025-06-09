@@ -1,7 +1,5 @@
 import assert from 'node:assert'
 
-import Axios from 'axios'
-import EmojisMap from 'emoji-name-map'
 import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
@@ -29,15 +27,11 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import { antiSpamString } from '../../util/shared-util.js'
 
-import ArabicFixer from './common/arabic-fixer.js'
 import type MessageAssociation from './common/message-association.js'
-import { stufEncode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
-  private readonly arabicFixer = new ArabicFixer()
   private readonly sendingQueue = new PromiseQueue()
 
   constructor(
@@ -74,12 +68,11 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
-    this.sendingQueue
-      .add(async () => {
-        const message = await this.formatChatMessage(prefix, event.username, replyUsername, event.message)
-        await this.clientInstance.send(message, MinecraftSendChatPriority.Default, event.eventId)
-      })
-      .catch(this.errorHandler.promiseCatch('sending chat message'))
+    void this.send(
+      this.formatChatMessage(prefix, event.username, replyUsername, event.message),
+      MinecraftSendChatPriority.Default,
+      event.eventId
+    ).catch(this.errorHandler.promiseCatch('sending chat message'))
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
@@ -113,7 +106,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, reply)
     switch (reply.channel) {
       case ChannelType.Public: {
-        await this.clientInstance.send(
+        await this.send(
           `/gc @[${event.instanceName}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
@@ -122,7 +115,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       }
 
       case ChannelType.Officer: {
-        await this.clientInstance.send(
+        await this.send(
           `/oc @[${event.instanceName}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
@@ -130,7 +123,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         break
       }
       case ChannelType.Private: {
-        await this.clientInstance.send(
+        await this.send(
           `/msg ${reply.username} @[${event.instanceName}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
@@ -141,13 +134,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(
+      await this.send(
         `/gc @[${event.instanceName}]: ${event.message}`,
         MinecraftSendChatPriority.Default,
         event.eventId
       )
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(
+      await this.send(
         `/oc @[${event.instanceName}]: ${event.message}`,
         MinecraftSendChatPriority.Default,
         event.eventId
@@ -156,9 +149,9 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
-      await this.clientInstance.send(`/gc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
+      await this.send(`/gc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
     else if (event.channels.includes(ChannelType.Officer))
-      await this.clientInstance.send(`/oc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
+      await this.send(`/oc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {
@@ -174,22 +167,21 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       this.logger.log(`instance has received signal type ${event.type}`)
 
       if (event.type === InstanceSignalType.Restart) {
-        void this.clientInstance
-          .send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, event.eventId)
-          .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
+        void this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, event.eventId).catch(
+          this.errorHandler.promiseCatch('handling restart broadcast and reconnecting')
+        )
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (event.type === InstanceSignalType.Shutdown) {
-        void this.clientInstance
-          .send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, event.eventId)
-          .catch(this.errorHandler.promiseCatch('handling restart broadcast and reconnecting'))
+        void this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, event.eventId).catch(
+          this.errorHandler.promiseCatch('handling restart broadcast and reconnecting')
+        )
       }
     }
   }
 
   private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
-    // undefined is strictly checked due to api specification
     if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      await this.clientInstance.send(event.command, event.priority, event.eventId)
+      await this.send(event.command, event.priority, event.eventId)
     }
   }
 
@@ -205,26 +197,28 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (reply.channel === ChannelType.Private) assert(reply.username === event.username)
     this.messageAssociation.addMessageId(event.eventId, reply)
 
-    const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse} @${antiSpamString()}`
+    const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse}`
     switch (reply.channel) {
       case ChannelType.Public: {
-        void this.clientInstance
-          .send(`/gc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)
-          .catch(this.errorHandler.promiseCatch('handling public command response display'))
+        void this.send(`/gc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId).catch(
+          this.errorHandler.promiseCatch('handling public command response display')
+        )
         break
       }
       case ChannelType.Officer: {
-        void this.clientInstance
-          .send(`/oc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)
-          .catch(this.errorHandler.promiseCatch('handling private command response display'))
+        void this.send(`/oc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId).catch(
+          this.errorHandler.promiseCatch('handling private command response display')
+        )
         break
       }
       case ChannelType.Private: {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
-        void this.clientInstance
-          .send(`/msg ${event.username} ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId)
-          .catch(this.errorHandler.promiseCatch('handling private command response display'))
+        void this.send(
+          `/msg ${event.username} ${finalResponse}`,
+          MinecraftSendChatPriority.Default,
+          event.eventId
+        ).catch(this.errorHandler.promiseCatch('handling private command response display'))
         break
       }
       default: {
@@ -233,113 +227,30 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     }
   }
 
-  private async formatChatMessage(
+  private send(message: string, priority: MinecraftSendChatPriority, eventId: string | undefined): Promise<void> {
+    return this.sendingQueue.add(async () => {
+      const newMessage = await this.application.minecraftManager.sanitizer.process(
+        this.clientInstance.instanceName,
+        message
+      )
+      await this.clientInstance.send(newMessage, priority, eventId)
+    })
+  }
+
+  private formatChatMessage(
     prefix: string,
     username: string,
     replyUsername: string | undefined,
     message: string
-  ): Promise<string> {
+  ): string {
     let full = `/${prefix} `
 
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`
     full += ': '
 
-    message = await this.encodeMessage(message)
     full += message
-      .split('\n')
-      .map((s) => s.trim())
-      .join(' ')
-      .trim()
 
     return full
-  }
-
-  private async encodeMessage(message: string): Promise<string> {
-    if (this.application.minecraftManager.getConfig().data.stuf) {
-      message = stufEncode(message)
-    } else if (this.application.minecraftManager.getConfig().data.resolveLinks) {
-      message = await this.resolveLinkHide(message)
-    } else {
-      message = message
-        .split(' ')
-        .map((part) => {
-          try {
-            if (part.startsWith('https:') || part.startsWith('http')) return '(link)'
-          } catch {
-            /* ignored */
-          }
-          return part
-        })
-        .join(' ')
-    }
-
-    message = this.arabicFixer.encode(message)
-    message = this.substituteEmoji(message)
-    message = this.cleanStandardEmoji(message)
-
-    return message
-  }
-
-  private async resolveLinkHide(message: string): Promise<string> {
-    const newMessage: string[] = []
-
-    for (const part of message.split(' ')) {
-      if (!part.startsWith('https:') && !part.startsWith('http')) {
-        newMessage.push(part)
-        continue
-      }
-
-      const response = await Axios.head(part).catch(() => undefined)
-      if (response === undefined) {
-        newMessage.push('(link)')
-        continue
-      }
-
-      const contentType = response.headers['content-type'] as undefined as string | undefined
-      if (typeof contentType !== 'string') {
-        newMessage.push('(link)')
-        continue
-      }
-
-      const type = contentType.split('/')[0]
-      if (type === 'image') newMessage.push('(image)')
-      else if (type === 'video') newMessage.push('(video)')
-      else if (contentType.includes('application/pdf')) newMessage.push('(pdf)')
-      else newMessage.push('(link)')
-    }
-
-    return newMessage.join(' ')
-  }
-
-  private substituteEmoji(message: string): string {
-    const map = new Map<string, string[]>()
-    map.set('❤', '❤️ 💟 ♥️ 🖤 💙 🤎 💝 💚 🩶 🩵 🧡 🩷 💜 💖 🤍 💛 💓 💗 💕'.split(' '))
-    map.set('❣', '❣️'.split(' '))
-    map.set('☠', '💀 ☠️'.split(' '))
-
-    for (const [substitute, convertEmojis] of map) {
-      for (const convertEmoji of convertEmojis) {
-        message = message.replaceAll(convertEmoji, substitute)
-      }
-    }
-
-    return message
-  }
-
-  private cleanStandardEmoji(message: string): string {
-    const AllowedString =
-      '☺ ☹ ☠ ❣ ❤ ✌ ☝ ✍ ♨ ✈ ⌛ ⌚ ☀ ☁ ☂ ❄ ☃ ☄ ♠ ♥ ♦ ♣ ♟ ☎ ⌨ ✉ ✏ ✒ ✂ ☢ ☣ ' +
-      '⬆ ⬇ ➡ ⬅ ↗ ↘ ↙ ↖ ↕ ↔ ↩ ↪ ✡ ☸ ☯ ✝ ☦ ☪ ☮ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ▶ ◀ ♀ ♂ ✖ ‼ 〰 ☑ ✔ ✳ ✴ ' +
-      '❇ © ® ™ Ⓜ ㊗ ㊙ ▪ ▫ ☷ ☵ ☶ ☋ ☌ ♜ ♕ ♡ ♬ ☚ ♮ ♝ ♯ ☴ ♭ ☓ ☛ ☭ ♢ ✐ ♖ ☈ ☒ ★ ♚ ♛ ✎ ♪ ☰ ☽ ☡ ☼ ♅ ☐ ☟ ❦ ☊ ' +
-      '☍ ☬ 7 ♧ ☫ ☱ ☾ ☤ ❧ ♄ ♁ ♔ ❥ ☥ ☻ ♤ ♞ ♆ # ♃ ♩ ☇ ☞ ♫ ☏ ♘ ☧ ☉ ♇ ☩ ♙ ☜ ☲ ☨ ♗ ☳ ⚔ ☕ ⚠'
-
-    const AllowedEmojis = AllowedString.split(' ')
-    const emojis = Object.entries(EmojisMap.emoji).filter(([, unicode]) => !AllowedEmojis.includes(unicode))
-    for (const [emojiReadable, emojiUnicode] of emojis) {
-      message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
-    }
-
-    return message
   }
 }

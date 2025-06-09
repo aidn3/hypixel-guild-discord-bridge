@@ -18,8 +18,6 @@ export interface MinecraftConfig {
   adminUsername: string
   instances: MinecraftInstanceConfig[]
 
-  stuf: boolean
-  resolveLinks: boolean
   joinGuildReaction: boolean
   leaveGuildReaction: boolean
   kickGuildReaction: boolean
