@@ -217,7 +217,8 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
                 text: DefaultCommandFooter
               }
             }
-          ]
+          ],
+          flags: MessageFlags.Ephemeral
         })
         return
       }
