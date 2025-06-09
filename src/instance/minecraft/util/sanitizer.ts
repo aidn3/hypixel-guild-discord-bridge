@@ -2,7 +2,6 @@ import type Application from '../../../application.js'
 import { ConfigManager } from '../../../common/config-manager.js'
 
 import Antispam from './antispam.js'
-import ArabicFixer from './arabic-fixer.js'
 import EmojiSanitizer from './emoji-sanitizer.js'
 import LineSanitizer from './line-sanitizer.js'
 import { LinksSanitizer } from './links-sanitizer.js'
@@ -13,7 +12,6 @@ export class Sanitizer {
   private readonly line: LineSanitizer
   private readonly link: LinksSanitizer
   private readonly emoji: EmojiSanitizer
-  private readonly arabic: ArabicFixer
   private readonly antispam: Antispam
 
   constructor(application: Application) {
@@ -30,7 +28,6 @@ export class Sanitizer {
     this.line = new LineSanitizer()
     this.link = new LinksSanitizer(this.config)
     this.emoji = new EmojiSanitizer()
-    this.arabic = new ArabicFixer()
     this.antispam = new Antispam(this.config)
   }
 
@@ -38,7 +35,6 @@ export class Sanitizer {
     message = this.line.process(message)
     message = await this.link.process(message)
     message = this.emoji.process(message)
-    message = this.arabic.encode(message)
     message = this.antispam.process(instanceName, message)
 
     return message

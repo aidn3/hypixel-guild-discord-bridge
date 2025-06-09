@@ -30,9 +30,11 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 
 import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
+import ArabicFixer from './util/arabic-fixer.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   private readonly sendingQueue = new PromiseQueue()
+  private readonly arabic = new ArabicFixer()
 
   constructor(
     application: Application,
@@ -249,7 +251,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (replyUsername != undefined) full += `⇾${replyUsername}`
     full += ': '
 
-    full += message
+    full += this.arabic.encode(message)
 
     return full
   }
