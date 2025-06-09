@@ -183,6 +183,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
 function fetchQualityOptions(application: Application): CategoryOption {
   const plugins = application.pluginsManager.getConfig()
+  const minecraft = application.minecraftManager.getConfig()
 
   return {
     type: OptionType.Category,
@@ -208,6 +209,43 @@ function fetchQualityOptions(application: Application): CategoryOption {
           plugins.data.starfallCultReminder = !plugins.data.starfallCultReminder
           plugins.markDirty()
         }
+      },
+      {
+        type: OptionType.EmbedCategory,
+        name: 'Guild Reaction',
+        header: 'Auto replying and reacting to various in-game guild events.',
+        options: [
+          {
+            type: OptionType.Boolean,
+            name: 'Guild Join Reaction',
+            description: 'Send a greeting message when a member joins the guild.',
+            getOption: () => minecraft.data.joinGuildReaction,
+            toggleOption: () => {
+              minecraft.data.joinGuildReaction = !minecraft.data.joinGuildReaction
+              minecraft.markDirty()
+            }
+          },
+          {
+            type: OptionType.Boolean,
+            name: 'Guild Leave Reaction',
+            description: 'Send a reaction message when a member leaves the guild.',
+            getOption: () => minecraft.data.leaveGuildReaction,
+            toggleOption: () => {
+              minecraft.data.leaveGuildReaction = !minecraft.data.leaveGuildReaction
+              minecraft.markDirty()
+            }
+          },
+          {
+            type: OptionType.Boolean,
+            name: 'Guild Kick Reaction',
+            description: 'Send a reaction message when a member is kicked from the guild.',
+            getOption: () => minecraft.data.kickGuildReaction,
+            toggleOption: () => {
+              minecraft.data.kickGuildReaction = !minecraft.data.kickGuildReaction
+              minecraft.markDirty()
+            }
+          }
+        ]
       }
     ]
   }
@@ -513,43 +551,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           minecraft.data.resolveLinks = !minecraft.data.resolveLinks
           minecraft.markDirty()
         }
-      },
-      {
-        type: OptionType.EmbedCategory,
-        name: 'Guild Reaction',
-        header: 'Auto replying and reacting to various in-game guild events.',
-        options: [
-          {
-            type: OptionType.Boolean,
-            name: 'Guild Join Reaction',
-            description: 'Send a greeting message when a member joins the guild.',
-            getOption: () => minecraft.data.joinGuildReaction,
-            toggleOption: () => {
-              minecraft.data.joinGuildReaction = !minecraft.data.joinGuildReaction
-              minecraft.markDirty()
-            }
-          },
-          {
-            type: OptionType.Boolean,
-            name: 'Guild Leave Reaction',
-            description: 'Send a reaction message when a member leaves the guild.',
-            getOption: () => minecraft.data.leaveGuildReaction,
-            toggleOption: () => {
-              minecraft.data.leaveGuildReaction = !minecraft.data.leaveGuildReaction
-              minecraft.markDirty()
-            }
-          },
-          {
-            type: OptionType.Boolean,
-            name: 'Guild Kick Reaction',
-            description: 'Send a reaction message when a member is kicked from the guild.',
-            getOption: () => minecraft.data.kickGuildReaction,
-            toggleOption: () => {
-              minecraft.data.kickGuildReaction = !minecraft.data.kickGuildReaction
-              minecraft.markDirty()
-            }
-          }
-        ]
       },
       {
         type: OptionType.EmbedCategory,
