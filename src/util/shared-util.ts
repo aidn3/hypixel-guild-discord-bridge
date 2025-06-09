@@ -122,9 +122,9 @@ export function beautifyInstanceName(instanceName: string): string {
   if (instanceName !== instanceName.toLowerCase()) return instanceName
 
   instanceName = instanceName
-    .replaceAll('-',' ')
+    .replaceAll('-', ' ')
     .split(' ')
-    .map(part=>part.trim())
+    .map((part) => part.trim())
     .filter((part) => part !== '')
     .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ')
