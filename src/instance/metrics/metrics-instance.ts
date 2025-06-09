@@ -68,7 +68,8 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
 
   disconnect(): Promise<void> | void {
     if (this.intervalId === undefined) {
-      this.logger.warn('Received disconnect() request but instance already disconnected')
+      // TODO: enable metrics back when finished
+      // this.logger.warn('Received disconnect() request but instance already disconnected')
     } else {
       clearInterval(this.intervalId)
       this.intervalId = undefined
