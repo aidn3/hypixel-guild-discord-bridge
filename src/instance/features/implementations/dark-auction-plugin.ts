@@ -2,7 +2,6 @@ import type Application from '../../../application.js'
 import { ChannelType, Color } from '../../../common/application-event.js'
 import type { PluginInfo } from '../../../common/plugin-instance.js'
 import PluginInstance from '../../../common/plugin-instance.js'
-import { antiSpamString } from '../../../util/shared-util.js'
 import { OfficialPlugins } from '../common/plugins-config.js'
 import type { PluginsManager } from '../plugins-manager.js'
 
@@ -38,11 +37,12 @@ export default class DarkAuctionPlugin extends PluginInstance {
           color: Color.Good,
 
           username: undefined,
-          message: `Dark Auction in ${55 - currentMinute} minutes! @${antiSpamString()}`
+          message: `Dark Auction in ${55 - currentMinute} minutes!`
         })
       }
     }, 5000)
   }
+
   private enabled(): boolean {
     return this.pluginsManager.getConfig().data.darkAuctionReminder
   }
