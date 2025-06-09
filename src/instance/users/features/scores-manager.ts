@@ -386,7 +386,7 @@ class ScoreDatabase {
   }
 
   public clean(): number {
-    const currentTime = Date.now()
+    const currentTime = Math.floor(Date.now() / 1000)
     const oldestMessageTimestamp = currentTime - this.scoresManager.config.data.deleteMessagesOlderThan * 24 * 60 * 60
     const oldestMemberTimestamp = currentTime - this.scoresManager.config.data.deleteMembersOlderThan * 24 * 60 * 60
 
