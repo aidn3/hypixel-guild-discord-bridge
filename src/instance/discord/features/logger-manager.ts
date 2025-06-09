@@ -103,13 +103,8 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
 
   private async send(message: string): Promise<void> {
     const currentStatus = this.clientInstance.currentStatus()
-    if (currentStatus !== Status.Connected) {
-      if (currentStatus === Status.Ended) return
-      this.logger.warn(
-        `Dropping log message due to discord not being connected. current status: ${this.clientInstance.currentStatus()}`
-      )
-      return
-    }
+    if (currentStatus === Status.Ended) return
+
     const channels = this.config.data.loggerChannelIds
     for (const channelId of channels) {
       try {
