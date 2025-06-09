@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type Application from '../../../application.js'
 import { ChannelType, Color } from '../../../common/application-event.js'
 import type { PluginInfo } from '../../../common/plugin-instance.js'
@@ -30,6 +32,9 @@ export default class DarkAuctionPlugin extends PluginInstance {
       lastMinuteCheck = currentMinute
 
       if ([50, 54].includes(currentMinute)) {
+        const remainingMinutes = 55 - currentMinute
+        assert(remainingMinutes > 0)
+
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
@@ -37,7 +42,7 @@ export default class DarkAuctionPlugin extends PluginInstance {
           color: Color.Good,
 
           username: undefined,
-          message: `Dark Auction in ${55 - currentMinute} minutes!`
+          message: `Dark Auction in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}!`
         })
       }
     }, 5000)
