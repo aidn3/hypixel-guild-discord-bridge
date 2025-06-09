@@ -1,9 +1,8 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Color, Permission } from '../../../common/application-event.js'
+import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
@@ -20,8 +19,6 @@ function createPing(latency: number, websocket: number, lag: number): APIEmbed {
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord Ping'),
-  permission: Permission.Anyone,
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     const timestamp = Date.now()

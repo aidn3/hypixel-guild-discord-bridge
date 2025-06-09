@@ -60,8 +60,15 @@ export interface DiscordCommandHandler {
     | SlashCommandBuilder
     | SlashCommandSubcommandsOnlyBuilder
     | SlashCommandOptionsOnlyBuilder
-  readonly addMinecraftInstancesToOptions: OptionToAddMinecraftInstances
-  readonly permission: Permission
+  /**
+   * @default OptionToAddMinecraftInstances.Disabled
+   */
+  readonly addMinecraftInstancesToOptions?: OptionToAddMinecraftInstances
+  /**
+   * @default Permission.Anyone
+   */
+  readonly permission?: Permission
+
   readonly handler: (context: Readonly<DiscordCommandContext>) => Promise<void>
   readonly autoComplete?: (context: Readonly<DiscordAutoCompleteContext>) => Promise<void>
 }

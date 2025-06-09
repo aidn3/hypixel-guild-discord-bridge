@@ -182,7 +182,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         return
       }
 
-      if (permission < command.permission) {
+      if (permission < (command.permission ?? Permission.Anyone)) {
         this.logger.debug('No permission to execute this command')
 
         await interaction.reply({

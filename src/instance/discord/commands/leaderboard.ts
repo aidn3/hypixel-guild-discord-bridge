@@ -2,9 +2,7 @@ import assert from 'node:assert'
 
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 
 import { Messages30Days, Online30Days } from './create-leaderboard.js'
 
@@ -16,8 +14,6 @@ export default {
       .addStringOption((o) =>
         o.setName('type').setDescription('Leaderboard type').setRequired(true).addChoices(Messages30Days, Online30Days)
       ),
-  permission: Permission.Anyone,
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Disabled,
 
   handler: async function (context) {
     assert(context.interaction.inGuild())
