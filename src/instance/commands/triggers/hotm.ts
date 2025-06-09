@@ -24,9 +24,12 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     let response = `${givenUsername} is hotm ${hotm.experience.level}`
 
     const powders: string[] = []
-    if (hotm.powder.mithril.total > 0) powders.push(`${hotm.powder.mithril.total.toLocaleString('en-US')} mithril`)
-    if (hotm.powder.gemstone.total > 0) powders.push(`${hotm.powder.gemstone.total.toLocaleString('en-US')} gemstone`)
-    if (hotm.powder.glacite.total > 0) powders.push(`${hotm.powder.glacite.total.toLocaleString('en-US')} galacite`)
+    if (hotm.powder.mithril.total > 0)
+      powders.push(`${(hotm.powder.mithril.current + hotm.powder.mithril.spent).toLocaleString('en-US')} mithril`)
+    if (hotm.powder.gemstone.total > 0)
+      powders.push(`${(hotm.powder.gemstone.current + hotm.powder.gemstone.spent).toLocaleString('en-US')} gemstone`)
+    if (hotm.powder.glacite.total > 0)
+      powders.push(`${(hotm.powder.glacite.current + hotm.powder.glacite.spent).toLocaleString('en-US')} galacite`)
     if (powders.length > 0) response += ` with (${powders.join(' | ')})`
 
     return response
