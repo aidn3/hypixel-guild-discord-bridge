@@ -1,29 +1,22 @@
 import type { APIEmbed } from 'discord.js'
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
-import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Severity, InstanceType } from '../../../common/application-event.js'
-import { escapeDiscord } from '../../../util/shared-util.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
+import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandScope, OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type EventHelper from '../../../common/event-helper.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { DefaultTimeout, interactivePaging } from '../discord-pager.js'
+import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
 
 const Title = 'Guild Log Audit'
 
-function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstance: boolean): APIEmbed {
+function formatEmbed(chatResult: ChatResult, targetInstance: string): APIEmbed {
   let result = ''
   let pageTitle = ''
 
-  if (!soleInstance) {
-    result +=
-      `_Warning: More than one Minecraft instance detected._\n` +
-      `_Since no particular instance has been selected, ${targetInstance} will be used._\n` +
-      `_You can select an instance via the optional command argument._\n\n`
-  }
-
-  result += `**${escapeDiscord(targetInstance)}**\n`
+  result += `**${escapeMarkdown(targetInstance)}**\n`
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
@@ -32,12 +25,12 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string, soleInstanc
   } else {
     result += `_Could not fetch information for ${targetInstance}._`
     if (chatResult.error) {
-      result += `\n${escapeDiscord(chatResult.error)}`
+      result += `\n${escapeMarkdown(chatResult.error)}`
     }
   }
 
   return {
-    color: chatResult.guildLog ? Severity.DEFAULT : Severity.INFO,
+    color: chatResult.guildLog ? Color.Default : Color.Info,
     title: `${Title}${pageTitle}`,
     description: result,
     footer: {
@@ -51,51 +44,60 @@ export default {
     new SlashCommandBuilder()
       .setName('log')
       .setDescription('View guild activity logs')
-      .addNumberOption((option) =>
-        option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75)
-      ) as SlashCommandBuilder,
+      .addNumberOption((option) => option.setName('page').setDescription('Page to view').setMinValue(1).setMaxValue(75))
+      .addStringOption((option) =>
+        option.setName('username').setDescription('Username of the player').setAutocomplete(true)
+      ),
   permission: Permission.Helper,
-  allowInstance: true,
+  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
+  scope: CommandScope.Privileged,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const currentPage: number = context.interaction.options.getNumber('page') ?? 1
-    const chosenInstance: string | null = context.interaction.options.getString('instance')
-    const instancesNames = context.application.clusterHelper.getInstancesNames(InstanceType.MINECRAFT)
-    const soleInstance = instancesNames.length <= 1 || !!chosenInstance
-    const targetInstanceName = chosenInstance ?? (instancesNames.length > 0 ? instancesNames[0] : undefined)
+    const selectedUsername = context.interaction.options.getString('username') ?? undefined
+    const targetInstanceName: string = context.interaction.options.getString('instance', true)
 
-    if (!targetInstanceName) {
-      await context.interaction.editReply({
-        embeds: [
-          {
-            title: Title,
-            description:
-              `No Minecraft instance exist.\n` +
-              'This is a Minecraft command that displays ingame logs of a guild.\n' +
-              `Check the tutorial on how to add a Minecraft account.`,
-            color: Severity.INFO,
-            footer: {
-              text: DefaultCommandFooter
-            }
-          }
-        ]
-      })
-      return
-    }
-
-    await interactivePaging(context.interaction, currentPage - 1, DefaultTimeout, async (requestedPage) => {
-      const chatResult = await getGuildLog(context.application, targetInstanceName, requestedPage + 1)
-      return {
-        totalPages: chatResult.guildLog?.total ?? 0,
-        embed: formatEmbed(chatResult, targetInstanceName, soleInstance)
+    await interactivePaging(
+      context.interaction,
+      currentPage - 1,
+      DefaultTimeout,
+      context.errorHandler,
+      async (requestedPage) => {
+        const chatResult = await getGuildLog(
+          context.application,
+          context.eventHelper,
+          targetInstanceName,
+          selectedUsername,
+          requestedPage + 1
+        )
+        return {
+          totalPages: chatResult.guildLog?.total ?? 0,
+          embed: formatEmbed(chatResult, targetInstanceName)
+        }
       }
-    })
+    )
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username') {
+      const response = context.application.usersManager.autoComplete
+        .username(option.value)
+        .slice(0, 25)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler
 
-async function getGuildLog(app: Application, targetInstance: string, page: number): Promise<ChatResult> {
+async function getGuildLog(
+  app: Application,
+  eventHelper: EventHelper<InstanceType.Discord>,
+  targetInstance: string,
+  selectedUsername: string | undefined,
+  page: number
+): Promise<ChatResult> {
   const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g
   return await new Promise((resolve) => {
     const result: ChatResult = {}
@@ -109,6 +111,8 @@ async function getGuildLog(app: Application, targetInstance: string, page: numbe
       if (event.instanceName !== targetInstance || event.message.length === 0) return
 
       if (event.message.startsWith('Your guild rank does not have permission to use this')) {
+        result.error = event.message.trim()
+      } else if (event.message.startsWith("Can't find a player by the name of")) {
         result.error = event.message.trim()
       }
       const match = regexLog.exec(event.message)
@@ -135,7 +139,13 @@ async function getGuildLog(app: Application, targetInstance: string, page: numbe
     }
 
     app.on('minecraftChat', chatListener)
-    app.clusterHelper.sendCommandToMinecraft(targetInstance, `/guild log ${page}`)
+
+    app.emit('minecraftSend', {
+      ...eventHelper.fillBaseEvent(),
+      targetInstanceName: [targetInstance],
+      priority: MinecraftSendChatPriority.High,
+      command: `/guild log ${selectedUsername ? selectedUsername + ' ' : ''}${page}`
+    })
   })
 }
 

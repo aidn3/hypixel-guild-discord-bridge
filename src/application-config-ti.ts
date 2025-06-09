@@ -6,92 +6,32 @@ import * as t from "ts-interface-checker";
 
 export const GeneralConfig = t.iface([], {
   "hypixelApiKey": "string",
+  "shareMetrics": "boolean",
 });
 
-export const DiscordConfig = t.iface([], {
-  "instanceName": "string",
-  "key": t.union("string", "null"),
-  "adminId": "string",
-  "publicChannelIds": t.array("string"),
-  "officerChannelIds": t.array("string"),
-  "helperRoleIds": t.array("string"),
-  "officerRoleIds": t.array("string"),
-  "deleteTempEventAfter": "number",
+export const StaticDiscordConfig = t.iface([], {
+  "key": "string",
+  "adminIds": t.array("string"),
 });
 
-export const MinecraftConfig = t.iface([], {
-  "bridgePrefix": "string",
-  "instances": t.array("MinecraftInstanceConfig"),
-});
-
-export const MinecraftInstanceConfig = t.iface([], {
-  "instanceName": "string",
-  "email": "string",
-  "proxy": t.union("ProxyConfig", "null"),
-});
-
-export const CommandsConfig = t.iface([], {
-  "enabled": "boolean",
-  "adminUsername": "string",
-  "commandPrefix": "string",
-  "disabledCommand": t.array("string"),
-});
-
-export const ProfanityFilterConfig = t.iface([], {
-  "enabled": "boolean",
-  "whitelisted": t.array("string"),
-});
-
-export const MetricsConfig = t.iface([], {
+export const PrometheusConfig = t.iface([], {
   "enabled": "boolean",
   "port": "number",
   "prefix": "string",
-  "useIngameCommand": "boolean",
-  "interval": "number",
-});
-
-export const SocketConfig = t.iface([], {
-  "enabled": "boolean",
-  "key": "string",
-  "uri": "string",
-  "type": t.union(t.lit('server'), t.lit('client')),
-  "port": "number",
-});
-
-export const ProxyConfig = t.iface([], {
-  "host": "string",
-  "port": "number",
-  "protocol": "ProxyProtocol",
-});
-
-export const ProxyProtocol = t.enumtype({
-  "Http": "http",
-  "Socks5": "socks5",
 });
 
 export const ApplicationConfig = t.iface([], {
+  "version": t.lit(2),
   "general": "GeneralConfig",
-  "discord": "DiscordConfig",
-  "minecraft": "MinecraftConfig",
-  "loggers": t.array("string"),
-  "commands": "CommandsConfig",
-  "profanity": "ProfanityFilterConfig",
-  "metrics": "MetricsConfig",
-  "socket": "SocketConfig",
+  "discord": "StaticDiscordConfig",
+  "prometheus": "PrometheusConfig",
   "plugins": t.array("string"),
 });
 
 const exportedTypeSuite: t.ITypeSuite = {
   GeneralConfig,
-  DiscordConfig,
-  MinecraftConfig,
-  MinecraftInstanceConfig,
-  CommandsConfig,
-  ProfanityFilterConfig,
-  MetricsConfig,
-  SocketConfig,
-  ProxyConfig,
-  ProxyProtocol,
+  StaticDiscordConfig,
+  PrometheusConfig,
   ApplicationConfig,
 };
 export default exportedTypeSuite;

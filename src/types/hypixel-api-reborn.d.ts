@@ -8,6 +8,8 @@ declare module 'hypixel-api-reborn' {
       query: string,
       options: Partial<skyblockMemberOptions> & { raw: true }
     ): Promise<SkyblockV2ProfilesRaw>
+
+    getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
   }
 
   export interface SkyblockV2ProfilesRaw {
@@ -36,6 +38,8 @@ declare module 'hypixel-api-reborn' {
       }
     }
     slayer: SlayerProfile | undefined
+    jacobs_contest?: Partial<{ perks: { farming_level_cap: number } }>
+    pets_data?: Partial<{ pet_care: { pet_types_sacrificed: string[] } }>
     essence?: SkyblockV2Essence
   }
 
@@ -54,6 +58,7 @@ declare module 'hypixel-api-reborn' {
   export interface SkyblockV2Dungeons {
     dungeon_types: SkyblockV2DungeonsTypes
     player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockV2DungeonsClass | undefined>
+    treasures?: { runs?: SkyblockV2DungeonRun[] }
   }
 
   export interface SkyblockV2DungeonsTypes {
@@ -83,6 +88,13 @@ declare module 'hypixel-api-reborn' {
     experience?: number
   }
 
+  export interface SkyblockV2DungeonRun {
+    completion_ts: number
+    dungeon_type: 'catacombs' | 'master_catacombs'
+    dungeon_tier: number
+    participants: { player_uuid: string; display_name: string }[]
+  }
+
   export interface SlayerProfile {
     slayer_bosses: {
       zombie: Slayer
@@ -101,6 +113,26 @@ declare module 'hypixel-api-reborn' {
     boss_kills_tier_2?: number
     boss_kills_tier_3?: number
     boss_kills_tier_4?: number
+  }
+
+  export interface MayorV2 {
+    mayor: MayorCandidateV2 & { minister: { name: string; perk: MayorPerkV2 }; election: MayorElectionV2 }
+    current?: MayorElectionV2
+  }
+
+  export interface MayorElectionV2 {
+    candidates: MayorCandidateV2[]
+  }
+
+  export interface MayorCandidateV2 {
+    name: string
+    perks: MayorPerkV2[]
+    votes?: number
+  }
+
+  export interface MayorPerkV2 {
+    name: string
+    minister: boolean
   }
 }
 /* eslint-enable @typescript-eslint/naming-convention */

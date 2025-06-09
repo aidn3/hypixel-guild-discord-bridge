@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { Color, MinecraftReactiveEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 const Messages = [
@@ -17,8 +17,6 @@ const Messages = [
   "Onii-chan, you are big meanie. Don't block my message even if it's repeated!"
 ]
 
-let lastWarning = 0
-
 export default {
   onChat: function (context: MinecraftChatContext): void {
     const regex = /^You cannot say the same message twice!/g
@@ -26,23 +24,20 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const randomMessage = Messages[Math.floor(Math.random() * Messages.length)]
-
-      context.application.emit('event', {
-        localEvent: true,
-        instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.REPEAT,
-        username: undefined,
-        severity: Severity.INFO,
-        message: randomMessage,
-        removeLater: false
-      })
-
-      if (lastWarning + 5000 < Date.now()) {
-        void context.clientInstance.send(`/gc @${randomMessage}`)
-        lastWarning = Date.now()
+      const originEventId = context.clientInstance.getLastEventIdForSentChatMessage()
+      if (originEventId === undefined) {
+        context.logger.warn('No originEventId detected. Dropping the event')
+        return
       }
+
+      context.application.emit('minecraftChatEvent', {
+        ...context.eventHelper.fillBaseEvent(),
+
+        color: Color.Info,
+        type: MinecraftReactiveEventType.Repeat,
+        originEventId: originEventId,
+        message: randomMessage
+      })
     }
   }
 } satisfies MinecraftChatMessage

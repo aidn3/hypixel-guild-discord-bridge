@@ -1,15 +1,20 @@
-import type { CommandsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type { ChatEvent } from '../../common/application-event.js'
-import { ChannelType, InstanceType } from '../../common/application-event.js'
-import { ClientInstance } from '../../common/client-instance.js'
+import { InstanceType, Permission } from '../../common/application-event.js'
+import type { ChatCommandHandler } from '../../common/commands.js'
+import { ConfigManager } from '../../common/config-manager.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import { InternalInstancePrefix } from '../../common/instance.js'
 
-import type { ChatCommandHandler } from './common/command-interface.js'
 import EightBallCommand from './triggers/8ball.js'
+import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
+import Boop from './triggers/boop.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
+import CurrentDungeon from './triggers/current-dungeon.js'
 import DarkAuction from './triggers/darkauction.js'
+import Election from './triggers/election.js'
 import Explain from './triggers/explain.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
@@ -17,6 +22,7 @@ import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import MagicalPower from './triggers/magicalpower.js'
+import Mayor from './triggers/mayor.js'
 import Networth from './triggers/networth.js'
 import Override from './triggers/override.js'
 import PartyManager from './triggers/party.js'
@@ -29,21 +35,36 @@ import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
+import Starfall from './triggers/starfall.js'
+import StatusCommand from './triggers/status.js'
 import Toggle from './triggers/toggle.js'
+import Vengeance from './triggers/vengeance.js'
+import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 
-export class CommandsInstance extends ClientInstance<CommandsConfig> {
+export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
+  private static readonly CommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
+  private readonly config: ConfigManager<CommandsConfig>
 
-  constructor(app: Application, instanceName: string, config: CommandsConfig) {
-    super(app, instanceName, InstanceType.COMMANDS, config)
+  constructor(app: Application) {
+    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
+
+    this.config = new ConfigManager(app, app.getConfigFilePath('commands.json'), {
+      enabled: true,
+      disabledCommands: []
+    })
 
     this.commands = [
-      new EightBallCommand(),
+      new Bits(),
+      new Bedwars(),
+      new Boop(),
       new Calculate(),
       new Catacomb(),
-      new RunsToClassAverage(),
+      new CurrentDungeon(),
       new DarkAuction(),
+      new Election(),
+      new EightBallCommand(),
       new Explain(),
       new Guild(),
       new Help(),
@@ -51,6 +72,7 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new Kuudra(),
       new Level(),
       new MagicalPower(),
+      new Mayor(),
       new Networth(),
       new Override(),
       ...new PartyManager().resolveCommands(),
@@ -58,25 +80,23 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       new RockPaperScissors(),
       new Roulette(),
       new Runs(),
+      new RunsToClassAverage(),
       new Secrets(),
       new Skills(),
       new Slayer(),
       new Soopy(),
+      new Starfall(),
+      new StatusCommand(),
       new Toggle(),
-      new Weight(),
-      new Bits()
+      new Vengeance(),
+      new Warp(),
+      new Weight()
     ]
 
-    const disabled = config.disabledCommand
-    for (const command of this.commands) {
-      if (command.triggers.some((trigger: string) => disabled.includes(trigger.toLowerCase()))) {
-        command.enabled = false
-      }
-    }
     this.checkCommandsIntegrity()
 
-    this.app.on('chat', (event) => {
-      void this.handle(event)
+    this.application.on('chat', (event) => {
+      void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
@@ -96,40 +116,71 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
     }
   }
 
-  connect(): Promise<void> | void {
+  public getConfig(): ConfigManager<CommandsConfig> {
+    return this.config
+  }
+
+  connect(): void {
     this.checkCommandsIntegrity()
+    this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
+  }
+
+  disconnect(): Promise<void> | void {
+    this.setAndBroadcastNewStatus(Status.Ended, 'chat commands have been disabled')
   }
 
   async handle(event: ChatEvent): Promise<void> {
-    if (!event.message.startsWith(this.config.commandPrefix)) return
+    if (this.currentStatus() !== Status.Connected) return
+    if (!event.message.startsWith(CommandsInstance.CommandPrefix)) return
 
-    const isAdmin = event.username === this.config.adminUsername && event.instanceType === InstanceType.MINECRAFT
-    const commandName = event.message.slice(this.config.commandPrefix.length).split(' ')[0].toLowerCase()
+    const commandName = event.message.slice(CommandsInstance.CommandPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
     if (command == undefined) return
 
-    // officer chat and application owner can bypass enabled flag
-    if (!command.enabled && !isAdmin && event.channelType !== ChannelType.OFFICER) {
+    // Disabled commands can only be used by officers and admins, regular users cannot use them
+    if (
+      this.config.data.disabledCommands.includes(command.triggers[0].toLowerCase()) &&
+      event.permission === Permission.Anyone
+    ) {
       return
     }
 
     try {
       const commandResponse = await command.handler({
-        app: this.app,
+        app: this.application,
 
+        eventHelper: this.eventHelper,
         logger: this.logger,
+        errorHandler: this.errorHandler,
+
         allCommands: this.commands,
-        commandPrefix: this.config.commandPrefix,
-        adminUsername: this.config.adminUsername,
+        toggleCommand: (trigger) => {
+          const command = this.commands.find((c) => c.triggers.includes(trigger.toLowerCase()))
+          if (command == undefined) return 'not-found'
+
+          const config = this.config.data
+          if (config.disabledCommands.includes(command.triggers[0].toLowerCase())) {
+            config.disabledCommands = config.disabledCommands.filter(
+              (disabledCommand) => disabledCommand !== command.triggers[0].toLowerCase()
+            )
+            this.config.markDirty()
+            return 'enabled'
+          } else {
+            config.disabledCommands.push(command.triggers[0].toLowerCase())
+            this.config.markDirty()
+            return 'disabled'
+          }
+        },
+        commandPrefix: CommandsInstance.CommandPrefix,
 
         instanceName: event.instanceName,
         instanceType: event.instanceType,
         channelType: event.channelType,
 
         username: event.username,
-        isAdmin: isAdmin,
+        permission: event.permission,
         args: commandsArguments,
 
         sendFeedback: (feedbackResponse) => {
@@ -140,37 +191,42 @@ export class CommandsInstance extends ClientInstance<CommandsConfig> {
       this.reply(event, command.triggers[0], commandResponse)
     } catch (error) {
       this.logger.error('Error while handling command', error)
-      this.reply(event, command.triggers[0], `${event.username}, error trying to execute ${command.triggers[0]}.`)
+      this.reply(
+        event,
+        command.triggers[0],
+        `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`
+      )
     }
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
-    this.app.emit('command', {
-      localEvent: true,
+    this.application.emit('command', {
+      eventId: this.eventHelper.generate(),
       instanceName: event.instanceName,
       instanceType: event.instanceType,
-      channelType: event.channelType,
-      discordChannelId: event.channelId,
+
+      originEventId: event.eventId,
       username: event.username,
-      fullCommand: event.message,
       commandName: commandName,
-      commandResponse: response,
-      alreadyReplied: false
+      commandResponse: response
     })
   }
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
-    this.app.emit('commandFeedback', {
-      localEvent: true,
+    this.application.emit('commandFeedback', {
+      eventId: this.eventHelper.generate(),
       instanceName: event.instanceName,
       instanceType: event.instanceType,
-      channelType: event.channelType,
-      discordChannelId: event.channelId,
+
+      originEventId: event.eventId,
       username: event.username,
-      fullCommand: event.message,
       commandName: commandName,
-      commandResponse: response,
-      alreadyReplied: false
+      commandResponse: response
     })
   }
+}
+
+export interface CommandsConfig {
+  enabled: boolean
+  disabledCommands: string[]
 }

@@ -23,13 +23,22 @@
     "project": true
   },
   "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "CallExpression[callee.object.name='console']",
+        "message": "usage of console object is not allowed. use node:assert or logger4j instead"
+      }
+    ],
     "unicorn/no-process-exit": 0,
+    "unicorn/no-array-push-push": 0,
     "unicorn/filename-case": 2,
     "no-use-before-define": 0,
     "import/order": [
       "error",
       {
         "newlines-between": "always",
+        "named": true,
         "alphabetize": {
           "order": "asc",
           "caseInsensitive": true
@@ -41,6 +50,12 @@
     "import/newline-after-import": 2,
     "import/no-extraneous-dependencies": 2,
     "@typescript-eslint/consistent-type-imports": 2,
+    "@typescript-eslint/no-floating-promises": [
+      "error",
+      {
+        "ignoreVoid": false
+      }
+    ],
     "@typescript-eslint/naming-convention": [
       "error",
       {
@@ -63,15 +78,7 @@
       },
       {
         "selector": ["import"],
-        "filter": {
-          "match": false,
-          "regex": "(fs|http|console|process|path|assert)"
-        },
-        "format": null,
-        "custom": {
-          "match": true,
-          "regex": "^([A-Z]{1,3}[a-z0-9]+)+$"
-        }
+        "format": null
       },
       {
         "selector": ["classProperty"],
@@ -129,7 +136,16 @@
           },
           {
             "target": "src/plugins",
-            "from": ["src/plugins", "src/types"],
+            "from": [
+              "src/types",
+              "src/plugins",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft",
+              "src/instance/socket"
+            ],
             "message": "Plugin files must not reference other plugins or outside files"
           },
           {
@@ -139,10 +155,9 @@
           },
           {
             "target": "src/util",
-            "from": ["src/instance", "src/plugins", "src/types"],
+            "from": ["src/instance", "src/types"],
             "message": "Util must only reference other common files. Specific util can be put in their respective instance common dir."
           },
-
           {
             "target": "src/instance/commands",
             "from": [
@@ -152,6 +167,7 @@
               "src/instance/logger",
               "src/instance/metrics",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -178,6 +194,7 @@
               "src/instance/discord",
               "src/instance/metrics",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -191,6 +208,7 @@
               "src/instance/discord",
               "src/instance/logger",
               "src/instance/minecraft",
+              "src/instance/moderation",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -204,6 +222,21 @@
               "src/instance/discord",
               "src/instance/logger",
               "src/instance/metrics",
+              "src/instance/moderation",
+              "src/instance/socket"
+            ],
+            "message": "Instance must only access itself and common files"
+          },
+          {
+            "target": "src/instance/moderation",
+            "from": [
+              "src/plugins",
+              "src/types",
+              "src/instance/commands",
+              "src/instance/discord",
+              "src/instance/logger",
+              "src/instance/metrics",
+              "src/instance/minecraft",
               "src/instance/socket"
             ],
             "message": "Instance must only access itself and common files"
@@ -217,7 +250,8 @@
               "src/instance/discord",
               "src/instance/logger",
               "src/instance/metrics",
-              "src/instance/minecraft"
+              "src/instance/minecraft",
+              "src/instance/moderation"
             ],
             "message": "Instance must only access itself and common files"
           }

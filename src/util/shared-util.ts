@@ -1,4 +1,8 @@
-import Logger4js from 'log4js'
+import assert from 'node:assert'
+
+import { default as Logger4js } from 'log4js'
+
+import { InternalInstancePrefix } from '../common/instance.js'
 
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
@@ -37,17 +41,50 @@ export function antiSpamString(): string {
   return randomString
 }
 
+export function formatTime(time: number, maxPrecision = 2): string {
+  assert(maxPrecision >= 1, 'Minimum precision is 1')
+
+  let result = ''
+  let variablesSet = 0
+  let remaining = Math.floor(time / 1000) // milli to seconds
+
+  const days = Math.floor(remaining / 86_400)
+  if (days > 0) {
+    result += `${days}d`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % 86_400
+
+  const hours = Math.floor(remaining / 3600)
+  if (hours > 0) {
+    result += `${hours}h`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % 3600
+
+  const minutes = Math.floor(remaining / 60)
+  if (minutes > 0) {
+    result += `${minutes}m`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % 60
+
+  if (remaining > 0) result += `${remaining}s`
+  return result
+}
+
 export async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function shutdownApplication(exitCode: number): Promise<void> {
+export async function gracefullyExitProcess(exitCode: number): Promise<void> {
   const timeout = sleep(30_000).then(() => {
+    // fallback to normal console if it fails to flush logs
+    // eslint-disable-next-line no-restricted-syntax
     console.warn('Logger flush timed out. Exiting...')
     process.exit(exitCode)
   })
 
-  // eslint-disable-next-line import/no-named-as-default-member
   Logger4js.shutdown(() => {
     process.exit(exitCode)
   })
@@ -55,13 +92,36 @@ export async function shutdownApplication(exitCode: number): Promise<void> {
   await timeout
 }
 
-export function escapeDiscord(message: string): string {
-  message = message.split('\\').join('\\\\') // "\"
-  message = message.split('_').join(String.raw`\_`) // Italic
-  message = message.split('*').join(String.raw`\*`) // bold
-  message = message.split('~').join(String.raw`\~`) // strikethrough
-  message = message.split('`').join('\\`') // code
-  message = message.split('@').join(String.raw`\@-`) // mentions
+/**
+ * Convert duration number to a duration with prefix
+ * @param duration time in milliseconds
+ * @return a duration with prefix capped at 1 month. Result always 60 or bigger.
+ */
+export function durationToMinecraftDuration(duration: number): string {
+  // 30 day in seconds
+  // Max allowed duration in minecraft. It is a hard limit from server side
+  const MaxDuration = 2_592_000
+  // 1 minute in seconds. hard limit too
+  const MinDuration = 60
+  const Prefix = 's' // for "seconds"
 
-  return message
+  const maxTime = Math.min(MaxDuration, Math.floor(duration / 1000))
+  return `${Math.max(maxTime, MinDuration)}${Prefix}`
+}
+
+/**
+ * Used to convert instanceName to a human-readable one.
+ * Most instanceNames are either lowercased or contain metadata such as prefixes.
+ * This function aimed to beautify the instanceName and prepare for human display.
+ */
+export function beautifyInstanceName(instanceName: string): string {
+  instanceName = instanceName.startsWith(InternalInstancePrefix)
+    ? instanceName.slice(InternalInstancePrefix.length)
+    : instanceName
+
+  if (instanceName === instanceName.toLowerCase()) {
+    instanceName = instanceName.slice(0, 1).toUpperCase() + instanceName.slice(1).toLowerCase()
+  }
+
+  return instanceName
 }

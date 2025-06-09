@@ -1,109 +1,145 @@
-import Axios, { type AxiosResponse } from 'axios'
-import type { Message, TextChannel } from 'discord.js'
-import EmojisMap from 'emoji-name-map'
+import type { Client, Message, TextChannel } from 'discord.js'
+import { escapeMarkdown } from 'discord.js'
+import type { Logger } from 'log4js'
 
-import { ChannelType, InstanceType, PunishmentType } from '../../common/application-event.js'
+import type Application from '../../application.js'
+import type { InstanceType } from '../../common/application-event.js'
+import { ChannelType, PunishmentType } from '../../common/application-event.js'
+import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
-import { escapeDiscord } from '../../util/shared-util.js'
+import type EventHelper from '../../common/event-helper.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
+import type { DiscordConfig } from './common/discord-config.js'
+import { FilteredReaction, MutedReaction } from './common/discord-config.js'
+import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends EventHandler<DiscordInstance> {
-  registerEvents(): void {
-    this.clientInstance.client.on('messageCreate', (message) => {
-      void this.onMessage(message)
+export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+  private static readonly WarnMuteEvery = 10 * 60 * 1000
+
+  private readonly messageAssociation: MessageAssociation
+  private readonly lastMuteWarn = new Map<string, number>()
+  private readonly config: ConfigManager<DiscordConfig>
+
+  constructor(
+    application: Application,
+    clientInstance: DiscordInstance,
+    config: ConfigManager<DiscordConfig>,
+    messageAssociation: MessageAssociation,
+    eventHelper: EventHelper<InstanceType.Discord>,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler
+  ) {
+    super(application, clientInstance, eventHelper, logger, errorHandler)
+    this.config = config
+    this.messageAssociation = messageAssociation
+  }
+
+  registerEvents(client: Client): void {
+    client.on('messageCreate', (message) => {
+      void this.onMessage(message).catch(
+        this.errorHandler.promiseCatch('handling incoming discord messageCreate event')
+      )
     })
   }
 
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
+    const config = this.config.data
     let channelType: ChannelType
-    if (this.clientInstance.config.publicChannelIds.includes(event.channel.id)) {
-      channelType = ChannelType.PUBLIC
-    } else if (this.clientInstance.config.officerChannelIds.includes(event.channel.id)) {
-      channelType = ChannelType.OFFICER
+    if (config.publicChannelIds.includes(event.channel.id)) {
+      channelType = ChannelType.Public
+    } else if (config.officerChannelIds.includes(event.channel.id)) {
+      channelType = ChannelType.Officer
     } else if (event.guildId) {
       return
     } else {
-      channelType = ChannelType.PRIVATE
+      channelType = ChannelType.Private
     }
 
     const discordName = event.member?.displayName ?? event.author.username
     const readableName = this.getReadableName(discordName, event.author.id)
-    if (channelType !== ChannelType.OFFICER && (await this.hasBeenPunished(event, discordName, readableName))) return
+    if (channelType !== ChannelType.Officer && (await this.hasBeenPunished(event, discordName, readableName))) return
 
     const replyUsername = await this.getReplyUsername(event)
     const readableReplyUsername =
       replyUsername == undefined ? undefined : this.getReadableName(replyUsername, replyUsername)
 
-    const content = await this.cleanMessage(event)
+    const content = this.cleanMessage(event)
     if (content.length === 0) return
-    const truncatedContent = await this.truncateText(event, content)
 
-    const { filteredMessage, changed } = this.clientInstance.app.filterProfanity(truncatedContent)
+    const fillBaseEvent = this.eventHelper.fillBaseEvent()
+    this.messageAssociation.addMessageId(fillBaseEvent.eventId, {
+      guildId: event.guildId ?? undefined,
+      channelId: event.channelId,
+      messageId: event.id
+    })
+
+    const { filteredMessage, changed } = this.application.moderation.filterProfanity(content)
     if (changed) {
-      this.clientInstance.app.emit('profanityWarning', {
-        localEvent: true,
-        instanceType: InstanceType.DISCORD,
-        instanceName: this.clientInstance.instanceName,
+      this.application.emit('profanityWarning', {
+        ...fillBaseEvent,
+
         channelType: channelType,
 
         username: discordName,
-        originalMessage: truncatedContent,
+        originalMessage: content,
         filteredMessage: filteredMessage
       })
-      await event.reply({
-        content: '**Profanity warning, Your message has been edited:**\n' + escapeDiscord(filteredMessage)
-      })
+
+      const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === FilteredReaction.name)
+      if (emoji !== undefined) await event.react(emoji)
+      if (emoji === undefined || this.config.data.alwaysReplyReaction) {
+        await event.reply({
+          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
+        })
+      }
     }
 
-    this.clientInstance.app.emit('chat', {
-      localEvent: true,
-      instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.DISCORD,
+    this.application.emit('chat', {
+      ...fillBaseEvent,
+
       channelType: channelType,
       channelId: event.channel.id,
+
+      permission: this.clientInstance.resolvePrivilegeLevel(
+        event.author.id,
+        event.member ? [...event.member.roles.cache.keys()] : []
+      ),
+
+      userId: event.author.id,
       username: readableName,
       replyUsername: readableReplyUsername,
       message: filteredMessage
     })
   }
 
-  async truncateText(message: Message, content: string): Promise<string> {
-    /*
-      minecraft has a limit of 256 chars per message
-      256 - 232 = 24
-      we reserve these 24 spare chars for username, prefix and ...
-    */
-    const length = 232
-    if (content.length <= length) {
-      return content
-    }
-
-    await message.reply({
-      content: `Message too long! It has been shortened to ${length} characters.`
-    })
-
-    return content.slice(0, length) + '...'
-  }
-
-  async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
-    const punishedUsers = this.clientInstance.app.punishedUsers
+  private async hasBeenPunished(message: Message, discordName: string, readableName: string): Promise<boolean> {
+    const punishments = this.application.moderation.punishments
     const userIdentifiers = [discordName, readableName, message.author.id]
-    const mutedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.MUTE)
+    const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
 
     if (mutedTill != undefined) {
-      await message.reply({
-        content:
-          '*Looks like you are muted on the chat-bridge.*\n' +
-          "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your mute expires <t:${Math.floor(mutedTill / 1000)}:R>!*`
-      })
+      const emoji = message.client.application.emojis.cache.find((emoji) => emoji.name === MutedReaction.name)
+      if (emoji !== undefined) await message.react(emoji)
+
+      const currentTimestamp = Date.now()
+      if ((this.lastMuteWarn.get(message.author.id) ?? 0) + ChatManager.WarnMuteEvery < currentTimestamp) {
+        this.lastMuteWarn.set(message.author.id, currentTimestamp)
+        await message.reply({
+          content:
+            '*Looks like you are muted on the chat-bridge.*\n' +
+            "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
+            `*Your mute expires <t:${Math.floor(mutedTill / 1000)}:R>!*`
+        })
+      }
+
       return true
     }
 
-    const bannedTill = punishedUsers.getPunishedTill(userIdentifiers, PunishmentType.BAN)
+    const bannedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Ban)
     if (bannedTill != undefined) {
       await message.reply({
         content:
@@ -148,26 +184,16 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
     })
   }
 
-  private cleanStandardEmoji(message: string): string {
-    for (const [emojiReadable, emojiUnicode] of Object.entries(EmojisMap.emoji)) {
-      message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
-    }
-
-    return message
-  }
-
-  private async cleanMessage(messageEvent: Message): Promise<string> {
+  private cleanMessage(messageEvent: Message): string {
     let content = messageEvent.cleanContent
 
-    content = this.cleanGuildEmoji(content)
-    content = this.cleanStandardEmoji(content).trim()
+    content = this.cleanGuildEmoji(content).trim()
 
     if (messageEvent.attachments.size > 0) {
       for (const [, attachment] of messageEvent.attachments) {
         if (attachment.contentType?.includes('image') === true) {
           const link = attachment.url
-          const linkWithoutTracking = await this.uploadToImgur(link)
-          content += ` ${linkWithoutTracking ?? link}`
+          content += ` ${link}`
         } else {
           content += ' (ATTACHMENT)'
         }
@@ -176,33 +202,4 @@ export default class ChatManager extends EventHandler<DiscordInstance> {
 
     return content
   }
-
-  private async uploadToImgur(link: string): Promise<string | undefined> {
-    // This is encoded just to prevent automated tools from extracting it.
-    // It is NOT a secret key
-    const encoded = 'Q-2-x-p-Z-W-5-0-L-U-l-E-I-D-Y-0-O-W-Y-y-Z-m-I-0-O-G-U-1-O-T-c-2-N-w-=-='
-    const decoded = Buffer.from(encoded.replaceAll('-', ''), 'base64').toString('utf8')
-
-    const result = await Axios.post(
-      'https://api.imgur.com/3/image',
-      {
-        image: link,
-        type: 'url'
-      },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      { headers: { Authorization: decoded } }
-    )
-      .then((response: AxiosResponse<ImgurResponse, unknown>) => {
-        return response.data.data.link
-      })
-      .catch((error: unknown) => {
-        this.clientInstance.logger.error(error)
-      })
-
-    return result || undefined
-  }
-}
-
-interface ImgurResponse {
-  data: { link: string }
 }

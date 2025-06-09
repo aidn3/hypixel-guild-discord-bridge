@@ -1,0 +1,23 @@
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+
+export default class Mayor extends ChatCommandHandler {
+  constructor() {
+    super({
+      name: 'Mayor',
+      triggers: ['mayor', 'm'],
+      description: 'Show current Hypixel Skyblock Election',
+      example: `mayor`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
+    const government = await context.app.hypixelApi.getSkyblockGovernment({ raw: true })
+
+    let message = `Elected Mayor: `
+    message += `${government.mayor.name} (${government.mayor.perks.map((perk) => perk.name).join(', ')})`
+    message += ' | '
+    message += `${government.mayor.minister.name} (${government.mayor.minister.perk.name})`
+    return message
+  }
+}

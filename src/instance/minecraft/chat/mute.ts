@@ -1,6 +1,9 @@
-import { EventType, InstanceType, ChannelType, PunishmentType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
 import { sufficeToTime } from '../../../util/shared-util.js'
+// eslint-disable-next-line import/no-restricted-paths
+import { HeatType } from '../../moderation/commands-heat.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+import { checkHeat } from '../common/common.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -14,34 +17,33 @@ export default {
       const muteTime = Number(match[3])
       const muteSuffice = match[4]
 
+      await checkHeat(context, responsible, HeatType.Mute)
+
       const mojangProfile = await context.application.mojangApi.profileByUsername(target).catch(() => undefined)
 
       if (responsible !== context.clientInstance.username()) {
-        context.application.punishedUsers.punish({
-          localEvent: true,
-          instanceType: InstanceType.MINECRAFT,
-          instanceName: context.instanceName,
+        context.application.moderation.punishments.add({
+          ...context.eventHelper.fillBaseEvent(),
 
           userName: mojangProfile?.name ?? target,
           userUuid: mojangProfile?.id,
           userDiscordId: undefined,
 
-          type: PunishmentType.MUTE,
+          type: PunishmentType.Mute,
           till: Date.now() + muteTime * sufficeToTime(muteSuffice) * 1000,
           reason: context.message
         })
       }
 
-      context.application.emit('event', {
-        localEvent: true,
-        instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.OFFICER,
-        eventType: EventType.MUTE,
+      context.application.emit('guildPlayer', {
+        ...context.eventHelper.fillBaseEvent(),
+
+        color: Color.Bad,
+        channels: [ChannelType.Officer],
+
+        type: GuildPlayerEventType.Mute,
         username: responsible,
-        severity: Severity.BAD,
-        message: context.message,
-        removeLater: false
+        message: context.message
       })
     }
   }

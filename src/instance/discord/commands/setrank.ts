@@ -1,9 +1,9 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { escapeDiscord } from '../../../util/shared-util.js'
-import { checkChatTriggers, formatChatTriggerResponse, RankChat } from '../common/chat-triggers.js'
-import type { CommandInterface } from '../common/command-interface.js'
-import { Permission } from '../common/command-interface.js'
+import { InstanceType, Permission } from '../../../common/application-event.js'
+import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { checkChatTriggers, RankChat } from '../../../util/chat-triggers.js'
+import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 
 export default {
   getCommandBuilder: () =>
@@ -11,24 +11,47 @@ export default {
       .setName('setrank')
       .setDescription('setrank guild member in-game')
       .addStringOption((option) =>
-        option.setName('username').setDescription('Username of the player').setRequired(true)
+        option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       )
       .addStringOption((option) =>
-        option.setName('rank').setDescription('rank to change to').setRequired(true)
-      ) as SlashCommandBuilder,
+        option.setName('rank').setDescription('rank to change to').setRequired(true).setAutocomplete(true)
+      ),
   permission: Permission.Helper,
-  allowInstance: false,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
+    const instances = context.application.getInstancesNames(InstanceType.Minecraft)
     const rank: string = context.interaction.options.getString('rank', true)
 
     const command = `/g setrank ${username} ${rank}`
-    const result = await checkChatTriggers(context.application, RankChat, undefined, command, username)
-    const formatted = formatChatTriggerResponse(result, `Setrank ${escapeDiscord(username)}`)
+    const result = await checkChatTriggers(
+      context.application,
+      context.eventHelper,
+      RankChat,
+      instances,
+      command,
+      username
+    )
+    const formatted = formatChatTriggerResponse(result, `Setrank ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
+  },
+  autoComplete: async function (context) {
+    const option = context.interaction.options.getFocused(true)
+    if (option.name === 'username') {
+      const response = context.application.usersManager.autoComplete
+        .username(option.value)
+        .slice(0, 25)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    } else if (option.name === 'rank') {
+      const response = context.application.usersManager.autoComplete
+        .rank(option.value)
+        .slice(0, 25)
+        .map((choice) => ({ name: choice, value: choice }))
+      await context.interaction.respond(response)
+    }
   }
-} satisfies CommandInterface
+} satisfies DiscordCommandHandler

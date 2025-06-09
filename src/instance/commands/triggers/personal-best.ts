@@ -1,7 +1,8 @@
 import type { DungeonFloors, DungeonFloorsWithEntrance, SkyblockV2DungeonsTypes } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import { formatTime } from '../../../util/shared-util.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
@@ -123,29 +124,17 @@ export default class PersonalBest extends ChatCommandHandler {
     s: number | undefined,
     sPlus: number | undefined
   ): string {
+    const timePrecision = 10
     let result = `${username} finished ${floorName} with `
 
     if (s === undefined && sPlus === undefined) {
       if (completion === undefined) return `${username} never finished ${floorName}`
-      result += `a completion ${this.formatTime(completion)}`
+      result += `a completion ${formatTime(completion, timePrecision)}`
       return result
     }
 
-    if (s !== undefined) result += `an S ${this.formatTime(s)}`
-    if (sPlus !== undefined) result += ` and an S+ ${this.formatTime(sPlus)}`
-
-    return result
-  }
-
-  private static formatTime(time: number): string {
-    let result = ''
-    let remaining = Math.floor(time / 1000) // milli to seconds
-
-    const minutes = Math.floor(remaining / 60)
-    if (minutes > 0) result += `${minutes}m`
-    remaining = remaining % 60
-
-    result += `${remaining}s`
+    if (s !== undefined) result += `an S ${formatTime(s, timePrecision)}`
+    if (sPlus !== undefined) result += ` and an S+ ${formatTime(sPlus, timePrecision)}`
 
     return result
   }

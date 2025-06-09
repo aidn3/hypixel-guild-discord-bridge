@@ -1,82 +1,25 @@
+export const ApplicationConfigVersion = 2
+
 export interface GeneralConfig {
   hypixelApiKey: string
+  shareMetrics: boolean
 }
 
-export interface DiscordConfig {
-  instanceName: string
-  key: string | null
-  adminId: string
-
-  publicChannelIds: string[]
-  officerChannelIds: string[]
-  helperRoleIds: string[]
-  officerRoleIds: string[]
-
-  deleteTempEventAfter: number
+export interface StaticDiscordConfig {
+  key: string
+  adminIds: string[]
 }
 
-export interface MinecraftConfig {
-  bridgePrefix: string
-  instances: MinecraftInstanceConfig[]
-}
-
-export interface MinecraftInstanceConfig {
-  instanceName: string
-  email: string
-  proxy: ProxyConfig | null
-}
-
-export interface CommandsConfig {
-  enabled: boolean
-
-  adminUsername: string
-  commandPrefix: string
-  disabledCommand: string[]
-}
-
-export interface ProfanityFilterConfig {
-  enabled: boolean
-  whitelisted: string[]
-}
-
-export interface MetricsConfig {
+export interface PrometheusConfig {
   enabled: boolean
   port: number
   prefix: string
-  useIngameCommand: boolean
-  interval: number
-}
-
-export interface SocketConfig {
-  enabled: boolean
-  key: string
-  uri: string
-  type: 'server' | 'client'
-  port: number
-}
-
-export interface ProxyConfig {
-  host: string
-  port: number
-  protocol: ProxyProtocol
-}
-
-export enum ProxyProtocol {
-  Http = 'http',
-  Socks5 = 'socks5'
 }
 
 export interface ApplicationConfig {
+  version: 2 // typeof ApplicationConfigVersion
   general: GeneralConfig
-
-  discord: DiscordConfig
-  minecraft: MinecraftConfig
-  loggers: string[]
-
-  commands: CommandsConfig
-  profanity: ProfanityFilterConfig
-  metrics: MetricsConfig
-  socket: SocketConfig
-
+  discord: StaticDiscordConfig
+  prometheus: PrometheusConfig
   plugins: string[]
 }

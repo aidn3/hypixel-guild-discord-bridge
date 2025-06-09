@@ -1,6 +1,6 @@
-import { InstanceType, PunishmentType } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
 const LossMessages = [
   '%s you got blasted!',
@@ -33,7 +33,7 @@ export default class Roulette extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.instanceType !== InstanceType.MINECRAFT) {
+    if (context.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
     }
 
@@ -59,18 +59,21 @@ export default class Roulette extends ChatCommandHandler {
     if (Math.random() < currentChance) {
       this.countSinceLastLose = 0
 
-      context.app.clusterHelper.sendCommandToAllMinecraft(`/g mute ${context.username} 15m`)
-      context.app.punishedUsers.punish({
-        localEvent: true,
-        instanceType: InstanceType.MINECRAFT,
-        instanceName: context.instanceName,
+      context.app.emit('minecraftSend', {
+        ...context.eventHelper.fillBaseEvent(),
+        targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
+        priority: MinecraftSendChatPriority.High,
+        command: `/g mute ${context.username} 15m`
+      })
+      context.app.moderation.punishments.add({
+        ...context.eventHelper.fillBaseEvent(),
 
         userName: context.username,
         // not really that important to resolve uuid since it ends fast and the punishment is just a game
         userUuid: undefined,
         userDiscordId: undefined,
 
-        type: PunishmentType.MUTE,
+        type: PunishmentType.Mute,
         till: Date.now() + 900_000,
         reason: 'Lost in RussianRoulette game'
       })
