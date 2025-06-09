@@ -10,7 +10,7 @@ import type { Logger } from 'log4js'
 import type Application from '../../application.js'
 import { ChannelType, Color, InstanceType, Permission } from '../../common/application-event.js'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../common/commands.js'
+import { CommandScope, OptionToAddMinecraftInstances } from '../../common/commands.js'
 import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
@@ -192,14 +192,10 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         return
       }
 
-      // enforce right channel OR allow exception if user is admin and executing admin command
-      if (channelType === undefined && !(permission === Permission.Admin && command.permission === Permission.Admin)) {
+      const scopeCheck = this.checkScope(command.scope ?? CommandScope.Public, channelType)
+      if (scopeCheck !== undefined) {
         this.logger.debug(`can't execute in channel ${interaction.channelId}`)
-
-        await interaction.reply({
-          content: 'You can only use commands in public/officer bridge channels!',
-          ephemeral: true
-        })
+        await interaction.reply({ content: scopeCheck, ephemeral: true })
         return
       }
 
@@ -224,41 +220,41 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ]
         })
         return
-      } else {
-        this.logger.debug('execution granted.')
+      }
 
-        const commandContext: DiscordCommandContext = {
-          application: this.application,
-          eventHelper: this.eventHelper,
-          logger: this.logger,
-          errorHandler: this.errorHandler,
-          instanceName: this.clientInstance.instanceName,
-          permission: this.clientInstance.resolvePrivilegeLevel(
-            interaction.user.id,
-            interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-          ),
-          interaction: interaction,
-          allCommands: [...this.commands.values()],
+      this.logger.debug('execution granted.')
 
-          showPermissionDenied: async () => {
-            if (interaction.deferred || interaction.replied) {
-              await interaction.editReply({
-                content: "You don't have permission to execute this command"
-              })
-              return
-            } else {
-              await interaction.reply({
-                content: "You don't have permission to execute this command",
-                ephemeral: true
-              })
-              return
-            }
+      const commandContext: DiscordCommandContext = {
+        application: this.application,
+        eventHelper: this.eventHelper,
+        logger: this.logger,
+        errorHandler: this.errorHandler,
+        instanceName: this.clientInstance.instanceName,
+        permission: this.clientInstance.resolvePrivilegeLevel(
+          interaction.user.id,
+          interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+        ),
+        interaction: interaction,
+        allCommands: [...this.commands.values()],
+
+        showPermissionDenied: async () => {
+          if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({
+              content: "You don't have permission to execute this command"
+            })
+            return
+          } else {
+            await interaction.reply({
+              content: "You don't have permission to execute this command",
+              ephemeral: true
+            })
+            return
           }
         }
-
-        await command.handler(commandContext)
-        return
       }
+
+      await command.handler(commandContext)
+      return
     } catch (error) {
       this.logger.error(error)
 
@@ -273,6 +269,26 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           ephemeral: true
         })
         return
+      }
+    }
+  }
+
+  private checkScope(scope: CommandScope, channelType: ChannelType | undefined): string | undefined {
+    switch (scope) {
+      case CommandScope.Public: {
+        if (channelType === ChannelType.Public || channelType === ChannelType.Officer) return undefined
+        return 'You can only use commands in public/officer bridge channels!'
+      }
+      case CommandScope.Privileged: {
+        if (channelType === ChannelType.Officer) return undefined
+        return 'You can only use commands in officer bridge channels!'
+      }
+      case CommandScope.Anywhere: {
+        return undefined
+      }
+      default: {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Unknown scope: ${scope}`)
       }
     }
   }

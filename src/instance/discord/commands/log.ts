@@ -5,7 +5,7 @@ import type Application from '../../../application.js'
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import { CommandScope, OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
@@ -50,6 +50,7 @@ export default {
       ),
   permission: Permission.Helper,
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
+  scope: CommandScope.Privileged,
 
   handler: async function (context) {
     await context.interaction.deferReply()

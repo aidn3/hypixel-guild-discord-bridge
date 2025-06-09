@@ -65,6 +65,10 @@ export interface DiscordCommandHandler {
    */
   readonly addMinecraftInstancesToOptions?: OptionToAddMinecraftInstances
   /**
+   * @default CommandScope.Public
+   */
+  readonly scope?: CommandScope
+  /**
    * @default Permission.Anyone
    */
   readonly permission?: Permission
@@ -77,6 +81,21 @@ export enum OptionToAddMinecraftInstances {
   Disabled,
   Optional,
   Required
+}
+
+export enum CommandScope {
+  /**
+   * only allow to execute in the registered channels
+   */
+  Public,
+  /**
+   * only allow to execute in officer channels
+   */
+  Privileged,
+  /**
+   * Allow to execute in any channel anywhere without limitations
+   */
+  Anywhere
 }
 
 interface DiscordContext {
