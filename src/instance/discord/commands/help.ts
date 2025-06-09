@@ -7,7 +7,7 @@ import type {
   ApplicationCommand,
   Collection
 } from 'discord.js'
-import { ApplicationCommandOptionType, SlashCommandBuilder } from 'discord.js'
+import { ApplicationCommandOptionType, MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
@@ -17,7 +17,7 @@ export default {
 
   handler: async function (context) {
     if (!context.interaction.inGuild()) {
-      await context.interaction.reply({ content: 'Use this command only in a server!', ephemeral: true })
+      await context.interaction.reply({ content: 'Use this command only in a server!', flags: MessageFlags.Ephemeral })
       return
     }
 

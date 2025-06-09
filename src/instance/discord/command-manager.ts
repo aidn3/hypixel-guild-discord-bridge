@@ -4,7 +4,7 @@ import type {
   Client,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
-import { Collection, escapeMarkdown, REST, Routes } from 'discord.js'
+import { Collection, escapeMarkdown, MessageFlags, REST, Routes } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
@@ -177,7 +177,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
         await interaction.reply({
           content: 'Command is not implemented somehow. Maybe there is new a version?',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         })
         return
       }
@@ -187,7 +187,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
         await interaction.reply({
           content: "You don't have permission to execute this command",
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         })
         return
       }
@@ -195,7 +195,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       const scopeCheck = this.checkScope(command.scope ?? CommandScope.Public, channelType)
       if (scopeCheck !== undefined) {
         this.logger.debug(`can't execute in channel ${interaction.channelId}`)
-        await interaction.reply({ content: scopeCheck, ephemeral: true })
+        await interaction.reply({ content: scopeCheck, flags: MessageFlags.Ephemeral })
         return
       }
 
@@ -247,7 +247,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
           } else {
             await interaction.reply({
               content: "You don't have permission to execute this command",
-              ephemeral: true
+              flags: MessageFlags.Ephemeral
             })
             return
           }
@@ -267,7 +267,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       } else {
         await interaction.reply({
           content: 'There was an error while executing command',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         })
         return
       }

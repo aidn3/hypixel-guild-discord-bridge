@@ -289,7 +289,7 @@ export class OptionsHandler {
           if (intValue < option.min || intValue > option.max || value !== intValue.toString(10)) {
             await modalInteraction.reply({
               content: `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(value)}`,
-              ephemeral: true
+              flags: MessageFlags.Ephemeral
             })
           } else {
             option.setOption(intValue)
