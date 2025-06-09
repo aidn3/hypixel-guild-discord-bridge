@@ -32,6 +32,17 @@ export class Sanitizer {
   }
 
   public async process(instanceName: string, message: string): Promise<string> {
+    if (message.startsWith('/')) {
+      const parts = message.split(' ')
+      const command = parts.shift()
+      const remaining = parts.join(' ')
+      return `${command} ${await this.sanitize(instanceName, remaining)}`
+    }
+
+    return await this.sanitize(instanceName, message)
+  }
+
+  private async sanitize(instanceName: string, message: string): Promise<string> {
     message = this.line.process(message)
     message = await this.link.process(message)
     message = this.emoji.process(message)
