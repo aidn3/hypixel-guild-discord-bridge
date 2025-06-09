@@ -61,7 +61,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        const embed = await this.getMessage30Days()
+        const embed = await this.getMessage30Days({ addLastUpdateAt: true })
 
         const shouldKeep = await this.update(client, entry, embed)
         if (!shouldKeep) deleteMessages.push(entry.messageId)
@@ -85,7 +85,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        const embed = await this.getOnline30Days()
+        const embed = await this.getOnline30Days({ addLastUpdateAt: true })
 
         const shouldKeep = await this.update(client, entry, embed)
         if (!shouldKeep) deleteMessages.push(entry.messageId)
@@ -139,10 +139,10 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     return true
   }
 
-  public async getMessage30Days(): Promise<APIEmbed> {
+  public async getMessage30Days(option: { addLastUpdateAt: boolean }): Promise<APIEmbed> {
     const leaderboard = this.application.usersManager.scoresManager.getMessages30Days(10)
 
-    let description = `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n`
+    let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
     description +=
       leaderboard.top.length > 0
         ? `Total messages: **${leaderboard.total.toLocaleString('en-US')}**\n\n`
@@ -163,10 +163,10 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     }
   }
 
-  public async getOnline30Days(): Promise<APIEmbed> {
+  public async getOnline30Days(option: { addLastUpdateAt: boolean }): Promise<APIEmbed> {
     const leaderboard = this.application.usersManager.scoresManager.getOnline30Days(10)
 
-    let description = `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n`
+    let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
     description +=
       leaderboard.top.length > 0
         ? `Total time: **${formatTime(leaderboard.total * 1000)}**\n\n`

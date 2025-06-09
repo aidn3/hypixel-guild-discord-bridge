@@ -31,7 +31,7 @@ export default {
     const config = context.application.discordInstance.leaderboard.getConfig()
     const type = context.interaction.options.getString('type', true)
     if (type === Messages30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getMessage30Days()
+      const embed = await context.application.discordInstance.leaderboard.getMessage30Days({ addLastUpdateAt: true })
       const messageId = await send(context.interaction, channel, embed)
       if (messageId === undefined) return
 
@@ -45,7 +45,7 @@ export default {
     }
 
     if (type === Online30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getOnline30Days()
+      const embed = await context.application.discordInstance.leaderboard.getOnline30Days({ addLastUpdateAt: true })
       const messageId = await send(context.interaction, channel, embed)
       if (messageId === undefined) return
 

@@ -24,13 +24,13 @@ export default {
 
     const type = context.interaction.options.getString('type', true)
     if (type === Messages30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getMessage30Days()
+      const embed = await context.application.discordInstance.leaderboard.getMessage30Days({ addLastUpdateAt: false })
       await context.interaction.editReply({ embeds: [embed] })
       return
     }
 
     if (type === Online30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getOnline30Days()
+      const embed = await context.application.discordInstance.leaderboard.getOnline30Days({ addLastUpdateAt: false })
       await context.interaction.editReply({ embeds: [embed] })
       return
     }
