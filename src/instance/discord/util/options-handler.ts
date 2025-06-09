@@ -285,7 +285,7 @@ export class OptionsHandler {
           assert(modalInteraction.isFromMessage())
 
           const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
-          const intValue = Number.parseInt(value)
+          const intValue = value.includes('.') ? Number.parseFloat(value) : Number.parseInt(value, 10)
           if (intValue < option.min || intValue > option.max || value !== intValue.toString(10)) {
             await modalInteraction.reply({
               content: `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(value)}`,
