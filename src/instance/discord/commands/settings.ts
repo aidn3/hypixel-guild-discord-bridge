@@ -264,9 +264,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         name: 'Leaderboards',
         description: 'How leaderboards are displayed.',
         header:
-          CategoryLabel +
-          '\n\n**These events are recommended for best user experience.**\n' +
-          'Do not turn off any unless you know what you are doing.',
+          '**These events are recommended for best user experience.**\n' +
+          'Do not turn off any unless you know what you are doing.\n\n' +
+          CategoryLabel,
         options: [
           {
             type: OptionType.Number,
@@ -288,9 +288,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         name: 'Minecraft Events',
         description: 'Advanced options for fine tuning public chat channels.',
         header:
-          CategoryLabel +
-          '\n\n**These events are recommended for best user experience.**\n' +
-          'Do not turn off any unless you know what you are doing.',
+          '**These events are recommended for best user experience.**\n' +
+          'Do not turn off any unless you know what you are doing.\n\n' +
+          CategoryLabel,
         options: [
           {
             type: OptionType.Boolean,
@@ -414,6 +414,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
 
 function fetchMetricsOptions(application: Application): CategoryOption {
   const scoresManager = application.usersManager.scoresManager.config
+
   return {
     type: OptionType.Category,
     name: 'Metrics',
@@ -491,7 +492,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
   return {
     type: OptionType.Category,
     name: 'Minecraft',
-    header: undefined,
+    header: CategoryLabel,
     options: [
       {
         type: OptionType.Boolean,
