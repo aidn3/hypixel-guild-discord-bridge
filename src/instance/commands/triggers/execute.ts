@@ -2,13 +2,13 @@ import { InstanceType, MinecraftSendChatPriority, Permission } from '../../../co
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
-export default class Override extends ChatCommandHandler {
+export default class Execute extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Override',
-      triggers: ['override', 'o'],
+      name: 'execute',
+      triggers: ['execute', 'exec'],
       description: 'Runs a command directly',
-      example: `override /guild accept aidn5`
+      example: `execute /guild accept aidn5`
     })
   }
 
@@ -30,6 +30,6 @@ export default class Override extends ChatCommandHandler {
       command: context.args.join(' ')
     })
 
-    return `Override command executed.`
+    return `Command has been executed.`
   }
 }

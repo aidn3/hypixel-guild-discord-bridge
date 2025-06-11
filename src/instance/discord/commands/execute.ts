@@ -7,8 +7,8 @@ import { CommandScope, OptionToAddMinecraftInstances } from '../../../common/com
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
-      .setName('override')
-      .setDescription('execute command to all clients in-game')
+      .setName('execute')
+      .setDescription('execute command in-game via Minecraft client')
       .addStringOption((option) =>
         option.setName('command').setDescription('command to execute. e.g. "/guild party"').setRequired(true)
       ),

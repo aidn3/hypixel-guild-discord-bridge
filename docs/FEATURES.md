@@ -20,7 +20,7 @@
 | `/reconnect`                        | Reconnect an in-game instance to Hypixel                | Helper         |
 | `/punishments`                      | Equivalent to `/guild mute/unmute/kick`. Can also ban   | Helper/Officer |
 | `/restart`                          | Restart the entire bridge service                       | Admin          |
-| `/override`                         | Send direct commands to all minecraft clients           | Admin          |
+| `/execute`                          | Send direct commands to all minecraft clients           | Admin          |
 
 ## Supported Events
 
@@ -74,7 +74,7 @@ A shorter version can also be used: `!- rtca`
 | !vengeance    | Try your luck against another player for a 15 minute mute  | Anyone     |
 | !weight       | Calculate the **Senither Weight** of a player              | Anyone     |
 | !toggle       | Enable/disable commands `!toggle 8ball`                    | Officer    |
-| !override     | Run a command directly `!overide /guild party`             | Admin      |
+| !execute      | Run a command directly `!overide /guild party`             | Admin      |
 
 ## Available Plugins
 
@@ -95,8 +95,8 @@ These are the supported official plugins that come bundled with the application:
 | starfall-cult     | Send a reminder when the skyblock starfall cult gathers                                 | Quality of Life | N/A                                                                                                                                                                                                |
 | STuF              | Bypass Hypixel restriction on hyperlinks                                                | Optional        | Requires the installation of a minecraft client mod/module that supports [STuF](https://github.com/stuffyerface/STuF) such as [ImageLinkFix](https://www.chattriggers.com/modules/v/ImageLinkFix). |
 
-## How to use override
+## How to use execute arbitrarily commands
 
 **Note: Only the one person who has administrator permissions can execute commands!**  
-From In-game: `/gc !override /guild party`  
-From Discord: `/override /guild party`
+From In-game: `/gc !execute /guild party`  
+From Discord: `/execute /guild party`
