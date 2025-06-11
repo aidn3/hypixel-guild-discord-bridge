@@ -29,7 +29,7 @@ export default class Antispam {
 
     let addedRandom = 0
     while (
-      this.similarity(newMessage, history) > this.config.data.antispamSafeScore &&
+      this.similarity(newMessage, history) > Antispam.SafeScore &&
       addedRandom < this.config.data.antispamMaxAdditions
     ) {
       if (addedRandom === 0) newMessage = newMessage.trim() + ' @'
