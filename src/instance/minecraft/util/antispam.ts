@@ -22,6 +22,10 @@ export default class Antispam {
 
     if (!this.config.data.antispamEnabled) {
       history.push(message)
+      if (history.length > Antispam.MaxHistory) {
+        history.splice(0, history.length - Antispam.MaxHistory)
+      }
+
       return message
     }
 
