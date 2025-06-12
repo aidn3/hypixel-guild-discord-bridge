@@ -9,7 +9,7 @@ export class MojangApi {
     const cachedResult = this.cache.get<MojangProfile>(username.toLowerCase())
     if (cachedResult) return cachedResult
 
-    const result = await Axios.get(`https://api.mojang.com/users/profiles/minecraft/${username}`).then(
+    const result = await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`).then(
       (response: AxiosResponse<MojangProfile, unknown>) => response.data
     )
 
@@ -23,7 +23,7 @@ export class MojangApi {
       if (cachedProfile?.id === uuid) return cachedProfile
     }
 
-    const result = await Axios.get(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`).then(
+    const result = await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`).then(
       (response: AxiosResponse<MojangProfile, unknown>) => response.data
     )
 
@@ -79,9 +79,10 @@ export class MojangApi {
   }
 
   private async lookupUsernames(usernames: string[]): Promise<MojangProfile[]> {
-    const result = await Axios.post(`https://api.mojang.com/profiles/minecraft`, usernames).then(
-      (response: AxiosResponse<MojangProfile[], unknown>) => response.data
-    )
+    const result = await Axios.post(
+      `https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname`,
+      usernames
+    ).then((response: AxiosResponse<MojangProfile[], unknown>) => response.data)
 
     for (const mojangProfile of result) {
       this.cache.set<MojangProfile>(mojangProfile.name.toLowerCase(), mojangProfile)
