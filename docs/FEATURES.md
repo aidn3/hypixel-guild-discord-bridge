@@ -45,7 +45,7 @@ Most [Soopy commands](https://soopy.dev/commands) are supported and can be used 
 A shorter version can also be used: `!- rtca`
 
 | Command       | Description                                                | Permission |
-| ------------- | ---------------------------------------------------------- | ---------- |
+| ------------- |------------------------------------------------------------| ---------- |
 | !8ball        | Replica of **8 ball**.`!8ball Will I win?`                 | Anyone     |
 | !bedwars      | Returns a player's bedwars common stats                    | Anyone     |
 | !bits         | Returns the best bit items to purchase for the most profit | Anyone     |
@@ -74,7 +74,7 @@ A shorter version can also be used: `!- rtca`
 | !vengeance    | Try your luck against another player for a 15 minute mute  | Anyone     |
 | !weight       | Calculate the **Senither Weight** of a player              | Anyone     |
 | !toggle       | Enable/disable commands `!toggle 8ball`                    | Officer    |
-| !execute      | Run a command directly `!overide /guild party`             | Admin      |
+| !execute      | Run a command directly `!execute /guild party`             | Admin      |
 
 ## Available Plugins
 
