@@ -74,7 +74,7 @@ A shorter version can also be used: `!- rtca`
 | !vengeance    | Try your luck against another player for a 15 minute mute  | Anyone     |
 | !weight       | Calculate the **Senither Weight** of a player              | Anyone     |
 | !toggle       | Enable/disable commands `!toggle 8ball`                    | Officer    |
-| !execute      | Run a command directly `!overide /guild party`             | Admin      |
+| !execute      | Run a command directly `!execute /guild party`             | Admin      |
 
 ## Available Plugins
 
