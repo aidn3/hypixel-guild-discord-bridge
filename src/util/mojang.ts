@@ -1,17 +1,25 @@
 import type { AxiosResponse } from 'axios'
 import Axios from 'axios'
 import NodeCache from 'node-cache'
+import PromiseQueue from 'promise-queue'
+
+import RateLimiter from './rate-limiter.js'
 
 export class MojangApi {
+  private readonly queue = new PromiseQueue()
+  private readonly rateLimit = new RateLimiter(1, 500)
   private readonly cache = new NodeCache({ maxKeys: 10_000, stdTTL: 24 * 60 * 60 })
 
   async profileByUsername(username: string): Promise<MojangProfile> {
     const cachedResult = this.cache.get<MojangProfile>(username.toLowerCase())
     if (cachedResult) return cachedResult
 
-    const result = await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`).then(
-      (response: AxiosResponse<MojangProfile, unknown>) => response.data
-    )
+    const result = await this.queue.add(async () => {
+      await this.rateLimit.wait()
+      return await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`).then(
+        (response: AxiosResponse<MojangProfile, unknown>) => response.data
+      )
+    })
 
     this.cache.set<MojangProfile>(result.name.toLowerCase(), result)
     return result
@@ -23,9 +31,12 @@ export class MojangApi {
       if (cachedProfile?.id === uuid) return cachedProfile
     }
 
-    const result = await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`).then(
-      (response: AxiosResponse<MojangProfile, unknown>) => response.data
-    )
+    const result = await this.queue.add(async () => {
+      await this.rateLimit.wait()
+      return await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`).then(
+        (response: AxiosResponse<MojangProfile, unknown>) => response.data
+      )
+    })
 
     this.cache.set(result.name.toLowerCase(), { ...result, fetchedAt: Date.now() })
     return result
@@ -79,10 +90,12 @@ export class MojangApi {
   }
 
   private async lookupUsernames(usernames: string[]): Promise<MojangProfile[]> {
-    const result = await Axios.post(
-      `https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname`,
-      usernames
-    ).then((response: AxiosResponse<MojangProfile[], unknown>) => response.data)
+    const result = await this.queue.add(async () => {
+      await this.rateLimit.wait()
+      return await Axios.post(`https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname`, usernames).then(
+        (response: AxiosResponse<MojangProfile[], unknown>) => response.data
+      )
+    })
 
     for (const mojangProfile of result) {
       this.cache.set<MojangProfile>(mojangProfile.name.toLowerCase(), mojangProfile)
