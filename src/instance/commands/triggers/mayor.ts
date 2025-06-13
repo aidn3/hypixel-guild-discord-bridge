@@ -16,8 +16,10 @@ export default class Mayor extends ChatCommandHandler {
 
     let message = `Elected Mayor: `
     message += `${government.mayor.name} (${government.mayor.perks.map((perk) => perk.name).join(', ')})`
-    message += ' | '
-    message += `${government.mayor.minister.name} (${government.mayor.minister.perk.name})`
+    if (government.mayor.minister !== undefined) {
+      message += ' | '
+      message += `${government.mayor.minister.name} (${government.mayor.minister.perk.name})`
+    }
     return message
   }
 }

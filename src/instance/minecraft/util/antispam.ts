@@ -22,6 +22,10 @@ export default class Antispam {
 
     if (!this.config.data.antispamEnabled) {
       history.push(message)
+      if (history.length > Antispam.MaxHistory) {
+        history.splice(0, history.length - Antispam.MaxHistory)
+      }
+
       return message
     }
 
@@ -29,7 +33,7 @@ export default class Antispam {
 
     let addedRandom = 0
     while (
-      this.similarity(newMessage, history) > this.config.data.antispamSafeScore &&
+      this.similarity(newMessage, history) > Antispam.SafeScore &&
       addedRandom < this.config.data.antispamMaxAdditions
     ) {
       if (addedRandom === 0) newMessage = newMessage.trim() + ' @'

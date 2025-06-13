@@ -609,31 +609,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
               },
               {
                 type: OptionType.Number,
-                name: `Account For Previous Messages ${Recommended}`,
-                description: 'Number of previous messages to account for when calculating the similarity score.',
-                min: 1,
-                max: 10,
-                getOption: () => sanitizer.data.antispamMaxHistory,
-                setOption: (value) => {
-                  sanitizer.data.antispamMaxHistory = value
-                  sanitizer.markDirty()
-                }
-              },
-              {
-                type: OptionType.Number,
-                name: `Safe Similarity Score ${Warning}`,
-                description:
-                  'Decide when a message is similar enough but still possible to send. Score 1.0 means the message is exactly identical and 0.0 where the message has no similarity at all.',
-                min: 0,
-                max: 1,
-                getOption: () => sanitizer.data.antispamSafeScore,
-                setOption: (value) => {
-                  sanitizer.data.antispamSafeScore = value
-                  sanitizer.markDirty()
-                }
-              },
-              {
-                type: OptionType.Number,
                 name: 'Max Additions',
                 description: 'How many letters to add at most to combat anti spam.',
                 min: 1,

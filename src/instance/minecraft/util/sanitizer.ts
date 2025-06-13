@@ -20,8 +20,6 @@ export class Sanitizer {
       resolveHideLinks: true,
 
       antispamEnabled: true,
-      antispamMaxHistory: Antispam.MaxHistory,
-      antispamSafeScore: Antispam.SafeScore,
       antispamMaxAdditions: Antispam.MaxAdditions
     })
 
@@ -61,7 +59,5 @@ export interface SanitizerConfig {
   resolveHideLinks: boolean
 
   antispamEnabled: boolean
-  antispamMaxHistory: number
-  antispamSafeScore: number
   antispamMaxAdditions: number
 }

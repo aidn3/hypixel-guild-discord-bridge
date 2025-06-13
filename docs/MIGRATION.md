@@ -12,6 +12,7 @@ somewhere else.
 Most notable changes:
 
 - Add `version: 2`
+- Add `shareMetrics` to `general`
 - Move `discord.adminId` to `discord.adminIds` and make it into a list
 - Remove all options in `discord` section except `key` and `adminIds`
 - Remove `profanity`, `commands`, `minecraft`, `loggers` sections since they have been moved out to an internal
@@ -22,18 +23,11 @@ Most notable changes:
 
 ### Application Configurations
 
-Application now has a discord command `/settings` that controls most of the application configurations.
+Application now has a discord slash command `/settings` that controls most of the application configurations.
+This includes official plugins, discord channels and roles, log channels, minecraft instances, and many other features and components.
 
-- `/settings feature toggle` to toggle any official plugin instead of changing `plugins` in `config.yaml`
-- Discord settings
-  - `/settings discord public-channel` is equivalent of the old `config.yaml` option `discord.publicChannelIds`
-  - `/settings discord officer-channel` to set Officer channels
-  - `/settings discord helper-role` to set roles that have HELPER permission in the application
-  - `/settings discord officer-role` to set roles that have OFFICER permission in the application
-  - `/settings discord logger-channel` to set discord channels to forward curated application logs to
-- Minecraft settings
-  - `/settings minecraft add/remove` to add and remove minecraft instances instead of the old `config.yaml` option `minecraft.instances`
-  - `/settings minecraft set-admin` is equivalent of the old `config.yaml` option `commands.adminUsername`
+Old configuration are NOT auto migrated to the new format.
+Make sure to check the new settings and apply back all your old configurations.
 
 ### Internal Configurations
 

@@ -15,6 +15,7 @@ import Catacomb from './triggers/catacomb.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DarkAuction from './triggers/darkauction.js'
 import Election from './triggers/election.js'
+import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
@@ -25,7 +26,6 @@ import Level from './triggers/level.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
 import Networth from './triggers/networth.js'
-import Override from './triggers/override.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
@@ -66,6 +66,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new DarkAuction(),
       new Election(),
       new EightBallCommand(),
+      new Execute(),
       new Explain(),
       new Guild(),
       new Help(),
@@ -76,7 +77,6 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new MagicalPower(),
       new Mayor(),
       new Networth(),
-      new Override(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
       new RockPaperScissors(),

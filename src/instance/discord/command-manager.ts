@@ -22,13 +22,13 @@ import ConnectivityCommand from './commands/connectivity.js'
 import CreateLeaderboardCommand from './commands/create-leaderboard.js'
 import DemoteCommand from './commands/demote.js'
 import DisconnectCommand from './commands/disconnect.js'
+import ExecuteCommand from './commands/execute.js'
 import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import LeaderboardCommand from './commands/leaderboard.js'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
-import OverrideCommand from './commands/override.js'
 import PingCommand from './commands/ping.js'
 import ProfanityCommand from './commands/profanity.js'
 import PromoteCommand from './commands/promote.js'
@@ -110,7 +110,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       LeaderboardCommand,
       ListCommand,
       LogCommand,
-      OverrideCommand,
+      ExecuteCommand,
       PingCommand,
       ProfanityCommand,
       PromoteCommand,
