@@ -122,8 +122,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
           case 10_008: {
             this.logger.warn(`Could not update leaderboard (deleted message): ${JSON.stringify(entry)}`)
             this.logger.warn('This leaderboard will be dropped.')
-
-            break
+            return false
           }
           case 50_001: {
             this.logger.error(
