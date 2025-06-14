@@ -17,9 +17,11 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
   let total = 0
 
   for (const [instanceName, list] of instances) {
-    total += list.length
+    const players = list.filter((value) => value.startsWith('  - ')).length
 
-    entries.push(`**${escapeMarkdown(instanceName)} (${list.length})**\n`)
+    total += players
+
+    entries.push(`**${escapeMarkdown(instanceName)} (${players})**\n`)
 
     if (list.length > 0) {
       for (const user of list) {
