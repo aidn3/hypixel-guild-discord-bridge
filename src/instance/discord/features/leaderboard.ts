@@ -55,8 +55,9 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
   }
 
   private async updateMessages30Days(client: Client<true>): Promise<void> {
-    const deleteMessages: string[] = []
-    for (const entry of this.config.data.messages30Days) {
+    for (let index = 0; index < this.config.data.messages30Days.length; index++) {
+      const entry = this.config.data.messages30Days[index]
+
       if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
@@ -64,23 +65,21 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
         const embed = await this.getMessage30Days({ addLastUpdateAt: true })
 
         const shouldKeep = await this.update(client, entry, embed)
-        if (!shouldKeep) deleteMessages.push(entry.messageId)
-        this.config.markDirty()
+        if (!shouldKeep) {
+          this.config.data.messages30Days.splice(index, 1)
+          this.config.markDirty()
+          index--
+        }
       } catch (error: unknown) {
         this.logger.error(error)
       }
     }
-
-    const originalSize = this.config.data.messages30Days
-    this.config.data.messages30Days = this.config.data.messages30Days.filter(
-      (entry) => !deleteMessages.includes(entry.messageId)
-    )
-    if (originalSize !== this.config.data.messages30Days) this.config.markDirty()
   }
 
   private async updateOnline30Days(client: Client<true>): Promise<void> {
-    const deleteMessages: string[] = []
-    for (const entry of this.config.data.online30Days) {
+    for (let index = 0; index < this.config.data.online30Days.length; index++) {
+      const entry = this.config.data.online30Days[index]
+
       if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
@@ -88,18 +87,15 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
         const embed = await this.getOnline30Days({ addLastUpdateAt: true })
 
         const shouldKeep = await this.update(client, entry, embed)
-        if (!shouldKeep) deleteMessages.push(entry.messageId)
-        this.config.markDirty()
+        if (!shouldKeep) {
+          this.config.data.online30Days.splice(index, 1)
+          this.config.markDirty()
+          index--
+        }
       } catch (error: unknown) {
         this.logger.error(error)
       }
     }
-
-    const originalSize = this.config.data.online30Days
-    this.config.data.online30Days = this.config.data.online30Days.filter(
-      (entry) => !deleteMessages.includes(entry.messageId)
-    )
-    if (originalSize !== this.config.data.online30Days) this.config.markDirty()
   }
 
   private async update(client: Client, entry: LeaderboardEntry, embed: APIEmbed): Promise<boolean> {
