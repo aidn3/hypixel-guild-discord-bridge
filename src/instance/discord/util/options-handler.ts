@@ -58,19 +58,17 @@ interface BaseOption {
   type: OptionType
 
   name: string
-  description: string
+  description?: string
 }
 
-export interface CategoryOption extends Omit<BaseOption, 'description'> {
+export interface CategoryOption extends BaseOption {
   type: OptionType.Category
-  description?: string
-  header: string | undefined
+  header?: string
   options: OptionItem[]
 }
 
-export interface EmbedCategoryOption extends Omit<BaseOption, 'description'> {
+export interface EmbedCategoryOption extends BaseOption {
   type: OptionType.EmbedCategory
-  header: string | undefined
   options: Exclude<OptionItem, EmbedCategoryOption>[]
 }
 
@@ -553,8 +551,10 @@ class ViewBuilder {
           }
         })
       }
-      if (currentCategory.header !== undefined) {
+      if ('header' in currentCategory && currentCategory.header !== undefined) {
         this.append({ type: ComponentType.TextDisplay, content: currentCategory.header })
+      } else if (currentCategory.description !== undefined) {
+        this.append({ type: ComponentType.TextDisplay, content: currentCategory.description })
       }
 
       this.tryApplySeperator(SeparatorSpacingSize.Large)
@@ -562,14 +562,12 @@ class ViewBuilder {
   }
 
   private addCategory(option: CategoryOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+
     this.append({
       type: ComponentType.Section,
-      components: [
-        {
-          type: ComponentType.TextDisplay,
-          content: `${bold(option.name)}${option.description === undefined ? '' : `\n-# ${option.description}`}`
-        }
-      ],
+      components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
         disabled: !this.enabled,
@@ -583,26 +581,29 @@ class ViewBuilder {
   private addEmbedCategory(option: EmbedCategoryOption): void {
     this.tryApplySeperator(SeparatorSpacingSize.Small)
 
-    this.append({ type: ComponentType.TextDisplay, content: `## ${option.name}` })
+    let label = `## ${option.name}`
+    if (option.description !== undefined) label += `\n-# ${option.description}`
 
-    if (option.header !== undefined) {
-      this.append({ type: ComponentType.TextDisplay, content: `-# ${option.header}` })
-    }
+    this.append({ type: ComponentType.TextDisplay, content: label })
 
     this.createCategoryView(option)
     this.categoryEnded = true
   }
 
   private addLabel(option: LabelOption): void {
-    let message = `**${option.name}**\n-# ${option.description}`
+    let message = `**${option.name}**`
+    if (option.description !== undefined) message += `\n-# ${option.description}`
     if (option.getOption !== undefined) message += `\n-# **Current Value:** ${escapeMarkdown(option.getOption())}`
     this.append({ type: ComponentType.TextDisplay, content: message })
   }
 
   private addBoolean(option: BooleanOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+
     this.append({
       type: ComponentType.Section,
-      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
         disabled: !this.enabled,
@@ -616,9 +617,12 @@ class ViewBuilder {
   private addList(option: ListOption): void {
     const addAction = [...this.ids.entries()].find(([, entry]) => entry.item === option && entry.action === 'add')
     assert(addAction !== undefined, 'Could not find add action?')
+
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
     this.append({
       type: ComponentType.Section,
-      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
         customId: addAction[0],
@@ -663,7 +667,9 @@ class ViewBuilder {
   private addChannel(option: DiscordSelectOption): void {
     assert(option.type === OptionType.Channel)
 
-    this.append({ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` })
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+    this.append({ type: ComponentType.TextDisplay, content: label })
 
     this.append({
       type: ComponentType.ActionRow,
@@ -682,7 +688,9 @@ class ViewBuilder {
   }
 
   private addRole(option: DiscordSelectOption): void {
-    this.append({ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` })
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+    this.append({ type: ComponentType.TextDisplay, content: label })
 
     this.append({
       type: ComponentType.ActionRow,
@@ -720,9 +728,12 @@ class ViewBuilder {
   }
 
   private addText(option: TextOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+
     this.append({
       type: ComponentType.Section,
-      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
         disabled: !this.enabled,
@@ -734,9 +745,12 @@ class ViewBuilder {
   }
 
   private addNumber(option: NumberOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+
     this.append({
       type: ComponentType.Section,
-      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
         disabled: !this.enabled,
@@ -748,9 +762,12 @@ class ViewBuilder {
   }
 
   private addAction(option: ActionOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+
     this.append({
       type: ComponentType.Section,
-      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
         disabled: !this.enabled,

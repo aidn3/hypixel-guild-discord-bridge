@@ -45,7 +45,7 @@ export default {
     const options: EmbedCategoryOption = {
       type: OptionType.EmbedCategory,
       name: 'Main',
-      header:
+      description:
         'Welcome to Application options!\n' +
         'You can choose one of the below categories to expand.\n\n' +
         CategoryLabel,
@@ -110,7 +110,6 @@ function fetchModerationOptions(application: Application): CategoryOption {
       {
         type: OptionType.EmbedCategory,
         name: `Heat Punishments`,
-        header: undefined,
         options: [
           {
             type: OptionType.Boolean,
@@ -159,7 +158,6 @@ function fetchModerationOptions(application: Application): CategoryOption {
       {
         type: OptionType.EmbedCategory,
         name: `Profanity Filter`,
-        header: undefined,
         options: [
           {
             type: OptionType.Boolean,
@@ -215,7 +213,7 @@ function fetchQualityOptions(application: Application): CategoryOption {
       {
         type: OptionType.EmbedCategory,
         name: 'Guild Reaction',
-        header: 'Auto replying and reacting to various in-game guild events.',
+        description: 'Auto replying and reacting to various in-game guild events.',
         options: [
           {
             type: OptionType.Boolean,
@@ -538,7 +536,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       {
         type: OptionType.EmbedCategory,
         name: 'Staff Options',
-        header: 'These are dangerous permissions. Make sure you know what you are doing!',
+        description: 'These are dangerous permissions. Make sure you know what you are doing!',
         options: [
           {
             type: OptionType.Text,
@@ -566,7 +564,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           {
             type: OptionType.EmbedCategory,
             name: 'Links Processor',
-            header: 'How to handle links sent to Minecraft.',
+            description: 'How to handle links sent to Minecraft.',
             options: [
               {
                 type: OptionType.Boolean,
@@ -594,7 +592,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           {
             type: OptionType.EmbedCategory,
             name: 'Anti Spam',
-            header: 'Techniques used to avoid messages being blocked for "can not repeat".',
+            description: 'Techniques used to avoid messages being blocked for "can not repeat".',
             options: [
               {
                 type: OptionType.Boolean,
@@ -626,7 +624,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
       {
         type: OptionType.EmbedCategory,
         name: 'Instances',
-        header: undefined,
         options: [
           {
             type: OptionType.Action,
