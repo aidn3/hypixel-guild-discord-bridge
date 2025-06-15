@@ -39,7 +39,8 @@ export enum OptionType {
   Action = 'action',
 
   Channel = 'channel',
-  Role = 'role'
+  Role = 'role',
+  User = 'user'
 }
 
 export type OptionItem =
@@ -85,7 +86,7 @@ export interface BooleanOption extends BaseOption {
 }
 
 export interface DiscordSelectOption extends BaseOption {
-  type: OptionType.Channel | OptionType.Role
+  type: OptionType.Channel | OptionType.Role | OptionType.User
   getOption: () => string[]
   setOption: (value: string[]) => void
   max: number
@@ -245,6 +246,14 @@ export class OptionsHandler {
       assert(action === 'default')
 
       assert(interaction.isRoleSelectMenu())
+      option.setOption(interaction.values)
+      return false
+    }
+
+    if (option.type === OptionType.User) {
+      assert(action === 'default')
+
+      assert(interaction.isUserSelectMenu())
       option.setOption(interaction.values)
       return false
     }
@@ -501,6 +510,10 @@ class ViewBuilder {
           this.addRole(option)
           break
         }
+        case OptionType.User: {
+          this.addUser(option)
+          break
+        }
         case OptionType.Text: {
           this.addText(option)
           break
@@ -681,6 +694,26 @@ class ViewBuilder {
           minValues: option.min,
           maxValues: option.max,
           defaultValues: option.getOption().map((o) => ({ id: o, type: SelectMenuDefaultValueType.Role }))
+        }
+      ]
+    })
+  }
+
+  private addUser(option: DiscordSelectOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+    this.append({ type: ComponentType.TextDisplay, content: label })
+
+    this.append({
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.UserSelect,
+          customId: this.getId(option),
+          disabled: !this.enabled,
+          minValues: option.min,
+          maxValues: option.max,
+          defaultValues: option.getOption().map((o) => ({ id: o, type: SelectMenuDefaultValueType.User }))
         }
       ]
     })
