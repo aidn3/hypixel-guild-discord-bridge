@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import * as crypto from 'node:crypto'
 
 import type {
   ButtonInteraction,
@@ -33,6 +34,8 @@ export enum OptionType {
   Number = 'number',
   Boolean = 'boolean',
 
+  List = 'list',
+
   Action = 'action',
 
   Channel = 'channel',
@@ -46,6 +49,7 @@ export type OptionItem =
   | TextOption
   | NumberOption
   | BooleanOption
+  | ListOption
   | ActionOption
   | DiscordSelectOption
 
@@ -88,6 +92,20 @@ export interface DiscordSelectOption extends BaseOption {
   min: number
 }
 
+export interface ListOption extends BaseOption {
+  type: OptionType.List
+  getOption: () => string[]
+  setOption: (value: string[]) => void
+  style: InputStyle
+  max: number
+  min: number
+}
+
+export enum InputStyle {
+  Short = 'short',
+  Long = 'long'
+}
+
 export interface TextOption extends BaseOption {
   type: OptionType.Text
   getOption: () => string
@@ -111,18 +129,28 @@ export interface ActionOption extends BaseOption {
   onInteraction: (interaction: ButtonInteraction, errorHandler: UnexpectedErrorHandler) => Promise<boolean>
 }
 
+interface OptionId {
+  action: 'default' | 'add' | 'delete'
+  item: OptionItem
+}
+
 export class OptionsHandler {
   public static readonly BackButton = 'back-button'
   private originalReply: InteractionResponse | undefined
   private enabled = true
   private path: string[] = []
-  private ids = new Map<string, OptionItem>()
+  private ids = new Map<string, OptionId>()
 
   constructor(private readonly mainCategory: CategoryOption | EmbedCategoryOption) {
     let currentId = 0
     const allComponents = this.flattenOptions([this.mainCategory])
     for (const component of allComponents) {
-      this.ids.set(`component-${currentId++}`, component)
+      this.ids.set(`component-${currentId++}`, { action: 'default', item: component })
+
+      if (component.type === OptionType.List) {
+        this.ids.set(`component-${currentId++}`, { action: 'add', item: component })
+        this.ids.set(`component-${currentId++}`, { action: 'delete', item: component })
+      }
     }
   }
 
@@ -186,31 +214,44 @@ export class OptionsHandler {
       return false
     }
 
-    const option = this.ids.get(interaction.customId)
-    assert(option !== undefined)
+    const foundOption = this.ids.get(interaction.customId)
+    assert(foundOption !== undefined)
+    const option = foundOption.item
+    const action = foundOption.action
 
     if (option.type === OptionType.Category) {
+      assert(action === 'default')
+
       this.path.push(interaction.customId)
       return false
     }
 
     if (option.type === OptionType.Boolean) {
+      assert(action === 'default')
+
       option.toggleOption()
       return false
     }
 
     if (option.type === OptionType.Channel) {
+      assert(action === 'default')
+
       assert(interaction.isChannelSelectMenu())
       option.setOption(interaction.values)
       return false
     }
+
     if (option.type === OptionType.Role) {
+      assert(action === 'default')
+
       assert(interaction.isRoleSelectMenu())
       option.setOption(interaction.values)
       return false
     }
 
     if (option.type === OptionType.Text) {
+      assert(action === 'default')
+
       assert(interaction.isButton())
       await interaction.showModal({
         customId: interaction.customId,
@@ -253,6 +294,8 @@ export class OptionsHandler {
     }
 
     if (option.type === OptionType.Number) {
+      assert(action === 'default')
+
       assert(interaction.isButton())
       await interaction.showModal({
         customId: interaction.customId,
@@ -301,10 +344,79 @@ export class OptionsHandler {
       return true
     }
 
+    if (option.type === OptionType.List) {
+      if (action === 'add') {
+        return await this.handleListAdd(interaction, option)
+      } else if (action === 'delete') {
+        return this.handleListDelete(interaction, option)
+      }
+    }
+
     if (option.type === OptionType.Action) {
+      assert(action === 'default')
+
       assert(interaction.isButton())
       return await option.onInteraction(interaction, errorHandler)
     }
+
+    return false
+  }
+
+  private async handleListAdd(interaction: CollectedInteraction, option: ListOption): Promise<boolean> {
+    assert(interaction.isButton())
+
+    await interaction.showModal({
+      customId: interaction.customId,
+      title: `Adding To ${option.name}`,
+      components: [
+        {
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.TextInput,
+              customId: interaction.customId,
+              style: option.style === InputStyle.Short ? TextInputStyle.Short : TextInputStyle.Paragraph,
+              label: option.name,
+
+              minLength: 1,
+              required: true
+            }
+          ]
+        }
+      ]
+    })
+
+    const modalInteraction = await interaction.awaitModalSubmit({
+      time: 300_000,
+      filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+    })
+    assert(modalInteraction.isFromMessage())
+
+    const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
+    const allOptions = option.getOption()
+
+    if (allOptions.includes(value)) {
+      await modalInteraction.reply({
+        content: `Value already added to **${option.name}**.`,
+        flags: MessageFlags.Ephemeral
+      })
+    } else {
+      option.setOption([...allOptions, value])
+      await this.updateView(modalInteraction)
+    }
+
+    return true
+  }
+
+  private handleListDelete(interaction: CollectedInteraction, option: ListOption): boolean {
+    assert(interaction.isStringSelectMenu())
+
+    const valuesToDelete = interaction.values
+    const allOptions = option.getOption()
+    const newValues = allOptions.filter((value) => !valuesToDelete.includes(hashOptionValue(value)))
+
+    assert.notStrictEqual(allOptions.length, newValues.length)
+    option.setOption(newValues)
 
     return false
   }
@@ -340,7 +452,7 @@ class ViewBuilder {
 
   constructor(
     private readonly mainCategory: CategoryOption | EmbedCategoryOption,
-    private readonly ids: Map<string, OptionItem>,
+    private readonly ids: Map<string, OptionId>,
     private readonly path: string[],
     private readonly enabled: boolean
   ) {}
@@ -375,6 +487,10 @@ class ViewBuilder {
         }
         case OptionType.Boolean: {
           this.addBoolean(option)
+          break
+        }
+        case OptionType.List: {
+          this.addList(option)
           break
         }
         case OptionType.Channel: {
@@ -481,6 +597,53 @@ class ViewBuilder {
         style: option.getOption() ? ButtonStyle.Success : ButtonStyle.Secondary,
         customId: this.getId(option)
       }
+    })
+  }
+
+  private addList(option: ListOption): void {
+    const addAction = [...this.ids.entries()].find(([, entry]) => entry.item === option && entry.action === 'add')
+    assert(addAction !== undefined, 'Could not find add action?')
+    this.append({
+      type: ComponentType.Section,
+      components: [{ type: ComponentType.TextDisplay, content: `${bold(option.name)}\n-# ${option.description}` }],
+      accessory: {
+        type: ComponentType.Button,
+        customId: addAction[0],
+        label: 'Add',
+        style: ButtonStyle.Primary
+      }
+    })
+
+    const deleteAction = [...this.ids.entries()].find(([, entry]) => entry.item === option && entry.action === 'delete')
+    assert(deleteAction !== undefined, 'Could not find delete action?')
+
+    const mentionedValues = new Set<string>()
+    const values = []
+    for (const value of option.getOption()) {
+      if (mentionedValues.has(value)) continue
+      mentionedValues.add(value)
+
+      values.push({
+        label: value.length > 100 ? value.slice(0, 97) + '...' : value,
+        value: hashOptionValue(value)
+      })
+    }
+
+    this.append({
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.StringSelect,
+          customId: deleteAction[0],
+          disabled: !this.enabled,
+          placeholder: 'Select from the list to DELETE.',
+
+          minValues: option.min,
+          maxValues: Math.min(values.length, option.max),
+
+          options: values
+        }
+      ]
     })
   }
 
@@ -591,7 +754,7 @@ class ViewBuilder {
     const lastPath = this.path.at(-1)
     assert(lastPath)
 
-    const category = this.ids.get(lastPath)
+    const category = this.ids.get(lastPath)?.item
     assert(category !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
     assert(category.type === OptionType.Category || category.type === OptionType.EmbedCategory)
 
@@ -602,7 +765,7 @@ class ViewBuilder {
     let title = `# ${escapeMarkdown(this.mainCategory.name)}`
 
     for (const path of this.path) {
-      const categoryOption = this.ids.get(path)
+      const categoryOption = this.ids.get(path)?.item
       assert(categoryOption !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
       title += ` > ${escapeMarkdown(categoryOption.name)}`
     }
@@ -612,8 +775,12 @@ class ViewBuilder {
 
   private getId(option: OptionItem): string {
     for (const [id, optionEntry] of this.ids.entries()) {
-      if (option === optionEntry) return id
+      if (option === optionEntry.item) return id
     }
     throw new Error(`could not find id for option name ${option.name}`)
   }
+}
+
+function hashOptionValue(value: string): string {
+  return crypto.hash('sha256', value)
 }
