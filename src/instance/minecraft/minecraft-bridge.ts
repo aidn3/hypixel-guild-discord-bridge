@@ -150,10 +150,11 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
+    const message = this.arabic.encode(event.message)
     if (event.channels.includes(ChannelType.Public))
-      await this.send(`/gc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
+      await this.send(`/gc ${message}`, MinecraftSendChatPriority.Default, event.eventId)
     if (event.channels.includes(ChannelType.Officer))
-      await this.send(`/oc ${event.message}`, MinecraftSendChatPriority.Default, event.eventId)
+      await this.send(`/oc ${message}`, MinecraftSendChatPriority.Default, event.eventId)
   }
 
   onCommand(event: CommandEvent): void | Promise<void> {
