@@ -14,6 +14,7 @@ import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DarkAuction from './triggers/darkauction.js'
+import DevelopmentExcuse from './triggers/devexcuse.js'
 import Election from './triggers/election.js'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
@@ -65,6 +66,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Catacomb(),
       new CurrentDungeon(),
       new DarkAuction(),
+      new DevelopmentExcuse(),
       new Election(),
       new EightBallCommand(),
       new Execute(),
