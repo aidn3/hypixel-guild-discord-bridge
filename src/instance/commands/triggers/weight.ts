@@ -13,7 +13,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class Weight extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Weight',
       triggers: ['weight', 'w'],
       description: "Returns a player's senither weight",
       example: `w %s`

@@ -7,7 +7,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class DadJoke extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Dadjoke',
       triggers: ['dadjoke', 'joke', 'dad'],
       description: 'Show you a random dad joke',
       example: 'dadjoke'

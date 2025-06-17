@@ -11,7 +11,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class Calculate extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Calculate',
       triggers: ['calculate', 'calc', 'c', 'math'],
       description: 'A basic calculator',
       example: `calc 1+1`

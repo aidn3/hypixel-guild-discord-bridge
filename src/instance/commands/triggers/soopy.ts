@@ -88,7 +88,6 @@ export default class Soopy extends ChatCommandHandler {
 
   constructor() {
     super({
-      name: 'Soopy',
       triggers: ['soopy', '-'],
       description: 'Use SoopyV2 API to execute commands',
       example: `- rtca`

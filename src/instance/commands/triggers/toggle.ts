@@ -5,7 +5,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class Toggle extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Toggle',
       triggers: ['toggle'],
       description: 'Enable/disable commands',
       example: `toggle 8balls`

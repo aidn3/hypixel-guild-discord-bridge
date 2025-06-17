@@ -5,7 +5,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class DevelopmentExcuse extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Devexcuse',
       triggers: ['devexcuse', 'devexc', 'dev'],
       description: "Show you a random excuse for why this bot isn't working",
       example: 'devexcuse'

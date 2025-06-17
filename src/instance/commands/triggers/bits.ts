@@ -68,7 +68,6 @@ export default class Bits extends ChatCommandHandler {
 
   constructor() {
     super({
-      name: 'Bits',
       triggers: ['bits', 'bit'],
       description: 'Returns the best bit items to purchase for the most profit.',
       example: `bits`
