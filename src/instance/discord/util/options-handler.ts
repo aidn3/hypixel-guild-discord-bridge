@@ -646,22 +646,41 @@ class ViewBuilder {
       })
     }
 
-    this.append({
-      type: ComponentType.ActionRow,
-      components: [
-        {
-          type: ComponentType.StringSelect,
-          customId: deleteAction[0],
-          disabled: !this.enabled,
-          placeholder: 'Select from the list to DELETE.',
+    if (values.length > 0) {
+      this.append({
+        type: ComponentType.ActionRow,
+        components: [
+          {
+            type: ComponentType.StringSelect,
+            customId: deleteAction[0],
+            disabled: !this.enabled,
+            placeholder: 'Select from the list to DELETE.',
 
-          minValues: option.min,
-          maxValues: Math.min(values.length, option.max),
+            minValues: option.min,
+            maxValues: Math.min(values.length, option.max),
 
-          options: values
-        }
-      ]
-    })
+            options: values
+          }
+        ]
+      })
+    } else {
+      this.append({
+        type: ComponentType.ActionRow,
+        components: [
+          {
+            type: ComponentType.StringSelect,
+            customId: deleteAction[0],
+            disabled: true,
+            placeholder: '(empty)',
+
+            minValues: 0,
+            maxValues: 1,
+
+            options: [{ label: '(empty)', value: '0' }]
+          }
+        ]
+      })
+    }
   }
 
   private addChannel(option: DiscordSelectOption): void {
