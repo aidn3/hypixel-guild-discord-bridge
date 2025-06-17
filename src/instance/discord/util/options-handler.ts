@@ -218,155 +218,178 @@ export class OptionsHandler {
     const option = foundOption.item
     const action = foundOption.action
 
-    if (option.type === OptionType.Category) {
-      assert(action === 'default')
+    switch (option.type) {
+      case OptionType.Category: {
+        assert(action === 'default')
 
-      this.path.push(interaction.customId)
-      return false
-    }
+        this.path.push(interaction.customId)
+        return false
+      }
 
-    if (option.type === OptionType.Boolean) {
-      assert(action === 'default')
+      case OptionType.Boolean: {
+        assert(action === 'default')
 
-      option.toggleOption()
-      return false
-    }
+        option.toggleOption()
+        return false
+      }
+      case OptionType.Text: {
+        assert(action === 'default')
+        return await this.handleText(interaction, errorHandler, option)
+      }
+      case OptionType.Number: {
+        assert(action === 'default')
+        return await this.handleNumber(interaction, errorHandler, option)
+      }
+      case OptionType.List: {
+        if (action === 'add') {
+          return await this.handleListAdd(interaction, option)
+        } else if (action === 'delete') {
+          return this.handleListDelete(interaction, option)
+        }
 
-    if (option.type === OptionType.Channel) {
-      assert(action === 'default')
+        break
+      }
 
-      assert(interaction.isChannelSelectMenu())
-      option.setOption(interaction.values)
-      return false
-    }
+      case OptionType.Channel: {
+        assert(action === 'default')
+        return this.handleChannel(interaction, option)
+      }
+      case OptionType.Role: {
+        assert(action === 'default')
+        assert(interaction.isRoleSelectMenu())
+        option.setOption(interaction.values)
+        return false
+      }
 
-    if (option.type === OptionType.Role) {
-      assert(action === 'default')
+      case OptionType.User: {
+        assert(action === 'default')
 
-      assert(interaction.isRoleSelectMenu())
-      option.setOption(interaction.values)
-      return false
-    }
+        assert(interaction.isUserSelectMenu())
+        option.setOption(interaction.values)
+        return false
+      }
 
-    if (option.type === OptionType.User) {
-      assert(action === 'default')
-
-      assert(interaction.isUserSelectMenu())
-      option.setOption(interaction.values)
-      return false
-    }
-
-    if (option.type === OptionType.Text) {
-      assert(action === 'default')
-
-      assert(interaction.isButton())
-      await interaction.showModal({
-        customId: interaction.customId,
-        title: `Setting ${option.name}`,
-        components: [
-          {
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.TextInput,
-                customId: interaction.customId,
-                style: TextInputStyle.Short,
-                label: option.name,
-
-                required: true,
-                minLength: option.min,
-                maxLength: option.max,
-                value: option.getOption()
-              }
-            ]
-          }
-        ]
-      })
-
-      interaction
-        .awaitModalSubmit({
-          time: 300_000,
-          filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
-        })
-        .then(async (modalInteraction) => {
-          assert(modalInteraction.isFromMessage())
-
-          const value = modalInteraction.fields.getTextInputValue(interaction.customId)
-          option.setOption(value)
-          await this.updateView(modalInteraction)
-        })
-        .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
-
-      return true
-    }
-
-    if (option.type === OptionType.Number) {
-      assert(action === 'default')
-
-      assert(interaction.isButton())
-      await interaction.showModal({
-        customId: interaction.customId,
-        title: `Setting ${option.name}`,
-        components: [
-          {
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.TextInput,
-                customId: interaction.customId,
-                style: TextInputStyle.Short,
-                label: option.name,
-
-                minLength: 1,
-                required: true,
-                value: option.getOption().toString(10)
-              }
-            ]
-          }
-        ]
-      })
-
-      interaction
-        .awaitModalSubmit({
-          time: 300_000,
-          filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
-        })
-        .then(async (modalInteraction) => {
-          assert(modalInteraction.isFromMessage())
-
-          const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
-          const intValue = value.includes('.') ? Number.parseFloat(value) : Number.parseInt(value, 10)
-          if (intValue < option.min || intValue > option.max || value !== intValue.toString(10)) {
-            await modalInteraction.reply({
-              content: `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(value)}`,
-              flags: MessageFlags.Ephemeral
-            })
-          } else {
-            option.setOption(intValue)
-            await this.updateView(modalInteraction)
-          }
-        })
-        .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
-
-      return true
-    }
-
-    if (option.type === OptionType.List) {
-      if (action === 'add') {
-        return await this.handleListAdd(interaction, option)
-      } else if (action === 'delete') {
-        return this.handleListDelete(interaction, option)
+      case OptionType.Action: {
+        assert(action === 'default')
+        return await this.handleAction(interaction, errorHandler, option)
       }
     }
 
-    if (option.type === OptionType.Action) {
-      assert(action === 'default')
-
-      assert(interaction.isButton())
-      return await option.onInteraction(interaction, errorHandler)
-    }
-
     return false
+  }
+
+  private handleChannel(interaction: CollectedInteraction, option: DiscordSelectOption): boolean {
+    assert(interaction.isChannelSelectMenu())
+    option.setOption(interaction.values)
+    return false
+  }
+
+  private async handleText(
+    interaction: CollectedInteraction,
+    errorHandler: UnexpectedErrorHandler,
+    option: TextOption
+  ): Promise<boolean> {
+    assert(interaction.isButton())
+    await interaction.showModal({
+      customId: interaction.customId,
+      title: `Setting ${option.name}`,
+      components: [
+        {
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.TextInput,
+              customId: interaction.customId,
+              style: TextInputStyle.Short,
+              label: option.name,
+
+              required: true,
+              minLength: option.min,
+              maxLength: option.max,
+              value: option.getOption()
+            }
+          ]
+        }
+      ]
+    })
+
+    interaction
+      .awaitModalSubmit({
+        time: 300_000,
+        filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+      })
+      .then(async (modalInteraction) => {
+        assert(modalInteraction.isFromMessage())
+
+        const value = modalInteraction.fields.getTextInputValue(interaction.customId)
+        option.setOption(value)
+        await this.updateView(modalInteraction)
+      })
+      .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
+
+    return true
+  }
+
+  private async handleNumber(
+    interaction: CollectedInteraction,
+    errorHandler: UnexpectedErrorHandler,
+    option: NumberOption
+  ): Promise<boolean> {
+    assert(interaction.isButton())
+    await interaction.showModal({
+      customId: interaction.customId,
+      title: `Setting ${option.name}`,
+      components: [
+        {
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.TextInput,
+              customId: interaction.customId,
+              style: TextInputStyle.Short,
+              label: option.name,
+
+              minLength: 1,
+              required: true,
+              value: option.getOption().toString(10)
+            }
+          ]
+        }
+      ]
+    })
+
+    interaction
+      .awaitModalSubmit({
+        time: 300_000,
+        filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+      })
+      .then(async (modalInteraction) => {
+        assert(modalInteraction.isFromMessage())
+
+        const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
+        const intValue = value.includes('.') ? Number.parseFloat(value) : Number.parseInt(value, 10)
+        if (intValue < option.min || intValue > option.max || value !== intValue.toString(10)) {
+          await modalInteraction.reply({
+            content: `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(value)}`,
+            flags: MessageFlags.Ephemeral
+          })
+        } else {
+          option.setOption(intValue)
+          await this.updateView(modalInteraction)
+        }
+      })
+      .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
+
+    return true
+  }
+
+  private async handleAction(
+    interaction: CollectedInteraction,
+    errorHandler: UnexpectedErrorHandler,
+    option: ActionOption
+  ): Promise<boolean> {
+    assert(interaction.isButton())
+    return await option.onInteraction(interaction, errorHandler)
   }
 
   private async handleListAdd(interaction: CollectedInteraction, option: ListOption): Promise<boolean> {
