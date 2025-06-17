@@ -4,7 +4,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class Help extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Help',
       triggers: ['help', 'command', 'commands', 'cmd', 'cmds'],
       description: 'Shows a command description and an example about its usage',
       example: `help <command/page>`
@@ -22,7 +21,7 @@ export default class Help extends ChatCommandHandler {
     if (command == undefined) return `That command does not exist, use ${context.commandPrefix}${this.triggers[0]}`
 
     return (
-      `${command.name}: ${command.description} ` +
+      `${command.triggers[0]}: ${command.description} ` +
       `(${context.commandPrefix}${command.example.replaceAll('%s', context.username)})`
     )
   }

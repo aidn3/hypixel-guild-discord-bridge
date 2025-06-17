@@ -7,7 +7,6 @@ import { getUuidIfExists, usernameNotExists } from '../common/util.js'
 export default class Status extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Status',
       triggers: ['status', 'stalk'],
       description: "Show a player's Hypixel status and current location",
       example: `status %s`

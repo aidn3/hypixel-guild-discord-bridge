@@ -11,7 +11,6 @@ import {
 export default class Secrets extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Secrets',
       triggers: ['secrets', 's', 'sec'],
       description: 'Returns how many secrets a player has done',
       example: `secrets %s`

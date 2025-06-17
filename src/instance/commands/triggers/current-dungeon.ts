@@ -18,7 +18,6 @@ export default class CurrentDungeon extends ChatCommandHandler {
 
   constructor() {
     super({
-      name: 'CurrentDungeon',
       triggers: ['currentdungeon', 'currdungeon', 'cd'],
       description: "Returns a player's last dungeon run",
       example: `cd %s`

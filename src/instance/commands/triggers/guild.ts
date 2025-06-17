@@ -11,7 +11,6 @@ import { getUuidIfExists, usernameNotExists } from '../common/util.js'
 export default class Guild extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Guild',
       triggers: ['guild', 'guildOf', 'g'],
       description: "Returns a player's guild, if they're in one",
       example: `g %s`

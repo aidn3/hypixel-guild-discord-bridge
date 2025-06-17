@@ -5,7 +5,6 @@ import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '
 export default class MagicalPower extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'magicalpower',
       triggers: ['magicalpower', 'mp'],
       description: "Returns a player's highest recorded skyblock Magical Power",
       example: `mp %s`

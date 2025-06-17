@@ -44,7 +44,6 @@ class PartyList extends ChatCommandHandler {
 
   constructor(partyManager: PartyManager) {
     super({
-      name: 'Parties',
       triggers: ['parties', 'party', 'listparty', 'listpartys', 'listparties', 'plist'],
       description: 'List all active parties in guild',
       example: `parties`
@@ -83,7 +82,6 @@ class PartyStart extends ChatCommandHandler {
 
   constructor(partyManager: PartyManager) {
     super({
-      name: 'StartParty',
       triggers: ['startparty', 'createparty', 'sparty'],
       description: 'Create public !parties to be viewed by guild members with <count> <time> <purpose>',
       example: `startparty 5 4h m7`
@@ -149,7 +147,6 @@ class PartyEnd extends ChatCommandHandler {
 
   constructor(partyManager: PartyManager) {
     super({
-      name: 'EndParty',
       triggers: ['endparty', 'delparty'],
       description: 'remove the party from the listing',
       example: `endparty`

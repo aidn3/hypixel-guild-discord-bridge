@@ -115,10 +115,10 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         if (allTriggers.has(trigger)) {
           const alreadyDefinedCommandName = allTriggers.get(trigger)
           throw new Error(
-            `Trigger already defined in ${alreadyDefinedCommandName} when trying to add it to ${command.name}`
+            `Trigger already defined in ${alreadyDefinedCommandName} when trying to add it to ${command.triggers[0]}`
           )
         } else {
-          allTriggers.set(trigger, command.name)
+          allTriggers.set(trigger, command.triggers[0])
         }
       }
     }

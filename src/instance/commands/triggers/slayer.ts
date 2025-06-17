@@ -55,7 +55,6 @@ const HighestTierTable = {
 export default class Slayer extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Slayers',
       triggers: ['slayer', 'sl', 'slyr'],
       description: "Returns a player's slayer level",
       example: `slayer eman %s`

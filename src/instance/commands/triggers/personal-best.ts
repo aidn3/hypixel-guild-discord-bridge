@@ -14,7 +14,6 @@ import {
 export default class PersonalBest extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Personalbest',
       triggers: ['pb', 'pbr', 'personalbest'],
       description: 'Returns a players best dungeon run time',
       example: `pb %s m7`

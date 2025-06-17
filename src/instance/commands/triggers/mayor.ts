@@ -4,7 +4,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class Mayor extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Mayor',
       triggers: ['mayor', 'm'],
       description: 'Show current Hypixel Skyblock Election',
       example: `mayor`

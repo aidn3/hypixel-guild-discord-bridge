@@ -10,7 +10,6 @@ import {
 export default class Kuudra extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Kuudra',
       triggers: ['kuudra', 'k'],
       description: "Returns a player's kuudra runs",
       example: `kuudra %s`
