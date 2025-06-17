@@ -8,7 +8,7 @@ export default class DadJoke extends ChatCommandHandler {
   constructor() {
     super({
       name: 'Dadjoke',
-      triggers: ['joke', 'dad'],
+      triggers: ['dadjoke', 'joke', 'dad'],
       description: 'Show you a random dad joke',
       example: 'dadjoke'
     })
