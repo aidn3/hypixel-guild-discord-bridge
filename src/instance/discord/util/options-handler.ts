@@ -648,6 +648,7 @@ class ViewBuilder {
       components: [{ type: ComponentType.TextDisplay, content: label }],
       accessory: {
         type: ComponentType.Button,
+        disabled: !this.enabled,
         customId: addAction[0],
         label: 'Add',
         style: ButtonStyle.Primary
