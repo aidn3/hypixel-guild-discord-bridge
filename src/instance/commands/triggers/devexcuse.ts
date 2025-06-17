@@ -8,7 +8,7 @@ export default class DevelopmentExcuse extends ChatCommandHandler {
       name: 'Devexcuse',
       triggers: ['devexc', 'dev'],
       description: "Show you a random excuse for why this bot isn't working",
-      example: 'da'
+      example: 'Devexcuse'
     })
   }
 
