@@ -584,7 +584,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
         type: OptionType.Category,
         name: 'Chat Processing',
         description: 'Fine tune how chat messages are sent to the game.',
-        header: 'nFine tune how chat messages are sent to the game.\n\n' + CategoryLabel,
+        header: 'Fine tune how chat messages are sent to the game.\n\n' + CategoryLabel,
         options: [
           {
             type: OptionType.EmbedCategory,
