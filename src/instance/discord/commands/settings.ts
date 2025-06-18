@@ -23,7 +23,7 @@ import type { ProxyConfig } from '../../minecraft/common/config.js'
 import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { CategoryOption, EmbedCategoryOption } from '../util/options-handler.js'
-import { OptionsHandler, OptionType } from '../util/options-handler.js'
+import { InputStyle, OptionsHandler, OptionType } from '../util/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'
@@ -544,6 +544,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
             name: 'Admin Username',
             description: 'In-game username of the person who has full permission over the application.',
 
+            style: InputStyle.Tiny,
             max: 16,
             min: 2,
 

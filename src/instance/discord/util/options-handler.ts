@@ -95,18 +95,20 @@ export interface ListOption extends BaseOption {
   type: OptionType.List
   getOption: () => string[]
   setOption: (value: string[]) => void
-  style: InputStyle
+  style: InputStyle.Long | InputStyle.Short
   max: number
   min: number
 }
 
 export enum InputStyle {
   Short = 'short',
-  Long = 'long'
+  Long = 'long',
+  Tiny = 'tiny'
 }
 
 export interface TextOption extends BaseOption {
   type: OptionType.Text
+  style: InputStyle
   getOption: () => string
   setOption: (value: string) => void
   max: number
@@ -300,7 +302,7 @@ export class OptionsHandler {
             {
               type: ComponentType.TextInput,
               customId: interaction.customId,
-              style: TextInputStyle.Short,
+              style: option.style === InputStyle.Long ? TextInputStyle.Paragraph : TextInputStyle.Short,
               label: option.name,
 
               required: true,
@@ -665,7 +667,7 @@ class ViewBuilder {
       mentionedValues.add(value)
 
       values.push({
-        label: value.length > 100 ? value.slice(0, 97) + '...' : value,
+        label: this.shortenString(value, 100),
         value: hashOptionValue(value)
       })
     }
@@ -773,6 +775,19 @@ class ViewBuilder {
   private addText(option: TextOption): void {
     let label = bold(option.name)
     if (option.description !== undefined) label += `\n-# ${option.description}`
+    let buttonLabel: string
+
+    switch (option.style) {
+      case InputStyle.Tiny: {
+        buttonLabel = option.getOption()
+        break
+      }
+      case InputStyle.Short:
+      case InputStyle.Long: {
+        buttonLabel = 'Edit'
+        label += `\n> -# ${escapeMarkdown(this.shortenString(option.getOption(), 200))}`
+      }
+    }
 
     this.append({
       type: ComponentType.Section,
@@ -780,7 +795,7 @@ class ViewBuilder {
       accessory: {
         type: ComponentType.Button,
         disabled: !this.enabled,
-        label: option.getOption(),
+        label: buttonLabel,
         style: ButtonStyle.Primary,
         customId: this.getId(option)
       }
@@ -871,6 +886,12 @@ class ViewBuilder {
       if (option === optionEntry.item) return id
     }
     throw new Error(`could not find id for option name ${option.name}`)
+  }
+
+  private shortenString(value: string, max: number): string {
+    const suffix = '...'
+    if (value.length <= max) return value
+    return value.slice(0, max - suffix.length) + suffix
   }
 }
 
