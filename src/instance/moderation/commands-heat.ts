@@ -33,7 +33,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   }
 
   public status(identifiers: UserIdentifier, type: HeatType): HeatResult {
-    if (this.clientInstance.immune(identifiers)) return HeatResult.Allowed
+    if (this.immune(identifiers)) return HeatResult.Allowed
 
     const user = this.resolveUser(identifiers)
     const typeInfo = this.resolveType(type)
@@ -51,7 +51,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     user.heatActions.push({ timestamp: Date.now(), type: type })
     this.addUser(user)
 
-    if (this.clientInstance.immune(identifier)) return HeatResult.Allowed
+    if (this.immune(identifier)) return HeatResult.Allowed
 
     if (count >= typeInfo.maxLimit) return HeatResult.Denied
 
@@ -72,7 +72,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     const count = user.heatActions.filter((action) => action.type === type).length
     user.heatActions.push({ timestamp: Date.now(), type: type })
 
-    if (this.clientInstance.immune(identifier)) {
+    if (this.immune(identifier)) {
       this.addUser(user)
       return HeatResult.Allowed
     }
@@ -88,6 +88,16 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     }
 
     return HeatResult.Allowed
+  }
+
+  private immune(identifier: UserIdentifier): boolean {
+    if (identifier.userUuid !== undefined && this.clientInstance.immuneMinecraft(identifier.userName)) {
+      return true
+    } else if (identifier.userDiscordId !== undefined && this.clientInstance.immuneDiscord(identifier.userDiscordId)) {
+      return true
+    }
+
+    return false
   }
 
   private addUser(heatUser: HeatUser): void {

@@ -589,7 +589,8 @@ async function handleAllowance(
   type: HeatType
 ): Promise<'denied' | 'allow' | APIEmbed> {
   const issuerUser = await findAboutUser(mojangApi, interaction, interaction.user.username, false, false)
-  if (moderation.immune(issuerUser)) return 'allow'
+  if (issuerUser.userUuid !== undefined && moderation.immuneMinecraft(issuerUser.userName)) return 'allow'
+  if (moderation.immuneDiscord(interaction.user.id)) return 'allow'
 
   const actionAllowance = moderation.commandsHeat.tryAdd(issuerUser, type)
 

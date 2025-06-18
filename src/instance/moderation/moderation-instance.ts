@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import BadWords from 'bad-words'
 
 import type Application from '../../application.js'
-import { InstanceType, type UserIdentifier } from '../../common/application-event.js'
+import { InstanceType } from '../../common/application-event.js'
 import { ConfigManager } from '../../common/config-manager.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type { MojangApi } from '../../util/mojang.js'
@@ -11,7 +11,6 @@ import type { MojangApi } from '../../util/mojang.js'
 import { CommandsHeat } from './commands-heat.js'
 import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
 import Punishments from './punishments.js'
-import { matchUserIdentifier } from './util.js'
 
 export default class ModerationInstance extends Instance<InstanceType.Moderation> {
   public readonly punishments: Punishments
@@ -30,7 +29,10 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
       heatPunishment: true,
       mutesPerDay: 10,
       kicksPerDay: 5,
-      immune: [],
+
+      immuneDiscordUsers: [],
+      immuneMojangPlayers: [],
+
       profanityEnabled: true,
       profanityWhitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard'],
       profanityBlacklist: []
@@ -82,8 +84,12 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
     return { filteredMessage: filtered, changed: message !== filtered }
   }
 
-  public immune(identifiers: UserIdentifier): boolean {
-    return matchUserIdentifier(identifiers, this.config.data.immune)
+  public immuneDiscord(discordId: string): boolean {
+    return this.config.data.immuneDiscordUsers.includes(discordId)
+  }
+
+  public immuneMinecraft(username: string): boolean {
+    return this.config.data.immuneMojangPlayers.includes(username)
   }
 
   async getMinecraftIdentifiers(username: string): Promise<string[]> {
@@ -98,7 +104,10 @@ export interface ModerationConfig {
   heatPunishment: boolean
   mutesPerDay: number
   kicksPerDay: number
-  immune: string[]
+
+  immuneDiscordUsers: string[]
+  immuneMojangPlayers: string[]
+
   profanityEnabled: boolean
   profanityWhitelist: string[]
   profanityBlacklist: string[]

@@ -10,13 +10,13 @@ import type { MinecraftChatContext } from './chat-interface.js'
 export async function checkHeat(context: MinecraftChatContext, issuedBy: string, heatType: HeatType): Promise<void> {
   const mojangProfile = await context.application.mojangApi.profileByUsername(issuedBy).catch(() => undefined)
 
-  const identifier: UserIdentifier = {
+  const identifier = {
     userName: mojangProfile?.name ?? issuedBy,
     userUuid: mojangProfile?.id,
     userDiscordId: undefined
-  }
+  } satisfies UserIdentifier
 
-  if (context.application.moderation.immune(identifier)) return
+  if (context.application.moderation.immuneMinecraft(identifier.userName)) return
   const heatResult = context.application.moderation.commandsHeat.add(identifier, heatType)
 
   if (heatResult === HeatResult.Warn) {

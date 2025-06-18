@@ -146,12 +146,36 @@ function fetchModerationOptions(application: Application): CategoryOption {
               moderation.data.mutesPerDay = value
               moderation.markDirty()
             }
+          }
+        ]
+      },
+      {
+        type: OptionType.EmbedCategory,
+        name: 'Immunity List',
+        description: 'Users who are completely immuneDiscordUsers to heat punishments (Use at your own risk!)',
+        options: [
+          {
+            type: OptionType.User,
+            name: 'Immune Discord Users',
+            min: 0,
+            max: 10,
+            getOption: () => moderation.data.immuneDiscordUsers,
+            setOption: (values) => {
+              moderation.data.immuneDiscordUsers = values
+              moderation.markDirty()
+            }
           },
           {
-            type: OptionType.Label,
-            name: 'Immunity List',
-            description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
-            getOption: () => (moderation.data.immune.length === 0 ? 'None' : moderation.data.immune.join(', '))
+            type: OptionType.List,
+            name: 'Immune Mojang Players',
+            style: InputStyle.Short,
+            min: 0,
+            max: 10,
+            getOption: () => moderation.data.immuneMojangPlayers,
+            setOption: (values) => {
+              moderation.data.immuneMojangPlayers = values
+              moderation.markDirty()
+            }
           }
         ]
       },
