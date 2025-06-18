@@ -7,8 +7,8 @@ import {
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { sleep } from '../../../util/shared-util.js'
+import { Timeout } from '../../../util/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
@@ -94,7 +94,8 @@ export default class Warp extends ChatCommandHandler {
       return errorMessage
     }
 
-    await instance.send('/party warp', MinecraftSendChatPriority.Instant, undefined)
+    await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
+    await sleep(1000)
     await instance.send(`/pc Blame the gods on your luck`, MinecraftSendChatPriority.High, undefined)
 
     await sleep(2000)
@@ -106,62 +107,39 @@ export default class Warp extends ChatCommandHandler {
     return 'Player has been warped out!'
   }
 
-  private send(
-    instance: MinecraftInstance,
-    errorHandler: UnexpectedErrorHandler,
-    command: string,
-    priority: MinecraftSendChatPriority
-  ): void {
-    void instance.send(command, priority, undefined).catch(errorHandler.promiseCatch('sending warp commands'))
-  }
-
   async awaitPartyStatus(
     application: Application,
     instance: MinecraftInstance,
     context: ChatCommandContext,
     username: string
   ): Promise<string | undefined> {
-    return await new Promise((resolve) => {
-      let errorMessage: string | undefined
+    const timeout = new Timeout<string | undefined>(30_000, "Player didn't accept the invite.")
 
-      const timeoutId = setTimeout(() => {
-        application.removeListener('minecraftChat', chatListener)
-        resolve("Player didn't accept the invite.")
-      }, 30_000)
+    const chatListener = (event: MinecraftRawChatEvent) => {
+      if (event.instanceName !== instance.instanceName) return
 
-      const chatListener = (event: MinecraftRawChatEvent) => {
-        if (event.instanceName !== instance.instanceName) return
-        let doneCollecting = false
-
-        if (event.message.startsWith("You cannot invite that player since they're not online.")) {
-          errorMessage = 'Player not online?'
-          doneCollecting = true
-        } else if (event.message.startsWith('You cannot invite that player.')) {
-          errorMessage = 'Player has party invites disabled.'
-          doneCollecting = true
-        } else if (
-          /^The party invite to (?:\[[+A-Z]{3,10}] )?(\w{3,32}) has expired/.exec(event.message) != undefined
-        ) {
-          errorMessage = "Player didn't accept the invite."
-          doneCollecting = true
-        } else if (/^(?:\[[+A-Z]{3,10}] )?(\w{3,32}) joined the party/.exec(event.message) != undefined) {
-          errorMessage = undefined
-          doneCollecting = true
-        }
-
-        if (doneCollecting) {
-          clearTimeout(timeoutId)
-          application.removeListener('minecraftChat', chatListener)
-          resolve(errorMessage)
-        }
+      if (event.message.startsWith("You cannot invite that player since they're not online.")) {
+        timeout.resolve('Player not online?')
+      } else if (event.message.startsWith('You cannot invite that player.')) {
+        timeout.resolve('Player has party invites disabled.')
+      } else if (/^The party invite to (?:\[[+A-Z]{3,10}] )?(\w{3,32}) has expired/.exec(event.message) != undefined) {
+        timeout.resolve("Player didn't accept the invite.")
+      } else if (/^(?:\[[+A-Z]{3,10}] )?(\w{3,32}) joined the party/.exec(event.message) != undefined) {
+        timeout.resolve(undefined)
       }
+    }
 
-      context.sendFeedback(`Sending party invite to warp ${username}`)
-      application.on('minecraftChat', chatListener)
-      this.send(instance, context.errorHandler, `/party invite ${username}`, MinecraftSendChatPriority.Instant)
-      this.send(instance, context.errorHandler, `/party disband`, MinecraftSendChatPriority.Instant)
+    context.sendFeedback(`Sending party invite to warp ${username}`)
 
-      this.send(instance, context.errorHandler, `/party invite ${username}`, MinecraftSendChatPriority.High)
-    })
+    await instance.send(`/party invite ${username}`, MinecraftSendChatPriority.High, undefined)
+    await instance.send(`/party disband`, MinecraftSendChatPriority.High, undefined)
+
+    application.on('minecraftChat', chatListener)
+    await instance.send(`/party invite ${username}`, MinecraftSendChatPriority.High, undefined)
+
+    const result = await timeout.wait()
+    application.removeListener('minecraftChat', chatListener)
+
+    return result
   }
 }

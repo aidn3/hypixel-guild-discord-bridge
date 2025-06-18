@@ -1,15 +1,20 @@
 import assert from 'node:assert'
 
 export class Timeout<T> {
+  private readonly defaultValue: T | undefined
   private hasFinished = false
   private readonly promise: Promise<T | undefined>
   private resolveFunction: (argument: T) => void
 
-  constructor(public readonly milliseconds: number) {
+  constructor(
+    public readonly milliseconds: number,
+    defaultValue?: T
+  ) {
+    this.defaultValue = defaultValue
     this.promise = new Promise((resolve) => {
       const timeout = setTimeout(() => {
         this.hasFinished = true
-        resolve(undefined)
+        resolve(this.defaultValue)
       }, milliseconds)
 
       this.resolveFunction = (argument: T) => {
