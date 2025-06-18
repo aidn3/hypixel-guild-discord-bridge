@@ -13,7 +13,9 @@ import Boop from './triggers/boop.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
+import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
+import DevelopmentExcuse from './triggers/devexcuse.js'
 import Election from './triggers/election.js'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
@@ -64,7 +66,9 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Calculate(),
       new Catacomb(),
       new CurrentDungeon(),
+      new DadJoke(),
       new DarkAuction(),
+      new DevelopmentExcuse(),
       new Election(),
       new EightBallCommand(),
       new Execute(),
@@ -111,10 +115,10 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         if (allTriggers.has(trigger)) {
           const alreadyDefinedCommandName = allTriggers.get(trigger)
           throw new Error(
-            `Trigger already defined in ${alreadyDefinedCommandName} when trying to add it to ${command.name}`
+            `Trigger already defined in ${alreadyDefinedCommandName} when trying to add it to ${command.triggers[0]}`
           )
         } else {
-          allTriggers.set(trigger, command.name)
+          allTriggers.set(trigger, command.triggers[0])
         }
       }
     }

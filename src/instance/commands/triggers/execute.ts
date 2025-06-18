@@ -5,7 +5,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 export default class Execute extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'execute',
       triggers: ['execute', 'exec'],
       description: 'Runs a command directly',
       example: `execute /guild accept aidn5`

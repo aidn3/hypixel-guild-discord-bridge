@@ -14,13 +14,11 @@ import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 export abstract class ChatCommandHandler {
-  public readonly name: string
   public readonly triggers: string[]
   public readonly description: string
   public readonly example: string
 
-  protected constructor(options: { name: string; triggers: string[]; description: string; example: string }) {
-    this.name = options.name
+  protected constructor(options: { triggers: string[]; description: string; example: string }) {
     this.triggers = options.triggers
     this.description = options.description
     this.example = options.example

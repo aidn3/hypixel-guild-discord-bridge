@@ -21,7 +21,6 @@ type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
 export default class RunsToClassAverage extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Runs to class average',
       triggers: ['rtca'],
       description: 'Returns the number of runs needed to reach the average class level specified',
       example: `rtca Steve 50 m7`

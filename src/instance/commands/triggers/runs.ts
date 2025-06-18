@@ -11,7 +11,6 @@ import {
 export default class Runs extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Runs',
       triggers: ['runs', 'r'],
       description: 'Returns how many dungeon runs a player has done',
       example: `runs mm %s`

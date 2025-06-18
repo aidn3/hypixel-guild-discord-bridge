@@ -13,7 +13,6 @@ export default class Boop extends ChatCommandHandler {
 
   constructor() {
     super({
-      name: 'Boop',
       triggers: ['boop'],
       description: '/boop a player in-game',
       example: `boop %s`

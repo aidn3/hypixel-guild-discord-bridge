@@ -13,7 +13,6 @@ import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '.
 export default class Networth extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Networth',
       triggers: ['networth', 'net', 'nw'],
       description: "Returns a calculation of a player's networth",
       example: `nw %s`

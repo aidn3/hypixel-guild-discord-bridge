@@ -5,7 +5,6 @@ import { getUuidIfExists, usernameNotExists } from '../common/util.js'
 export default class Bedwars extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Bedwars',
       triggers: ['bedwars', 'bw'],
       description: "Returns a player's bedwars common stats",
       example: `bw %s`

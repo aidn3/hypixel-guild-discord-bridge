@@ -24,7 +24,6 @@ const AbbreviationMappings: Record<keyof SkyblockMember['skills'], string> = {
 export default class Skills extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Skills',
       triggers: ['skill', 'skills', 'sk', 'skillaverage', 'skillsaverage', 'sa'],
       description: "Returns a player's skills levels",
       example: `skill %s`
