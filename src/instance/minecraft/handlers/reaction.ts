@@ -9,7 +9,7 @@ import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class Reaction extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
-  private static readonly JoinMessages = [
+  public static JoinMessages = [
     'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',
     "%s, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",
     'Psst %s. You just joined. Do /g discord and !help here :D',
@@ -20,7 +20,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
     '%s nice, new member! Do /g discord to join our community (*・‿・)ノ⌒*:･ﾟ✧'
   ]
 
-  private static readonly LeaveMessages = [
+  public static readonly LeaveMessages = [
     'Oh. %s just left us :(',
     'L %s for leaving',
     'See you later %s',
@@ -30,7 +30,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
     '%s left. What a shame.'
   ]
 
-  private static readonly KickMessages = [
+  public static readonly KickMessages = [
     '%s got drop kicked! LOL',
     'See you later %s, or not :P',
     '%s was forcefully evicted.',
@@ -58,7 +58,12 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
         event.type === GuildPlayerEventType.Join &&
         this.application.minecraftManager.getConfig().data.joinGuildReaction
       ) {
-        let message = Reaction.JoinMessages[Math.floor(Math.random() * Reaction.JoinMessages.length)]
+        const messages = this.application.language.data.guildJoinReaction
+        if (messages.length === 0) {
+          this.logger.error('There is no guild join reaction messages. Dropping the reaction entirely.')
+          return
+        }
+        let message = messages[Math.floor(Math.random() * messages.length)]
         message = message.replaceAll('%s', event.username)
 
         this.application.emit('broadcast', {
@@ -76,7 +81,12 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
         event.type === GuildPlayerEventType.Leave &&
         this.application.minecraftManager.getConfig().data.leaveGuildReaction
       ) {
-        let message = Reaction.LeaveMessages[Math.floor(Math.random() * Reaction.LeaveMessages.length)]
+        const messages = this.application.language.data.guildLeaveReaction
+        if (messages.length === 0) {
+          this.logger.error('There is no guild leave reaction messages. Dropping the reaction entirely.')
+          return
+        }
+        let message = messages[Math.floor(Math.random() * messages.length)]
         message = message.replaceAll('%s', event.username)
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
@@ -93,7 +103,12 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
         event.type === GuildPlayerEventType.Kick &&
         this.application.minecraftManager.getConfig().data.kickGuildReaction
       ) {
-        let message = Reaction.KickMessages[Math.floor(Math.random() * Reaction.KickMessages.length)]
+        const messages = this.application.language.data.guildKickReaction
+        if (messages.length === 0) {
+          this.logger.error('There is no guild kick reaction messages. Dropping the reaction entirely.')
+          return
+        }
+        let message = messages[Math.floor(Math.random() * messages.length)]
         message = message.replaceAll('%s', event.username)
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),

@@ -13,6 +13,7 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
+import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
@@ -26,6 +27,8 @@ import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import UsersManager from './instance/users/users-manager.js'
+import type { LanguageConfig } from './language-config.js'
+import { DefaultLanguageConfig } from './language-config.js'
 import { MojangApi } from './util/mojang.js'
 import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
@@ -58,6 +61,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly rootDirectory
   private readonly configsDirectory
   private readonly config: Readonly<ApplicationConfig>
+  public readonly language: ConfigManager<LanguageConfig>
 
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
@@ -87,6 +91,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
+    this.language = new ConfigManager<LanguageConfig>(
+      this,
+      this.getConfigFilePath('language.json'),
+      DefaultLanguageConfig
+    )
+
     this.moderation = new ModerationInstance(this, this.mojangApi)
     this.usersManager = new UsersManager(this)
 

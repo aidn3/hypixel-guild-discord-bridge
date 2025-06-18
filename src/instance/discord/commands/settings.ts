@@ -68,7 +68,8 @@ export default {
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
         fetchMetricsOptions(context.application),
-        fetchCommandsOptions(context.application)
+        fetchCommandsOptions(context.application),
+        fetchLanguageOptions(context.application)
       ]
     }
 
@@ -543,6 +544,57 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         description: 'This can only be changed via `!toggle`.',
         getOption: () =>
           commands.data.disabledCommands.length === 0 ? 'none' : commands.data.disabledCommands.join(', ')
+      }
+    ]
+  }
+}
+
+function fetchLanguageOptions(application: Application): CategoryOption {
+  const language = application.language
+
+  return {
+    type: OptionType.Category,
+    name: 'Language',
+    header: CategoryLabel,
+    options: [
+      {
+        type: OptionType.List,
+        name: 'Join Message List',
+        description: 'Send a greeting message when a member joins the guild.',
+        style: InputStyle.Long,
+        min: 0,
+        max: 20,
+        getOption: () => language.data.guildJoinReaction,
+        setOption: (values) => {
+          language.data.guildJoinReaction = values
+          language.markDirty()
+        }
+      },
+      {
+        type: OptionType.List,
+        name: 'Leave Message List',
+        description: 'Send a reaction message when a member leaves the guild.',
+        style: InputStyle.Long,
+        min: 0,
+        max: 20,
+        getOption: () => language.data.guildLeaveReaction,
+        setOption: (values) => {
+          language.data.guildLeaveReaction = values
+          language.markDirty()
+        }
+      },
+      {
+        type: OptionType.List,
+        name: 'Kick Message List',
+        description: 'Send a reaction message when a member is kicked from the guild.',
+        style: InputStyle.Long,
+        min: 0,
+        max: 20,
+        getOption: () => language.data.guildKickReaction,
+        setOption: (values) => {
+          language.data.guildKickReaction = values
+          language.markDirty()
+        }
       }
     ]
   }
