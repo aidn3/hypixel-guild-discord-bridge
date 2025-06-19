@@ -91,11 +91,11 @@ export default class Slayer extends ChatCommandHandler {
       }
     }
 
-    let output = '/'
+    const output: string[] = []
     for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output += `${this.getSlayerLevel(slayer.xp, name)}/`
+      output.push(`${name} ${this.getSlayerLevel(slayer.xp, name)}`)
     }
-    return `${givenUsername}'s slayers: ${output}`
+    return `${givenUsername}'s slayers: ${output.join(' - ')}`
   }
 
   private getSlayerLevel(exp: number, slayer: string): number {
