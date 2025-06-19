@@ -6,6 +6,8 @@ import { OfficialPlugins } from '../common/plugins-config.js'
 import type { PluginsManager } from '../plugins-manager.js'
 
 export default class StarfallCultPlugin extends PluginInstance {
+  public static readonly DefaultMessage = `Reminder: Star Cult is here. Get that free x200 starfall!`
+
   constructor(application: Application, pluginsManager: PluginsManager) {
     super(application, pluginsManager, OfficialPlugins.StarfallCultReminder)
   }
@@ -34,7 +36,7 @@ export default class StarfallCultPlugin extends PluginInstance {
           channels: [ChannelType.Public],
 
           username: undefined,
-          message: `Reminder: Star Cult is here. Get that free x200 starfall!`
+          message: this.application.language.data.starfallReminder
         })
       }
     }, 5000)

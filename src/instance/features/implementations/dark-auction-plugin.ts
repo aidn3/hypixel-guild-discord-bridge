@@ -8,6 +8,8 @@ import { OfficialPlugins } from '../common/plugins-config.js'
 import type { PluginsManager } from '../plugins-manager.js'
 
 export default class DarkAuctionPlugin extends PluginInstance {
+  public static readonly DefaultMessage = 'Dark Auction in {minutes} minute(s)!'
+
   constructor(application: Application, pluginsManager: PluginsManager) {
     super(application, pluginsManager, OfficialPlugins.DarkAuctionReminder)
   }
@@ -35,6 +37,11 @@ export default class DarkAuctionPlugin extends PluginInstance {
         const remainingMinutes = 55 - currentMinute
         assert(remainingMinutes > 0)
 
+        const message = this.application.language.data.darkAuctionReminder.replaceAll(
+          '{minutes}',
+          remainingMinutes.toString(10)
+        )
+
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
@@ -42,7 +49,7 @@ export default class DarkAuctionPlugin extends PluginInstance {
           color: Color.Good,
 
           username: undefined,
-          message: `Dark Auction in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}!`
+          message: message
         })
       }
     }, 5000)

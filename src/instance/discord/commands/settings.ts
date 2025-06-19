@@ -558,6 +558,32 @@ function fetchLanguageOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
+        type: OptionType.Text,
+        name: 'Dark Auction Reminder',
+        description: 'Send a reminder when a skyblock dark auction is starting.',
+        style: InputStyle.Long,
+        min: 2,
+        max: 150,
+        getOption: () => language.data.darkAuctionReminder,
+        setOption: (value) => {
+          language.data.darkAuctionReminder = value
+          language.markDirty()
+        }
+      },
+      {
+        type: OptionType.Text,
+        name: 'Starfall Cult Reminder',
+        description: 'Send a reminder when the skyblock starfall cult gathers.',
+        style: InputStyle.Long,
+        min: 2,
+        max: 150,
+        getOption: () => language.data.starfallReminder,
+        setOption: (value) => {
+          language.data.starfallReminder = value
+          language.markDirty()
+        }
+      },
+      {
         type: OptionType.List,
         name: 'Join Message List',
         description: 'Send a greeting message when a member joins the guild.',
