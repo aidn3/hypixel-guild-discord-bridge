@@ -33,7 +33,7 @@ export default {
     embed.description += '**Anyone**\n'
     embed.description += createField(
       guildCommands,
-      allCommands.filter((command) => command.permission === Permission.Anyone)
+      allCommands.filter((command) => command.permission === undefined || command.permission === Permission.Anyone)
     )
     embed.description += '\n'
 
