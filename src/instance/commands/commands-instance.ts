@@ -7,6 +7,7 @@ import { ConnectableInstance, Status } from '../../common/connectable-instance.j
 import { InternalInstancePrefix } from '../../common/instance.js'
 
 import EightBallCommand from './triggers/8ball.js'
+import Api from './triggers/api.js'
 import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
 import Boop from './triggers/boop.js'
@@ -63,6 +64,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     })
 
     this.commands = [
+      new Api(),
       new Bits(),
       new Bedwars(),
       new Boop(),

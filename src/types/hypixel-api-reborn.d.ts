@@ -35,6 +35,10 @@ declare module 'hypixel-api-reborn' {
     currencies?: { coin_purse?: number }
     dungeons: SkyblockV2Dungeons | undefined
     rift?: SkyblockV2Rift
+    collection?: Record<string, number>
+    inventory?: object
+    profile: { bank_account?: number }
+    player_data: { experience?: Record<string, number> }
     nether_island_player_data?: {
       selected_faction?: string
       mages_reputation?: number
