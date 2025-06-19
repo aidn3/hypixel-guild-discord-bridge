@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 
 import type { Client } from 'discord.js'
+import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import { ConfigManager } from '../../../common/config-manager.js'
@@ -13,11 +14,13 @@ export default class MessageDeleter {
 
   constructor(
     application: Application,
+    logger: Logger,
     private readonly errorHandler: UnexpectedErrorHandler,
     private readonly client: Client
   ) {
     this.config = new ConfigManager<MessageDeleterConfig>(
       application,
+      logger,
       application.getConfigFilePath('discord-temp-events.json'),
       {
         expireSeconds: MessageDeleter.DefaultExpiresSeconds,

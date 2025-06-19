@@ -70,7 +70,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     // TODO: properly reference client
     // @ts-expect-error client is private variable
-    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.client)
+    this.messageDeleter = new MessageDeleter(application, logger, errorHandler, this.clientInstance.client)
 
     this.application.on('instanceMessage', (event) => {
       void this.onInstanceMessageEvent(event).catch(this.errorHandler.promiseCatch('handling event instanceMessage'))

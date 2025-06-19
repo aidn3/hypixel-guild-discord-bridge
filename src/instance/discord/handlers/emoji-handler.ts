@@ -27,6 +27,7 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
 
     this.registeredEmoji = new ConfigManager(
       application,
+      logger,
       application.getConfigFilePath('discord-registered-emoji.json'),
       { savedEmojis: [] }
     )

@@ -33,7 +33,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     sqliteManager: SqliteManager
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = new ConfigManager(application, application.getConfigFilePath('scores-manager.json'), {
+    this.config = new ConfigManager(application, logger, application.getConfigFilePath('scores-manager.json'), {
       deleteMessagesOlderThan: ScoresManager.DeleteMessagesOlderThan,
       deleteMembersOlderThan: ScoresManager.DeleteMemberOlderThan,
       leniencyTimeSeconds: ScoresManager.LeniencyTimeSeconds,

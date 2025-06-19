@@ -43,7 +43,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     super(app, InstanceType.Discord, InstanceType.Discord)
 
     this.staticConfig = config
-    this.config = new ConfigManager(app, app.getConfigFilePath('discord.json'), {
+    this.config = new ConfigManager(app, this.logger, app.getConfigFilePath('discord.json'), {
       publicChannelIds: [],
       officerChannelIds: [],
       helperRoleIds: [],

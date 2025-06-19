@@ -1,3 +1,5 @@
+import type { Logger } from 'log4js'
+
 import type Application from '../../../application.js'
 import { ConfigManager } from '../../../common/config-manager.js'
 
@@ -14,8 +16,8 @@ export class Sanitizer {
   private readonly emoji: EmojiSanitizer
   private readonly antispam: Antispam
 
-  constructor(application: Application) {
-    this.config = new ConfigManager(application, application.getConfigFilePath('minecraft-antispam.json'), {
+  constructor(application: Application, logger: Logger) {
+    this.config = new ConfigManager(application, logger, application.getConfigFilePath('minecraft-antispam.json'), {
       hideLinksViaStuf: false,
       resolveHideLinks: true,
 

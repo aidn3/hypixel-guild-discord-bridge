@@ -29,7 +29,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    this.config = new ConfigManager(application, application.getConfigFilePath('discord-leaderboards.json'), {
+    this.config = new ConfigManager(application, logger, application.getConfigFilePath('discord-leaderboards.json'), {
       updateEveryMinutes: Leaderboard.DefaultUpdateEveryMinutes,
       messages30Days: [],
       online30Days: []

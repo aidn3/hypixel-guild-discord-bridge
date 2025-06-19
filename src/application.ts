@@ -93,6 +93,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.mojangApi = new MojangApi()
     this.language = new ConfigManager<LanguageConfig>(
       this,
+      this.logger,
       this.getConfigFilePath('language.json'),
       DefaultLanguageConfig
     )

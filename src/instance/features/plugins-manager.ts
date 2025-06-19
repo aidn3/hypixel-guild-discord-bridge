@@ -19,7 +19,7 @@ export class PluginsManager extends Instance<InstanceType.Util> {
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Util)
 
-    this.config = new ConfigManager(application, application.getConfigFilePath('features-manager.json'), {
+    this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('features-manager.json'), {
       darkAuctionReminder: true,
       starfallCultReminder: true,
       autoRestart: false

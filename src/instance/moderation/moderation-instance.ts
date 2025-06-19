@@ -25,7 +25,7 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
   constructor(application: Application, mojangApi: MojangApi) {
     super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation)
 
-    this.config = new ConfigManager(application, application.getConfigFilePath('moderation.json'), {
+    this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('moderation.json'), {
       heatPunishment: true,
       mutesPerDay: 10,
       kicksPerDay: 5,

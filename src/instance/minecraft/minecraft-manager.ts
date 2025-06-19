@@ -24,7 +24,7 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'MinecraftManager', InstanceType.Util)
 
-    this.config = new ConfigManager(application, application.getConfigFilePath('minecraft-manager.json'), {
+    this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('minecraft-manager.json'), {
       adminUsername: 'Steve',
       instances: [],
 
@@ -38,7 +38,7 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
     fs.mkdirSync(this.sessionDirectory, { recursive: true })
     this.application.applicationIntegrity.addConfigPath(sessionDirectoryName)
 
-    this.sanitizer = new Sanitizer(application)
+    this.sanitizer = new Sanitizer(application, this.logger)
 
     this.application.on('minecraftSelfBroadcast', (event) => {
       this.minecraftBots.set(event.instanceName, event)

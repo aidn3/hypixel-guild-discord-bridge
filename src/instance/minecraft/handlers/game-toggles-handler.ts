@@ -194,13 +194,18 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
     }
 
     if (this.config === undefined) {
-      this.config = new ConfigManager(this.application, path.join(this.toggleDirectory, `${newUuid}.json`), {
-        playerOnlineStatusEnabled: false,
+      this.config = new ConfigManager(
+        this.application,
+        this.logger,
+        path.join(this.toggleDirectory, `${newUuid}.json`),
+        {
+          playerOnlineStatusEnabled: false,
 
-        guildAllEnabled: false,
-        guildChatEnabled: false,
-        guildNotificationsEnabled: false
-      })
+          guildAllEnabled: false,
+          guildChatEnabled: false,
+          guildNotificationsEnabled: false
+        }
+      )
 
       if (this.allPrepared(this.config)) {
         this.prepared = true
