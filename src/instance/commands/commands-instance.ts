@@ -30,6 +30,7 @@ import Mayor from './triggers/mayor.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
+import Purse from './triggers/purse.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
@@ -85,6 +86,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
+      new Purse(),
       new Reputation(),
       new Rng(),
       new RockPaperScissors(),

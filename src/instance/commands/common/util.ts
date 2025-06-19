@@ -71,6 +71,24 @@ export function getDungeonLevelWithOverflow(experience: number): number {
   return totalLevel + fractionLevel
 }
 
+export function localizedNetworth(coins: number): string {
+  let suffix = ''
+  if (coins > 1000) {
+    coins = coins / 1000
+    suffix = 'k'
+  }
+  if (coins > 1000) {
+    coins = coins / 1000
+    suffix = 'm'
+  }
+  if (coins > 1000) {
+    coins = coins / 1000
+    suffix = 'b'
+  }
+
+  return coins.toFixed(3) + suffix
+}
+
 export function usernameNotExists(givenUsername: string): string {
   return `Invalid username! (given: ${givenUsername})`
 }

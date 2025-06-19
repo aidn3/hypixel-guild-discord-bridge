@@ -27,6 +27,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
+    currencies?: { coin_purse?: number }
     dungeons: SkyblockV2Dungeons | undefined
     nether_island_player_data?: {
       selected_faction?: string
