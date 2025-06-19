@@ -3,6 +3,7 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
+  playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/util.js'
@@ -25,6 +26,7 @@ export default class Kuudra extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
+    if (!selectedProfile.nether_island_player_data) return playerNeverEnteredCrimson(givenUsername)
     const tiers = selectedProfile.nether_island_player_data.kuudra_completed_tiers
 
     const completions = Object.entries(tiers)

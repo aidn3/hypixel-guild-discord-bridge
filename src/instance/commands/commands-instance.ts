@@ -30,6 +30,7 @@ import Mayor from './triggers/mayor.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
+import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
@@ -54,7 +55,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
   constructor(app: Application) {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
 
-    this.config = new ConfigManager(app, app.getConfigFilePath('commands.json'), {
+    this.config = new ConfigManager(app, this.logger, app.getConfigFilePath('commands.json'), {
       enabled: true,
       disabledCommands: []
     })
@@ -84,6 +85,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
+      new Reputation(),
       new Rng(),
       new RockPaperScissors(),
       new Roulette(),

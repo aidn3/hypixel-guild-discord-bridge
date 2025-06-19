@@ -28,7 +28,11 @@ declare module 'hypixel-api-reborn' {
   export interface SkyblockV2Member {
     leveling?: { experience: number }
     dungeons: SkyblockV2Dungeons | undefined
-    nether_island_player_data: {
+    nether_island_player_data?: {
+      selected_faction?: string
+      mages_reputation?: number
+      barbarians_reputation?: number
+
       kuudra_completed_tiers: {
         none: number
         hot: number

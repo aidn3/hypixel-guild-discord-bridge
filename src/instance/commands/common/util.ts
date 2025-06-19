@@ -86,3 +86,6 @@ export function playerNeverPlayedDungeons(username: string): string {
 export function playerNeverPlayedSlayers(username: string): string {
   return `${username} has never done slayers before?`
 }
+export function playerNeverEnteredCrimson(username: string): string {
+  return `${username} has never entered Crimson Isle before?`
+}
