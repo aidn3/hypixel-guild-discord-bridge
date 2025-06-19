@@ -29,6 +29,7 @@ declare module 'hypixel-api-reborn' {
     leveling?: { experience: number }
     currencies?: { coin_purse?: number }
     dungeons: SkyblockV2Dungeons | undefined
+    rift?: SkyblockV2Rift
     nether_island_player_data?: {
       selected_faction?: string
       mages_reputation?: number
@@ -99,6 +100,25 @@ declare module 'hypixel-api-reborn' {
     dungeon_tier: number
     participants: { player_uuid: string; display_name: string }[]
   }
+
+  export interface SkyblockV2Rift {
+    gallery?: { secured_trophies?: RiftSecureTrophies[] }
+  }
+
+  export interface RiftSecureTrophies {
+    type: RiftTrophyType
+    timestamp: number
+  }
+
+  export type RiftTrophyType =
+    | 'wyldly_supreme'
+    | 'mirrored'
+    | 'chicken_n_egg'
+    | 'citizen'
+    | 'lazy_living'
+    | 'slime'
+    | 'vampiric'
+    | 'mountain'
 
   export interface SlayerProfile {
     slayer_bosses: {

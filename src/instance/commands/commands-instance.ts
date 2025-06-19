@@ -43,6 +43,7 @@ import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
 import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
+import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
@@ -99,6 +100,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Soopy(),
       new Starfall(),
       new StatusCommand(),
+      new Timecharms(),
       new Toggle(),
       new Vengeance(),
       new Warp(),
