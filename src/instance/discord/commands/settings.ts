@@ -558,69 +558,122 @@ function fetchLanguageOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
-        type: OptionType.Text,
-        name: 'Dark Auction Reminder',
-        description: 'Send a reminder when a skyblock dark auction is starting.',
-        style: InputStyle.Long,
-        min: 2,
-        max: 150,
-        getOption: () => language.data.darkAuctionReminder,
-        setOption: (value) => {
-          language.data.darkAuctionReminder = value
-          language.markDirty()
-        }
+        type: OptionType.Category,
+        name: 'Automated Messages',
+        options: [
+          {
+            type: OptionType.Text,
+            name: 'Dark Auction Reminder',
+            description: 'Send a reminder when a skyblock dark auction is starting.',
+            style: InputStyle.Long,
+            min: 2,
+            max: 150,
+            getOption: () => language.data.darkAuctionReminder,
+            setOption: (value) => {
+              language.data.darkAuctionReminder = value
+              language.markDirty()
+            }
+          },
+          {
+            type: OptionType.Text,
+            name: 'Starfall Cult Reminder',
+            description: 'Send a reminder when the skyblock starfall cult gathers.',
+            style: InputStyle.Long,
+            min: 2,
+            max: 150,
+            getOption: () => language.data.starfallReminder,
+            setOption: (value) => {
+              language.data.starfallReminder = value
+              language.markDirty()
+            }
+          }
+        ]
       },
       {
-        type: OptionType.Text,
-        name: 'Starfall Cult Reminder',
-        description: 'Send a reminder when the skyblock starfall cult gathers.',
-        style: InputStyle.Long,
-        min: 2,
-        max: 150,
-        getOption: () => language.data.starfallReminder,
-        setOption: (value) => {
-          language.data.starfallReminder = value
-          language.markDirty()
-        }
+        type: OptionType.Category,
+        name: 'Chat Commands',
+        description: 'Chat commands such as `!cata` and `!iq`.',
+        options: [
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Russian Roulette',
+            description: 'Chat Command `!rr`',
+            options: [
+              {
+                type: OptionType.List,
+                name: 'Russian Roulette Win',
+                description: 'Message when winning chat command `!rr`.',
+                style: InputStyle.Short,
+                min: 0,
+                max: 100,
+                getOption: () => language.data.commandRouletteWin,
+                setOption: (values) => {
+                  language.data.commandRouletteWin = values
+                  language.markDirty()
+                }
+              },
+              {
+                type: OptionType.List,
+                name: 'Russian Roulette Lose',
+                description: 'Message when losing chat command `!rr`.',
+                style: InputStyle.Short,
+                min: 0,
+                max: 100,
+                getOption: () => language.data.commandRouletteLose,
+                setOption: (values) => {
+                  language.data.commandRouletteLose = values
+                  language.markDirty()
+                }
+              }
+            ]
+          }
+        ]
       },
       {
-        type: OptionType.List,
-        name: 'Join Message List',
-        description: 'Send a greeting message when a member joins the guild.',
-        style: InputStyle.Long,
-        min: 0,
-        max: 20,
-        getOption: () => language.data.guildJoinReaction,
-        setOption: (values) => {
-          language.data.guildJoinReaction = values
-          language.markDirty()
-        }
-      },
-      {
-        type: OptionType.List,
-        name: 'Leave Message List',
-        description: 'Send a reaction message when a member leaves the guild.',
-        style: InputStyle.Long,
-        min: 0,
-        max: 20,
-        getOption: () => language.data.guildLeaveReaction,
-        setOption: (values) => {
-          language.data.guildLeaveReaction = values
-          language.markDirty()
-        }
-      },
-      {
-        type: OptionType.List,
-        name: 'Kick Message List',
-        description: 'Send a reaction message when a member is kicked from the guild.',
-        style: InputStyle.Long,
-        min: 0,
-        max: 20,
-        getOption: () => language.data.guildKickReaction,
-        setOption: (values) => {
-          language.data.guildKickReaction = values
-          language.markDirty()
-        }
+        type: OptionType.Category,
+        name: 'Guild Reaction',
+        description: 'Auto replying and reacting to various in-game guild events.',
+        options: [
+          {
+            type: OptionType.List,
+            name: 'Join Message List',
+            description: 'Send a greeting message when a member joins the guild.',
+            style: InputStyle.Long,
+            min: 0,
+            max: 20,
+            getOption: () => language.data.guildJoinReaction,
+            setOption: (values) => {
+              language.data.guildJoinReaction = values
+              language.markDirty()
+            }
+          },
+          {
+            type: OptionType.List,
+            name: 'Leave Message List',
+            description: 'Send a reaction message when a member leaves the guild.',
+            style: InputStyle.Long,
+            min: 0,
+            max: 20,
+            getOption: () => language.data.guildLeaveReaction,
+            setOption: (values) => {
+              language.data.guildLeaveReaction = values
+              language.markDirty()
+            }
+          },
+          {
+            type: OptionType.List,
+            name: 'Kick Message List',
+            description: 'Send a reaction message when a member is kicked from the guild.',
+            style: InputStyle.Long,
+            min: 0,
+            max: 20,
+            getOption: () => language.data.guildKickReaction,
+            setOption: (values) => {
+              language.data.guildKickReaction = values
+              language.markDirty()
+            }
+          }
+        ]
       }
     ]
   }

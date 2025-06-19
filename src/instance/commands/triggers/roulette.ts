@@ -2,25 +2,25 @@ import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../.
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
-const LossMessages = [
-  '%s you got blasted!',
-  '%s unlucky, wrong choice.',
-  "%s it's not rigged, I promise!",
-  '%s you got capped.',
-  '%s enjoy the mute, haha!',
-  '%s better luck next time. Or not...'
-]
-
-const WinMessages = [
-  '%s you survived?!',
-  '%s, lucky. Do it again!',
-  '%s? Alive? shame.',
-  "%s, I'll get you next time",
-  '%s, perhaps I forgot to load it?',
-  "%s you're crazy. Again again again!"
-]
-
 export default class Roulette extends ChatCommandHandler {
+  public static readonly LossMessages = [
+    '{username} you got blasted!',
+    '{username} unlucky, wrong choice.',
+    "{username} it's not rigged, I promise!",
+    '{username} you got capped.',
+    '{username} enjoy the mute, haha!',
+    '{username} better luck next time. Or not...'
+  ]
+
+  public static readonly WinMessages = [
+    '{username} you survived?!',
+    '{username}, lucky. Do it again!',
+    '{username}? Alive? shame.',
+    "{username}, I'll get you next time",
+    '{username}, perhaps I forgot to load it?',
+    "{username} you're crazy. Again again again!"
+  ]
+
   private countSinceLastLose = 0
 
   constructor() {
@@ -77,11 +77,13 @@ export default class Roulette extends ChatCommandHandler {
         reason: 'Lost in RussianRoulette game'
       })
 
-      return LossMessages[Math.floor(Math.random() * LossMessages.length)].replaceAll('%s', context.username)
+      const messages = context.app.language.data.commandRouletteLose
+      return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)
     } else {
       this.countSinceLastLose++
     }
 
-    return WinMessages[Math.floor(Math.random() * WinMessages.length)].replaceAll('%s', context.username)
+    const messages = context.app.language.data.commandRouletteWin
+    return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)
   }
 }
