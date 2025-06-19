@@ -626,6 +626,52 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 }
               }
             ]
+          },
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Vengeance',
+            description: 'Chat Command `!v`',
+            options: [
+              {
+                type: OptionType.List,
+                name: 'Vengeance Win',
+                description: 'Message when winning chat command `!v`.',
+                style: InputStyle.Short,
+                min: 0,
+                max: 100,
+                getOption: () => language.data.commandVengeanceWin,
+                setOption: (values) => {
+                  language.data.commandVengeanceWin = values
+                  language.markDirty()
+                }
+              },
+              {
+                type: OptionType.List,
+                name: 'Vengeance Draw',
+                description: 'Message when drawing chat command `!v`.',
+                style: InputStyle.Short,
+                min: 0,
+                max: 100,
+                getOption: () => language.data.commandVengeanceDraw,
+                setOption: (values) => {
+                  language.data.commandVengeanceDraw = values
+                  language.markDirty()
+                }
+              },
+              {
+                type: OptionType.List,
+                name: 'Vengeance Lose',
+                description: 'Message when losing chat command `!v`.',
+                style: InputStyle.Short,
+                min: 0,
+                max: 100,
+                getOption: () => language.data.commandVengeanceLose,
+                setOption: (values) => {
+                  language.data.commandVengeanceLose = values
+                  language.markDirty()
+                }
+              }
+            ]
           }
         ]
       },

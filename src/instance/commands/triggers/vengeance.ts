@@ -3,33 +3,33 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/util.js'
 
-const LossMessages = [
-  '%s tried to blast %u but failed epically and ended up blasting themself!',
-  '%s unlucky, wrong choice.',
-  '%s, this is what you get for trying to blast %u!',
-  '%s died',
-  '%s tried to mute %u but got muted instead, haha!',
-  '%s better luck next time. Or not...',
-  '%s was punished for trying to mute %u',
-  '%s, aya, are you still trying to mute %u? How petty.'
-]
-
-const DrawMessages = [
-  '%s Click. Click. Click. It is empty!',
-  '%s, remind me what the plan was again?',
-  '%s, I forgot to take vengeance.',
-  '%s, I was supposed to take vengeance against %u but I changed my mind :P',
-  '%s tried to kill %u but they dodged every bullet like Neo!'
-]
-
-const WinMessages = [
-  '%s is Batman!',
-  '%u survival was never an option',
-  '%s, I am Agent 47. The job is done.',
-  '%u? Dead? That was the only possible outcome.'
-]
-
 export default class Vengeance extends ChatCommandHandler {
+  public static readonly LossMessages = [
+    '{username} tried to blast {target} but failed epically and ended up blasting themself!',
+    '{username} unlucky, wrong choice.',
+    '{username}, this is what you get for trying to blast {target}!',
+    '{username} died',
+    '{username} tried to mute {target} but got muted instead, haha!',
+    '{username} better luck next time. Or not...',
+    '{username} was punished for trying to mute {target}',
+    '{username}, aya, are you still trying to mute {target}? How petty.'
+  ]
+
+  public static readonly DrawMessages = [
+    '{username} Click. Click. Click. It is empty!',
+    '{username}, remind me what the plan was again?',
+    '{username}, I forgot to take vengeance.',
+    '{username}, I was supposed to take vengeance against {target} but I changed my mind :P',
+    '{username} tried to kill {target} but they dodged every bullet like Neo!'
+  ]
+
+  public static readonly WinMessages = [
+    '{username} is Batman!',
+    '{target} survival was never an option',
+    '{username}, I am Agent 47. The job is done.',
+    '{target}? Dead? That was the only possible outcome.'
+  ]
+
   private countSinceLastWin = 0
   private consecutiveLose = 0
 
@@ -53,26 +53,25 @@ export default class Vengeance extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
+    let messages: string[]
     // 3% to win.
     // 47% to lose.
     // 49% to draw.
     if (this.won()) {
       this.mute(context, givenUsername)
-      return WinMessages[Math.floor(Math.random() * WinMessages.length)]
-        .replaceAll('%s', context.username)
-        .replaceAll('%u', givenUsername)
+      messages = context.app.language.data.commandVengeanceWin
     } else if (this.lose()) {
       this.countSinceLastWin++
       this.mute(context, context.username)
-      return LossMessages[Math.floor(Math.random() * LossMessages.length)]
-        .replaceAll('%s', context.username)
-        .replaceAll('%u', givenUsername)
+      messages = context.app.language.data.commandVengeanceLose
     } else {
       this.countSinceLastWin++
-      return DrawMessages[Math.floor(Math.random() * DrawMessages.length)]
-        .replaceAll('%s', context.username)
-        .replaceAll('%u', givenUsername)
+      messages = context.app.language.data.commandVengeanceDraw
     }
+
+    return messages[Math.floor(Math.random() * messages.length)]
+      .replaceAll('{username}', context.username)
+      .replaceAll('{target}', givenUsername)
   }
 
   private won(): boolean {

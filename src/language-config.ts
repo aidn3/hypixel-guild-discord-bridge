@@ -1,4 +1,5 @@
 import Roulette from './instance/commands/triggers/roulette.js'
+import Vengeance from './instance/commands/triggers/vengeance.js'
 import DarkAuctionPlugin from './instance/features/implementations/dark-auction-plugin.js'
 import StarfallCultPlugin from './instance/features/implementations/starfall-cult-plugin.js'
 import Reaction from './instance/minecraft/handlers/reaction.js'
@@ -9,6 +10,10 @@ export interface LanguageConfig {
 
   commandRouletteWin: string[]
   commandRouletteLose: string[]
+
+  commandVengeanceWin: string[]
+  commandVengeanceDraw: string[]
+  commandVengeanceLose: string[]
 
   guildJoinReaction: string[]
   guildLeaveReaction: string[]
@@ -21,6 +26,10 @@ export const DefaultLanguageConfig: LanguageConfig = {
 
   commandRouletteWin: Roulette.WinMessages,
   commandRouletteLose: Roulette.LossMessages,
+
+  commandVengeanceWin: Vengeance.WinMessages,
+  commandVengeanceDraw: Vengeance.DrawMessages,
+  commandVengeanceLose: Vengeance.LossMessages,
 
   guildJoinReaction: Reaction.JoinMessages,
   guildLeaveReaction: Reaction.LeaveMessages,
