@@ -3,7 +3,6 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import Axios, { type AxiosResponse } from 'axios'
 import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
@@ -31,10 +30,8 @@ export default class Networth extends ChatCommandHandler {
 
     let museumData: object | undefined
     try {
-      museumData = await Axios.get(
-        `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
-      )
-        .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
+      museumData = await context.app.hypixelApi
+        .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })
         .then((museum) => museum.members[uuid] as object)
     } catch {
       return `${context.username}, error fetching museum data?`
@@ -58,8 +55,4 @@ export default class Networth extends ChatCommandHandler {
 
     return `${givenUsername}'s networth: ${localizedNetworth(networth)}, non-cosmetic: ${localizedNetworth(nonCosmetic)}`
   }
-}
-
-interface HypixelSkyblockMuseumRaw {
-  members: Record<string, unknown>
 }

@@ -10,6 +10,11 @@ declare module 'hypixel-api-reborn' {
     ): Promise<SkyblockV2ProfilesRaw>
 
     getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
+    getSkyblockMuseum(
+      query: string,
+      profileId: string,
+      options?: methodOptions & { raw: true }
+    ): Promise<SkyblockMuseumRaw>
   }
 
   export interface SkyblockV2ProfilesRaw {
@@ -158,6 +163,10 @@ declare module 'hypixel-api-reborn' {
   export interface MayorPerkV2 {
     name: string
     minister: boolean
+  }
+
+  interface SkyblockMuseumRaw {
+    members: Record<string, unknown>
   }
 }
 /* eslint-enable @typescript-eslint/naming-convention */
