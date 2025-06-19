@@ -20,7 +20,7 @@ export interface LanguageConfig {
   guildKickReaction: string[]
 }
 
-export const DefaultLanguageConfig: LanguageConfig = {
+export const DefaultLanguageConfig: Readonly<LanguageConfig> = {
   darkAuctionReminder: DarkAuctionPlugin.DefaultMessage,
   starfallReminder: StarfallCultPlugin.DefaultMessage,
 
