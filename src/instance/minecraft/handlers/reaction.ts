@@ -10,32 +10,32 @@ import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class Reaction extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   public static JoinMessages = [
-    'Welcome %s to our guild! Do /g discord and !help for ingame commands :-)',
-    "%s, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",
-    'Psst %s. You just joined. Do /g discord and !help here :D',
-    '%s since you are a member now, do !e and /g discord',
-    "Can we take a moment to applaud %s for joining us. Don't forget to do /g discord :3",
-    '%s joined the guild. What a legend. Do /g discord',
-    'Hey %s and welcome to the guild! Run /g discord',
-    '%s nice, new member! Do /g discord to join our community (*・‿・)ノ⌒*:･ﾟ✧'
+    'Welcome {username} to our guild! Do /g discord and !help for ingame commands :-)',
+    "{username}, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",
+    'Psst {username}. You just joined. Do /g discord and !help here :D',
+    '{username} since you are a member now, do !e and /g discord',
+    "Can we take a moment to applaud {username} for joining us. Don't forget to do /g discord :3",
+    '{username} joined the guild. What a legend. Do /g discord',
+    'Hey {username} and welcome to the guild! Run /g discord',
+    '{username} nice, new member! Do /g discord to join our community (*・‿・)ノ⌒*:･ﾟ✧'
   ]
 
   public static readonly LeaveMessages = [
-    'Oh. %s just left us :(',
-    'L %s for leaving',
-    'See you later %s',
-    'Adios %s o/',
-    "%s wasn't cool enough for us.",
-    '%s left. I wonder why?',
-    '%s left. What a shame.'
+    'Oh. {username} just left us :(',
+    'L {username} for leaving',
+    'See you later {username}',
+    'Adios {username} o/',
+    "{username} wasn't cool enough for us.",
+    '{username} left. I wonder why?',
+    '{username} left. What a shame.'
   ]
 
   public static readonly KickMessages = [
-    '%s got drop kicked! LOL',
-    'See you later %s, or not :P',
-    '%s was forcefully evicted.',
-    "%s wasn't welcome here.",
-    'Goodbye %s. Forever.'
+    '{username} got drop kicked! LOL',
+    'See you later {username}, or not :P',
+    '{username} was forcefully evicted.',
+    "{username} wasn't welcome here.",
+    'Goodbye {username}. Forever.'
   ]
 
   constructor(
@@ -64,7 +64,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('%s', event.username)
+        message = message.replaceAll('{username}', event.username)
 
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
@@ -87,7 +87,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('%s', event.username)
+        message = message.replaceAll('{username}', event.username)
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
@@ -109,7 +109,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('%s', event.username)
+        message = message.replaceAll('{username}', event.username)
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
