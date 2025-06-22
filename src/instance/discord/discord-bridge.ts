@@ -140,10 +140,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
 
       const webhook = await this.getWebhook(channelId)
-      const displayUsername =
+      let displayUsername =
         event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
           ? `${event.username}⇾${event.replyUsername}`
           : event.username
+
+      if (this.application.generalConfig.data.originTag) {
+        displayUsername += ` [${event.instanceName}]`
+      }
 
       // TODO: integrate instanceName
       const message = await webhook.send({

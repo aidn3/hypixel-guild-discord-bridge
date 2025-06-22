@@ -1,5 +1,4 @@
 export interface PluginConfig {
-  autoRestart: boolean
   starfallCultReminder: boolean
   darkAuctionReminder: boolean
 }
