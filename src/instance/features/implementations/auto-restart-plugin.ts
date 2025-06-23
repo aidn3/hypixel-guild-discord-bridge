@@ -50,6 +50,6 @@ export default class AutoRestartPlugin extends PluginInstance {
   }
 
   private enabled(): boolean {
-    return this.pluginsManager.getConfig().data.autoRestart
+    return this.application.generalConfig.data.autoRestart
   }
 }

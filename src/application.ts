@@ -17,6 +17,7 @@ import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
+import type { GeneralConfig } from './general-config.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
@@ -63,6 +64,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly config: Readonly<ApplicationConfig>
   public readonly language: ConfigManager<LanguageConfig>
 
+  public readonly generalConfig: ConfigManager<GeneralConfig>
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
   public readonly pluginsManager: PluginsManager
@@ -84,6 +86,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.config = config
     this.configsDirectory = configsDirectory
     this.rootDirectory = rootDirectory
+
+    this.generalConfig = new ConfigManager(this, this.logger, this.getConfigFilePath('application.json'), {
+      autoRestart: false,
+      originTag: false
+    })
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,

@@ -71,7 +71,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
     void this.send(
-      this.formatChatMessage(prefix, event.username, replyUsername, event.message),
+      this.formatChatMessage(prefix, event.username, replyUsername, event.message, event.instanceName),
       MinecraftSendChatPriority.Default,
       event.eventId
     ).catch(this.errorHandler.promiseCatch('sending chat message'))
@@ -244,9 +244,14 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     prefix: string,
     username: string,
     replyUsername: string | undefined,
-    message: string
+    message: string,
+    instanceName: string
   ): string {
     let full = `/${prefix} `
+
+    if (this.application.generalConfig.data.originTag) {
+      full += `[${instanceName}] `
+    }
 
     full += username
     if (replyUsername != undefined) full += `⇾${replyUsername}`
