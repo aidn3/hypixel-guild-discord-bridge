@@ -28,7 +28,8 @@ export default {
 
         type: GuildPlayerEventType.Unmute,
         username: responsible,
-        message: context.message
+        message: context.message,
+        rawMessage: context.rawMessage
       })
     }
   }

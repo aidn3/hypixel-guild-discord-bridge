@@ -36,7 +36,8 @@ export default {
         color: Color.Info,
         type: MinecraftReactiveEventType.Repeat,
         originEventId: originEventId,
-        message: randomMessage
+        message: randomMessage,
+        rawMessage: context.rawMessage
       })
     }
   }

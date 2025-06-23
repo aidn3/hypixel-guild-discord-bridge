@@ -53,6 +53,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
 
       alwaysReplyReaction: false,
       enforceVerification: false,
+      textToImage: false,
 
       guildOnline: true,
       guildOffline: true

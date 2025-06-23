@@ -24,4 +24,5 @@ export interface MinecraftChatContext {
   messageAssociation: MessageAssociation
 
   message: string
+  rawMessage: string
 }

@@ -10,6 +10,7 @@ export interface DiscordConfig {
 
   alwaysReplyReaction: boolean
   enforceVerification: boolean
+  textToImage: boolean
 
   guildOnline: boolean
   guildOffline: boolean

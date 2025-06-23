@@ -18,7 +18,8 @@ export default {
         color: Color.Info,
         type: MinecraftReactiveEventType.Block,
         originEventId: originEventId,
-        message: 'The message has been blocked by Hypixel for breaking its rules.'
+        message: 'The message has been blocked by Hypixel for breaking its rules.',
+        rawMessage: context.rawMessage
       })
     }
   }

@@ -17,7 +17,8 @@ export default {
 
         type: GuildPlayerEventType.Request,
         username: username,
-        message: `${username} has requested to join the guild!`
+        message: `${username} has requested to join the guild!`,
+        rawMessage: context.rawMessage
       })
     }
   }

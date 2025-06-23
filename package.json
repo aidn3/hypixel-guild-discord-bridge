@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.ts",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22.16"
   },
   "scripts": {
     "start": "node --import tsx/esm index.ts",
@@ -32,6 +32,7 @@
     "bad-words": "3.0.4",
     "better-sqlite3": "^11.10.0",
     "deepcopy": "^2.1.0",
+    "canvas": "^3.1.0",
     "defaults": "^3.0.0",
     "discord.js": "^14.15.3",
     "emoji-name-map": "^2.0.1",

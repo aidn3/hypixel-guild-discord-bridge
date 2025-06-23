@@ -17,7 +17,8 @@ export default {
 
         type: GuildPlayerEventType.Demote,
         username: username,
-        message: context.message
+        message: context.message,
+        rawMessage: context.rawMessage
       })
     }
   }

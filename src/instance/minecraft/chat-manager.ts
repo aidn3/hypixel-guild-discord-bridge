@@ -80,7 +80,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
   registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      this.onMessage(chatMessage.toString())
+      this.onMessage(chatMessage.toString(), chatMessage.toMotd())
     })
 
     clientSession.client.on('playerChat', (data: object) => {
@@ -125,10 +125,10 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
       assert(message) // old packet means message exists
       resultMessage = clientSession.prismChat.fromNotch(message)
     }
-    this.onMessage(resultMessage.toString())
+    this.onMessage(resultMessage.toString(), resultMessage.toMotd())
   }
 
-  private onMessage(message: string): void {
+  private onMessage(message: string, rawMessage: string): void {
     message = stufDecode(message)
 
     for (const module of this.chatModules) {
@@ -144,14 +144,16 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
           errorHandler: this.errorHandler,
           messageAssociation: this.messageAssociation,
 
-          message
+          message: message,
+          rawMessage: rawMessage
         })
       ).catch(this.errorHandler.promiseCatch('handling chat trigger'))
     }
 
     this.application.emit('minecraftChat', {
       ...this.eventHelper.fillBaseEvent(),
-      message
+      message: message,
+      rawMessage: rawMessage
     })
   }
 }

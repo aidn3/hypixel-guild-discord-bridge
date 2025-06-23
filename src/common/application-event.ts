@@ -222,6 +222,16 @@ export interface ReplyEvent extends BaseEvent {
   readonly originEventId: string
 }
 
+/**
+ * Additional properties of minecraft related events
+ */
+export interface MinecraftRawMessage {
+  /**
+   * The raw message with all § color encodings
+   */
+  readonly rawMessage: string
+}
+
 // values must be numbers to be comparable
 export enum Permission {
   Anyone,
@@ -263,7 +273,7 @@ export interface BaseChat extends InformEvent {
   readonly message: string
 }
 
-export interface MinecraftChat extends BaseChat {
+export interface MinecraftChat extends BaseChat, MinecraftRawMessage {
   readonly instanceType: InstanceType.Minecraft
   readonly hypixelRank: string
 }
@@ -364,7 +374,7 @@ export enum GuildPlayerEventType {
   Online = 'online'
 }
 
-export interface BaseInGameEvent<K extends string> extends InformEvent {
+export interface BaseInGameEvent<K extends string> extends InformEvent, MinecraftRawMessage {
   /**
    * Which event has occurred
    */
@@ -389,7 +399,7 @@ export interface BaseInGameEvent<K extends string> extends InformEvent {
  *
  * @see GuildPlayerEventType
  */
-export interface GuildPlayerEvent extends BaseInGameEvent<GuildPlayerEventType> {
+export interface GuildPlayerEvent extends BaseInGameEvent<GuildPlayerEventType>, MinecraftRawMessage {
   /**
    * The name of the user who fired that event.
    */
@@ -409,7 +419,7 @@ export enum GuildGeneralEventType {
  *
  * @see GuildGeneralEventType
  */
-export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType>
+export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType> & MinecraftRawMessage
 
 export enum MinecraftReactiveEventType {
   /**
@@ -444,7 +454,7 @@ export enum MinecraftReactiveEventType {
  *
  * @see MinecraftReactiveEventType
  */
-export interface MinecraftReactiveEvent extends ReplyEvent {
+export interface MinecraftReactiveEvent extends ReplyEvent, MinecraftRawMessage {
   /**
    * Which event has occurred
    */
@@ -534,7 +544,7 @@ export interface InstanceStatusEvent extends InformEvent {
 /**
  * Event sent with every received minecraft chat
  */
-export interface MinecraftRawChatEvent extends InformEvent {
+export interface MinecraftRawChatEvent extends InformEvent, MinecraftRawMessage {
   /**
    * The raw chat received from a Minecraft bot
    */

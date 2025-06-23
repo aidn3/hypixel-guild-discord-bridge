@@ -24,7 +24,8 @@ export default {
 
         type: GuildPlayerEventType.Kick,
         username: username,
-        message: context.message
+        message: context.message,
+        rawMessage: context.rawMessage
       })
     }
   }

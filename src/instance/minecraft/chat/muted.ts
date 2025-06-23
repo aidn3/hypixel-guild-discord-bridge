@@ -20,7 +20,8 @@ export default {
         color: Color.Bad,
         type: MinecraftReactiveEventType.Muted,
         originEventId: originEventId,
-        message: `Account has been muted. ${context.message}`
+        message: `Account has been muted. ${context.message}`,
+        rawMessage: context.rawMessage
       })
       lastWarning = Date.now()
     }

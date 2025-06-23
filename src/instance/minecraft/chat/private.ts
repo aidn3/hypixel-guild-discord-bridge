@@ -25,7 +25,8 @@ export default {
         username,
         hypixelRank: hypixelRank,
 
-        message: playerMessage
+        message: playerMessage,
+        rawMessage: context.rawMessage
       })
     }
   }

@@ -14,7 +14,8 @@ export default {
         channels: [ChannelType.Public],
 
         type: GuildGeneralEventType.Quest,
-        message: context.message.trim()
+        message: context.message.trim(),
+        rawMessage: context.rawMessage
       })
     }
   }

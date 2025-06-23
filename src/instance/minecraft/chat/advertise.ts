@@ -18,7 +18,8 @@ export default {
         color: Color.Info,
         type: MinecraftReactiveEventType.Advertise,
         originEventId: originEventId,
-        message: 'The message has been blocked by Hypixel for advertising.'
+        message: 'The message has been blocked by Hypixel for advertising.',
+        rawMessage: context.rawMessage
       })
     }
   }

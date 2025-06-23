@@ -18,7 +18,8 @@ export default {
         color: Color.Info,
         type: MinecraftReactiveEventType.NoOfficer,
         originEventId: originEventId,
-        message: context.message
+        message: context.message,
+        rawMessage: context.rawMessage
       })
     }
   }

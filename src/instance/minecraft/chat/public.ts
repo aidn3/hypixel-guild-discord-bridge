@@ -66,7 +66,8 @@ export default {
         hypixelRank: hypixelRank,
         guildRank: guildRank,
 
-        message: filteredMessage
+        message: filteredMessage,
+        rawMessage: context.rawMessage
       })
     }
   }

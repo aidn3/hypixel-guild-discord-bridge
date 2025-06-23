@@ -333,6 +333,17 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Boolean,
+        name: 'Minecraft Text Images',
+        description:
+          'Render chat messages the same way they are rendered in Minecraft in-game. **DOES NOT WORK ON WINDOWS OS.**',
+        getOption: () => discord.data.textToImage,
+        toggleOption: () => {
+          discord.data.textToImage = !discord.data.textToImage
+          discord.markDirty()
+        }
+      },
+      {
         type: OptionType.Category,
         name: 'Leaderboards',
         description: 'How leaderboards are displayed.',
