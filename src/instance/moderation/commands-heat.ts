@@ -16,8 +16,8 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   private static readonly WarnPercentage = 0.8
   private static readonly WarnEvery = 30 * 60 * 1000
 
-  private readonly heats
-  private readonly config
+  private readonly heatsConfig
+  private readonly moderationConfig
 
   constructor(
     application: Application,
@@ -28,12 +28,12 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = config
-    this.heats = new ConfigManager<HeatUser[]>(
+    this.moderationConfig = config
+    this.heatsConfig = new ConfigManager<HeatConfig>(
       application,
       logger,
       application.getConfigFilePath('commands-heat.json'),
-      []
+      { heats: [] }
     )
   }
 
@@ -106,13 +106,17 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   }
 
   private addUser(heatUser: HeatUser): void {
-    this.heats.data = this.heats.data.filter((user) => !matchIdentifiersLists(heatUser.identifiers, user.identifiers))
-    this.heats.data.push(heatUser)
-    this.heats.markDirty()
+    this.heatsConfig.data.heats = this.heatsConfig.data.heats.filter(
+      (user) => !matchIdentifiersLists(heatUser.identifiers, user.identifiers)
+    )
+    this.heatsConfig.data.heats.push(heatUser)
+    this.heatsConfig.markDirty()
   }
 
   private resolveUser(identifiers: UserIdentifier): HeatUser {
-    const identifiedUsers = this.heats.data.filter((user) => matchUserIdentifier(identifiers, user.identifiers))
+    const identifiedUsers = this.heatsConfig.data.heats.filter((user) =>
+      matchUserIdentifier(identifiers, user.identifiers)
+    )
     const newIdentifiers = new Set<string>([
       ...identifiedUsers.flatMap((user) => user.identifiers),
       ...userIdentifiersToList(identifiers)
@@ -140,7 +144,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   }
 
   private resolveType(type: HeatType): { expire: number; maxLimit: number; warnLimit: number; warnEvery: number } {
-    const config = this.config.data
+    const config = this.moderationConfig.data
     const common = { expire: CommandsHeat.ActionExpiresAfter, warnEvery: CommandsHeat.WarnEvery }
     switch (type) {
       case HeatType.Mute: {
@@ -186,6 +190,10 @@ interface HeatUser {
   identifiers: string[]
   heatActions: HeatAction[]
   lastWarning: Map<HeatType, number>
+}
+
+interface HeatConfig {
+  heats: HeatUser[]
 }
 
 interface HeatAction {
