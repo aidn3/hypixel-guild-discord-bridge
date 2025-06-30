@@ -534,7 +534,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
   }
 
+  private webhooks = new Map<string, Webhook>()
+
   private async getWebhook(channelId: string): Promise<Webhook> {
+    const cachedWebhook = this.webhooks.get(channelId)
+    if (cachedWebhook !== undefined) return cachedWebhook
+
     // TODO: properly reference client
     // @ts-expect-error client is private variable
     const channel = (await this.clientInstance.client.channels.fetch(
@@ -547,6 +552,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // @ts-expect-error client is private variable
     let webhook = webhooks.find((h) => h.owner?.id === this.clientInstance.client.user?.id)
     webhook ??= await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
+
+    this.webhooks.set(channelId, webhook)
     return webhook
   }
 }
