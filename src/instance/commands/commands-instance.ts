@@ -20,6 +20,7 @@ import DevelopmentExcuse from './triggers/devexcuse.js'
 import Election from './triggers/election.js'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
+import Fetchur from './triggers/fetchur.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
@@ -78,6 +79,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new EightBallCommand(),
       new Execute(),
       new Explain(),
+      new Fetchur(),
       new Guild(),
       new Help(),
       new HeartOfTheMountain(),
