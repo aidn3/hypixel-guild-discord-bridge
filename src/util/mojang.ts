@@ -6,7 +6,7 @@ import PromiseQueue from 'promise-queue'
 import RateLimiter from './rate-limiter.js'
 
 export class MojangApi {
-  private readonly queue = new PromiseQueue()
+  private readonly queue = new PromiseQueue(1)
   private readonly rateLimit = new RateLimiter(1, 500)
   private readonly cache = new NodeCache({ maxKeys: 10_000, stdTTL: 24 * 60 * 60 })
 

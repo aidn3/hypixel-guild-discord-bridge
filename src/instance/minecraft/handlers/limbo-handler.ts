@@ -11,7 +11,7 @@ export default class LimboHandler extends EventHandler<MinecraftInstance, Instan
   private static readonly DefaultTimeout = 5 * 60 * 1000
   private static readonly DefaultAcquire = 10 * 60 * 1000
 
-  private queue = new PromiseQueue()
+  private queue = new PromiseQueue(1)
 
   public async acquire(
     timeout: number = LimboHandler.DefaultTimeout,

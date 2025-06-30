@@ -21,7 +21,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
   static readonly InstantInterval = 60 * 1000
   private static readonly FetchMembersEvery = 50 * 1000
 
-  private readonly queue = new PromiseQueue()
+  private readonly queue = new PromiseQueue(1)
   readonly config: ConfigManager<ScoreManagerConfig>
   private readonly database: ScoreDatabase
 
