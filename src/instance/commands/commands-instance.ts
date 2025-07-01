@@ -51,6 +51,7 @@ import Toggle from './triggers/toggle.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
+import Insult from './triggers/insult'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
   private static readonly CommandPrefix: string = '!'
@@ -84,6 +85,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Guild(),
       new Help(),
       new HeartOfTheMountain(),
+      new Insult(),
       new Iq(),
       new Kuudra(),
       new Level(),
