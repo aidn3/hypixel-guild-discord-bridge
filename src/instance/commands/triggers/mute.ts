@@ -89,14 +89,16 @@ export default class Mute extends ChatCommandHandler {
 
     const usernames: Promise<string[]>[] = []
     for (const instance of instances) {
-      const chunk = context.app.usersManager.guildManager.onlineMembers(instance.instanceName)
-        .then((result) => result.flatMap(entries => [...entries.usernames]))
+      const chunk = context.app.usersManager.guildManager
+        .onlineMembers(instance.instanceName)
+        .then((result) => result.flatMap((entries) => [...entries.usernames]))
         .catch(() => [] as string[])
 
       usernames.push(chunk)
     }
 
-    return (await Promise.all(usernames)).flat()
+    const resolvedChunks = await Promise.all(usernames)
+    return resolvedChunks.flat()
   }
 
   private selectUsername(context: ChatCommandContext, usernames: string[]): string | undefined {

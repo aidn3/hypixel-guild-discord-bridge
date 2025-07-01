@@ -7,7 +7,7 @@ export default class Insult extends ChatCommandHandler {
     '{username}, if brains were taxed, you’d get a refund',
     '{username} is like a puzzle with half its pieces',
     '{username} plays like their controller’s unplugged',
-    '{username}, if laziness were an Olympic sport, you\'d still find a way to come in second',
+    "{username}, if laziness were an Olympic sport, you'd still find a way to come in second",
     '{username} looks like they get dressed in the dark... with mittens on',
     '{username} has a face for podcasts',
     '{username} is like a pop-up ad: loud, pointless, and hard to get rid of'
