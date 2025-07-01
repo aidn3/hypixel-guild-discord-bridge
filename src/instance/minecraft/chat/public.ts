@@ -6,6 +6,7 @@ import {
   PunishmentType
 } from '../../../common/application-event.js'
 import { durationToMinecraftDuration } from '../../../util/shared-util.js'
+import { LinkType } from '../../users/features/verification.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -20,9 +21,14 @@ export default {
       const guildRank = match[3]
       const playerMessage = match[4].trim()
 
-      const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
       const identifiers = [username]
-      if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
+      const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
+      if (mojangProfile) {
+        identifiers.push(mojangProfile.id, mojangProfile.name)
+
+        const link = context.application.usersManager.verification.findByIngame(mojangProfile.id)
+        if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
+      }
 
       const mutedTill = context.application.moderation.punishments.punishedTill(identifiers, PunishmentType.Mute)
       if (mutedTill) {
