@@ -18,6 +18,8 @@ export interface MinecraftConfig {
   adminUsername: string
   instances: MinecraftInstanceConfig[]
 
+  announceMutedPlayer: boolean
+
   joinGuildReaction: boolean
   leaveGuildReaction: boolean
   kickGuildReaction: boolean

@@ -2,6 +2,7 @@ import Roulette from './instance/commands/triggers/roulette.js'
 import Vengeance from './instance/commands/triggers/vengeance.js'
 import DarkAuctionPlugin from './instance/features/implementations/dark-auction-plugin.js'
 import StarfallCultPlugin from './instance/features/implementations/starfall-cult-plugin.js'
+import PlayerMuted from './instance/minecraft/handlers/player-muted.js'
 import Reaction from './instance/minecraft/handlers/reaction.js'
 
 export interface LanguageConfig {
@@ -14,6 +15,8 @@ export interface LanguageConfig {
   commandVengeanceWin: string[]
   commandVengeanceDraw: string[]
   commandVengeanceLose: string[]
+
+  announceMutedPlayer: string
 
   guildJoinReaction: string[]
   guildLeaveReaction: string[]
@@ -30,6 +33,8 @@ export const DefaultLanguageConfig: Readonly<LanguageConfig> = {
   commandVengeanceWin: Vengeance.WinMessages,
   commandVengeanceDraw: Vengeance.DrawMessages,
   commandVengeanceLose: Vengeance.LossMessages,
+
+  announceMutedPlayer: PlayerMuted.DefaultMessage,
 
   guildJoinReaction: Reaction.JoinMessages,
   guildLeaveReaction: Reaction.LeaveMessages,

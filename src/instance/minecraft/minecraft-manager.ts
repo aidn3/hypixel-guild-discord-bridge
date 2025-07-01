@@ -28,6 +28,8 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
       adminUsername: 'Steve',
       instances: [],
 
+      announceMutedPlayer: true,
+
       joinGuildReaction: true,
       leaveGuildReaction: true,
       kickGuildReaction: true

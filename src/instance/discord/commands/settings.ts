@@ -246,6 +246,17 @@ function fetchQualityOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Boolean,
+        name: 'Announce Player Muted',
+        description:
+          'Announce to the guild about a player being muted when they `/immuted` to the application in-game.',
+        getOption: () => minecraft.data.announceMutedPlayer,
+        toggleOption: () => {
+          minecraft.data.announceMutedPlayer = !minecraft.data.announceMutedPlayer
+          minecraft.markDirty()
+        }
+      },
+      {
         type: OptionType.EmbedCategory,
         name: 'Guild Reaction',
         description: 'Auto replying and reacting to various in-game guild events.',
@@ -578,6 +589,20 @@ function fetchLanguageOptions(application: Application): CategoryOption {
     name: 'Language',
     header: CategoryLabel,
     options: [
+      {
+        type: OptionType.Text,
+        name: 'Announce Player Muted',
+        description:
+          'Announce to the guild about a player being muted when they `/immuted` to the application in-game.',
+        style: InputStyle.Long,
+        min: 2,
+        max: 150,
+        getOption: () => language.data.announceMutedPlayer,
+        setOption: (value) => {
+          language.data.announceMutedPlayer = value
+          language.markDirty()
+        }
+      },
       {
         type: OptionType.Category,
         name: 'Automated Messages',
