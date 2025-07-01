@@ -41,7 +41,7 @@ export default class Mute extends ChatCommandHandler {
     }
     const currentTime = Date.now()
     if (this.lastCommandExecutionAt + Mute.CommandCoolDown > currentTime) {
-      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.CommandCoolDown - currentTime)} seconds.`
+      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.CommandCoolDown - currentTime)}.`
     }
     this.lastCommandExecutionAt = currentTime
 
