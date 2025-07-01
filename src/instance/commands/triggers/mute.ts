@@ -46,8 +46,7 @@ export default class Mute extends ChatCommandHandler {
     this.lastCommandExecutionAt = currentTime
 
     context.sendFeedback('Choosing a victim...')
-    const members = await context.app.usersManager.guildManager.onlineMembers(context.instanceName)
-    const usernames = members.flatMap((entry) => [...entry.usernames])
+    const usernames = await this.getUsernames(context)
     if (usernames.length === 0) return 'No username to randomly mute??'
 
     const selectedUsername = this.selectUsername(context, usernames)
@@ -83,6 +82,21 @@ export default class Mute extends ChatCommandHandler {
       till: Date.now() + 300_000,
       reason: `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     })
+  }
+
+  private async getUsernames(context: ChatCommandContext): Promise<string[]> {
+    const instances = context.app.minecraftManager.getAllInstances()
+
+    const usernames: Promise<string[]>[] = []
+    for (const instance of instances) {
+      const chunk = context.app.usersManager.guildManager.onlineMembers(instance.instanceName)
+        .then((result) => result.flatMap(entries => [...entries.usernames]))
+        .catch(() => [] as string[])
+
+      usernames.push(chunk)
+    }
+
+    return (await Promise.all(usernames)).flat()
   }
 
   private selectUsername(context: ChatCommandContext, usernames: string[]): string | undefined {
