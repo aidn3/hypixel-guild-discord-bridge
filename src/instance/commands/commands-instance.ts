@@ -49,6 +49,7 @@ import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
+import Unlink from './triggers/unlink.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
@@ -110,6 +111,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new StatusCommand(),
       new Timecharms(),
       new Toggle(),
+      new Unlink(),
       new Vengeance(),
       new Warp(),
       new Weight()
