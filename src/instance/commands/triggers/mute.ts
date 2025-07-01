@@ -69,7 +69,7 @@ export default class Mute extends ChatCommandHandler {
     context.app.moderation.punishments.add({
       ...context.eventHelper.fillBaseEvent(),
 
-      userName: context.username,
+      userName: selectedUsername,
       // not really that important to resolve uuid since it ends fast and the punishment is just a game
       userUuid: undefined,
       userDiscordId: undefined,
