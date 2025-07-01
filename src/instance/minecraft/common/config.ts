@@ -6,6 +6,8 @@ export interface MinecraftInstanceConfig {
 export interface ProxyConfig {
   host: string
   port: number
+  user: string | undefined
+  password: string | undefined
   protocol: ProxyProtocol
 }
 

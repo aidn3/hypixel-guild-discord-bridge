@@ -1266,8 +1266,8 @@ function parseSocks5(url: string): ProxyConfig {
   assert(match.groups)
 
   const type = groups.type
-  //const username: string | undefined = groups.username
-  //const password: string | undefined = groups.password
+  const username: string | undefined = groups.username ?? undefined
+  const password: string | undefined = groups.password ?? undefined
   const host: string = groups.host
   const port: number = groups.port === undefined ? 1080 : Number.parseInt(groups.port)
 
@@ -1275,7 +1275,7 @@ function parseSocks5(url: string): ProxyConfig {
     throw new Error('invalid proxy type. Only "socks5" is supported.')
   }
 
-  return { host: host, port: port, protocol: type } satisfies ProxyConfig
+  return { host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
 }
 
 function errorMessage(error: unknown): string {
