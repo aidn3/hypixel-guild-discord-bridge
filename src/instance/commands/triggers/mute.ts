@@ -43,6 +43,7 @@ export default class Mute extends ChatCommandHandler {
     if (this.lastCommandExecutionAt + Mute.CommandCoolDown > currentTime) {
       return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.CommandCoolDown - currentTime)} seconds.`
     }
+    this.lastCommandExecutionAt = currentTime
 
     context.sendFeedback('Choosing a victim...')
     const members = await context.app.usersManager.guildManager.onlineMembers(context.instanceName)
