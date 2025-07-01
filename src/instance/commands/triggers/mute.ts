@@ -75,7 +75,7 @@ export default class Mute extends ChatCommandHandler {
       userDiscordId: undefined,
 
       type: PunishmentType.Mute,
-      till: Date.now() + 900_000,
+      till: Date.now() + 300_000,
       reason: `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     })
   }
