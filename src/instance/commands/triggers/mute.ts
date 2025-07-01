@@ -49,7 +49,11 @@ export default class Mute extends ChatCommandHandler {
     const usernames = members.flatMap((entry) => [...entry.usernames])
     if (usernames.length === 0) return 'No username to randomly mute??'
 
-    const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
+    const selectedUsername = this.selectUsername(context, usernames)
+    if (selectedUsername === undefined) {
+      return 'Could not choose a victim somehow :('
+    }
+
     this.mute(context, selectedUsername)
 
     const messages = context.app.language.data.commandMuteGame
@@ -78,5 +82,16 @@ export default class Mute extends ChatCommandHandler {
       till: Date.now() + 300_000,
       reason: `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     })
+  }
+
+  private selectUsername(context: ChatCommandContext, usernames: string[]): string | undefined {
+    for (let tries = 0; tries < 5; tries++) {
+      const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
+      if (context.app.minecraftManager.isMinecraftBot(selectedUsername)) continue
+
+      return selectedUsername
+    }
+
+    return undefined
   }
 }
