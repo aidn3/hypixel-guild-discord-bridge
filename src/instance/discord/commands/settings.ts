@@ -641,6 +641,19 @@ function fetchLanguageOptions(application: Application): CategoryOption {
         description: 'Chat commands such as `!cata` and `!iq`.',
         options: [
           {
+            type: OptionType.List,
+            name: 'Mute',
+            description: 'Message to show when `!mute`.',
+            style: InputStyle.Short,
+            min: 0,
+            max: 100,
+            getOption: () => language.data.commandMuteGame,
+            setOption: (values) => {
+              language.data.commandMuteGame = values
+              language.markDirty()
+            }
+          },
+          {
             type: OptionType.EmbedCategory,
             name: 'Russian Roulette',
             description: 'Chat Command `!rr`',

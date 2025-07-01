@@ -1,3 +1,4 @@
+import Mute from './instance/commands/triggers/mute.js'
 import Roulette from './instance/commands/triggers/roulette.js'
 import Vengeance from './instance/commands/triggers/vengeance.js'
 import DarkAuctionPlugin from './instance/features/implementations/dark-auction-plugin.js'
@@ -8,6 +9,8 @@ import Reaction from './instance/minecraft/handlers/reaction.js'
 export interface LanguageConfig {
   darkAuctionReminder: string
   starfallReminder: string
+
+  commandMuteGame: string[]
 
   commandRouletteWin: string[]
   commandRouletteLose: string[]
@@ -26,6 +29,8 @@ export interface LanguageConfig {
 export const DefaultLanguageConfig: Readonly<LanguageConfig> = {
   darkAuctionReminder: DarkAuctionPlugin.DefaultMessage,
   starfallReminder: StarfallCultPlugin.DefaultMessage,
+
+  commandMuteGame: Mute.DefaultMessages,
 
   commandRouletteWin: Roulette.WinMessages,
   commandRouletteLose: Roulette.LossMessages,
