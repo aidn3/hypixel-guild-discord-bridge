@@ -10,7 +10,7 @@ import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class PlayerMuted extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
-  public static readonly DefaultMessage = '{usersName} is currently muted and is unable to message right now.'
+  public static readonly DefaultMessage = '{username} is currently muted and is unable to message right now.'
 
   constructor(
     application: Application,
@@ -31,7 +31,9 @@ export default class PlayerMuted extends EventHandler<MinecraftInstance, Instanc
       if (!event.message.startsWith("Hey! I'm currently muted")) return
       if (!event.rawMessage.includes('§eHey!')) return
 
-      const messageToSend = this.application.language.data.announceMutedPlayer
+      let message = this.application.language.data.announceMutedPlayer
+      message = message.replaceAll('{username}', event.username)
+
       this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
 
@@ -39,7 +41,7 @@ export default class PlayerMuted extends EventHandler<MinecraftInstance, Instanc
         color: Color.Default,
 
         username: event.username,
-        message: messageToSend
+        message: message
       })
     })
   }

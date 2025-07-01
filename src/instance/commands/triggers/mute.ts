@@ -52,7 +52,7 @@ export default class Mute extends ChatCommandHandler {
     const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
     this.mute(context, selectedUsername)
 
-    const messages = context.app.language.data.commandRouletteLose
+    const messages = context.app.language.data.commandMuteGame
     return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)
   }
 
