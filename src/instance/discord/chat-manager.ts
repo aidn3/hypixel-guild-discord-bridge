@@ -91,9 +91,9 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     }
 
     const mojangProfile =
-      verificationLink.type === LinkType.None
-        ? undefined
-        : await this.application.mojangApi.profileByUuid(verificationLink.link.uuid)
+      verificationLink.type === LinkType.Confirmed
+        ? await this.application.mojangApi.profileByUuid(verificationLink.link.uuid)
+        : undefined
     const discordName = mojangProfile?.name ?? event.member?.displayName ?? event.author.username
     const readableName = mojangProfile?.name ?? this.getReadableName(discordName, event.author.id)
     if (
