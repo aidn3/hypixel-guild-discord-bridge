@@ -19,8 +19,11 @@ export default class Asian extends ChatCommandHandler {
 
     const listener = (event: ChatEvent) => {
       if (event.username !== context.username) return
-      if (!/^\d+$/g.test(event.message)) return
-      const guess = Number.parseInt(event.message, 10)
+
+      const match = /^\d+/g.exec(event.message)
+      if (!match) return
+
+      const guess = Number.parseInt(match[0], 10)
       if (guess === math.answer) timeout.resolve(guess)
     }
 
