@@ -138,9 +138,9 @@ async function handleAlias(
     return
   }
 
-  let originalLink = context.application.usersManager.verification.findByDiscord(user.id)
+  let originalLink = await context.application.usersManager.verification.findByDiscord(user.id)
   if (originalLink.type !== LinkType.Confirmed) {
-    originalLink = context.application.usersManager.verification.findByIngame(mojangProfile.id)
+    originalLink = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
   }
 
   if (originalLink.type === LinkType.Confirmed) {
@@ -221,7 +221,7 @@ async function handleQueryMinecraft(context: Readonly<DiscordCommandContext>) {
     return
   }
 
-  const link = context.application.usersManager.verification.findByIngame(mojangProfile.id)
+  const link = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
   await interaction.editReply({
     embeds: [await formatLink(context.application.mojangApi, link, `\`${mojangProfile.name}\``)]
   })
@@ -232,7 +232,7 @@ async function handleQueryDiscord(context: Readonly<DiscordCommandContext>) {
   await interaction.deferReply()
 
   const user = interaction.options.getUser('user', true)
-  const link = context.application.usersManager.verification.findByDiscord(user.id)
+  const link = await context.application.usersManager.verification.findByDiscord(user.id)
   await interaction.editReply({ embeds: [await formatLink(context.application.mojangApi, link, `<@${user.id}>`)] })
 }
 
