@@ -26,7 +26,7 @@ export default {
       if (mojangProfile) {
         identifiers.push(mojangProfile.id, mojangProfile.name)
 
-        const link = context.application.usersManager.verification.findByIngame(mojangProfile.id)
+        const link = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
         if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
       }
 

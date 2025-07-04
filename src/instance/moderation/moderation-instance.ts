@@ -100,7 +100,7 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
     if (mojangProfile) {
       identifiers.push(mojangProfile.id, mojangProfile.name)
 
-      const link = this.application.usersManager.verification.findByIngame(mojangProfile.id)
+      const link = await this.application.usersManager.verification.findByIngame(mojangProfile.id)
       if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
     }
 

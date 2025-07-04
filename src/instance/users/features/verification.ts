@@ -24,7 +24,8 @@ export class Verification extends EventHandler<UsersManager, InstanceType.Util, 
     this.database = new VerificationDatabase(sqliteManager)
   }
 
-  public findByDiscord(discordId: string): Link {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async findByDiscord(discordId: string): Promise<Link> {
     const savedLink = this.database.getLinkByDiscord(discordId)
     if (savedLink !== undefined)
       return {
@@ -42,7 +43,8 @@ export class Verification extends EventHandler<UsersManager, InstanceType.Util, 
     return { type: LinkType.None }
   }
 
-  public findByIngame(uuid: string): Link {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async findByIngame(uuid: string): Promise<Link> {
     const savedLink = this.database.getLinkByUuid(uuid)
     if (savedLink !== undefined)
       return {

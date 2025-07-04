@@ -66,7 +66,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       channelType = ChannelType.Private
     }
 
-    const verificationLink = this.fetchLink(event)
+    const verificationLink = await this.fetchLink(event)
     if (verificationLink.type !== LinkType.Confirmed && this.config.data.enforceVerification) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
       if (emoji !== undefined) await event.react(emoji)
@@ -206,7 +206,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
     if (replyMessage.webhookId != undefined) return replyMessage.author.username
 
-    const verificationLink = this.fetchLink(replyMessage)
+    const verificationLink = await this.fetchLink(replyMessage)
     if (verificationLink.type !== LinkType.None) {
       return await this.application.mojangApi.profileByUuid(verificationLink.link.uuid).then((profile) => profile.name)
     }
@@ -234,8 +234,8 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     return undefined
   }
 
-  private fetchLink(event: Message): Link {
-    return this.application.usersManager.verification.findByDiscord(event.author.id)
+  private async fetchLink(event: Message): Promise<Link> {
+    return await this.application.usersManager.verification.findByDiscord(event.author.id)
   }
 
   private cleanGuildEmoji(message: string): string {
