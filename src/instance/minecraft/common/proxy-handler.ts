@@ -34,7 +34,7 @@ export function resolveProxyIfExist(
     }
 
     case ProxyProtocol.Socks5: {
-      connect = createSocksConnectFunction(logger, proxyHost, proxyPort, host, port)
+      connect = createSocksConnectFunction(logger, proxyConfig, host, port)
       break
     }
     default: {
@@ -74,15 +74,23 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
   }
 }
 
-function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+function createSocksConnectFunction(
+  logger: Logger,
+  proxyOptions: Omit<ProxyConfig, 'protocol'>,
+  host: string,
+  port: number
+) {
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
     SocksClient.createConnection({
       proxy: {
-        host: proxyHost,
-        port: proxyPort,
-        type: 5
+        host: proxyOptions.host,
+        port: proxyOptions.port,
+        type: 5,
+
+        userId: proxyOptions.user,
+        password: proxyOptions.password
       },
       command: 'connect',
       destination: {

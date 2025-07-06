@@ -8,6 +8,7 @@ import { InternalInstancePrefix } from '../../common/instance.js'
 
 import EightBallCommand from './triggers/8ball.js'
 import Api from './triggers/api.js'
+import Asian from './triggers/asian.js'
 import Bedwars from './triggers/bedwars.js'
 import Bits from './triggers/bits.js'
 import Boop from './triggers/boop.js'
@@ -20,14 +21,17 @@ import DevelopmentExcuse from './triggers/devexcuse.js'
 import Election from './triggers/election.js'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
+import Fetchur from './triggers/fetchur.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
+import Insult from './triggers/insult.js'
 import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
+import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
@@ -46,6 +50,7 @@ import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
+import Unlink from './triggers/unlink.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
@@ -65,6 +70,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
     this.commands = [
       new Api(),
+      new Asian(),
       new Bits(),
       new Bedwars(),
       new Boop(),
@@ -78,14 +84,17 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new EightBallCommand(),
       new Execute(),
       new Explain(),
+      new Fetchur(),
       new Guild(),
       new Help(),
       new HeartOfTheMountain(),
+      new Insult(),
       new Iq(),
       new Kuudra(),
       new Level(),
       new MagicalPower(),
       new Mayor(),
+      new Mute(),
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
@@ -104,6 +113,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new StatusCommand(),
       new Timecharms(),
       new Toggle(),
+      new Unlink(),
       new Vengeance(),
       new Warp(),
       new Weight()

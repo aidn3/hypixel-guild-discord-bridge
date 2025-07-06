@@ -6,6 +6,8 @@ export interface MinecraftInstanceConfig {
 export interface ProxyConfig {
   host: string
   port: number
+  user: string | undefined
+  password: string | undefined
   protocol: ProxyProtocol
 }
 
@@ -17,6 +19,8 @@ export enum ProxyProtocol {
 export interface MinecraftConfig {
   adminUsername: string
   instances: MinecraftInstanceConfig[]
+
+  announceMutedPlayer: boolean
 
   joinGuildReaction: boolean
   leaveGuildReaction: boolean

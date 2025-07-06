@@ -49,6 +49,10 @@ export default class Vengeance extends ChatCommandHandler {
     const givenUsername = context.args[0] as string | undefined
     if (givenUsername === undefined) return `${context.username}, you need to specify someone!`
 
+    if (context.app.minecraftManager.isMinecraftBot(givenUsername)) {
+      return `${context.username}, You can't take vengeance against the bot itself!`
+    }
+
     // ensure user input is safe since it will be used
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)

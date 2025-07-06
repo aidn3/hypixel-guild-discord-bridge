@@ -7,6 +7,7 @@ import { InstanceType } from '../../common/application-event.js'
 import { ConfigManager } from '../../common/config-manager.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type { MojangApi } from '../../util/mojang.js'
+import { LinkType } from '../users/features/verification.js'
 
 import { CommandsHeat } from './commands-heat.js'
 import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
@@ -93,9 +94,16 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
   }
 
   async getMinecraftIdentifiers(username: string): Promise<string[]> {
-    const mojangProfile = await this.mojangApi.profileByUsername(username).catch(() => undefined)
     const identifiers = [username]
-    if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
+
+    const mojangProfile = await this.mojangApi.profileByUsername(username).catch(() => undefined)
+    if (mojangProfile) {
+      identifiers.push(mojangProfile.id, mojangProfile.name)
+
+      const link = this.application.usersManager.verification.findByIngame(mojangProfile.id)
+      if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
+    }
+
     return identifiers
   }
 }

@@ -17,6 +17,7 @@ export async function checkHeat(context: MinecraftChatContext, issuedBy: string,
   } satisfies UserIdentifier
 
   if (context.application.moderation.immuneMinecraft(identifier.userName)) return
+  if (context.application.minecraftManager.isMinecraftBot(identifier.userName)) return
   const heatResult = context.application.moderation.commandsHeat.add(identifier, heatType)
 
   if (heatResult === HeatResult.Warn) {

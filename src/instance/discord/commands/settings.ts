@@ -246,6 +246,17 @@ function fetchQualityOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Boolean,
+        name: 'Announce Player Muted',
+        description:
+          'Announce to the guild about a player being muted when they `/immuted` to the application in-game.',
+        getOption: () => minecraft.data.announceMutedPlayer,
+        toggleOption: () => {
+          minecraft.data.announceMutedPlayer = !minecraft.data.announceMutedPlayer
+          minecraft.markDirty()
+        }
+      },
+      {
         type: OptionType.EmbedCategory,
         name: 'Guild Reaction',
         description: 'Auto replying and reacting to various in-game guild events.',
@@ -579,6 +590,20 @@ function fetchLanguageOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
+        type: OptionType.Text,
+        name: 'Announce Player Muted',
+        description:
+          'Announce to the guild about a player being muted when they `/immuted` to the application in-game.',
+        style: InputStyle.Long,
+        min: 2,
+        max: 150,
+        getOption: () => language.data.announceMutedPlayer,
+        setOption: (value) => {
+          language.data.announceMutedPlayer = value
+          language.markDirty()
+        }
+      },
+      {
         type: OptionType.Category,
         name: 'Automated Messages',
         options: [
@@ -615,6 +640,19 @@ function fetchLanguageOptions(application: Application): CategoryOption {
         name: 'Chat Commands',
         description: 'Chat commands such as `!cata` and `!iq`.',
         options: [
+          {
+            type: OptionType.List,
+            name: 'Mute',
+            description: 'Message to show when `!mute`.',
+            style: InputStyle.Short,
+            min: 0,
+            max: 100,
+            getOption: () => language.data.commandMuteGame,
+            setOption: (values) => {
+              language.data.commandMuteGame = values
+              language.markDirty()
+            }
+          },
           {
             type: OptionType.EmbedCategory,
             name: 'Russian Roulette',
@@ -1228,8 +1266,8 @@ function parseSocks5(url: string): ProxyConfig {
   assert(match.groups)
 
   const type = groups.type
-  //const username: string | undefined = groups.username
-  //const password: string | undefined = groups.password
+  const username: string | undefined = groups.username ?? undefined
+  const password: string | undefined = groups.password ?? undefined
   const host: string = groups.host
   const port: number = groups.port === undefined ? 1080 : Number.parseInt(groups.port)
 
@@ -1237,7 +1275,7 @@ function parseSocks5(url: string): ProxyConfig {
     throw new Error('invalid proxy type. Only "socks5" is supported.')
   }
 
-  return { host: host, port: port, protocol: type } satisfies ProxyConfig
+  return { host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
 }
 
 function errorMessage(error: unknown): string {
