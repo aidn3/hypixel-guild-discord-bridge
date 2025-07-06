@@ -1,5 +1,7 @@
 import type Application from '../../../application.js'
 import {
+  ChannelType,
+  Color,
   InstanceType,
   type MinecraftRawChatEvent,
   MinecraftSendChatPriority
@@ -69,6 +71,9 @@ export default class Warp extends ChatCommandHandler {
     context.sendFeedback(`Preparing to warp ${username}`)
     const lock = await instance.acquireLimbo()
 
+    // leave any existing party
+    await instance.send('/party leave', MinecraftSendChatPriority.High, undefined)
+
     // exit limbo and go to main lobby. Can't warp from limbo
     await instance.send('/lobby', MinecraftSendChatPriority.High, undefined)
 
@@ -126,6 +131,23 @@ export default class Warp extends ChatCommandHandler {
         timeout.resolve("Player didn't accept the invite.")
       } else if (/^(?:\[[+A-Z]{3,10}] )?(\w{3,32}) joined the party/.exec(event.message) != undefined) {
         timeout.resolve(undefined)
+      }
+
+      const someoneParty = /^You have joined (?:\[[+A-Z]{3,10}] )?(\w{3,32})'s party!/g.exec(event.message)
+      if (someoneParty) {
+        timeout.resolve(`Accidentally Joined ${someoneParty[1]}'s party!`)
+
+        application.emit('broadcast', {
+          ...context.eventHelper.fillBaseEvent(),
+
+          channels: [ChannelType.Officer],
+          color: Color.Bad,
+
+          username: someoneParty[1],
+          message:
+            `Accidentally Joined ${someoneParty[1]}'s party!` +
+            ' The offending person might be purposely doing it to abuse the service.'
+        })
       }
     }
 
