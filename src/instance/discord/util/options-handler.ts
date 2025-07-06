@@ -23,7 +23,7 @@ import {
   TextInputStyle
 } from 'discord.js'
 
-import type UnexpectedErrorHandler from 'src/common/unexpected-error-handler'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
 
 export enum OptionType {
   Category = 'category',
