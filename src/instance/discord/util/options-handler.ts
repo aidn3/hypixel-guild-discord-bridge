@@ -35,6 +35,7 @@ export enum OptionType {
   Boolean = 'boolean',
 
   List = 'list',
+  PresetList = 'preset-list',
 
   Action = 'action',
 
@@ -51,6 +52,7 @@ export type OptionItem =
   | NumberOption
   | BooleanOption
   | ListOption
+  | PresetListOption
   | ActionOption
   | DiscordSelectOption
 
@@ -98,6 +100,15 @@ export interface ListOption extends BaseOption {
   style: InputStyle.Long | InputStyle.Short
   max: number
   min: number
+}
+
+export interface PresetListOption extends BaseOption {
+  type: OptionType.PresetList
+  getOption: () => string[]
+  setOption: (value: string[]) => void
+  max: number
+  min: number
+  options: { label: string; value: string; description?: string }[] // Add preset options
 }
 
 export enum InputStyle {
@@ -250,6 +261,11 @@ export class OptionsHandler {
         }
 
         break
+      }
+
+      case OptionType.PresetList: {
+        assert(action === 'default')
+        return this.handlePresetList(interaction, option)
       }
 
       case OptionType.Channel: {
@@ -453,14 +469,19 @@ export class OptionsHandler {
     return false
   }
 
+  private handlePresetList(interaction: CollectedInteraction, option: PresetListOption): boolean {
+    assert(interaction.isStringSelectMenu())
+    option.setOption(interaction.values)
+    return false
+  }
+
   private flattenOptions(options: OptionItem[]): OptionItem[] {
     const flatOptions: OptionItem[] = []
     for (const option of options) {
       switch (option.type) {
         case OptionType.Category:
         case OptionType.EmbedCategory: {
-          flatOptions.push(option)
-          flatOptions.push(...this.flattenOptions(option.options))
+          flatOptions.push(option, ...this.flattenOptions(option.options))
           break
         }
         default: {
@@ -523,6 +544,10 @@ class ViewBuilder {
         }
         case OptionType.List: {
           this.addList(option)
+          break
+        }
+        case OptionType.PresetList: {
+          this.addPresetList(option)
           break
         }
         case OptionType.Channel: {
@@ -707,6 +732,40 @@ class ViewBuilder {
         ]
       })
     }
+  }
+
+  private addPresetList(option: PresetListOption): void {
+    let label = bold(option.name)
+    if (option.description !== undefined) label += `\n-# ${option.description}`
+
+    // Show current selection count
+    const currentSelection = option.getOption()
+    label += `\n-# **Selected:** ${currentSelection.length} option${currentSelection.length === 1 ? '' : 's'}`
+
+    this.append({ type: ComponentType.TextDisplay, content: label })
+
+    // Create select menu options with current selections marked as default
+    const selectOptions = option.options.map((opt) => ({
+      label: opt.label,
+      value: opt.value,
+      description: opt.description,
+      default: currentSelection.includes(opt.value)
+    }))
+
+    this.append({
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.StringSelect,
+          customId: this.getId(option),
+          disabled: !this.enabled,
+          placeholder: currentSelection.length > 0 ? `${currentSelection.length} selected` : 'Select options...',
+          minValues: option.min,
+          maxValues: Math.min(option.options.length, option.max),
+          options: selectOptions
+        }
+      ]
+    })
   }
 
   private addChannel(option: DiscordSelectOption): void {
