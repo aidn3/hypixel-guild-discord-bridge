@@ -153,9 +153,6 @@ export default class Warp extends ChatCommandHandler {
 
     context.sendFeedback(`Sending party invite to warp ${username}`)
 
-    await instance.send(`/party invite ${username}`, MinecraftSendChatPriority.High, undefined)
-    await instance.send(`/party disband`, MinecraftSendChatPriority.High, undefined)
-
     application.on('minecraftChat', chatListener)
     await instance.send(`/party invite ${username}`, MinecraftSendChatPriority.High, undefined)
 
