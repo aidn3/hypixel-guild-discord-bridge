@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import * as Crypto from 'node:crypto'
+import * as crypto from 'node:crypto'
 
 import type {
   ButtonInteraction,
@@ -23,7 +23,7 @@ import {
   TextInputStyle
 } from 'discord.js'
 
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 
 export enum OptionType {
   Category = 'category',
@@ -955,5 +955,5 @@ class ViewBuilder {
 }
 
 function hashOptionValue(value: string): string {
-  return Crypto.hash('sha256', value)
+  return crypto.hash('sha256', value)
 }
