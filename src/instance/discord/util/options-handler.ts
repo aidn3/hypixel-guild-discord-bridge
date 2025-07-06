@@ -23,6 +23,8 @@ import {
   TextInputStyle
 } from 'discord.js'
 
+import type UnexpectedErrorHandler from 'src/common/unexpected-error-handler'
+
 export enum OptionType {
   Category = 'category',
   EmbedCategory = 'subcategory',
@@ -136,17 +138,12 @@ export interface ActionOption extends BaseOption {
   type: OptionType.Action
   label: string
   style: ButtonStyle.Primary | ButtonStyle.Secondary | ButtonStyle.Success | ButtonStyle.Danger
-  onInteraction: (interaction: ButtonInteraction) => Promise<boolean>
+  onInteraction: (interaction: ButtonInteraction, errorHandler: UnexpectedErrorHandler) => Promise<boolean>
 }
 
 interface OptionId {
   action: 'default' | 'add' | 'delete'
   item: OptionItem
-}
-
-// Simple error handler interface
-interface ErrorHandler {
-  promiseCatch: (context: string) => (error: unknown) => void
 }
 
 export class OptionsHandler {
@@ -169,7 +166,7 @@ export class OptionsHandler {
     }
   }
 
-  public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: ErrorHandler) {
+  public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
     this.originalReply = await interaction.reply({
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
@@ -220,7 +217,10 @@ export class OptionsHandler {
     })
   }
 
-  private async handleInteraction(interaction: CollectedInteraction, errorHandler: ErrorHandler): Promise<boolean> {
+  private async handleInteraction(
+    interaction: CollectedInteraction,
+    errorHandler: UnexpectedErrorHandler
+  ): Promise<boolean> {
     if (interaction.customId === OptionsHandler.BackButton) {
       this.path.pop()
       return false
@@ -304,7 +304,7 @@ export class OptionsHandler {
 
   private async handleText(
     interaction: CollectedInteraction,
-    errorHandler: ErrorHandler,
+    errorHandler: UnexpectedErrorHandler,
     option: TextOption
   ): Promise<boolean> {
     assert.ok(interaction.isButton())
@@ -350,7 +350,7 @@ export class OptionsHandler {
 
   private async handleNumber(
     interaction: CollectedInteraction,
-    errorHandler: ErrorHandler,
+    errorHandler: UnexpectedErrorHandler,
     option: NumberOption
   ): Promise<boolean> {
     assert.ok(interaction.isButton())
@@ -403,11 +403,11 @@ export class OptionsHandler {
 
   private async handleAction(
     interaction: CollectedInteraction,
-    errorHandler: ErrorHandler,
+    errorHandler: UnexpectedErrorHandler,
     option: ActionOption
   ): Promise<boolean> {
     assert.ok(interaction.isButton())
-    return await option.onInteraction(interaction)
+    return await option.onInteraction(interaction, errorHandler)
   }
 
   private async handleListAdd(interaction: CollectedInteraction, option: ListOption): Promise<boolean> {
