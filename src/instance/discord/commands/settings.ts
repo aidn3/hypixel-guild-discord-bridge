@@ -64,7 +64,7 @@ export default {
         },
         fetchGeneralOptions(context.application),
         fetchDiscordOptions(context.application),
-        fetchMinecraftOptions(context.application),
+        fetchMinecraftOptions(context.application, context.errorHandler),
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
         fetchMetricsOptions(context.application),
@@ -746,7 +746,7 @@ function fetchLanguageOptions(application: Application): CategoryOption {
   }
 }
 
-function fetchMinecraftOptions(application: Application): CategoryOption {
+function fetchMinecraftOptions(application: Application, errorHandler: UnexpectedErrorHandler): CategoryOption {
   const minecraft = application.minecraftManager.getConfig()
   const sanitizer = application.minecraftManager.sanitizer.getConfig()
 
@@ -866,7 +866,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
             label: 'add',
             style: ButtonStyle.Success,
 
-            onInteraction: (interaction, errorHandler) => minecraftInstanceAdd(application, interaction, errorHandler)
+            onInteraction: (interaction) => minecraftInstanceAdd(application, interaction, errorHandler)
           },
           {
             type: OptionType.Action,
@@ -876,8 +876,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
             label: 'remove',
             style: ButtonStyle.Danger,
 
-            onInteraction: (interaction, errorHandler) =>
-              minecraftInstanceRemove(application, interaction, errorHandler)
+            onInteraction: (interaction) => minecraftInstanceRemove(application, interaction, errorHandler)
           }
         ]
       }
