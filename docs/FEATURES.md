@@ -95,8 +95,3 @@ These are the supported official plugins that come bundled with the application:
 | starfall-cult     | Send a reminder when the skyblock starfall cult gathers                                 | Quality of Life | N/A                                                                                                                                                                                                |
 | STuF              | Bypass Hypixel restriction on hyperlinks                                                | Optional        | Requires the installation of a minecraft client mod/module that supports [STuF](https://github.com/stuffyerface/STuF) such as [ImageLinkFix](https://www.chattriggers.com/modules/v/ImageLinkFix). |
 
-## How to use execute arbitrarily commands
-
-**Note: Only the one person who has administrator permissions can execute commands!**  
-From In-game: `/gc !execute /guild party`  
-From Discord: `/execute /guild party`

@@ -16,6 +16,7 @@ import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
 import GameTogglesHandler from './handlers/game-toggles-handler.js'
 import LimboHandler from './handlers/limbo-handler.js'
+import PlayerMuted from './handlers/player-muted.js'
 import Reaction from './handlers/reaction.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
@@ -37,6 +38,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private chatManager: ChatManager
   private gameToggle: GameTogglesHandler
   private reactionHandler: Reaction
+  private playerMuted: PlayerMuted
   private limboHandler: LimboHandler
 
   private readonly messageAssociation: MessageAssociation
@@ -84,6 +86,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.gameToggle = new GameTogglesHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.limboHandler = new LimboHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.reactionHandler = new Reaction(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.playerMuted = new PlayerMuted(this.application, this, this.eventHelper, this.logger, this.errorHandler)
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
@@ -132,6 +135,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.gameToggle.registerEvents(this.clientSession)
     this.limboHandler.registerEvents(this.clientSession)
     this.reactionHandler.registerEvents(this.clientSession)
+    this.playerMuted.registerEvents(this.clientSession)
 
     this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
   }

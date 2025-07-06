@@ -27,6 +27,7 @@ import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import LeaderboardCommand from './commands/leaderboard.js'
+import LinkCommand from './commands/link.js'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
 import PingCommand from './commands/ping.js'
@@ -37,6 +38,8 @@ import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
 import SettingsCommand from './commands/settings.js'
+import UnlinkCommand from './commands/unlink.js'
+import VerificationCommand from './commands/verification.js'
 import type { DiscordConfig } from './common/discord-config.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
@@ -108,6 +111,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       InviteCommand,
       JoinCommand,
       LeaderboardCommand,
+      LinkCommand,
       ListCommand,
       LogCommand,
       ExecuteCommand,
@@ -117,7 +121,9 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       PunishmentsCommand,
       ReconnectCommand,
       SetrankCommand,
-      RestartCommand
+      RestartCommand,
+      UnlinkCommand,
+      VerificationCommand
     ]
 
     for (const command of toAdd) {

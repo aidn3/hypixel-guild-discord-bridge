@@ -6,6 +6,7 @@ import PromiseQueue from 'promise-queue'
 import type Application from '../../../application.js'
 import { InstanceType } from '../../../common/application-event.js'
 import { ConfigManager } from '../../../common/config-manager.js'
+import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type { SqliteManager } from '../../../common/sqlite-manager.js'
@@ -20,7 +21,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
   static readonly InstantInterval = 60 * 1000
   private static readonly FetchMembersEvery = 50 * 1000
 
-  private readonly queue = new PromiseQueue()
+  private readonly queue = new PromiseQueue(1)
   readonly config: ConfigManager<ScoreManagerConfig>
   private readonly database: ScoreDatabase
 
@@ -109,43 +110,45 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
       const botUuid = instance.uuid()
       if (botUuid !== undefined) this.addBotUuid(botUuid)
 
-      const onlineTask = this.application.usersManager.guildManager
-        .onlineMembers(instance.instanceName)
-        .then((entries) => entries.flatMap((entry) => [...entry.usernames]))
-        .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
-        .then((profiles) => {
-          const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
-          const currentTime = Date.now()
-          const leniency = this.getLeniency()
-          const entries: Timeframe[] = uuids.map((uuid) => ({
-            uuid: uuid,
-            timestamp: currentTime,
-            toTimestamp: currentTime,
-            leniencyMilliseconds: leniency
-          }))
-          this.database.addOnlineMembers(entries)
-        })
-        .catch(this.errorHandler.promiseCatch('fetching and adding online members'))
+      if (instance.currentStatus() === Status.Connected) {
+        const onlineTask = this.application.usersManager.guildManager
+          .onlineMembers(instance.instanceName)
+          .then((entries) => entries.flatMap((entry) => [...entry.usernames]))
+          .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
+          .then((profiles) => {
+            const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
+            const currentTime = Date.now()
+            const leniency = this.getLeniency()
+            const entries: Timeframe[] = uuids.map((uuid) => ({
+              uuid: uuid,
+              timestamp: currentTime,
+              toTimestamp: currentTime,
+              leniencyMilliseconds: leniency
+            }))
+            this.database.addOnlineMembers(entries)
+          })
+          .catch(this.errorHandler.promiseCatch('fetching and adding online members'))
 
-      const allTask = this.application.usersManager.guildManager
-        .listMembers(instance.instanceName)
-        .then((entries) => entries.flatMap((entry) => [...entry.usernames]))
-        .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
-        .then((profiles) => {
-          const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
-          const currentTime = Date.now()
-          const leniency = this.getLeniency()
-          const entries: Timeframe[] = uuids.map((uuid) => ({
-            uuid: uuid,
-            timestamp: currentTime,
-            toTimestamp: currentTime,
-            leniencyMilliseconds: leniency
-          }))
-          this.database.addMembers(entries)
-        })
-        .catch(this.errorHandler.promiseCatch('fetching and adding all members'))
+        const allTask = this.application.usersManager.guildManager
+          .listMembers(instance.instanceName)
+          .then((entries) => entries.flatMap((entry) => [...entry.usernames]))
+          .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
+          .then((profiles) => {
+            const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
+            const currentTime = Date.now()
+            const leniency = this.getLeniency()
+            const entries: Timeframe[] = uuids.map((uuid) => ({
+              uuid: uuid,
+              timestamp: currentTime,
+              toTimestamp: currentTime,
+              leniencyMilliseconds: leniency
+            }))
+            this.database.addMembers(entries)
+          })
+          .catch(this.errorHandler.promiseCatch('fetching and adding all members'))
 
-      tasks.push(onlineTask, allTask)
+        tasks.push(onlineTask, allTask)
+      }
     }
 
     await Promise.all(tasks)

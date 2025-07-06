@@ -1,4 +1,5 @@
 import type { Logger } from 'log4js'
+import PromiseQueue from 'promise-queue'
 
 import type Application from '../application.js'
 
@@ -26,6 +27,7 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
 
   protected readonly logger: Logger
   protected readonly errorHandler: UnexpectedErrorHandler
+  protected readonly queue: PromiseQueue = new PromiseQueue(1)
 
   protected constructor(
     application: Application,
@@ -39,38 +41,46 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
     this.errorHandler = errorHandler
 
     this.application.on('command', (event) => {
-      void Promise.resolve(this.onCommand(event)).catch(this.errorHandler.promiseCatch('handling command event'))
+      void this.queue
+        .add(() => Promise.resolve(this.onCommand(event)))
+        .catch(this.errorHandler.promiseCatch('handling command event'))
     })
     this.application.on('commandFeedback', (event) => {
-      void Promise.resolve(this.onCommandFeedback(event)).catch(
-        this.errorHandler.promiseCatch('handling command feedback')
-      )
+      void this.queue
+        .add(() => Promise.resolve(this.onCommandFeedback(event)))
+        .catch(this.errorHandler.promiseCatch('handling command feedback'))
     })
 
     this.application.on('chat', (event) => {
-      void Promise.resolve(this.onChat(event)).catch(this.errorHandler.promiseCatch('handling chat event'))
+      void this.queue
+        .add(() => Promise.resolve(this.onChat(event)))
+        .catch(this.errorHandler.promiseCatch('handling chat event'))
     })
 
     this.application.on('guildPlayer', (event) => {
-      void Promise.resolve(this.onGuildPlayer(event)).catch(
-        this.errorHandler.promiseCatch('handling guildPlayer event')
-      )
+      void this.queue
+        .add(() => Promise.resolve(this.onGuildPlayer(event)))
+        .catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
     this.application.on('guildGeneral', (event) => {
-      void Promise.resolve(this.onGuildGeneral(event)).catch(
-        this.errorHandler.promiseCatch('handling guildGeneral event')
-      )
+      void this.queue
+        .add(() => Promise.resolve(this.onGuildGeneral(event)))
+        .catch(this.errorHandler.promiseCatch('handling guildGeneral event'))
     })
     this.application.on('minecraftChatEvent', (event) => {
-      void Promise.resolve(this.onMinecraftChatEvent(event)).catch(
-        this.errorHandler.promiseCatch('handling minecraftChat event')
-      )
+      void this.queue
+        .add(() => Promise.resolve(this.onMinecraftChatEvent(event)))
+        .catch(this.errorHandler.promiseCatch('handling minecraftChat event'))
     })
     this.application.on('instanceStatus', (event) => {
-      void Promise.resolve(this.onInstance(event)).catch(this.errorHandler.promiseCatch('handling instance event'))
+      void this.queue
+        .add(() => Promise.resolve(this.onInstance(event)))
+        .catch(this.errorHandler.promiseCatch('handling instance event'))
     })
     this.application.on('broadcast', (event) => {
-      void Promise.resolve(this.onBroadcast(event)).catch(this.errorHandler.promiseCatch('handling broadcast event'))
+      void this.queue
+        .add(() => Promise.resolve(this.onBroadcast(event)))
+        .catch(this.errorHandler.promiseCatch('handling broadcast event'))
     })
   }
 

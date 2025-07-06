@@ -47,14 +47,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
   private readonly staticConfig: Readonly<StaticDiscordConfig>
   private readonly config: ConfigManager<DiscordConfig>
-  /*
-     Queue all sending chat messages. So, when a command event comes.
-     All currently outgoing messages can be awaited before the reply is sent to one of them.
-
-     Before this: Chat message containing a chat command is sent, then the command is sent after independently.
-     Now, it is possible to make it as a reply.
-   */
-  private outgoingChat = new Map<string, Promise<unknown>>()
 
   constructor(
     application: Application,
@@ -77,7 +69,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.messageToImage = new MessageToImage(config)
 
     this.application.on('instanceMessage', (event) => {
-      void this.onInstanceMessageEvent(event).catch(this.errorHandler.promiseCatch('handling event instanceMessage'))
+      void this.queue
+        .add(async () => this.onInstanceMessageEvent(event))
+        .catch(this.errorHandler.promiseCatch('handling event instanceMessage'))
     })
   }
 
@@ -121,14 +115,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onChat(event: ChatEvent): Promise<void> {
-    const promise = this.queueChat(event).catch(this.errorHandler.promiseCatch('handling event chat'))
-
-    this.outgoingChat.set(event.eventId, promise)
-    await promise
-    this.outgoingChat.delete(event.eventId)
-  }
-
-  private async queueChat(event: ChatEvent): Promise<void> {
     const channels = this.resolveChannels([event.channelType])
 
     for (const channelId of channels) {
@@ -502,10 +488,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
-    const outgoingPromises = this.outgoingChat
-    this.outgoingChat = new Map()
-    await Promise.all(outgoingPromises.values())
-
     const replyEmbed: APIEmbed = {
       color: Color.Good,
       description: `**${escapeMarkdown(event.commandResponse)}**`,
@@ -534,7 +516,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
   }
 
+  private webhooks = new Map<string, Webhook>()
+
   private async getWebhook(channelId: string): Promise<Webhook> {
+    const cachedWebhook = this.webhooks.get(channelId)
+    if (cachedWebhook !== undefined) return cachedWebhook
+
     // TODO: properly reference client
     // @ts-expect-error client is private variable
     const channel = (await this.clientInstance.client.channels.fetch(
@@ -547,6 +534,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // @ts-expect-error client is private variable
     let webhook = webhooks.find((h) => h.owner?.id === this.clientInstance.client.user?.id)
     webhook ??= await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
+
+    this.webhooks.set(channelId, webhook)
     return webhook
   }
 }

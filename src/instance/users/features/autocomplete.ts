@@ -2,6 +2,7 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import { InstanceType } from '../../../common/application-event.js'
+import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
@@ -107,9 +108,11 @@ export default class Autocomplete extends EventHandler<UsersManager, InstanceTyp
 
   private async fetchGuildInfo(): Promise<void> {
     const tasks = []
-    for (const instancesName of this.application.getInstancesNames(InstanceType.Minecraft)) {
+    for (const instance of this.application.minecraftManager.getAllInstances()) {
+      if (instance.currentStatus() !== Status.Connected) continue
+
       const task = this.application.usersManager.guildManager
-        .listMembers(instancesName, 60_000)
+        .listMembers(instance.instanceName, 60_000)
         .then((members) => {
           for (const { rank, usernames } of members) {
             this.addRank(rank)

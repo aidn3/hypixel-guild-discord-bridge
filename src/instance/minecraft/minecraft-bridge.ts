@@ -1,7 +1,6 @@
 import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
-import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application.js'
 import type {
@@ -30,12 +29,8 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 
 import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
-import ArabicFixer from './util/arabic-fixer.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
-  private readonly sendingQueue = new PromiseQueue()
-  private readonly arabic = new ArabicFixer()
-
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
@@ -61,7 +56,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     return undefined
   }
 
-  onChat(event: ChatEvent): void | Promise<void> {
+  async onChat(event: ChatEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.channelType === ChannelType.Private) return
 
@@ -70,8 +65,8 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
-    void this.send(
-      this.formatChatMessage(prefix, event.username, replyUsername, event.message, event.instanceName),
+    await this.send(
+      await this.formatChatMessage(prefix, event.username, replyUsername, event.message, event.instanceName),
       MinecraftSendChatPriority.Default,
       event.eventId
     ).catch(this.errorHandler.promiseCatch('sending chat message'))
@@ -150,7 +145,10 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
-    const message = this.arabic.encode(event.message)
+    const message = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
+      this.clientInstance.instanceName,
+      event.message
+    )
     if (event.channels.includes(ChannelType.Public))
       await this.send(`/gc ${message}`, MinecraftSendChatPriority.Default, event.eventId)
     if (event.channels.includes(ChannelType.Officer))
@@ -230,23 +228,18 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     }
   }
 
-  private send(message: string, priority: MinecraftSendChatPriority, eventId: string | undefined): Promise<void> {
-    return this.sendingQueue.add(async () => {
-      const newMessage = await this.application.minecraftManager.sanitizer.process(
-        this.clientInstance.instanceName,
-        message
-      )
-      await this.clientInstance.send(newMessage, priority, eventId)
-    })
+  private async send(message: string, priority: MinecraftSendChatPriority, eventId: string | undefined): Promise<void> {
+    const newMessage = this.application.minecraftManager.sanitizer.sanitizeGenericCommand(message)
+    await this.clientInstance.send(newMessage, priority, eventId)
   }
 
-  private formatChatMessage(
+  private async formatChatMessage(
     prefix: string,
     username: string,
     replyUsername: string | undefined,
     message: string,
     instanceName: string
-  ): string {
+  ): Promise<string> {
     let full = `/${prefix} `
 
     if (this.application.generalConfig.data.originTag) {
@@ -257,7 +250,10 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (replyUsername != undefined) full += `⇾${replyUsername}`
     full += ': '
 
-    full += this.arabic.encode(message)
+    full += await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
+      this.clientInstance.instanceName,
+      message
+    )
 
     return full
   }
