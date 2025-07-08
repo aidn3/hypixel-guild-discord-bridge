@@ -19,7 +19,7 @@ Most notable changes:
   configuration at `./config/` directory that is directly controlled by the application via discord command `/settings`
 - Remove `socket` section entirely since the feature has been completely removed.
 - Remove `useIngameCommand` and `interval` in `metrics` section.
-- Remove all official plugins in `plugins` section except for any custom plugin
+- Remove `plugins` section entirely since it has been migrated to newer system.
 
 ### Application Configurations
 
@@ -36,6 +36,12 @@ All configurations are saved at `./config/` directory. Not all of them are direc
 - You only need to save `./config/` directory and `config.yaml` file for backups.
 - If you change something, make sure all changes are **valid and will not break** the application in any unintentional.
 - You can safely delete any file there to reset a part of the application.
+
+## Custom Plugins
+
+There is a directory called `./plugins` at the root of the project. Move all plugins to this directory.
+Application will auto-detect and load them.  
+Only applications ending with `.ts` file extension and at the top of the directory will be loaded.
 
 ## Migrate from 2.x to 3.x
 
