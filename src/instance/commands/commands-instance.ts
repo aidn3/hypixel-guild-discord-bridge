@@ -29,6 +29,7 @@ import Insult from './triggers/insult.js'
 import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
+import List from './triggers/list.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
 import Mute from './triggers/mute.js'
@@ -92,6 +93,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Iq(),
       new Kuudra(),
       new Level(),
+      new List(),
       new MagicalPower(),
       new Mayor(),
       new Mute(),
