@@ -37,7 +37,7 @@ All configurations are saved at `./config/` directory. Not all of them are direc
 - If you change something, make sure all changes are **valid and will not break** the application in any unintentional.
 - You can safely delete any file there to reset a part of the application.
 
-## Custom Plugins
+### Custom Plugins
 
 There is a directory called `./plugins` at the root of the project. Move all plugins to this directory.
 Application will auto-detect and load them.  
