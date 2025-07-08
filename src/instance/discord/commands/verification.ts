@@ -118,16 +118,16 @@ async function handleAlias(
             {
               name: 'How usernames are written?',
               value:
-                'Usernames are made out of 2-16 letter and can only have:\n' +
-                '- alphabet letters (A-Z)\n' +
+                'Usernames are made up of 2-16 characters and can only have:\n' +
+                '- alphabetical letters (A-Z/a-z)\n' +
                 '- numbers (0-9)\n' +
                 "- underscore '_'"
             },
             {
               name: "I'm sure the username is valid!",
               value:
-                'It could be Mojang fault for not resolving it (e.g. their servers are down).\n' +
-                'If problem persists, contact an admin for support'
+                "It could be Mojang's fault for not resolving it (e.g. their servers are down).\n" +
+                'If the problem persists, contact an admin for support'
             }
           ],
           footer: { text: DefaultCommandFooter }
