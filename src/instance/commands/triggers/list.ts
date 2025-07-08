@@ -61,7 +61,7 @@ export default class List extends ChatCommandHandler {
       const members = onlineMembers.flatMap((entry) => [...entry.usernames])
       if (members.length === 0) return `No one is online??`
 
-      const pageRaw = context.args[0] ?? '1'
+      const pageRaw = context.args[1] ?? '1'
       return this.formatList(members, pageRaw)
     }
   }
