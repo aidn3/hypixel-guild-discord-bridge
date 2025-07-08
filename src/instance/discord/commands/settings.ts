@@ -29,9 +29,9 @@ const Recommended = ':beginner:'
 const Warning = ':warning:'
 
 const CategoryLabel =
-  `Options marked with ${Essential} are Essential. Disable at your own risk.\n` +
+  `Options marked with ${Essential} are essential. Change at your own risk.\n` +
   `Options marked with ${Recommended} are recommended for quality of life.\n` +
-  `Options marked with ${Warning} are only to be messed with if you know what you are doing.\n` +
+  `Options marked with ${Warning} should only be messed with if you know what you are doing.\n` +
   `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/4.0-pre1/docs/FEATURES.md#available-plugins) for more information.`
 
 export default {
@@ -45,7 +45,7 @@ export default {
       name: 'Main',
       description:
         'Welcome to Application options!\n' +
-        'You can choose one of the below categories to expand.\n\n' +
+        'You can choose one of the categories below to expand it.\n\n' +
         CategoryLabel,
 
       options: [
@@ -97,7 +97,7 @@ function fetchGeneralOptions(application: Application): CategoryOption {
       {
         type: OptionType.Boolean,
         name: `Add origin tag`,
-        description: "Adds an origin tag to messages that show from where it's coming",
+        description: "Adds an origin tag to messages that show where it's coming from.",
         getOption: () => generalConfig.data.originTag,
         toggleOption: () => {
           generalConfig.data.originTag = !generalConfig.data.originTag
@@ -161,7 +161,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
       {
         type: OptionType.EmbedCategory,
         name: 'Immunity List',
-        description: 'Users who are completely immuneDiscordUsers to heat punishments (Use at your own risk!)',
+        description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
         options: [
           {
             type: OptionType.User,
@@ -195,7 +195,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.Boolean,
             name: `Profanity Filter ${Essential}`,
-            description: 'Enable to filter and censor users chat messages of any profanity.',
+            description: 'Enable to filter and censor chat messages for profanity.',
             getOption: () => moderation.data.profanityEnabled,
             toggleOption: () => {
               moderation.data.profanityEnabled = !moderation.data.profanityEnabled
@@ -205,7 +205,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.Label,
             name: 'Profanity List',
-            description: 'Use command `/profanity` to fine tune the list.',
+            description: 'Use command `/profanity` to edit the filter.',
             getOption: undefined
           }
         ]
@@ -247,7 +247,7 @@ function fetchQualityOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: 'Announce Player Muted',
         description:
-          'Announce to the guild about a player being muted when they `/immuted` to the application in-game.',
+          'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
         getOption: () => minecraft.data.announceMutedPlayer,
         toggleOption: () => {
           minecraft.data.announceMutedPlayer = !minecraft.data.announceMutedPlayer
@@ -324,7 +324,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: 'Always Reply',
         description:
-          'Enable to always send a text reply instead of reactions when a problem occurs when sending a discord user message.',
+          'Enable to always send a text reply instead of reactions when a problem occurs. E.g when a message is blocked',
         getOption: () => discord.data.alwaysReplyReaction,
         toggleOption: () => {
           discord.data.alwaysReplyReaction = !discord.data.alwaysReplyReaction
@@ -334,7 +334,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
       {
         type: OptionType.Boolean,
         name: 'Enforce Verification',
-        description: 'Enable to always require verification via `/verify` to chat in the application.',
+        description: 'Enable to always require verification via `/verify` to chat using the application.',
         getOption: () => discord.data.enforceVerification,
         toggleOption: () => {
           discord.data.enforceVerification = !discord.data.enforceVerification
@@ -358,14 +358,14 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         description: 'How leaderboards are displayed.',
         header:
           '**These events are recommended for best user experience.**\n' +
-          'Do not turn off any unless you know what you are doing.\n\n' +
+          'Do not turn off unless you know what you are doing.\n\n' +
           CategoryLabel,
         options: [
           {
             type: OptionType.Number,
             name: `Update Frequency (In Minutes)`,
             description:
-              'How frequent to update the displayed leaderboards. WARNING: Fast update might introduce instability!',
+              'How frequent to update the displayed leaderboards. WARNING: Fast updates might introduce instability!',
             min: 1,
             max: 43_200,
             getOption: () => leaderboard.data.updateEveryMinutes,
@@ -382,14 +382,14 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         description: 'Advanced options for fine tuning public chat channels.',
         header:
           '**These events are recommended for best user experience.**\n' +
-          'Do not turn off any unless you know what you are doing.\n\n' +
+          'Do not turn off unless you know what you are doing.\n\n' +
           CategoryLabel,
         options: [
           {
             type: OptionType.Boolean,
             name: `Member Online ${Recommended}`,
             description:
-              'Show a temporarily message in the designated public discord channels when a guild member comes online.',
+              'Show a temporary message in the designated public discord channels when a guild member comes online.',
             getOption: () => discord.data.guildOnline,
             toggleOption: () => {
               discord.data.guildOnline = !discord.data.guildOnline
@@ -400,7 +400,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: `Member Offline ${Recommended}`,
             description:
-              'Show a temporarily message in the designated public discord channels when a guild member goes offline.',
+              'Show a temporary message in the designated public discord channels when a guild member goes offline.',
             getOption: () => discord.data.guildOffline,
             toggleOption: () => {
               discord.data.guildOffline = !discord.data.guildOffline
@@ -409,8 +409,8 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.Number,
-            name: 'Delete Temporarily Events After (In Seconds)',
-            description: 'Temporarily events are `Online` and `Offline` events.',
+            name: 'Delete Temporary Events After (In Seconds)',
+            description: 'Temporary events are `Online` and `Offline` events.',
             min: 1,
             max: 43_200,
             getOption: () => deleterConfig.data.expireSeconds,
@@ -473,7 +473,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             type: OptionType.Role,
 
             name: 'Helper Roles',
-            description: 'Staff roles that have permissions to do commands such as `!toggle` and `/invite`',
+            description: 'Staff roles that have permissions to execute commands such as `!toggle` and `/invite`',
 
             min: 0,
             max: 5,
@@ -488,7 +488,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             type: OptionType.Role,
 
             name: 'Officer Roles',
-            description: 'Staff roles that have permissions to do destructive commands such as `/kick`.',
+            description: 'Staff roles that have permissions to execute destructive commands such as `/kick`.',
 
             min: 0,
             max: 5,
@@ -517,7 +517,7 @@ function fetchMetricsOptions(application: Application): CategoryOption {
         type: OptionType.Number,
         name: `Messages Persistence (In Days)`,
         description:
-          'How long to keep records of members messages stats. WARNING: High persistence will increase storage usage and might introduce lags.',
+          'How long to keep records of members messages stats. WARNING: High persistence will increase storage usage and might introduce lag.',
         min: 1,
         max: 1068,
         getOption: () => scoresManager.data.deleteMessagesOlderThan,
@@ -530,7 +530,7 @@ function fetchMetricsOptions(application: Application): CategoryOption {
         type: OptionType.Number,
         name: `Members Persistence (In Days)`,
         description:
-          'How long to keep records of members being in the guild or online, etc. WARNING: High persistence will increase storage usage and might introduce lags.',
+          'How long to keep records of members being in the guild or online, etc. WARNING: High persistence will increase storage usage and might introduce lag.',
         min: 1,
         max: 1068,
         getOption: () => scoresManager.data.deleteMembersOlderThan,
@@ -591,7 +591,7 @@ function fetchLanguageOptions(application: Application): CategoryOption {
         type: OptionType.Text,
         name: 'Announce Player Muted',
         description:
-          'Announce to the guild about a player being muted when they `/immuted` to the application in-game.',
+          'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
         style: InputStyle.Long,
         min: 2,
         max: 150,
@@ -829,7 +829,7 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
                 type: OptionType.Boolean,
                 name: 'STuF',
                 description:
-                  'Bypass Hypixel restriction on hyperlinks using STuF encoding. Only use if you know what is STuF!',
+                  'Bypass Hypixel restriction on hyperlinks using STuF encoding. Only use if you know what STuF is!',
                 getOption: () => sanitizer.data.hideLinksViaStuf,
                 toggleOption: () => {
                   sanitizer.data.hideLinksViaStuf = !sanitizer.data.hideLinksViaStuf
@@ -1097,7 +1097,7 @@ async function minecraftInstanceAdd(
     if (!event.targetInstanceName.includes(instanceName)) return
 
     assert(embed.description)
-    embed.description += `- ${event.type} signal has been received received\n`
+    embed.description += `- ${event.type} signal has been received\n`
     refresher.refresh()
   }
   registeredEvents.instanceAnnouncement = (event) => {
@@ -1228,7 +1228,7 @@ async function minecraftInstanceRemove(
     embed.description += italic(
       'An error occurred while trying to remove Minecraft instance\n' +
         'The results are inconclusive.\n' +
-        'Check the console logs for further  details\n' +
+        'Check the console logs for further details\n' +
         'Tread carefully when trying anything else.'
     )
   }

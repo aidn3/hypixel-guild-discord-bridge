@@ -6,7 +6,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('unlink')
-      .setDescription('unLink your Discord account from your Minecraft account'),
+      .setDescription('unlink your Discord account from your Minecraft account'),
 
   handler: async function (context) {
     const interaction = context.interaction
