@@ -1,5 +1,7 @@
 import assert from 'node:assert'
 
+import PromiseQueue from 'promise-queue'
+
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { MinecraftSendChatPriority } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
@@ -104,7 +106,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
   private getGuildInfo(instanceName: string): GuildInformation {
     let guild = this.guildInfo.get(instanceName)
     if (guild === undefined) {
-      guild = { commandQueue: Promise.resolve() }
+      guild = { commandQueue: new PromiseQueue(1) }
       this.guildInfo.set(instanceName, guild)
     }
 
@@ -120,20 +122,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
    */
   public async queueTask<T>(guild: GuildInformation | string, task: () => Promise<T>): Promise<T> {
     if (typeof guild === 'string') guild = this.getGuildInfo(guild)
-    const oldTask = guild.commandQueue
-
-    let resolveNewTask: undefined | ((v: unknown) => void)
-    const newTask = new Promise((resolve) => {
-      resolveNewTask = resolve
-    })
-    assert(resolveNewTask)
-
-    guild.commandQueue = newTask
-    await oldTask
-    const chainedNewTask = newTask.then(() => task())
-    resolveNewTask(true)
-
-    return chainedNewTask
+    return guild.commandQueue.add(task)
   }
 
   /*
@@ -220,7 +209,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
 }
 
 interface GuildInformation {
-  commandQueue: Promise<unknown>
+  commandQueue: PromiseQueue
 
   name?: { name: string } & Metadata
   listAll?: { members: { rank: string; usernames: Set<string> }[] } & Metadata
