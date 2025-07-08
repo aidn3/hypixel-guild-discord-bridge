@@ -24,7 +24,7 @@ export class Verification extends EventHandler<UsersManager, InstanceType.Util, 
     this.database = new VerificationDatabase(sqliteManager)
   }
 
-  public findByDiscord(discordId: string): Link {
+  public findByDiscord(discordId: string): Awaitable<Link> {
     const savedLink = this.database.getLinkByDiscord(discordId)
     if (savedLink !== undefined)
       return {
@@ -42,7 +42,7 @@ export class Verification extends EventHandler<UsersManager, InstanceType.Util, 
     return { type: LinkType.None }
   }
 
-  public findByIngame(uuid: string): Link {
+  public findByIngame(uuid: string): Awaitable<Link> {
     const savedLink = this.database.getLinkByUuid(uuid)
     if (savedLink !== undefined)
       return {
