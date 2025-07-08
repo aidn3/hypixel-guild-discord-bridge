@@ -13,7 +13,6 @@ import {
   PunishmentType
 } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { checkChatTriggers, KickChat, MuteChat, UnmuteChat } from '../../../util/chat-triggers.js'
@@ -127,7 +126,6 @@ export default {
       )
       .addSubcommand(new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments')),
   permission: Permission.Helper,
-  scope: CommandScope.Privileged,
 
   handler: async function (context) {
     await context.interaction.deferReply()

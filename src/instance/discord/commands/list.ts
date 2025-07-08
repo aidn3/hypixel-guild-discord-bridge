@@ -7,6 +7,7 @@ import type { Client, Status } from 'hypixel-api-reborn'
 import type Application from '../../../application.js'
 import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../util/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -63,6 +64,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
+  scope: CommandScope.Chat,
 
   handler: async function (context) {
     await context.interaction.deferReply()

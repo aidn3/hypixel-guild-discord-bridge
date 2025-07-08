@@ -83,9 +83,9 @@ export enum OptionToAddMinecraftInstances {
 
 export enum CommandScope {
   /**
-   * only allow to execute in the registered channels
+   * only allow to execute in the registered chat channels
    */
-  Public,
+  Chat,
   /**
    * only allow to execute in officer channels
    */

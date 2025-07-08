@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from 'discord.js'
 
 import { MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope, OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
@@ -14,7 +14,6 @@ export default {
       ),
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
   permission: Permission.Admin,
-  scope: CommandScope.Privileged,
 
   handler: async function (context) {
     await context.interaction.deferReply()

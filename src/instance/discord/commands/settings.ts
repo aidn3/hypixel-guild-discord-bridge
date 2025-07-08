@@ -14,7 +14,6 @@ import {
 import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { Timeout } from '../../../util/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
@@ -39,7 +38,6 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('settings').setDescription('Control application settings.'),
   permission: Permission.Admin,
-  scope: CommandScope.Anywhere,
 
   handler: async function (context) {
     const options: EmbedCategoryOption = {

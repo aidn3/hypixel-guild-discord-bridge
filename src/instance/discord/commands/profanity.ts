@@ -9,7 +9,6 @@ import {
 
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
 import Autocomplete from '../../users/features/autocomplete.js'
 import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
 
@@ -74,7 +73,6 @@ export default {
           )
       ),
   permission: Permission.Officer,
-  scope: CommandScope.Privileged,
 
   handler: async function (context) {
     if (!context.interaction.channel) {

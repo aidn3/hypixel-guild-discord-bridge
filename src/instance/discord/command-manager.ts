@@ -198,7 +198,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         return
       }
 
-      const scopeCheck = this.checkScope(command.scope ?? CommandScope.Public, channelType)
+      const scopeCheck = this.checkScope(command.scope ?? CommandScope.Anywhere, channelType)
       if (scopeCheck !== undefined) {
         this.logger.debug(`can't execute in channel ${interaction.channelId}`)
         await interaction.reply({ content: scopeCheck, flags: MessageFlags.Ephemeral })
@@ -282,7 +282,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
   private checkScope(scope: CommandScope, channelType: ChannelType | undefined): string | undefined {
     switch (scope) {
-      case CommandScope.Public: {
+      case CommandScope.Chat: {
         if (channelType === ChannelType.Public || channelType === ChannelType.Officer) return undefined
         return 'You can only use commands in public/officer bridge channels!'
       }
