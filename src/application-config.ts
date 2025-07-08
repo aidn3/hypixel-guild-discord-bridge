@@ -21,5 +21,4 @@ export interface ApplicationConfig {
   general: GeneralConfig
   discord: StaticDiscordConfig
   prometheus: PrometheusConfig
-  plugins: string[]
 }

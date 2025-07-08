@@ -149,7 +149,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async start(): Promise<void> {
-    await this.pluginsManager.loadPlugins(this.rootDirectory, this.config.plugins)
+    await this.pluginsManager.loadPlugins(this.rootDirectory)
 
     for (const instance of this.getAllInstances()) {
       // must cast first before using due to typescript limitation

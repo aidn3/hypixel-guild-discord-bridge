@@ -25,7 +25,6 @@ export const ApplicationConfig = t.iface([], {
   "general": "GeneralConfig",
   "discord": "StaticDiscordConfig",
   "prometheus": "PrometheusConfig",
-  "plugins": t.array("string"),
 });
 
 const exportedTypeSuite: t.ITypeSuite = {

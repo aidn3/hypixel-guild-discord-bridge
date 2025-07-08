@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -59,19 +60,25 @@ export class PluginsManager extends Instance<InstanceType.Util> {
     return conflicts
   }
 
-  public async loadPlugins(rootDirectory: string, pluginPaths: string[]): Promise<void> {
+  public async loadPlugins(rootDirectory: string): Promise<void> {
     const plugins: PluginInstance[] = []
 
-    for (const pluginPath of pluginPaths) {
-      let newPath: string = path.resolve(rootDirectory, pluginPath)
+    const pluginsDirectory = path.join(rootDirectory, 'plugins')
+    for (const pluginPath of fs.readdirSync(pluginsDirectory)) {
+      let newPath: string = path.resolve(pluginsDirectory, pluginPath)
+
+      if (!pluginPath.endsWith('.ts')) continue
+      if (!fs.statSync(newPath).isFile()) continue
+
       if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
         newPath = `file:///${newPath}`
       }
 
+      this.logger.info(`Loading plugin: ${pluginPath}`)
       const plugin = await import(newPath)
         .then((resolved: { default: typeof PluginInstance }) => resolved.default)
         // @ts-expect-error although it says it is an abstract, the class isn't since it is extended.
-        .then((clazz) => new clazz(this.application) as PluginInstance)
+        .then((clazz) => new clazz(this.application, this) as PluginInstance)
 
       plugins.push(plugin)
     }

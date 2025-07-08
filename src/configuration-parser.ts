@@ -21,7 +21,19 @@ export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): Applic
         `Check MIGRATION.md for further information on how to migrate the configuration file.`
     )
   }
+  assertsConfigValidity(config)
 
-  ApplicationConfigChecker.ApplicationConfig.check(config)
-  return config as ApplicationConfig
+  if ('plugins' in config) {
+    throw new Error(
+      `Detected 'plugins' section in configration file ${filepath.toString()}. ` +
+        'Plugins have been migrated outside the configuration file. ' +
+        'Check docs/PLUGINS.md and docs/MIGRATION.md for further information on how to migrate.'
+    )
+  }
+
+  return config
+}
+
+function assertsConfigValidity(value: unknown): asserts value is ApplicationConfig {
+  ApplicationConfigChecker.ApplicationConfig.check(value)
 }
