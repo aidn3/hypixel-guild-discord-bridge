@@ -162,3 +162,19 @@ which will happen when sending the party request and subsequent party warping,
 can result in the client being kicked out of the lobby.
 
 This entire preparation sequence can take around 30 seconds to finish.
+
+## What are the chances for chat command !vengeance?
+
+There is a pity system in this command, but it will average out to: `3%` chance to win, `47%` to lose, `49%` chance to draw/neutral.
+
+As for how the pity system works:  
+Command will first check for `win`, which is to mute your target: It starts with `1/32` chance to succeed.
+
+If `win` fails, the command will check for `lose`, which is to mute yourself: It starts with `1/2` chance to succeed.
+The pity is reversed here. You can only succeed (aka getting yourself muted) up to `5` times in a row before it gives you fail-pity to not get yourself muted.
+
+If `lose` fails, it will give a `neutral` response not muting anyone.
+
+After `12` consecutive failures to `win`, be it by reaching `lose` or `neutral` outcome,
+the pity will start kicking in gradually upping the chances till `24th` try which is guaranteed to succeed.
+The pity is counted globally across all users.
