@@ -1,4 +1,9 @@
-import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
+import {
+  ChannelType,
+  InstanceType,
+  MinecraftSendChatPriority,
+  PunishmentType
+} from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/util.js'
@@ -44,6 +49,9 @@ export default class Vengeance extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     if (context.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
+    }
+    if (context.channelType !== ChannelType.Public) {
+      return `${context.username}, Command can only be executed in public chat!`
     }
 
     const givenUsername = context.args[0] as string | undefined
