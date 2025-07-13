@@ -61,6 +61,10 @@ export default class Vengeance extends ChatCommandHandler {
       return `${context.username}, You can't take vengeance against the bot itself!`
     }
 
+    if (givenUsername.toLowerCase() === 'everyone') {
+      return `${context.username}, You can't take vengeance against everyone!`
+    }
+
     // ensure user input is safe since it will be used
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
