@@ -13,10 +13,6 @@ discord:
   # Discord ID of the USER who will have ADMIN permission
   adminIds: ['730667783180493755']
 
-# Add custom plugins
-plugins:
-  - './src/plugins/example-plugin.ts'
-
 prometheus:
   enabled: false
   port: 9095
