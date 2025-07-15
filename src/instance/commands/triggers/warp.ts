@@ -154,7 +154,10 @@ export default class Warp extends ChatCommandHandler {
     context.sendFeedback(`Sending party invite to warp ${username}`)
 
     application.on('minecraftChat', chatListener)
-    await instance.send(`/party invite ${username}`, MinecraftSendChatPriority.High, undefined)
+    // Inviting multiple people prevents the bot from accidentally joining the target party
+    // if they sent a party invite to the bot
+    // this is an exploit fix
+    await instance.send(`/party invite ${username} ${username}`, MinecraftSendChatPriority.High, undefined)
 
     const result = await timeout.wait()
     application.removeListener('minecraftChat', chatListener)
