@@ -123,6 +123,8 @@ export default class Warp extends ChatCommandHandler {
 
       if (event.message.startsWith("You cannot invite that player since they're not online.")) {
         timeout.resolve('Player not online?')
+      } else if (event.message.startsWith("Couldn't find a player with that name")) {
+        timeout.resolve("Couldn't find a player with that name!")
       } else if (event.message.startsWith('You cannot invite that player.')) {
         timeout.resolve('Player has party invites disabled.')
       } else if (/^The party invite to (?:\[[+A-Z]{3,10}] )?(\w{3,32}) has expired/.exec(event.message) != undefined) {
