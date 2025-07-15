@@ -1,4 +1,9 @@
-import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
+import {
+  ChannelType,
+  InstanceType,
+  MinecraftSendChatPriority,
+  PunishmentType
+} from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
@@ -34,6 +39,9 @@ export default class Roulette extends ChatCommandHandler {
   handler(context: ChatCommandContext): string {
     if (context.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
+    }
+    if (context.channelType !== ChannelType.Public) {
+      return `${context.username}, Command can only be executed in public chat!`
     }
 
     // Default behaviour which is just "1/6 chance" is too unreliable
