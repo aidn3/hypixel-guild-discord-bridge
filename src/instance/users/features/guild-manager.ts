@@ -23,7 +23,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
         // since there is a chance previous task has already fetched the data while awaiting in queue
         if (!oldData()) return
 
-        await this.list(instanceName, 'all')
+        await this.list(instanceName)
         if (oldData()) throw new Error('Could not fetch fresh data')
       })
     }
@@ -43,7 +43,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
         // since there is a chance previous task has already fetched the data while awaiting in queue
         if (!oldData()) return
 
-        await this.list(instanceName, 'all')
+        await this.list(instanceName)
         if (oldData()) throw new Error('Could not fetch fresh data')
       })
     }
@@ -65,7 +65,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
         // since there is a chance previous task has already fetched the data while awaiting in queue
         if (!oldData()) return
 
-        await this.list(instanceName, 'all')
+        await this.list(instanceName)
         if (oldData()) throw new Error('Could not fetch fresh data')
       })
     }
@@ -94,7 +94,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
         // since there is a chance previous task has already fetched the data while awaiting in queue
         if (!oldData()) return
 
-        await this.list(instanceName, 'online')
+        await this.list(instanceName)
         if (oldData()) throw new Error('Could not fetch fresh data')
       })
     }
@@ -130,17 +130,18 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
    * That means data within must be done within a cycle and not separated by an "async/await".
    * So all data must be "whole" across cycles at all times.
    */
-  private async list(instanceName: string, status: 'all' | 'online'): Promise<void> {
+  private async list(instanceName: string): Promise<void> {
     const timeout = new Timeout(10_000)
     const guild = this.getGuildInfo(instanceName)
 
-    const members: { rank: string; usernames: Set<string> }[] = []
-    let currentRank: string | undefined = undefined
-    let usernames: Set<string> = new Set<string>()
+    const allMembers: { rank: string; usernames: Set<string> }[] = []
+    const onlineMembers: { rank: string; usernames: Set<string> }[] = []
+    let allUsernames: Set<string> | undefined
+    let onlineUsernames: Set<string> | undefined
 
     const nameRegex = /^Guild Name: ([\W\w]{1,64})/g
     const rankRegex = /^\W+-- (Guild Master|[\w -]+) --$/g
-    const memberRegex = /(\w{2,16}) \u25CF/g
+    const memberRegex = /(?:§\w|)(\w{2,16})(§\w) \u25CF/g
     const totalRegex = /^Total Members: (\d+)$/g
     const onlineRegex = /^Online Members: (\d+)$/g
 
@@ -156,20 +157,37 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
 
       const rankMatch = rankRegex.exec(event.message)
       if (rankMatch != undefined) {
-        if (currentRank !== undefined) {
-          // ranks can end with space but will not show up in chat messages
-          members.push({ rank: currentRank.trim(), usernames: usernames })
-          usernames = new Set<string>()
-        }
-        currentRank = rankMatch[1]
+        // ranks can end with space but will not show up in chat messages
+        const rank = rankMatch[1].trim()
+
+        allUsernames = new Set<string>()
+        allMembers.push({ rank: rank.trim(), usernames: allUsernames })
+
+        onlineUsernames = new Set<string>()
+        onlineMembers.push({ rank: rank.trim(), usernames: onlineUsernames })
+
         return
       }
 
-      if (currentRank !== undefined) {
-        let usernameMatch = memberRegex.exec(event.message)
-        while (usernameMatch != undefined) {
-          usernames.add(usernameMatch[1])
-          usernameMatch = memberRegex.exec(event.message)
+      if (allUsernames !== undefined && onlineUsernames !== undefined) {
+        let usernameMatch: RegExpExecArray | null
+        while ((usernameMatch = memberRegex.exec(event.rawMessage)) != undefined) {
+          const username = usernameMatch[1]
+          switch (usernameMatch[2]) {
+            case '§c': {
+              // player offline. do nothing
+              break
+            }
+            case '§a': {
+              onlineUsernames.add(username)
+              break
+            }
+            default: {
+              throw new Error(`invalid online indicator character: ${usernameMatch[0]}`)
+            }
+          }
+
+          allUsernames.add(username)
         }
       }
 
@@ -188,22 +206,16 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
       ...this.eventHelper.fillBaseEvent(),
       targetInstanceName: [instanceName],
       priority: MinecraftSendChatPriority.High,
-      command: `/guild ${status === 'all' ? 'list' : 'online'}`
+      command: `/guild list`
     })
     await timeout.wait()
     this.application.removeListener('minecraftChat', chatListener)
 
-    // false positive
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (currentRank !== undefined && usernames.size > 0) {
-      members.push({ rank: currentRank, usernames: usernames })
+    if (onlineMembers.length > 0) {
+      guild.listOnline = { createdAt: Date.now(), members: onlineMembers }
     }
-    if (members.length > 0) {
-      if (status === 'online') {
-        guild.listOnline = { createdAt: Date.now(), members: members }
-      } else {
-        guild.listAll = { createdAt: Date.now(), members: members }
-      }
+    if (allMembers.length > 0) {
+      guild.listAll = { createdAt: Date.now(), members: allMembers }
     }
   }
 }

@@ -112,6 +112,7 @@ async function listMembers(
     }
 
     for (const { rank, usernames } of members) {
+      if (usernames.size === 0) continue
       instance.push(`- **${escapeMarkdown(rank)}**`)
       for (const username of usernames) {
         const status = statuses.get(username.toLowerCase())
