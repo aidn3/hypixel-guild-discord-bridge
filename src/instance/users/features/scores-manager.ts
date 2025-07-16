@@ -58,7 +58,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           void this.queue
             .add(async () => {
               const profile = await this.application.mojangApi.profileByUsername(event.username)
-              this.database.addMinecraftMessage(profile.name, this.timestamp())
+              this.database.addMinecraftMessage(profile.id, this.timestamp())
             })
             .catch(this.errorHandler.promiseCatch('adding minecraft chat message score'))
         }
