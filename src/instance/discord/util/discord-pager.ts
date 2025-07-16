@@ -49,15 +49,18 @@ export async function interactivePaging(
 
   if (lastUpdate.totalPages > 1) {
     const nextInteraction = channel.createMessageComponentCollector({
-      filter: (index) => index.customId === `${interaction.id}-${Button.Next}` && index.user.id === interaction.user.id,
-      time: duration
+      filter: (index) => index.customId === `${interaction.id}-${Button.Next}` && index.user.id === interaction.user.id
     })
     const backInteraction = channel.createMessageComponentCollector({
-      filter: (index) => index.customId === `${interaction.id}-${Button.Back}` && index.user.id === interaction.user.id,
-      time: duration
+      filter: (index) => index.customId === `${interaction.id}-${Button.Back}` && index.user.id === interaction.user.id
     })
+    const timeoutId = setTimeout(() => {
+      nextInteraction.stop()
+      backInteraction.stop()
+    }, duration)
 
     nextInteraction.on('collect', (index: ButtonInteraction) => {
+      timeoutId.refresh()
       void index
         .update({ components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)] })
         .then(async () => {
@@ -75,6 +78,7 @@ export async function interactivePaging(
         .catch(errorHandler.promiseCatch('pressing next button on discord-pager'))
     })
     backInteraction.on('collect', (index: ButtonInteraction) => {
+      timeoutId.refresh()
       void index
         .update({ components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)] })
         .then(async () => {

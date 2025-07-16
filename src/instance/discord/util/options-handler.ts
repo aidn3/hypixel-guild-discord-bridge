@@ -173,30 +173,34 @@ export class OptionsHandler {
       allowedMentions: { parse: [] }
     })
 
-    this.originalReply
-      .createMessageComponentCollector({
-        time: 300_000,
-        filter: (messageInteraction) => messageInteraction.user.id === interaction.user.id
-      })
-      .on('collect', (messageInteraction) => {
-        void Promise.resolve()
-          .then(async () => {
-            const alreadyReplied = await this.handleInteraction(messageInteraction, errorHandler)
+    const collector = this.originalReply.createMessageComponentCollector({
+      filter: (messageInteraction) => messageInteraction.user.id === interaction.user.id
+    })
+    const timeoutId = setTimeout(() => {
+      collector.stop()
+    }, 20_000)
 
-            await (alreadyReplied
-              ? this.updateView()
-              : messageInteraction.update({
-                  components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
-                  flags: MessageFlags.IsComponentsV2,
-                  allowedMentions: { parse: [] }
-                }))
-          })
-          .catch(errorHandler.promiseCatch('updating container'))
-      })
-      .on('end', () => {
-        this.enabled = false
-        void this.updateView().catch(errorHandler.promiseCatch('updating container'))
-      })
+    collector.on('collect', (messageInteraction) => {
+      timeoutId.refresh()
+      void Promise.resolve()
+        .then(async () => {
+          const alreadyReplied = await this.handleInteraction(messageInteraction, errorHandler)
+
+          await (alreadyReplied
+            ? this.updateView()
+            : messageInteraction.update({
+                components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+                flags: MessageFlags.IsComponentsV2,
+                allowedMentions: { parse: [] }
+              }))
+        })
+        .catch(errorHandler.promiseCatch('updating container'))
+    })
+
+    collector.on('end', () => {
+      this.enabled = false
+      void this.updateView().catch(errorHandler.promiseCatch('updating container'))
+    })
   }
 
   private async updateView(interaction?: ModalMessageModalSubmitInteraction): Promise<void> {
