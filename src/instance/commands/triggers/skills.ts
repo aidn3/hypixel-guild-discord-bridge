@@ -86,7 +86,7 @@ export default class Skills extends ChatCommandHandler {
       if (profile.selected) {
         cuteName = profile.cute_name
         farmingCap = profile.members[uuid].jacobs_contest?.perks?.farming_level_cap ?? 0
-        tamingCap = profile.members[uuid].pets_data?.pet_care?.pet_types_sacrificed.length ?? 0
+        tamingCap = profile.members[uuid].pets_data?.pet_care?.pet_types_sacrificed?.length ?? 0
         break
       }
     }
