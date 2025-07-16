@@ -81,7 +81,13 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     )
   }
 
-  public getMessages30Days(limit: number): { top: MessagesLeaderboard[]; total: number } {
+  public getMessages30Days(): TotalMessagesLeaderboard[] {
+    const currentDate = Date.now()
+    const ignores = this.config.data.minecraftBotUuids
+    return this.database.getGuildMessagesLeaderboard(ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate)
+  }
+
+  public getMinecraftMessages30Days(limit: number): { top: MessagesLeaderboard[]; total: number } {
     const currentDate = Date.now()
     const ignores = this.config.data.minecraftBotUuids
     return this.database.getMinecraftMessages(ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate, limit)
@@ -308,6 +314,47 @@ class ScoreDatabase {
     return select.all(...userIds, Math.floor(from / 1000), Math.floor(to / 1000)) as MessagesLeaderboard[]
   }
 
+  public getGuildMessagesLeaderboard(ignore: string[], from: number, to: number): TotalMessagesLeaderboard[] {
+    const database = this.sqliteManager.getDatabase()
+
+    const selectMinecraft = database.prepare(
+      `SELECT user as uuid, links.discordId, count FROM "MinecraftMessages" LEFT JOIN links ON (MinecraftMessages.user = links.uuid) WHERE MinecraftMessages.user NOT IN (${ignore.map(() => '?').join(',')}) AND timestamp BETWEEN ? AND ?`
+    )
+    const selectDiscord = database.prepare(
+      `SELECT user as discordId, links.uuid, count FROM "DiscordMessages" JOIN links ON (DiscordMessages.user = links.discordId) WHERE links.uuid NOT IN (${ignore.map(() => '?').join(',')}) AND timestamp BETWEEN ? AND ?`
+    )
+
+    const parameters = [ignore, Math.floor(from / 1000), Math.floor(to / 1000)]
+
+    const transaction = database.transaction(() => {
+      interface DatabaseEntry {
+        uuid: string
+        count: number
+        discordId: string | null
+      }
+
+      const leaderboard = new Map<string, TotalMessagesLeaderboard>()
+
+      const minecraftResult = selectMinecraft.all(...parameters) as DatabaseEntry[]
+      const discordResult = selectDiscord.all(...parameters) as DatabaseEntry[]
+      for (const entry of [...minecraftResult, ...discordResult]) {
+        let object: TotalMessagesLeaderboard | undefined = leaderboard.get(entry.uuid)
+        if (object === undefined) {
+          object = { uuid: entry.uuid, discordId: entry.discordId ?? undefined, count: 0 }
+          leaderboard.set(entry.uuid, object)
+        }
+
+        object.count += entry.count
+      }
+
+      const resultLeaderboard = [...leaderboard.values()]
+      resultLeaderboard.sort((a, b) => b.count - a.count)
+      return resultLeaderboard
+    })
+
+    return transaction()
+  }
+
   public getTime(
     table: 'allMembers' | 'OnlineMembers',
     ignore: string[],
@@ -502,6 +549,12 @@ interface ScoreManagerConfig {
 interface MessagesLeaderboard {
   user: string
   total: number
+}
+
+interface TotalMessagesLeaderboard {
+  uuid: string
+  count: number
+  discordId: string | undefined
 }
 
 interface MemberLeaderboard {

@@ -3,6 +3,7 @@ import assert from 'node:assert'
 import { SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
 
 import { Messages30Days, Online30Days } from './create-leaderboard.js'
 
@@ -24,8 +25,12 @@ export default {
 
     const type = context.interaction.options.getString('type', true)
     if (type === Messages30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getMessage30Days({ addLastUpdateAt: false })
-      await context.interaction.editReply({ embeds: [embed] })
+      await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
+        return await context.application.discordInstance.leaderboard.getMessage30Days({
+          addLastUpdateAt: false,
+          page: requestedPage
+        })
+      })
       return
     }
 
