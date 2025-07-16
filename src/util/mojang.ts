@@ -1,13 +1,13 @@
-import type { AxiosResponse } from 'axios'
-import Axios from 'axios'
+import Axios, { AxiosError, HttpStatusCode } from 'axios'
 import NodeCache from 'node-cache'
 import PromiseQueue from 'promise-queue'
 
 import RateLimiter from './rate-limiter.js'
 
 export class MojangApi {
+  private static readonly RetryCount = 3
   private readonly queue = new PromiseQueue(1)
-  private readonly rateLimit = new RateLimiter(1, 500)
+  private readonly rateLimit = new RateLimiter(1, 800)
   private readonly cache = new NodeCache({ maxKeys: 10_000, stdTTL: 24 * 60 * 60 })
 
   async profileByUsername(username: string): Promise<MojangProfile> {
@@ -15,10 +15,21 @@ export class MojangApi {
     if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
-      await this.rateLimit.wait()
-      return await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`).then(
-        (response: AxiosResponse<MojangProfile, unknown>) => response.data
-      )
+      for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
+        await this.rateLimit.wait()
+
+        try {
+          return await Axios.get<MojangProfile>(
+            `https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`
+          ).then((response) => response.data)
+        } catch (error: unknown) {
+          if (error instanceof AxiosError && error.status === HttpStatusCode.TooManyRequests) continue
+
+          throw error
+        }
+      }
+
+      throw new Error('Failed fetching new data')
     })
 
     this.cache.set<MojangProfile>(result.name.toLowerCase(), result)
@@ -32,10 +43,21 @@ export class MojangApi {
     }
 
     const result = await this.queue.add(async () => {
-      await this.rateLimit.wait()
-      return await Axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`).then(
-        (response: AxiosResponse<MojangProfile, unknown>) => response.data
-      )
+      for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
+        await this.rateLimit.wait()
+
+        try {
+          return await Axios.get<MojangProfile>(
+            `https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`
+          ).then((response) => response.data)
+        } catch (error: unknown) {
+          if (error instanceof AxiosError && error.status === HttpStatusCode.TooManyRequests) continue
+
+          throw error
+        }
+      }
+
+      throw new Error('Failed fetching new data')
     })
 
     this.cache.set(result.name.toLowerCase(), { ...result, fetchedAt: Date.now() })
@@ -91,10 +113,21 @@ export class MojangApi {
 
   private async lookupUsernames(usernames: string[]): Promise<MojangProfile[]> {
     const result = await this.queue.add(async () => {
-      await this.rateLimit.wait()
-      return await Axios.post(`https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname`, usernames).then(
-        (response: AxiosResponse<MojangProfile[], unknown>) => response.data
-      )
+      for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
+        await this.rateLimit.wait()
+        try {
+          return await Axios.post<MojangProfile[]>(
+            `https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname`,
+            usernames
+          ).then((response) => response.data)
+        } catch (error: unknown) {
+          if (error instanceof AxiosError && error.status === HttpStatusCode.TooManyRequests) continue
+
+          throw error
+        }
+      }
+
+      throw new Error('Failed fetching new data')
     })
 
     for (const mojangProfile of result) {
