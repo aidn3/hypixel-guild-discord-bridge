@@ -59,7 +59,7 @@ export async function interactivePaging(
 
     nextInteraction.on('collect', (index: ButtonInteraction) => {
       void index
-        .deferUpdate()
+        .update({ components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)] })
         .then(async () => {
           lastUpdate = await fetch(++currentPage)
           if (lastUpdate.embed === undefined) {
@@ -69,14 +69,14 @@ export async function interactivePaging(
 
           await index.editReply({
             embeds: [lastUpdate.embed],
-            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)]
           })
         })
         .catch(errorHandler.promiseCatch('pressing next button on discord-pager'))
     })
     backInteraction.on('collect', (index: ButtonInteraction) => {
       void index
-        .deferUpdate()
+        .update({ components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)] })
         .then(async () => {
           lastUpdate = await fetch(--currentPage)
           if (lastUpdate.embed === undefined) {
@@ -86,7 +86,7 @@ export async function interactivePaging(
 
           await index.editReply({
             embeds: [lastUpdate.embed],
-            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages)]
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)]
           })
         })
         .catch(errorHandler.promiseCatch('pressing back button on discord-pager'))
@@ -110,7 +110,8 @@ export async function interactivePaging(
 
   return await interaction.editReply({
     embeds: [lastUpdate.embed],
-    components: lastUpdate.totalPages > 1 ? [createButtons(interaction.id, currentPage, lastUpdate.totalPages)] : []
+    components:
+      lastUpdate.totalPages > 1 ? [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)] : []
   })
 }
 
@@ -127,19 +128,24 @@ export async function pageMessage(
 
 // discord library api doesn't export correct type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createButtons(interactionId: string, currentPage: number, totalPages: number): any {
+function createButtons(interactionId: string, currentPage: number, totalPages: number, enabled: boolean): any {
   return new ActionRowBuilder()
     .addComponents(
       new ButtonBuilder()
         .setCustomId(`${interactionId}-${Button.Back}`)
         .setLabel('Back')
         .setStyle(ButtonStyle.Primary)
-        .setDisabled(currentPage <= 0),
+        .setDisabled(currentPage <= 0 || !enabled),
+      new ButtonBuilder()
+        .setCustomId(`${interactionId}-currentPage`)
+        .setLabel((currentPage + 1).toLocaleString('en-US') + ' / ' + totalPages.toLocaleString('en-US'))
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
       new ButtonBuilder()
         .setCustomId(`${interactionId}-${Button.Next}`)
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary)
-        .setDisabled(currentPage + 1 >= totalPages)
+        .setDisabled(currentPage + 1 >= totalPages || !enabled)
     )
     .toJSON()
 }
