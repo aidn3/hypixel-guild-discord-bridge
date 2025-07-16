@@ -98,10 +98,10 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     return this.database.getDiscordMessages(userIds, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate)
   }
 
-  public getOnline30Days(limit: number): { top: MemberLeaderboard[]; total: number } {
+  public getOnline30Days(): MemberLeaderboard[] {
     const currentDate = Date.now()
     const ignores = this.config.data.minecraftBotUuids
-    return this.database.getTime('OnlineMembers', ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate, limit)
+    return this.database.getTime('OnlineMembers', ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate)
   }
 
   private addBotUuid(uuid: string): void {
@@ -359,46 +359,37 @@ class ScoreDatabase {
     table: 'allMembers' | 'OnlineMembers',
     ignore: string[],
     from: number,
-    to: number,
-    limit: number
-  ): {
-    top: MemberLeaderboard[]
-    total: number
-  } {
+    to: number
+  ): MemberLeaderboard[] {
     assert(from < to, '"from" timestamp is earlier than the "to" timestamp')
 
     let ignoreQuery = ''
     if (ignore.length > 0)
-      ignoreQuery = ` uuid NOT IN (` + ignore.map((parameter, index) => `@uuid${index}`).join(',') + ') AND'
+      ignoreQuery = ` ${table}.uuid NOT IN (` + ignore.map((parameter, index) => `@uuid${index}`).join(',') + ') AND'
 
     const database = this.sqliteManager.getDatabase()
     const select = database.prepare(
-      `SELECT uuid, total((min(@toTimestamp, toTimestamp) - max(@fromTimestamp, fromTimestamp))) as totalTime FROM "${table}"` +
+      `SELECT ${table}.uuid, links.discordId, total((min(@toTimestamp, toTimestamp) - max(@fromTimestamp, fromTimestamp))) as totalTime FROM "${table}"` +
+        ` LEFT JOIN links ON (${table}.uuid = links.uuid)` +
         ' WHERE' +
         ignoreQuery +
         ' ((fromTimestamp BETWEEN @fromTimestamp AND @toTimestamp) OR (toTimestamp BETWEEN @fromTimestamp AND @toTimestamp))' +
-        ' GROUP BY uuid ORDER BY totalTime DESC LIMIT @limit'
-    )
-    const total = database.prepare(
-      `SELECT total((min(@toTimestamp, toTimestamp) - max(@fromTimestamp, fromTimestamp))) as totalTime FROM "${table}"` +
-        ' WHERE' +
-        ignoreQuery +
-        ' ((fromTimestamp BETWEEN @fromTimestamp AND @toTimestamp) OR (toTimestamp BETWEEN @fromTimestamp AND @toTimestamp))'
+        ` GROUP BY ${table}.uuid ORDER BY totalTime DESC`
     )
 
     const parameters: Record<string, unknown> = {
       toTimestamp: Math.floor(to / 1000),
-      fromTimestamp: Math.floor(from / 1000),
-      limit: limit
+      fromTimestamp: Math.floor(from / 1000)
     }
     for (const [index, element] of ignore.entries()) {
       parameters[`uuid${index}`] = element
     }
 
-    return {
-      top: select.all(parameters) as MemberLeaderboard[],
-      total: total.pluck(true).get(parameters) as number
+    const leaderboard = select.all(parameters) as MemberLeaderboard[]
+    for (const entry of leaderboard) {
+      entry.discordId ??= undefined
     }
+    return leaderboard
   }
 
   public addDiscordMessage(id: string, timestamp: number): void {
@@ -560,4 +551,5 @@ interface TotalMessagesLeaderboard {
 interface MemberLeaderboard {
   uuid: string
   totalTime: number
+  discordId: string | undefined
 }

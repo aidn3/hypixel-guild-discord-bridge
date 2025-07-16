@@ -35,8 +35,12 @@ export default {
     }
 
     if (type === Online30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getOnline30Days({ addLastUpdateAt: false })
-      await context.interaction.editReply({ embeds: [embed] })
+      await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
+        return await context.application.discordInstance.leaderboard.getOnline30Days({
+          addLastUpdateAt: false,
+          page: requestedPage
+        })
+      })
       return
     }
   }

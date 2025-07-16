@@ -46,8 +46,11 @@ export default {
     }
 
     if (type === Online30Days.value) {
-      const embed = await context.application.discordInstance.leaderboard.getOnline30Days({ addLastUpdateAt: true })
-      const messageId = await send(context.interaction, channel, embed)
+      const leaderboard = await context.application.discordInstance.leaderboard.getOnline30Days({
+        addLastUpdateAt: true,
+        page: 0
+      })
+      const messageId = await send(context.interaction, channel, leaderboard.embed)
       if (messageId === undefined) return
 
       config.data.online30Days.push({

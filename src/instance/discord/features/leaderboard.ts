@@ -15,6 +15,8 @@ import { DefaultCommandFooter } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
 export default class Leaderboard extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+  private static readonly EntriesPerPage = 10
+
   private static readonly CheckUpdateEvery = 60 * 1000
 
   private static readonly DefaultUpdateEveryMinutes = 30
@@ -84,9 +86,9 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        const embed = await this.getOnline30Days({ addLastUpdateAt: true })
+        const leaderboard = await this.getOnline30Days({ addLastUpdateAt: true, page: 0 })
 
-        const shouldKeep = await this.update(client, entry, embed)
+        const shouldKeep = await this.update(client, entry, leaderboard.embed)
         if (!shouldKeep) {
           this.config.data.online30Days.splice(index, 1)
           this.config.markDirty()
@@ -138,16 +140,19 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    const EntriesPerPage = 10
     const leaderboard = this.application.usersManager.scoresManager.getMessages30Days()
     const total = leaderboard.map((entry) => entry.count).reduce((previous, current) => previous + current)
 
     let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
-    description += total > 0 ? `Total messages: **${total.toLocaleString('en-US')}**\n\n` : '(empty leaderboard!)'
+    description +=
+      leaderboard.length > 0 ? `Total messages: **${total.toLocaleString('en-US')}**\n\n` : '(empty leaderboard!)'
 
-    const chunk = leaderboard.slice(EntriesPerPage * option.page, EntriesPerPage * (option.page + 1))
+    const chunk = leaderboard.slice(
+      Leaderboard.EntriesPerPage * option.page,
+      Leaderboard.EntriesPerPage * (option.page + 1)
+    )
     for (const [index, entry] of chunk.entries()) {
-      const position = option.page * EntriesPerPage + index + 1
+      const position = option.page * Leaderboard.EntriesPerPage + index + 1
       const displayName = await this.application.mojangApi
         .profileByUuid(entry.uuid)
         .then((profile) => profile.name)
@@ -165,31 +170,43 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       footer: { text: DefaultCommandFooter }
     }
 
-    return { embed: embed, totalPages: Math.ceil(leaderboard.length / EntriesPerPage) }
+    return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
-  public async getOnline30Days(option: { addLastUpdateAt: boolean }): Promise<APIEmbed> {
-    const leaderboard = this.application.usersManager.scoresManager.getOnline30Days(10)
+  public async getOnline30Days(option: { addLastUpdateAt: boolean; page: number }): Promise<{
+    embed: APIEmbed
+    totalPages: number
+  }> {
+    const leaderboard = this.application.usersManager.scoresManager.getOnline30Days()
+    const total = leaderboard.map((entry) => entry.totalTime).reduce((previous, current) => previous + current)
 
     let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
-    description +=
-      leaderboard.top.length > 0
-        ? `Total time: **${formatTime(leaderboard.total * 1000)}**\n\n`
-        : '(empty leaderboard!)'
+    description += leaderboard.length > 0 ? `Total time: **${formatTime(total * 1000)}**\n\n` : '(empty leaderboard!)'
 
-    for (const [index, entry] of leaderboard.top.entries()) {
+    const chunk = leaderboard.slice(
+      Leaderboard.EntriesPerPage * option.page,
+      Leaderboard.EntriesPerPage * (option.page + 1)
+    )
+    for (const [index, entry] of chunk.entries()) {
+      const position = option.page * Leaderboard.EntriesPerPage + index + 1
       const displayName = await this.application.mojangApi
         .profileByUuid(entry.uuid)
         .then((profile) => profile.name)
         .catch(() => entry.uuid)
-      description += `${this.getEmoji(index + 1)} • ${index + 1} ${escapeMarkdown(displayName)} **${formatTime(entry.totalTime * 1000)}**\n`
+
+      let formatted = `${this.getEmoji(position)} • ${position} ${escapeMarkdown(displayName)}`
+      if (entry.discordId !== undefined) formatted += ` (${userMention(entry.discordId)})`
+      formatted += ` **${formatTime(entry.totalTime * 1000)}**`
+
+      description += formatted + '\n'
     }
 
-    return {
+    const embed: APIEmbed = {
       title: 'Online Leaderboard (30 days)',
       description: description,
       footer: { text: DefaultCommandFooter }
     }
+    return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
   private getEmoji(position: number): string {
