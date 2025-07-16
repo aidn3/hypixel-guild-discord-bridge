@@ -72,6 +72,13 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
         })
         .catch(this.errorHandler.promiseCatch('fetching and adding members'))
     }, ScoresManager.FetchMembersEvery)
+
+    setInterval(
+      () => {
+        void this.migrateUsernames().catch(this.errorHandler.promiseCatch('migrating Mojang usernames to UUID'))
+      },
+      30 * 60 * 60 * 1000
+    )
   }
 
   public getMessages30Days(limit: number): { top: MessagesLeaderboard[]; total: number } {
@@ -152,6 +159,34 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     }
 
     await Promise.all(tasks)
+  }
+
+  private async migrateUsernames(): Promise<void> {
+    /**
+     * Only migrate from the last 30 days since Mojang locks username for up to 30 days before releasing it to the public
+     * Within 30 days period, there won't be conflict between players UUID
+     */
+    const oldestTimestamp = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60
+
+    const usernames = this.database.getLegacyUsernames(oldestTimestamp)
+    if (usernames.size === 0) return
+    this.logger.debug(`Found ${usernames.size} legacy username that requires migration`)
+
+    const resolvedProfiles = await this.application.mojangApi.profilesByUsername(usernames)
+    const entries: { username: string; uuid: string }[] = []
+    for (const [username, uuid] of resolvedProfiles.entries()) {
+      if (uuid === undefined) continue
+      entries.push({ username, uuid })
+    }
+
+    if (entries.length < usernames.size) {
+      this.logger.debug(`No Mojang information found for ${usernames.size - entries.length} username. Skipping those.`)
+    }
+
+    const changedCount = this.database.migrateUsernameToUuid(oldestTimestamp, entries)
+    if (changedCount > 0) {
+      this.logger.debug(`Migrated ${changedCount} database entry from Mojang username to UUID`)
+    }
   }
 
   private timestamp(): number {
@@ -386,6 +421,39 @@ class ScoreDatabase {
     })
 
     transaction()
+  }
+
+  public getLegacyUsernames(oldestTimestamp: number): Set<string> {
+    const database = this.sqliteManager.getDatabase()
+
+    const result = new Set<string>()
+
+    const getMinecraftChat = database.prepare(
+      'SELECT user FROM MinecraftMessages WHERE timestamp > ? AND length(user) < 30 GROUP BY user'
+    )
+    for (const username of getMinecraftChat.pluck(true).all(oldestTimestamp)) result.add(username as string)
+
+    return result
+  }
+
+  public migrateUsernameToUuid(oldestTimestamp: number, entries: { username: string; uuid: string }[]): number {
+    const database = this.sqliteManager.getDatabase()
+
+    const updateMinecraftChat = database.prepare(
+      'UPDATE MinecraftMessages SET user = ? WHERE user = ? AND timestamp > ?'
+    )
+
+    const transaction = database.transaction(() => {
+      let count = 0
+      for (const entry of entries) {
+        const result = updateMinecraftChat.run(entry.uuid, entry.username, oldestTimestamp)
+        count += result.changes
+      }
+
+      return count
+    })
+
+    return transaction()
   }
 
   public clean(): number {
