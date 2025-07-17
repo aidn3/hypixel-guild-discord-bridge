@@ -22,11 +22,14 @@ jobs:
       - name: Install dependencies
         run: npm i
 
+      - name: Generate Checker files
+        run: npm run generate-code
+
+      - name: Generate documentation files
+        run: npm run generate-docs
+
       - name: Pretty and Eslint
         run: npm run lint:fix
-
-      - name: Generate Checker files
-        run: npm run generate
 
       - name: Update Type-Coverage result
         run: npx type-coverage --detail true --update true
