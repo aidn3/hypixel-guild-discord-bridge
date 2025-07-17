@@ -17,6 +17,7 @@ export class MojangApi {
     if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
+      let lastError: Error | undefined
       for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
         await this.rateLimit.wait()
 
@@ -25,13 +26,14 @@ export class MojangApi {
             `https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`
           ).then((response) => response.data)
         } catch (error: unknown) {
+          if (error instanceof Error) lastError = error
           if (error instanceof AxiosError && error.status === HttpStatusCode.TooManyRequests) continue
 
           throw error
         }
       }
 
-      throw new Error('Failed fetching new data')
+      throw lastError ?? new Error('Failed fetching new data')
     })
 
     this.application.usersManager.mojangDatabase.add([result])
@@ -43,6 +45,8 @@ export class MojangApi {
     if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
+      let lastError: Error | undefined
+
       for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
         await this.rateLimit.wait()
 
@@ -51,13 +55,14 @@ export class MojangApi {
             `https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`
           ).then((response) => response.data)
         } catch (error: unknown) {
+          if (error instanceof Error) lastError = error
           if (error instanceof AxiosError && error.status === HttpStatusCode.TooManyRequests) continue
 
           throw error
         }
       }
 
-      throw new Error('Failed fetching new data')
+      throw lastError ?? new Error('Failed fetching new data')
     })
 
     this.application.usersManager.mojangDatabase.add([result])
@@ -113,6 +118,7 @@ export class MojangApi {
 
   private async lookupUsernames(usernames: string[]): Promise<MojangProfile[]> {
     const result = await this.queue.add(async () => {
+      let lastError: Error | undefined
       for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
         await this.rateLimit.wait()
         try {
@@ -121,13 +127,14 @@ export class MojangApi {
             usernames
           ).then((response) => response.data)
         } catch (error: unknown) {
+          if (error instanceof Error) lastError = error
           if (error instanceof AxiosError && error.status === HttpStatusCode.TooManyRequests) continue
 
           throw error
         }
       }
 
-      throw new Error('Failed fetching new data')
+      throw lastError ?? new Error('Failed fetching new data')
     })
 
     this.application.usersManager.mojangDatabase.add(result)
