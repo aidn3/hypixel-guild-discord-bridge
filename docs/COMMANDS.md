@@ -99,6 +99,6 @@ A shorter version can also be used: `!- rtca`
 | `/unlink`             | unlink your Discord account from your Minecraft account          |
 | `/verification`       | Manage users links                                               |
 
------------------
+---
 
 This document is [auto generated](../scripts/generate-documentation.ts).
