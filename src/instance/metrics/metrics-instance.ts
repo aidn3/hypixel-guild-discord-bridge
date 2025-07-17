@@ -1,100 +1,80 @@
-import http from 'node:http'
+import type { AxiosResponse } from 'axios'
+import Axios from 'axios'
 
-import { HttpStatusCode } from 'axios'
-import * as Client from 'prom-client'
-
-import type { MetricsConfig } from '../../application-config.js'
 import type Application from '../../application.js'
+import type { ApplicationEvents } from '../../common/application-event.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ClientInstance, Status } from '../../common/client-instance.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import { InternalInstancePrefix } from '../../common/instance.js'
 
-import ApplicationMetrics from './application-metrics.js'
-import GuildOnlineMetrics from './guild-online-metrics.js'
+interface Stats {
+  id: string
+  instancesUsed: InstanceType[]
+  events: Map<keyof ApplicationEvents, number>
+}
 
-export default class MetricsInstance extends ClientInstance<MetricsConfig> {
-  private readonly httpServer
-  private readonly register
+export default class MetricsInstance extends ConnectableInstance<InstanceType.Metrics> {
+  private static readonly SendEvery = 20 * 60 * 1000
+  private static readonly Host = 'https://bridge-stats.aidn5.com/metrics'
 
-  private readonly applicationMetrics: ApplicationMetrics
-  private readonly guildOnlineMetrics: GuildOnlineMetrics
+  private readonly stats: Stats
 
-  constructor(app: Application, instanceName: string, config: MetricsConfig) {
-    super(app, instanceName, InstanceType.METRICS, config)
+  private intervalId: NodeJS.Timeout | undefined
 
-    this.register = new Client.Registry()
-    this.register.setDefaultLabels({ app: 'hypixel-guild-bridge' })
-    Client.collectDefaultMetrics({ register: this.register })
+  constructor(app: Application) {
+    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics)
 
-    this.applicationMetrics = new ApplicationMetrics(this.register, config.prefix)
-    this.guildOnlineMetrics = new GuildOnlineMetrics(this.register, config.prefix)
+    this.stats = {
+      id: '',
+      instancesUsed: [],
+      events: new Map()
+    }
 
-    app.on('event', (event) => {
-      this.applicationMetrics.onClientEvent(event)
-    })
-    app.on('chat', (event) => {
-      this.applicationMetrics.onChatEvent(event)
-    })
-    app.on('command', (event) => {
-      this.applicationMetrics.onCommandEvent(event)
-    })
-
-    setInterval(() => {
-      void this.collectMetrics()
-    }, config.interval * 1000)
-
-    this.httpServer = http.createServer((request, response) => {
-      if (request.url == undefined) {
-        response.writeHead(HttpStatusCode.NotFound)
-        response.end()
-        return
-      }
-
-      const route = request.url.split('?')[0]
-      if (route === '/metrics') {
-        this.logger.debug('Metrics scrap is called on /metrics')
-        response.setHeader('Content-Type', this.register.contentType)
-
-        void (async () => {
-          response.end(await this.register.metrics())
-        })().catch(() => {
-          response.end()
-        })
-      } else if (route === '/ping') {
-        this.logger.debug('Ping received')
-        response.writeHead(HttpStatusCode.Ok)
-        response.end()
-      } else {
-        response.writeHead(HttpStatusCode.NotFound)
-        response.end()
-      }
+    this.application.on('all', (name) => {
+      const count = this.stats.events.get(name) ?? 0
+      this.stats.events.set(name, count + 1)
     })
   }
 
-  private async collectMetrics(): Promise<void> {
-    this.logger.debug('Collecting metrics')
+  private async send(): Promise<void> {
+    this.logger.debug('collecting anonymous metrics to send')
+    this.stats.instancesUsed = this.application.getAllInstancesIdentifiers().map((instance) => instance.instanceType)
 
-    if (this.config.useIngameCommand) {
-      await this.guildOnlineMetrics.collectMetrics(this.app)
-    }
+    await Axios.post(MetricsInstance.Host, this.stats)
+      .then((response: AxiosResponse<{ id: string }, unknown>) => response.data)
+      .then((response) => {
+        this.stats.id = response.id // ID is used to ensure no duplicates entries when sharing metrics
+      })
   }
 
   connect(): void {
-    if (this.httpServer.listening) {
-      this.logger.debug('Server already listening. Returning')
-      return
+    this.logger.info('Thank you for enabling metrics!')
+    if (this.intervalId !== undefined) {
+      clearInterval(this.intervalId)
     }
 
-    if (!this.config.enabled) {
-      this.status = Status.FAILED
-      return
+    // TODO: enable metrics back when finished
+    this.logger.debug(
+      "No metrics will be sent for the time being since the server that is meant to receive the metrics isn't prepared yet."
+    )
+    /*
+        this.intervalId = setInterval(() => {
+          void this.send().catch(this.errorHandler.promiseCatch('sending anonymous metrics'))
+        }, MetricsInstance.SendEvery)
+    */
+
+    this.setAndBroadcastNewStatus(Status.Connected, 'instance ready and will be sending periodical anonymous metrics')
+  }
+
+  disconnect(): Promise<void> | void {
+    if (this.intervalId === undefined) {
+      // TODO: enable metrics back when finished
+      // this.logger.warn('Received disconnect() request but instance already disconnected')
+    } else {
+      clearInterval(this.intervalId)
+      this.intervalId = undefined
     }
 
-    this.status = Status.CONNECTING
-    this.logger.debug('prometheus is enabled')
-
-    this.logger.debug(`Listening on port ${this.config.port}`)
-    this.httpServer.listen(this.config.port)
-
-    this.status = Status.CONNECTED
+    this.setAndBroadcastNewStatus(Status.Ended, 'instance has stopped')
   }
 }

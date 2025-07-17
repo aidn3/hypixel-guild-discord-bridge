@@ -1,4 +1,4 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -15,23 +15,21 @@ export default {
       const identifiers = [target]
       if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
 
-      context.application.punishedUsers.forgive({
-        localEvent: true,
-        instanceType: InstanceType.MINECRAFT,
-        instanceName: context.instanceName,
+      context.application.moderation.punishments.remove({
+        ...context.eventHelper.fillBaseEvent(),
         userIdentifiers: identifiers
       })
 
-      context.application.emit('event', {
-        localEvent: true,
-        instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.OFFICER,
-        eventType: EventType.UNMUTE,
+      context.application.emit('guildPlayer', {
+        ...context.eventHelper.fillBaseEvent(),
+
+        color: Color.Good,
+        channels: [ChannelType.Officer],
+
+        type: GuildPlayerEventType.Unmute,
         username: responsible,
-        severity: Severity.GOOD,
         message: context.message,
-        removeLater: false
+        rawMessage: context.rawMessage
       })
     }
   }

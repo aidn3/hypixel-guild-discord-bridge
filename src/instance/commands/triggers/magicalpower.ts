@@ -1,11 +1,10 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/util.js'
 
 export default class MagicalPower extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'magicalpower',
       triggers: ['magicalpower', 'mp'],
       description: "Returns a player's highest recorded skyblock Magical Power",
       example: `mp %s`

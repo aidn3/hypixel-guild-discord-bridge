@@ -1,8 +1,9 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
+  playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/util.js'
@@ -10,7 +11,6 @@ import {
 export default class Kuudra extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Kuudra',
       triggers: ['kuudra', 'k'],
       description: "Returns a player's kuudra runs",
       example: `kuudra %s`
@@ -26,6 +26,7 @@ export default class Kuudra extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
+    if (!selectedProfile.nether_island_player_data) return playerNeverEnteredCrimson(givenUsername)
     const tiers = selectedProfile.nether_island_player_data.kuudra_completed_tiers
 
     const completions = Object.entries(tiers)

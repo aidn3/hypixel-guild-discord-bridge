@@ -8,6 +8,13 @@ declare module 'hypixel-api-reborn' {
       query: string,
       options: Partial<skyblockMemberOptions> & { raw: true }
     ): Promise<SkyblockV2ProfilesRaw>
+
+    getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
+    getSkyblockMuseum(
+      query: string,
+      profileId: string,
+      options?: methodOptions & { raw: true }
+    ): Promise<SkyblockMuseumRaw>
   }
 
   export interface SkyblockV2ProfilesRaw {
@@ -25,8 +32,18 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
+    currencies?: { coin_purse?: number }
     dungeons: SkyblockV2Dungeons | undefined
-    nether_island_player_data: {
+    rift?: SkyblockV2Rift
+    collection?: Record<string, number>
+    inventory?: object
+    profile: { bank_account?: number }
+    player_data: { experience?: Record<string, number> }
+    nether_island_player_data?: {
+      selected_faction?: string
+      mages_reputation?: number
+      barbarians_reputation?: number
+
       kuudra_completed_tiers: {
         none: number
         hot: number
@@ -36,6 +53,8 @@ declare module 'hypixel-api-reborn' {
       }
     }
     slayer: SlayerProfile | undefined
+    jacobs_contest?: Partial<{ perks: { farming_level_cap: number } }>
+    pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
     essence?: SkyblockV2Essence
   }
 
@@ -54,6 +73,7 @@ declare module 'hypixel-api-reborn' {
   export interface SkyblockV2Dungeons {
     dungeon_types: SkyblockV2DungeonsTypes
     player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockV2DungeonsClass | undefined>
+    treasures?: { runs?: SkyblockV2DungeonRun[] }
   }
 
   export interface SkyblockV2DungeonsTypes {
@@ -83,6 +103,32 @@ declare module 'hypixel-api-reborn' {
     experience?: number
   }
 
+  export interface SkyblockV2DungeonRun {
+    completion_ts: number
+    dungeon_type: 'catacombs' | 'master_catacombs'
+    dungeon_tier: number
+    participants: { player_uuid: string; display_name: string }[]
+  }
+
+  export interface SkyblockV2Rift {
+    gallery?: { secured_trophies?: RiftSecureTrophies[] }
+  }
+
+  export interface RiftSecureTrophies {
+    type: RiftTrophyType
+    timestamp: number
+  }
+
+  export type RiftTrophyType =
+    | 'wyldly_supreme'
+    | 'mirrored'
+    | 'chicken_n_egg'
+    | 'citizen'
+    | 'lazy_living'
+    | 'slime'
+    | 'vampiric'
+    | 'mountain'
+
   export interface SlayerProfile {
     slayer_bosses: {
       zombie: Slayer
@@ -101,6 +147,30 @@ declare module 'hypixel-api-reborn' {
     boss_kills_tier_2?: number
     boss_kills_tier_3?: number
     boss_kills_tier_4?: number
+  }
+
+  export interface MayorV2 {
+    mayor: MayorCandidateV2 & { minister?: { name: string; perk: MayorPerkV2 }; election: MayorElectionV2 }
+    current?: MayorElectionV2
+  }
+
+  export interface MayorElectionV2 {
+    candidates: MayorCandidateV2[]
+  }
+
+  export interface MayorCandidateV2 {
+    name: string
+    perks: MayorPerkV2[]
+    votes?: number
+  }
+
+  export interface MayorPerkV2 {
+    name: string
+    minister: boolean
+  }
+
+  interface SkyblockMuseumRaw {
+    members: Record<string, unknown>
   }
 }
 /* eslint-enable @typescript-eslint/naming-convention */

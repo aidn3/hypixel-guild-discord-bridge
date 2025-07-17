@@ -1,24 +1,31 @@
-import { EventType, InstanceType, ChannelType, Severity } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
+// eslint-disable-next-line import/no-restricted-paths
+import { HeatType } from '../../moderation/commands-heat.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+import { checkHeat } from '../common/common.js'
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
-    const regex = /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) was kicked from the guild by .{1,32}!$/g
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
+    const regex =
+      /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) was kicked from the guild by (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})!$/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
+      const issuedBy = match[2]
 
-      context.application.emit('event', {
-        localEvent: true,
-        instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        eventType: EventType.KICK,
-        username,
-        severity: Severity.BAD,
+      await checkHeat(context, issuedBy, HeatType.Kick)
+
+      context.application.emit('guildPlayer', {
+        ...context.eventHelper.fillBaseEvent(),
+
+        color: Color.Bad,
+        channels: [ChannelType.Public, ChannelType.Officer],
+
+        type: GuildPlayerEventType.Kick,
+        username: username,
         message: context.message,
-        removeLater: false
+        rawMessage: context.rawMessage
       })
     }
   }

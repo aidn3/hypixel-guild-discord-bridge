@@ -5,3 +5,4 @@ config.yaml
 build
 config
 .vscode
+/plugins/

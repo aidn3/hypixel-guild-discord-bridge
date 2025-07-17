@@ -3,31 +3,19 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
-import Axios, { type AxiosResponse } from 'axios'
-import { getNetworth, getPrices } from 'skyhelper-networth'
+import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import { getUuidIfExists, localizedNetworth, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
 
 export default class Networth extends ChatCommandHandler {
-  private prices: object | undefined
-
   constructor() {
     super({
-      name: 'Networth',
       triggers: ['networth', 'net', 'nw'],
       description: "Returns a calculation of a player's networth",
       example: `nw %s`
     })
-
-    void this.updatePrices()
-    setInterval(
-      () => {
-        void this.updatePrices()
-      },
-      1000 * 60 * 5
-    ) // 5 minutes
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
@@ -42,51 +30,29 @@ export default class Networth extends ChatCommandHandler {
 
     let museumData: object | undefined
     try {
-      museumData = await Axios.get(
-        `https://api.hypixel.net/skyblock/museum?key=${context.app.hypixelApi.key}&profile=${selectedProfile.profile_id}`
-      )
-        .then((response: AxiosResponse<HypixelSkyblockMuseumRaw, unknown>) => response.data)
+      museumData = await context.app.hypixelApi
+        .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })
         .then((museum) => museum.members[uuid] as object)
     } catch {
       return `${context.username}, error fetching museum data?`
     }
 
-    const networth = await getNetworth(selectedProfile.members[uuid], selectedProfile.banking?.balance ?? 0, {
-      v2Endpoint: true,
-      prices: this.prices,
-      museumData: museumData,
-      onlyNetworth: true
-    })
+    const calculator = new ProfileNetworthCalculator(
+      selectedProfile.members[uuid],
+      museumData,
+      selectedProfile.banking?.balance ?? 0
+    )
+    const networth = await calculator
+      .getNetworth({ onlyNetworth: true })
       .then((response) => response.networth)
       .catch(() => undefined)
     if (networth === undefined) return `${context.username}, cannot calculate the networth?`
+    const nonCosmetic = await calculator
+      .getNonCosmeticNetworth({ onlyNetworth: true })
+      .then((response) => response.networth)
+      .catch(() => undefined)
+    if (nonCosmetic === undefined) return `${context.username}, cannot calculate the non-cosmetic networth?`
 
-    return `${givenUsername}'s networth: ${this.localizedNetworth(networth)}`
+    return `${givenUsername}'s networth: ${localizedNetworth(networth)}, non-cosmetic: ${localizedNetworth(nonCosmetic)}`
   }
-
-  private async updatePrices(): Promise<void> {
-    this.prices = await getPrices()
-  }
-
-  private localizedNetworth(coins: number): string {
-    let suffix = ''
-    if (coins > 1000) {
-      coins = coins / 1000
-      suffix = 'k'
-    }
-    if (coins > 1000) {
-      coins = coins / 1000
-      suffix = 'm'
-    }
-    if (coins > 1000) {
-      coins = coins / 1000
-      suffix = 'b'
-    }
-
-    return coins.toFixed(3) + suffix
-  }
-}
-
-interface HypixelSkyblockMuseumRaw {
-  members: Record<string, unknown>
 }

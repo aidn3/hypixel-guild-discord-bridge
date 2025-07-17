@@ -4,8 +4,8 @@
  Minecraft username: _aura
 */
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
 const Answers = [
   'As I see it, yes.',
@@ -33,7 +33,6 @@ const Answers = [
 export default class EightBallCommand extends ChatCommandHandler {
   constructor() {
     super({
-      name: '8Ball',
       triggers: ['8ball', '8balls', '8', 'ball', 'balls', '8b'],
       description: 'Returns a basic 8 ball response',
       example: `8b am I cool?`

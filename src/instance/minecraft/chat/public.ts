@@ -1,46 +1,58 @@
-import { ChannelType, InstanceType, PunishmentType } from '../../../common/application-event.js'
-import { PunishedUsers } from '../../../util/punished-users.js'
+import {
+  ChannelType,
+  InstanceType,
+  MinecraftSendChatPriority,
+  Permission,
+  PunishmentType
+} from '../../../common/application-event.js'
+import { durationToMinecraftDuration } from '../../../util/shared-util.js'
+import { LinkType } from '../../users/features/verification.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
     // REGEX: Guild > [MVP+] aidn5 [Staff]: hello there.
-    const regex = /^Guild > (?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32})(?: \[\w{1,10}]){0,3}:(.{1,256})/g
+    const regex = /^Guild > (?:\[([+A-Z]{1,10})] ){0,3}(\w{3,32})(?: \[(\w{1,10})]){0,3}:(.{1,256})/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
-      const username = match[1]
-      const playerMessage = match[2].trim()
+      const hypixelRank = match[1]
+      const username = match[2]
+      const guildRank = match[3]
+      const playerMessage = match[4].trim()
 
-      if (
-        context.clientInstance.bridgePrefix.length > 0 &&
-        playerMessage.startsWith(context.clientInstance.bridgePrefix)
-      ) {
-        return
+      const identifiers = [username]
+      const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
+      if (mojangProfile) {
+        identifiers.push(mojangProfile.id, mojangProfile.name)
+
+        const link = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
+        if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
       }
 
-      const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
-      const identifiers = [username]
-      if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
-
-      const mutedTill = context.application.punishedUsers.getPunishedTill(identifiers, PunishmentType.MUTE)
+      const mutedTill = context.application.moderation.punishments.punishedTill(identifiers, PunishmentType.Mute)
       if (mutedTill) {
-        context.application.clusterHelper.sendCommandToAllMinecraft(
-          `/guild mute ${username} ${PunishedUsers.durationToMinecraftDuration(mutedTill - Date.now())}`
-        )
+        context.application.emit('minecraftSend', {
+          ...context.eventHelper.fillBaseEvent(),
+          targetInstanceName: context.application.getInstancesNames(InstanceType.Minecraft),
+          priority: MinecraftSendChatPriority.High,
+          command: `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
+        })
       }
 
       // if any other punishments active
-      if (context.application.punishedUsers.findPunishmentsByUser(identifiers).length > 0) return
-      if (context.application.clusterHelper.isMinecraftBot(username)) return
+      if (context.application.moderation.punishments.findByUser(identifiers).length > 0) return
+      if (context.application.minecraftManager.isMinecraftBot(username)) {
+        context.clientInstance.notifyChatEvent(ChannelType.Public, playerMessage)
+        return
+      }
 
-      const { filteredMessage, changed } = context.application.filterProfanity(playerMessage)
+      const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
       if (changed) {
         context.application.emit('profanityWarning', {
-          localEvent: true,
-          instanceType: InstanceType.MINECRAFT,
-          instanceName: context.instanceName,
-          channelType: ChannelType.PUBLIC,
+          ...context.eventHelper.fillBaseEvent(),
+
+          channelType: ChannelType.Public,
 
           username,
           originalMessage: playerMessage,
@@ -48,15 +60,20 @@ export default {
         })
       }
 
+      const event = context.eventHelper.fillBaseEvent()
+      context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Public })
       context.application.emit('chat', {
-        localEvent: true,
-        instanceName: context.instanceName,
-        instanceType: InstanceType.MINECRAFT,
-        channelType: ChannelType.PUBLIC,
-        channelId: undefined,
+        ...event,
+
+        channelType: ChannelType.Public,
+
+        permission: context.clientInstance.resolvePermission(username, Permission.Anyone),
         username,
-        replyUsername: undefined,
-        message: filteredMessage
+        hypixelRank: hypixelRank,
+        guildRank: guildRank,
+
+        message: filteredMessage,
+        rawMessage: context.rawMessage
       })
     }
   }

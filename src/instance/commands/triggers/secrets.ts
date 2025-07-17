@@ -1,5 +1,5 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
@@ -11,7 +11,6 @@ import {
 export default class Secrets extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Secrets',
       triggers: ['secrets', 's', 'sec'],
       description: 'Returns how many secrets a player has done',
       example: `secrets %s`

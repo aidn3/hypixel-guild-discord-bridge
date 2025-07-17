@@ -4,13 +4,14 @@ import type { Logger } from 'log4js'
 import type { Client } from 'minecraft-protocol'
 import { SocksClient } from 'socks'
 
-import type { ProxyConfig } from '../../../application-config.js'
-import { ProxyProtocol } from '../../../application-config.js'
-import { QuitProxyError } from '../handlers/error-handler.js'
+import { QuitProxyError } from '../handlers/state-handler.js'
+
+import type { ProxyConfig } from './config.js'
+import { ProxyProtocol } from './config.js'
 
 export function resolveProxyIfExist(
   logger: Logger,
-  proxyConfig: ProxyConfig | null,
+  proxyConfig: ProxyConfig | undefined,
   defaultBotOptions: {
     host: string
     port: number
@@ -33,7 +34,7 @@ export function resolveProxyIfExist(
     }
 
     case ProxyProtocol.Socks5: {
-      connect = createSocksConnectFunction(logger, proxyHost, proxyPort, host, port)
+      connect = createSocksConnectFunction(logger, proxyConfig, host, port)
       break
     }
     default: {
@@ -73,15 +74,23 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
   }
 }
 
-function createSocksConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+function createSocksConnectFunction(
+  logger: Logger,
+  proxyOptions: Omit<ProxyConfig, 'protocol'>,
+  host: string,
+  port: number
+) {
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
     SocksClient.createConnection({
       proxy: {
-        host: proxyHost,
-        port: proxyPort,
-        type: 5
+        host: proxyOptions.host,
+        port: proxyOptions.port,
+        type: 5,
+
+        userId: proxyOptions.user,
+        password: proxyOptions.password
       },
       command: 'connect',
       destination: {

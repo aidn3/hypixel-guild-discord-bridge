@@ -6,8 +6,8 @@
 import type { AxiosResponse } from 'axios'
 import Axios from 'axios'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
@@ -68,7 +68,6 @@ export default class Bits extends ChatCommandHandler {
 
   constructor() {
     super({
-      name: 'Bits',
       triggers: ['bits', 'bit'],
       description: 'Returns the best bit items to purchase for the most profit.',
       example: `bits`

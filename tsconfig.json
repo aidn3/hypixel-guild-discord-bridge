@@ -5,6 +5,7 @@
     "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
+    "noImplicitOverride": true,
     "isolatedModules": true,
     "noEmit": true,
     "moduleResolution": "node",

@@ -1,5 +1,5 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 
 enum CommandOptions {
   Rock = 'rock',
@@ -10,7 +10,6 @@ enum CommandOptions {
 export default class RockPaperScissors extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'RPS',
       triggers: ['rps'],
       description: 'Play rock, paper, scissors against the bot',
       example: `rps rock`

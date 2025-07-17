@@ -1,59 +1,96 @@
+/* eslint @typescript-eslint/explicit-member-accessibility: "error" */
+// @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
+
 import type Events from 'node:events'
 import path from 'node:path'
-import * as process from 'node:process'
 
-import BadWords from 'bad-words'
+import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
-import Logger4js from 'log4js'
+import { default as Logger4js } from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
-import ClusterHelper from './cluster-helper.js'
-import type { ApplicationEvents } from './common/application-event.js'
-import { InstanceType } from './common/application-event.js'
-import type { ClientInstance } from './common/client-instance.js'
-import { INTERNAL_INSTANCE_PREFIX } from './common/client-instance.js'
-import type { PluginInterface } from './common/plugins.js'
+import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
+import { InstanceSignalType, InstanceType } from './common/application-event.js'
+import { ConfigManager } from './common/config-manager.js'
+import { ConnectableInstance, Status } from './common/connectable-instance.js'
+import PluginInstance from './common/plugin-instance.js'
+import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
+import type { GeneralConfig } from './general-config.js'
+import ApplicationIntegrity from './instance/application-integrity.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
-import LoggerInstance from './instance/logger/logger-instance.js'
+import { PluginsManager } from './instance/features/plugins-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
-import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
-import SocketInstance from './instance/socket/socket-instance.js'
+import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
+import ModerationInstance from './instance/moderation/moderation-instance.js'
+import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
+import UsersManager from './instance/users/users-manager.js'
+import type { LanguageConfig } from './language-config.js'
+import { DefaultLanguageConfig } from './language-config.js'
 import { MojangApi } from './util/mojang.js'
-import { PunishedUsers } from './util/punished-users.js'
-import { shutdownApplication, sleep } from './util/shared-util.js'
+import { gracefullyExitProcess, sleep } from './util/shared-util.js'
 
-export default class Application extends TypedEmitter<ApplicationEvents> {
+export type AllInstances =
+  | CommandsInstance
+  | DiscordInstance
+  | PrometheusInstance
+  | MetricsInstance
+  | UsersManager
+  | MinecraftInstance
+  | ModerationInstance
+  | PluginInstance
+  | ApplicationIntegrity
+  | MinecraftManager
+  | PluginsManager
+
+export default class Application extends TypedEmitter<ApplicationEvents> implements InstanceIdentifier {
+  public readonly instanceName: string = InstanceType.Main
+  public readonly instanceType: InstanceType = InstanceType.Main
+
+  public readonly applicationIntegrity: ApplicationIntegrity
+
+  public readonly hypixelApi: HypixelClient
+  public readonly mojangApi: MojangApi
+
   private readonly logger: Logger
+  private readonly errorHandler: UnexpectedErrorHandler
+  private readonly shutdownListeners: (() => void)[] = []
+
+  private readonly rootDirectory
   private readonly configsDirectory
-  private readonly config: ApplicationConfig
+  private readonly config: Readonly<ApplicationConfig>
+  public readonly language: ConfigManager<LanguageConfig>
 
-  private readonly plugins: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+  public readonly generalConfig: ConfigManager<GeneralConfig>
+  public readonly discordInstance: DiscordInstance
+  public readonly minecraftManager: MinecraftManager
+  public readonly pluginsManager: PluginsManager
+  public readonly moderation: ModerationInstance
+  public readonly commandsInstance: CommandsInstance
+  public readonly usersManager: UsersManager
+  private readonly prometheusInstance: PrometheusInstance | undefined
+  private readonly metricsInstance: MetricsInstance
 
-  readonly commandsInstance: CommandsInstance | undefined
-  readonly discordInstance: DiscordInstance | undefined
-  private readonly loggerInstances: LoggerInstance[] = []
-  private readonly metricsInstance: MetricsInstance | undefined
-  private readonly minecraftInstances: MinecraftInstance[] = []
-  private readonly socketInstance: SocketInstance | undefined
-
-  readonly clusterHelper: ClusterHelper
-  readonly punishedUsers: PunishedUsers
-  readonly profanityFilter: BadWords.BadWords
-
-  readonly hypixelApi: HypixelClient
-  readonly mojangApi: MojangApi
-
-  constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
+  public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
-    // eslint-disable-next-line import/no-named-as-default-member
     this.logger = Logger4js.getLogger('Application')
+    this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
-    emitAll(this) // first thing to redirect all events
+
+    this.applicationIntegrity = new ApplicationIntegrity(this)
+
+    emitAll(this, this.applicationIntegrity) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
+    this.rootDirectory = rootDirectory
+
+    this.generalConfig = new ConfigManager(this, this.logger, this.getConfigFilePath('application.json'), {
+      autoRestart: false,
+      originTag: false
+    })
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
@@ -61,60 +98,44 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
       hypixelCacheTime: 300
     })
     this.mojangApi = new MojangApi()
-    this.punishedUsers = new PunishedUsers(this)
-    this.clusterHelper = new ClusterHelper(this)
+    this.language = new ConfigManager<LanguageConfig>(
+      this,
+      this.logger,
+      this.getConfigFilePath('language.json'),
+      DefaultLanguageConfig
+    )
 
-    this.profanityFilter = new BadWords({
-      emptyList: !this.config.profanity.enabled
-    })
-    this.profanityFilter.removeWords(...this.config.profanity.whitelisted)
+    this.moderation = new ModerationInstance(this, this.mojangApi)
+    this.usersManager = new UsersManager(this)
 
-    this.discordInstance =
-      this.config.discord.key == undefined
-        ? undefined
-        : new DiscordInstance(this, this.config.discord.instanceName, this.config.discord)
+    this.discordInstance = new DiscordInstance(this, this.config.discord)
 
-    for (let index = 0; index < this.config.loggers.length; index++) {
-      this.loggerInstances.push(
-        new LoggerInstance(
-          this,
-          `${INTERNAL_INSTANCE_PREFIX}${InstanceType.Logger}-${index + 1}`,
-          this.config.loggers[index]
-        )
-      )
-    }
+    this.minecraftManager = new MinecraftManager(this)
+    this.minecraftManager.loadInstances()
 
-    for (const instanceConfig of this.config.minecraft.instances) {
-      this.minecraftInstances.push(
-        new MinecraftInstance(this, instanceConfig.instanceName, instanceConfig, this.config.minecraft.bridgePrefix)
-      )
-    }
+    this.pluginsManager = new PluginsManager(this)
 
-    this.metricsInstance = this.config.metrics.enabled
-      ? new MetricsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.METRICS, this.config.metrics)
+    this.prometheusInstance = this.config.prometheus.enabled
+      ? new PrometheusInstance(this, this.config.prometheus)
       : undefined
+    this.metricsInstance = new MetricsInstance(this)
+    this.commandsInstance = new CommandsInstance(this)
 
-    this.socketInstance = this.config.socket.enabled
-      ? new SocketInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.SOCKET, this.config.socket)
-      : undefined
-
-    this.commandsInstance = this.config.commands.enabled
-      ? new CommandsInstance(this, INTERNAL_INSTANCE_PREFIX + InstanceType.COMMANDS, this.config.commands)
-      : undefined
-
-    this.plugins = this.loadPlugins(rootDirectory)
-
-    this.on('shutdownSignal', (event) => {
-      if (event.targetInstanceName === undefined) {
+    this.on('instanceSignal', (event) => {
+      if (event.targetInstanceName.includes(this.instanceName)) {
         this.logger.info('Shutdown signal has been received. Shutting down this node.')
-        if (event.restart) {
+        if (event.type === InstanceSignalType.Restart) {
           this.logger.info('Node should auto restart if a process monitor service is used.')
         }
 
         this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-        void sleep(5000).then(() => {
-          void shutdownApplication(2)
-        })
+        void sleep(5000)
+          .then(() => {
+            this.logger.debug('shutting down application')
+            return this.shutdown()
+          })
+          .then(() => gracefullyExitProcess(2))
+          .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
       }
     })
   }
@@ -122,116 +143,96 @@ export default class Application extends TypedEmitter<ApplicationEvents> {
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }
-  public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
-    let filtered: string
-    try {
-      filtered = this.profanityFilter.clean(message)
-    } catch {
-      /*
-          profanity package has bug.
-          will throw error if given one special character.
-          example: clean("?")
-          message is clear if thrown
-        */
-      filtered = message
-    }
 
-    return { filteredMessage: filtered, changed: message !== filtered }
+  public addShutdownListener(listener: () => void): void {
+    this.shutdownListeners.push(listener)
   }
 
-  private loadPlugins(
-    rootDirectory: string
-  ): { promise: Promise<PluginInterface>; originalPath: string; name: string }[] {
-    const result: { promise: Promise<PluginInterface>; originalPath: string; name: string }[] = []
+  public async start(): Promise<void> {
+    await this.pluginsManager.loadPlugins(this.rootDirectory)
 
-    for (const pluginPath of this.config.plugins) {
-      let newPath: string = path.resolve(rootDirectory, pluginPath)
-      if (process.platform === 'win32' && !newPath.startsWith('file:///')) {
-        newPath = `file:///${newPath}`
+    for (const instance of this.getAllInstances()) {
+      // must cast first before using due to typescript limitation
+      // https://github.com/microsoft/TypeScript/issues/30650#issuecomment-486680485
+      const checkedInstance = instance
+
+      if (checkedInstance instanceof MetricsInstance) {
+        if (this.config.general.shareMetrics) {
+          checkedInstance.connect()
+        }
+      } else if (checkedInstance instanceof ConnectableInstance) {
+        this.logger.debug(`Connecting instance type=${instance.instanceType},name=${instance.instanceName}`)
+        await checkedInstance.connect()
+      } else if (instance instanceof PluginInstance) {
+        this.logger.debug(`Signaling plugin instance type=${instance.instanceType},name=${instance.instanceName}`)
+        await instance.onReady()
       }
-
-      result.push({
-        promise: import(newPath).then((resolved: { default: PluginInterface }) => resolved.default),
-        originalPath: pluginPath,
-        name: path.basename(pluginPath)
-      })
-    }
-
-    return result
-  }
-
-  async sendConnectSignal(): Promise<void> {
-    this.logger.debug('Sending signal to all plugins')
-    for (const p of this.plugins) {
-      this.logger.debug(`Loading Plugin ${p.originalPath}`)
-      const loadedPlugin = await p.promise
-      loadedPlugin.onRun({
-        // eslint-disable-next-line import/no-named-as-default-member
-        logger: Logger4js.getLogger(`plugin-${p.name}`),
-        pluginName: p.name,
-        application: this,
-        // only shared with plugins to directly modify instances
-        // everything else is encapsulated
-        localInstances: this.getAllInstances(),
-
-        addChatCommand: this.commandsInstance ? (command) => this.commandsInstance?.commands.push(command) : undefined,
-        addDiscordCommand: this.discordInstance
-          ? (command) => this.discordInstance?.commandsManager.commands.set(command.getCommandBuilder().name, command)
-          : undefined
-      })
-    }
-
-    this.syncBroadcast()
-
-    for (const instance of this.getAllInstances()) {
-      this.logger.debug(`Connecting instance ${instance.instanceName}`)
-      await instance.connect()
     }
   }
 
-  public syncBroadcast(): void {
-    this.logger.debug('Informing instances of each other')
-    for (const instance of this.getAllInstances()) {
-      this.emit('selfBroadcast', {
-        localEvent: true,
-        instanceName: instance.instanceName,
-        instanceType: instance.instanceType
-      })
+  public async shutdown(): Promise<void> {
+    for (const shutdownListener of this.shutdownListeners) {
+      shutdownListener()
     }
 
-    this.logger.debug('Broadcasting all Minecraft bots')
-    for (const minecraftBot of this.clusterHelper.getMinecraftBots()) {
-      minecraftBot.localEvent = true
-      this.emit('minecraftSelfBroadcast', minecraftBot)
+    const tasks: Awaitable<unknown>[] = []
+    for (const instance of this.getAllInstances().reverse()) {
+      // reversed to go backward of `start()`
+      if (instance instanceof ConnectableInstance && instance.currentStatus() !== Status.Fresh) {
+        this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)
+        tasks.push(instance.disconnect())
+      }
     }
-
-    this.logger.debug('Broadcasting all punishments')
-    for (const punishment of this.punishedUsers.getAllPunishments()) {
-      punishment.localEvent = true
-      this.emit('punishmentAdd', punishment)
-    }
+    await Promise.all(tasks)
   }
 
-  private getAllInstances(): ClientInstance<unknown>[] {
-    return [
-      ...this.loggerInstances, // loggers first to catch any connecting events and log them as well
+  public getInstancesNames(instanceType: InstanceType): string[] {
+    return this.getAllInstancesIdentifiers()
+      .filter((instance) => instance.instanceType === instanceType)
+      .map((instance) => instance.instanceName)
+  }
+
+  /**
+   * Get all instances {@link InstanceIdentifier} exist in this application.
+   * This includes all internal and public instances as well as plugins and utilities.
+   */
+  public getAllInstancesIdentifiers(): InstanceIdentifier[] {
+    return this.getAllInstances().map((instance) => ({
+      instanceName: instance.instanceName,
+      instanceType: instance.instanceType
+    }))
+  }
+
+  private getAllInstances(): AllInstances[] {
+    const instances = [
+      ...this.pluginsManager.getAllInstances(),
+      this.usersManager,
+      this.applicationIntegrity,
+
       this.discordInstance, // discord second to send any notification about connecting
 
+      this.moderation,
+      this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,
-      ...this.minecraftInstances,
+      ...this.minecraftManager.getAllInstances()
+    ].filter((instance) => instance != undefined)
 
-      this.socketInstance // socket last. so other instances are ready when connecting to other clients
-    ].filter((instance) => instance != undefined) as ClientInstance<unknown>[]
+    this.applicationIntegrity.checkLocalInstancesIntegrity(instances)
+    return instances
   }
 }
 
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
-function emitAll(emitter: Events): void {
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+function emitAll(emitter: Events, applicationIntegrity: ApplicationIntegrity): void {
   const old = emitter.emit
-  emitter.emit = (event: string, ...arguments_): boolean => {
-    if (event !== '*') emitter.emit('*', event, ...arguments_)
-    return old.call(emitter, event, ...arguments_)
+  emitter.emit = (event: string, ...callerArguments): boolean => {
+    if (event !== 'all') {
+      applicationIntegrity.checkEventIntegrity(event, callerArguments[0])
+      emitter.emit('all', event, ...callerArguments)
+    }
+    return old.call(emitter, event, ...callerArguments)
   }
 }
-/* eslint-enable @typescript-eslint/naming-convention, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+
+/* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */

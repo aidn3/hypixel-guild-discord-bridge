@@ -1,7 +1,7 @@
 import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getDungeonLevelWithOverflow,
   getSelectedSkyblockProfileRaw,
@@ -14,7 +14,6 @@ import {
 export default class Catacomb extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Catacombs',
       triggers: ['catacomb', 'catacombs', 'cata'],
       description: "Returns a player's catacombs level",
       example: `cata %s`

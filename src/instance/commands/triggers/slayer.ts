@@ -1,7 +1,7 @@
 import type { Slayer as SlayerType } from 'hypixel-api-reborn'
 
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
@@ -55,7 +55,6 @@ const HighestTierTable = {
 export default class Slayer extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Slayers',
       triggers: ['slayer', 'sl', 'slyr'],
       description: "Returns a player's slayer level",
       example: `slayer eman %s`
@@ -92,11 +91,11 @@ export default class Slayer extends ChatCommandHandler {
       }
     }
 
-    let output = '/'
+    const output: string[] = []
     for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output += `${this.getSlayerLevel(slayer.xp, name)}/`
+      output.push(`${name} ${this.getSlayerLevel(slayer.xp, name)}`)
     }
-    return `${givenUsername}'s slayers: ${output}`
+    return `${givenUsername}'s slayers: ${output.join(' - ')}`
   }
 
   private getSlayerLevel(exp: number, slayer: string): number {

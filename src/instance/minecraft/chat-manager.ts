@@ -1,11 +1,16 @@
 import assert from 'node:assert'
 
+import type { Logger } from 'log4js'
 import GetMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
 
-import { InstanceType } from '../../common/application-event.js'
+import type Application from '../../application.js'
+import type { InstanceType } from '../../common/application-event.js'
 import EventHandler from '../../common/event-handler.js'
+import type EventHelper from '../../common/event-helper.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
+import AdvertiseChat from './chat/advertise.js'
 import BlockChat from './chat/block.js'
 import DemoteChat from './chat/demote.js'
 import JoinChat from './chat/join.js'
@@ -13,6 +18,7 @@ import KickChat from './chat/kick.js'
 import LeaveChat from './chat/leave.js'
 import MuteChat from './chat/mute.js'
 import MutedChat from './chat/muted.js'
+import NoOfficerChat from './chat/no-officer.js'
 import OfficerChat from './chat/officer.js'
 import OfflineChat from './chat/offline.js'
 import OnlineChat from './chat/online.js'
@@ -22,21 +28,32 @@ import PublicChat from './chat/public.js'
 import QuestChat from './chat/quest.js'
 import RepeatChat from './chat/repeat.js'
 import RequestChat from './chat/request.js'
+import RequireGuildChat from './chat/require-guild.js'
 import UnmuteChat from './chat/unmute.js'
 import type ClientSession from './client-session.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
+import type MessageAssociation from './common/message-association.js'
+import { stufDecode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
-export default class ChatManager extends EventHandler<MinecraftInstance> {
+export default class ChatManager extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private readonly chatModules: MinecraftChatMessage[]
   private readonly minecraftData
 
-  constructor(clientInstance: MinecraftInstance) {
-    super(clientInstance)
+  constructor(
+    application: Application,
+    clientInstance: MinecraftInstance,
+    eventHelper: EventHelper<InstanceType.Minecraft>,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    private readonly messageAssociation: MessageAssociation
+  ) {
+    super(application, clientInstance, eventHelper, logger, errorHandler)
 
     this.minecraftData = GetMinecraftData(clientInstance.defaultBotConfig.version)
 
     this.chatModules = [
+      AdvertiseChat,
       BlockChat,
       DemoteChat,
       JoinChat,
@@ -44,6 +61,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       LeaveChat,
       MuteChat,
       MutedChat,
+      NoOfficerChat,
       OfficerChat,
       OfflineChat,
       OnlineChat,
@@ -53,21 +71,15 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       PublicChat,
       RepeatChat,
       RequestChat,
+      RequireGuildChat,
       UnmuteChat
     ]
   }
 
-  registerEvents(): void {
-    const clientSession = this.clientInstance.clientSession
-    assert(clientSession)
-
-    this.listenForMessages(clientSession)
-  }
-
-  private listenForMessages(clientSession: ClientSession): void {
+  override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      this.onMessage(chatMessage.toString())
+      this.onMessage(chatMessage.toString(), chatMessage.toMotd())
     })
 
     clientSession.client.on('playerChat', (data: object) => {
@@ -112,24 +124,35 @@ export default class ChatManager extends EventHandler<MinecraftInstance> {
       assert(message) // old packet means message exists
       resultMessage = clientSession.prismChat.fromNotch(message)
     }
-    this.onMessage(resultMessage.toString())
+    this.onMessage(resultMessage.toString(), resultMessage.toMotd())
   }
 
-  private onMessage(message: string): void {
+  private onMessage(message: string, rawMessage: string): void {
+    message = stufDecode(message)
+
     for (const module of this.chatModules) {
-      void module.onChat({
-        application: this.clientInstance.app,
-        clientInstance: this.clientInstance,
-        instanceName: this.clientInstance.instanceName,
-        message
-      })
+      void Promise.resolve(
+        module.onChat({
+          application: this.application,
+
+          clientInstance: this.clientInstance,
+          instanceName: this.clientInstance.instanceName,
+          eventHelper: this.eventHelper,
+
+          logger: this.logger,
+          errorHandler: this.errorHandler,
+          messageAssociation: this.messageAssociation,
+
+          message: message,
+          rawMessage: rawMessage
+        })
+      ).catch(this.errorHandler.promiseCatch('handling chat trigger'))
     }
 
-    this.clientInstance.app.emit('minecraftChat', {
-      localEvent: true,
-      instanceName: this.clientInstance.instanceName,
-      instanceType: InstanceType.MINECRAFT,
-      message
+    this.application.emit('minecraftChat', {
+      ...this.eventHelper.fillBaseEvent(),
+      message: message,
+      rawMessage: rawMessage
     })
   }
 }

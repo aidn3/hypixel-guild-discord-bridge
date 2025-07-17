@@ -1,5 +1,5 @@
-import type { ChatCommandContext } from '../common/command-interface.js'
-import { ChatCommandHandler } from '../common/command-interface.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
@@ -11,7 +11,6 @@ import {
 export default class Runs extends ChatCommandHandler {
   constructor() {
     super({
-      name: 'Runs',
       triggers: ['runs', 'r'],
       description: 'Returns how many dungeon runs a player has done',
       example: `runs mm %s`
