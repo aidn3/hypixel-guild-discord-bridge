@@ -34,24 +34,20 @@ export class Mojang extends EventHandler<UsersManager, InstanceType.Util, void> 
   }
 
   public add(profiles: MojangProfile[]): void {
-    try {
-      const database = this.sqliteManager.getDatabase()
-      const deleteOld = database.prepare('DELETE FROM "mojang" WHERE loweredName = ?')
-      const upsert = database.prepare(
-        'INSERT INTO "mojang" (uuid, username, loweredName) VALUES (@uuid, @username, @loweredName) ON CONFLICT DO UPDATE SET username = @username AND loweredName = @loweredName'
-      )
+    const database = this.sqliteManager.getDatabase()
+    const deleteOld = database.prepare('DELETE FROM "mojang" WHERE loweredName = ?')
+    const upsert = database.prepare(
+      'INSERT INTO "mojang" (uuid, username, loweredName) VALUES (@uuid, @username, @loweredName) ON CONFLICT DO UPDATE SET username = @username AND loweredName = @loweredName'
+    )
 
-      const transaction = database.transaction(() => {
-        for (const profile of profiles) {
-          deleteOld.run(profile.name.toLowerCase())
-          upsert.run({ uuid: profile.id, username: profile.name, loweredName: profile.name.toLowerCase() })
-        }
-      })
+    const transaction = database.transaction(() => {
+      for (const profile of profiles) {
+        deleteOld.run(profile.name.toLowerCase())
+        upsert.run({ uuid: profile.id, username: profile.name, loweredName: profile.name.toLowerCase() })
+      }
+    })
 
-      transaction()
-    } catch (error) {
-      this.logger.error(error)
-    }
+    transaction()
   }
 
   public profileByUsername(username: string): MojangProfile | undefined {
