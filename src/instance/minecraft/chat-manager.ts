@@ -44,7 +44,6 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
     application: Application,
     clientInstance: MinecraftInstance,
     eventHelper: EventHelper<InstanceType.Minecraft>,
-
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     private readonly messageAssociation: MessageAssociation
@@ -77,7 +76,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
     ]
   }
 
-  registerEvents(clientSession: ClientSession): void {
+  override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
       this.onMessage(chatMessage.toString(), chatMessage.toMotd())

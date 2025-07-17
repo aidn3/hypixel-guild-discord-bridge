@@ -33,7 +33,7 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
     )
   }
 
-  registerEvents(client: Client): void {
+  override registerEvents(client: Client): void {
     client.on('ready', (readyClient) => {
       void this.registerEmojis(readyClient.application.emojis).catch(
         this.errorHandler.promiseCatch('registering emojis in guild')

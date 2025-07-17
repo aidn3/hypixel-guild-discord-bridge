@@ -6,7 +6,7 @@ import EventHandler from '../../../common/event-handler.js'
 import type DiscordInstance from '../discord-instance.js'
 
 export default class StatusHandler extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
-  registerEvents(client: Client): void {
+  override registerEvents(client: Client): void {
     client.on('ready', (client) => {
       client.user.setPresence({
         status: 'online',

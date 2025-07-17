@@ -8,7 +8,7 @@ export default class SelfbroadcastHandler extends EventHandler<
   InstanceType.Minecraft,
   ClientSession
 > {
-  registerEvents(clientSession: ClientSession): void {
+  override registerEvents(clientSession: ClientSession): void {
     // first spawn packet
     clientSession.client.on('login', () => {
       this.onSpawn()

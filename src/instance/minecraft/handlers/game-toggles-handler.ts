@@ -152,7 +152,7 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
       })
   }
 
-  registerEvents(clientSession: ClientSession): void {
+  override registerEvents(clientSession: ClientSession): void {
     this.initializeReadySignal(clientSession.client)
   }
 

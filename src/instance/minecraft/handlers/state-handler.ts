@@ -34,7 +34,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
     this.loginAttempts = 0
   }
 
-  registerEvents(clientSession: ClientSession): void {
+  override registerEvents(clientSession: ClientSession): void {
     // this will only be called after the player receives spawn packet
     clientSession.client.on('login', () => {
       this.onLogin()

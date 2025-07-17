@@ -43,7 +43,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     this.messageAssociation = messageAssociation
   }
 
-  registerEvents(client: Client): void {
+  override registerEvents(client: Client): void {
     client.on('messageCreate', (message) => {
       void this.onMessage(message).catch(
         this.errorHandler.promiseCatch('handling incoming discord messageCreate event')

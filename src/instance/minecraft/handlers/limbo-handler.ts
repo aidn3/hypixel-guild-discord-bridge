@@ -40,7 +40,7 @@ export default class LimboHandler extends EventHandler<MinecraftInstance, Instan
     return result
   }
 
-  registerEvents(clientSession: ClientSession): void {
+  override registerEvents(clientSession: ClientSession): void {
     // first spawn packet
     clientSession.client.on('login', () => {
       if (this.empty()) this.triggerLimbo().catch(this.errorHandler.promiseCatch('handling /limbo command'))
