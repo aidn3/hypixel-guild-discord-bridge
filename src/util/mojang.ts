@@ -1,6 +1,7 @@
 import Axios, { AxiosError, HttpStatusCode } from 'axios'
-import NodeCache from 'node-cache'
 import PromiseQueue from 'promise-queue'
+
+import type Application from '../application.js'
 
 import RateLimiter from './rate-limiter.js'
 
@@ -8,10 +9,11 @@ export class MojangApi {
   private static readonly RetryCount = 3
   private readonly queue = new PromiseQueue(1)
   private readonly rateLimit = new RateLimiter(1, 800)
-  private readonly cache = new NodeCache({ maxKeys: 10_000, stdTTL: 24 * 60 * 60 })
+
+  constructor(private readonly application: Application) {}
 
   async profileByUsername(username: string): Promise<MojangProfile> {
-    const cachedResult = this.cache.get<MojangProfile>(username.toLowerCase())
+    const cachedResult = this.application.usersManager.mojangDatabase.profileByUsername(username)
     if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
@@ -32,15 +34,13 @@ export class MojangApi {
       throw new Error('Failed fetching new data')
     })
 
-    this.cache.set<MojangProfile>(result.name.toLowerCase(), result)
+    this.application.usersManager.mojangDatabase.add([result])
     return result
   }
 
   async profileByUuid(uuid: string): Promise<MojangProfile> {
-    for (const cachedUsername of this.cache.keys()) {
-      const cachedProfile: MojangProfile | undefined = this.cache.get(cachedUsername)
-      if (cachedProfile?.id === uuid) return cachedProfile
-    }
+    const cachedResult = this.application.usersManager.mojangDatabase.profileByUuid(uuid)
+    if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
       for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
@@ -60,7 +60,7 @@ export class MojangApi {
       throw new Error('Failed fetching new data')
     })
 
-    this.cache.set(result.name.toLowerCase(), { ...result, fetchedAt: Date.now() })
+    this.application.usersManager.mojangDatabase.add([result])
     return result
   }
 
@@ -92,7 +92,7 @@ export class MojangApi {
     const chunkSize = 10 // Mojang only allow up to 10 usernames per lookup
     let chunk: string[] = []
     for (const username of usernames) {
-      const cachedProfile = this.cache.get<MojangProfile>(username.toLowerCase())
+      const cachedProfile = this.application.usersManager.mojangDatabase.profileByUsername(username)
       if (cachedProfile !== undefined) {
         result.set(username, cachedProfile.id)
         continue
@@ -130,10 +130,7 @@ export class MojangApi {
       throw new Error('Failed fetching new data')
     })
 
-    for (const mojangProfile of result) {
-      this.cache.set<MojangProfile>(mojangProfile.name.toLowerCase(), mojangProfile)
-    }
-
+    this.application.usersManager.mojangDatabase.add(result)
     return result
   }
 }

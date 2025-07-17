@@ -97,7 +97,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       mojangCacheTime: 300,
       hypixelCacheTime: 300
     })
-    this.mojangApi = new MojangApi()
+    this.mojangApi = new MojangApi(this)
     this.language = new ConfigManager<LanguageConfig>(
       this,
       this.logger,
