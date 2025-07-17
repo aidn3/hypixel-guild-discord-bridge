@@ -71,8 +71,8 @@ async function generateDiscordCommands(): Promise<string> {
 }
 
 function addFooter(): string {
-  let text = '-----------------\n\n'
-  text += `This document is [auto generated](../scripts/generate-documentation.ts).`
+  let text = '---\n\n'
+  text += `This document is [auto generated](../scripts/generate-documentation.ts).\n`
 
   return text
 }
