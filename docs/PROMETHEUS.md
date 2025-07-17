@@ -12,10 +12,10 @@ prefix `guild_bridge_`. It can be changed in `config.yaml` under `metrics`.
 | Metric                        | Description                  | Source                                                  | metadata                                                                                                                                        |
 | ----------------------------- | ---------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PREFIX_guild_members`        | Guild members count          | Hypixel API `/guild` end point                          | `name`: Guild name                                                                                                                              |
+| `PREFIX_guild_members_online` | Guild current online members | In-game periodic execution of `/guild list`             | `name`: Guild name                                                                                                                              |
 | `PREFIX_chat`                 | Messages count of all chat   | In-game guild chat/Discord bot                          | `location`: Discord, webhook, in-game.<br>`scope`: private, officer, public chat.<br>`instance`: name of the source registered in `config.yaml` |
 | `PREFIX_command`              | Commands usage count         | Discord commands interactions and in-game chat commands | Same as chat metrics + `command`: command name                                                                                                  |
 | `PREFIX_event`                | Events count                 | Discord server events and in-game chat                  | same as chat metrics + `event`: event name (e.g. offline, join, mute, etc.)                                                                     |
-| `PREFIX_guild_members_online` | Guild current online members | In-game periodic execution of `/guild list`             | `name`: Guild name                                                                                                                              |
 
 ## Metrics With Grafana
 
