@@ -76,6 +76,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
     super()
+    this.setMaxListeners(50)
+
     this.logger = Logger4js.getLogger('Application')
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.logger.trace('Application initiating')
