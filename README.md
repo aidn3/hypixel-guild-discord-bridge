@@ -99,6 +99,15 @@ Alternatively, providing the path as an argument to the docker container is also
 sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
 ```
 
+## Setup Via Discord
+
+After installing and running the application, basic setup needs to be done to integrate the application.
+
+Use Discord slash command `/settings` to configure the application:
+
+- Set up the public and officer channels
+- Check [How to prepare and add Minecraft account](docs/FAQ.md#how-to-prepare-a-minecraft-account-to-be-added).
+
 ## Credits
 
 - The Project is inspired by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
