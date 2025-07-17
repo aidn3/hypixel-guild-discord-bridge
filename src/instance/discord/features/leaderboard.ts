@@ -64,7 +64,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        const leaderboard = await this.getMessage30Days({ addLastUpdateAt: true, page: 0 })
+        const leaderboard = await this.getMessage30Days({ addFooter: false, addLastUpdateAt: true, page: 0 })
 
         const shouldKeep = await this.update(client, entry, leaderboard.embed)
         if (!shouldKeep) {
@@ -86,7 +86,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        const leaderboard = await this.getOnline30Days({ addLastUpdateAt: true, page: 0 })
+        const leaderboard = await this.getOnline30Days({ addFooter: false, addLastUpdateAt: true, page: 0 })
 
         const shouldKeep = await this.update(client, entry, leaderboard.embed)
         if (!shouldKeep) {
@@ -136,7 +136,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     return true
   }
 
-  public async getMessage30Days(option: { addLastUpdateAt: boolean; page: number }): Promise<{
+  public async getMessage30Days(option: { addFooter: boolean; addLastUpdateAt: boolean; page: number }): Promise<{
     embed: APIEmbed
     totalPages: number
   }> {
@@ -166,14 +166,14 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
 
     const embed: APIEmbed = {
       title: 'Messages Leaderboard (30 days)',
-      description: description,
-      footer: { text: DefaultCommandFooter }
+      description: description
     }
+    if (option.addFooter) Object.assign(embed, { footer: { text: DefaultCommandFooter } } satisfies APIEmbed)
 
     return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
-  public async getOnline30Days(option: { addLastUpdateAt: boolean; page: number }): Promise<{
+  public async getOnline30Days(option: { addFooter: boolean; addLastUpdateAt: boolean; page: number }): Promise<{
     embed: APIEmbed
     totalPages: number
   }> {
@@ -203,9 +203,9 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
 
     const embed: APIEmbed = {
       title: 'Online Leaderboard (30 days)',
-      description: description,
-      footer: { text: DefaultCommandFooter }
+      description: description
     }
+    if (option.addFooter) Object.assign(embed, { footer: { text: DefaultCommandFooter } } satisfies APIEmbed)
     return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 

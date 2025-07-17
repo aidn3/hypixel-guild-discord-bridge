@@ -30,6 +30,7 @@ export default {
     const type = context.interaction.options.getString('type', true)
     if (type === Messages30Days.value) {
       const leaderboard = await context.application.discordInstance.leaderboard.getMessage30Days({
+        addFooter: false,
         addLastUpdateAt: true,
         page: 0
       })
@@ -47,6 +48,7 @@ export default {
 
     if (type === Online30Days.value) {
       const leaderboard = await context.application.discordInstance.leaderboard.getOnline30Days({
+        addFooter: false,
         addLastUpdateAt: true,
         page: 0
       })

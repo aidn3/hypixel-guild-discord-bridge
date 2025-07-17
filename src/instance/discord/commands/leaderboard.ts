@@ -27,6 +27,7 @@ export default {
     if (type === Messages30Days.value) {
       await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
         return await context.application.discordInstance.leaderboard.getMessage30Days({
+          addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage
         })
@@ -37,6 +38,7 @@ export default {
     if (type === Online30Days.value) {
       await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
         return await context.application.discordInstance.leaderboard.getOnline30Days({
+          addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage
         })
