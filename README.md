@@ -19,11 +19,12 @@ This project is made to be fully flexible and customisable, offering a high qual
 ## Documentation And Tutorials
 
 - [Frequently asked questions](docs/FAQ.md)
-- [All features available](docs/FEATURES.md)
+- [All Commands And Interactions](docs/COMMANDS.md)
 - [Compatibility and future support](docs/COMPATIBILITY.md)
 - [Migrating to newer version](docs/MIGRATION.md)
 - [Tracking metrics via Prometheus](docs/PROMETHEUS.md)
 - [How to create plugins](docs/PLUGIN-TUTORIAL.md)
+- [Contribute](CONTRIBUTING.md)
 
 ## Features
 
@@ -31,12 +32,12 @@ This project is made to be fully flexible and customisable, offering a high qual
 - Bind hypixel guild chats to Discord channels
 - Supports public, officer and private chat
 - Supports in-game moderation commands from Discord
-- Share events with Discord such as online/offline/join/leave/mute notification/etc
-- Allows commands to be executed
-- Logs all chats/events/etc
-- Quality of life commands. For example, `/list` - lists online members and their current game mode
-- Provides detailed metrics for every instance
-- Supports custom plugins
+- Fully synchronize in-game chat and interactions with Discord including guild events such as
+  online/offline/join/leave/mute notification/etc
+- Support many commands from fun ones to management ones
+- Logs all chats/events/etc as records for staff to view
+- Provides detailed metrics per user and per guild (by Prometheus or by leaderboard)
+- Supports custom plugins with fully fleshed out public API
 - Supports proxies for Minecraft instances
 
 ## Installing and Running
