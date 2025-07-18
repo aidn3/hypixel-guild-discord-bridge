@@ -230,29 +230,65 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
-    this.application.emit('command', {
-      eventId: this.eventHelper.generate(),
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+    if (event.instanceType === InstanceType.Discord) {
+      this.application.emit('command', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
 
-      originEventId: event.eventId,
-      username: event.username,
-      commandName: commandName,
-      commandResponse: response
-    })
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        userId: event.userId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    } else {
+      this.application.emit('command', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    }
   }
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
-    this.application.emit('commandFeedback', {
-      eventId: this.eventHelper.generate(),
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+    if (event.instanceType === InstanceType.Discord) {
+      this.application.emit('commandFeedback', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
 
-      originEventId: event.eventId,
-      username: event.username,
-      commandName: commandName,
-      commandResponse: response
-    })
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        userId: event.userId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    } else {
+      this.application.emit('commandFeedback', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    }
   }
 }
 

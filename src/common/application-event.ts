@@ -498,6 +498,11 @@ export interface BroadcastEvent extends InformEvent {
  */
 export interface BaseCommandEvent extends InformEvent, ReplyEvent {
   /**
+   * The channel type the message is coming from
+   * @see ChannelType
+   */
+  readonly channelType: ChannelType
+  /**
    * The name of the user who executed the command
    */
   readonly username: string
@@ -512,16 +517,32 @@ export interface BaseCommandEvent extends InformEvent, ReplyEvent {
   readonly commandResponse: string
 }
 
+export interface DiscordCommandEvent {
+  instanceType: InstanceType.Discord
+  /**
+   * The unique id of the user provided by Discord
+   */
+  userId: string
+}
+
 /**
  * Used when a command has been executed
  */
-export type CommandEvent = BaseCommandEvent
+export type CommandEvent =
+  | (BaseCommandEvent & DiscordCommandEvent)
+  | (BaseCommandEvent & {
+      instanceType: Exclude<InstanceType, InstanceType.Discord>
+    })
 
 /**
  * Used to send feedback messages when a command takes time to execute.
  * Can be used to send multiple responses as well.
  */
-export type CommandFeedbackEvent = BaseCommandEvent
+export type CommandFeedbackEvent =
+  | (BaseCommandEvent & DiscordCommandEvent)
+  | (BaseCommandEvent & {
+      instanceType: Exclude<InstanceType, InstanceType.Discord>
+    })
 
 /**
  * Events used when an instance changes its status

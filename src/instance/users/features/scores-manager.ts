@@ -4,7 +4,7 @@ import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application.js'
-import { InstanceType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import { ConfigManager } from '../../../common/config-manager.js'
 import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
@@ -61,6 +61,25 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
               this.database.addMinecraftMessage(profile.id, this.timestamp())
             })
             .catch(this.errorHandler.promiseCatch('adding minecraft chat message score'))
+        }
+      }
+    })
+
+    this.application.on('command', (event) => {
+      if (event.channelType !== ChannelType.Public) return
+
+      switch (event.instanceType) {
+        case InstanceType.Discord: {
+          this.database.addDiscordCommand(event.userId, this.timestamp())
+          break
+        }
+        case InstanceType.Minecraft: {
+          void this.queue
+            .add(async () => {
+              const profile = await this.application.mojangApi.profileByUsername(event.username)
+              this.database.addMinecraftCommand(profile.id, this.timestamp())
+            })
+            .catch(this.errorHandler.promiseCatch('adding minecraft command score'))
         }
       }
     })
@@ -262,6 +281,25 @@ class ScoreDatabase {
     )
 
     sqliteManager.register(
+      'DiscordCommands',
+      "CREATE TABLE IF NOT EXISTS 'DiscordCommands' (" +
+        '  timestamp INTEGER NOT NULL,' +
+        '  user TEXT NOT NULL,' +
+        '  count INTEGER NOT NULL DEFAULT 0,' +
+        '  PRIMARY KEY(timestamp, user)' +
+        ')'
+    )
+    sqliteManager.register(
+      'MinecraftCommands',
+      "CREATE TABLE IF NOT EXISTS 'MinecraftCommands' (" +
+        '  timestamp INTEGER NOT NULL,' +
+        '  user TEXT NOT NULL,' +
+        '  count INTEGER NOT NULL DEFAULT 0,' +
+        '  PRIMARY KEY(timestamp, user)' +
+        ')'
+    )
+
+    sqliteManager.register(
       'AllMembers',
       "CREATE TABLE IF NOT EXISTS 'AllMembers' (" +
         '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
@@ -296,6 +334,24 @@ class ScoreDatabase {
     )
 
     sqliteManager.registerCleaner(() => this.clean())
+  }
+
+  public addMinecraftCommand(uuid: string, timestamp: number): void {
+    const database = this.sqliteManager.getDatabase()
+    const insert = database.prepare(
+      'INSERT INTO "MinecraftCommands" (timestamp, user, count) VALUES (@timestamp, @user, 1) ON CONFLICT DO UPDATE SET count = count + 1'
+    )
+    const result = insert.run({ user: uuid, timestamp: Math.floor(timestamp / 1000) })
+    assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
+  }
+
+  public addDiscordCommand(id: string, timestamp: number): void {
+    const database = this.sqliteManager.getDatabase()
+    const insert = database.prepare(
+      'INSERT INTO "DiscordCommands" (timestamp, user, count) VALUES (@timestamp, @user, 1) ON CONFLICT DO UPDATE SET count = count + 1'
+    )
+    const result = insert.run({ user: id, timestamp: Math.floor(timestamp / 1000) })
+    assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
   }
 
   public addMinecraftMessage(uuid: string, timestamp: number): void {
@@ -538,8 +594,11 @@ class ScoreDatabase {
 
     const database = this.sqliteManager.getDatabase()
 
-    const deleteMinecraft = database.prepare('DELETE FROM "MinecraftMessages" WHERE timestamp < ?')
-    const deleteDiscord = database.prepare('DELETE FROM "DiscordMessages" WHERE timestamp < ?')
+    const deleteMinecraftMessages = database.prepare('DELETE FROM "MinecraftMessages" WHERE timestamp < ?')
+    const deleteDiscordMessages = database.prepare('DELETE FROM "DiscordMessages" WHERE timestamp < ?')
+
+    const deleteMinecraftCommands = database.prepare('DELETE FROM "MinecraftCommands" WHERE timestamp < ?')
+    const deleteDiscordCommands = database.prepare('DELETE FROM "DiscordCommands" WHERE timestamp < ?')
 
     const deleteAllMembers = database.prepare('DELETE FROM "AllMembers" WHERE toTimestamp < ?')
     const deleteOnlineMembers = database.prepare('DELETE FROM "OnlineMembers" WHERE toTimestamp < ?')
@@ -547,8 +606,11 @@ class ScoreDatabase {
     const transaction = database.transaction(() => {
       let count = 0
 
-      count += deleteMinecraft.run(oldestMessageTimestamp).changes
-      count += deleteDiscord.run(oldestMessageTimestamp).changes
+      count += deleteMinecraftMessages.run(oldestMessageTimestamp).changes
+      count += deleteDiscordMessages.run(oldestMessageTimestamp).changes
+
+      count += deleteMinecraftCommands.run(oldestMessageTimestamp).changes
+      count += deleteDiscordCommands.run(oldestMessageTimestamp).changes
 
       count += deleteAllMembers.run(oldestMemberTimestamp).changes
       count += deleteOnlineMembers.run(oldestMemberTimestamp).changes
