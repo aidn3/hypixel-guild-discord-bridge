@@ -10,6 +10,7 @@ declare module 'hypixel-api-reborn' {
     ): Promise<SkyblockV2ProfilesRaw>
 
     getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
+
     getSkyblockMuseum(
       query: string,
       profileId: string,
@@ -35,8 +36,13 @@ declare module 'hypixel-api-reborn' {
     currencies?: { coin_purse?: number }
     dungeons: SkyblockV2Dungeons | undefined
     rift?: SkyblockV2Rift
+    accessory_bag_storage: {
+      selected_power?: string
+      highest_magical_power: number
+      tuning: { slot_0?: Record<string, number> }
+    }
     collection?: Record<string, number>
-    inventory?: object
+    inventory?: { bag_contents: { talisman_bag: SkyblockV2Inventory } }
     profile: { bank_account?: number }
     player_data: { experience?: Record<string, number> }
     nether_island_player_data?: {
@@ -56,6 +62,11 @@ declare module 'hypixel-api-reborn' {
     jacobs_contest?: Partial<{ perks: { farming_level_cap: number } }>
     pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
     essence?: SkyblockV2Essence
+  }
+
+  export interface SkyblockV2Inventory {
+    type: 0
+    data: string
   }
 
   export interface SkyblockV2Essence {
