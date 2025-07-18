@@ -65,6 +65,17 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
       }
     })
 
+    setInterval(
+      () => {
+        void this.queue
+          .add(async () => {
+            await this.fetchGuilds()
+          })
+          .catch(this.errorHandler.promiseCatch('fetching guilds'))
+      },
+      30 * 60 * 1000
+    )
+
     setInterval(() => {
       void this.queue
         .add(async () => {
@@ -111,6 +122,26 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     this.config.markDirty()
   }
 
+  private async fetchGuilds(): Promise<void> {
+    for (const instance of this.application.minecraftManager.getAllInstances()) {
+      const botUuid = instance.uuid()
+      if (botUuid === undefined) continue
+
+      const guild = await this.application.hypixelApi.getGuild('player', botUuid)
+      const timeframes: Timeframe[] = []
+      const currentTimestamp = Date.now()
+      for (const member of guild.members) {
+        timeframes.push({
+          uuid: member.uuid,
+          fromTimestamp: member.joinedAtTimestamp,
+          toTimestamp: currentTimestamp,
+          leniencyMilliseconds: this.config.data.leniencyTimeSeconds * 1000
+        })
+      }
+      this.database.addOnlineMembers(timeframes)
+    }
+  }
+
   private async fetchMembers(): Promise<void> {
     const instances = this.application.minecraftManager.getAllInstances()
     for (const bot of this.application.minecraftManager.getMinecraftBots()) {
@@ -134,7 +165,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
             const leniency = this.getLeniency()
             const entries: Timeframe[] = uuids.map((uuid) => ({
               uuid: uuid,
-              timestamp: currentTime,
+              fromTimestamp: currentTime,
               toTimestamp: currentTime,
               leniencyMilliseconds: leniency
             }))
@@ -152,7 +183,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
             const leniency = this.getLeniency()
             const entries: Timeframe[] = uuids.map((uuid) => ({
               uuid: uuid,
-              timestamp: currentTime,
+              fromTimestamp: currentTime,
               toTimestamp: currentTime,
               leniencyMilliseconds: leniency
             }))
@@ -418,8 +449,8 @@ class ScoreDatabase {
       `SELECT id, fromTimestamp, toTimestamp FROM "${tableName}" WHERE ` +
         `uuid = @uuid` +
         ` AND (` +
-        ` (fromTimestamp > @timestamp AND fromTimestamp - @timestamp <= @leniency) OR ` +
-        ` (toTimestamp < @timestamp AND @timestamp - toTimestamp <= @leniency)` +
+        ` (fromTimestamp > @toTimestamp AND fromTimestamp - @toTimestamp <= @leniency) OR ` +
+        ` (toTimestamp < @fromTimestamp AND @fromTimestamp - toTimestamp <= @leniency)` +
         `)`
     )
     const deleteTimeframe = database.prepare(`DELETE FROM "${tableName}" WHERE id = ?`)
@@ -430,12 +461,14 @@ class ScoreDatabase {
     const transaction = database.transaction(() => {
       for (const entry of entries) {
         const uuid = entry.uuid
-        const timestamp = Math.floor(entry.timestamp / 1000)
+        const fromTimestamp = Math.floor(entry.fromTimestamp / 1000)
+        const toTimestamp = Math.floor(entry.toTimestamp / 1000)
         const leniencySeconds = Math.floor(entry.leniencyMilliseconds / 1000)
 
         const existingFrames = getTimeframe.all({
           uuid: uuid,
-          timestamp: timestamp,
+          fromTimestamp: fromTimestamp,
+          toTimestamp: toTimestamp,
           leniency: leniencySeconds
         }) as { id: string; toTimestamp: number; fromTimestamp: number }[]
 
@@ -444,8 +477,8 @@ class ScoreDatabase {
             deleteTimeframe.run(frame.id)
           }
 
-          let lowestTime = Math.min(existingFrames[0].fromTimestamp, timestamp)
-          let highestTime = Math.max(existingFrames[0].toTimestamp, timestamp)
+          let lowestTime = Math.min(existingFrames[0].fromTimestamp, fromTimestamp)
+          let highestTime = Math.max(existingFrames[0].toTimestamp, toTimestamp)
           for (const frame of existingFrames) {
             if (frame.fromTimestamp < lowestTime) lowestTime = frame.fromTimestamp
             if (frame.toTimestamp > highestTime) highestTime = frame.toTimestamp
@@ -453,7 +486,7 @@ class ScoreDatabase {
 
           insertTimeframe.run({ uuid: uuid, fromTimestamp: lowestTime, toTimestamp: highestTime })
         } else {
-          insertTimeframe.run({ uuid: uuid, fromTimestamp: timestamp, toTimestamp: timestamp })
+          insertTimeframe.run({ uuid: uuid, fromTimestamp: fromTimestamp, toTimestamp: toTimestamp })
         }
       }
     })
@@ -525,7 +558,8 @@ class ScoreDatabase {
 
 interface Timeframe {
   uuid: string
-  timestamp: number
+  fromTimestamp: number
+  toTimestamp: number
   leniencyMilliseconds: number
 }
 
