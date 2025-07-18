@@ -145,6 +145,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       const botUuid = instance.uuid()
       if (botUuid === undefined) continue
+      this.logger.trace(`Fetching guild members for bot uuid ${botUuid}`)
 
       const guild = await this.application.hypixelApi.getGuild('player', botUuid)
       const timeframes: Timeframe[] = []
@@ -157,6 +158,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           leniencyMilliseconds: this.config.data.leniencyTimeSeconds * 1000
         })
       }
+      this.logger.trace(`Supplementing ${timeframes.length} guild members timeframe data for bot uuid ${botUuid}`)
       this.database.addOnlineMembers(timeframes)
     }
   }
