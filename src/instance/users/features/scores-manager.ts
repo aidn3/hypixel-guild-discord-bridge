@@ -449,8 +449,12 @@ class ScoreDatabase {
       `SELECT id, fromTimestamp, toTimestamp FROM "${tableName}" WHERE ` +
         `uuid = @uuid` +
         ` AND (` +
+        // check nearby timeframes with some leniency
         ` (fromTimestamp > @toTimestamp AND fromTimestamp - @toTimestamp <= @leniency) OR ` +
-        ` (toTimestamp < @fromTimestamp AND @fromTimestamp - toTimestamp <= @leniency)` +
+        ` (toTimestamp < @fromTimestamp AND @fromTimestamp - toTimestamp <= @leniency) OR ` +
+        // check overlapping timeframes
+        ` (fromTimestamp BETWEEN @fromTimestamp AND @toTimestamp) OR ` +
+        ` (toTimestamp BETWEEN @fromTimestamp AND @toTimestamp)` +
         `)`
     )
     const deleteTimeframe = database.prepare(`DELETE FROM "${tableName}" WHERE id = ?`)
