@@ -1,6 +1,0 @@
-node_modules
-build
-logs
-package-lock.json
-*-ti.ts
-config

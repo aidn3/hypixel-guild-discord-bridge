@@ -143,7 +143,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   }
 
   async connect(): Promise<void> {
-    assert(this.staticConfig.key)
+    assert.ok(this.staticConfig.key)
 
     if (this.connected) {
       this.logger.error('Instance already connected once. Calling connect() again will bug it. Returning...')

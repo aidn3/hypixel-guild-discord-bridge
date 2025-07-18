@@ -56,7 +56,7 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
 
     this.application.on('chat', (event) => {
       if (event.instanceName !== this.clientInstance.instanceName) return
-      assert(this.config)
+      assert.ok(this.config)
 
       if (event.channelType === ChannelType.Public || event.channelType === ChannelType.Officer) {
         this.config.data.guildChatEnabled = true
@@ -120,7 +120,7 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
       return
     }
 
-    assert(this.config)
+    assert.ok(this.config)
     if (!this.prepared && this.allPrepared(this.config)) {
       this.prepared = true
       this.application.emit('broadcast', {
@@ -183,8 +183,8 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
   private retrieveConfig() {
     const newUuid = this.clientInstance.uuid()
     const username = this.clientInstance.username()
-    assert(newUuid !== undefined)
-    assert(username !== undefined)
+    assert.ok(newUuid !== undefined)
+    assert.ok(username !== undefined)
 
     this.lastUuid ??= newUuid
     if (newUuid !== this.lastUuid) {

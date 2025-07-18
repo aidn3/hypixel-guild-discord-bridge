@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { formatTime } from '../../../util/shared-util.js'
+import { formatTime } from '../../../utility/shared-utility'
 
 export default class Starfall extends ChatCommandHandler {
   constructor() {

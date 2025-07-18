@@ -10,7 +10,7 @@ import {
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import Autocomplete from '../../users/features/autocomplete.js'
-import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
+import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const IncludeCommand = 'include'
 const ExcludeCommand = 'exclude'
@@ -237,7 +237,7 @@ async function handleRemove(
   } satisfies APIEmbed
 
   const index = list.map((entry) => entry.toLowerCase()).indexOf(word.toLowerCase())
-  if (index < 0) {
+  if (index === -1) {
     result.color = Color.Info
     result.description = `Could not find \`${escapeMarkdown(word)}\` in the list.`
   } else {

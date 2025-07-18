@@ -2,7 +2,7 @@ import type { ChatEvent } from '../../../common/application-event.js'
 import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { Timeout } from '../../../util/timeout.js'
+import { Timeout } from '../../../utility/timeout.js'
 
 export default class Asian extends ChatCommandHandler {
   constructor() {

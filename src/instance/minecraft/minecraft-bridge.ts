@@ -195,7 +195,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       return
     }
 
-    if (reply.channel === ChannelType.Private) assert(reply.username === event.username)
+    if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.username)
     this.messageAssociation.addMessageId(event.eventId, reply)
 
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse}`

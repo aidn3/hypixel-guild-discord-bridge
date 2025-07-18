@@ -9,8 +9,8 @@ import {
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
-import { sleep } from '../../../util/shared-util.js'
-import { Timeout } from '../../../util/timeout.js'
+import { sleep } from '../../../utility/shared-utility'
+import { Timeout } from '../../../utility/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 // eslint-disable-next-line import/no-restricted-paths

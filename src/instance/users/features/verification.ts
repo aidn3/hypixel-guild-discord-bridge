@@ -8,13 +8,13 @@ import type { SqliteManager } from '../../../common/sqlite-manager.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type UsersManager from '../users-manager.js'
 
-export class Verification extends EventHandler<UsersManager, InstanceType.Util, void> {
+export class Verification extends EventHandler<UsersManager, InstanceType.Utility, void> {
   private readonly database: VerificationDatabase
 
   constructor(
     application: Application,
     clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Util>,
+    eventHelper: EventHelper<InstanceType.Utility>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     sqliteManager: SqliteManager

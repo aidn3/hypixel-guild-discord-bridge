@@ -1,5 +1,5 @@
 import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
-import { sufficeToTime } from '../../../util/shared-util.js'
+import { sufficeToTime } from '../../../utility/shared-utility'
 // eslint-disable-next-line import/no-restricted-paths
 import { HeatType } from '../../moderation/commands-heat.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'

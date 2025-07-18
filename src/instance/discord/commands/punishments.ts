@@ -15,15 +15,15 @@ import {
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { checkChatTriggers, KickChat, MuteChat, UnmuteChat } from '../../../util/chat-triggers.js'
-import type { MojangApi } from '../../../util/mojang.js'
-import { durationToMinecraftDuration, getDuration } from '../../../util/shared-util.js'
+import { checkChatTriggers, KickChat, MuteChat, UnmuteChat } from '../../../utility/chat-triggers.js'
+import type { MojangApi } from '../../../utility/mojang.js'
+import { durationToMinecraftDuration, getDuration } from '../../../utility/shared-utility'
 import { HeatResult, HeatType } from '../../moderation/commands-heat.js'
 import type ModerationInstance from '../../moderation/moderation-instance.js'
-import { userIdentifiersToList } from '../../moderation/util.js'
+import { userIdentifiersToList } from '../../moderation/utility'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { pageMessage } from '../util/discord-pager.js'
+import { pageMessage } from '../utility/discord-pager.js'
 
 export default {
   getCommandBuilder: () =>
@@ -476,7 +476,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
     currentLength += entry.length
     entriesCount++
     const lastPage = pages.at(-1)
-    assert(lastPage)
+    assert.ok(lastPage)
     lastPage.description += entry
   }
 

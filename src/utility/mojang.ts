@@ -1,4 +1,4 @@
-import Axios, { AxiosError, HttpStatusCode } from 'axios'
+import DefaultAxios, { AxiosError, HttpStatusCode } from 'axios'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../application.js'
@@ -22,7 +22,7 @@ export class MojangApi {
         await this.rateLimit.wait()
 
         try {
-          return await Axios.get<MojangProfile>(
+          return await DefaultAxios.get<MojangProfile>(
             `https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`
           ).then((response) => response.data)
         } catch (error: unknown) {
@@ -51,7 +51,7 @@ export class MojangApi {
         await this.rateLimit.wait()
 
         try {
-          return await Axios.get<MojangProfile>(
+          return await DefaultAxios.get<MojangProfile>(
             `https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`
           ).then((response) => response.data)
         } catch (error: unknown) {
@@ -122,7 +122,7 @@ export class MojangApi {
       for (let retry = 0; retry < MojangApi.RetryCount; retry++) {
         await this.rateLimit.wait()
         try {
-          return await Axios.post<MojangProfile[]>(
+          return await DefaultAxios.post<MojangProfile[]>(
             `https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname`,
             usernames
           ).then((response) => response.data)

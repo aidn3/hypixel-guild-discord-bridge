@@ -213,7 +213,7 @@ export class OptionsHandler {
       return
     }
 
-    assert(this.originalReply)
+    assert.ok(this.originalReply)
     await this.originalReply.edit({
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
@@ -231,30 +231,30 @@ export class OptionsHandler {
     }
 
     const foundOption = this.ids.get(interaction.customId)
-    assert(foundOption !== undefined)
+    assert.ok(foundOption !== undefined)
     const option = foundOption.item
     const action = foundOption.action
 
     switch (option.type) {
       case OptionType.Category: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
 
         this.path.push(interaction.customId)
         return false
       }
 
       case OptionType.Boolean: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
 
         option.toggleOption()
         return false
       }
       case OptionType.Text: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
         return await this.handleText(interaction, errorHandler, option)
       }
       case OptionType.Number: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
         return await this.handleNumber(interaction, errorHandler, option)
       }
       case OptionType.List: {
@@ -268,31 +268,31 @@ export class OptionsHandler {
       }
 
       case OptionType.PresetList: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
         return this.handlePresetList(interaction, option)
       }
 
       case OptionType.Channel: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
         return this.handleChannel(interaction, option)
       }
       case OptionType.Role: {
-        assert(action === 'default')
-        assert(interaction.isRoleSelectMenu())
+        assert.ok(action === 'default')
+        assert.ok(interaction.isRoleSelectMenu())
         option.setOption(interaction.values)
         return false
       }
 
       case OptionType.User: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
 
-        assert(interaction.isUserSelectMenu())
+        assert.ok(interaction.isUserSelectMenu())
         option.setOption(interaction.values)
         return false
       }
 
       case OptionType.Action: {
-        assert(action === 'default')
+        assert.ok(action === 'default')
         return await this.handleAction(interaction, errorHandler, option)
       }
     }
@@ -301,7 +301,7 @@ export class OptionsHandler {
   }
 
   private handleChannel(interaction: CollectedInteraction, option: DiscordSelectOption): boolean {
-    assert(interaction.isChannelSelectMenu())
+    assert.ok(interaction.isChannelSelectMenu())
     option.setOption(interaction.values)
     return false
   }
@@ -311,7 +311,7 @@ export class OptionsHandler {
     errorHandler: UnexpectedErrorHandler,
     option: TextOption
   ): Promise<boolean> {
-    assert(interaction.isButton())
+    assert.ok(interaction.isButton())
     await interaction.showModal({
       customId: interaction.customId,
       title: `Setting ${option.name}`,
@@ -341,7 +341,7 @@ export class OptionsHandler {
         filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
       })
       .then(async (modalInteraction) => {
-        assert(modalInteraction.isFromMessage())
+        assert.ok(modalInteraction.isFromMessage())
 
         const value = modalInteraction.fields.getTextInputValue(interaction.customId)
         option.setOption(value)
@@ -357,7 +357,7 @@ export class OptionsHandler {
     errorHandler: UnexpectedErrorHandler,
     option: NumberOption
   ): Promise<boolean> {
-    assert(interaction.isButton())
+    assert.ok(interaction.isButton())
     await interaction.showModal({
       customId: interaction.customId,
       title: `Setting ${option.name}`,
@@ -386,7 +386,7 @@ export class OptionsHandler {
         filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
       })
       .then(async (modalInteraction) => {
-        assert(modalInteraction.isFromMessage())
+        assert.ok(modalInteraction.isFromMessage())
 
         const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
         const intValue = value.includes('.') ? Number.parseFloat(value) : Number.parseInt(value, 10)
@@ -410,12 +410,12 @@ export class OptionsHandler {
     errorHandler: UnexpectedErrorHandler,
     option: ActionOption
   ): Promise<boolean> {
-    assert(interaction.isButton())
+    assert.ok(interaction.isButton())
     return await option.onInteraction(interaction, errorHandler)
   }
 
   private async handleListAdd(interaction: CollectedInteraction, option: ListOption): Promise<boolean> {
-    assert(interaction.isButton())
+    assert.ok(interaction.isButton())
 
     await interaction.showModal({
       customId: interaction.customId,
@@ -442,7 +442,7 @@ export class OptionsHandler {
       time: 300_000,
       filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
     })
-    assert(modalInteraction.isFromMessage())
+    assert.ok(modalInteraction.isFromMessage())
 
     const value = modalInteraction.fields.getTextInputValue(interaction.customId).trim()
     const allOptions = option.getOption()
@@ -461,7 +461,7 @@ export class OptionsHandler {
   }
 
   private handleListDelete(interaction: CollectedInteraction, option: ListOption): boolean {
-    assert(interaction.isStringSelectMenu())
+    assert.ok(interaction.isStringSelectMenu())
 
     const valuesToDelete = interaction.values
     const allOptions = option.getOption()
@@ -474,7 +474,7 @@ export class OptionsHandler {
   }
 
   private handlePresetList(interaction: CollectedInteraction, option: PresetListOption): boolean {
-    assert(interaction.isStringSelectMenu())
+    assert.ok(interaction.isStringSelectMenu())
     option.setOption(interaction.values)
     return false
   }
@@ -670,7 +670,7 @@ class ViewBuilder {
 
   private addList(option: ListOption): void {
     const addAction = [...this.ids.entries()].find(([, entry]) => entry.item === option && entry.action === 'add')
-    assert(addAction !== undefined, 'Could not find add action?')
+    assert.ok(addAction !== undefined, 'Could not find add action?')
 
     let label = bold(option.name)
     if (option.description !== undefined) label += `\n-# ${option.description}`
@@ -687,7 +687,7 @@ class ViewBuilder {
     })
 
     const deleteAction = [...this.ids.entries()].find(([, entry]) => entry.item === option && entry.action === 'delete')
-    assert(deleteAction !== undefined, 'Could not find delete action?')
+    assert.ok(deleteAction !== undefined, 'Could not find delete action?')
 
     const mentionedValues = new Set<string>()
     const values = []
@@ -773,7 +773,7 @@ class ViewBuilder {
   }
 
   private addChannel(option: DiscordSelectOption): void {
-    assert(option.type === OptionType.Channel)
+    assert.ok(option.type === OptionType.Channel)
 
     let label = bold(option.name)
     if (option.description !== undefined) label += `\n-# ${option.description}`
@@ -907,7 +907,7 @@ class ViewBuilder {
   }
 
   private append(component: ComponentInContainerData): void {
-    assert(component.type !== ComponentType.Separator, 'use applySeperator() instead')
+    assert.ok(component.type !== ComponentType.Separator, 'use applySeperator() instead')
 
     this.components.push(component)
     this.separatorApplied = false
@@ -923,11 +923,11 @@ class ViewBuilder {
     if (this.path.length === 0) return this.mainCategory
 
     const lastPath = this.path.at(-1)
-    assert(lastPath)
+    assert.ok(lastPath)
 
     const category = this.ids.get(lastPath)?.item
-    assert(category !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
-    assert(category.type === OptionType.Category || category.type === OptionType.EmbedCategory)
+    assert.ok(category !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
+    assert.ok(category.type === OptionType.Category || category.type === OptionType.EmbedCategory)
 
     return category
   }
@@ -937,7 +937,7 @@ class ViewBuilder {
 
     for (const path of this.path) {
       const categoryOption = this.ids.get(path)?.item
-      assert(categoryOption !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
+      assert.ok(categoryOption !== undefined, `Can not find path to the category. Given: ${this.path.join(', ')}`)
       title += ` > ${escapeMarkdown(categoryOption.name)}`
     }
 

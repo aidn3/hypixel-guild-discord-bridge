@@ -9,7 +9,7 @@ import {
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/util.js'
+} from '../common/utility'
 
 const FloorsBaseExp = {
   m6: 120_000,
@@ -91,7 +91,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
         }
       }
 
-      assert(currentClassPlaying)
+      assert.ok(currentClassPlaying)
       classesExperiences[currentClassPlaying] += xpPerRun * 0.75 * classExpBoosts[currentClassPlaying]
       runsDone[currentClassPlaying]++
 

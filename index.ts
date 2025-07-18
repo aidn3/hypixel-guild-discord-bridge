@@ -2,13 +2,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
-import { default as Logger4js } from 'log4js'
+import Logger4js from 'log4js'
 
 import LoggerConfig from './config/log4js-config.json' with { type: 'json' }
 import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
-import { gracefullyExitProcess } from './src/util/shared-util.js'
+import { gracefullyExitProcess } from './src/utility/shared-utility'
 
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
 let app: Application | undefined

@@ -3,7 +3,7 @@ import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } fr
 
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
-import type { MojangApi } from '../../../util/mojang.js'
+import type { MojangApi } from '../../../utility/mojang.js'
 import type { Link } from '../../users/features/verification.js'
 import { LinkType } from '../../users/features/verification.js'
 import { formatInvalidUsername } from '../common/commands-format.js'

@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import { default as Database } from 'better-sqlite3'
+import Database from 'better-sqlite3'
 
 import type Application from '../application.js'
 
@@ -33,7 +33,7 @@ export class SqliteManager {
   }
 
   public register(name: string, query: string): void {
-    assert(!this.registeredTables.has(name.toLowerCase()), `name already registered: ${name}`)
+    assert.ok(!this.registeredTables.has(name.toLowerCase()), `name already registered: ${name}`)
 
     this.getDatabase().exec(query)
     this.registeredTables.add(name)
@@ -53,7 +53,7 @@ export class SqliteManager {
   }
 
   public getDatabase(): Database.Database {
-    assert(!this.isClosed(), 'Database is closed')
+    assert.ok(!this.isClosed(), 'Database is closed')
     this.tryClean()
     return this.database
   }

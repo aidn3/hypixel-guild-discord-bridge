@@ -62,7 +62,7 @@ export default class MessageDeleter {
     newArray.sort((a, b) => b.createdAt - a.createdAt)
     while (newArray.length > this.config.data.maxInteractions) {
       const interaction = newArray.pop()
-      assert(interaction)
+      assert.ok(interaction)
       tasks.push(...this.delete(interaction))
     }
 
@@ -81,11 +81,11 @@ export default class MessageDeleter {
       const task = this.client.channels
         .fetch(message.channelId)
         .then((channel) => {
-          assert(channel?.isSendable())
+          assert.ok(channel?.isSendable())
           return channel.messages.fetch(message.messageId)
         })
         .then((message) => {
-          assert(message)
+          assert.ok(message)
           return message.delete()
         })
         .catch(this.errorHandler.promiseCatch(`deleting channel=${message.channelId},message=${message.messageId}`))

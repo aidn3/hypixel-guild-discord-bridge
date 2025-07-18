@@ -6,7 +6,7 @@ import {
   playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/util.js'
+} from '../common/utility'
 
 export default class Kuudra extends ChatCommandHandler {
   constructor() {

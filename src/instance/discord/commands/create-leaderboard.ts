@@ -20,10 +20,10 @@ export default {
   permission: Permission.Officer,
 
   handler: async function (context) {
-    assert(context.interaction.inGuild())
+    assert.ok(context.interaction.inGuild())
     const channel = context.interaction.channel
-    assert(channel)
-    assert(channel.isSendable(), 'not text based channel?')
+    assert.ok(channel)
+    assert.ok(channel.isSendable(), 'not text based channel?')
     await context.interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const config = context.application.discordInstance.leaderboard.getConfig()

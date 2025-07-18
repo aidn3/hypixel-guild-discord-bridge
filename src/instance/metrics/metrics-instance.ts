@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios'
-import Axios from 'axios'
+import DefaultAxios from 'axios'
 
 import type Application from '../../application.js'
 import type { ApplicationEvents } from '../../common/application-event.js'
@@ -40,7 +40,7 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
     this.logger.debug('collecting anonymous metrics to send')
     this.stats.instancesUsed = this.application.getAllInstancesIdentifiers().map((instance) => instance.instanceType)
 
-    await Axios.post(MetricsInstance.Host, this.stats)
+    await DefaultAxios.post(MetricsInstance.Host, this.stats)
       .then((response: AxiosResponse<{ id: string }, unknown>) => response.data)
       .then((response) => {
         this.stats.id = response.id // ID is used to ensure no duplicates entries when sharing metrics

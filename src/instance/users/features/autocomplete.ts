@@ -8,7 +8,7 @@ import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type UsersManager from '../users-manager.js'
 
-export default class Autocomplete extends EventHandler<UsersManager, InstanceType.Util, void> {
+export default class Autocomplete extends EventHandler<UsersManager, InstanceType.Utility, void> {
   private readonly usernames: string[] = []
   private readonly loweredCaseUsernames = new Set<string>()
 
@@ -17,7 +17,7 @@ export default class Autocomplete extends EventHandler<UsersManager, InstanceTyp
   constructor(
     application: Application,
     clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Util>,
+    eventHelper: EventHelper<InstanceType.Utility>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {

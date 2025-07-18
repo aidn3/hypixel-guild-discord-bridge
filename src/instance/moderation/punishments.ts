@@ -4,7 +4,7 @@ import type Application from '../../application.js'
 import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../../common/application-event.js'
 import { PunishmentType } from '../../common/application-event.js'
 
-import { matchUserIdentifier } from './util.js'
+import { matchUserIdentifier } from './utility'
 
 type PunishmentsRecord = Record<PunishmentType, PunishmentAddEvent[]>
 

@@ -5,7 +5,7 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/util.js'
+} from '../common/utility'
 
 export default class Level extends ChatCommandHandler {
   constructor() {

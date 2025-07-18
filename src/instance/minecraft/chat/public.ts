@@ -5,7 +5,7 @@ import {
   Permission,
   PunishmentType
 } from '../../../common/application-event.js'
-import { durationToMinecraftDuration } from '../../../util/shared-util.js'
+import { durationToMinecraftDuration } from '../../../utility/shared-utility'
 import { LinkType } from '../../users/features/verification.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 

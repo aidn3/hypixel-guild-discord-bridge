@@ -2,7 +2,7 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
-import type { ChatTriggerResult } from '../../../util/chat-triggers.js'
+import type { ChatTriggerResult } from '../../../utility/chat-triggers.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
 

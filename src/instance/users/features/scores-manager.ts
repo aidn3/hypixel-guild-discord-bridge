@@ -13,7 +13,7 @@ import type { SqliteManager } from '../../../common/sqlite-manager.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type UsersManager from '../users-manager.js'
 
-export default class ScoresManager extends EventHandler<UsersManager, InstanceType.Util, void> {
+export default class ScoresManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
   private static readonly DeleteMemberOlderThan = 30
   private static readonly DeleteMessagesOlderThan = 356
   private static readonly LeniencyTimeSeconds = 5 * 60
@@ -28,7 +28,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
   constructor(
     application: Application,
     clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Util>,
+    eventHelper: EventHelper<InstanceType.Utility>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     sqliteManager: SqliteManager
@@ -273,7 +273,7 @@ class ScoreDatabase {
       'INSERT INTO "MinecraftMessages" (timestamp, user, count) VALUES (@timestamp, @user, 1) ON CONFLICT DO UPDATE SET count = count + 1'
     )
     const result = insert.run({ user: uuid, timestamp: Math.floor(timestamp / 1000) })
-    assert(result.changes > 0, 'Nothing changed even when inserted?')
+    assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
   }
 
   public getMinecraftMessages(
@@ -361,7 +361,7 @@ class ScoreDatabase {
     from: number,
     to: number
   ): MemberLeaderboard[] {
-    assert(from < to, '"from" timestamp is earlier than the "to" timestamp')
+    assert.ok(from < to, '"from" timestamp is earlier than the "to" timestamp')
 
     let ignoreQuery = ''
     if (ignore.length > 0)
@@ -398,7 +398,7 @@ class ScoreDatabase {
       'INSERT INTO "DiscordMessages" (timestamp, user, count) VALUES (@timestamp, @user, 1) ON CONFLICT DO UPDATE SET count = count + 1'
     )
     const result = insert.run({ user: id, timestamp: Math.floor(timestamp / 1000) })
-    assert(result.changes > 0, 'Nothing changed even when inserted?')
+    assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
   }
 
   public addOnlineMembers(entries: Timeframe[]): void {

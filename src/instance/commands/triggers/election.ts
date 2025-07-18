@@ -24,18 +24,18 @@ export default class Election extends ChatCommandHandler {
 
     let winner = candidates[0]
     for (const candidate of candidates) {
-      assert(candidate.votes !== undefined)
-      assert(winner.votes !== undefined)
+      assert.ok(candidate.votes !== undefined)
+      assert.ok(winner.votes !== undefined)
       if (candidate.votes > winner.votes) winner = candidate
     }
 
     let minister = candidates.find((candidate) => candidate.name !== winner.name)
-    assert(minister !== undefined)
+    assert.ok(minister !== undefined)
     for (const candidate of candidates) {
       if (candidate.name === winner.name) continue
 
-      assert(candidate.votes !== undefined)
-      assert(minister.votes !== undefined)
+      assert.ok(candidate.votes !== undefined)
+      assert.ok(minister.votes !== undefined)
       if (candidate.votes > minister.votes) minister = candidate
     }
 

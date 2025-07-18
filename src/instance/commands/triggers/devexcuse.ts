@@ -1,4 +1,4 @@
-import Axios from 'axios'
+import DefaultAxios from 'axios'
 
 import { ChatCommandHandler } from '../../../common/commands.js'
 
@@ -13,7 +13,7 @@ export default class DevelopmentExcuse extends ChatCommandHandler {
 
   async handler(): Promise<string> {
     let message = "You're asking why it doesn't work?\n"
-    message += await Axios.get<DevelopmentExcuseResponse>(`https://api.devexcus.es/`).then(
+    message += await DefaultAxios.get<DevelopmentExcuseResponse>(`https://api.devexcus.es/`).then(
       (response) => response.data.text
     )
     return message

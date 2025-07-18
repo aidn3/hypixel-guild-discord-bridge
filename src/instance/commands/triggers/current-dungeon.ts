@@ -1,17 +1,17 @@
 import assert from 'node:assert'
 
-import { default as Moment } from 'moment'
+import Moment from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { MojangApi } from '../../../util/mojang.js'
+import type { MojangApi } from '../../../utility/mojang.js'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/util.js'
+} from '../common/utility'
 
 export default class CurrentDungeon extends ChatCommandHandler {
   private static readonly ShowTimeAfter = 30 * 60 * 1000
@@ -59,7 +59,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
         foundPlayer = true
       }
     }
-    assert(foundPlayer)
+    assert.ok(foundPlayer)
 
     message +=
       lastRun.completion_ts + CurrentDungeon.ShowTimeAfter < Date.now()

@@ -25,7 +25,7 @@ export class Timeout<T> {
     })
 
     // @ts-expect-error Promise is executed before the constructor is returned
-    assert(this.resolveFunction)
+    assert.ok(this.resolveFunction)
   }
 
   public finished(): boolean {

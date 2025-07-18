@@ -6,7 +6,7 @@ import {
 } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { formatTime } from '../../../util/shared-util.js'
+import { formatTime } from '../../../utility/shared-utility'
 
 export default class Mute extends ChatCommandHandler {
   public static readonly DefaultMessages = [

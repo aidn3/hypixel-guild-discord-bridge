@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import { default as Logger4js } from 'log4js'
+import Logger4js from 'log4js'
 
 import { InternalInstancePrefix } from '../common/instance.js'
 
@@ -42,7 +42,7 @@ export function antiSpamString(): string {
 }
 
 export function formatTime(time: number, maxPrecision = 2): string {
-  assert(maxPrecision >= 1, 'Minimum precision is 1')
+  assert.ok(maxPrecision >= 1, 'Minimum precision is 1')
 
   let result = ''
   let variablesSet = 0

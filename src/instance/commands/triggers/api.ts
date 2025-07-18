@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Api extends ChatCommandHandler {
   constructor() {
@@ -27,9 +27,11 @@ export default class Api extends ChatCommandHandler {
     const member = selectedProfile.members[uuid]
 
     const parts: string[] = []
-    parts.push(`Skills ${'experience' in member.player_data ? 'ON' : 'OFF'}`)
-    parts.push(`Collection ${'collection' in member ? 'ON' : 'OFF'}`)
-    parts.push(`Inventory ${'inventory' in member ? 'ON' : 'OFF'}`)
+    parts.push(
+      `Skills ${'experience' in member.player_data ? 'ON' : 'OFF'}`,
+      `Collection ${'collection' in member ? 'ON' : 'OFF'}`,
+      `Inventory ${'inventory' in member ? 'ON' : 'OFF'}`
+    )
 
     const museum = await context.app.hypixelApi
       .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })

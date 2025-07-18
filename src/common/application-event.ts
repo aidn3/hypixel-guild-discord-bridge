@@ -129,7 +129,7 @@ export enum InstanceType {
   /**
    * Used for when utils broadcast events
    */
-  Util = 'util'
+  Utility = 'utility'
 }
 
 /**

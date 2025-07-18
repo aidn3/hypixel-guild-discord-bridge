@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import { ChannelType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { Timeout } from '../../../util/timeout.js'
+import { Timeout } from '../../../utility/timeout.js'
 
 export enum CommandType {
   Generic = 'generic',
@@ -88,7 +88,7 @@ export class SendQueue {
   }
 
   private async startCycle(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       while (this.priorityQueue.empty()) {
         this.threadSleep = new Timeout(~(1 << 31)) // max 32bit integer
@@ -116,7 +116,7 @@ export class SendQueue {
     const allTimes = currentEntry.types.map((type) => CommandTypeSleep[type]).sort((a, b) => a - b)
 
     let sleptSoFar = 0
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       let maxSleep: number
       if (this.priorityQueue.empty()) {
@@ -200,7 +200,7 @@ class PriorityQueue {
 
   public pop(): QueueEntry {
     const entry = this.entries.shift()
-    assert(entry !== undefined)
+    assert.ok(entry !== undefined)
     return entry
   }
 
@@ -209,7 +209,7 @@ class PriorityQueue {
   }
 
   public peek(): QueueEntry {
-    assert(this.entries.length > 0)
+    assert.ok(this.entries.length > 0)
     return this.entries[0]
   }
 }
