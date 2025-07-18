@@ -6,7 +6,7 @@ import { InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { LinkType } from '../../users/features/verification.js'
-import { getUuidIfExists } from '../common/util.js'
+import { getUuidIfExists } from '../common/utility'
 
 export default class Unlink extends ChatCommandHandler {
   private readonly confirmationId = new NodeCache({ stdTTL: 60 })

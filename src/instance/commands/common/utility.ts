@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
 
-import type { MojangApi } from '../../../util/mojang.js'
+import type { MojangApi } from '../../../utility/mojang.js'
 
 export async function getUuidIfExists(mojangApi: MojangApi, username: string): Promise<string | undefined> {
   return await mojangApi
@@ -24,14 +24,14 @@ export async function getSelectedSkyblockProfileRaw(
   const profile = response.profiles.find((p) => p.selected)
 
   const selected = profile?.members[uuid]
-  assert(selected)
+  assert.ok(selected)
   return selected
 }
 
 export async function getSelectedSkyblockProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
   return await hypixelApi.getSkyblockProfiles(uuid).then((profiles) => {
     const profile = profiles.find((profile) => profile.selected)?.me
-    assert(profile)
+    assert.ok(profile)
     return profile
   })
 }

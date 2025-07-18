@@ -1,5 +1,5 @@
 import type { Logger } from 'log4js'
-import { default as Logger4Js } from 'log4js'
+import Logger4Js from 'log4js'
 
 import type Application from '../application.js'
 

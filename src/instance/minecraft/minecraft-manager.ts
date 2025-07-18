@@ -10,9 +10,9 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 
 import type { MinecraftConfig, MinecraftInstanceConfig } from './common/config.js'
 import MinecraftInstance from './minecraft-instance.js'
-import { Sanitizer } from './util/sanitizer.js'
+import { Sanitizer } from './utility/sanitizer.js'
 
-export class MinecraftManager extends Instance<InstanceType.Util> {
+export class MinecraftManager extends Instance<InstanceType.Utility> {
   public sanitizer: Sanitizer
   private readonly config: ConfigManager<MinecraftConfig>
 
@@ -22,7 +22,7 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
   private readonly sessionDirectory
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'MinecraftManager', InstanceType.Util)
+    super(application, InternalInstancePrefix + 'MinecraftManager', InstanceType.Utility)
 
     this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('minecraft-manager.json'), {
       adminUsername: 'Steve',
@@ -118,7 +118,7 @@ export class MinecraftManager extends Instance<InstanceType.Util> {
     }
 
     for (const instance of instances) {
-      assert(this.instances.delete(instance))
+      assert.ok(this.instances.delete(instance))
       this.minecraftBots.delete(instance.instanceName)
     }
     result.instanceRemoved += instances.length

@@ -1,4 +1,4 @@
-import { default as StringComparison } from 'string-comparison'
+import StringComparison from 'string-comparison'
 
 import type { ConfigManager } from '../../../common/config-manager.js'
 

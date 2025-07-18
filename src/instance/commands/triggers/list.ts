@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
-import { beautifyInstanceName } from '../../../util/shared-util.js'
+import { beautifyInstanceName } from '../../../utility/shared-utility'
 
 export default class List extends ChatCommandHandler {
   constructor() {

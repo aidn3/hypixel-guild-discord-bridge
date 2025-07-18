@@ -8,7 +8,7 @@ import {
   playerNeverPlayedSkyblock,
   playerNeverPlayedSlayers,
   usernameNotExists
-} from '../common/util.js'
+} from '../common/utility'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],

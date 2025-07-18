@@ -1,9 +1,9 @@
 import assert from 'node:assert'
 import fs from 'node:fs'
 
-import { default as deepcopy } from 'deepcopy'
+import deepcopy from 'deepcopy'
 import Defaults from 'defaults'
-import { default as deepEqual } from 'fast-deep-equal'
+import deepEqual from 'fast-deep-equal'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
@@ -21,7 +21,7 @@ export class ConfigManager<T extends object> {
   public constructor(application: Application, logger: Logger, filepath: string, data: T) {
     this.logger = logger
     this.configFilePath = filepath
-    assert(!Array.isArray(data), 'configuration not allowed to be an array. Only Objects')
+    assert.ok(!Array.isArray(data), 'configuration not allowed to be an array. Only Objects')
     this.data = data
     this.defaultConfig = deepcopy(data)
 

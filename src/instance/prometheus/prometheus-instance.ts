@@ -24,7 +24,7 @@ export default class PrometheusInstance extends Instance<InstanceType.Prometheus
   constructor(app: Application, config: PrometheusConfig) {
     super(app, InternalInstancePrefix + InstanceType.Prometheus, InstanceType.Prometheus)
 
-    assert(config.enabled)
+    assert.ok(config.enabled)
     this.config = config
 
     this.register = new Client.Registry()

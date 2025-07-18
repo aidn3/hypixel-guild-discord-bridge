@@ -6,16 +6,16 @@ import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type { SqliteManager } from '../../../common/sqlite-manager.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import type { MojangProfile } from '../../../util/mojang.js'
+import type { MojangProfile } from '../../../utility/mojang.js'
 import type UsersManager from '../users-manager.js'
 
-export class Mojang extends EventHandler<UsersManager, InstanceType.Util, void> {
+export class Mojang extends EventHandler<UsersManager, InstanceType.Utility, void> {
   private static readonly MaxAge = 7 * 24 * 60 * 60 * 1000
 
   constructor(
     application: Application,
     clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Util>,
+    eventHelper: EventHelper<InstanceType.Utility>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     private readonly sqliteManager: SqliteManager

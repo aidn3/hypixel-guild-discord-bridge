@@ -15,14 +15,14 @@ import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { Timeout } from '../../../util/timeout.js'
+import { Timeout } from '../../../utility/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { ProxyConfig } from '../../minecraft/common/config.js'
 // eslint-disable-next-line import/no-restricted-paths
 import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import type { CategoryOption, EmbedCategoryOption } from '../util/options-handler.js'
-import { InputStyle, OptionsHandler, OptionType } from '../util/options-handler.js'
+import type { CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
+import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'
@@ -932,7 +932,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
       text: DefaultCommandFooter
     }
   }
-  assert(embed.fields)
+  assert.ok(embed.fields)
 
   const registeredInstances = instances.filter((instance) =>
     config.instances.some((configInstance) => instance.instanceName === configInstance.name)
@@ -1065,7 +1065,7 @@ async function minecraftInstanceAdd(
     title: EmbedTitle,
     description: '**Progress:**\n'
   }
-  assert(embed.description)
+  assert.ok(embed.description)
 
   let sendChainPromise: Promise<InteractionResponse | Message> = modalInteraction.deferReply()
   const deferredReply = await sendChainPromise
@@ -1089,35 +1089,35 @@ async function minecraftInstanceAdd(
   registeredEvents.instanceStatus = (event) => {
     if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    assert(embed.description)
+    assert.ok(embed.description)
     embed.description += `- ${event.message}\n`
     refresher.refresh()
   }
   registeredEvents.instanceSignal = (event) => {
     if (!event.targetInstanceName.includes(instanceName)) return
 
-    assert(embed.description)
+    assert.ok(embed.description)
     embed.description += `- ${event.type} signal has been received\n`
     refresher.refresh()
   }
   registeredEvents.instanceAnnouncement = (event) => {
     if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    assert(embed.description)
+    assert.ok(embed.description)
     embed.description += `- Instance has been created\n`
     refresher.refresh()
   }
   registeredEvents.instanceMessage = (event) => {
     if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    assert(embed.description)
+    assert.ok(embed.description)
     embed.description += `- ${event.message}\n`
     refresher.refresh()
   }
   registeredEvents.minecraftSelfBroadcast = (event) => {
     if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    assert(embed.description)
+    assert.ok(embed.description)
     embed.description += `- Instance has logged in as ${event.username} (${event.uuid})\n`
     embed.color = Color.Good
 
@@ -1261,7 +1261,7 @@ function parseSocks5(url: string): ProxyConfig {
     host: string
     port: string | undefined
   }
-  assert(match.groups)
+  assert.ok(match.groups)
 
   const type = groups.type
   const username: string | undefined = groups.username ?? undefined

@@ -4,7 +4,7 @@ import type { Client, SkyblockMember } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/util.js'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 const AbbreviationMappings: Record<keyof SkyblockMember['skills'], string> = {
   combat: 'combat',
@@ -59,8 +59,8 @@ export default class Skills extends ChatCommandHandler {
       // @ts-expect-error string is index-able as key
       skillsMessage.push(`${AbbreviationMappings[name] ?? name} ${formattedLevel}`)
     }
-    assert(skillAverage !== undefined)
-    assert(skillsMessage.length > 0)
+    assert.ok(skillAverage !== undefined)
+    assert.ok(skillsMessage.length > 0)
 
     return `${givenUsername}: AVG ${skillAverage}, ${skillsMessage.join(', ')}`
   }
@@ -91,15 +91,15 @@ export default class Skills extends ChatCommandHandler {
       }
     }
 
-    assert(cuteName !== undefined)
-    assert(farmingCap !== undefined)
-    assert(tamingCap !== undefined)
+    assert.ok(cuteName !== undefined)
+    assert.ok(farmingCap !== undefined)
+    assert.ok(tamingCap !== undefined)
 
     const parsedProfile = await hypixelApi
       .getSkyblockProfiles(uuid)
       .then((profiles) => profiles.find((profile) => profile.profileName === cuteName)?.me)
 
-    assert(parsedProfile)
+    assert.ok(parsedProfile)
     return { profile: parsedProfile, farmingCap: farmingCap, tamingCap: tamingCap }
   }
 

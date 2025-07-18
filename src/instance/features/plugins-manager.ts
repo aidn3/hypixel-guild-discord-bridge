@@ -13,12 +13,12 @@ import AutoRestartPlugin from './implementations/auto-restart-plugin.js'
 import DarkAuctionPlugin from './implementations/dark-auction-plugin.js'
 import StarfallCultPlugin from './implementations/starfall-cult-plugin.js'
 
-export class PluginsManager extends Instance<InstanceType.Util> {
+export class PluginsManager extends Instance<InstanceType.Utility> {
   private readonly config: ConfigManager<PluginConfig>
   private readonly instances: PluginInstance[] = []
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Util)
+    super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Utility)
 
     this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('features-manager.json'), {
       darkAuctionReminder: true,

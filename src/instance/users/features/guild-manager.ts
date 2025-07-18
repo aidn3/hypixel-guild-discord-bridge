@@ -5,10 +5,10 @@ import PromiseQueue from 'promise-queue'
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { MinecraftSendChatPriority } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
-import { Timeout } from '../../../util/timeout.js'
+import { Timeout } from '../../../utility/timeout.js'
 import type UsersManager from '../users-manager.js'
 
-export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, void> {
+export class GuildManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
   public static readonly DefaultDataExpire = 30 * 1000
   private readonly guildInfo = new Map<string, GuildInformation>()
 
@@ -28,7 +28,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
       })
     }
 
-    assert(guildInfo.totalMembersCount)
+    assert.ok(guildInfo.totalMembersCount)
     return guildInfo.totalMembersCount.count
   }
 
@@ -48,7 +48,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
       })
     }
 
-    assert(guildInfo.totalOnlineMembers)
+    assert.ok(guildInfo.totalOnlineMembers)
     return guildInfo.totalOnlineMembers.count
   }
 
@@ -70,7 +70,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
       })
     }
 
-    assert(guildInfo.listAll)
+    assert.ok(guildInfo.listAll)
     return guildInfo.listAll.members
   }
 
@@ -99,7 +99,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Util, 
       })
     }
 
-    assert(guildInfo.listOnline)
+    assert.ok(guildInfo.listOnline)
     return guildInfo.listOnline.members
   }
 

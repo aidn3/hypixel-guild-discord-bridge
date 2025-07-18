@@ -9,7 +9,7 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 
 import type ModerationInstance from './moderation-instance.js'
 import type { ModerationConfig } from './moderation-instance.js'
-import { matchIdentifiersLists, matchUserIdentifier, userIdentifiersToList } from './util.js'
+import { matchIdentifiersLists, matchUserIdentifier, userIdentifiersToList } from './utility'
 
 export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.Moderation, void> {
   private static readonly ActionExpiresAfter: number = 24 * 60 * 60 * 10

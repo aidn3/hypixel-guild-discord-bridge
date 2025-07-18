@@ -1,9 +1,9 @@
-import { default as Moment } from 'moment'
+import Moment from 'moment'
 
 import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getDuration } from '../../../util/shared-util.js'
+import { getDuration } from '../../../utility/shared-utility'
 
 interface Party {
   username: string

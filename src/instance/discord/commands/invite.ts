@@ -3,7 +3,7 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
-import { checkChatTriggers, InviteAcceptChat } from '../../../util/chat-triggers.js'
+import { checkChatTriggers, InviteAcceptChat } from '../../../utility/chat-triggers.js'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 
 export default {

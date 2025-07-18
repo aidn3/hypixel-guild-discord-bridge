@@ -1,4 +1,4 @@
-import Axios from 'axios'
+import DefaultAxios from 'axios'
 
 import type { ConfigManager } from '../../../common/config-manager.js'
 import { stufEncode } from '../common/stuf.js'
@@ -43,7 +43,7 @@ export class LinksSanitizer {
         continue
       }
 
-      const response = await Axios.head(part).catch(() => undefined)
+      const response = await DefaultAxios.head(part).catch(() => undefined)
       if (response === undefined) {
         newMessage.push('(link)')
         continue

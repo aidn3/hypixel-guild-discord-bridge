@@ -35,7 +35,7 @@ export default class DarkAuctionPlugin extends PluginInstance {
 
       if ([50, 54].includes(currentMinute)) {
         const remainingMinutes = 55 - currentMinute
-        assert(remainingMinutes > 0)
+        assert.ok(remainingMinutes > 0)
 
         const message = this.application.language.data.darkAuctionReminder.replaceAll(
           '{minutes}',

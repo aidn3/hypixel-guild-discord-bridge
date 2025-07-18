@@ -6,7 +6,7 @@ import type Application from '../../application.js'
 import type { ChannelType, MinecraftSendChatPriority } from '../../common/application-event.js'
 import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
-import type { Timeout } from '../../util/timeout.js'
+import type { Timeout } from '../../utility/timeout.js'
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'

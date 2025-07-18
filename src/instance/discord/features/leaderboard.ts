@@ -10,7 +10,7 @@ import { ConfigManager } from '../../../common/config-manager.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { formatTime } from '../../../util/shared-util.js'
+import { formatTime } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
@@ -50,7 +50,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     // TODO: properly reference client
     // @ts-expect-error client is private variable
     const client = this.clientInstance.client
-    assert(client.isReady())
+    assert.ok(client.isReady())
 
     await this.updateMessages30Days(client)
     await this.updateOnline30Days(client)
@@ -103,7 +103,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
   private async update(client: Client, entry: LeaderboardEntry, embed: APIEmbed): Promise<boolean> {
     try {
       const channel = await client.channels.fetch(entry.channelId)
-      assert(channel?.isSendable())
+      assert.ok(channel?.isSendable())
 
       const message = await channel.messages.fetch(entry.messageId)
       await message.edit({ embeds: [embed] })

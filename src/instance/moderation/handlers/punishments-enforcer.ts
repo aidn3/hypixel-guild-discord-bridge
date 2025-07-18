@@ -13,7 +13,7 @@ import {
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { durationToMinecraftDuration } from '../../../util/shared-util.js'
+import { durationToMinecraftDuration } from '../../../utility/shared-utility'
 import type ModerationInstance from '../moderation-instance.js'
 
 export default class PunishmentsEnforcer extends EventHandler<ModerationInstance, InstanceType.Moderation, void> {

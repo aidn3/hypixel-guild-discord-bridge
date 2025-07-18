@@ -22,7 +22,7 @@ export default {
     }
 
     await context.interaction.deferReply()
-    assert(context.interaction.inCachedGuild())
+    assert.ok(context.interaction.inCachedGuild())
     const guildCommands = await context.interaction.guild.commands.fetch()
 
     const userPermission = context.permission

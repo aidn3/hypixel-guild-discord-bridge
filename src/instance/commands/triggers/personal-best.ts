@@ -2,14 +2,14 @@ import type { DungeonFloors, DungeonFloorsWithEntrance, SkyblockV2DungeonsTypes 
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { formatTime } from '../../../util/shared-util.js'
+import { formatTime } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/util.js'
+} from '../common/utility'
 
 export default class PersonalBest extends ChatCommandHandler {
   constructor() {

@@ -2,7 +2,7 @@ import type { Status as Session } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, usernameNotExists } from '../common/util.js'
+import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Status extends ChatCommandHandler {
   constructor() {

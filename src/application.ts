@@ -7,7 +7,7 @@ import path from 'node:path'
 import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
-import { default as Logger4js } from 'log4js'
+import Logger4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
@@ -30,8 +30,8 @@ import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import UsersManager from './instance/users/users-manager.js'
 import type { LanguageConfig } from './language-config.js'
 import { DefaultLanguageConfig } from './language-config.js'
-import { MojangApi } from './util/mojang.js'
-import { gracefullyExitProcess, sleep } from './util/shared-util.js'
+import { MojangApi } from './utility/mojang.js'
+import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
   | CommandsInstance

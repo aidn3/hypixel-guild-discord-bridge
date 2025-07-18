@@ -15,7 +15,7 @@ export default {
     await context.interaction.deferReply()
 
     const targetInstance: string = context.interaction.options.getString('instance', true)
-    assert(targetInstance)
+    assert.ok(targetInstance)
 
     context.application.emit('instanceSignal', {
       ...context.eventHelper.fillBaseEvent(),

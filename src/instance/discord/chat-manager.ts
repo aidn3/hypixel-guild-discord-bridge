@@ -11,7 +11,7 @@ import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { MojangProfile } from '../../util/mojang.js'
+import type { MojangProfile } from '../../utility/mojang.js'
 import type { Link } from '../users/features/verification.js'
 import { LinkType } from '../users/features/verification.js'
 
@@ -77,7 +77,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
         currentTimestamp
       ) {
         this.lastVerificationWarn.set(event.author.id, currentTimestamp)
-        assert(event.inGuild())
+        assert.ok(event.inGuild())
         const commands = await event.guild.commands.fetch()
         const linkCommand = commands.find((command) => command.name === 'link')
 

@@ -30,7 +30,7 @@ import Bridge from '../../common/bridge.js'
 import type { ConfigManager } from '../../common/config-manager.js'
 import { StatusVisibility } from '../../common/connectable-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import { beautifyInstanceName } from '../../util/shared-util.js'
+import { beautifyInstanceName } from '../../utility/shared-utility'
 
 import type { DiscordConfig } from './common/discord-config.js'
 import { BlockReaction, RepeatReaction } from './common/discord-config.js'
@@ -83,7 +83,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       case InstanceType.Prometheus:
       case InstanceType.Metrics:
       case InstanceType.Plugin:
-      case InstanceType.Util:
+      case InstanceType.Utility:
       case InstanceType.Moderation: {
         return
       }
@@ -251,7 +251,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         }
 
         if (this.messageToImage.shouldRenderImage()) {
-          assert(channel?.isSendable())
+          assert.ok(channel?.isSendable())
           await channel.send({
             files: [new AttachmentBuilder(this.messageToImage.generateMessageImage(event.rawMessage))]
           })
@@ -408,8 +408,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // TODO: properly reference client
     // @ts-expect-error client is private variable
     const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
-    assert(channel != undefined)
-    assert(channel.isSendable())
+    assert.ok(channel != undefined)
+    assert.ok(channel.isSendable())
 
     const result = await channel.send({
       embeds: [embed],
@@ -436,8 +436,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         // @ts-expect-error client is private variable
         const channel = await this.clientInstance.client.channels.fetch(channelId)
         if (channel == undefined) continue
-        assert(channel.isSendable())
-        assert(channel.type === DiscordChannelType.GuildText)
+        assert.ok(channel.isSendable())
+        assert.ok(channel.type === DiscordChannelType.GuildText)
 
         const embed =
           preGeneratedEmbed ??
@@ -468,8 +468,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         // @ts-expect-error client is private variable
         const channel = await this.clientInstance.client.channels.fetch(channelId)
         if (channel == undefined) continue
-        assert(channel.isSendable())
-        assert(channel.type === DiscordChannelType.GuildText)
+        assert.ok(channel.isSendable())
+        assert.ok(channel.type === DiscordChannelType.GuildText)
 
         const message = await channel.send({ files: [image] })
 

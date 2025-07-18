@@ -8,7 +8,7 @@ import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import { DefaultTimeout, interactivePaging } from '../util/discord-pager.js'
+import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const Title = 'Guild Log Audit'
 

@@ -6,7 +6,7 @@ import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ConfigManager } from '../../common/config-manager.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
-import type { MojangApi } from '../../util/mojang.js'
+import type { MojangApi } from '../../utility/mojang.js'
 import { LinkType } from '../users/features/verification.js'
 
 import { CommandsHeat } from './commands-heat.js'
@@ -41,7 +41,7 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
     this.mojangApi = mojangApi
 
     this.reloadProfanity()
-    assert(this.profanityFilter !== undefined)
+    assert.ok(this.profanityFilter !== undefined)
 
     this.punishments = new Punishments(application)
     this.commandsHeat = new CommandsHeat(
@@ -67,7 +67,7 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
 
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
     if (!this.config.data.profanityEnabled) return { filteredMessage: message, changed: false }
-    assert(this.profanityFilter)
+    assert.ok(this.profanityFilter)
 
     let filtered: string
     try {

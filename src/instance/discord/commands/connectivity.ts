@@ -7,7 +7,7 @@ import { Color, InstanceType, MinecraftSendChatPriority } from '../../../common/
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandScope } from '../../../common/commands.js'
 import type EventHelper from '../../../common/event-helper.js'
-import { antiSpamString } from '../../../util/shared-util.js'
+import { antiSpamString } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createEmbed(instances: Map<string, string[]>): APIEmbed {

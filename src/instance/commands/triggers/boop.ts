@@ -2,8 +2,8 @@ import { InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
-import { checkChatTriggers, PrivateMessageChat } from '../../../util/chat-triggers.js'
-import { antiSpamString } from '../../../util/shared-util.js'
+import { checkChatTriggers, PrivateMessageChat } from '../../../utility/chat-triggers.js'
+import { antiSpamString } from '../../../utility/shared-utility'
 // eslint-disable-next-line import/no-restricted-paths
 import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
 
