@@ -8,6 +8,10 @@ import tseslint from 'typescript-eslint'
 //TODO: add functionality one day when it is supported
 // requireExtensions from 'eslint-plugin-require-extensions'
 
+/**
+ * Credit: https://github.com/Callanplays (Discord: callanftw)
+ *   for helping with migrating to eslint-v9
+ */
 export default [
   {
     ignores: ['**/node_modules', '.idea', './logs', './config', '**/*-ti.ts', 'package-lock.json', 'eslint.config.mjs']
