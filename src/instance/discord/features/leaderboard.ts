@@ -141,7 +141,10 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     totalPages: number
   }> {
     const leaderboard = this.application.usersManager.scoresManager.getMessages30Days()
-    const total = leaderboard.map((entry) => entry.count).reduce((previous, current) => previous + current)
+    const total =
+      leaderboard.length === 0
+        ? 0
+        : leaderboard.map((entry) => entry.count).reduce((previous, current) => previous + current)
 
     let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
     description +=
@@ -178,7 +181,10 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     totalPages: number
   }> {
     const leaderboard = this.application.usersManager.scoresManager.getOnline30Days()
-    const total = leaderboard.map((entry) => entry.totalTime).reduce((previous, current) => previous + current)
+    const total =
+      leaderboard.length === 0
+        ? 0
+        : leaderboard.map((entry) => entry.totalTime).reduce((previous, current) => previous + current)
 
     let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
     description += leaderboard.length > 0 ? `Total time: **${formatTime(total * 1000)}**\n\n` : '(empty leaderboard!)'
