@@ -99,8 +99,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const message = await channel.send({
         embeds: [
           {
-            title: escapeMarkdown(beautifyInstanceName(event.instanceName)),
-            description: escapeMarkdown(event.message),
+            description:
+              escapeMarkdown(beautifyInstanceName(event.instanceName)) + ' > ' + escapeMarkdown(event.message),
             color: Color.Info
           }
         ],
