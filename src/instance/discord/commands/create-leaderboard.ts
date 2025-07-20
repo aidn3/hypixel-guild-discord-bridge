@@ -8,6 +8,7 @@ import type { DiscordCommandHandler } from '../../../common/commands.js'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
 export const Online30Days = { name: 'Top Online Member (30 days)', value: 'online30Days' }
+export const Points30Days = { name: 'Top Activity Points (30 days)', value: 'points30Days' }
 
 export default {
   getCommandBuilder: () =>
@@ -15,7 +16,11 @@ export default {
       .setName('create-leaderboard')
       .setDescription('Create a leaderboard message in this channel')
       .addStringOption((o) =>
-        o.setName('type').setDescription('Leaderboard type').setRequired(true).addChoices(Messages30Days, Online30Days)
+        o
+          .setName('type')
+          .setDescription('Leaderboard type')
+          .setRequired(true)
+          .addChoices(Messages30Days, Online30Days, Points30Days)
       ),
   permission: Permission.Officer,
 
@@ -56,6 +61,24 @@ export default {
       if (messageId === undefined) return
 
       config.data.online30Days.push({
+        messageId: messageId,
+        channelId: channel.id,
+        lastUpdate: Date.now()
+      })
+      config.markDirty()
+      return
+    }
+
+    if (type === Points30Days.value) {
+      const leaderboard = await context.application.discordInstance.leaderboard.getPoints30Days({
+        addFooter: false,
+        addLastUpdateAt: true,
+        page: 0
+      })
+      const messageId = await send(context.interaction, channel, leaderboard.embed)
+      if (messageId === undefined) return
+
+      config.data.points30Days.push({
         messageId: messageId,
         channelId: channel.id,
         lastUpdate: Date.now()

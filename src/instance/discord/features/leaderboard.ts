@@ -34,7 +34,8 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     this.config = new ConfigManager(application, logger, application.getConfigFilePath('discord-leaderboards.json'), {
       updateEveryMinutes: Leaderboard.DefaultUpdateEveryMinutes,
       messages30Days: [],
-      online30Days: []
+      online30Days: [],
+      points30Days: []
     })
 
     setInterval(() => {
@@ -54,6 +55,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
 
     await this.updateMessages30Days(client)
     await this.updateOnline30Days(client)
+    await this.updatePoints30Days(client)
   }
 
   private async updateMessages30Days(client: Client<true>): Promise<void> {
@@ -91,6 +93,28 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
         const shouldKeep = await this.update(client, entry, leaderboard.embed)
         if (!shouldKeep) {
           this.config.data.online30Days.splice(index, 1)
+          this.config.markDirty()
+          index--
+        }
+      } catch (error: unknown) {
+        this.logger.error(error)
+      }
+    }
+  }
+
+  private async updatePoints30Days(client: Client<true>): Promise<void> {
+    for (let index = 0; index < this.config.data.points30Days.length; index++) {
+      const entry = this.config.data.points30Days[index]
+
+      if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
+      this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
+
+      try {
+        const leaderboard = await this.getPoints30Days({ addFooter: false, addLastUpdateAt: true, page: 0 })
+
+        const shouldKeep = await this.update(client, entry, leaderboard.embed)
+        if (!shouldKeep) {
+          this.config.data.points30Days.splice(index, 1)
           this.config.markDirty()
           index--
         }
@@ -215,6 +239,46 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
+  public async getPoints30Days(option: { addFooter: boolean; addLastUpdateAt: boolean; page: number }): Promise<{
+    embed: APIEmbed
+    totalPages: number
+  }> {
+    const leaderboard = this.application.usersManager.scoresManager.getPoints30Days()
+    const total =
+      leaderboard.length === 0
+        ? 0
+        : leaderboard.map((entry) => entry.total).reduce((previous, current) => previous + current)
+
+    let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
+    description +=
+      leaderboard.length > 0 ? `Total points: **${total.toLocaleString('en-US')}**\n\n` : '(empty leaderboard!)'
+
+    const chunk = leaderboard.slice(
+      Leaderboard.EntriesPerPage * option.page,
+      Leaderboard.EntriesPerPage * (option.page + 1)
+    )
+    for (const [index, entry] of chunk.entries()) {
+      const position = option.page * Leaderboard.EntriesPerPage + index + 1
+      const displayName = await this.application.mojangApi
+        .profileByUuid(entry.uuid)
+        .then((profile) => profile.name)
+        .catch(() => entry.uuid)
+      let formatted = `${this.getEmoji(position)} • ${position} ${escapeMarkdown(displayName)}`
+      if (entry.discordId !== undefined) formatted += ` (${userMention(entry.discordId)})`
+      formatted += ` **${entry.total.toLocaleString('en-US')}** points`
+
+      description += formatted + '\n'
+    }
+
+    const embed: APIEmbed = {
+      title: 'Points Leaderboard (30 days)',
+      description: description
+    }
+    if (option.addFooter) Object.assign(embed, { footer: { text: DefaultCommandFooter } } satisfies APIEmbed)
+
+    return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
+  }
+
   private getEmoji(position: number): string {
     switch (position) {
       case 1: {
@@ -239,6 +303,7 @@ export interface LeaderboardConfig {
   updateEveryMinutes: number
   messages30Days: LeaderboardEntry[]
   online30Days: LeaderboardEntry[]
+  points30Days: LeaderboardEntry[]
 }
 
 interface LeaderboardEntry {
