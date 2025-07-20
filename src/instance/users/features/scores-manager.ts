@@ -24,8 +24,11 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
 
   private static readonly ScoresExpireAt = Duration.minutes(1)
 
-  private cachedScores: ActivityTotalPoints[] | undefined
-  private lastScoresUpdate = -1
+  private cachedPoints30Days: ActivityTotalPoints[] | undefined
+  private lastUpdatePoints30Days = -1
+
+  private cachedPointsAlltime: ActivityTotalPoints[] | undefined
+  private lastUpdatePointsAlltime = -1
 
   private readonly queue = new PromiseQueue(1)
   readonly config: ConfigManager<ScoreManagerConfig>
@@ -139,29 +142,52 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
 
   public getPoints30Days(): ActivityTotalPoints[] {
     if (
-      this.cachedScores !== undefined &&
-      this.lastScoresUpdate + ScoresManager.ScoresExpireAt.toMilliseconds() > Date.now()
+      this.cachedPoints30Days !== undefined &&
+      this.lastUpdatePoints30Days + ScoresManager.ScoresExpireAt.toMilliseconds() > Date.now()
     ) {
-      return this.cachedScores
+      return this.cachedPoints30Days
     }
 
     const currentDate = Date.now()
-    const currentScores = this.database.getPoints(currentDate - Duration.days(30).toMilliseconds(), currentDate)
-    for (const minecraftBotUuid of this.config.data.minecraftBotUuids) {
-      currentScores.delete(minecraftBotUuid)
-    }
-    for (const minecraftBot of this.application.minecraftManager.getMinecraftBots()) {
-      currentScores.delete(minecraftBot.uuid)
+    const points = this.database.getPoints(currentDate - Duration.days(30).toMilliseconds(), currentDate)
+    const leaderboard = this.normalizePoints(points)
+
+    this.cachedPoints30Days = leaderboard
+    this.lastUpdatePoints30Days = Date.now()
+
+    return leaderboard
+  }
+
+  public getPointsAlltime(): ActivityTotalPoints[] {
+    if (
+      this.cachedPointsAlltime !== undefined &&
+      this.lastUpdatePointsAlltime + ScoresManager.ScoresExpireAt.toMilliseconds() > Date.now()
+    ) {
+      return this.cachedPointsAlltime
     }
 
-    const leaderboard = currentScores.values().toArray()
+    const points = this.database.getPoints(0, Date.now())
+    const leaderboard = this.normalizePoints(points)
+
+    this.cachedPointsAlltime = leaderboard
+    this.lastUpdatePointsAlltime = Date.now()
+
+    return leaderboard
+  }
+
+  private normalizePoints(points: Map<string, ActivityTotalPoints>): ActivityTotalPoints[] {
+    for (const minecraftBotUuid of this.config.data.minecraftBotUuids) {
+      points.delete(minecraftBotUuid)
+    }
+    for (const minecraftBot of this.application.minecraftManager.getMinecraftBots()) {
+      points.delete(minecraftBot.uuid)
+    }
+
+    const leaderboard = points.values().toArray()
     for (const currentScore of leaderboard) {
       currentScore.total = Math.floor(currentScore.total)
     }
     leaderboard.sort((a, b) => b.total - a.total)
-
-    this.cachedScores = leaderboard
-    this.lastScoresUpdate = Date.now()
 
     return leaderboard
   }
