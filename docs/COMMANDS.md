@@ -49,6 +49,8 @@ A shorter version can also be used: `!- rtca`
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
 | `endparty`       | remove the party from the listing                                                  |
 | `pb`             | Returns a players best dungeon run time                                            |
+| `points30`       | Returns user's 30 days activity points                                             |
+| `points`         | Returns user's all time activity points                                            |
 | `purse`          | Returns a player's skyblock coins                                                  |
 | `rep`            | Returns a player's crimson isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |

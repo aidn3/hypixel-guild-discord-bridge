@@ -93,16 +93,13 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
       }
     })
 
-    setInterval(
-      () => {
-        void this.queue
-          .add(async () => {
-            await this.fetchGuilds()
-          })
-          .catch(this.errorHandler.promiseCatch('fetching guilds'))
-      },
-      30 * 60 * 1000
-    )
+    setInterval(() => {
+      void this.queue
+        .add(async () => {
+          await this.fetchGuilds()
+        })
+        .catch(this.errorHandler.promiseCatch('fetching guilds'))
+    }, Duration.minutes(30).toMilliseconds())
 
     setInterval(() => {
       void this.queue
@@ -217,7 +214,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
         })
       }
       this.logger.trace(`Supplementing ${timeframes.length} guild members timeframe data for bot uuid ${botUuid}`)
-      this.database.addOnlineMembers(timeframes)
+      this.database.addMembers(timeframes)
     }
   }
 

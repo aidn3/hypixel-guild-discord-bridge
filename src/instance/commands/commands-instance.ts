@@ -36,6 +36,8 @@ import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
+import Points30days from './triggers/points-30days'
+import PointsAll from './triggers/points-all'
 import Purse from './triggers/purse.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
@@ -101,6 +103,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
+      new Points30days(),
+      new PointsAll(),
       new Purse(),
       new Reputation(),
       new Rng(),
