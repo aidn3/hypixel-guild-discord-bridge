@@ -19,7 +19,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
   private static readonly DeleteMessagesOlderThan = 365
   private static readonly LeniencyTimeSeconds = 5 * 60
 
-  static readonly InstantInterval = 60 * 1000
+  private static readonly InstantInterval = 60 * 1000
   private static readonly FetchMembersEvery = 50 * 1000
 
   private static readonly ScoresExpireAt = Duration.minutes(1)
