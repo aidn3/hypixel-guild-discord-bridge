@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import DefaultAxios, { AxiosError, HttpStatusCode } from 'axios'
 import PromiseQueue from 'promise-queue'
 
@@ -41,6 +43,8 @@ export class MojangApi {
   }
 
   async profileByUuid(uuid: string): Promise<MojangProfile> {
+    assert.ok(uuid.length === 32 || uuid.length === 36, `'uuid' must be valid UUID. given ${uuid}`)
+
     const cachedResult = this.application.usersManager.mojangDatabase.profileByUuid(uuid)
     if (cachedResult) return cachedResult
 
