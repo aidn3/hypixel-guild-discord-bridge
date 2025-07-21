@@ -11,8 +11,8 @@ import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { formatTime } from '../../../utility/shared-utility'
-import { DefaultCommandFooter } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
+import { DefaultCommandFooter } from '../common/discord-config'
 
 export default class Leaderboard extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly EntriesPerPage = 10
@@ -138,34 +138,23 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
         ? 0
         : leaderboard.map((entry) => entry.count).reduce((previous, current) => previous + current)
 
-    let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
-    description +=
-      leaderboard.length > 0 ? `Total messages: **${total.toLocaleString('en-US')}**\n\n` : '(empty leaderboard!)'
-
-    const chunk = leaderboard.slice(
-      Leaderboard.EntriesPerPage * option.page,
-      Leaderboard.EntriesPerPage * (option.page + 1)
+    let result = ''
+    result += Leaderboard.addTimers(0)
+    result += `Total messages: **${total.toLocaleString('en-US')}**\n\n`
+    result += await this.createEntries(
+      leaderboard,
+      option.page,
+      (entry) => `**${entry.count.toLocaleString('en-US')}** messages`
     )
-    for (const [index, entry] of chunk.entries()) {
-      const position = option.page * Leaderboard.EntriesPerPage + index + 1
-      const displayName = await this.application.mojangApi
-        .profileByUuid(entry.uuid)
-        .then((profile) => profile.name)
-        .catch(() => entry.uuid)
-      let formatted = `${this.getEmoji(position)} • ${position} ${escapeMarkdown(displayName)}`
-      if (entry.discordId !== undefined) formatted += ` (${userMention(entry.discordId)})`
-      formatted += ` **${entry.count.toLocaleString('en-US')}** messages`
 
-      description += formatted + '\n'
+    return {
+      embed: {
+        title: 'Messages Leaderboard (30 days)',
+        description: result,
+        footer: option.addFooter ? { text: DefaultCommandFooter }: undefined
+      },
+      totalPages: Leaderboard.totalPages(leaderboard)
     }
-
-    const embed: APIEmbed = {
-      title: 'Messages Leaderboard (30 days)',
-      description: description
-    }
-    if (option.addFooter) Object.assign(embed, { footer: { text: DefaultCommandFooter } } satisfies APIEmbed)
-
-    return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
   public async getOnline30Days(option: LeaderboardOptions): Promise<{
@@ -178,33 +167,19 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
         ? 0
         : leaderboard.map((entry) => entry.totalTime).reduce((previous, current) => previous + current)
 
-    let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
-    description += leaderboard.length > 0 ? `Total time: **${formatTime(total * 1000)}**\n\n` : '(empty leaderboard!)'
+    let result = ''
+    result += Leaderboard.addTimers(0)
+    result += `Total time: **${formatTime(total * 1000)}**\n\n`
+    result += await this.createEntries(leaderboard, option.page, (entry) => `**${formatTime(entry.totalTime * 1000)}**`)
 
-    const chunk = leaderboard.slice(
-      Leaderboard.EntriesPerPage * option.page,
-      Leaderboard.EntriesPerPage * (option.page + 1)
-    )
-    for (const [index, entry] of chunk.entries()) {
-      const position = option.page * Leaderboard.EntriesPerPage + index + 1
-      const displayName = await this.application.mojangApi
-        .profileByUuid(entry.uuid)
-        .then((profile) => profile.name)
-        .catch(() => entry.uuid)
-
-      let formatted = `${this.getEmoji(position)} • ${position} ${escapeMarkdown(displayName)}`
-      if (entry.discordId !== undefined) formatted += ` (${userMention(entry.discordId)})`
-      formatted += ` **${formatTime(entry.totalTime * 1000)}**`
-
-      description += formatted + '\n'
+    return {
+      embed: {
+        title: 'Online Leaderboard (30 days)',
+        description: result,
+        footer: option.addFooter ? { text: DefaultCommandFooter }: undefined
+      },
+      totalPages: Leaderboard.totalPages(leaderboard)
     }
-
-    const embed: APIEmbed = {
-      title: 'Online Leaderboard (30 days)',
-      description: description
-    }
-    if (option.addFooter) Object.assign(embed, { footer: { text: DefaultCommandFooter } } satisfies APIEmbed)
-    return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
   public async getPoints30Days(option: LeaderboardOptions): Promise<{
@@ -217,34 +192,61 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
         ? 0
         : leaderboard.map((entry) => entry.total).reduce((previous, current) => previous + current)
 
-    let description = option.addLastUpdateAt ? `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n` : ''
-    description +=
-      leaderboard.length > 0 ? `Total points: **${total.toLocaleString('en-US')}**\n\n` : '(empty leaderboard!)'
-
-    const chunk = leaderboard.slice(
-      Leaderboard.EntriesPerPage * option.page,
-      Leaderboard.EntriesPerPage * (option.page + 1)
+    let result = ''
+    result += Leaderboard.addTimers(0)
+    result += `Total points: **${total.toLocaleString('en-US')}**\n\n`
+    result += await this.createEntries(
+      leaderboard,
+      option.page,
+      (entry) => `**${entry.total.toLocaleString('en-US')}** points`
     )
+
+    return {
+      embed: {
+        title: 'Points Leaderboard (30 days)',
+        description: result,
+        footer: option.addFooter ? { text: DefaultCommandFooter }: undefined
+      },
+      totalPages: Leaderboard.totalPages(leaderboard)
+    }
+  }
+
+  private static addTimers(nextReset: number): string {
+    let result = ''
+
+    result += `Last update: <t:${Math.floor(Date.now() / 1000)}:R>\n`
+    if (nextReset > 0) result += `Next reset <t:${Math.floor(nextReset / 1000)}>\n`
+
+    return result
+  }
+
+  private static totalPages(entries: unknown[]): number {
+    return Math.ceil(entries.length / Leaderboard.EntriesPerPage)
+  }
+
+  private async createEntries<T extends LeaderboardFormatEntry>(
+    entries: T[],
+    page: number,
+    format: (entry: T) => string
+  ): Promise<string> {
+    const chunk = entries.slice(Leaderboard.EntriesPerPage * page, Leaderboard.EntriesPerPage * (page + 1))
+    if (chunk.length === 0) return '(empty leaderboard!)'
+
+    let result = ''
     for (const [index, entry] of chunk.entries()) {
-      const position = option.page * Leaderboard.EntriesPerPage + index + 1
+      const position = page * Leaderboard.EntriesPerPage + index + 1
       const displayName = await this.application.mojangApi
         .profileByUuid(entry.uuid)
         .then((profile) => profile.name)
         .catch(() => entry.uuid)
       let formatted = `${this.getEmoji(position)} • ${position} ${escapeMarkdown(displayName)}`
       if (entry.discordId !== undefined) formatted += ` (${userMention(entry.discordId)})`
-      formatted += ` **${entry.total.toLocaleString('en-US')}** points`
+      formatted += ` ${format(entry)}`
 
-      description += formatted + '\n'
+      result += formatted + '\n'
     }
 
-    const embed: APIEmbed = {
-      title: 'Points Leaderboard (30 days)',
-      description: description
-    }
-    if (option.addFooter) Object.assign(embed, { footer: { text: DefaultCommandFooter } } satisfies APIEmbed)
-
-    return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
+    return result
   }
 
   private getEmoji(position: number): string {
@@ -284,4 +286,9 @@ interface LeaderboardOptions {
   addFooter: boolean
   addLastUpdateAt: boolean
   page: number
+}
+
+interface LeaderboardFormatEntry {
+  uuid: string
+  discordId: string | undefined
 }
