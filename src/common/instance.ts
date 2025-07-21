@@ -21,9 +21,13 @@ export abstract class Instance<T extends InstanceType> implements InstanceIdenti
     this.instanceName = instanceName
     this.instanceType = instanceType
 
-    this.logger = Logger4Js.getLogger(instanceName)
+    this.logger = Instance.createLogger(instanceName)
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.eventHelper = new EventHelper<T>(this.instanceName, this.instanceType)
+  }
+
+  public static createLogger(name: string): Logger {
+    return Logger4Js.getLogger(name)
   }
 }
 

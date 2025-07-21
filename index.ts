@@ -7,6 +7,7 @@ import Logger4js from 'log4js'
 import LoggerConfig from './config/log4js-config.json' with { type: 'json' }
 import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
+import { Instance } from './src/common/instance'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { gracefullyExitProcess } from './src/utility/shared-utility'
 
@@ -53,9 +54,16 @@ try {
   const ConfigsDirectory = path.resolve(RootDirectory, 'config')
   app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
 
+  const loggers = new Map<string, Logger4js.Logger>()
   app.on('all', (name, event) => {
-    Logger.log(`[${name}] ${JSON.stringify(event)}`)
+    let instanceLogger = loggers.get(event.instanceName)
+    if (instanceLogger === undefined) {
+      instanceLogger = Instance.createLogger(event.instanceName)
+      loggers.set(event.instanceName, instanceLogger)
+    }
+    instanceLogger.log(`[${name}] ${JSON.stringify(event)}`)
   })
+
   await app.start()
   Logger.info('App is connected')
 } catch (error: unknown) {
