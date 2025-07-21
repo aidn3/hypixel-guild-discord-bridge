@@ -42,6 +42,7 @@ export default [
         }
       ],
       'unicorn/no-process-exit': 0,
+      'unicorn/prefer-single-call': 0,
       'unicorn/filename-case': 2,
       'no-use-before-define': 0,
       'import/order': [

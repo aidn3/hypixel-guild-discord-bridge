@@ -36,6 +36,8 @@ import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
+import Points30days from './triggers/points-30days'
+import PointsAll from './triggers/points-all'
 import Purse from './triggers/purse.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
@@ -101,6 +103,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
+      new Points30days(),
+      new PointsAll(),
       new Purse(),
       new Reputation(),
       new Rng(),
@@ -230,29 +234,65 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
-    this.application.emit('command', {
-      eventId: this.eventHelper.generate(),
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+    if (event.instanceType === InstanceType.Discord) {
+      this.application.emit('command', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
 
-      originEventId: event.eventId,
-      username: event.username,
-      commandName: commandName,
-      commandResponse: response
-    })
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        userId: event.userId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    } else {
+      this.application.emit('command', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    }
   }
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
-    this.application.emit('commandFeedback', {
-      eventId: this.eventHelper.generate(),
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+    if (event.instanceType === InstanceType.Discord) {
+      this.application.emit('commandFeedback', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
 
-      originEventId: event.eventId,
-      username: event.username,
-      commandName: commandName,
-      commandResponse: response
-    })
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        userId: event.userId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    } else {
+      this.application.emit('commandFeedback', {
+        eventId: this.eventHelper.generate(),
+        instanceName: event.instanceName,
+        instanceType: event.instanceType,
+
+        channelType: event.channelType,
+        originEventId: event.eventId,
+        username: event.username,
+
+        commandName: commandName,
+        commandResponse: response
+      })
+    }
   }
 }
 

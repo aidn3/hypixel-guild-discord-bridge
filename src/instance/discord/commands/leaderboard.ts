@@ -5,7 +5,7 @@ import { SlashCommandBuilder } from 'discord.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
-import { Messages30Days, Online30Days } from './create-leaderboard.js'
+import { Messages30Days, Online30Days, Points30Days } from './create-leaderboard.js'
 
 export default {
   getCommandBuilder: () =>
@@ -13,7 +13,11 @@ export default {
       .setName('leaderboard')
       .setDescription('display a leaderboard message in this channel')
       .addStringOption((o) =>
-        o.setName('type').setDescription('Leaderboard type').setRequired(true).addChoices(Messages30Days, Online30Days)
+        o
+          .setName('type')
+          .setDescription('Leaderboard type')
+          .setRequired(true)
+          .addChoices(Messages30Days, Online30Days, Points30Days)
       ),
 
   handler: async function (context) {
@@ -38,6 +42,17 @@ export default {
     if (type === Online30Days.value) {
       await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
         return await context.application.discordInstance.leaderboard.getOnline30Days({
+          addFooter: true,
+          addLastUpdateAt: false,
+          page: requestedPage
+        })
+      })
+      return
+    }
+
+    if (type === Points30Days.value) {
+      await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
+        return await context.application.discordInstance.leaderboard.getPoints30Days({
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage

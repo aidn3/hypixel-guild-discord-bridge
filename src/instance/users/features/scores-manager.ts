@@ -4,22 +4,31 @@ import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application.js'
-import { InstanceType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import { ConfigManager } from '../../../common/config-manager.js'
 import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type { SqliteManager } from '../../../common/sqlite-manager.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import Duration from '../../../utility/duration'
 import type UsersManager from '../users-manager.js'
 
 export default class ScoresManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
-  private static readonly DeleteMemberOlderThan = 30
-  private static readonly DeleteMessagesOlderThan = 356
+  private static readonly DeleteMemberOlderThan = 356
+  private static readonly DeleteMessagesOlderThan = 365
   private static readonly LeniencyTimeSeconds = 5 * 60
 
-  static readonly InstantInterval = 60 * 1000
+  private static readonly InstantInterval = 60 * 1000
   private static readonly FetchMembersEvery = 50 * 1000
+
+  private static readonly ScoresExpireAt = Duration.minutes(1)
+
+  private cachedPoints30Days: ActivityTotalPoints[] | undefined
+  private lastUpdatePoints30Days = -1
+
+  private cachedPointsAlltime: ActivityTotalPoints[] | undefined
+  private lastUpdatePointsAlltime = -1
 
   private readonly queue = new PromiseQueue(1)
   readonly config: ConfigManager<ScoreManagerConfig>
@@ -65,16 +74,32 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
       }
     })
 
-    setInterval(
-      () => {
-        void this.queue
-          .add(async () => {
-            await this.fetchGuilds()
-          })
-          .catch(this.errorHandler.promiseCatch('fetching guilds'))
-      },
-      30 * 60 * 1000
-    )
+    this.application.on('command', (event) => {
+      if (event.channelType !== ChannelType.Public) return
+
+      switch (event.instanceType) {
+        case InstanceType.Discord: {
+          this.database.addDiscordCommand(event.userId, this.timestamp())
+          break
+        }
+        case InstanceType.Minecraft: {
+          void this.queue
+            .add(async () => {
+              const profile = await this.application.mojangApi.profileByUsername(event.username)
+              this.database.addMinecraftCommand(profile.id, this.timestamp())
+            })
+            .catch(this.errorHandler.promiseCatch('adding minecraft command score'))
+        }
+      }
+    })
+
+    setInterval(() => {
+      void this.queue
+        .add(async () => {
+          await this.fetchGuilds()
+        })
+        .catch(this.errorHandler.promiseCatch('fetching guilds'))
+    }, Duration.minutes(30).toMilliseconds())
 
     setInterval(() => {
       void this.queue
@@ -84,12 +109,9 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
         .catch(this.errorHandler.promiseCatch('fetching and adding members'))
     }, ScoresManager.FetchMembersEvery)
 
-    setInterval(
-      () => {
-        void this.migrateUsernames().catch(this.errorHandler.promiseCatch('migrating Mojang usernames to UUID'))
-      },
-      30 * 60 * 60 * 1000
-    )
+    setInterval(() => {
+      void this.migrateUsernames().catch(this.errorHandler.promiseCatch('migrating Mojang usernames to UUID'))
+    }, Duration.minutes(30).toMilliseconds())
   }
 
   public getMessages30Days(): TotalMessagesLeaderboard[] {
@@ -115,6 +137,58 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     return this.database.getTime('OnlineMembers', ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate)
   }
 
+  public getPoints30Days(): ActivityTotalPoints[] {
+    if (
+      this.cachedPoints30Days !== undefined &&
+      this.lastUpdatePoints30Days + ScoresManager.ScoresExpireAt.toMilliseconds() > Date.now()
+    ) {
+      return this.cachedPoints30Days
+    }
+
+    const currentDate = Date.now()
+    const points = this.database.getPoints(currentDate - Duration.days(30).toMilliseconds(), currentDate)
+    const leaderboard = this.normalizePoints(points)
+
+    this.cachedPoints30Days = leaderboard
+    this.lastUpdatePoints30Days = Date.now()
+
+    return leaderboard
+  }
+
+  public getPointsAlltime(): ActivityTotalPoints[] {
+    if (
+      this.cachedPointsAlltime !== undefined &&
+      this.lastUpdatePointsAlltime + ScoresManager.ScoresExpireAt.toMilliseconds() > Date.now()
+    ) {
+      return this.cachedPointsAlltime
+    }
+
+    const points = this.database.getPoints(0, Date.now())
+    const leaderboard = this.normalizePoints(points)
+
+    this.cachedPointsAlltime = leaderboard
+    this.lastUpdatePointsAlltime = Date.now()
+
+    return leaderboard
+  }
+
+  private normalizePoints(points: Map<string, ActivityTotalPoints>): ActivityTotalPoints[] {
+    for (const minecraftBotUuid of this.config.data.minecraftBotUuids) {
+      points.delete(minecraftBotUuid)
+    }
+    for (const minecraftBot of this.application.minecraftManager.getMinecraftBots()) {
+      points.delete(minecraftBot.uuid)
+    }
+
+    const leaderboard = points.values().toArray()
+    for (const currentScore of leaderboard) {
+      currentScore.total = Math.floor(currentScore.total)
+    }
+    leaderboard.sort((a, b) => b.total - a.total)
+
+    return leaderboard
+  }
+
   private addBotUuid(uuid: string): void {
     if (this.config.data.minecraftBotUuids.includes(uuid)) return
 
@@ -126,6 +200,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       const botUuid = instance.uuid()
       if (botUuid === undefined) continue
+      this.logger.trace(`Fetching guild members for bot uuid ${botUuid}`)
 
       const guild = await this.application.hypixelApi.getGuild('player', botUuid)
       const timeframes: Timeframe[] = []
@@ -138,7 +213,8 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           leniencyMilliseconds: this.config.data.leniencyTimeSeconds * 1000
         })
       }
-      this.database.addOnlineMembers(timeframes)
+      this.logger.trace(`Supplementing ${timeframes.length} guild members timeframe data for bot uuid ${botUuid}`)
+      this.database.addMembers(timeframes)
     }
   }
 
@@ -262,6 +338,25 @@ class ScoreDatabase {
     )
 
     sqliteManager.register(
+      'DiscordCommands',
+      "CREATE TABLE IF NOT EXISTS 'DiscordCommands' (" +
+        '  timestamp INTEGER NOT NULL,' +
+        '  user TEXT NOT NULL,' +
+        '  count INTEGER NOT NULL DEFAULT 0,' +
+        '  PRIMARY KEY(timestamp, user)' +
+        ')'
+    )
+    sqliteManager.register(
+      'MinecraftCommands',
+      "CREATE TABLE IF NOT EXISTS 'MinecraftCommands' (" +
+        '  timestamp INTEGER NOT NULL,' +
+        '  user TEXT NOT NULL,' +
+        '  count INTEGER NOT NULL DEFAULT 0,' +
+        '  PRIMARY KEY(timestamp, user)' +
+        ')'
+    )
+
+    sqliteManager.register(
       'AllMembers',
       "CREATE TABLE IF NOT EXISTS 'AllMembers' (" +
         '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
@@ -296,6 +391,24 @@ class ScoreDatabase {
     )
 
     sqliteManager.registerCleaner(() => this.clean())
+  }
+
+  public addMinecraftCommand(uuid: string, timestamp: number): void {
+    const database = this.sqliteManager.getDatabase()
+    const insert = database.prepare(
+      'INSERT INTO "MinecraftCommands" (timestamp, user, count) VALUES (@timestamp, @user, 1) ON CONFLICT DO UPDATE SET count = count + 1'
+    )
+    const result = insert.run({ user: uuid, timestamp: Math.floor(timestamp / 1000) })
+    assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
+  }
+
+  public addDiscordCommand(id: string, timestamp: number): void {
+    const database = this.sqliteManager.getDatabase()
+    const insert = database.prepare(
+      'INSERT INTO "DiscordCommands" (timestamp, user, count) VALUES (@timestamp, @user, 1) ON CONFLICT DO UPDATE SET count = count + 1'
+    )
+    const result = insert.run({ user: id, timestamp: Math.floor(timestamp / 1000) })
+    assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
   }
 
   public addMinecraftMessage(uuid: string, timestamp: number): void {
@@ -498,6 +611,213 @@ class ScoreDatabase {
     transaction()
   }
 
+  private getMessagesPoints(from: number, to: number): Map<string, ActivityPoint> {
+    const database = this.sqliteManager.getDatabase()
+
+    const selectMinecraft = database.prepare(
+      `SELECT user as uuid, links.discordId, count, MinecraftMessages.timestamp FROM "MinecraftMessages" LEFT JOIN links ON (MinecraftMessages.user = links.uuid) WHERE timestamp BETWEEN ? AND ?`
+    )
+    const selectDiscord = database.prepare(
+      `SELECT user as discordId, links.uuid, count, DiscordMessages.timestamp FROM "DiscordMessages" JOIN links ON (DiscordMessages.user = links.discordId) WHERE timestamp BETWEEN ? AND ?`
+    )
+
+    const transaction = database.transaction(() => {
+      const minecraftResult = selectMinecraft.all(
+        Math.floor(from / 1000),
+        Math.floor(to / 1000)
+      ) as DatabaseCountEntry[]
+      const discordResult = selectDiscord.all(Math.floor(from / 1000), Math.floor(to / 1000)) as DatabaseCountEntry[]
+      const allEntries = [...minecraftResult, ...discordResult]
+
+      const ScoreMaxHistory = Duration.minutes(3)
+      const BaseScore = 30
+
+      return this.calculateCount(allEntries, BaseScore, ScoreMaxHistory)
+    })
+
+    return transaction()
+  }
+
+  private getCommandsPoints(from: number, to: number): Map<string, ActivityPoint> {
+    const database = this.sqliteManager.getDatabase()
+
+    const selectMinecraft = database.prepare(
+      `SELECT user as uuid, links.discordId, count, MinecraftCommands.timestamp FROM "MinecraftCommands" LEFT JOIN links ON (MinecraftCommands.user = links.uuid) WHERE timestamp BETWEEN ? AND ?`
+    )
+    const selectDiscord = database.prepare(
+      `SELECT user as discordId, links.uuid, count, DiscordCommands.timestamp FROM "DiscordCommands" JOIN links ON (DiscordCommands.user = links.discordId) WHERE timestamp BETWEEN ? AND ?`
+    )
+
+    const transaction = database.transaction(() => {
+      const minecraftResult = selectMinecraft.all(
+        Math.floor(from / 1000),
+        Math.floor(to / 1000)
+      ) as DatabaseCountEntry[]
+      const discordResult = selectDiscord.all(Math.floor(from / 1000), Math.floor(to / 1000)) as DatabaseCountEntry[]
+      const allEntries = [...minecraftResult, ...discordResult]
+
+      const ScoreMaxHistory = Duration.minutes(5)
+      const BaseScore = 15
+
+      return this.calculateCount(allEntries, BaseScore, ScoreMaxHistory)
+    })
+
+    return transaction()
+  }
+
+  private calculateCount(
+    allEntries: DatabaseCountEntry[],
+    baseScore: number,
+    scoreMaxHistory: Duration
+  ): Map<string, ActivityPoint> {
+    allEntries.sort((a, b) => a.timestamp - b.timestamp)
+
+    const leaderboard = new Map<string, ActivityPoint>()
+    const countHistory = new Map<string, number[]>()
+
+    for (const entry of allEntries) {
+      let activityEntry = leaderboard.get(entry.uuid)
+      if (activityEntry === undefined) {
+        activityEntry = { uuid: entry.uuid, discordId: entry.discordId ?? undefined, points: 0 }
+        leaderboard.set(entry.uuid, activityEntry)
+      }
+      activityEntry.discordId ??= entry.discordId ?? undefined
+
+      let countHistoryEntry = countHistory.get(entry.uuid)
+      if (countHistoryEntry === undefined) {
+        countHistoryEntry = []
+        countHistory.set(entry.uuid, countHistoryEntry)
+      } else {
+        countHistoryEntry = countHistoryEntry.filter(
+          (countHistory) => countHistory + scoreMaxHistory.toSeconds() > entry.timestamp
+        )
+        countHistory.set(entry.uuid, countHistoryEntry)
+      }
+
+      for (let counter = 0; counter < entry.count; counter++) {
+        countHistoryEntry.push(entry.timestamp)
+
+        const pointsIncrement = Math.max(1, baseScore / countHistoryEntry.length)
+        activityEntry.points += pointsIncrement
+      }
+    }
+
+    return leaderboard
+  }
+
+  private getOnlinePoints(from: number, to: number): Map<string, ActivityPoint> {
+    const database = this.sqliteManager.getDatabase()
+    const select = database.prepare(
+      `SELECT OnlineMembers.uuid, links.discordId, fromTimestamp, toTimestamp FROM "OnlineMembers"` +
+        ` LEFT JOIN links ON (OnlineMembers.uuid = links.uuid)` +
+        ` WHERE ((fromTimestamp BETWEEN @fromTimestamp AND @toTimestamp) OR (toTimestamp BETWEEN @fromTimestamp AND @toTimestamp))` +
+        ` ORDER BY fromTimestamp ASC`
+    )
+
+    interface DatabaseTimeframes {
+      uuid: string
+      discordId: string | undefined
+      fromTimestamp: number
+      toTimestamp: number
+    }
+
+    const timeframes = select.all({
+      fromTimestamp: Math.floor(from),
+      toTimestamp: Math.floor(to)
+    }) as DatabaseTimeframes[]
+
+    const BaseScore = 15
+    const ScoreCooldown = Duration.minutes(15).toSeconds()
+
+    const leaderboard = new Map<string, ActivityPoint>()
+    const reachedTimestamps = new Map<string, number>()
+    for (const entry of timeframes) {
+      entry.fromTimestamp = Math.max(entry.fromTimestamp, Math.floor(from / 1000))
+      entry.toTimestamp = Math.min(entry.toTimestamp, Math.floor(to / 1000))
+
+      let user = leaderboard.get(entry.uuid)
+      if (user === undefined) {
+        user = { uuid: entry.uuid, discordId: entry.discordId ?? undefined, points: 0 }
+        leaderboard.set(entry.uuid, user)
+      }
+      user.discordId ??= entry.discordId ?? undefined
+
+      let reachedTimestamp = reachedTimestamps.get(entry.uuid)
+      if (entry.toTimestamp < (reachedTimestamp ?? 0)) continue
+
+      if (reachedTimestamp === undefined) {
+        reachedTimestamp = entry.fromTimestamp
+      } else if (reachedTimestamp < entry.fromTimestamp) {
+        if (reachedTimestamp + ScoreCooldown > entry.toTimestamp) {
+          continue
+        } else {
+          reachedTimestamp += ScoreCooldown
+        }
+      } else {
+        reachedTimestamp = Math.max(reachedTimestamp, entry.fromTimestamp)
+      }
+
+      for (; reachedTimestamp <= entry.toTimestamp; reachedTimestamp += ScoreCooldown) {
+        user.points += BaseScore
+      }
+
+      reachedTimestamps.set(entry.uuid, reachedTimestamp)
+    }
+
+    return leaderboard
+  }
+
+  public getPoints(from: number, to: number): Map<string, ActivityTotalPoints> {
+    assert.ok(from < to, '"from" timestamp must be earlier than the "to" timestamp')
+
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const leaderboard = new Map<string, ActivityTotalPoints>()
+      const getUser = (entry: ActivityPoint) => {
+        let user = leaderboard.get(entry.uuid)
+        if (user === undefined) {
+          user = {
+            uuid: entry.uuid,
+            discordId: entry.discordId ?? undefined,
+            total: 0,
+            chat: 0,
+            online: 0,
+            commands: 0
+          }
+          leaderboard.set(entry.uuid, user)
+        }
+        user.discordId ??= entry.discordId ?? undefined
+        return user
+      }
+
+      for (const entry of this.getMessagesPoints(from, to).values()) {
+        const user = getUser(entry)
+        const points = Math.floor(entry.points)
+
+        user.total += points
+        user.chat += points
+      }
+      for (const entry of this.getCommandsPoints(from, to).values()) {
+        const user = getUser(entry)
+        const points = Math.floor(entry.points)
+
+        user.total += points
+        user.commands += points
+      }
+      for (const entry of this.getOnlinePoints(from, to).values()) {
+        const user = getUser(entry)
+        const points = Math.floor(entry.points)
+
+        user.total += points
+        user.online += points
+      }
+
+      return leaderboard
+    })
+
+    return transaction()
+  }
+
   public getLegacyUsernames(oldestTimestamp: number): Set<string> {
     const database = this.sqliteManager.getDatabase()
 
@@ -538,8 +858,11 @@ class ScoreDatabase {
 
     const database = this.sqliteManager.getDatabase()
 
-    const deleteMinecraft = database.prepare('DELETE FROM "MinecraftMessages" WHERE timestamp < ?')
-    const deleteDiscord = database.prepare('DELETE FROM "DiscordMessages" WHERE timestamp < ?')
+    const deleteMinecraftMessages = database.prepare('DELETE FROM "MinecraftMessages" WHERE timestamp < ?')
+    const deleteDiscordMessages = database.prepare('DELETE FROM "DiscordMessages" WHERE timestamp < ?')
+
+    const deleteMinecraftCommands = database.prepare('DELETE FROM "MinecraftCommands" WHERE timestamp < ?')
+    const deleteDiscordCommands = database.prepare('DELETE FROM "DiscordCommands" WHERE timestamp < ?')
 
     const deleteAllMembers = database.prepare('DELETE FROM "AllMembers" WHERE toTimestamp < ?')
     const deleteOnlineMembers = database.prepare('DELETE FROM "OnlineMembers" WHERE toTimestamp < ?')
@@ -547,8 +870,11 @@ class ScoreDatabase {
     const transaction = database.transaction(() => {
       let count = 0
 
-      count += deleteMinecraft.run(oldestMessageTimestamp).changes
-      count += deleteDiscord.run(oldestMessageTimestamp).changes
+      count += deleteMinecraftMessages.run(oldestMessageTimestamp).changes
+      count += deleteDiscordMessages.run(oldestMessageTimestamp).changes
+
+      count += deleteMinecraftCommands.run(oldestMessageTimestamp).changes
+      count += deleteDiscordCommands.run(oldestMessageTimestamp).changes
 
       count += deleteAllMembers.run(oldestMemberTimestamp).changes
       count += deleteOnlineMembers.run(oldestMemberTimestamp).changes
@@ -590,4 +916,27 @@ interface MemberLeaderboard {
   uuid: string
   totalTime: number
   discordId: string | undefined
+}
+
+interface DatabaseCountEntry {
+  uuid: string
+  count: number
+  discordId: string | null
+  timestamp: number
+}
+
+export interface ActivityPoint {
+  uuid: string
+  discordId: string | undefined
+  points: number
+}
+
+export interface ActivityTotalPoints {
+  uuid: string
+  discordId: string | undefined
+
+  total: number
+  commands: number
+  chat: number
+  online: number
 }

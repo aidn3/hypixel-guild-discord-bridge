@@ -82,7 +82,6 @@ export default class ArabicFixer {
     const isnonJoinerRegex = String.raw`(?<=\s|^|$|[` + nonJoinerLetters + '])'
     const JoinerRegex = String.raw`(?<!\s\w[^` + nonJoinerLetters + '])'
 
-    /* eslint-disable unicorn/prefer-single-call */
     const allRules: { regex: RegExp; replace: string }[] = []
     allRules.push({ regex: new RegExp(spaceAfter + 'الله', 'g'), replace: 'ﷲ' }) //الله
     allRules.push({ regex: new RegExp(spaceAfter + 'الله' + spaceAfter, 'g'), replace: 'ﷲ' }) //الله
@@ -187,7 +186,6 @@ export default class ArabicFixer {
     allRules.push({ regex: new RegExp(nonJoinerRegex + 'ي' + nospaceAfter, 'g'), replace: 'ﺌ' })
     allRules.push({ regex: new RegExp(JoinerRegex + 'ي' + nospaceAfter, 'g'), replace: 'ﺋ' })
     allRules.push({ regex: new RegExp(nonJoinerRegex + 'ي' + spaceAfter, 'g'), replace: 'ﺊ' })
-    /* eslint-enable unicorn/prefer-single-call */
 
     return allRules
   }
