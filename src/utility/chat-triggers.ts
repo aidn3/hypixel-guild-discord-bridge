@@ -98,7 +98,8 @@ export const InviteAcceptChat: RegexChat = {
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in another guild!/,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in your guild!/,
     /^Already in a guild!/,
-    /^Your guild is full!/
+    /^Your guild is full!/,
+    /^That guild is full!/
   ]
 }
 
