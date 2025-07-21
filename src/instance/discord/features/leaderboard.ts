@@ -11,8 +11,8 @@ import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { formatTime } from '../../../utility/shared-utility'
-import type DiscordInstance from '../discord-instance.js'
 import { DefaultCommandFooter } from '../common/discord-config'
+import type DiscordInstance from '../discord-instance.js'
 
 export default class Leaderboard extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly EntriesPerPage = 10
@@ -151,7 +151,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       embed: {
         title: 'Messages Leaderboard (30 days)',
         description: result,
-        footer: option.addFooter ? { text: DefaultCommandFooter }: undefined
+        footer: option.addFooter ? { text: DefaultCommandFooter } : undefined
       },
       totalPages: Leaderboard.totalPages(leaderboard)
     }
@@ -176,7 +176,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       embed: {
         title: 'Online Leaderboard (30 days)',
         description: result,
-        footer: option.addFooter ? { text: DefaultCommandFooter }: undefined
+        footer: option.addFooter ? { text: DefaultCommandFooter } : undefined
       },
       totalPages: Leaderboard.totalPages(leaderboard)
     }
@@ -205,7 +205,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       embed: {
         title: 'Points Leaderboard (30 days)',
         description: result,
-        footer: option.addFooter ? { text: DefaultCommandFooter }: undefined
+        footer: option.addFooter ? { text: DefaultCommandFooter } : undefined
       },
       totalPages: Leaderboard.totalPages(leaderboard)
     }
@@ -276,7 +276,7 @@ export interface LeaderboardConfig {
   points30Days: LeaderboardEntry[]
 }
 
-interface LeaderboardEntry {
+export interface LeaderboardEntry {
   lastUpdate: number
   channelId: string
   messageId: string

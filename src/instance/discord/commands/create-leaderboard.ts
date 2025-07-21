@@ -5,6 +5,7 @@ import { MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { LeaderboardEntry } from '../features/leaderboard'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
 export const Online30Days = { name: 'Top Online Member (30 days)', value: 'online30Days' }
@@ -33,59 +34,38 @@ export default {
 
     const config = context.application.discordInstance.leaderboard.getConfig()
     const type = context.interaction.options.getString('type', true)
-    if (type === Messages30Days.value) {
-      const leaderboard = await context.application.discordInstance.leaderboard.getMessage30Days({
-        addFooter: false,
-        addLastUpdateAt: true,
-        page: 0
-      })
-      const messageId = await send(context.interaction, channel, leaderboard.embed)
-      if (messageId === undefined) return
 
-      config.data.messages30Days.push({
-        messageId: messageId,
-        channelId: channel.id,
-        lastUpdate: Date.now()
-      })
-      config.markDirty()
-      return
+    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0 }
+    let leaderboard: { embed: APIEmbed; totalPages: number } | undefined
+    let entries: LeaderboardEntry[] | undefined
+
+    switch (type) {
+      case Messages30Days.value: {
+        leaderboard = await context.application.discordInstance.leaderboard.getMessage30Days(parameters)
+        entries = config.data.messages30Days
+        break
+      }
+
+      case Online30Days.value: {
+        leaderboard = await context.application.discordInstance.leaderboard.getOnline30Days(parameters)
+        entries = config.data.online30Days
+        break
+      }
+
+      case Points30Days.value: {
+        leaderboard = await context.application.discordInstance.leaderboard.getPoints30Days(parameters)
+        entries = config.data.points30Days
+      }
     }
 
-    if (type === Online30Days.value) {
-      const leaderboard = await context.application.discordInstance.leaderboard.getOnline30Days({
-        addFooter: false,
-        addLastUpdateAt: true,
-        page: 0
-      })
-      const messageId = await send(context.interaction, channel, leaderboard.embed)
-      if (messageId === undefined) return
-
-      config.data.online30Days.push({
-        messageId: messageId,
-        channelId: channel.id,
-        lastUpdate: Date.now()
-      })
-      config.markDirty()
-      return
+    if (leaderboard === undefined || entries === undefined) {
+      throw new Error(`leaderboard type not found: ${type}`)
     }
 
-    if (type === Points30Days.value) {
-      const leaderboard = await context.application.discordInstance.leaderboard.getPoints30Days({
-        addFooter: false,
-        addLastUpdateAt: true,
-        page: 0
-      })
-      const messageId = await send(context.interaction, channel, leaderboard.embed)
-      if (messageId === undefined) return
-
-      config.data.points30Days.push({
-        messageId: messageId,
-        channelId: channel.id,
-        lastUpdate: Date.now()
-      })
-      config.markDirty()
-      return
-    }
+    const messageId = await send(context.interaction, channel, leaderboard.embed)
+    if (messageId === undefined) return
+    entries.push({ messageId: messageId, channelId: channel.id, lastUpdate: Date.now() })
+    config.markDirty()
   }
 } satisfies DiscordCommandHandler
 
