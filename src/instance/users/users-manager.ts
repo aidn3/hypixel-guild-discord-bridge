@@ -3,6 +3,7 @@ import { InstanceType } from '../../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import { SqliteManager } from '../../common/sqlite-manager.js'
 
+import DatabaseMigration from './database-migration'
 import Autocomplete from './features/autocomplete.js'
 import { GuildManager } from './features/guild-manager.js'
 import { Mojang } from './features/mojang.js'
@@ -21,7 +22,11 @@ export default class UsersManager extends Instance<InstanceType.Utility> {
   public constructor(application: Application) {
     super(application, InternalInstancePrefix + 'UsersManager', InstanceType.Utility)
 
-    this.sqliteManager = new SqliteManager(application, application.getConfigFilePath('users.sqlite'))
+    const sqliteName = 'users.sqlite'
+    this.sqliteManager = new SqliteManager(application, application.getConfigFilePath(sqliteName))
+    const migrationProcess = new DatabaseMigration(this.application, this.logger)
+    migrationProcess.migrate(this.sqliteManager, sqliteName)
+
     this.mojangDatabase = new Mojang(
       application,
       this,

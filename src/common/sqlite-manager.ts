@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import fs from 'node:fs'
 
 import Database from 'better-sqlite3'
 
@@ -56,6 +57,10 @@ export class SqliteManager {
     assert.ok(!this.isClosed(), 'Database is closed')
     this.tryClean()
     return this.database
+  }
+
+  public backup(destination: string): void {
+    fs.copyFileSync(this.configFilePath, destination)
   }
 
   private tryClean(): void {

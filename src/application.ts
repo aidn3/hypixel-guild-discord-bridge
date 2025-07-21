@@ -1,7 +1,9 @@
 /* eslint @typescript-eslint/explicit-member-accessibility: "error" */
 // @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
 
+import assert from 'node:assert'
 import type Events from 'node:events'
+import fs from 'node:fs'
 import path from 'node:path'
 
 import type { Awaitable } from 'discord.js'
@@ -61,6 +63,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   private readonly rootDirectory
   private readonly configsDirectory
+  private readonly backupDirectory
   private readonly config: Readonly<ApplicationConfig>
   public readonly language: ConfigManager<LanguageConfig>
 
@@ -88,6 +91,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.config = config
     this.configsDirectory = configsDirectory
     this.rootDirectory = rootDirectory
+
+    this.backupDirectory = path.join(configsDirectory, 'backup')
+    this.applicationIntegrity.addConfigPath(this.backupDirectory)
+    fs.mkdirSync(this.backupDirectory, { recursive: true })
 
     this.generalConfig = new ConfigManager(this, this.logger, this.getConfigFilePath('application.json'), {
       autoRestart: false,
@@ -144,6 +151,26 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
+  }
+
+  public getBackupPath(name: string): string {
+    assert.ok(name.length > 0, "'name' must not be empty")
+
+    const MaxTries = 3
+    for (let tryCount = 0; tryCount < MaxTries; tryCount++) {
+      const currentTime = Date.now()
+
+      const basename = path.basename(name)
+      const extension = path.extname(basename)
+      const fileName = basename.slice(0, basename.length - extension.length)
+      const fullName = `${fileName}-${currentTime}${extension}`
+
+      const fullPath = path.join(this.backupDirectory, fullName)
+      if (fs.existsSync(fullPath)) continue
+      return fullPath
+    }
+
+    throw new Error(`could not find viable backup path for '${name}'.`)
   }
 
   public addShutdownListener(listener: () => void): void {
