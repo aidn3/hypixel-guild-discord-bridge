@@ -69,7 +69,7 @@ export function formatTime(time: number, maxPrecision = 2): string {
   }
   remaining = remaining % 60
 
-  if (remaining > 0) result += `${remaining}s`
+  result += `${remaining}s`
   return result
 }
 
