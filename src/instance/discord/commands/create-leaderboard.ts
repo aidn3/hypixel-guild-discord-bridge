@@ -5,7 +5,7 @@ import { MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { LeaderboardEntry } from '../features/leaderboard'
+import type { LeaderboardEntry } from '../features/leaderboard'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
 export const Online30Days = { name: 'Top Online Member (30 days)', value: 'online30Days' }
