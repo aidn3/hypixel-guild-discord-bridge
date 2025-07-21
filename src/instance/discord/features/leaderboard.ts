@@ -53,68 +53,36 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     const client = this.clientInstance.client
     assert.ok(client.isReady())
 
-    await this.updateMessages30Days(client)
-    await this.updateOnline30Days(client)
-    await this.updatePoints30Days(client)
+    await this.updateLeaderboard(client, this.config.data.messages30Days, (options) => this.getMessage30Days(options))
+    await this.updateLeaderboard(client, this.config.data.online30Days, (options) => this.getOnline30Days(options))
+    await this.updateLeaderboard(client, this.config.data.points30Days, (options) => this.getPoints30Days(options))
   }
 
-  private async updateMessages30Days(client: Client<true>): Promise<void> {
-    for (let index = 0; index < this.config.data.messages30Days.length; index++) {
-      const entry = this.config.data.messages30Days[index]
+  private async updateLeaderboard(
+    client: Client<true>,
+    entries: LeaderboardEntry[],
+    generate: (entry: LeaderboardOptions) => Promise<{ embed: APIEmbed; totalPages: number }>
+  ): Promise<void> {
+    let cachedEmbed: APIEmbed | undefined = undefined
+    for (let index = 0; index < entries.length; index++) {
+      const entry = entries[index]
 
       if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        const leaderboard = await this.getMessage30Days({ addFooter: false, addLastUpdateAt: true, page: 0 })
+        cachedEmbed =
+          cachedEmbed ??
+          (await generate({
+            addFooter: false,
+            addLastUpdateAt: true,
+            page: 0
+          }).then((leaderboard) => leaderboard.embed))
+        assert.ok(cachedEmbed !== undefined)
 
-        const shouldKeep = await this.update(client, entry, leaderboard.embed)
+        const shouldKeep = await this.update(client, entry, cachedEmbed)
         if (!shouldKeep) {
-          this.config.data.messages30Days.splice(index, 1)
-          this.config.markDirty()
-          index--
-        }
-      } catch (error: unknown) {
-        this.logger.error(error)
-      }
-    }
-  }
-
-  private async updateOnline30Days(client: Client<true>): Promise<void> {
-    for (let index = 0; index < this.config.data.online30Days.length; index++) {
-      const entry = this.config.data.online30Days[index]
-
-      if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
-      this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
-
-      try {
-        const leaderboard = await this.getOnline30Days({ addFooter: false, addLastUpdateAt: true, page: 0 })
-
-        const shouldKeep = await this.update(client, entry, leaderboard.embed)
-        if (!shouldKeep) {
-          this.config.data.online30Days.splice(index, 1)
-          this.config.markDirty()
-          index--
-        }
-      } catch (error: unknown) {
-        this.logger.error(error)
-      }
-    }
-  }
-
-  private async updatePoints30Days(client: Client<true>): Promise<void> {
-    for (let index = 0; index < this.config.data.points30Days.length; index++) {
-      const entry = this.config.data.points30Days[index]
-
-      if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
-      this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
-
-      try {
-        const leaderboard = await this.getPoints30Days({ addFooter: false, addLastUpdateAt: true, page: 0 })
-
-        const shouldKeep = await this.update(client, entry, leaderboard.embed)
-        if (!shouldKeep) {
-          this.config.data.points30Days.splice(index, 1)
+          entries.splice(index, 1)
           this.config.markDirty()
           index--
         }
@@ -160,7 +128,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     return true
   }
 
-  public async getMessage30Days(option: { addFooter: boolean; addLastUpdateAt: boolean; page: number }): Promise<{
+  public async getMessage30Days(option: LeaderboardOptions): Promise<{
     embed: APIEmbed
     totalPages: number
   }> {
@@ -200,7 +168,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
-  public async getOnline30Days(option: { addFooter: boolean; addLastUpdateAt: boolean; page: number }): Promise<{
+  public async getOnline30Days(option: LeaderboardOptions): Promise<{
     embed: APIEmbed
     totalPages: number
   }> {
@@ -239,7 +207,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     return { embed: embed, totalPages: Math.ceil(leaderboard.length / Leaderboard.EntriesPerPage) }
   }
 
-  public async getPoints30Days(option: { addFooter: boolean; addLastUpdateAt: boolean; page: number }): Promise<{
+  public async getPoints30Days(option: LeaderboardOptions): Promise<{
     embed: APIEmbed
     totalPages: number
   }> {
@@ -310,4 +278,10 @@ interface LeaderboardEntry {
   lastUpdate: number
   channelId: string
   messageId: string
+}
+
+interface LeaderboardOptions {
+  addFooter: boolean
+  addLastUpdateAt: boolean
+  page: number
 }
