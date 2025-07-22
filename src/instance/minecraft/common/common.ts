@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { UserIdentifier } from '../../../common/application-event.js'
 import { ChannelType, Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
 // eslint-disable-next-line import/no-restricted-paths
@@ -51,5 +53,8 @@ export function getUuidFromGuildChat(message: unknown): string {
 
   // clickCommand: "/viewprofile <UUID>"
   const uuidWithDashes = clickCommand.split(' ')[1].trim()
-  return uuidWithDashes.replaceAll('-', '')
+  const uuid = uuidWithDashes.replaceAll('-', '')
+  assert.ok(uuid.length === 32, `Invalid uuid. given: ${uuid}`)
+
+  return uuid
 }
