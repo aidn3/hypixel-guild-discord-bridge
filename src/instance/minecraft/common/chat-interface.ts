@@ -25,4 +25,5 @@ export interface MinecraftChatContext {
 
   message: string
   rawMessage: string
+  jsonMessage: unknown
 }

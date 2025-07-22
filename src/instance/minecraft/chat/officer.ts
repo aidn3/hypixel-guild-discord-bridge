@@ -1,5 +1,6 @@
 import { ChannelType, Permission } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+import { getUuidFromGuildChat } from '../common/common'
 
 export default {
   onChat: function (context: MinecraftChatContext): void {
@@ -13,6 +14,8 @@ export default {
       const guildRank = match[3]
       const playerMessage = match[4].trim()
 
+      const uuid = getUuidFromGuildChat(context.jsonMessage)
+      context.application.usersManager.mojangDatabase.add([{ name: username, id: uuid }])
       if (context.application.minecraftManager.isMinecraftBot(username)) {
         context.clientInstance.notifyChatEvent(ChannelType.Officer, playerMessage)
         return
@@ -39,7 +42,8 @@ export default {
         channelType: ChannelType.Officer,
 
         permission: context.clientInstance.resolvePermission(username, Permission.Helper),
-        username,
+        username: username,
+        uuid: uuid,
         hypixelRank: hypixelRank,
         guildRank: guildRank,
 

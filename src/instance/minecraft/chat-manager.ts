@@ -79,7 +79,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
   override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      this.onMessage(chatMessage.toString(), chatMessage.toMotd())
+      this.onMessage(chatMessage.toString(), chatMessage.toMotd(), chatMessage.json)
     })
 
     clientSession.client.on('playerChat', (data: object) => {
@@ -124,10 +124,11 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
       assert.ok(message) // old packet means message exists
       resultMessage = clientSession.prismChat.fromNotch(message)
     }
-    this.onMessage(resultMessage.toString(), resultMessage.toMotd())
+
+    this.onMessage(resultMessage.toString(), resultMessage.toMotd(), resultMessage.json)
   }
 
-  private onMessage(message: string, rawMessage: string): void {
+  private onMessage(message: string, rawMessage: string, jsonMessage: unknown): void {
     message = stufDecode(message)
 
     for (const module of this.chatModules) {
@@ -144,7 +145,8 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
           messageAssociation: this.messageAssociation,
 
           message: message,
-          rawMessage: rawMessage
+          rawMessage: rawMessage,
+          jsonMessage: jsonMessage
         })
       ).catch(this.errorHandler.promiseCatch('handling chat trigger'))
     }

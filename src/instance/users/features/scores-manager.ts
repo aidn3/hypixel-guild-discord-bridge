@@ -64,12 +64,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           break
         }
         case InstanceType.Minecraft: {
-          void this.queue
-            .add(async () => {
-              const profile = await this.application.mojangApi.profileByUsername(event.username)
-              this.database.addMinecraftMessage(profile.id, this.timestamp())
-            })
-            .catch(this.errorHandler.promiseCatch('adding minecraft chat message score'))
+          this.database.addMinecraftMessage(event.uuid, this.timestamp())
         }
       }
     })
@@ -83,12 +78,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           break
         }
         case InstanceType.Minecraft: {
-          void this.queue
-            .add(async () => {
-              const profile = await this.application.mojangApi.profileByUsername(event.username)
-              this.database.addMinecraftCommand(profile.id, this.timestamp())
-            })
-            .catch(this.errorHandler.promiseCatch('adding minecraft command score'))
+          this.database.addMinecraftCommand(event.uuid, this.timestamp())
         }
       }
     })
