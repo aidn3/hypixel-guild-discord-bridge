@@ -15,7 +15,7 @@ import Duration from '../../../utility/duration'
 import type UsersManager from '../users-manager.js'
 
 export default class ScoresManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
-  private static readonly DeleteMemberOlderThan = 356
+  private static readonly DeleteMemberOlderThan = 365
   private static readonly DeleteMessagesOlderThan = 365
   private static readonly LeniencyTimeSeconds = 5 * 60
 
