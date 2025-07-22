@@ -256,6 +256,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
         channelType: event.channelType,
         originEventId: event.eventId,
+
+        uuid: event.uuid,
         username: event.username,
 
         commandName: commandName,
@@ -287,6 +289,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
         channelType: event.channelType,
         originEventId: event.eventId,
+
+        uuid: event.uuid,
         username: event.username,
 
         commandName: commandName,

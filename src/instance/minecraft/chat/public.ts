@@ -8,6 +8,7 @@ import {
 import { durationToMinecraftDuration } from '../../../utility/shared-utility'
 import { LinkType } from '../../users/features/verification.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
+import { getUuidFromGuildChat } from '../common/common'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -22,11 +23,13 @@ export default {
       const playerMessage = match[4].trim()
 
       const identifiers = [username]
-      const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
-      if (mojangProfile) {
-        identifiers.push(mojangProfile.id, mojangProfile.name)
 
-        const link = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
+      const uuid = getUuidFromGuildChat(context.jsonMessage)
+      if (uuid) {
+        context.application.usersManager.mojangDatabase.add([{ name: username, id: uuid }])
+        identifiers.push(uuid, username)
+
+        const link = await context.application.usersManager.verification.findByIngame(uuid)
         if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
       }
 
@@ -68,7 +71,8 @@ export default {
         channelType: ChannelType.Public,
 
         permission: context.clientInstance.resolvePermission(username, Permission.Anyone),
-        username,
+        username: username,
+        uuid: uuid,
         hypixelRank: hypixelRank,
         guildRank: guildRank,
 

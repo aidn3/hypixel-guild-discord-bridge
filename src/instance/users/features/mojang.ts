@@ -35,15 +35,13 @@ export class Mojang extends EventHandler<UsersManager, InstanceType.Utility, voi
 
   public add(profiles: MojangProfile[]): void {
     const database = this.sqliteManager.getDatabase()
-    const deleteOld = database.prepare('DELETE FROM "mojang" WHERE loweredName = ?')
-    const upsert = database.prepare(
-      'INSERT INTO "mojang" (uuid, username, loweredName) VALUES (@uuid, @username, @loweredName) ON CONFLICT DO UPDATE SET username = @username AND loweredName = @loweredName'
+    const insert = database.prepare(
+      'INSERT OR REPLACE INTO "mojang" (uuid, username, loweredName) VALUES (@uuid, @username, @loweredName)'
     )
 
     const transaction = database.transaction(() => {
       for (const profile of profiles) {
-        deleteOld.run(profile.name.toLowerCase())
-        upsert.run({ uuid: profile.id, username: profile.name, loweredName: profile.name.toLowerCase() })
+        insert.run({ uuid: profile.id, username: profile.name, loweredName: profile.name.toLowerCase() })
       }
     })
 

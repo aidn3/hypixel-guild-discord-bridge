@@ -276,6 +276,10 @@ export interface BaseChat extends InformEvent {
 export interface MinecraftChat extends BaseChat, MinecraftRawMessage {
   readonly instanceType: InstanceType.Minecraft
   readonly hypixelRank: string
+  /**
+   * The Mojang uuid of the user provided by Minecraft
+   */
+  readonly uuid: string
 }
 
 export interface MinecraftPrivateChat extends MinecraftChat {
@@ -517,7 +521,7 @@ export interface BaseCommandEvent extends InformEvent, ReplyEvent {
   readonly commandResponse: string
 }
 
-export interface DiscordCommandEvent {
+export interface DiscordCommandEvent extends BaseCommandEvent {
   instanceType: InstanceType.Discord
   /**
    * The unique id of the user provided by Discord
@@ -525,24 +529,29 @@ export interface DiscordCommandEvent {
   userId: string
 }
 
+export interface MinecraftCommandEvent extends BaseCommandEvent {
+  instanceType: InstanceType.Minecraft
+  /**
+   * The Mojang uuid of the user provided by Minecraft
+   */
+  uuid: string
+}
+
+export type CommandLike =
+  | DiscordCommandEvent
+  | MinecraftCommandEvent
+  | (BaseCommandEvent & { instanceType: Exclude<InstanceType, InstanceType.Discord | InstanceType.Minecraft> })
+
 /**
  * Used when a command has been executed
  */
-export type CommandEvent =
-  | (BaseCommandEvent & DiscordCommandEvent)
-  | (BaseCommandEvent & {
-      instanceType: Exclude<InstanceType, InstanceType.Discord>
-    })
+export type CommandEvent = CommandLike
 
 /**
  * Used to send feedback messages when a command takes time to execute.
  * Can be used to send multiple responses as well.
  */
-export type CommandFeedbackEvent =
-  | (BaseCommandEvent & DiscordCommandEvent)
-  | (BaseCommandEvent & {
-      instanceType: Exclude<InstanceType, InstanceType.Discord>
-    })
+export type CommandFeedbackEvent = CommandLike
 
 /**
  * Events used when an instance changes its status

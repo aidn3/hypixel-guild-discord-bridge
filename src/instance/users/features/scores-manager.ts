@@ -15,7 +15,7 @@ import Duration from '../../../utility/duration'
 import type UsersManager from '../users-manager.js'
 
 export default class ScoresManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
-  private static readonly DeleteMemberOlderThan = 356
+  private static readonly DeleteMemberOlderThan = 365
   private static readonly DeleteMessagesOlderThan = 365
   private static readonly LeniencyTimeSeconds = 5 * 60
 
@@ -58,18 +58,15 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     })
 
     this.application.on('chat', (event) => {
+      if (event.channelType !== ChannelType.Public) return
+
       switch (event.instanceType) {
         case InstanceType.Discord: {
           this.database.addDiscordMessage(event.userId, this.timestamp())
           break
         }
         case InstanceType.Minecraft: {
-          void this.queue
-            .add(async () => {
-              const profile = await this.application.mojangApi.profileByUsername(event.username)
-              this.database.addMinecraftMessage(profile.id, this.timestamp())
-            })
-            .catch(this.errorHandler.promiseCatch('adding minecraft chat message score'))
+          this.database.addMinecraftMessage(event.uuid, this.timestamp())
         }
       }
     })
@@ -83,12 +80,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           break
         }
         case InstanceType.Minecraft: {
-          void this.queue
-            .add(async () => {
-              const profile = await this.application.mojangApi.profileByUsername(event.username)
-              this.database.addMinecraftCommand(profile.id, this.timestamp())
-            })
-            .catch(this.errorHandler.promiseCatch('adding minecraft command score'))
+          this.database.addMinecraftCommand(event.uuid, this.timestamp())
         }
       }
     })
