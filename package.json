@@ -12,9 +12,10 @@
     "generate-code": "npx ts-interface-builder src/application-config.ts",
     "generate-docs": "node --import tsx/esm scripts/generate-documentation.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
+    "lint:coverage": "npx type-coverage --detail true --update true",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --import tsx/esm index.ts test-run",
-    "validate": "npm install && npm run generate-code && npm run generate-docs && npm run lint:fix && npm run test:compile && npx type-coverage --detail true --update true && npm run test:run"
+    "validate": "npm install && npm run generate-code && npm run generate-docs && npm run lint:fix && npm run test:compile && npm run lint:coverage && npm run test:run"
   },
   "license": "MIT",
   "repository": {
