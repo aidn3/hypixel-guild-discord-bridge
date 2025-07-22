@@ -58,6 +58,8 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
     })
 
     this.application.on('chat', (event) => {
+      if (event.channelType !== ChannelType.Public) return
+
       switch (event.instanceType) {
         case InstanceType.Discord: {
           this.database.addDiscordMessage(event.userId, this.timestamp())
