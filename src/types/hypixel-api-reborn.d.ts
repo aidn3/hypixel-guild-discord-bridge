@@ -19,7 +19,7 @@ declare module 'hypixel-api-reborn' {
   }
 
   export interface SkyblockV2ProfilesRaw {
-    profiles: SkyblockV2Profile[] | undefined
+    profiles: SkyblockV2Profile[] | null
   }
 
   export interface SkyblockV2Profile {
@@ -36,13 +36,13 @@ declare module 'hypixel-api-reborn' {
     currencies?: { coin_purse?: number }
     dungeons: SkyblockV2Dungeons | undefined
     rift?: SkyblockV2Rift
-    accessory_bag_storage: {
+    accessory_bag_storage?: {
       selected_power?: string
       highest_magical_power: number
       tuning: { slot_0?: Record<string, number> }
     }
     collection?: Record<string, number>
-    inventory?: { bag_contents: { talisman_bag: SkyblockV2Inventory } }
+    inventory?: { bag_contents?: { talisman_bag: SkyblockV2Inventory } }
     profile: { bank_account?: number }
     player_data: { experience?: Record<string, number> }
     nether_island_player_data?: {

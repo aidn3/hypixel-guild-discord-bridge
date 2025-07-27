@@ -77,7 +77,7 @@ export default class Skills extends ChatCommandHandler {
     | undefined
   > {
     const rawProfiles = await hypixelApi.getSkyblockProfiles(uuid, { raw: true })
-    if (rawProfiles.profiles === undefined) return undefined
+    if (!rawProfiles.profiles) return undefined
 
     let cuteName: string | undefined
     let farmingCap: number | undefined

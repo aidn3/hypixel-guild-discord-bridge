@@ -28,10 +28,10 @@ export default class MagicalPower extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const magicalPower = selectedProfile.accessory_bag_storage.highest_magical_power
-    const stone = selectedProfile.accessory_bag_storage.selected_power ?? '(none)'
+    const magicalPower = selectedProfile.accessory_bag_storage?.highest_magical_power ?? 0
+    const stone = selectedProfile.accessory_bag_storage?.selected_power ?? '(none)'
     const enrichments = await this.getEnrichments(selectedProfile)
-    const tuning = selectedProfile.accessory_bag_storage.tuning.slot_0
+    const tuning = selectedProfile.accessory_bag_storage?.tuning.slot_0
 
     let result = `${givenUsername}:`
     result += ` MP ${magicalPower}`
@@ -70,7 +70,7 @@ export default class MagicalPower extends ChatCommandHandler {
   }
 
   private async getEnrichments(member: SkyblockV2Member): Promise<{ name: string; count: number }[]> {
-    const bagRaw = member.inventory?.bag_contents.talisman_bag
+    const bagRaw = member.inventory?.bag_contents?.talisman_bag
     if (bagRaw === undefined) return []
 
     const parsed = await parse(Buffer.from(bagRaw.data, 'base64'))
