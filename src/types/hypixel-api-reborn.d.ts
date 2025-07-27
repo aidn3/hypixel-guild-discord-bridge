@@ -19,7 +19,7 @@ declare module 'hypixel-api-reborn' {
   }
 
   export interface SkyblockV2ProfilesRaw {
-    profiles: SkyblockV2Profile[] | undefined
+    profiles: SkyblockV2Profile[] | null
   }
 
   export interface SkyblockV2Profile {
