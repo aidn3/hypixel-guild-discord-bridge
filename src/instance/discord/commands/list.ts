@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { APIEmbed } from 'discord.js'
-import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
@@ -13,7 +13,7 @@ import type { MojangApi } from '../../../utility/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
-function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
+function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): APIEmbed[] {
   const entries: string[] = []
   let total = 0
 
@@ -45,7 +45,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 
       pages.push({
         color: Color.Default,
-        title: `Guild Online Players (${total}):`,
+        title: onlyOnline ? `Guild Online Players (${total}):` : `Guild Players (${total}):`,
         description: '',
         footer: {
           text: DefaultCommandFooter
@@ -65,13 +65,11 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
-      .addSubcommand(
-        new SlashCommandSubcommandBuilder().setName('online').setDescription('List online players in your guild(s)')
+      .addSubcommand((subCommand) =>
+        subCommand.setName('online').setDescription('List online players in your guild(s)')
       )
-      .addSubcommand(
-        new SlashCommandSubcommandBuilder()
-          .setName('all')
-          .setDescription('List all players in your guild(s), even offline players')
+      .addSubcommand((subCommand) =>
+        subCommand.setName('all').setDescription('List all players in your guild(s), even offline players')
       )
       .setName('list')
       .setDescription('List players in your guild(s)'),
@@ -81,19 +79,20 @@ export default {
     await context.interaction.deferReply()
 
     const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
+    const onlyOnline = context.interaction.options.getSubcommand() === 'online'
     const lists: Map<string, string[]> = await listMembers(
       context.application,
       context.errorHandler,
       context.application.mojangApi,
       context.application.hypixelApi,
-      context.interaction.command?.name === 'all'
+      onlyOnline
     )
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
     }
 
-    await pageMessage(context.interaction, createEmbed(lists), context.errorHandler)
+    await pageMessage(context.interaction, createEmbed(lists, onlyOnline), context.errorHandler)
   }
 } satisfies DiscordCommandHandler
 
