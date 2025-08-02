@@ -103,7 +103,7 @@ async function listMembers(
   hypixelApi: Client,
   onlyOnline: boolean
 ): Promise<Map<string, string[]>> {
-  const players = onlyOnline ? await getOnlineMembers(app, errorHandler) : await getAllMembers(app, errorHandler)
+  const players = await getMembers(app, errorHandler, onlyOnline)
 
   const allUsernames = new Set<string>()
   for (const [, members] of players) {
@@ -178,38 +178,22 @@ function formatLocation(username: string, session: Status | undefined): string {
   return message
 }
 
-async function getOnlineMembers(
+async function getMembers(
   app: Application,
-  errorHandler: UnexpectedErrorHandler
+  errorHandler: UnexpectedErrorHandler,
+  onlyOnline: boolean
 ): Promise<Map<string, { rank: string; usernames: Set<string> }[]>> {
   const resolvedNames = new Map<string, { rank: string; usernames: Set<string> }[]>()
 
   const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
     try {
-      const members = await app.usersManager.guildManager.onlineMembers(instanceName)
+      const members = onlyOnline
+        ? await app.usersManager.guildManager.onlineMembers(instanceName)
+        : await app.usersManager.guildManager.listMembers(instanceName)
+
       resolvedNames.set(instanceName, members)
     } catch (error: unknown) {
-      errorHandler.promiseCatch('fetching members')(error)
-      return
-    }
-  })
-
-  await Promise.all(tasks)
-  return resolvedNames
-}
-
-async function getAllMembers(
-  app: Application,
-  errorHandler: UnexpectedErrorHandler
-): Promise<Map<string, { rank: string; usernames: Set<string> }[]>> {
-  const resolvedNames = new Map<string, { rank: string; usernames: Set<string> }[]>()
-
-  const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
-    try {
-      const members = await app.usersManager.guildManager.listMembers(instanceName)
-      resolvedNames.set(instanceName, members)
-    } catch (error: unknown) {
-      errorHandler.promiseCatch('fetching members')(error)
+      errorHandler.promiseCatch(`fetching ${onlyOnline ? 'online' : 'all'} members`)(error)
       return
     }
   })
