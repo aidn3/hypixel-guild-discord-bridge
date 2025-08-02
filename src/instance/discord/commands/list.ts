@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { APIEmbed } from 'discord.js'
-import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
@@ -63,7 +63,18 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder().setName('online').setDescription('List online players in your guild(s)')
+      )
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('all')
+          .setDescription('List all players in your guild(s), even offline players')
+      )
+      .setName('list')
+      .setDescription('List players in your guild(s)'),
   scope: CommandScope.Chat,
 
   handler: async function (context) {
@@ -74,7 +85,8 @@ export default {
       context.application,
       context.errorHandler,
       context.application.mojangApi,
-      context.application.hypixelApi
+      context.application.hypixelApi,
+      context.interaction.command?.name === 'all'
     )
 
     for (const instancesName of instancesNames) {
@@ -89,12 +101,13 @@ async function listMembers(
   app: Application,
   errorHandler: UnexpectedErrorHandler,
   mojangApi: MojangApi,
-  hypixelApi: Client
+  hypixelApi: Client,
+  onlyOnline: boolean
 ): Promise<Map<string, string[]>> {
-  const onlineProfiles = await getOnlineMembers(app, errorHandler)
+  const players = onlyOnline ? await getOnlineMembers(app, errorHandler) : await getAllMembers(app, errorHandler)
 
   const allUsernames = new Set<string>()
-  for (const [, members] of onlineProfiles) {
+  for (const [, members] of players) {
     for (const section of members) {
       for (const username of section.usernames) {
         allUsernames.add(username)
@@ -104,7 +117,7 @@ async function listMembers(
   const statuses = await look(mojangApi, hypixelApi, errorHandler, allUsernames)
 
   const result = new Map<string, string[]>()
-  for (const [instanceName, members] of onlineProfiles) {
+  for (const [instanceName, members] of players) {
     let instance = result.get(instanceName)
     if (instance === undefined) {
       instance = []
@@ -175,6 +188,26 @@ async function getOnlineMembers(
   const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
     try {
       const members = await app.usersManager.guildManager.onlineMembers(instanceName)
+      resolvedNames.set(instanceName, members)
+    } catch (error: unknown) {
+      errorHandler.promiseCatch('fetching members')(error)
+      return
+    }
+  })
+
+  await Promise.all(tasks)
+  return resolvedNames
+}
+
+async function getAllMembers(
+  app: Application,
+  errorHandler: UnexpectedErrorHandler
+): Promise<Map<string, { rank: string; usernames: Set<string> }[]>> {
+  const resolvedNames = new Map<string, { rank: string; usernames: Set<string> }[]>()
+
+  const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
+    try {
+      const members = await app.usersManager.guildManager.listMembers(instanceName)
       resolvedNames.set(instanceName, members)
     } catch (error: unknown) {
       errorHandler.promiseCatch('fetching members')(error)
