@@ -13,7 +13,7 @@ import type { MojangApi } from '../../../utility/mojang.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
-function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
+function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): APIEmbed[] {
   const entries: string[] = []
   let total = 0
 
@@ -45,7 +45,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 
       pages.push({
         color: Color.Default,
-        title: `Guild Online Players (${total}):`,
+        title: onlyOnline ? `Guild Online Players (${total}):` : `Guild Players (${total}):`,
         description: '',
         footer: {
           text: DefaultCommandFooter
@@ -63,25 +63,36 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed[] {
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('list').setDescription('List Online Players'),
+  getCommandBuilder: () =>
+    new SlashCommandBuilder()
+      .addSubcommand((subCommand) =>
+        subCommand.setName('online').setDescription('List online players in your guild(s)')
+      )
+      .addSubcommand((subCommand) =>
+        subCommand.setName('all').setDescription('List all players in your guild(s), even offline players')
+      )
+      .setName('list')
+      .setDescription('List players in your guild(s)'),
   scope: CommandScope.Chat,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
+    const onlyOnline = context.interaction.options.getSubcommand() === 'online'
     const lists: Map<string, string[]> = await listMembers(
       context.application,
       context.errorHandler,
       context.application.mojangApi,
-      context.application.hypixelApi
+      context.application.hypixelApi,
+      onlyOnline
     )
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
     }
 
-    await pageMessage(context.interaction, createEmbed(lists), context.errorHandler)
+    await pageMessage(context.interaction, createEmbed(lists, onlyOnline), context.errorHandler)
   }
 } satisfies DiscordCommandHandler
 
@@ -89,12 +100,13 @@ async function listMembers(
   app: Application,
   errorHandler: UnexpectedErrorHandler,
   mojangApi: MojangApi,
-  hypixelApi: Client
+  hypixelApi: Client,
+  onlyOnline: boolean
 ): Promise<Map<string, string[]>> {
-  const onlineProfiles = await getOnlineMembers(app, errorHandler)
+  const players = await getMembers(app, errorHandler, onlyOnline)
 
   const allUsernames = new Set<string>()
-  for (const [, members] of onlineProfiles) {
+  for (const [, members] of players) {
     for (const section of members) {
       for (const username of section.usernames) {
         allUsernames.add(username)
@@ -104,7 +116,7 @@ async function listMembers(
   const statuses = await look(mojangApi, hypixelApi, errorHandler, allUsernames)
 
   const result = new Map<string, string[]>()
-  for (const [instanceName, members] of onlineProfiles) {
+  for (const [instanceName, members] of players) {
     let instance = result.get(instanceName)
     if (instance === undefined) {
       instance = []
@@ -166,18 +178,22 @@ function formatLocation(username: string, session: Status | undefined): string {
   return message
 }
 
-async function getOnlineMembers(
+async function getMembers(
   app: Application,
-  errorHandler: UnexpectedErrorHandler
+  errorHandler: UnexpectedErrorHandler,
+  onlyOnline: boolean
 ): Promise<Map<string, { rank: string; usernames: Set<string> }[]>> {
   const resolvedNames = new Map<string, { rank: string; usernames: Set<string> }[]>()
 
   const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
     try {
-      const members = await app.usersManager.guildManager.onlineMembers(instanceName)
+      const members = onlyOnline
+        ? await app.usersManager.guildManager.onlineMembers(instanceName)
+        : await app.usersManager.guildManager.listMembers(instanceName)
+
       resolvedNames.set(instanceName, members)
     } catch (error: unknown) {
-      errorHandler.promiseCatch('fetching members')(error)
+      errorHandler.promiseCatch(`fetching ${onlyOnline ? 'online' : 'all'} members`)(error)
       return
     }
   })
