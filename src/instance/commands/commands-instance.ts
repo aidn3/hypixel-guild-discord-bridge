@@ -47,6 +47,7 @@ import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Secrets from './triggers/secrets.js'
 import Skills from './triggers/skills.js'
+import Skywars from './triggers/skywars'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
 import Starfall from './triggers/starfall.js'
@@ -114,6 +115,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new RunsToClassAverage(),
       new Secrets(),
       new Skills(),
+      new Skywars(),
       new Slayer(),
       new Soopy(),
       new Starfall(),

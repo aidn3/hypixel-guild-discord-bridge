@@ -187,11 +187,20 @@ async function getMembers(
 
   const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
     try {
-      const members = onlyOnline
-        ? await app.usersManager.guildManager.onlineMembers(instanceName)
-        : await app.usersManager.guildManager.listMembers(instanceName)
+      const guild = await app.usersManager.guildManager.list(instanceName)
 
-      resolvedNames.set(instanceName, members)
+      const result: { rank: string; usernames: Set<string> }[] = []
+      for (const member of guild.members) {
+        if (onlyOnline && !member.online) continue
+        let rankSection = result.find((section) => section.rank === member.rank)
+        if (!rankSection) {
+          rankSection = { rank: member.rank, usernames: new Set<string>() }
+          result.push(rankSection)
+        }
+        rankSection.usernames.add(member.username)
+      }
+
+      resolvedNames.set(instanceName, result)
     } catch (error: unknown) {
       errorHandler.promiseCatch(`fetching ${onlyOnline ? 'online' : 'all'} members`)(error)
       return

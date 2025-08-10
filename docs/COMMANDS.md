@@ -60,6 +60,7 @@ A shorter version can also be used: `!- rtca`
 | `runs`           | Returns how many dungeon runs a player has done                                    |
 | `secrets`        | Returns how many secrets a player has done                                         |
 | `skill`          | Returns a player's skills levels                                                   |
+| `skywars`        | Returns a player's skywars common stats                                            |
 | `slayer`         | Returns a player's slayer level                                                    |
 | `soopy`          | Use SoopyV2 API to execute commands                                                |
 | `starfall`       | When is the next Skyblock Starfall event                                           |

@@ -22,8 +22,7 @@ export default class List extends ChatCommandHandler {
     } else if (instances.length === 1) {
       const instance = instances[0]
 
-      const onlineMembers = await context.app.usersManager.guildManager.onlineMembers(instance.instanceName)
-      const members = onlineMembers.flatMap((entry) => [...entry.usernames])
+      const members = await this.onlineMembers(context, instance.instanceName)
       if (members.length === 0) return `No one is online??`
 
       const pageRaw = context.args[0] ?? '1'
@@ -35,12 +34,10 @@ export default class List extends ChatCommandHandler {
         const tasks: Promise<string>[] = []
         for (const instance of instances) {
           tasks.push(
-            context.app.usersManager.guildManager
-              .onlineMembers(instance.instanceName)
-              .then((onlineMembers) => onlineMembers.flatMap((entry) => [...entry.usernames]).length)
-              .then((count) => {
-                totalCount += count
-                return `${beautifyInstanceName(instance.instanceName)} ${count}`
+            this.onlineMembers(context, instance.instanceName)
+              .then((members) => {
+                totalCount += members.length
+                return `${beautifyInstanceName(instance.instanceName)} ${members.length}`
               })
               .catch(() => `${beautifyInstanceName(instance.instanceName)} N/A`)
           )
@@ -57,8 +54,7 @@ export default class List extends ChatCommandHandler {
         return `Can only query online Minecraft instances: ${instances.map((instance) => instance.instanceName).join(', ')}`
       }
 
-      const onlineMembers = await context.app.usersManager.guildManager.onlineMembers(foundInstance.instanceName)
-      const members = onlineMembers.flatMap((entry) => [...entry.usernames])
+      const members = await this.onlineMembers(context, foundInstance.instanceName)
       if (members.length === 0) return `No one is online??`
 
       const pageRaw = context.args[1] ?? '1'
@@ -76,5 +72,10 @@ export default class List extends ChatCommandHandler {
 
     const chunk = members.slice((page - 1) * PageSize, page * PageSize)
     return `Online ${members.length} (page ${page}/${totalPages}): ${chunk.join(', ')}`
+  }
+
+  private async onlineMembers(context: ChatCommandContext, instanceName: string): Promise<string[]> {
+    const guild = await context.app.usersManager.guildManager.list(instanceName)
+    return guild.members.filter((member) => member.online).map((member) => member.username)
   }
 }
