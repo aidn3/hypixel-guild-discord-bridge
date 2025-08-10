@@ -224,8 +224,8 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
 
       if (instance.currentStatus() === Status.Connected) {
         const onlineTask = this.application.usersManager.guildManager
-          .onlineMembers(instance.instanceName)
-          .then((entries) => entries.flatMap((entry) => [...entry.usernames]))
+          .list(instance.instanceName)
+          .then((guild) => guild.members.filter((member) => member.online).map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
           .then((profiles) => {
             const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
@@ -242,8 +242,8 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           .catch(this.errorHandler.promiseCatch('fetching and adding online members'))
 
         const allTask = this.application.usersManager.guildManager
-          .listMembers(instance.instanceName)
-          .then((entries) => entries.flatMap((entry) => [...entry.usernames]))
+          .list(instance.instanceName)
+          .then((guild) => guild.members.map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
           .then((profiles) => {
             const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
