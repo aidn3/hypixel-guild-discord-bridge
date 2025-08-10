@@ -6,6 +6,8 @@
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
+import { formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Guild extends ChatCommandHandler {
@@ -29,6 +31,18 @@ export default class Guild extends ChatCommandHandler {
     if (guild == undefined) return `${givenUsername} is not in a guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
-    return `${givenUsername} in ${guild.name} (${guild.members.length}/125) as ${member?.rank ?? 'unknown'}`
+
+    let result = givenUsername
+    result += ` in ${guild.name} (${guild.members.length}/125)`
+    result += ` as ${member?.rank ?? 'unknown'}`
+    if (member?.joinedAtTimestamp) {
+      const duration = Date.now() - member.joinedAtTimestamp
+      const days = Math.floor(duration / Duration.days(1).toMilliseconds())
+
+      result += ` for the last `
+      result += days > 0 ? `${days} days` : formatTime(duration)
+    }
+    if (member?.weeklyExperience) result += ` with GEXP this week ${member.weeklyExperience.toLocaleString('en-US')}`
+    return result
   }
 }
