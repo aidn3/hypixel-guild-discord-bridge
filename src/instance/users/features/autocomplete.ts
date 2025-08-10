@@ -6,6 +6,7 @@ import { Status } from '../../../common/connectable-instance.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import Duration from '../../../utility/duration'
 import type UsersManager from '../users-manager.js'
 
 export default class Autocomplete extends EventHandler<UsersManager, InstanceType.Utility, void> {
@@ -112,13 +113,11 @@ export default class Autocomplete extends EventHandler<UsersManager, InstanceTyp
       if (instance.currentStatus() !== Status.Connected) continue
 
       const task = this.application.usersManager.guildManager
-        .listMembers(instance.instanceName, 60_000)
-        .then((members) => {
-          for (const { rank, usernames } of members) {
-            this.addRank(rank)
-            for (const username of usernames) {
-              this.addUsername(username)
-            }
+        .list(instance.instanceName, Duration.minutes(1))
+        .then((guild) => {
+          for (const member of guild.members) {
+            this.addRank(member.rank)
+            this.addUsername(member.username)
           }
         })
         .catch(() => undefined)
