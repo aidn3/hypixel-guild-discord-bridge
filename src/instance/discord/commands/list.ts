@@ -10,6 +10,7 @@ import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../utility/mojang.js'
+import type { GuildFetch } from '../../users/features/guild-manager'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -17,12 +18,12 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
   const entries: string[] = []
   let total = 0
 
-  for (const [instanceName, list] of instances) {
+  for (const [guildName, list] of instances) {
     const players = list.filter((value) => value.startsWith('  - ')).length
 
     total += players
 
-    entries.push(`**${escapeMarkdown(instanceName)} (${players})**\n`)
+    entries.push(`**${escapeMarkdown(guildName)} (${players})**\n`)
 
     if (list.length > 0) {
       for (const user of list) {
@@ -78,7 +79,6 @@ export default {
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
     const onlyOnline = context.interaction.options.getSubcommand() === 'online'
     const lists: Map<string, string[]> = await listMembers(
       context.application,
@@ -103,32 +103,42 @@ async function listMembers(
   hypixelApi: Client,
   onlyOnline: boolean
 ): Promise<Map<string, string[]>> {
-  const players = await getMembers(app, errorHandler, onlyOnline)
+  const guildsLookup = await getGuilds(app, errorHandler)
 
   const allUsernames = new Set<string>()
-  for (const [, members] of players) {
-    for (const section of members) {
-      for (const username of section.usernames) {
-        allUsernames.add(username)
-      }
+  for (const guild of guildsLookup.fetched) {
+    for (const member of guild.members) {
+      if (!member.online) continue
+      allUsernames.add(member.username)
     }
   }
   const statuses = await look(mojangApi, hypixelApi, errorHandler, allUsernames)
 
   const result = new Map<string, string[]>()
-  for (const [instanceName, members] of players) {
-    let instance = result.get(instanceName)
-    if (instance === undefined) {
-      instance = []
-      result.set(instanceName, instance)
+  for (const failedInstanceName of guildsLookup.failed) {
+    result.set(failedInstanceName, [])
+  }
+  for (const guild of guildsLookup.fetched) {
+    let guildResult = result.get(guild.name)
+    if (guildResult === undefined) {
+      guildResult = []
+      result.set(guild.name, guildResult)
     }
 
-    for (const { rank, usernames } of members) {
-      if (usernames.size === 0) continue
-      instance.push(`- **${escapeMarkdown(rank)}**`)
-      for (const username of usernames) {
-        const status = statuses.get(username.toLowerCase())
-        instance.push(`  - ${formatLocation(username, status)}`)
+    const formattedRanks = new Set<string>()
+    for (const member of guild.members) {
+      if (onlyOnline && !member.online) continue
+
+      if (!formattedRanks.has(member.rank)) {
+        guildResult.push(`- **${escapeMarkdown(member.rank)}**`)
+        formattedRanks.add(member.rank)
+      }
+
+      if (member.online) {
+        const status = statuses.get(member.username.toLowerCase())
+        guildResult.push(`  - ${formatLocation(member.username, status)}`)
+      } else {
+        guildResult.push(`  - **${escapeMarkdown(member.username)}**`)
       }
     }
   }
@@ -178,35 +188,30 @@ function formatLocation(username: string, session: Status | undefined): string {
   return message
 }
 
-async function getMembers(
-  app: Application,
-  errorHandler: UnexpectedErrorHandler,
-  onlyOnline: boolean
-): Promise<Map<string, { rank: string; usernames: Set<string> }[]>> {
-  const resolvedNames = new Map<string, { rank: string; usernames: Set<string> }[]>()
+async function getGuilds(app: Application, errorHandler: UnexpectedErrorHandler): Promise<GuildsLookup> {
+  const tasks: Promise<unknown>[] = []
 
-  const tasks = app.getInstancesNames(InstanceType.Minecraft).map(async (instanceName) => {
-    try {
-      const guild = await app.usersManager.guildManager.list(instanceName)
+  const result: GuildsLookup = { fetched: [], failed: [] }
 
-      const result: { rank: string; usernames: Set<string> }[] = []
-      for (const member of guild.members) {
-        if (onlyOnline && !member.online) continue
-        let rankSection = result.find((section) => section.rank === member.rank)
-        if (!rankSection) {
-          rankSection = { rank: member.rank, usernames: new Set<string>() }
-          result.push(rankSection)
-        }
-        rankSection.usernames.add(member.username)
-      }
+  for (const instanceName of app.getInstancesNames(InstanceType.Minecraft)) {
+    const task = app.usersManager.guildManager
+      .list(instanceName)
+      .then((guild) => {
+        result.fetched.push(guild)
+      })
+      .catch((error: unknown) => {
+        errorHandler.error('fetching guild info', error)
+        result.failed.push(instanceName)
+      })
 
-      resolvedNames.set(instanceName, result)
-    } catch (error: unknown) {
-      errorHandler.promiseCatch(`fetching ${onlyOnline ? 'online' : 'all'} members`)(error)
-      return
-    }
-  })
+    tasks.push(task)
+  }
 
   await Promise.all(tasks)
-  return resolvedNames
+  return result
+}
+
+interface GuildsLookup {
+  fetched: GuildFetch[]
+  failed: string[]
 }
