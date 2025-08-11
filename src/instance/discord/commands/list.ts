@@ -152,19 +152,24 @@ async function listMembers(
 
     const sortedMembers = [...guild.members].sort((a, b) => a.username.localeCompare(b.username))
     for (const currentRank of ranksOrder) {
-      guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
-
+      const guildTemporarilyResult: string[] = []
       for (const member of sortedMembers) {
         if (!member.online || member.rank !== currentRank) continue
 
         const status = statuses.get(member.username.toLowerCase())
-        guildResult.push(`  - ${formatLocation(member.username, status)}`)
+        guildTemporarilyResult.push(`  - ${formatLocation(member.username, status)}`)
       }
-      if (onlyOnline) continue
-      for (const member of sortedMembers) {
-        if (member.online || member.rank !== currentRank) continue
+      if (!onlyOnline) {
+        for (const member of sortedMembers) {
+          if (member.online || member.rank !== currentRank) continue
 
-        guildResult.push(`  - **${escapeMarkdown(member.username)}**`)
+          guildTemporarilyResult.push(`  - **${escapeMarkdown(member.username)}**`)
+        }
+      }
+
+      if (guildTemporarilyResult.length > 0) {
+        guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
+        guildResult.push(...guildTemporarilyResult)
       }
     }
   }
