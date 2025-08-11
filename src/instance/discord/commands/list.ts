@@ -94,8 +94,22 @@ export default {
       onlyOnline
     )
 
-    for (const instancesName of instancesNames) {
-      if (!lists.has(instancesName)) lists.set(instancesName, [])
+    if (lists.size === 0) {
+      await context.interaction.editReply({
+        embeds: [
+          {
+            description:
+              `No Minecraft instance exist.\n` +
+              'This is a Minecraft command that requires a working Minecraft account connected to the bridge.\n' +
+              `Check the tutorial on how to add a Minecraft account before using this command.`,
+            color: Color.Info,
+            footer: {
+              text: DefaultCommandFooter
+            }
+          }
+        ]
+      })
+      return
     }
 
     await pageMessage(context.interaction, createEmbed(lists, onlyOnline), context.errorHandler)
