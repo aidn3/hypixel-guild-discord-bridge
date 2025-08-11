@@ -36,6 +36,7 @@ A shorter version can also be used: `!- rtca`
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |
 | `hotm`           | Returns a player's hotm and powder                                                 |
+| `hlevel`         | Returns a player's Hypixel common stats                                            |
 | `insult`         | insult a player                                                                    |
 | `iq`             | Returns a player's IQ (0-200)                                                      |
 | `kuudra`         | Returns a player's kuudra runs                                                     |

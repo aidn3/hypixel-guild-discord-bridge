@@ -25,6 +25,7 @@ import Fetchur from './triggers/fetchur.js'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
+import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
 import Iq from './triggers/iq.js'
 import Kuudra from './triggers/kuudra.js'
@@ -93,6 +94,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Guild(),
       new Help(),
       new HeartOfTheMountain(),
+      new HypixelLevel(),
       new Insult(),
       new Iq(),
       new Kuudra(),
