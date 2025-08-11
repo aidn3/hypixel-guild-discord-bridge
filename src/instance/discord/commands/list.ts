@@ -47,10 +47,18 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
     trimming the end of the text when displayed on client side.
    */
   const MaxLength = 3300
+  /*
+   * Although still unknown, sometimes too many bullet points
+   * create the weird client artifact.
+   */
+  const MaxCount = 150
+
   let currentLength = 0
+  let currentCount = 0
   for (const entry of entries) {
-    if (pages.length === 0 || currentLength + entry.length > MaxLength) {
+    if (pages.length === 0 || currentLength + entry.length > MaxLength || currentCount >= MaxCount) {
       currentLength = 0
+      currentCount = 0
 
       pages.push({
         color: Color.Default,
@@ -63,6 +71,7 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
     }
 
     currentLength += entry.length
+    currentLength++
     const lastPage = pages.at(-1)
     assert.ok(lastPage)
     lastPage.description += entry
