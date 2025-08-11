@@ -145,19 +145,25 @@ async function listMembers(
       result.set(guild.name, guildResult)
     }
 
-    const formattedRanks = new Set<string>()
+    const ranksOrder: string[] = []
     for (const member of guild.members) {
-      if (onlyOnline && !member.online) continue
+      if (!ranksOrder.includes(member.rank)) ranksOrder.push(member.rank)
+    }
 
-      if (!formattedRanks.has(member.rank)) {
-        guildResult.push(`- **${escapeMarkdown(member.rank)}**`)
-        formattedRanks.add(member.rank)
-      }
+    const sortedMembers = [...guild.members].sort((a, b) => a.username.localeCompare(b.username))
+    for (const currentRank of ranksOrder) {
+      guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
 
-      if (member.online) {
+      for (const member of sortedMembers) {
+        if (!member.online || member.rank !== currentRank) continue
+
         const status = statuses.get(member.username.toLowerCase())
         guildResult.push(`  - ${formatLocation(member.username, status)}`)
-      } else {
+      }
+      if (onlyOnline) continue
+      for (const member of sortedMembers) {
+        if (member.online || member.rank !== currentRank) continue
+
         guildResult.push(`  - **${escapeMarkdown(member.username)}**`)
       }
     }
