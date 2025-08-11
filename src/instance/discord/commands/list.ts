@@ -38,7 +38,13 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
 
   const pages = []
 
-  const MaxLength = 3900
+  /*
+    Max allowed characters length is 4000.
+    Originally the variable was set to 3900 with 100 leeway for headers/etc.
+    However, for some unknown bug, nearing the max length will result in weird artifacts and bugs
+    trimming the end of the text when displayed on client side.
+   */
+  const MaxLength = 3300
   let currentLength = 0
   for (const entry of entries) {
     if (pages.length === 0 || currentLength + entry.length > MaxLength) {
