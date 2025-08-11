@@ -148,6 +148,7 @@ interface OptionId {
 
 export class OptionsHandler {
   public static readonly BackButton = 'back-button'
+  private static readonly InactivityTime = 600_000
   private originalReply: InteractionResponse | undefined
   private enabled = true
   private path: string[] = []
@@ -178,7 +179,7 @@ export class OptionsHandler {
     })
     const timeoutId = setTimeout(() => {
       collector.stop()
-    }, 20_000)
+    }, OptionsHandler.InactivityTime)
 
     collector.on('collect', (messageInteraction) => {
       timeoutId.refresh()
