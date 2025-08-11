@@ -2,6 +2,7 @@ import type { Status as Session } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Status extends ChatCommandHandler {
@@ -23,6 +24,13 @@ export default class Status extends ChatCommandHandler {
       // eslint-disable-next-line unicorn/no-useless-undefined
       return undefined
     })
+    if (!session?.online) {
+      const player = await context.app.hypixelApi.getPlayer(uuid).catch(() => undefined)
+      if (player !== undefined) {
+        return `${givenUsername} was last online ${formatTime(Date.now() - player.lastLogoutTimestamp)} ago.`
+      }
+    }
+
     return this.formatStatus(givenUsername, session)
   }
 
