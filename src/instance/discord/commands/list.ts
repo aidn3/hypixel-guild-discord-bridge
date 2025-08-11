@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { APIEmbed } from 'discord.js'
-import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
@@ -11,6 +11,8 @@ import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { MojangApi } from '../../../utility/mojang.js'
 import type { GuildFetch } from '../../users/features/guild-manager'
+import type { Link, Verification } from '../../users/features/verification'
+import { LinkType } from '../../users/features/verification'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -126,13 +128,25 @@ async function listMembers(
   const guildsLookup = await getGuilds(app, errorHandler)
 
   const allUsernames = new Set<string>()
+  const onlineUsernames = new Set<string>()
   for (const guild of guildsLookup.fetched) {
     for (const member of guild.members) {
-      if (!member.online) continue
       allUsernames.add(member.username)
+      if (!member.online) continue
+      onlineUsernames.add(member.username.toLowerCase())
     }
   }
-  const statuses = await look(mojangApi, hypixelApi, errorHandler, allUsernames)
+
+  const mojangProfiles = await mojangApi.profilesByUsername(allUsernames)
+  const onlineMojangProfiles = new Map<string, string>()
+  for (const [username, uuid] of mojangProfiles) {
+    if (uuid === undefined) continue
+    if (onlineUsernames.has(username.toLowerCase())) {
+      onlineMojangProfiles.set(username, uuid)
+    }
+  }
+
+  const statuses = await look(onlineMojangProfiles, hypixelApi, errorHandler)
 
   const result = new Map<string, string[]>()
   for (const failedInstanceName of guildsLookup.failed) {
@@ -156,14 +170,16 @@ async function listMembers(
       for (const member of sortedMembers) {
         if (!member.online || member.rank !== currentRank) continue
 
+        const link = await getVerification(app.usersManager.verification, mojangProfiles, member.username)
         const status = statuses.get(member.username.toLowerCase())
-        guildTemporarilyResult.push(`  - ${formatLocation(member.username, status)}`)
+        guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
       }
       if (!onlyOnline) {
         for (const member of sortedMembers) {
           if (member.online || member.rank !== currentRank) continue
 
-          guildTemporarilyResult.push(`  - **${escapeMarkdown(member.username)}**`)
+          const link = await getVerification(app.usersManager.verification, mojangProfiles, member.username)
+          guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}`)
         }
       }
 
@@ -181,18 +197,14 @@ async function listMembers(
   Map of username-status where username is always lowercased
  */
 async function look(
-  mojangApi: MojangApi,
+  mojangProfiles: Map<string, string>,
   hypixelApi: Client,
-  errorHandler: UnexpectedErrorHandler,
-  members: Set<string>
+  errorHandler: UnexpectedErrorHandler
 ): Promise<Map<string, Status>> {
   const result = new Map<string, Status>()
-  const mojangProfiles = await mojangApi.profilesByUsername(members)
 
   const tasks: Promise<unknown>[] = []
   for (const [username, uuid] of mojangProfiles) {
-    if (uuid === undefined) continue
-
     tasks.push(
       hypixelApi
         .getStatus(uuid)
@@ -205,8 +217,30 @@ async function look(
   return result
 }
 
-function formatLocation(username: string, session: Status | undefined): string {
-  let message = `**${escapeMarkdown(username)}** `
+async function getVerification(
+  verification: Verification,
+  mojangProfiles: Map<string, string | undefined>,
+  username: string
+): Promise<Link> {
+  for (const [mojangUsername, uuid] of mojangProfiles) {
+    if (mojangUsername.toLowerCase() !== username.toLowerCase()) continue
+    if (uuid === undefined) return { type: LinkType.None }
+
+    return verification.findByIngame(uuid)
+  }
+
+  return { type: LinkType.None }
+}
+
+function formatUser(username: string, link: Link): string {
+  let message = `**${escapeMarkdown(username)}**`
+  if (link.type === LinkType.Confirmed) message += ` (${userMention(link.link.discordId)})`
+
+  return message
+}
+
+function formatLocation(username: string, link: Link, session: Status | undefined): string {
+  let message = `${formatUser(username, link)} `
 
   if (session === undefined) return message + ' is *__unknown?__*'
   if (!session.online) return message + ' is *__offline?__*'
