@@ -361,12 +361,38 @@ export enum GuildPlayerEventType {
   Demote = 'demote',
   /**
    * When a player gets muted in a guild
+   *
+   * @see GuildPlayerEventType#Muted
+   * @see MinecraftReactiveEventType#GuildMuted
    */
   Mute = 'mute',
   /**
    * When a player is unmuted in a guild
    */
   Unmute = 'unmute',
+
+  /**
+   * When the currently used Minecraft account is muted in a guild.
+   *
+   * This the notification sent before {@link MinecraftReactiveEventType#GuildMuted}.
+   *
+   * Event not to be confused with {@link #Mute}.
+   *
+   * @see GuildPlayerEventType#Unmuted
+   * @see GuildPlayerEventType#Mute
+   * @see MinecraftReactiveEventType#GuildMuted
+   */
+  Muted = 'muted',
+  /**
+   * When the currently used Minecraft account is unmuted in a guild.
+   *
+   * Event not to be confused with {@link #Unmute}.
+   *
+   * @see GuildPlayerEventType#Muted
+   * @see GuildPlayerEventType#Mute
+   * @see MinecraftReactiveEventType#GuildMuted
+   */
+  Unmuted = 'unmuted',
 
   /**
    * When a player goes offline
@@ -450,7 +476,18 @@ export enum MinecraftReactiveEventType {
   /**
    * Minecraft account is in a guild but does not have permission to access officer chat.
    */
-  NoOfficer = 'no_officer'
+  NoOfficer = 'no_officer',
+
+  /**
+   * Minecraft account is in a guild and the guild moderation has muted the account
+   * making it unable to send chat messages.
+   *
+   * {@link GuildPlayerEventType#Muted} is sent before to indicate the muted state.
+   *
+   * @see GuildPlayerEventType#Mute
+   * @see GuildPlayerEventType#Muted
+   */
+  GuildMuted = 'guild_muted'
 }
 
 /**

@@ -13,6 +13,9 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 import AdvertiseChat from './chat/advertise.js'
 import BlockChat from './chat/block.js'
 import DemoteChat from './chat/demote.js'
+import GuildMute from './chat/guild-mute'
+import GuildMuted from './chat/guild-muted'
+import GuildUnmute from './chat/guild-unmute'
 import JoinChat from './chat/join.js'
 import KickChat from './chat/kick.js'
 import LeaveChat from './chat/leave.js'
@@ -56,6 +59,9 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
       AdvertiseChat,
       BlockChat,
       DemoteChat,
+      GuildMute,
+      GuildMuted,
+      GuildUnmute,
       JoinChat,
       KickChat,
       LeaveChat,
