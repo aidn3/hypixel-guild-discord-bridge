@@ -35,7 +35,12 @@ export default class Help extends ChatCommandHandler {
   }
 
   private commandPages(context: ChatCommandContext): string[][] {
-    const allCommands = context.allCommands.map((command) => command.triggers[0])
+    const allCommands = context.allCommands
+      .filter(
+        (command) =>
+          !command.triggers.some((trigger) => context.config.data.disabledCommands.includes(trigger.toLowerCase()))
+      )
+      .map((command) => command.triggers[0])
     const pages: string[][] = []
 
     const MaxPageLength = 120 // must be below 256 (max character length for minecraft) + some leeway for extra metadata

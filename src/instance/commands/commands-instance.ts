@@ -194,23 +194,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         errorHandler: this.errorHandler,
 
         allCommands: this.commands,
-        toggleCommand: (trigger) => {
-          const command = this.commands.find((c) => c.triggers.includes(trigger.toLowerCase()))
-          if (command == undefined) return 'not-found'
-
-          const config = this.config.data
-          if (config.disabledCommands.includes(command.triggers[0].toLowerCase())) {
-            config.disabledCommands = config.disabledCommands.filter(
-              (disabledCommand) => disabledCommand !== command.triggers[0].toLowerCase()
-            )
-            this.config.markDirty()
-            return 'enabled'
-          } else {
-            config.disabledCommands.push(command.triggers[0].toLowerCase())
-            this.config.markDirty()
-            return 'disabled'
-          }
-        },
+        config: this.config,
         commandPrefix: CommandsInstance.CommandPrefix,
 
         instanceName: event.instanceName,

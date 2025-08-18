@@ -21,17 +21,22 @@ export default class Toggle extends ChatCommandHandler {
     }
 
     const query = context.args[0]
-    const result = context.toggleCommand(query)
-    switch (result) {
-      case 'not-found': {
-        return `Command does not exist`
-      }
-      case 'enabled': {
-        return `Command ${query} is now enabled.`
-      }
-      case 'disabled': {
-        return `Command ${query} is now disabled.`
-      }
+    const commands = context.allCommands
+    const config = context.config
+
+    const command = commands.find((c) => c.triggers.includes(query.toLowerCase()))
+    if (command == undefined) return `Command does not exist`
+
+    if (config.data.disabledCommands.includes(command.triggers[0].toLowerCase())) {
+      config.data.disabledCommands = config.data.disabledCommands.filter(
+        (disabledCommand) => disabledCommand !== command.triggers[0].toLowerCase()
+      )
+      config.markDirty()
+      return `Command ${query} is now enabled.`
+    } else {
+      config.data.disabledCommands.push(command.triggers[0].toLowerCase())
+      config.markDirty()
+      return `Command ${query} is now disabled.`
     }
   }
 }
