@@ -61,7 +61,10 @@ export default class Warp extends ChatCommandHandler {
       .filter((instance) => instance.currentStatus() === Status.Connected)
 
     let result: MinecraftInstance | undefined
-    if (preferredInstanceName !== undefined) result = availableInstances.find(Boolean)
+    if (preferredInstanceName !== undefined)
+      result = availableInstances.find(
+        (instance) => instance.instanceName.toLowerCase() === preferredInstanceName.toLowerCase()
+      )
     if (result === undefined && availableInstances.length > 0) result = availableInstances[0]
 
     return result
