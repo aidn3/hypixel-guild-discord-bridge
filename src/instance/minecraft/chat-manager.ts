@@ -19,6 +19,7 @@ import GuildUnmute from './chat/guild-unmute'
 import JoinChat from './chat/join.js'
 import KickChat from './chat/kick.js'
 import LeaveChat from './chat/leave.js'
+import LevelChat from './chat/level'
 import MuteChat from './chat/mute.js'
 import MutedChat from './chat/muted.js'
 import NoOfficerChat from './chat/no-officer.js'
@@ -65,6 +66,7 @@ export default class ChatManager extends EventHandler<MinecraftInstance, Instanc
       JoinChat,
       KickChat,
       LeaveChat,
+      LevelChat,
       MuteChat,
       MutedChat,
       NoOfficerChat,
