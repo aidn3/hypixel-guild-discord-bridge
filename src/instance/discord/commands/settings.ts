@@ -32,7 +32,7 @@ const CategoryLabel =
   `Options marked with ${Essential} are essential. Change at your own risk.\n` +
   `Options marked with ${Recommended} are recommended for quality of life.\n` +
   `Options marked with ${Warning} should only be messed with if you know what you are doing.\n` +
-  `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/4.0-pre1/docs/FEATURES.md#available-plugins) for more information.`
+  `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/master/docs/FAQ.md) for more information.`
 
 export default {
   getCommandBuilder: () =>
