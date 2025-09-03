@@ -53,7 +53,7 @@ export default {
           type: OptionType.Label,
           name: 'Admins',
           description:
-            'Users who have admin permission on the application. Check `/help` for all commands admins can use.',
+            'Users who have admin permission on the application. Check `/help` for all commands available to you.',
           getOption: () =>
             context.application.discordInstance
               .getStaticConfig()
