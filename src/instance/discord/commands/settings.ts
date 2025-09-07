@@ -32,7 +32,7 @@ const CategoryLabel =
   `Options marked with ${Essential} are essential. Change at your own risk.\n` +
   `Options marked with ${Recommended} are recommended for quality of life.\n` +
   `Options marked with ${Warning} should only be messed with if you know what you are doing.\n` +
-  `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/4.0-pre1/docs/FEATURES.md#available-plugins) for more information.`
+  `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/master/docs/FAQ.md) for more information.`
 
 export default {
   getCommandBuilder: () =>
@@ -53,7 +53,7 @@ export default {
           type: OptionType.Label,
           name: 'Admins',
           description:
-            'Users who have admin permission on the application. Check `/help` for all commands admins can use.',
+            'Users who have admin permission on the application. Check `/help` for all commands available to you.',
           getOption: () =>
             context.application.discordInstance
               .getStaticConfig()
@@ -563,6 +563,19 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Text,
+        name: 'Chat Command Prefix',
+        description: 'Prefix to indicate it is a chat command.',
+        style: InputStyle.Tiny,
+        min: 1,
+        max: 2, // to allow "b!" prefix for example at most
+        getOption: () => commands.data.chatPrefix,
+        setOption: (newValue) => {
+          commands.data.chatPrefix = newValue
+          commands.markDirty()
+        }
+      },
+      {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Minecraft** category.',
@@ -1038,6 +1051,27 @@ async function minecraftInstanceAdd(
   const InitiationTimeout = 30 * 60 * 1000
   type ApplicationListeners<T> = { [P in keyof T]?: T[P] }
 
+  try {
+    application.applicationIntegrity.ensureInstanceName({
+      instanceName: instanceName,
+      instanceType: InstanceType.Minecraft
+    })
+  } catch (error: unknown) {
+    errorHandler.error('adding new minecraft instance', error)
+    await modalInteraction.reply({
+      embeds: [
+        {
+          title: EmbedTitle,
+          description:
+            'Minecraft name must be a single word with no spaces or special characters besides alphanumerical letters: A-Z and a-z and 0-9 and "_"',
+          color: Color.Error,
+          footer: { text: DefaultCommandFooter }
+        } satisfies APIEmbed
+      ]
+    })
+    return true
+  }
+
   let proxy: ProxyConfig | undefined = undefined
   if (proxyOptions.length > 0) {
     try {
@@ -1129,7 +1163,7 @@ async function minecraftInstanceAdd(
   }
   try {
     embed.description += `- Creating a fresh Minecraft instance\n`
-    application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
+    await application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
 
     const config = application.minecraftManager.getConfig()
     config.data.instances.push({

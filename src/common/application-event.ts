@@ -440,7 +440,12 @@ export enum GuildGeneralEventType {
   /**
    * When a guild quest completion message is shown
    */
-  Quest = 'quest'
+  Quest = 'quest',
+  /**
+   * When the guild is leveled up.
+   * e.g. In-Game message "The Guild has reached Level 127!"
+   */
+  Level = 'level'
 }
 
 /**

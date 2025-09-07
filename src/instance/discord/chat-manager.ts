@@ -84,7 +84,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
         await event.reply({
           content:
             `**Verification Warning:**\n` +
-            `You can not talk in this channel unless you </link:${linkCommand?.id}> first.`
+            `You can not talk in this channel unless you </link:${linkCommand?.id}> (press the blue link button here) first.`
         })
       }
       return

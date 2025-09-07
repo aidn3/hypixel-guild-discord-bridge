@@ -25,6 +25,7 @@ This project is made to be fully flexible and customisable, offering a high qual
 - [Tracking metrics via Prometheus](docs/PROMETHEUS.md)
 - [How to create plugins](docs/PLUGIN-TUTORIAL.md)
 - [Contribute](CONTRIBUTING.md)
+- [Development Documentation](./docs/DEVELOPMENT.md)
 
 ## Features
 
