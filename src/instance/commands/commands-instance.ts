@@ -62,7 +62,7 @@ import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
-  private static readonly CommandPrefix: string = '!'
+  private static readonly DefaultCommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
   private readonly config: ConfigManager<CommandsConfig>
 
@@ -71,6 +71,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
     this.config = new ConfigManager(app, this.logger, app.getConfigFilePath('commands.json'), {
       enabled: true,
+      chatPrefix: CommandsInstance.DefaultCommandPrefix,
       disabledCommands: []
     })
 
@@ -169,9 +170,9 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
   async handle(event: ChatEvent): Promise<void> {
     if (this.currentStatus() !== Status.Connected) return
-    if (!event.message.startsWith(CommandsInstance.CommandPrefix)) return
+    if (!event.message.startsWith(this.config.data.chatPrefix)) return
 
-    const commandName = event.message.slice(CommandsInstance.CommandPrefix.length).split(' ')[0].toLowerCase()
+    const commandName = event.message.slice(this.config.data.chatPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
@@ -195,7 +196,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
         allCommands: this.commands,
         config: this.config,
-        commandPrefix: CommandsInstance.CommandPrefix,
+        commandPrefix: this.config.data.chatPrefix,
 
         instanceName: event.instanceName,
         instanceType: event.instanceType,
@@ -290,5 +291,6 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
 export interface CommandsConfig {
   enabled: boolean
+  chatPrefix: string
   disabledCommands: string[]
 }

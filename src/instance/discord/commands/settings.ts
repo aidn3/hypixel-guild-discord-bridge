@@ -563,6 +563,19 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Text,
+        name: 'Chat Command Prefix',
+        description: 'Prefix to indicate it is a chat command.',
+        style: InputStyle.Tiny,
+        min: 1,
+        max: 2, // to allow "b!" prefix for example at most
+        getOption: () => commands.data.chatPrefix,
+        setOption: (newValue) => {
+          commands.data.chatPrefix = newValue
+          commands.markDirty()
+        }
+      },
+      {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Minecraft** category.',
