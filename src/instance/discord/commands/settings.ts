@@ -1051,6 +1051,27 @@ async function minecraftInstanceAdd(
   const InitiationTimeout = 30 * 60 * 1000
   type ApplicationListeners<T> = { [P in keyof T]?: T[P] }
 
+  try {
+    application.applicationIntegrity.ensureInstanceName({
+      instanceName: instanceName,
+      instanceType: InstanceType.Minecraft
+    })
+  } catch (error: unknown) {
+    errorHandler.error('adding new minecraft instance', error)
+    await modalInteraction.reply({
+      embeds: [
+        {
+          title: EmbedTitle,
+          description:
+            'Minecraft name must be a single word with no spaces or special characters besides alphanumerical letters: A-Z and a-z and 0-9 and "_"',
+          color: Color.Error,
+          footer: { text: DefaultCommandFooter }
+        } satisfies APIEmbed
+      ]
+    })
+    return true
+  }
+
   let proxy: ProxyConfig | undefined = undefined
   if (proxyOptions.length > 0) {
     try {
@@ -1142,7 +1163,7 @@ async function minecraftInstanceAdd(
   }
   try {
     embed.description += `- Creating a fresh Minecraft instance\n`
-    application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
+    await application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
 
     const config = application.minecraftManager.getConfig()
     config.data.instances.push({

@@ -80,7 +80,7 @@ export default class ApplicationIntegrity extends Instance<InstanceType.Utility>
     }
   }
 
-  private ensureInstanceName(instance: InstanceIdentifier): void {
+  public ensureInstanceName(instance: InstanceIdentifier): void {
     const hasPrefix = instance.instanceName.startsWith(InternalInstancePrefix)
     const instanceName = hasPrefix ? instance.instanceName.slice(InternalInstancePrefix.length) : instance.instanceName
 

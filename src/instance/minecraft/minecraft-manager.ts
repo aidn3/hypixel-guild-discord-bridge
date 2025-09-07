@@ -72,7 +72,7 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
     }
   }
 
-  public addAndStart(config: MinecraftInstanceConfig): void {
+  public async addAndStart(config: MinecraftInstanceConfig): Promise<void> {
     if (this.getAllInstances().some((instance) => instance.instanceName.toLowerCase() === config.name.toLowerCase())) {
       throw new Error('Minecraft instance name already exists')
     }
@@ -80,7 +80,13 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
     const instance = new MinecraftInstance(this.application, this, config.name, config, this.sessionDirectory)
     this.instances.add(instance)
 
-    instance.connect()
+    try {
+      instance.connect()
+    } catch (error: unknown) {
+      await instance.disconnect().catch(() => undefined) // it might throw an error if connecting is throwing one already
+      this.instances.delete(instance)
+      throw error
+    }
   }
 
   public async removeInstance(instanceName: string): Promise<RemoveResultEntry> {
