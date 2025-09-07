@@ -11,6 +11,8 @@ You can join the Discord server or contact us directly there as well.
 
 ## Development
 
+Check [Development Documentation and Design](./docs/DEVELOPMENT.md) before delving deep into coding.
+
 ### Setting up environment
 
 Clone the project and install dependencies:
