@@ -2,7 +2,7 @@ import { ChannelType, Color, GuildGeneralEventType } from '../../../common/appli
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
-  onChat:  function (context: MinecraftChatContext): void {
+  onChat: function (context: MinecraftChatContext): void {
     const regex = /^\s+The Guild has reached Level \d+!/g
 
     const match = regex.exec(context.message)
