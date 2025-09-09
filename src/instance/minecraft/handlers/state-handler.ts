@@ -100,7 +100,7 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
   }
 
   private onKicked(reason: string): void {
-    this.logger.error(`Minecraft bot was kicked from the server for "${reason.toString()}"`)
+    this.logger.error(`Minecraft bot was kicked from the server for "${reason}"`)
 
     this.loginAttempts++
     if (reason.includes('You logged in from another location')) {
@@ -123,16 +123,14 @@ export default class StateHandler extends EventHandler<MinecraftInstance, Instan
       this.logger.fatal('Instance will shut off since the account has been temporarily blocked')
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Failed,
-        "Account has been temporarily blocked.\nWon't try to re-login.\n\n" + reason.toString()
+        "Account has been temporarily blocked.\nWon't try to re-login.\n\n" + reason
       )
     } else {
       // possible kick messages that are accounted for
       // "Your version (1.17.1) of Minecraft is disabled on Hypixel due to compatibility issues."
       this.clientInstance.setAndBroadcastNewStatus(
         Status.Disconnected,
-        `Client ${this.clientInstance.instanceName} has been kicked.\n` +
-          'Attempting to reconnect soon\n\n' +
-          reason.toString()
+        `Client ${this.clientInstance.instanceName} has been kicked.\n` + 'Attempting to reconnect soon\n\n' + reason
       )
     }
   }
