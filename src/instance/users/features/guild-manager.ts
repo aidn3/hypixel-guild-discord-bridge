@@ -83,7 +83,7 @@ export class GuildManager extends EventHandler<UsersManager, InstanceType.Utilit
     let currentRank: string | undefined = undefined
 
     const nameRegex = /^Guild Name: ([\W\w]{1,64})/g
-    const rankRegex = /^\W+-- (Guild Master|[\w -]+) --$/g
+    const rankRegex = /^\s+-- (Guild Master|[\S -]{1,16}) --$/g
     const memberRegex = /(?:§\w|)(\w{2,16})(§\w) \u25CF/g
     const totalRegex = /^Total Members: (\d+)$/g
     const onlineRegex = /^Online Members: (\d+)$/g
