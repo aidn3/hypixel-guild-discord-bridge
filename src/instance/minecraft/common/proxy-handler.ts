@@ -21,7 +21,7 @@ export function resolveProxyIfExist(
   logger.debug(`Proxy enabled with params: ${JSON.stringify(proxyConfig)}`)
 
   const proxyHost = proxyConfig.host
-  const proxyPort = Number(proxyConfig.port)
+  const proxyPort = proxyConfig.port
   const protocol = proxyConfig.protocol
   const host = defaultBotOptions.host
   const port = defaultBotOptions.port
