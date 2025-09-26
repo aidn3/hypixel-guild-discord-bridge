@@ -18,7 +18,8 @@ export default {
           .setDescription('Leaderboard type')
           .setRequired(true)
           .addChoices(Messages30Days, Online30Days, Points30Days)
-      ),
+      )
+      .addStringOption((o) => o.setName('guild-name').setDescription('Hypixel Guild name')),
 
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())
@@ -28,12 +29,24 @@ export default {
     await context.interaction.deferReply()
 
     const type = context.interaction.options.getString('type', true)
+    const guildName = context.interaction.options.getString('guild-name') ?? undefined
+    let guildId: string | undefined
+    if (guildName !== undefined) {
+      try {
+        guildId = await context.application.hypixelApi.getGuild('name', guildName).then((guild) => guild.id)
+      } catch (error: unknown) {
+        context.errorHandler.error('fetching guild id from guild-name', error)
+        await context.interaction.editReply('Could not find the guild??')
+        return
+      }
+    }
     if (type === Messages30Days.value) {
       await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, async (requestedPage) => {
         return await context.application.discordInstance.leaderboard.getMessage30Days({
           addFooter: true,
           addLastUpdateAt: false,
-          page: requestedPage
+          page: requestedPage,
+          guildId: guildId
         })
       })
       return
@@ -44,7 +57,8 @@ export default {
         return await context.application.discordInstance.leaderboard.getOnline30Days({
           addFooter: true,
           addLastUpdateAt: false,
-          page: requestedPage
+          page: requestedPage,
+          guildId: guildId
         })
       })
       return
@@ -55,7 +69,8 @@ export default {
         return await context.application.discordInstance.leaderboard.getPoints30Days({
           addFooter: true,
           addLastUpdateAt: false,
-          page: requestedPage
+          page: requestedPage,
+          guildId: guildId
         })
       })
       return

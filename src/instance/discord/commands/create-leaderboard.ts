@@ -22,7 +22,8 @@ export default {
           .setDescription('Leaderboard type')
           .setRequired(true)
           .addChoices(Messages30Days, Online30Days, Points30Days)
-      ),
+      )
+      .addStringOption((o) => o.setName('guild-name').setDescription('Hypixel Guild name')),
   permission: Permission.Officer,
 
   handler: async function (context) {
@@ -34,8 +35,19 @@ export default {
 
     const config = context.application.discordInstance.leaderboard.getConfig()
     const type = context.interaction.options.getString('type', true)
+    const guildName = context.interaction.options.getString('guild-name') ?? undefined
+    let guildId: string | undefined
+    if (guildName !== undefined) {
+      try {
+        guildId = await context.application.hypixelApi.getGuild('name', guildName).then((guild) => guild.id)
+      } catch (error: unknown) {
+        context.errorHandler.error('fetching guild id from guild-name', error)
+        await context.interaction.editReply('Could not find the guild??')
+        return
+      }
+    }
 
-    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0 }
+    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guildId: guildId }
     let leaderboard: { embed: APIEmbed; totalPages: number } | undefined
     let entries: LeaderboardEntry[] | undefined
 
@@ -64,7 +76,7 @@ export default {
 
     const messageId = await send(context.interaction, channel, leaderboard.embed)
     if (messageId === undefined) return
-    entries.push({ messageId: messageId, channelId: channel.id, lastUpdate: Date.now() })
+    entries.push({ messageId: messageId, channelId: channel.id, lastUpdate: Date.now(), guildId: guildId })
     config.markDirty()
   }
 } satisfies DiscordCommandHandler
