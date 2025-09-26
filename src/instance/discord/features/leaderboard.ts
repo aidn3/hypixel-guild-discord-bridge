@@ -2,6 +2,7 @@ import assert from 'node:assert'
 
 import type { APIEmbed, Client } from 'discord.js'
 import { DiscordAPIError, escapeMarkdown, userMention } from 'discord.js'
+import type { Guild } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
@@ -37,6 +38,26 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       online30Days: [],
       points30Days: []
     })
+
+    // Migrate data to include guildId
+    const entries = [
+      ...this.config.data.messages30Days,
+      ...this.config.data.online30Days,
+      ...this.config.data.points30Days
+    ]
+    for (const entry of entries) {
+      if (!('guildId' in entry)) {
+        /*
+         * commented out log message because "undefined" is never saved in ConfigManager (aka serialized JSON objects)
+         * so the log message is repeated nonstop. This is left here for future migration outside serialized JSON objects.
+         */
+        // this.logger.debug(`Migrating leaderboard to new format with guildId: ${JSON.stringify(entry)}`)
+        // this.config.markDirty()
+
+        // @ts-expect-error guildId not exist indeed, but we are forcefully adding it.
+        entry.guildId = undefined
+      }
+    }
 
     setInterval(() => {
       void this.updateLeaderboards().catch(this.errorHandler.promiseCatch('updating the leaderboards'))
@@ -76,7 +97,8 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
           (await generate({
             addFooter: false,
             addLastUpdateAt: true,
-            page: 0
+            page: 0,
+            guildId: entry.guildId
           }).then((leaderboard) => leaderboard.embed))
         assert.ok(cachedEmbed !== undefined)
 
@@ -132,13 +154,20 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    const leaderboard = this.application.usersManager.scoresManager.getMessages30Days()
+    let leaderboard = this.application.usersManager.scoresManager.getMessages30Days()
+    let result = ''
+
+    if (option.guildId !== undefined) {
+      const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+
+      leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({ uuid: uuid, discordId: undefined, count: 0 }))
+      result += `Guild: **${escapeMarkdown(guild.name)}**\n`
+    }
+
     const total =
       leaderboard.length === 0
         ? 0
         : leaderboard.map((entry) => entry.count).reduce((previous, current) => previous + current)
-
-    let result = ''
     result += Leaderboard.addTimers(0)
     result += `Total messages: **${total.toLocaleString('en-US')}**\n\n`
     result += await this.createEntries(
@@ -161,13 +190,24 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    const leaderboard = this.application.usersManager.scoresManager.getOnline30Days()
+    let leaderboard = this.application.usersManager.scoresManager.getOnline30Days()
+    let result = ''
+
+    if (option.guildId !== undefined) {
+      const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
+        uuid: uuid,
+        discordId: undefined,
+        totalTime: 0
+      }))
+      result += `Guild: **${escapeMarkdown(guild.name)}**\n`
+    }
+
     const total =
       leaderboard.length === 0
         ? 0
         : leaderboard.map((entry) => entry.totalTime).reduce((previous, current) => previous + current)
 
-    let result = ''
     result += Leaderboard.addTimers(0)
     result += `Total time: **${formatTime(total * 1000)}**\n\n`
     result += await this.createEntries(leaderboard, option.page, (entry) => `**${formatTime(entry.totalTime * 1000)}**`)
@@ -186,13 +226,26 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    const leaderboard = this.application.usersManager.scoresManager.getPoints30Days()
+    let leaderboard = this.application.usersManager.scoresManager.getPoints30Days()
+    let result = ''
+
+    if (option.guildId !== undefined) {
+      const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
+        uuid: uuid,
+        discordId: undefined,
+        total: 0,
+        commands: 0,
+        chat: 0,
+        online: 0
+      }))
+      result += `Guild: **${escapeMarkdown(guild.name)}**\n`
+    }
     const total =
       leaderboard.length === 0
         ? 0
         : leaderboard.map((entry) => entry.total).reduce((previous, current) => previous + current)
 
-    let result = ''
     result += Leaderboard.addTimers(0)
     result += `Total points: **${total.toLocaleString('en-US')}**\n\n`
     result += await this.createEntries(
@@ -209,6 +262,28 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
       },
       totalPages: Leaderboard.totalPages(leaderboard)
     }
+  }
+
+  private limitToGuild<T extends { uuid: string }>(entries: T[], guild: Guild, createEntry: (uuid: string) => T): T[] {
+    const guildMembers = new Set<string>()
+    for (const member of guild.members) {
+      guildMembers.add(member.uuid)
+    }
+
+    const remainingEntries: T[] = []
+    for (const entry of entries) {
+      if (guildMembers.has(entry.uuid)) {
+        guildMembers.delete(entry.uuid)
+        remainingEntries.push(entry)
+      }
+    }
+
+    for (const guildMember of guildMembers) {
+      const emptyEntry = createEntry(guildMember)
+      remainingEntries.push(emptyEntry)
+    }
+
+    return remainingEntries
   }
 
   private static addTimers(nextReset: number): string {
@@ -280,12 +355,14 @@ export interface LeaderboardEntry {
   lastUpdate: number
   channelId: string
   messageId: string
+  guildId: string | undefined
 }
 
 interface LeaderboardOptions {
   addFooter: boolean
   addLastUpdateAt: boolean
   page: number
+  guildId: string | undefined
 }
 
 interface LeaderboardFormatEntry {

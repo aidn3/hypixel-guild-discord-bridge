@@ -40,11 +40,9 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
   /**
    * Change instance status and inform other instances about the status.
    * Function will just return if the status is the same.
-   *
    * @param status The status to set
    * @param reason Any message to supply for other instances in case of displaying a human-readable message.
    * @param visibility whether to broadcast the status change and how to broadcast it
-   * @protected
    */
   public setAndBroadcastNewStatus(
     status: Status,

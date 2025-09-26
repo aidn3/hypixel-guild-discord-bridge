@@ -35,12 +35,14 @@ export class ConfigManager<T extends object> {
       this.saveIfDirty()
     })
 
-    this.reload()
-    this.save() // to write any new default configs into the file
+    this.reloadAndSaveIfChanged()
   }
 
-  private reload(): void {
-    if (!fs.existsSync(this.configFilePath)) return
+  private reloadAndSaveIfChanged(): void {
+    if (!fs.existsSync(this.configFilePath)) {
+      this.save()
+      return
+    }
 
     const fileRawData = fs.readFileSync(this.configFilePath, 'utf8')
     const fileData = JSON.parse(fileRawData) as T
@@ -54,37 +56,55 @@ export class ConfigManager<T extends object> {
       { data: deepcopy(this.defaultConfig) } satisfies DataContainer
     )
 
+    const readyToSave = JSON.stringify(
+      this.removeWithoutDefaults(mergedData.data as Record<string, unknown>, this.defaultConfig),
+      undefined,
+      4
+    )
+    if (fileRawData !== readyToSave) {
+      this.logger.debug(
+        `Saved configuration file seems manually edited. Reformatting the file properly ${this.configFilePath}..`
+      )
+      fs.writeFileSync(this.configFilePath, readyToSave, { encoding: 'utf8' })
+    }
+
     this.data = mergedData.data as T
   }
 
   public save(): void {
     this.logger.debug(`Saving configuration file for ${this.configFilePath}`)
 
-    const data = this.data as Record<string, unknown>
-    const defaultData = this.defaultConfig as Record<string, unknown>
-    const objectToSave: Record<string, unknown> = {}
+    const objectToSave = this.removeWithoutDefaults(this.data as Record<string, unknown>, this.defaultConfig)
+    const dataRaw = JSON.stringify(objectToSave, undefined, 4)
+    fs.writeFileSync(this.configFilePath, dataRaw, { encoding: 'utf8' })
+  }
 
-    for (const key of Object.keys(this.data)) {
-      if (!(key in this.defaultConfig)) {
+  private removeWithoutDefaults(
+    data: Record<string, unknown>,
+    defaults: Record<string, unknown>
+  ): Record<string, unknown> {
+    const resultObject: Record<string, unknown> = {}
+
+    for (const key of Object.keys(data)) {
+      if (!(key in defaults)) {
         this.logger.warn(
           `Deleting key '${key}' since it is not defined in default configuration in ${this.configFilePath}`
         )
       }
     }
 
-    for (const definedKey of Object.keys(this.defaultConfig)) {
-      if (!(definedKey in this.data)) {
+    for (const definedKey of Object.keys(defaults)) {
+      if (!(definedKey in defaults)) {
         this.logger.warn(`Key '${definedKey}' not defined in current configuration for some reason??`)
         continue
       }
 
-      if (!deepEqual(defaultData[definedKey], data[definedKey])) {
-        objectToSave[definedKey] = data[definedKey]
+      if (!deepEqual(defaults[definedKey], data[definedKey])) {
+        resultObject[definedKey] = data[definedKey]
       }
     }
 
-    const dataRaw = JSON.stringify(objectToSave, undefined, 4)
-    fs.writeFileSync(this.configFilePath, dataRaw, { encoding: 'utf8' })
+    return resultObject
   }
 
   /**

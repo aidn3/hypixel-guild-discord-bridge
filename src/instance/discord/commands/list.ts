@@ -173,7 +173,7 @@ async function listMembers(
       if (!ranksOrder.includes(member.rank)) ranksOrder.push(member.rank)
     }
 
-    const sortedMembers = [...guild.members].sort((a, b) => a.username.localeCompare(b.username))
+    const sortedMembers = guild.members.toSorted((a, b) => a.username.localeCompare(b.username))
     for (const currentRank of ranksOrder) {
       const guildTemporarilyResult: string[] = []
       for (const member of sortedMembers) {

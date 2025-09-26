@@ -34,7 +34,7 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
   }
 
   override registerEvents(client: Client): void {
-    client.on('ready', (readyClient) => {
+    client.on('clientReady', (readyClient) => {
       void this.registerEmojis(readyClient.application.emojis).catch(
         this.errorHandler.promiseCatch('registering emojis in guild')
       )
@@ -78,9 +78,8 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
       savedEmojis = savedEmojis.filter((savedEmoji) => savedEmoji.name !== emoji.name)
       savedEmojis.push({ name: emoji.name, hash: imageHash })
       this.registeredEmoji.data.savedEmojis = savedEmojis
+      this.registeredEmoji.markDirty()
     }
-
-    this.registeredEmoji.save()
   }
 }
 

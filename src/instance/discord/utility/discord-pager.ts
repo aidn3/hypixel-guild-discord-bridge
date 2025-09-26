@@ -12,9 +12,13 @@ import { Color } from '../../../common/application-event.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
+import type { NumberOption } from './options-handler'
+import { getNumber, OptionType } from './options-handler'
+
 enum Button {
   Next = 'next',
-  Back = 'back'
+  Back = 'back',
+  Select = 'select'
 }
 
 export const DefaultTimeout = 60_000
@@ -54,9 +58,14 @@ export async function interactivePaging(
     const backInteraction = channel.createMessageComponentCollector({
       filter: (index) => index.customId === `${interaction.id}-${Button.Back}` && index.user.id === interaction.user.id
     })
+    const selectPage = channel.createMessageComponentCollector({
+      filter: (index) =>
+        index.customId === `${interaction.id}-${Button.Select}` && index.user.id === interaction.user.id
+    })
     const timeoutId = setTimeout(() => {
       nextInteraction.stop()
       backInteraction.stop()
+      selectPage.stop()
     }, duration)
 
     nextInteraction.on('collect', (index: ButtonInteraction) => {
@@ -94,6 +103,36 @@ export async function interactivePaging(
           })
         })
         .catch(errorHandler.promiseCatch('pressing back button on discord-pager'))
+    })
+    selectPage.on('collect', (index: ButtonInteraction) => {
+      timeoutId.refresh()
+
+      const optionParameters: Omit<NumberOption, 'getOption' | 'setOption'> = {
+        type: OptionType.Number,
+        name: 'Page',
+        description: `Select page number between 1 and ${lastUpdate.totalPages}`,
+        min: 1,
+        max: lastUpdate.totalPages
+      }
+
+      void getNumber(index, optionParameters, undefined, 'Select Page')
+        .then(async (selectedPage) => {
+          currentPage = selectedPage - 1 // to account for 0-index
+          await index.editReply({
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)]
+          })
+          lastUpdate = await fetch(currentPage)
+          if (lastUpdate.embed === undefined) {
+            await interaction.editReply({ embeds: [NoEmbed] })
+            return
+          }
+
+          await index.editReply({
+            embeds: [lastUpdate.embed],
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)]
+          })
+        })
+        .catch(errorHandler.promiseCatch('pressing select button on discord-pager'))
     })
 
     nextInteraction.on('end', () => {
@@ -141,10 +180,10 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage <= 0 || !enabled),
       new ButtonBuilder()
-        .setCustomId(`${interactionId}-currentPage`)
+        .setCustomId(`${interactionId}-${Button.Select}`)
         .setLabel((currentPage + 1).toLocaleString('en-US') + ' / ' + totalPages.toLocaleString('en-US'))
         .setStyle(ButtonStyle.Primary)
-        .setDisabled(true),
+        .setDisabled(totalPages <= 2 || !enabled),
       new ButtonBuilder()
         .setCustomId(`${interactionId}-${Button.Next}`)
         .setLabel('Next')

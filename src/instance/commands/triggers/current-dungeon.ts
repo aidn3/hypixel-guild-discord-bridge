@@ -41,7 +41,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
 
     if (runs.length > 1) {
       // runs aren't always chronologically ordered
-      runs = [...runs].sort((a, b) => b.completion_ts - a.completion_ts)
+      runs = runs.toSorted((a, b) => b.completion_ts - a.completion_ts)
     }
 
     const lastRun = runs[0]

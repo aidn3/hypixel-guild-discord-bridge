@@ -113,7 +113,7 @@ export class SendQueue {
     const context: EntryContext = { sleep: undefined, skip: false, entry: currentEntry }
     this.entryContext = context
 
-    const allTimes = currentEntry.types.map((type) => CommandTypeSleep[type]).sort((a, b) => a - b)
+    const allTimes = currentEntry.types.map((type) => CommandTypeSleep[type]).toSorted((a, b) => a - b)
 
     let sleptSoFar = 0
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
