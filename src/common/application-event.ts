@@ -35,7 +35,6 @@ export interface ApplicationEvents {
   guildGeneral: (event: Readonly<GuildGeneralEvent>) => void
   /**
    * In-game events such as interactions blocked/etc.
-   *
    * @see MinecraftReactiveEventType
    */
   minecraftChatEvent: (event: Readonly<MinecraftReactiveEvent>) => void
@@ -361,7 +360,6 @@ export enum GuildPlayerEventType {
   Demote = 'demote',
   /**
    * When a player gets muted in a guild
-   *
    * @see GuildPlayerEventType#Muted
    * @see MinecraftReactiveEventType#GuildMuted
    */
@@ -377,7 +375,6 @@ export enum GuildPlayerEventType {
    * This the notification sent before {@link MinecraftReactiveEventType#GuildMuted}.
    *
    * Event not to be confused with {@link #Mute}.
-   *
    * @see GuildPlayerEventType#Unmuted
    * @see GuildPlayerEventType#Mute
    * @see MinecraftReactiveEventType#GuildMuted
@@ -387,7 +384,6 @@ export enum GuildPlayerEventType {
    * When the currently used Minecraft account is unmuted in a guild.
    *
    * Event not to be confused with {@link #Unmute}.
-   *
    * @see GuildPlayerEventType#Muted
    * @see GuildPlayerEventType#Mute
    * @see MinecraftReactiveEventType#GuildMuted
@@ -426,7 +422,6 @@ export interface BaseInGameEvent<K extends string> extends InformEvent, Minecraf
 
 /**
  * In-game guild events such as joining/leaving/online/offline/etc.
- *
  * @see GuildPlayerEventType
  */
 export interface GuildPlayerEvent extends BaseInGameEvent<GuildPlayerEventType>, MinecraftRawMessage {
@@ -451,7 +446,6 @@ export enum GuildGeneralEventType {
 /**
  * When a guild emits an event that isn't specific for any player or user.
  * Events such as reach a general guild quest goal.
- *
  * @see GuildGeneralEventType
  */
 export type GuildGeneralEvent = BaseInGameEvent<GuildGeneralEventType> & MinecraftRawMessage
@@ -488,7 +482,6 @@ export enum MinecraftReactiveEventType {
    * making it unable to send chat messages.
    *
    * {@link GuildPlayerEventType#Muted} is sent before to indicate the muted state.
-   *
    * @see GuildPlayerEventType#Mute
    * @see GuildPlayerEventType#Muted
    */
@@ -497,7 +490,6 @@ export enum MinecraftReactiveEventType {
 
 /**
  * In-game events such as interactions blocked/etc.
- *
  * @see MinecraftReactiveEventType
  */
 export interface MinecraftReactiveEvent extends ReplyEvent, MinecraftRawMessage {

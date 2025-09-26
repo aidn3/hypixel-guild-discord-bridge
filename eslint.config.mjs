@@ -4,7 +4,7 @@ import importPlugin from 'eslint-plugin-import'
 import prettier from 'eslint-plugin-prettier/recommended'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
-
+import { jsdoc } from 'eslint-plugin-jsdoc'
 //TODO: add functionality one day when it is supported
 // requireExtensions from 'eslint-plugin-require-extensions'
 
@@ -22,6 +22,14 @@ export default [
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   eslintPluginUnicorn.configs.recommended,
+  jsdoc({
+    files: ['./src/common/**/*.ts'],
+    config: 'flat/recommended-typescript-error',
+    rules: {
+      'jsdoc/check-values': ['error', { allowedLicenses: ['MIT', 'ISC'] }],
+      'jsdoc/require-description': 'error'
+    }
+  }),
   prettier,
   eslintConfigPrettier,
   {
