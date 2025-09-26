@@ -205,7 +205,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }
 
     const tasks: Awaitable<unknown>[] = []
-    for (const instance of this.getAllInstances().reverse()) {
+    for (const instance of this.getAllInstances().toReversed()) {
       // reversed to go backward of `start()`
       if (instance instanceof ConnectableInstance && instance.currentStatus() !== Status.Fresh) {
         this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)

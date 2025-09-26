@@ -102,7 +102,7 @@ export default class Bits extends ChatCommandHandler {
     this.prices = Object.entries(response)
       .filter(([itemId]) => Object.hasOwn(BitItem, itemId))
       .map(([itemId, sellPrice]) => ({ itemId, sellPrice }))
-      .sort((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
+      .toSorted((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
       .slice(0, 5)
   }
 }

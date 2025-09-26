@@ -44,7 +44,7 @@ export default class ArabicFixer {
     const segments = this.regexSegment(message)
 
     let reversedMessage = ''
-    for (const segment of segments.reverse()) {
+    for (const segment of segments.toReversed()) {
       if (segment.isArabic) {
         const translatedSegment = this.translate(segment.content)
         reversedMessage += esrever.reverse(translatedSegment).trim() + ' '

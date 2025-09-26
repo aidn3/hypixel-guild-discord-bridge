@@ -441,7 +441,7 @@ function formatList(list: PunishmentAddEvent[]): APIEmbed[] {
     ]
   }
 
-  list = list.sort((a, b) => {
+  list = list.toSorted((a, b) => {
     if (a.type === b.type) return a.till - b.till
     return a.type.localeCompare(b.type)
   })

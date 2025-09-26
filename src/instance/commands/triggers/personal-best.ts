@@ -74,7 +74,7 @@ export default class PersonalBest extends ChatCommandHandler {
     // check for highest S+ master mode
     if (dungeon.master_catacombs.fastest_time_s_plus) {
       let selectedFloor: DungeonFloors | undefined = undefined
-      for (const floorName of Object.keys(dungeon.master_catacombs.fastest_time_s_plus).reverse()) {
+      for (const floorName of Object.keys(dungeon.master_catacombs.fastest_time_s_plus).toReversed()) {
         if (floorName === 'best') continue
         selectedFloor = floorName as DungeonFloors
         break
@@ -93,7 +93,7 @@ export default class PersonalBest extends ChatCommandHandler {
     // check for highest S+ normal mode
     if (dungeon.catacombs.fastest_time_s_plus) {
       let selectedFloor: DungeonFloors | undefined = undefined
-      for (const floorName of Object.keys(dungeon.catacombs.fastest_time_s_plus).reverse()) {
+      for (const floorName of Object.keys(dungeon.catacombs.fastest_time_s_plus).toReversed()) {
         if (floorName === 'best') continue
         selectedFloor = floorName as DungeonFloors
         break
