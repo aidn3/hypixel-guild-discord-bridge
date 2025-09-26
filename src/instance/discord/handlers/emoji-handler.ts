@@ -78,9 +78,8 @@ export default class EmojiHandler extends EventHandler<DiscordInstance, Instance
       savedEmojis = savedEmojis.filter((savedEmoji) => savedEmoji.name !== emoji.name)
       savedEmojis.push({ name: emoji.name, hash: imageHash })
       this.registeredEmoji.data.savedEmojis = savedEmojis
+      this.registeredEmoji.markDirty()
     }
-
-    this.registeredEmoji.save()
   }
 }
 
