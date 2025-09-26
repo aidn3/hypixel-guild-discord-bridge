@@ -63,7 +63,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
   override registerEvents(client: Client): void {
     let listenerStarted = false
-    client.on('ready', (client) => {
+    client.on('clientReady', (client) => {
       if (listenerStarted) return
       listenerStarted = true
       this.listenToRegisterCommands(client)

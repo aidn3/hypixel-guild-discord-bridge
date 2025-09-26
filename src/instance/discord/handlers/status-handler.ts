@@ -7,7 +7,7 @@ import type DiscordInstance from '../discord-instance.js'
 
 export default class StatusHandler extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   override registerEvents(client: Client): void {
-    client.on('ready', (client) => {
+    client.on('clientReady', (client) => {
       client.user.setPresence({
         status: 'online',
         activities: [{ name: 'Connecting Hypixel guilds with Discord!', type: ActivityType.Custom }]

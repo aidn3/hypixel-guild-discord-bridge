@@ -7,7 +7,7 @@ import type DiscordInstance from '../discord-instance.js'
 
 export default class StateHandler extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
   override registerEvents(client: Client): void {
-    client.on('ready', (client) => {
+    client.on('clientReady', (client) => {
       this.logger.info('Discord client ready, logged in as ' + client.user.tag)
       this.clientInstance.setAndBroadcastNewStatus(Status.Connected, 'Discord logged in')
     })
