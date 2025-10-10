@@ -30,6 +30,7 @@ import Bridge from '../../common/bridge.js'
 import type { ConfigManager } from '../../common/config-manager.js'
 import { StatusVisibility } from '../../common/connectable-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type { User } from '../../common/user'
 import { beautifyInstanceName } from '../../utility/shared-utility'
 
 import type { DiscordConfig } from './common/discord-config.js'
@@ -116,6 +117,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
   async onChat(event: ChatEvent): Promise<void> {
     const channels = this.resolveChannels([event.channelType])
+    const username = event.user.displayName()
 
     for (const channelId of channels) {
       if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
@@ -129,8 +131,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
         let displayUsername =
           event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
-            ? `${event.username}⇾${event.replyUsername}`
-            : event.username
+            ? `${username}⇾${event.replyUsername}`
+            : username
 
         if (this.application.generalConfig.data.originTag) {
           displayUsername += ` [${event.instanceName}]`
@@ -139,7 +141,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         const message = await webhook.send({
           content: escapeMarkdown(event.message),
           username: displayUsername,
-          avatarURL: `https://mc-heads.net/avatar/${encodeURIComponent(event.username)}`,
+          avatarURL: event.user.avatar(),
           allowedMentions: { parse: [] }
         })
         this.messageAssociation.addMessageId(event.eventId, {
@@ -162,6 +164,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if (event.type === GuildPlayerEventType.Offline && !this.config.data.guildOffline) return
 
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
+    const username = event.user.displayName()
 
     let messages: Message[]
     if (this.messageToImage.shouldRenderImage()) {
@@ -173,17 +176,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         this.messageToImage.generateMessageImage(formattedMessage)
       )
     } else {
-      const clickableUsername = hyperlink(
-        event.username,
-        `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`
-      )
+      const clickableUsername = hyperlink(username, event.user.profileLink())
 
       const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
 
-      const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(event.username), clickableUsername)}`
+      const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(username), clickableUsername)}`
 
       const embed = {
-        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
+        url: event.user.profileLink(),
         description: newMessage,
         color: event.color
       } satisfies APIEmbed
@@ -379,13 +379,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       embed.color = event.color
     }
 
-    if ('username' in event && event.username != undefined) {
-      const extra = {
-        title: escapeMarkdown(event.username),
-        url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
-        thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` }
-      }
-      Object.assign(embed, extra)
+    if ('user' in event && event.user != undefined) {
+      embed.title = event.user.displayName()
+      this.assignAvatar(embed, event.user)
     }
 
     // all enums are unique and must unique for this to work.
@@ -496,13 +492,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       color: Color.Good,
       description: `**${escapeMarkdown(event.commandResponse)}**`,
 
-      title: escapeMarkdown(event.username),
-      url: `https://sky.shiiyu.moe/stats/${encodeURIComponent(event.username)}`,
-      thumbnail: { url: `https://cravatar.eu/helmavatar/${encodeURIComponent(event.username)}.png` },
+      title: escapeMarkdown(event.user.displayName()),
       footer: {
         text: feedback ? ' (command feedback)' : ''
       }
     }
+
+    this.assignAvatar(replyEmbed, event.user)
 
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
     for (const replyId of replyIds) {
@@ -518,6 +514,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         this.logger.error(error, 'can not reply to message')
       }
     }
+  }
+
+  private assignAvatar(embed: APIEmbed, user: User): void {
+    const avatar = user.avatar()
+    if (avatar !== undefined) embed.thumbnail = { url: avatar }
+    const profileLink = user.profileLink()
+    if (profileLink !== undefined) embed.url = profileLink
   }
 
   private webhooks = new Map<string, Webhook>()

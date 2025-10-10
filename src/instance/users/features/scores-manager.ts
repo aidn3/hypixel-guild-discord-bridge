@@ -62,11 +62,11 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
 
       switch (event.instanceType) {
         case InstanceType.Discord: {
-          this.database.addDiscordMessage(event.userId, this.timestamp())
+          this.database.addDiscordMessage(event.user.discordProfile().id, this.timestamp())
           break
         }
         case InstanceType.Minecraft: {
-          this.database.addMinecraftMessage(event.uuid, this.timestamp())
+          this.database.addMinecraftMessage(event.user.mojangProfile().id, this.timestamp())
         }
       }
     })
@@ -76,11 +76,13 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
 
       switch (event.instanceType) {
         case InstanceType.Discord: {
-          this.database.addDiscordCommand(event.userId, this.timestamp())
+          const profile = event.user.discordProfile()
+          this.database.addDiscordCommand(profile.id, this.timestamp())
           break
         }
         case InstanceType.Minecraft: {
-          this.database.addMinecraftCommand(event.uuid, this.timestamp())
+          const profile = event.user.mojangProfile()
+          this.database.addMinecraftCommand(profile.id, this.timestamp())
         }
       }
     })

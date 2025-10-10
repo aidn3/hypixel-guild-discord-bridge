@@ -1,9 +1,10 @@
-import { ChannelType, Permission } from '../../../common/application-event.js'
+import { ChannelType } from '../../../common/application-event.js'
+import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 import { getUuidFromGuildChat } from '../common/common'
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     // REGEX: Officer > [MVP+] aidn5 [Staff]: hello there.
     const regex = /^Officer > (?:\[([+A-Z]{1,10})] ){0,3}(\w{3,32})(?: \[(\w{1,10})]){0,3}:(.{1,256})/g
 
@@ -15,6 +16,8 @@ export default {
       const playerMessage = match[4].trim()
 
       const uuid = getUuidFromGuildChat(context.jsonMessage)
+      const user = await initializeMinecraftUser(context.application, { name: username, id: uuid }, {})
+
       context.application.usersManager.mojangDatabase.add([{ name: username, id: uuid }])
       if (context.application.minecraftManager.isMinecraftBot(username)) {
         context.clientInstance.notifyChatEvent(ChannelType.Officer, playerMessage)
@@ -28,7 +31,7 @@ export default {
 
           channelType: ChannelType.Officer,
 
-          username,
+          user,
           originalMessage: playerMessage,
           filteredMessage: filteredMessage
         })
@@ -41,9 +44,7 @@ export default {
 
         channelType: ChannelType.Officer,
 
-        permission: context.clientInstance.resolvePermission(username, Permission.Helper),
-        username: username,
-        uuid: uuid,
+        user: user,
         hypixelRank: hypixelRank,
         guildRank: guildRank,
 

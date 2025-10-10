@@ -1,10 +1,11 @@
 import assert from 'node:assert'
 
 import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
+import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     const regex =
       /^You have been guild muted for (?<duration>[dhms0-9\s]+) by (?<rank>\[[+A-Z]{1,10}] )?(?<responsible>\w{3,32})/g
 
@@ -19,6 +20,15 @@ export default {
       if (rank !== undefined) formattedResponsible += rank + ' '
       formattedResponsible += responsible
 
+      const responsibleProfile = await context.application.mojangApi.profileByUsername(responsible)
+      const responsibleUser = await initializeMinecraftUser(context.application, responsibleProfile, {})
+
+      const name = context.clientInstance.username()
+      const uuid = context.clientInstance.uuid()
+      assert.ok(name !== undefined)
+      assert.ok(uuid !== undefined)
+      const botUser = await initializeMinecraftUser(context.application, { id: uuid, name: name }, {})
+
       context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
@@ -26,7 +36,8 @@ export default {
         channels: [ChannelType.Public, ChannelType.Officer],
 
         type: GuildPlayerEventType.Muted,
-        username: responsible,
+        user: botUser,
+        responsible: responsibleUser,
         message: `Account has been guild muted for ${formattedDuration} by ${formattedResponsible}.`,
         rawMessage: context.rawMessage
       })

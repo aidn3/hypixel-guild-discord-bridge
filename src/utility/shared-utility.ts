@@ -4,6 +4,8 @@ import Logger4js from 'log4js'
 
 import { InternalInstancePrefix } from '../common/instance.js'
 
+import Duration from './duration'
+
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
 
@@ -15,14 +17,14 @@ export function sufficeToTime(suffice: string): number {
   throw new Error(`Unexpected suffice: ${suffice}. Need a new update to handle the new one`)
 }
 
-export function getDuration(short: string): number {
+export function getDuration(short: string): Duration {
   const regex = /(\d*)([dhms]*)/g
   const match = regex.exec(short)
 
   if (match != undefined) {
     const time = match[1] as unknown as number
     const suffice = match[2]
-    return time * sufficeToTime(suffice)
+    return Duration.seconds(time * sufficeToTime(suffice))
   }
 
   throw new Error('Invalid short time')

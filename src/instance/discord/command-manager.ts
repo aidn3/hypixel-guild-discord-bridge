@@ -15,6 +15,7 @@ import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import { initializeDiscordUser } from '../../common/user'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
@@ -138,6 +139,12 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       return
     }
 
+    const identifier = this.clientInstance.profileByUser(
+      interaction.user,
+      interaction.inCachedGuild() ? interaction.member : undefined
+    )
+    const user = await initializeDiscordUser(this.application, identifier, { guild: interaction.guild ?? undefined })
+    const permission = user.permission()
     if (command.autoComplete) {
       const context: DiscordAutoCompleteContext = {
         application: this.application,
@@ -145,10 +152,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
-        permission: this.clientInstance.resolvePrivilegeLevel(
-          interaction.user.id,
-          interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-        ),
+        permission: permission,
         interaction: interaction,
         allCommands: [...this.commands.values()]
       }
@@ -173,10 +177,12 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
     try {
       const channelType = this.getChannelType(interaction.channelId)
-      const permission = this.clientInstance.resolvePrivilegeLevel(
-        interaction.user.id,
-        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+      const identifier = this.clientInstance.profileByUser(
+        interaction.user,
+        interaction.inCachedGuild() ? interaction.member : undefined
       )
+      const user = await initializeDiscordUser(this.application, identifier, { guild: interaction.guild ?? undefined })
+      const permission = user.permission()
 
       if (command == undefined) {
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
@@ -237,10 +243,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
-        permission: this.clientInstance.resolvePrivilegeLevel(
-          interaction.user.id,
-          interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-        ),
+        permission: permission,
         interaction: interaction,
         allCommands: [...this.commands.values()],
 

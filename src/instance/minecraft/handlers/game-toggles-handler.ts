@@ -129,7 +129,7 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
         channels: [ChannelType.Public],
         color: Color.Good,
 
-        username: undefined,
+        user: undefined,
         message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
       })
       return
@@ -217,7 +217,7 @@ export default class GameTogglesHandler extends EventHandler<MinecraftInstance, 
           channels: [ChannelType.Public],
           color: Color.Info,
 
-          username: undefined,
+          user: undefined,
           message:
             `Minecraft account ${username}/${newUuid} is not prepared to be used in the application yet.\n` +
             'Application will run through a discovery phase for one minute to prepare the account. ' +

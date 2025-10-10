@@ -2,10 +2,9 @@ import { hash } from 'node:crypto'
 
 import NodeCache from 'node-cache'
 
-import { InstanceType } from '../../../common/application-event.js'
+import { InstanceType, LinkType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { LinkType } from '../../users/features/verification.js'
 import { getUuidIfExists } from '../common/utility'
 
 export default class Unlink extends ChatCommandHandler {
@@ -22,7 +21,7 @@ export default class Unlink extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenId = context.args[0] ?? ''
 
-    if (context.instanceType !== InstanceType.Minecraft) {
+    if (context.message.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Can only use this command in-game`
     }
 

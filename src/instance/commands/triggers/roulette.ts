@@ -1,11 +1,7 @@
-import {
-  ChannelType,
-  InstanceType,
-  MinecraftSendChatPriority,
-  PunishmentType
-} from '../../../common/application-event.js'
+import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
 
 export default class Roulette extends ChatCommandHandler {
   public static readonly LossMessages = [
@@ -37,10 +33,10 @@ export default class Roulette extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.instanceType !== InstanceType.Minecraft) {
+    if (context.message.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
     }
-    if (context.channelType !== ChannelType.Public) {
+    if (context.message.channelType !== ChannelType.Public) {
       return `${context.username}, Command can only be executed in public chat!`
     }
 
@@ -66,24 +62,11 @@ export default class Roulette extends ChatCommandHandler {
     if (Math.random() < currentChance) {
       this.countSinceLastLose = 0
 
-      context.app.emit('minecraftSend', {
-        ...context.eventHelper.fillBaseEvent(),
-        targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
-        priority: MinecraftSendChatPriority.High,
-        command: `/g mute ${context.username} 15m`
-      })
-      context.app.moderation.punishments.add({
-        ...context.eventHelper.fillBaseEvent(),
-
-        userName: context.username,
-        // not really that important to resolve uuid since it ends fast and the punishment is just a game
-        userUuid: undefined,
-        userDiscordId: undefined,
-
-        type: PunishmentType.Mute,
-        till: Date.now() + 900_000,
-        reason: 'Lost in RussianRoulette game'
-      })
+      context.message.user.mute(
+        context.eventHelper.fillBaseEvent(),
+        Duration.minutes(15),
+        'Lost in RussianRoulette game'
+      )
 
       const messages = context.app.language.data.commandRouletteLose
       return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)

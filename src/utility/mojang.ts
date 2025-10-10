@@ -4,6 +4,7 @@ import DefaultAxios, { AxiosError, HttpStatusCode } from 'axios'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../application.js'
+import type { MojangProfile } from '../common/user'
 
 import RateLimiter from './rate-limiter.js'
 
@@ -144,9 +145,4 @@ export class MojangApi {
     this.application.usersManager.mojangDatabase.add(result)
     return result
   }
-}
-
-export interface MojangProfile {
-  id: string
-  name: string
 }

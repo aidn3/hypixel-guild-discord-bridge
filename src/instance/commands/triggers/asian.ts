@@ -1,7 +1,7 @@
 import type { ChatEvent } from '../../../common/application-event.js'
-import { InstanceType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout.js'
 
 export default class Asian extends ChatCommandHandler {
@@ -18,7 +18,7 @@ export default class Asian extends ChatCommandHandler {
     const timeout = new Timeout<number>(10_000)
 
     const listener = (event: ChatEvent) => {
-      if (event.username !== context.username) return
+      if (!event.user.equalsUser(context.message.user)) return
 
       const match = /^\d+/g.exec(event.message)
       if (!match) return
@@ -35,7 +35,11 @@ export default class Asian extends ChatCommandHandler {
     if (result === math.answer) {
       return 'Big brain!'
     } else {
-      this.mute(context, context.username)
+      context.message.user.mute(
+        context.eventHelper.fillBaseEvent(),
+        Duration.minutes(1),
+        `failed ${context.commandPrefix}${this.triggers[0]}`
+      )
       return `haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: ${math.answer})`
     }
   }
@@ -80,27 +84,5 @@ export default class Asian extends ChatCommandHandler {
     }
 
     throw new Error("Can't find a good math expression")
-  }
-
-  private mute(context: ChatCommandContext, selectedUsername: string): void {
-    context.app.emit('minecraftSend', {
-      ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
-      priority: MinecraftSendChatPriority.High,
-      command: `/g mute ${selectedUsername} 1m`
-    })
-
-    context.app.moderation.punishments.add({
-      ...context.eventHelper.fillBaseEvent(),
-
-      userName: selectedUsername,
-      // not really that important to resolve uuid since it ends fast and the punishment is just a game
-      userUuid: undefined,
-      userDiscordId: undefined,
-
-      type: PunishmentType.Mute,
-      till: Date.now() + 60_000,
-      reason: `failed ${context.commandPrefix}${this.triggers[0]}`
-    })
   }
 }

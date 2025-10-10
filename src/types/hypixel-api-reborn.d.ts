@@ -27,6 +27,7 @@ declare module 'hypixel-api-reborn' {
     community_upgrades: SkyblockV2CommunityUpgrades
     members: Record<string, SkyblockV2Member>
     banking?: { balance: number }
+    game_mode?: 'ironman' | 'bingo' | 'island'
     cute_name: string
     selected: boolean
   }

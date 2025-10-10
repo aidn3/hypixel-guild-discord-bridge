@@ -11,9 +11,8 @@ import type { ConfigManager } from '../../common/config-manager.js'
 import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { MojangProfile } from '../../utility/mojang.js'
-import type { Link } from '../users/features/verification.js'
-import { LinkType } from '../users/features/verification.js'
+import type { DiscordUser } from '../../common/user'
+import { initializeDiscordUser } from '../../common/user'
 
 import type { DiscordConfig } from './common/discord-config.js'
 import { FilteredReaction, MutedReaction, UnverifiedReaction } from './common/discord-config.js'
@@ -66,8 +65,10 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       channelType = ChannelType.Private
     }
 
-    const verificationLink = await this.fetchLink(event)
-    if (verificationLink.type !== LinkType.Confirmed && this.config.data.enforceVerification) {
+    const userProfile = this.clientInstance.profileByUser(event.author, event.member ?? undefined)
+    const user = await initializeDiscordUser(this.application, userProfile, {})
+
+    if (!user.verified() && this.config.data.enforceVerification) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
       if (emoji !== undefined) await event.react(emoji)
 
@@ -90,21 +91,10 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       return
     }
 
-    const mojangProfile =
-      verificationLink.type === LinkType.Confirmed
-        ? await this.application.mojangApi.profileByUuid(verificationLink.link.uuid)
-        : undefined
-    const discordName = mojangProfile?.name ?? event.member?.displayName ?? event.author.username
-    const readableName = mojangProfile?.name ?? this.getReadableName(discordName, event.author.id)
-    if (
-      channelType !== ChannelType.Officer &&
-      (await this.hasBeenPunished(event, discordName, readableName, mojangProfile))
-    ) {
+    if (channelType === ChannelType.Public && (await this.hasBeenPunished(event, user))) {
       return
     }
-    const replyUsername = await this.getReplyUsername(event)
-    const readableReplyUsername =
-      replyUsername == undefined ? undefined : this.getReadableName(replyUsername, replyUsername)
+    const readableReplyUsername = await this.getReplyUsername(event)
 
     const content = this.cleanMessage(event)
     if (content.length === 0) return
@@ -123,7 +113,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
 
         channelType: channelType,
 
-        username: discordName,
+        user: user,
         originalMessage: content,
         filteredMessage: filteredMessage
       })
@@ -143,29 +133,15 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       channelType: channelType,
       channelId: event.channel.id,
 
-      permission: this.clientInstance.resolvePrivilegeLevel(
-        event.author.id,
-        event.member ? [...event.member.roles.cache.keys()] : []
-      ),
-
-      userId: event.author.id,
-      username: readableName,
+      user: user,
       replyUsername: readableReplyUsername,
       message: filteredMessage
     })
   }
 
-  private async hasBeenPunished(
-    message: Message,
-    discordName: string,
-    readableName: string,
-    mojangProfile: MojangProfile | undefined
-  ): Promise<boolean> {
-    const punishments = this.application.moderation.punishments
-    const userIdentifiers = [discordName, readableName, message.author.id]
-    if (mojangProfile !== undefined) userIdentifiers.push(mojangProfile.name, mojangProfile.id)
-    const mutedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Mute)
-
+  private async hasBeenPunished(message: Message, user: DiscordUser): Promise<boolean> {
+    const punishments = user.punishments()
+    const mutedTill = punishments.punishedTill(PunishmentType.Mute)
     if (mutedTill != undefined) {
       const emoji = message.client.application.emojis.cache.find((emoji) => emoji.name === MutedReaction.name)
       if (emoji !== undefined) await message.react(emoji)
@@ -184,7 +160,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       return true
     }
 
-    const bannedTill = punishments.punishedTill(userIdentifiers, PunishmentType.Ban)
+    const bannedTill = punishments.punishedTill(PunishmentType.Ban)
     if (bannedTill != undefined) {
       await message.reply({
         content:
@@ -206,36 +182,10 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
     if (replyMessage.webhookId != undefined) return replyMessage.author.username
 
-    const verificationLink = await this.fetchLink(replyMessage)
-    if (verificationLink.type !== LinkType.None) {
-      return await this.application.mojangApi.profileByUuid(verificationLink.link.uuid).then((profile) => profile.name)
-    }
+    const resolvedProfile = this.clientInstance.profileByUser(replyMessage.author, replyMessage.member ?? undefined)
+    const replyUser = await initializeDiscordUser(this.application, resolvedProfile, {})
 
-    if (messageEvent.guild == undefined) return
-    const guildMember = await messageEvent.guild.members.fetch(replyMessage.author.id)
-    return guildMember.displayName
-  }
-
-  private getReadableName(username: string, id: string): string {
-    return this.cleanUsername(username) ?? id
-  }
-
-  private cleanUsername(username: string | undefined): string | undefined {
-    if (username === undefined) return undefined
-
-    // clear all non ASCII characters
-    // eslint-disable-next-line no-control-regex
-    username = username.replaceAll(/[^\u0000-\u007F]/g, '')
-
-    username = username.trim().slice(0, 16)
-
-    if (/^\w+$/.test(username)) return username
-    if (username.includes(' ')) return username.split(' ')[0]
-    return undefined
-  }
-
-  private async fetchLink(event: Message): Promise<Link> {
-    return await this.application.usersManager.verification.findByDiscord(event.author.id)
+    return replyUser.displayName()
   }
 
   private cleanGuildEmoji(message: string): string {

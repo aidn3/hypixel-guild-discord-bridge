@@ -1,4 +1,5 @@
-import { ChannelType, Permission } from '../../../common/application-event.js'
+import { ChannelType } from '../../../common/application-event.js'
+import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -12,15 +13,9 @@ export default {
       const username = match[2]
       const playerMessage = match[3].trim()
 
-      const uuid = await context.application.mojangApi
-        .profileByUsername(username)
-        .then((profile) => profile.id)
-        .catch(() => undefined)
+      const uuid = await context.application.mojangApi.profileByUsername(username).then((profile) => profile.id)
+      const user = await initializeMinecraftUser(context.application, { name: username, id: uuid }, {})
 
-      if (uuid === undefined) {
-        context.logger.warn(`Failed fetching Mojang UUID for user ${username}. Dropping the message entirely.`)
-        return
-      }
       if (context.application.minecraftManager.isMinecraftBot(username)) return
 
       const event = context.eventHelper.fillBaseEvent()
@@ -30,9 +25,7 @@ export default {
 
         channelType: ChannelType.Private,
 
-        permission: context.clientInstance.resolvePermission(username, Permission.Anyone),
-        uuid: uuid,
-        username: username,
+        user: user,
         hypixelRank: hypixelRank,
 
         message: playerMessage,

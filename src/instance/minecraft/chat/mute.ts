@@ -1,9 +1,8 @@
-import { ChannelType, Color, GuildPlayerEventType, PunishmentType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
+import { initializeMinecraftUser } from '../../../common/user'
+import Duration from '../../../utility/duration'
 import { sufficeToTime } from '../../../utility/shared-utility'
-// eslint-disable-next-line import/no-restricted-paths
-import { HeatType } from '../../moderation/commands-heat.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
-import { checkHeat } from '../common/common.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -17,22 +16,22 @@ export default {
       const muteTime = Number(match[3])
       const muteSuffice = match[4]
 
-      await checkHeat(context, responsible, HeatType.Mute)
+      const targetProfile = await context.application.mojangApi.profileByUsername(target)
+      const targetUser = await initializeMinecraftUser(context.application, { id: targetProfile.id, name: target }, {})
 
-      const mojangProfile = await context.application.mojangApi.profileByUsername(target).catch(() => undefined)
+      const responsibleProfile = await context.application.mojangApi.profileByUsername(responsible)
+      const responsibleUser = await initializeMinecraftUser(
+        context.application,
+        { id: responsibleProfile.id, name: responsible },
+        {}
+      )
 
       if (responsible !== context.clientInstance.username()) {
-        context.application.moderation.punishments.add({
-          ...context.eventHelper.fillBaseEvent(),
-
-          userName: mojangProfile?.name ?? target,
-          userUuid: mojangProfile?.id,
-          userDiscordId: undefined,
-
-          type: PunishmentType.Mute,
-          till: Date.now() + muteTime * sufficeToTime(muteSuffice) * 1000,
-          reason: context.message
-        })
+        targetUser.mute(
+          context.eventHelper.fillBaseEvent(),
+          Duration.seconds(muteTime * sufficeToTime(muteSuffice)),
+          context.message
+        )
       }
 
       context.application.emit('guildPlayer', {
@@ -42,7 +41,9 @@ export default {
         channels: [ChannelType.Officer],
 
         type: GuildPlayerEventType.Mute,
-        username: responsible,
+        user: targetUser,
+        responsible: responsibleUser,
+
         message: context.message,
         rawMessage: context.rawMessage
       })

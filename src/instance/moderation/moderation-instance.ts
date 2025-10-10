@@ -6,8 +6,6 @@ import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ConfigManager } from '../../common/config-manager.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
-import type { MojangApi } from '../../utility/mojang.js'
-import { LinkType } from '../users/features/verification.js'
 
 import { CommandsHeat } from './commands-heat.js'
 import PunishmentsEnforcer from './handlers/punishments-enforcer.js'
@@ -21,9 +19,7 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
   public profanityFilter: BadWords.BadWords | undefined
   private readonly config: ConfigManager<ModerationConfig>
 
-  private readonly mojangApi: MojangApi
-
-  constructor(application: Application, mojangApi: MojangApi) {
+  constructor(application: Application) {
     super(application, InternalInstancePrefix + InstanceType.Moderation, InstanceType.Moderation)
 
     this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('moderation.json'), {
@@ -38,12 +34,11 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
       profanityWhitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard'],
       profanityBlacklist: []
     })
-    this.mojangApi = mojangApi
 
     this.reloadProfanity()
     assert.ok(this.profanityFilter !== undefined)
 
-    this.punishments = new Punishments(application)
+    this.punishments = new Punishments(application, this.logger)
     this.commandsHeat = new CommandsHeat(
       application,
       this,
@@ -91,20 +86,6 @@ export default class ModerationInstance extends Instance<InstanceType.Moderation
 
   public immuneMinecraft(username: string): boolean {
     return this.config.data.immuneMojangPlayers.includes(username)
-  }
-
-  async getMinecraftIdentifiers(username: string): Promise<string[]> {
-    const identifiers = [username]
-
-    const mojangProfile = await this.mojangApi.profileByUsername(username).catch(() => undefined)
-    if (mojangProfile) {
-      identifiers.push(mojangProfile.id, mojangProfile.name)
-
-      const link = await this.application.usersManager.verification.findByIngame(mojangProfile.id)
-      if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
-    }
-
-    return identifiers
   }
 }
 

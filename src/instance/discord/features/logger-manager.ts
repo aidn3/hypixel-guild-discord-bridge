@@ -29,8 +29,8 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
     this.application.on('chat', (event) => {
       const displayUsername =
         event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
-          ? `${event.username}▸${event.replyUsername}`
-          : event.username
+          ? `${event.user.displayName()}▸${event.replyUsername}`
+          : event.user.displayName()
 
       void this.send(`Chat > ${event.channelType} ${event.instanceName} ${displayUsername}: ${event.message}`).catch(
         this.errorHandler.promiseCatch('handling chat event')
@@ -47,7 +47,7 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
       )
     })
     this.application.on('broadcast', (event) => {
-      void this.send(`Broadcast > ${event.username ? `${event.username}: ` : ''}${event.message}`).catch(
+      void this.send(`Broadcast > ${event.user ? `${event.user.displayName()}: ` : ''}${event.message}`).catch(
         this.errorHandler.promiseCatch('handling broadcast event')
       )
     })

@@ -35,7 +35,7 @@ export default class AutoRestartPlugin extends PluginInstance {
           channels: [ChannelType.Public],
           color: Color.Info,
 
-          username: undefined,
+          user: undefined,
           message: 'Application Restarting: Scheduled restart'
         })
 

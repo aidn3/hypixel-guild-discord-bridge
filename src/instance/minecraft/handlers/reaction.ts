@@ -64,7 +64,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.username)
+        message = message.replaceAll('{username}', event.user.displayName())
 
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
@@ -72,7 +72,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           channels: [ChannelType.Public],
           color: Color.Good,
 
-          username: event.username,
+          user: event.user,
           message: message
         })
       }
@@ -87,14 +87,14 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.username)
+        message = message.replaceAll('{username}', event.user.displayName())
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
           color: Color.Bad,
 
-          username: event.username,
+          user: event.user,
           message: message
         })
       }
@@ -109,14 +109,14 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.username)
+        message = message.replaceAll('{username}', event.user.displayName())
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
           color: Color.Bad,
 
-          username: event.username,
+          user: event.user,
           message: message
         })
       }

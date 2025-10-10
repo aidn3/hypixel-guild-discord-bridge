@@ -1,7 +1,8 @@
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { InstanceType } from '../../../common/application-event.js'
+import type { InstanceType, Link, LinkInfo } from '../../../common/application-event.js'
+import { LinkType } from '../../../common/application-event.js'
 import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
 import type { SqliteManager } from '../../../common/sqlite-manager.js'
@@ -74,33 +75,6 @@ export class Verification extends EventHandler<UsersManager, InstanceType.Utilit
     if (options.discordId !== undefined) count += this.database.invalidateDiscord(options.discordId)
     return count
   }
-}
-
-export enum LinkType {
-  None = 'none',
-  Inference = 'inference',
-  Confirmed = 'confirmed'
-}
-
-export type Link = NoneLink | InferenceLink | ConfirmedLink
-
-export interface BaseLink<T extends LinkType> {
-  type: T
-}
-
-export type NoneLink = BaseLink<LinkType.None>
-
-export interface InferenceLink extends BaseLink<LinkType.Inference> {
-  link: LinkInfo
-}
-
-export interface ConfirmedLink extends BaseLink<LinkType.Confirmed> {
-  link: LinkInfo
-}
-
-interface LinkInfo {
-  uuid: string
-  discordId: string
 }
 
 class VerificationDatabase {

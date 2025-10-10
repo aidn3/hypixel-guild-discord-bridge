@@ -29,7 +29,7 @@ import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import ModerationInstance from './instance/moderation/moderation-instance.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
-import UsersManager from './instance/users/users-manager.js'
+import UsersManager from './instance/users/users-manager'
 import type { LanguageConfig } from './language-config.js'
 import { DefaultLanguageConfig } from './language-config.js'
 import { MojangApi } from './utility/mojang.js'
@@ -65,6 +65,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly configsDirectory
   private readonly backupDirectory
   private readonly config: Readonly<ApplicationConfig>
+
   public readonly language: ConfigManager<LanguageConfig>
 
   public readonly generalConfig: ConfigManager<GeneralConfig>
@@ -114,7 +115,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       DefaultLanguageConfig
     )
 
-    this.moderation = new ModerationInstance(this, this.mojangApi)
+    this.moderation = new ModerationInstance(this)
     this.usersManager = new UsersManager(this)
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)

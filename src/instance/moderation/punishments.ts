@@ -1,111 +1,100 @@
-import fs from 'node:fs'
+import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
-import type { PunishmentAddEvent, PunishmentForgiveEvent } from '../../common/application-event.js'
-import { PunishmentType } from '../../common/application-event.js'
+import type { BasePunishment } from '../../common/application-event'
+import { ConfigManager } from '../../common/config-manager'
+import type { User, UserIdentifier } from '../../common/user'
+import Duration from '../../utility/duration'
 
-import { matchUserIdentifier } from './utility'
+export interface PunishmentsConfig {
+  records: SavedPunishment[]
+}
 
-type PunishmentsRecord = Record<PunishmentType, PunishmentAddEvent[]>
+export type SavedPunishment = BasePunishment & UserIdentifier
 
 export default class Punishments {
   private static readonly ConfigName = 'punishments.json'
+  private static readonly CheckRemoval = Duration.minutes(30)
 
-  private readonly app: Application
-  private readonly configFilePath: string
-  private records: PunishmentsRecord = {
-    [PunishmentType.Mute]: [],
-    [PunishmentType.Ban]: []
-  }
+  private readonly config: ConfigManager<PunishmentsConfig>
 
-  constructor(app: Application) {
-    this.app = app
-    this.configFilePath = app.getConfigFilePath(Punishments.ConfigName)
-    this.app.applicationIntegrity.addConfigPath(this.configFilePath)
-    this.loadFromConfig()
-  }
-
-  public add(event: PunishmentAddEvent): void {
-    this.app.emit('punishmentAdd', event)
-
-    const originalList = this.records[event.type]
-    const currentTime = Date.now()
-    const identifiers = [event.userName, event.userUuid, event.userDiscordId].filter((id) => id !== undefined)
-
-    const modifiedList = originalList.filter(
-      (punishment) => punishment.till < currentTime || !matchUserIdentifier(punishment, identifiers)
+  constructor(
+    private readonly application: Application,
+    logger: Logger
+  ) {
+    this.config = new ConfigManager<PunishmentsConfig>(
+      application,
+      logger,
+      application.getConfigFilePath(Punishments.ConfigName),
+      {
+        records: []
+      }
     )
 
-    modifiedList.push(event)
-    this.records[event.type] = modifiedList
-    this.saveConfig()
+    /*    // migrating old data
+        for (const records of Object.values(this.config.data.records)) {
+          for (const record of records) {
+            // @ts-expect-error it is readonly.
+            // noinspection JSConstantReassignment
+            record.purpose ??= PunishmentPurpose.Manual
+          }
+        }*/
   }
 
-  public remove(event: PunishmentForgiveEvent): PunishmentAddEvent[] {
-    this.app.emit('punishmentForgive', event)
+  public add(punishment: SavedPunishment): void {
+    this.config.data.records.push(punishment)
+    this.config.markDirty()
+  }
 
-    const result: PunishmentAddEvent[] = []
-
+  public remove(user: User): SavedPunishment[] {
     const currentTime = Date.now()
-    for (const type of Object.keys(this.records) as PunishmentType[]) {
-      this.records[type] = this.records[type].filter((punishment) => {
-        if (punishment.till < currentTime) return false
-        const shouldDelete = matchUserIdentifier(punishment, event.userIdentifiers)
-        if (shouldDelete) {
-          result.push(punishment)
-          return false
-        }
-        return true
-      })
+    const result: SavedPunishment[] = []
+    const newList: SavedPunishment[] = []
+
+    for (const punishment of this.config.data.records) {
+      if (punishment.till < currentTime) continue
+      if (user.equalsIdentifier(punishment)) {
+        result.push(punishment)
+      } else {
+        newList.push(punishment)
+      }
     }
 
-    this.saveConfig()
-    return result
-  }
-
-  punishedTill(identifiers: string[], type: PunishmentType): number | undefined {
-    const allPunishments = this.records[type]
-
-    const current = Date.now()
-    const punishment = allPunishments.find((p) => p.till > current && matchUserIdentifier(p, identifiers))
-
-    if (punishment) {
-      return punishment.till
-    }
-    return undefined
-  }
-
-  findByUser(identifiers: string[]): PunishmentAddEvent[] {
-    const current = Date.now()
-    const result: PunishmentAddEvent[] = []
-
-    for (const [, events] of Object.entries(this.records)) {
-      result.push(...events.filter((event) => event.till > current && matchUserIdentifier(event, identifiers)))
+    if (this.config.data.records.length !== newList.length) {
+      this.config.data.records = newList
+      this.config.markDirty()
     }
 
     return result
   }
 
-  all(): PunishmentAddEvent[] {
+  findByUser(user: User): SavedPunishment[] {
     const current = Date.now()
-    const result: PunishmentAddEvent[] = []
+    const result: SavedPunishment[] = []
+    for (const punishment of this.config.data.records) {
+      if (punishment.till < current) continue
 
-    for (const [, events] of Object.entries(this.records)) {
-      result.push(...events.filter((event) => event.till > current))
+      if (!user.equalsIdentifier(punishment)) continue
+
+      result.push(punishment)
     }
 
     return result
   }
 
-  private loadFromConfig(): void {
-    if (!fs.existsSync(this.configFilePath)) return
+  all(): SavedPunishment[] {
+    const current = Date.now()
+    const result: SavedPunishment[] = []
+    for (const punishment of this.config.data.records) {
+      if (punishment.till < current) continue
+      result.push(punishment)
+    }
 
-    const fileData = fs.readFileSync(this.configFilePath, 'utf8')
-    this.records = JSON.parse(fileData) as PunishmentsRecord
-  }
+    if (this.config.data.records.length !== result.length) {
+      this.config.data.records = result
+      this.config.markDirty()
+    }
 
-  private saveConfig(): void {
-    const dataRaw = JSON.stringify(this.records, undefined, 4)
-    fs.writeFileSync(this.configFilePath, dataRaw, { encoding: 'utf8' })
+    return result
   }
 }

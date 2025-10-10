@@ -32,7 +32,7 @@ export default class PlayerMuted extends EventHandler<MinecraftInstance, Instanc
       if (!event.rawMessage.includes('§eHey!')) return
 
       let message = this.application.language.data.announceMutedPlayer
-      message = message.replaceAll('{username}', event.username)
+      message = message.replaceAll('{username}', event.user.displayName())
 
       this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
@@ -40,7 +40,7 @@ export default class PlayerMuted extends EventHandler<MinecraftInstance, Instanc
         channels: [ChannelType.Public],
         color: Color.Default,
 
-        username: event.username,
+        user: event.user,
         message: message
       })
     })

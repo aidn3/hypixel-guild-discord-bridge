@@ -48,7 +48,7 @@ export default class DarkAuctionPlugin extends PluginInstance {
           channels: [ChannelType.Public],
           color: Color.Good,
 
-          username: undefined,
+          user: undefined,
           message: message
         })
       }

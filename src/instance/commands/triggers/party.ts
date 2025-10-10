@@ -30,9 +30,11 @@ export default class PartyManager {
   }
 
   allowedExecution(context: ChatCommandContext): string | undefined {
-    if (context.channelType === ChannelType.Officer || context.channelType === ChannelType.Public) {
-      if (context.instanceType === InstanceType.Minecraft) return undefined
-      if (context.instanceType === InstanceType.Discord) return undefined
+    const originalMessage = context.message
+    if (originalMessage.channelType === ChannelType.Officer || originalMessage.channelType === ChannelType.Public) {
+      if (originalMessage.instanceType === InstanceType.Minecraft) return undefined
+
+      if (originalMessage.instanceType === InstanceType.Discord) return undefined
     }
 
     return 'Parties commands can only be executed in public and officer chat of either minecraft or discord.'
@@ -134,7 +136,7 @@ class PartyStart extends ChatCommandHandler {
       username: context.username,
       count: count,
       purpose: purpose,
-      expiresAt: Date.now() + durationInSeconds * 1000
+      expiresAt: Date.now() + duration.toMilliseconds()
     } satisfies Party
 
     this.partyManager.activeParties.push(party)

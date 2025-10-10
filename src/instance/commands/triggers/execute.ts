@@ -12,10 +12,11 @@ export default class Execute extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    if (context.instanceType !== InstanceType.Minecraft) {
+    const originalMessage = context.message
+    if (originalMessage.instanceType !== InstanceType.Minecraft) {
       return 'Can only be executed from Minecraft'
     }
-    if (context.permission !== Permission.Admin) {
+    if (originalMessage.user.permission() !== Permission.Admin) {
       return 'You are not a Bridge Admin!'
     }
     if (context.args.length <= 0) {
@@ -24,7 +25,7 @@ export default class Execute extends ChatCommandHandler {
 
     context.app.emit('minecraftSend', {
       ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: [context.instanceName],
+      targetInstanceName: [originalMessage.instanceName],
       priority: MinecraftSendChatPriority.High,
       command: context.args.join(' ')
     })

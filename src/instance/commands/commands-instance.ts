@@ -1,5 +1,5 @@
 import type Application from '../../application.js'
-import type { ChatEvent } from '../../common/application-event.js'
+import type { ChatEvent, CommandLike } from '../../common/application-event.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
 import { ConfigManager } from '../../common/config-manager.js'
@@ -181,7 +181,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     if (
       this.config.data.disabledCommands.includes(command.triggers[0].toLowerCase()) &&
-      event.permission === Permission.Anyone
+      event.user.permission() === Permission.Anyone
     ) {
       return
     }
@@ -198,12 +198,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         config: this.config,
         commandPrefix: this.config.data.chatPrefix,
 
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
-        channelType: event.channelType,
-
-        username: event.username,
-        permission: event.permission,
+        message: event,
+        username: event.user.mojangProfile()?.name ?? event.user.displayName(),
         args: commandsArguments,
 
         sendFeedback: (feedbackResponse) => {
@@ -217,74 +213,65 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       this.reply(
         event,
         command.triggers[0],
-        `${event.username}, an error occurred while trying to execute ${command.triggers[0]}.`
+        `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
       )
     }
   }
 
   private reply(event: ChatEvent, commandName: string, response: string): void {
-    if (event.instanceType === InstanceType.Discord) {
-      this.application.emit('command', {
-        eventId: this.eventHelper.generate(),
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
-
-        channelType: event.channelType,
-        originEventId: event.eventId,
-        userId: event.userId,
-        username: event.username,
-
-        commandName: commandName,
-        commandResponse: response
-      })
-    } else {
-      this.application.emit('command', {
-        eventId: this.eventHelper.generate(),
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
-
-        channelType: event.channelType,
-        originEventId: event.eventId,
-
-        uuid: event.uuid,
-        username: event.username,
-
-        commandName: commandName,
-        commandResponse: response
-      })
-    }
+    this.application.emit('command', this.format(event, commandName, response))
   }
 
   private feedback(event: ChatEvent, commandName: string, response: string): void {
-    if (event.instanceType === InstanceType.Discord) {
-      this.application.emit('commandFeedback', {
-        eventId: this.eventHelper.generate(),
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
+    this.application.emit('commandFeedback', this.format(event, commandName, response))
+  }
 
-        channelType: event.channelType,
-        originEventId: event.eventId,
-        userId: event.userId,
-        username: event.username,
+  private format(event: ChatEvent, commandName: string, response: string): CommandLike {
+    switch (event.instanceType) {
+      case InstanceType.Discord: {
+        return {
+          eventId: this.eventHelper.generate(),
+          instanceName: event.instanceName,
+          instanceType: event.instanceType,
 
-        commandName: commandName,
-        commandResponse: response
-      })
-    } else {
-      this.application.emit('commandFeedback', {
-        eventId: this.eventHelper.generate(),
-        instanceName: event.instanceName,
-        instanceType: event.instanceType,
+          channelType: event.channelType,
+          originEventId: event.eventId,
+          user: event.user,
 
-        channelType: event.channelType,
-        originEventId: event.eventId,
+          commandName: commandName,
+          commandResponse: response
+        }
+      }
 
-        uuid: event.uuid,
-        username: event.username,
+      case InstanceType.Minecraft: {
+        return {
+          eventId: this.eventHelper.generate(),
+          instanceName: event.instanceName,
+          instanceType: event.instanceType,
 
-        commandName: commandName,
-        commandResponse: response
-      })
+          channelType: event.channelType,
+          originEventId: event.eventId,
+          user: event.user,
+
+          commandName: commandName,
+          commandResponse: response
+        }
+      }
+
+      default: {
+        return {
+          eventId: this.eventHelper.generate(),
+          instanceName: event.instanceName,
+          instanceType: event.instanceType,
+
+          channelType: event.channelType,
+          originEventId: event.eventId,
+          user: event.user,
+
+          commandName: commandName,
+          commandResponse: response
+        }
+      }
     }
   }
 }

@@ -66,7 +66,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
     await this.send(
-      await this.formatChatMessage(prefix, event.username, replyUsername, event.message, event.instanceName),
+      await this.formatChatMessage(prefix, event.user.displayName(), replyUsername, event.message, event.instanceName),
       MinecraftSendChatPriority.Default,
       event.eventId
     ).catch(this.errorHandler.promiseCatch('sending chat message'))
@@ -195,7 +195,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       return
     }
 
-    if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.username)
+    if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.user.displayName())
     this.messageAssociation.addMessageId(event.eventId, reply)
 
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse}`
@@ -216,7 +216,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
         void this.send(
-          `/msg ${event.username} ${finalResponse}`,
+          `/msg ${event.user.mojangProfile().name} ${finalResponse}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         ).catch(this.errorHandler.promiseCatch('handling private command response display'))

@@ -25,16 +25,16 @@ export default class Autocomplete extends EventHandler<UsersManager, InstanceTyp
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
     application.on('chat', (event) => {
-      this.addUsername(event.username)
+      this.addUsername(event.user.displayName())
     })
     application.on('guildPlayer', (event) => {
-      this.addUsername(event.username)
+      this.addUsername(event.user.mojangProfile().name)
     })
     application.on('command', (event) => {
-      this.addUsername(event.username)
+      this.addUsername(event.user.displayName())
     })
     application.on('commandFeedback', (event) => {
-      this.addUsername(event.username)
+      this.addUsername(event.user.displayName())
     })
 
     setInterval(() => {

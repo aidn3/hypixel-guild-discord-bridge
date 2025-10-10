@@ -2,11 +2,10 @@ import {
   ChannelType,
   InstanceType,
   MinecraftSendChatPriority,
-  Permission,
   PunishmentType
 } from '../../../common/application-event.js'
+import { initializeMinecraftUser } from '../../../common/user'
 import { durationToMinecraftDuration } from '../../../utility/shared-utility'
-import { LinkType } from '../../users/features/verification.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 import { getUuidFromGuildChat } from '../common/common'
 
@@ -21,19 +20,12 @@ export default {
       const username = match[2]
       const guildRank = match[3]
       const playerMessage = match[4].trim()
-
-      const identifiers = [username]
-
       const uuid = getUuidFromGuildChat(context.jsonMessage)
-      if (uuid) {
-        context.application.usersManager.mojangDatabase.add([{ name: username, id: uuid }])
-        identifiers.push(uuid, username)
 
-        const link = await context.application.usersManager.verification.findByIngame(uuid)
-        if (link.type === LinkType.Confirmed) identifiers.push(link.link.discordId)
-      }
+      const user = await initializeMinecraftUser(context.application, { name: username, id: uuid }, {})
 
-      const mutedTill = context.application.moderation.punishments.punishedTill(identifiers, PunishmentType.Mute)
+      const punishments = user.punishments()
+      const mutedTill = punishments.punishedTill(PunishmentType.Mute)
       if (mutedTill) {
         context.application.emit('minecraftSend', {
           ...context.eventHelper.fillBaseEvent(),
@@ -44,7 +36,7 @@ export default {
       }
 
       // if any other punishments active
-      if (context.application.moderation.punishments.findByUser(identifiers).length > 0) return
+      if (punishments.all().length > 0) return
       if (context.application.minecraftManager.isMinecraftBot(username)) {
         context.clientInstance.notifyChatEvent(ChannelType.Public, playerMessage)
         return
@@ -57,7 +49,7 @@ export default {
 
           channelType: ChannelType.Public,
 
-          username,
+          user: user,
           originalMessage: playerMessage,
           filteredMessage: filteredMessage
         })
@@ -70,9 +62,7 @@ export default {
 
         channelType: ChannelType.Public,
 
-        permission: context.clientInstance.resolvePermission(username, Permission.Anyone),
-        username: username,
-        uuid: uuid,
+        user: user,
         hypixelRank: hypixelRank,
         guildRank: guildRank,
 

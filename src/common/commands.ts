@@ -11,7 +11,7 @@ import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { CommandsConfig } from '../instance/commands/commands-instance'
 
-import type { ChannelType, InstanceType, Permission } from './application-event.js'
+import type { ChatEvent, InstanceType, Permission } from './application-event.js'
 import type { ConfigManager } from './config-manager'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
@@ -45,12 +45,8 @@ export interface ChatCommandContext {
   config: ConfigManager<CommandsConfig>
   commandPrefix: string
 
-  instanceName: string
-  instanceType: InstanceType
-  channelType: ChannelType
-
+  message: ChatEvent
   username: string
-  permission: Permission
   args: string[]
 
   sendFeedback: (feedback: string) => void

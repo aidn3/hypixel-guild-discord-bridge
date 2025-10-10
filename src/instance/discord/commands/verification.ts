@@ -1,11 +1,10 @@
 import type { APIEmbed, APIEmbedField, ChatInputCommandInteraction } from 'discord.js'
 import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
-import { Color, Permission } from '../../../common/application-event.js'
+import type { Link } from '../../../common/application-event.js'
+import { Color, LinkType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import type { MojangApi } from '../../../utility/mojang.js'
-import type { Link } from '../../users/features/verification.js'
-import { LinkType } from '../../users/features/verification.js'
 import { formatInvalidUsername } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
