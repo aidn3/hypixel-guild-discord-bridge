@@ -133,7 +133,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             : event.username
 
         if (this.application.generalConfig.data.originTag) {
-          displayUsername += ` [${event.instanceName}]`
+          if (event.instanceType === InstanceType.Discord) {
+            displayUsername += ` [DC]`
+          } else {
+            displayUsername += ` [${event.instanceName}]`
+          }
         }
 
         const message = await webhook.send({
