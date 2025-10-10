@@ -61,6 +61,7 @@ declare module 'hypixel-api-reborn' {
     }
     slayer: SlayerProfile | undefined
     jacobs_contest?: Partial<{ perks: { farming_level_cap: number } }>
+    events?: SkyblockPlayerEvents
     pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
     essence?: SkyblockV2Essence
   }
@@ -159,6 +160,15 @@ declare module 'hypixel-api-reborn' {
     boss_kills_tier_2?: number
     boss_kills_tier_3?: number
     boss_kills_tier_4?: number
+  }
+
+  export interface SkyblockPlayerEvents {
+    easter?: SkyblockPlayerEaster
+  }
+
+  export interface SkyblockPlayerEaster {
+    total_chocolate?: number
+    shop?: { chocolate_spent?: number }
   }
 
   export interface MayorV2 {
