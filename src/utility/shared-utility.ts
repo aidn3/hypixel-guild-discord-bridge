@@ -43,12 +43,12 @@ export function antiSpamString(): string {
   return randomString
 }
 
-export function formatTime(time: number, maxPrecision = 2): string {
+export function formatTime(milliseconds: number, maxPrecision = 2): string {
   assert.ok(maxPrecision >= 1, 'Minimum precision is 1')
 
   let result = ''
   let variablesSet = 0
-  let remaining = Math.floor(time / 1000) // milli to seconds
+  let remaining = Math.floor(milliseconds / 1000) // milli to seconds
 
   const days = Math.floor(remaining / 86_400)
   if (days > 0) {
