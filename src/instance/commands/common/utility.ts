@@ -71,22 +71,30 @@ export function getDungeonLevelWithOverflow(experience: number): number {
   return totalLevel + fractionLevel
 }
 
-export function localizedNetworth(coins: number): string {
+export function shortenNumber(value: number): string {
   let suffix = ''
-  if (coins > 1000) {
-    coins = coins / 1000
+
+  if (value > 1000) {
+    value = value / 1000
     suffix = 'k'
   }
-  if (coins > 1000) {
-    coins = coins / 1000
+  if (value > 1000) {
+    value = value / 1000
     suffix = 'm'
   }
-  if (coins > 1000) {
-    coins = coins / 1000
+  if (value > 1000) {
+    value = value / 1000
     suffix = 'b'
   }
+  if (value > 1000) {
+    value = value / 1000
+    suffix = 't'
+  }
 
-  return coins.toFixed(3) + suffix
+  const digits = Math.floor(Math.log10(value)) + 1
+  const digitsCount = 3
+
+  return value.toFixed(Math.max(0, digitsCount - digits)) + suffix
 }
 
 export function usernameNotExists(givenUsername: string): string {
@@ -104,6 +112,7 @@ export function playerNeverPlayedDungeons(username: string): string {
 export function playerNeverPlayedSlayers(username: string): string {
   return `${username} has never done slayers before?`
 }
+
 export function playerNeverEnteredCrimson(username: string): string {
   return `${username} has never entered Crimson Isle before?`
 }
