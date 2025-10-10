@@ -243,7 +243,11 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     let full = `/${prefix} `
 
     if (this.application.generalConfig.data.originTag) {
-      full += `[${instanceName}] `
+      if (instanceName === InstanceType.Discord) {
+        full += `[DC] `
+      } else {
+        full += `[${instanceName}] `
+      }
     }
 
     full += username
