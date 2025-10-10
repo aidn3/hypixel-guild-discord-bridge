@@ -8,7 +8,7 @@ import { ConnectableInstance, Status } from '../../common/connectable-instance.j
 import { InternalInstancePrefix } from '../../common/instance.js'
 import Duration from '../../utility/duration'
 
-interface Stats {
+export interface Stats {
   id: string
   instancesUsed: InstanceType[]
   events: Map<keyof ApplicationEvents, number>
