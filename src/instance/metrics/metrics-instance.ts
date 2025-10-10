@@ -6,6 +6,7 @@ import type { ApplicationEvents } from '../../common/application-event.js'
 import { InstanceType } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
+import Duration from '../../utility/duration'
 
 interface Stats {
   id: string
@@ -14,7 +15,7 @@ interface Stats {
 }
 
 export default class MetricsInstance extends ConnectableInstance<InstanceType.Metrics> {
-  private static readonly SendEvery = 20 * 60 * 1000
+  private static readonly SendEvery = Duration.minutes(20)
   private static readonly Host = 'https://bridge-stats.aidn5.com/metrics'
 
   private readonly stats: Stats

@@ -2,6 +2,7 @@ import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { initializeMinecraftUser } from '../../../common/user'
+import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 
 export default class Mute extends ChatCommandHandler {
@@ -20,7 +21,7 @@ export default class Mute extends ChatCommandHandler {
     'I muted someone, but who? :)',
     'I am agent of chaos!'
   ]
-  private static readonly CommandCoolDown = 300_000
+  private static readonly TimeLength = Duration.minutes(5)
   private lastCommandExecutionAt = 0
 
   constructor() {
@@ -36,8 +37,8 @@ export default class Mute extends ChatCommandHandler {
       return 'Command can only be executed in-game in guild public channel'
     }
     const currentTime = Date.now()
-    if (this.lastCommandExecutionAt + Mute.CommandCoolDown > currentTime) {
-      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.CommandCoolDown - currentTime)}.`
+    if (this.lastCommandExecutionAt + Mute.TimeLength.toMilliseconds() > currentTime) {
+      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.TimeLength.toMilliseconds() - currentTime)}.`
     }
     this.lastCommandExecutionAt = currentTime
 
