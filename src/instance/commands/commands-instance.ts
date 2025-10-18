@@ -10,6 +10,7 @@ import EightBallCommand from './triggers/8ball.js'
 import Api from './triggers/api.js'
 import Asian from './triggers/asian.js'
 import Bedwars from './triggers/bedwars.js'
+import Bestiary from './triggers/bestiary'
 import Bits from './triggers/bits.js'
 import Boop from './triggers/boop.js'
 import Calculate from './triggers/calculate.js'
@@ -81,6 +82,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Asian(),
       new Bits(),
       new Bedwars(),
+      new Bestiary(),
       new Boop(),
       new Calculate(),
       new Catacomb(),

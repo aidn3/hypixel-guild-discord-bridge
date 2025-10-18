@@ -21,6 +21,7 @@ A shorter version can also be used: `!- rtca`
 | `api`            | Returns a player's skyblock API status                                             |
 | `asian`          | Challenge yourself with math!                                                      |
 | `bedwars`        | Returns a player's bedwars common stats                                            |
+| `be`             | Returns a player's Bestiary stats                                                  |
 | `bits`           | Returns the best bit items to purchase for the most profit.                        |
 | `boop`           | /boop a player in-game                                                             |
 | `calculate`      | A basic calculator                                                                 |
