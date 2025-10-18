@@ -145,7 +145,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           allowedMentions: { parse: [] }
         })
         this.messageAssociation.addMessageId(event.eventId, {
-          guildId: message.guildId ?? undefined,
+          guildId: message.guildId,
           channelId: message.channelId,
           messageId: message.id
         })

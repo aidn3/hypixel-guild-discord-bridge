@@ -11,7 +11,7 @@ export default class Bestiary extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['be', 'bestiary'],
-      description: 'Returns a player\'s Bestiary stats',
+      description: "Returns a player's Bestiary stats",
       example: `be %s dreadlord`
     })
   }
@@ -24,16 +24,15 @@ export default class Bestiary extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if(selectedProfile === undefined) return playerNeverPlayedSkyblock(givenUsername)
+    if (selectedProfile === undefined) return playerNeverPlayedSkyblock(givenUsername)
     const bestiary = selectedProfile.bestiary
     if (bestiary === undefined) return `${givenUsername} has never killed on this profile.`
 
     let response = `${givenUsername} has `
-    if (bestiary.milestone?.last_claimed_milestone === undefined || bestiary.milestone.last_claimed_milestone === 0) {
-      response += 'never claimed bestiary milestones on this profile.'
-    } else {
-      response += `claimed ${bestiary.milestone.last_claimed_milestone} bestiary milestones.`
-    }
+    response +=
+      bestiary.milestone?.last_claimed_milestone === undefined || bestiary.milestone.last_claimed_milestone === 0
+        ? 'never claimed bestiary milestones on this profile.'
+        : `claimed ${bestiary.milestone.last_claimed_milestone} bestiary milestones.`
 
     if (bestiaryName !== undefined) {
       const bestiaryStats = Object.keys(bestiary.kills)
