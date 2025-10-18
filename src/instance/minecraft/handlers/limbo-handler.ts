@@ -2,12 +2,12 @@ import PromiseQueue from 'promise-queue'
 
 import type { InstanceType } from '../../../common/application-event.js'
 import { MinecraftSendChatPriority } from '../../../common/application-event.js'
-import EventHandler from '../../../common/event-handler.js'
+import SubInstance from '../../../common/sub-instance'
 import { Timeout } from '../../../utility/timeout.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class LimboHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class LimboHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private static readonly DefaultTimeout = 5 * 60 * 1000
   private static readonly DefaultAcquire = 10 * 60 * 1000
 

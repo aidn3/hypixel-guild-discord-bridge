@@ -17,13 +17,12 @@ import {
 import { Color, InstanceType, Permission, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import type { DiscordUser, MojangProfile, User } from '../../../common/user'
-import { initializeDiscordUser, initializeMinecraftUser, initializeUser } from '../../../common/user'
+import { HeatResult, HeatType } from '../../../core/moderation/commands-heat'
+import type { SavedPunishment } from '../../../core/moderation/punishments'
 import type { RegexChat } from '../../../utility/chat-triggers.js'
 import { checkChatTriggers, KickChat, MuteChat, UnmuteChat } from '../../../utility/chat-triggers.js'
 import type Duration from '../../../utility/duration'
 import { durationToMinecraftDuration, formatTime, getDuration } from '../../../utility/shared-utility'
-import { HeatResult, HeatType } from '../../moderation/commands-heat.js'
-import type { SavedPunishment } from '../../moderation/punishments'
 import { formatInvalidUsername } from '../common/commands-format'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { FetchPageResult } from '../utility/discord-pager.js'
@@ -124,7 +123,7 @@ export default {
           await interaction.reply({ embeds: [formatInvalidUsername(username)] })
           return
         }
-        target = await initializeMinecraftUser(context.application, mojangProfile, {
+        target = await context.application.core.initializeMinecraftUser(mojangProfile, {
           guild: interaction.guild ?? undefined
         })
         break
@@ -134,7 +133,9 @@ export default {
         const selectedUser = interaction.options.getUser('user', true)
         const guildMember = interaction.guild?.members.cache.get(selectedUser.id)
         const profile = context.application.discordInstance.profileByUser(selectedUser, guildMember)
-        target = await initializeDiscordUser(context.application, profile, { guild: interaction.guild ?? undefined })
+        target = await context.application.core.initializeDiscordUser(profile, {
+          guild: interaction.guild ?? undefined
+        })
         break
       }
 
@@ -145,7 +146,7 @@ export default {
 
     const guildMember = interaction.guild?.members.cache.get(context.interaction.user.id)
     const responsibleProfile = context.application.discordInstance.profileByUser(context.interaction.user, guildMember)
-    const responsible = await initializeDiscordUser(context.application, responsibleProfile, {
+    const responsible = await context.application.core.initializeDiscordUser(responsibleProfile, {
       guild: interaction.guild ?? undefined
     })
 
@@ -203,8 +204,8 @@ export default {
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'username') {
-      const response = context.application.usersManager.autoComplete
-        .username(option.value)
+      const response = context.application.core
+        .completeUsername(option.value)
         .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
@@ -392,7 +393,7 @@ async function handleAllListInteraction(context: DiscordCommandContext): Promise
     DefaultTimeout,
     context.errorHandler,
     async (page: number): Promise<FetchPageResult> => {
-      const punishments = context.application.moderation.punishments.all()
+      const punishments = context.application.core.allPunishments()
 
       const list = await formatList(context, punishments, page)
 
@@ -449,7 +450,9 @@ async function formatList(
   for (const punishment of chunk) {
     let user: User | undefined
     if (context !== undefined) {
-      user = await initializeUser(context.application, punishment, { guild: context.interaction.guild ?? undefined })
+      user = await context.application.core.initializeUser(punishment, {
+        guild: context.interaction.guild ?? undefined
+      })
     }
 
     result += formatPunishment(punishment, user) + '\n\n'

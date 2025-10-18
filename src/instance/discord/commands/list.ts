@@ -10,9 +10,9 @@ import { Color, InstanceType, LinkType } from '../../../common/application-event
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import type { MojangApi } from '../../../utility/mojang.js'
-import type { GuildFetch } from '../../users/features/guild-manager'
-import type { Verification } from '../../users/features/verification'
+import type { GuildFetch } from '../../../core/users/guild-manager'
+import type { MojangApi } from '../../../core/users/mojang'
+import type { Verification } from '../../../core/users/verification'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -179,7 +179,7 @@ async function listMembers(
       for (const member of sortedMembers) {
         if (!member.online || member.rank !== currentRank) continue
 
-        const link = await getVerification(app.usersManager.verification, mojangProfiles, member.username)
+        const link = await getVerification(app.core.verification, mojangProfiles, member.username)
         const status = statuses.get(member.username.toLowerCase())
         guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
       }
@@ -187,7 +187,7 @@ async function listMembers(
         for (const member of sortedMembers) {
           if (member.online || member.rank !== currentRank) continue
 
-          const link = await getVerification(app.usersManager.verification, mojangProfiles, member.username)
+          const link = await getVerification(app.core.verification, mojangProfiles, member.username)
           guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}`)
         }
       }
@@ -268,7 +268,7 @@ async function getGuilds(app: Application, errorHandler: UnexpectedErrorHandler)
   const result: GuildsLookup = { fetched: [], failed: [] }
 
   for (const instanceName of app.getInstancesNames(InstanceType.Minecraft)) {
-    const task = app.usersManager.guildManager
+    const task = app.core.guildManager
       .list(instanceName)
       .then((guild) => {
         result.fetched.push(guild)

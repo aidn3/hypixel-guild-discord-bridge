@@ -1,7 +1,6 @@
 import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import Duration from '../../../utility/duration'
 import { usernameNotExists } from '../common/utility'
 
@@ -66,7 +65,7 @@ export default class Vengeance extends ChatCommandHandler {
 
     const mojangProfile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (mojangProfile == undefined) return usernameNotExists(givenUsername)
-    const targetUser = await initializeMinecraftUser(context.app, mojangProfile, {})
+    const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, {})
 
     let messages: string[]
     // 3% to win.

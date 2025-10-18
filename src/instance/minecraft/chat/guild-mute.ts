@@ -1,7 +1,6 @@
 import assert from 'node:assert'
 
 import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -21,13 +20,13 @@ export default {
       formattedResponsible += responsible
 
       const responsibleProfile = await context.application.mojangApi.profileByUsername(responsible)
-      const responsibleUser = await initializeMinecraftUser(context.application, responsibleProfile, {})
+      const responsibleUser = await context.application.core.initializeMinecraftUser(responsibleProfile, {})
 
       const name = context.clientInstance.username()
       const uuid = context.clientInstance.uuid()
       assert.ok(name !== undefined)
       assert.ok(uuid !== undefined)
-      const botUser = await initializeMinecraftUser(context.application, { id: uuid, name: name }, {})
+      const botUser = await context.application.core.initializeMinecraftUser({ id: uuid, name: name }, {})
 
       context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),

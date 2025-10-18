@@ -4,7 +4,7 @@ import { escapeMarkdown, SlashCommandBuilder, SlashCommandSubcommandBuilder } fr
 import type { Link } from '../../../common/application-event.js'
 import { Color, LinkType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
-import type { MojangApi } from '../../../utility/mojang.js'
+import type { MojangApi } from '../../../core/users/mojang'
 import { formatInvalidUsername } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
@@ -87,8 +87,8 @@ export default {
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'username') {
-      const response = context.application.usersManager.autoComplete
-        .username(option.value)
+      const response = context.application.core
+        .completeUsername(option.value)
         .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
@@ -137,9 +137,9 @@ async function handleAlias(
     return
   }
 
-  let originalLink = await context.application.usersManager.verification.findByDiscord(user.id)
+  let originalLink = await context.application.core.verification.findByDiscord(user.id)
   if (originalLink.type !== LinkType.Confirmed) {
-    originalLink = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
+    originalLink = await context.application.core.verification.findByIngame(mojangProfile.id)
   }
 
   if (originalLink.type === LinkType.Confirmed) {
@@ -164,7 +164,7 @@ async function handleAlias(
     return
   }
 
-  context.application.usersManager.verification.addInferenceLink(user.id, mojangProfile.id)
+  context.application.core.verification.addInferenceLink(user.id, mojangProfile.id)
   await interaction.editReply({
     embeds: [
       {
@@ -195,7 +195,7 @@ async function handleUnlinkMinecraft(context: Readonly<DiscordCommandContext>) {
     return
   }
 
-  const count = context.application.usersManager.verification.invalidate({ uuid: mojangProfile.id })
+  const count = context.application.core.verification.invalidate({ uuid: mojangProfile.id })
   await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
 }
 
@@ -204,7 +204,7 @@ async function handleUnlinkDiscord(context: Readonly<DiscordCommandContext>) {
   await interaction.deferReply()
 
   const user = interaction.options.getUser('user', true)
-  const count = context.application.usersManager.verification.invalidate({ discordId: user.id })
+  const count = context.application.core.verification.invalidate({ discordId: user.id })
   await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
 }
 
@@ -220,7 +220,7 @@ async function handleQueryMinecraft(context: Readonly<DiscordCommandContext>) {
     return
   }
 
-  const link = await context.application.usersManager.verification.findByIngame(mojangProfile.id)
+  const link = await context.application.core.verification.findByIngame(mojangProfile.id)
   await interaction.editReply({
     embeds: [await formatLink(context.application.mojangApi, link, `\`${mojangProfile.name}\``)]
   })
@@ -231,7 +231,7 @@ async function handleQueryDiscord(context: Readonly<DiscordCommandContext>) {
   await interaction.deferReply()
 
   const user = interaction.options.getUser('user', true)
-  const link = await context.application.usersManager.verification.findByDiscord(user.id)
+  const link = await context.application.core.verification.findByDiscord(user.id)
   await interaction.editReply({ embeds: [await formatLink(context.application.mojangApi, link, `<@${user.id}>`)] })
 }
 

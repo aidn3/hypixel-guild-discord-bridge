@@ -9,7 +9,7 @@ import {
 
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
-import Autocomplete from '../../users/features/autocomplete.js'
+import Autocomplete from '../../../core/users/autocomplete'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const IncludeCommand = 'include'
@@ -97,7 +97,7 @@ export default {
     if (subCommand === Remove) {
       const option = context.interaction.options.getFocused(true)
       if (option.name !== 'word') return
-      const config = context.application.moderation.getConfig()
+      const config = context.application.core.getModerationConfig()
       let list: string[] = []
       if (groupCommand === IncludeCommand) {
         list = config.data.profanityBlacklist
@@ -144,7 +144,7 @@ async function handleList(
   await context.interaction.deferReply()
 
   await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, (page) => {
-    const config = context.application.moderation.getConfig()
+    const config = context.application.core.getModerationConfig()
     let list: string[] | undefined
     if (group === IncludeCommand) {
       list = config.data.profanityBlacklist
@@ -173,7 +173,7 @@ async function handleAdd(
   context: DiscordCommandContext,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
-  const config = context.application.moderation.getConfig()
+  const config = context.application.core.getModerationConfig()
   let list: string[] | undefined = undefined
   if (group === IncludeCommand) {
     list = config.data.profanityBlacklist
@@ -207,7 +207,7 @@ async function handleAdd(
 
   if (changed) {
     config.markDirty()
-    context.application.moderation.reloadProfanity()
+    context.application.core.reloadProfanity()
   }
   await context.interaction.reply({ embeds: [result] })
 }
@@ -216,7 +216,7 @@ async function handleRemove(
   context: DiscordCommandContext,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
-  const config = context.application.moderation.getConfig()
+  const config = context.application.core.getModerationConfig()
   let list: string[] | undefined = undefined
   if (group === IncludeCommand) {
     list = config.data.profanityBlacklist
@@ -244,7 +244,7 @@ async function handleRemove(
     list.splice(index, 1)
 
     config.markDirty()
-    context.application.moderation.reloadProfanity()
+    context.application.core.reloadProfanity()
 
     result.description = `Word \`${escapeMarkdown(word)}\` has been removed from the list.`
   }

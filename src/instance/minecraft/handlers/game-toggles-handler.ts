@@ -9,13 +9,13 @@ import type Application from '../../../application.js'
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { ChannelType, Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import { ConfigManager } from '../../../common/config-manager.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class GameTogglesHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class GameTogglesHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private readonly toggleDirectory: string
 
   /*

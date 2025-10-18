@@ -1,5 +1,4 @@
 import { ChannelType } from '../../../common/application-event.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -14,7 +13,7 @@ export default {
       const playerMessage = match[3].trim()
 
       const uuid = await context.application.mojangApi.profileByUsername(username).then((profile) => profile.id)
-      const user = await initializeMinecraftUser(context.application, { name: username, id: uuid }, {})
+      const user = await context.application.core.initializeMinecraftUser({ name: username, id: uuid }, {})
 
       if (context.application.minecraftManager.isMinecraftBot(username)) return
 

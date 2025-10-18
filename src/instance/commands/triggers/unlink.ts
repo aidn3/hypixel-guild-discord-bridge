@@ -31,10 +31,10 @@ export default class Unlink extends ChatCommandHandler {
     }
 
     if (this.confirmationId.get<string>(givenId) === uuid) {
-      const count = context.app.usersManager.verification.invalidate({ uuid: uuid })
+      const count = context.app.core.verification.invalidate({ uuid: uuid })
       return count > 0 ? `${context.username}, Successfully unlinked!` : `${context.username}, Nothing to Unlink!`
     } else {
-      const link = await context.app.usersManager.verification.findByIngame(uuid)
+      const link = await context.app.core.verification.findByIngame(uuid)
       if (link.type === LinkType.None) {
         return `${context.username}, Nothing to Unlink!`
       }

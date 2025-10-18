@@ -1,5 +1,4 @@
 import { ChannelType } from '../../../common/application-event.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 import { getUuidFromGuildChat } from '../common/common'
 
@@ -16,15 +15,15 @@ export default {
       const playerMessage = match[4].trim()
 
       const uuid = getUuidFromGuildChat(context.jsonMessage)
-      const user = await initializeMinecraftUser(context.application, { name: username, id: uuid }, {})
+      const user = await context.application.core.initializeMinecraftUser({ name: username, id: uuid }, {})
 
-      context.application.usersManager.mojangDatabase.add([{ name: username, id: uuid }])
+      context.application.mojangApi.cache([{ name: username, id: uuid }])
       if (context.application.minecraftManager.isMinecraftBot(username)) {
         context.clientInstance.notifyChatEvent(ChannelType.Officer, playerMessage)
         return
       }
 
-      const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
+      const { filteredMessage, changed } = context.application.core.filterProfanity(playerMessage)
       if (changed) {
         context.application.emit('profanityWarning', {
           ...context.eventHelper.fillBaseEvent(),

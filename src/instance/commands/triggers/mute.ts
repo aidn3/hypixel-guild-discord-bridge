@@ -1,7 +1,6 @@
 import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 
@@ -48,7 +47,7 @@ export default class Mute extends ChatCommandHandler {
 
     const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
     const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
-    const user = await initializeMinecraftUser(context.app, userProfile, {})
+    const user = await context.app.core.initializeMinecraftUser(userProfile, {})
     user.mute(
       context.eventHelper.fillBaseEvent(),
       Mute.TimeLength,
@@ -66,7 +65,7 @@ export default class Mute extends ChatCommandHandler {
 
     const usernames: Promise<string[]>[] = []
     for (const instance of instances) {
-      const chunk = context.app.usersManager.guildManager
+      const chunk = context.app.core.guildManager
         .list(instance.instanceName)
         .then((guild) => guild.members)
         .then((members) => members.filter((member) => member.online).map((member) => member.username))

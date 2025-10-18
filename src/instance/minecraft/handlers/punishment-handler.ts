@@ -8,15 +8,14 @@ import {
   GuildPlayerEventType,
   MinecraftSendChatPriority
 } from '../../../common/application-event.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-// eslint-disable-next-line import/no-restricted-paths
-import { HeatResult, HeatType } from '../../moderation/commands-heat'
+import { HeatResult, HeatType } from '../../../core/moderation/commands-heat'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class PunishmentHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class PunishmentHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,

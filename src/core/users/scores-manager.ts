@@ -3,18 +3,18 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
-import type Application from '../../../application.js'
-import { ChannelType, InstanceType } from '../../../common/application-event.js'
-import { ConfigManager } from '../../../common/config-manager.js'
-import { Status } from '../../../common/connectable-instance.js'
-import EventHandler from '../../../common/event-handler.js'
-import type EventHelper from '../../../common/event-helper.js'
-import type { SqliteManager } from '../../../common/sqlite-manager.js'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import Duration from '../../../utility/duration'
-import type UsersManager from '../users-manager.js'
+import type Application from '../../application'
+import { ChannelType, InstanceType } from '../../common/application-event'
+import { ConfigManager } from '../../common/config-manager'
+import { Status } from '../../common/connectable-instance'
+import type EventHelper from '../../common/event-helper'
+import type { SqliteManager } from '../../common/sqlite-manager'
+import SubInstance from '../../common/sub-instance'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
+import Duration from '../../utility/duration'
+import type { Core } from '../core'
 
-export default class ScoresManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
+export default class ScoresManager extends SubInstance<Core, InstanceType.Core, void> {
   private static readonly DeleteMemberOlderThan = 365
   private static readonly DeleteMessagesOlderThan = 365
   private static readonly LeniencyTimeSeconds = 5 * 60
@@ -36,8 +36,8 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
 
   constructor(
     application: Application,
-    clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Utility>,
+    clientInstance: Core,
+    eventHelper: EventHelper<InstanceType.Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     sqliteManager: SqliteManager
@@ -225,7 +225,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
       if (botUuid !== undefined) this.addBotUuid(botUuid)
 
       if (instance.currentStatus() === Status.Connected) {
-        const onlineTask = this.application.usersManager.guildManager
+        const onlineTask = this.application.core.guildManager
           .list(instance.instanceName)
           .then((guild) => guild.members.filter((member) => member.online).map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
@@ -243,7 +243,7 @@ export default class ScoresManager extends EventHandler<UsersManager, InstanceTy
           })
           .catch(this.errorHandler.promiseCatch('fetching and adding online members'))
 
-        const allTask = this.application.usersManager.guildManager
+        const allTask = this.application.core.guildManager
           .list(instance.instanceName)
           .then((guild) => guild.members.map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))

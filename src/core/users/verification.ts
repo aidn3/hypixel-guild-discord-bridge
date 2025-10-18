@@ -1,27 +1,11 @@
-import type { Logger } from 'log4js'
+import type { Link, LinkInfo } from '../../common/application-event'
+import { LinkType } from '../../common/application-event'
+import type { SqliteManager } from '../../common/sqlite-manager'
 
-import type Application from '../../../application.js'
-import type { InstanceType, Link, LinkInfo } from '../../../common/application-event.js'
-import { LinkType } from '../../../common/application-event.js'
-import EventHandler from '../../../common/event-handler.js'
-import type EventHelper from '../../../common/event-helper.js'
-import type { SqliteManager } from '../../../common/sqlite-manager.js'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import type UsersManager from '../users-manager.js'
-
-export class Verification extends EventHandler<UsersManager, InstanceType.Utility, void> {
+export class Verification {
   private readonly database: VerificationDatabase
 
-  constructor(
-    application: Application,
-    clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Utility>,
-    logger: Logger,
-    errorHandler: UnexpectedErrorHandler,
-    sqliteManager: SqliteManager
-  ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
-
+  constructor(sqliteManager: SqliteManager) {
     this.database = new VerificationDatabase(sqliteManager)
   }
 

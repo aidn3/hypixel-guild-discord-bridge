@@ -48,7 +48,7 @@ export default {
         return
       }
 
-      context.application.usersManager.verification.addConfirmedLink(interaction.user.id, mojangProfile.id)
+      context.application.core.verification.addConfirmedLink(interaction.user.id, mojangProfile.id)
       await interaction.editReply('Successfully linked!')
     } catch (error: unknown) {
       if (
@@ -75,8 +75,8 @@ export default {
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'username') {
-      const response = context.application.usersManager.autoComplete
-        .username(option.value)
+      const response = context.application.core
+        .completeUsername(option.value)
         .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)

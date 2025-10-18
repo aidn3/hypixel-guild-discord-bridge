@@ -3,7 +3,6 @@ import type { InstanceIdentifier } from '../src/common/application-event.js'
 import { ChannelType, InstanceType } from '../src/common/application-event.js'
 import EventHelper from '../src/common/event-helper.js'
 import { InternalInstancePrefix } from '../src/common/instance.js'
-import { initializeDiscordUser } from '../src/common/user'
 
 export class EventsUtility implements InstanceIdentifier {
   public readonly instanceName: string = InternalInstancePrefix + 'EventsUtility'
@@ -21,7 +20,10 @@ export class EventsUtility implements InstanceIdentifier {
       channelId: '0',
       channelType: ChannelType.Public,
 
-      user: await initializeDiscordUser(this.application, { id: '123', displayName: username, avatar: undefined }, {}),
+      user: await this.application.core.initializeDiscordUser(
+        { id: '123', displayName: username, avatar: undefined },
+        {}
+      ),
       replyUsername: undefined,
       message: message
     })

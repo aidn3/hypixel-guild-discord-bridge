@@ -17,7 +17,7 @@ export default class Points30days extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const allPoints = context.app.usersManager.scoresManager.getPoints30Days()
+    const allPoints = context.app.core.scoresManager.getPoints30Days()
     const user = allPoints.find((entry) => entry.uuid === uuid)
     if (user === undefined) return `${givenUsername} does not have any activity`
 

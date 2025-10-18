@@ -1,15 +1,15 @@
 import type { Logger } from 'log4js'
 
-import type Application from '../../../application.js'
-import { InstanceType } from '../../../common/application-event.js'
-import { Status } from '../../../common/connectable-instance.js'
-import EventHandler from '../../../common/event-handler.js'
-import type EventHelper from '../../../common/event-helper.js'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import Duration from '../../../utility/duration'
-import type UsersManager from '../users-manager.js'
+import type Application from '../../application'
+import { InstanceType } from '../../common/application-event'
+import { Status } from '../../common/connectable-instance'
+import type EventHelper from '../../common/event-helper'
+import SubInstance from '../../common/sub-instance'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
+import Duration from '../../utility/duration'
+import type { Core } from '../core'
 
-export default class Autocomplete extends EventHandler<UsersManager, InstanceType.Utility, void> {
+export default class Autocomplete extends SubInstance<Core, InstanceType.Core, void> {
   private readonly usernames: string[] = []
   private readonly loweredCaseUsernames = new Set<string>()
 
@@ -17,8 +17,8 @@ export default class Autocomplete extends EventHandler<UsersManager, InstanceTyp
 
   constructor(
     application: Application,
-    clientInstance: UsersManager,
-    eventHelper: EventHelper<InstanceType.Utility>,
+    clientInstance: Core,
+    eventHelper: EventHelper<InstanceType.Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
@@ -112,7 +112,7 @@ export default class Autocomplete extends EventHandler<UsersManager, InstanceTyp
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       if (instance.currentStatus() !== Status.Connected) continue
 
-      const task = this.application.usersManager.guildManager
+      const task = this.application.core.guildManager
         .list(instance.instanceName, Duration.minutes(1))
         .then((guild) => {
           for (const member of guild.members) {

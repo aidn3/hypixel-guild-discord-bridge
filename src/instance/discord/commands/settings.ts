@@ -109,7 +109,7 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 }
 
 function fetchModerationOptions(application: Application): CategoryOption {
-  const moderation = application.moderation.getConfig()
+  const moderation = application.core.getModerationConfig()
 
   return {
     type: OptionType.Category,
@@ -506,7 +506,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
 }
 
 function fetchMetricsOptions(application: Application): CategoryOption {
-  const scoresManager = application.usersManager.scoresManager.config
+  const scoresManager = application.core.scoresManager.config
 
   return {
     type: OptionType.Category,

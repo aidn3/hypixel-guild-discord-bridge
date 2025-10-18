@@ -8,14 +8,14 @@ import type { Logger } from 'log4js'
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
 import { ConfigManager } from '../../../common/config-manager.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { formatTime } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance.js'
 
-export default class Leaderboard extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+export default class Leaderboard extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly EntriesPerPage = 10
 
   private static readonly CheckUpdateEvery = 60 * 1000
@@ -154,7 +154,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    let leaderboard = this.application.usersManager.scoresManager.getMessages30Days()
+    let leaderboard = this.application.core.scoresManager.getMessages30Days()
     let result = ''
 
     if (option.guildId !== undefined) {
@@ -190,7 +190,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    let leaderboard = this.application.usersManager.scoresManager.getOnline30Days()
+    let leaderboard = this.application.core.scoresManager.getOnline30Days()
     let result = ''
 
     if (option.guildId !== undefined) {
@@ -226,7 +226,7 @@ export default class Leaderboard extends EventHandler<DiscordInstance, InstanceT
     embed: APIEmbed
     totalPages: number
   }> {
-    let leaderboard = this.application.usersManager.scoresManager.getPoints30Days()
+    let leaderboard = this.application.core.scoresManager.getPoints30Days()
     let result = ''
 
     if (option.guildId !== undefined) {

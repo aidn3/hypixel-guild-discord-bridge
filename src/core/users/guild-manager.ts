@@ -2,14 +2,14 @@ import assert from 'node:assert'
 
 import PromiseQueue from 'promise-queue'
 
-import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { MinecraftSendChatPriority } from '../../../common/application-event.js'
-import EventHandler from '../../../common/event-handler.js'
-import Duration from '../../../utility/duration'
-import { Timeout } from '../../../utility/timeout.js'
-import type UsersManager from '../users-manager.js'
+import type { InstanceType, MinecraftRawChatEvent } from '../../common/application-event'
+import { MinecraftSendChatPriority } from '../../common/application-event'
+import SubInstance from '../../common/sub-instance'
+import Duration from '../../utility/duration'
+import { Timeout } from '../../utility/timeout'
+import type { Core } from '../core'
 
-export class GuildManager extends EventHandler<UsersManager, InstanceType.Utility, void> {
+export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
   public static readonly DefaultDataExpire = Duration.seconds(30)
   private readonly guildInfo = new Map<string, GuildInformation>()
 

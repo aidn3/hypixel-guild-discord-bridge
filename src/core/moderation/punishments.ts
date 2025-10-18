@@ -1,6 +1,6 @@
 import type { Logger } from 'log4js'
 
-import type Application from '../../application.js'
+import type Application from '../../application'
 import type { BasePunishment } from '../../common/application-event'
 import { ConfigManager } from '../../common/config-manager'
 import type { User, UserIdentifier } from '../../common/user'
@@ -18,10 +18,7 @@ export default class Punishments {
 
   private readonly config: ConfigManager<PunishmentsConfig>
 
-  constructor(
-    private readonly application: Application,
-    logger: Logger
-  ) {
+  constructor(application: Application, logger: Logger) {
     this.config = new ConfigManager<PunishmentsConfig>(
       application,
       logger,

@@ -12,10 +12,9 @@ import { ChannelType, Color, InstanceType, Permission } from '../../common/appli
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
 import { CommandScope, OptionToAddMinecraftInstances } from '../../common/commands.js'
 import type { ConfigManager } from '../../common/config-manager.js'
-import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
+import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import { initializeDiscordUser } from '../../common/user'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
@@ -45,7 +44,7 @@ import type { DiscordConfig } from './common/discord-config.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
-export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
   private readonly config: ConfigManager<DiscordConfig>
 
@@ -143,7 +142,9 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       interaction.user,
       interaction.inCachedGuild() ? interaction.member : undefined
     )
-    const user = await initializeDiscordUser(this.application, identifier, { guild: interaction.guild ?? undefined })
+    const user = await this.application.core.initializeDiscordUser(identifier, {
+      guild: interaction.guild ?? undefined
+    })
     const permission = user.permission()
     if (command.autoComplete) {
       const context: DiscordAutoCompleteContext = {
@@ -181,7 +182,9 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         interaction.user,
         interaction.inCachedGuild() ? interaction.member : undefined
       )
-      const user = await initializeDiscordUser(this.application, identifier, { guild: interaction.guild ?? undefined })
+      const user = await this.application.core.initializeDiscordUser(identifier, {
+        guild: interaction.guild ?? undefined
+      })
       const permission = user.permission()
 
       if (command == undefined) {

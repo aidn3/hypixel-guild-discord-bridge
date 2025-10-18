@@ -3,20 +3,23 @@ import assert from 'node:assert'
 import DefaultAxios, { AxiosError, HttpStatusCode } from 'axios'
 import PromiseQueue from 'promise-queue'
 
-import type Application from '../application.js'
-import type { MojangProfile } from '../common/user'
-
-import RateLimiter from './rate-limiter.js'
+import type { SqliteManager } from '../../common/sqlite-manager'
+import type { MojangProfile } from '../../common/user'
+import RateLimiter from '../../utility/rate-limiter'
 
 export class MojangApi {
   private static readonly RetryCount = 3
   private readonly queue = new PromiseQueue(1)
   private readonly rateLimit = new RateLimiter(1, 800)
 
-  constructor(private readonly application: Application) {}
+  private readonly mojangDatabase: MojangDatabase
+
+  constructor(private readonly sqliteManager: SqliteManager) {
+    this.mojangDatabase = new MojangDatabase(this.sqliteManager)
+  }
 
   async profileByUsername(username: string): Promise<MojangProfile> {
-    const cachedResult = this.application.usersManager.mojangDatabase.profileByUsername(username)
+    const cachedResult = this.mojangDatabase.profileByUsername(username)
     if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
@@ -39,14 +42,14 @@ export class MojangApi {
       throw lastError ?? new Error('Failed fetching new data')
     })
 
-    this.application.usersManager.mojangDatabase.add([result])
+    this.cache([result])
     return result
   }
 
   async profileByUuid(uuid: string): Promise<MojangProfile> {
     assert.ok(uuid.length === 32 || uuid.length === 36, `'uuid' must be valid UUID. given ${uuid}`)
 
-    const cachedResult = this.application.usersManager.mojangDatabase.profileByUuid(uuid)
+    const cachedResult = this.mojangDatabase.profileByUuid(uuid)
     if (cachedResult) return cachedResult
 
     const result = await this.queue.add(async () => {
@@ -70,7 +73,7 @@ export class MojangApi {
       throw lastError ?? new Error('Failed fetching new data')
     })
 
-    this.application.usersManager.mojangDatabase.add([result])
+    this.cache([result])
     return result
   }
 
@@ -102,7 +105,7 @@ export class MojangApi {
     const chunkSize = 10 // Mojang only allow up to 10 usernames per lookup
     let chunk: string[] = []
     for (const username of usernames) {
-      const cachedProfile = this.application.usersManager.mojangDatabase.profileByUsername(username)
+      const cachedProfile = this.mojangDatabase.profileByUsername(username)
       if (cachedProfile !== undefined) {
         result.set(username, cachedProfile.id)
         continue
@@ -119,6 +122,10 @@ export class MojangApi {
     await Promise.all(requests)
 
     return result
+  }
+
+  public cache(profiles: MojangProfile[]): void {
+    this.mojangDatabase.add(profiles)
   }
 
   private async lookupUsernames(usernames: string[]): Promise<MojangProfile[]> {
@@ -142,7 +149,59 @@ export class MojangApi {
       throw lastError ?? new Error('Failed fetching new data')
     })
 
-    this.application.usersManager.mojangDatabase.add(result)
+    this.cache(result)
     return result
+  }
+}
+
+class MojangDatabase {
+  private static readonly MaxAge = 7 * 24 * 60 * 60 * 1000
+
+  constructor(private readonly sqliteManager: SqliteManager) {
+    sqliteManager.register(
+      'mojang',
+      'CREATE TABLE IF NOT EXISTS "mojang" (' +
+        '  uuid TEXT PRIMARY KEY NOT NULL,' +
+        '  username TEXT UNIQUE NOT NULL,' +
+        '  loweredName TEXT UNIQUE NOT NULL,' + // username all lowercased to use make it easily indexable
+        '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+        ' )'
+    )
+  }
+
+  public add(profiles: MojangProfile[]): void {
+    const database = this.sqliteManager.getDatabase()
+    const insert = database.prepare(
+      'INSERT OR REPLACE INTO "mojang" (uuid, username, loweredName) VALUES (@uuid, @username, @loweredName)'
+    )
+
+    const transaction = database.transaction(() => {
+      for (const profile of profiles) {
+        insert.run({ uuid: profile.id, username: profile.name, loweredName: profile.name.toLowerCase() })
+      }
+    })
+
+    transaction()
+  }
+
+  public profileByUsername(username: string): MojangProfile | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const select = database.prepare(
+      'SELECT uuid as id, username as name FROM "mojang" WHERE loweredName = @loweredName AND createdAt > @createdAt'
+    )
+    return select.get({
+      loweredName: username.toLowerCase(),
+      createdAt: Math.floor((Date.now() - MojangDatabase.MaxAge) / 1000)
+    }) as MojangProfile | undefined
+  }
+
+  public profileByUuid(uuid: string): MojangProfile | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const select = database.prepare(
+      'SELECT uuid as id, username as name FROM "mojang" WHERE uuid = @uuid AND createdAt > @createdAt'
+    )
+    return select.get({ uuid: uuid, createdAt: Math.floor((Date.now() - MojangDatabase.MaxAge) / 1000) }) as
+      | MojangProfile
+      | undefined
   }
 }

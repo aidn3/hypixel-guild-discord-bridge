@@ -4,91 +4,15 @@ import assert from 'node:assert'
 import type { Guild } from 'discord.js'
 
 import type Application from '../application'
-import type { HeatResult, HeatType } from '../instance/moderation/commands-heat'
-import type { SavedPunishment } from '../instance/moderation/punishments'
+import type { ModerationConfig } from '../core/core'
+import type { CommandsHeat, HeatResult, HeatType } from '../core/moderation/commands-heat'
+import type { SavedPunishment } from '../core/moderation/punishments'
+import type Punishments from '../core/moderation/punishments'
 import type Duration from '../utility/duration'
 
 import type { BasePunishment, InformEvent, Link } from './application-event'
 import { InstanceType, LinkType, Permission, PunishmentType } from './application-event'
 import { Status } from './connectable-instance'
-
-/**
- * Initialize a user based on a given profile and load all metadata in advance
- * @param application Application main instance
- * @param profile Profile to base the user on
- * @param context additional information that might help with constructing user metadata
- * @returns a full initialized object that contains user data at the moment of execution
- */
-export async function initializeDiscordUser(
-  application: Application,
-  profile: DiscordProfile,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  context: InitializeOptions
-): Promise<DiscordUser> {
-  const identifier: UserIdentifier = { userId: profile.id, originInstance: InstanceType.Discord }
-
-  let mojangProfile: MojangProfile | undefined
-  const verification = await application.usersManager.verification.findByDiscord(profile.id)
-  if (verification.type === LinkType.Confirmed) {
-    mojangProfile = await application.mojangApi.profileByUuid(verification.link.uuid)
-  }
-
-  const user = new User(application, identifier, mojangProfile, profile, verification)
-  assert.ok(user.isDiscordUser())
-  return user
-}
-
-/**
- * Initialize a user based on a given profile and load all metadata in advance
- * @param application Application main instance
- * @param mojangProfile Profile to base the user on
- * @param context additional information that might help with constructing user metadata
- * @returns a full initialized object that contains user data at the moment of execution
- */
-export async function initializeMinecraftUser(
-  application: Application,
-  mojangProfile: MojangProfile,
-  context: InitializeOptions
-): Promise<MinecraftUser> {
-  const identifier: UserIdentifier = { userId: mojangProfile.id, originInstance: InstanceType.Minecraft }
-
-  let profile: DiscordProfile | undefined
-  const verification = await application.usersManager.verification.findByIngame(mojangProfile.id)
-  if (verification.type === LinkType.Confirmed) {
-    profile = application.discordInstance.profileById(verification.link.discordId, context.guild)
-  }
-
-  const user = new User(application, identifier, mojangProfile, profile, verification)
-  assert.ok(user.isMojangUser())
-  return user
-}
-
-/**
- * Initialize a user based on a given data and load all metadata in advance
- * @param application Application main instance
- * @param identifier most basic data to identify a unique user
- * @param context additional information that might help with constructing user metadata
- * @returns a full initialized object that contains user data at the moment of execution
- */
-export async function initializeUser(
-  application: Application,
-  identifier: UserIdentifier,
-  context: InitializeOptions
-): Promise<User> {
-  switch (identifier.originInstance) {
-    case InstanceType.Minecraft: {
-      const profile = await application.mojangApi.profileByUuid(identifier.userId)
-      return initializeMinecraftUser(application, profile, context)
-    }
-    case InstanceType.Discord: {
-      const profile = application.discordInstance.profileById(identifier.userId, context.guild)
-      if (profile !== undefined) return initializeDiscordUser(application, profile, context)
-    }
-  }
-
-  // default
-  return new User(application, identifier, undefined, undefined, { type: LinkType.None })
-}
 
 export interface InitializeOptions {
   guild?: Guild
@@ -97,6 +21,7 @@ export interface InitializeOptions {
 export class User {
   public constructor(
     protected readonly application: Application,
+    protected readonly context: ManagerContext,
     private readonly userIdentifier: UserIdentifier,
     private readonly userMojang: MojangProfile | undefined,
     private readonly userDiscord: DiscordProfile | undefined,
@@ -196,14 +121,18 @@ export class User {
       ) {
         return true
       }
-      if (this.application.moderation.immuneMinecraft(mojangProfile.name)) {
+      if (
+        this.context.moderation.immuneMojangPlayers.some(
+          (entry) => entry.toLowerCase() === mojangProfile.name.toLowerCase()
+        )
+      ) {
         return true
       }
     }
 
     const discordProfile = this.discordProfile()
     // noinspection RedundantIfStatementJS
-    if (discordProfile !== undefined && this.application.moderation.immuneDiscord(discordProfile.id)) {
+    if (discordProfile !== undefined && this.context.moderation.immuneDiscordUsers.includes(discordProfile.id)) {
       return true
     }
 
@@ -265,12 +194,12 @@ export class User {
   }
 
   public punishments(): PunishmentInstant {
-    const punishments = this.application.moderation.punishments.findByUser(this)
+    const punishments = this.context.punishments.findByUser(this)
     return new PunishmentInstant(this, punishments)
   }
 
   public forgive(executor: InformEvent): SavedPunishment[] {
-    const savedPunishments = this.application.moderation.punishments.remove(this)
+    const savedPunishments = this.context.punishments.remove(this)
 
     this.application.emit('punishmentForgive', { ...executor, user: this })
 
@@ -297,18 +226,18 @@ export class User {
 
     const savedPunishment = { ...punishment, ...this.getUserIdentifier() }
 
-    this.application.moderation.punishments.add(savedPunishment)
+    this.context.punishments.add(savedPunishment)
     this.application.emit('punishmentAdd', { ...executor, user: this, ...punishment })
 
     return savedPunishment
   }
 
   public addModerationAction(type: HeatType): HeatResult {
-    return this.application.moderation.commandsHeat.add(this, type)
+    return this.context.commandsHeat.add(this, type)
   }
 
   public tryAddModerationAction(type: HeatType): HeatResult {
-    return this.application.moderation.commandsHeat.tryAdd(this, type)
+    return this.context.commandsHeat.tryAdd(this, type)
   }
 
   public isMojangUser(): this is MinecraftUser {
@@ -403,4 +332,10 @@ export interface UserIdentifier {
    * It can be Mojang UUID, or Discord user ID, etc.
    */
   readonly userId: string
+}
+
+export interface ManagerContext {
+  commandsHeat: CommandsHeat
+  punishments: Punishments
+  moderation: DeepReadonly<ModerationConfig>
 }

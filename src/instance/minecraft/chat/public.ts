@@ -4,7 +4,6 @@ import {
   MinecraftSendChatPriority,
   PunishmentType
 } from '../../../common/application-event.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import { durationToMinecraftDuration } from '../../../utility/shared-utility'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 import { getUuidFromGuildChat } from '../common/common'
@@ -22,7 +21,7 @@ export default {
       const playerMessage = match[4].trim()
       const uuid = getUuidFromGuildChat(context.jsonMessage)
 
-      const user = await initializeMinecraftUser(context.application, { name: username, id: uuid }, {})
+      const user = await context.application.core.initializeMinecraftUser({ name: username, id: uuid }, {})
 
       const punishments = user.punishments()
       const mutedTill = punishments.punishedTill(PunishmentType.Mute)
@@ -42,7 +41,7 @@ export default {
         return
       }
 
-      const { filteredMessage, changed } = context.application.moderation.filterProfanity(playerMessage)
+      const { filteredMessage, changed } = context.application.core.filterProfanity(playerMessage)
       if (changed) {
         context.application.emit('profanityWarning', {
           ...context.eventHelper.fillBaseEvent(),

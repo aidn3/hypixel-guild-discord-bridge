@@ -19,6 +19,8 @@ import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
+import { Core } from './core/core'
+import type { MojangApi } from './core/users/mojang'
 import type { GeneralConfig } from './general-config.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
@@ -27,12 +29,9 @@ import { PluginsManager } from './instance/features/plugins-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
-import ModerationInstance from './instance/moderation/moderation-instance.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
-import UsersManager from './instance/users/users-manager'
 import type { LanguageConfig } from './language-config.js'
 import { DefaultLanguageConfig } from './language-config.js'
-import { MojangApi } from './utility/mojang.js'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
@@ -40,9 +39,8 @@ export type AllInstances =
   | DiscordInstance
   | PrometheusInstance
   | MetricsInstance
-  | UsersManager
+  | Core
   | MinecraftInstance
-  | ModerationInstance
   | PluginInstance
   | ApplicationIntegrity
   | MinecraftManager
@@ -72,9 +70,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
   public readonly pluginsManager: PluginsManager
-  public readonly moderation: ModerationInstance
   public readonly commandsInstance: CommandsInstance
-  public readonly usersManager: UsersManager
+  public readonly core: Core
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
@@ -107,7 +104,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       mojangCacheTime: 300,
       hypixelCacheTime: 300
     })
-    this.mojangApi = new MojangApi(this)
     this.language = new ConfigManager<LanguageConfig>(
       this,
       this.logger,
@@ -115,8 +111,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       DefaultLanguageConfig
     )
 
-    this.moderation = new ModerationInstance(this)
-    this.usersManager = new UsersManager(this)
+    this.core = new Core(this)
+    this.mojangApi = this.core.mojangApi
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
 
@@ -236,12 +232,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private getAllInstances(): AllInstances[] {
     const instances = [
       ...this.pluginsManager.getAllInstances(),
-      this.usersManager,
+      this.core,
       this.applicationIntegrity,
 
       this.discordInstance, // discord second to send any notification about connecting
 
-      this.moderation,
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,

@@ -43,8 +43,8 @@ export default {
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'name') {
-      const response = context.application.usersManager.autoComplete
-        .username(option.value)
+      const response = context.application.core
+        .completeUsername(option.value)
         .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)

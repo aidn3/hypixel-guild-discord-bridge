@@ -1,18 +1,12 @@
 import type { Logger } from 'log4js'
 
-import type Application from '../../application.js'
-import type { InstanceType } from '../../common/application-event.js'
-import { ConfigManager } from '../../common/config-manager.js'
-import EventHandler from '../../common/event-handler.js'
-import type EventHelper from '../../common/event-helper.js'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type Application from '../../application'
+import { ConfigManager } from '../../common/config-manager'
 import type { User, UserIdentifier } from '../../common/user'
 import Duration from '../../utility/duration'
+import type { ModerationConfig } from '../core'
 
-import type ModerationInstance from './moderation-instance.js'
-import type { ModerationConfig } from './moderation-instance.js'
-
-export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.Moderation, void> {
+export class CommandsHeat {
   private static readonly ActionExpiresAfter = Duration.days(1)
   private static readonly WarnPercentage = 0.8
   private static readonly WarnEvery = Duration.minutes(30)
@@ -20,15 +14,7 @@ export class CommandsHeat extends EventHandler<ModerationInstance, InstanceType.
   private readonly heatsConfig
   private readonly moderationConfig
 
-  constructor(
-    application: Application,
-    clientInstance: ModerationInstance,
-    config: ConfigManager<ModerationConfig>,
-    eventHelper: EventHelper<InstanceType.Moderation>,
-    logger: Logger,
-    errorHandler: UnexpectedErrorHandler
-  ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+  constructor(application: Application, config: ConfigManager<ModerationConfig>, logger: Logger) {
     this.moderationConfig = config
     this.heatsConfig = new ConfigManager<HeatConfig>(
       application,

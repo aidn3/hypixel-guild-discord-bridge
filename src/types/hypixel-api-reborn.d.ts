@@ -43,6 +43,10 @@ declare module 'hypixel-api-reborn' {
       tuning: { slot_0?: Record<string, number> }
     }
     collection?: Record<string, number>
+    bestiary?: {
+      kills: Record<string, number> & { last_killed_mob: string }
+      milestone: { last_claimed_milestone?: number }
+    }
     inventory?: { bag_contents?: { talisman_bag: SkyblockV2Inventory } }
     profile: { bank_account?: number }
     player_data: { experience?: Record<string, number> }

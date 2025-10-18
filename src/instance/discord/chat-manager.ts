@@ -8,18 +8,17 @@ import type Application from '../../application.js'
 import type { InstanceType } from '../../common/application-event.js'
 import { ChannelType, PunishmentType } from '../../common/application-event.js'
 import type { ConfigManager } from '../../common/config-manager.js'
-import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
+import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { DiscordUser } from '../../common/user'
-import { initializeDiscordUser } from '../../common/user'
 
 import type { DiscordConfig } from './common/discord-config.js'
 import { FilteredReaction, MutedReaction, UnverifiedReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+export default class ChatManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly WarnMuteEvery = 10 * 60 * 1000
   private static readonly WarnVerificationEvery = 10 * 60 * 1000
   private readonly lastVerificationWarn = new Map<string, number>()
@@ -66,7 +65,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     }
 
     const userProfile = this.clientInstance.profileByUser(event.author, event.member ?? undefined)
-    const user = await initializeDiscordUser(this.application, userProfile, {})
+    const user = await this.application.core.initializeDiscordUser(userProfile, {})
 
     if (!user.verified() && this.config.data.enforceVerification) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
@@ -106,7 +105,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
       messageId: event.id
     })
 
-    const { filteredMessage, changed } = this.application.moderation.filterProfanity(content)
+    const { filteredMessage, changed } = this.application.core.filterProfanity(content)
     if (changed) {
       this.application.emit('profanityWarning', {
         ...fillBaseEvent,
@@ -183,7 +182,7 @@ export default class ChatManager extends EventHandler<DiscordInstance, InstanceT
     if (replyMessage.webhookId != undefined) return replyMessage.author.username
 
     const resolvedProfile = this.clientInstance.profileByUser(replyMessage.author, replyMessage.member ?? undefined)
-    const replyUser = await initializeDiscordUser(this.application, resolvedProfile, {})
+    const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile, {})
 
     return replyUser.displayName()
   }

@@ -1,5 +1,4 @@
 import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
-import { initializeMinecraftUser } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -13,11 +12,10 @@ export default {
       const responsibleUsername = match[2]
 
       const uuid = await context.application.mojangApi.profileByUsername(username).then((profile) => profile.id)
-      const user = await initializeMinecraftUser(context.application, { id: uuid, name: username }, {})
+      const user = await context.application.core.initializeMinecraftUser({ id: uuid, name: username }, {})
 
       const responsible = await context.application.mojangApi.profileByUsername(responsibleUsername)
-      const responsibleProfile = await initializeMinecraftUser(
-        context.application,
+      const responsibleProfile = await context.application.core.initializeMinecraftUser(
         { name: responsibleUsername, id: responsible.id },
         {}
       )
