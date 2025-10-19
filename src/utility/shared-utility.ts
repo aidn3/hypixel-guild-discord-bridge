@@ -13,12 +13,13 @@ export function sufficeToTime(suffice: string): number {
   if (suffice === 'm') return 60
   if (suffice === 'h') return 60 * 60
   if (suffice === 'd') return 60 * 60 * 24
+  if (suffice === 'y') return 60 * 60 * 24 * 30 * 12
 
   throw new Error(`Unexpected suffice: ${suffice}. Need a new update to handle the new one`)
 }
 
 export function getDuration(short: string): Duration {
-  const regex = /(\d*)([dhms]*)/g
+  const regex = /(\d*)([ydhms]*)$/g
   const match = regex.exec(short)
 
   if (match != undefined) {
@@ -46,9 +47,18 @@ export function antiSpamString(): string {
 export function formatTime(milliseconds: number, maxPrecision = 2): string {
   assert.ok(maxPrecision >= 1, 'Minimum precision is 1')
 
+  const Year = Duration.years(1).toSeconds()
+
   let result = ''
   let variablesSet = 0
   let remaining = Math.floor(milliseconds / 1000) // milli to seconds
+
+  const years = Math.floor(remaining / Year)
+  if (years > 0) {
+    result += `${years}y`
+    if (++variablesSet >= maxPrecision) return result
+  }
+  remaining = remaining % Year
 
   const days = Math.floor(remaining / 86_400)
   if (days > 0) {
