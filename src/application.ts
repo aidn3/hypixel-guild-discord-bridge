@@ -175,6 +175,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async start(): Promise<void> {
+    await this.core.awaitReady()
     await this.pluginsManager.loadPlugins(this.rootDirectory)
 
     for (const instance of this.getAllInstances()) {

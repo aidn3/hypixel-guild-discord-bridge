@@ -6,8 +6,8 @@ import type { Guild } from 'discord.js'
 import type Application from '../application'
 import type { ModerationConfig } from '../core/core'
 import type { CommandsHeat, HeatResult, HeatType } from '../core/moderation/commands-heat'
-import type { SavedPunishment } from '../core/moderation/punishments'
 import type Punishments from '../core/moderation/punishments'
+import type { SavedPunishment } from '../core/moderation/punishments'
 import type Duration from '../utility/duration'
 
 import type { BasePunishment, InformEvent, Link } from './application-event'
@@ -27,8 +27,6 @@ export class User {
     private readonly userDiscord: DiscordProfile | undefined,
     private readonly verification: Link
   ) {
-    assert.ok(userMojang !== undefined || userDiscord !== undefined)
-
     if (
       (verification.type === LinkType.Confirmed || verification.type === LinkType.Inference) &&
       userMojang !== undefined &&
@@ -46,7 +44,7 @@ export class User {
     const discordProfile = this.discordProfile()
     if (discordProfile !== undefined) return discordProfile.displayName
 
-    throw new Error('No way to display name for this user.')
+    return this.getUserIdentifier().userId.slice(0, 16)
   }
 
   public avatar(): string | undefined {
@@ -162,35 +160,45 @@ export class User {
   }
 
   public equalsIdentifier(identifier: UserIdentifier): boolean {
-    if (
-      this.userIdentifier.originInstance === identifier.originInstance &&
-      this.userIdentifier.userId !== identifier.userId
+    return this.allIdentifiers().some(
+      (entry) => entry.originInstance === identifier.originInstance && entry.userId === identifier.userId
     )
-      return true
-
-    switch (identifier.originInstance) {
-      case InstanceType.Discord: {
-        const discordProfile = this.discordProfile()
-        if (discordProfile !== undefined && identifier.userId === discordProfile.id) return true
-        if (this.verification.type === LinkType.Confirmed && this.verification.link.discordId === identifier.userId)
-          return true
-        break
-      }
-
-      case InstanceType.Minecraft: {
-        const mojangProfile = this.mojangProfile()
-        if (mojangProfile !== undefined && mojangProfile.id !== identifier.userId) return true
-        if (this.verification.type === LinkType.Confirmed && this.verification.link.uuid === identifier.userId)
-          return true
-        break
-      }
-    }
-
-    return false
   }
 
   public getUserIdentifier(): UserIdentifier {
     return this.userIdentifier
+  }
+
+  public allIdentifiers(): UserIdentifier[] {
+    const result: UserIdentifier[] = []
+
+    /**
+     * Add an identifier if not already exists in `result`
+     * @param identifier the identifier to add
+     */
+    function add(identifier: UserIdentifier) {
+      for (const entry of result) {
+        if (identifier.originInstance === entry.originInstance && identifier.userId === entry.userId) {
+          return
+        }
+      }
+
+      result.push(identifier)
+    }
+
+    add(this.userIdentifier)
+    const mojangProfile = this.mojangProfile()
+    if (mojangProfile !== undefined) add({ originInstance: InstanceType.Minecraft, userId: mojangProfile.id })
+
+    const discordProfile = this.discordProfile()
+    if (discordProfile !== undefined) add({ originInstance: InstanceType.Discord, userId: discordProfile.id })
+
+    if (this.verification.type === LinkType.Confirmed) {
+      add({ originInstance: InstanceType.Minecraft, userId: this.verification.link.uuid })
+      add({ originInstance: InstanceType.Discord, userId: this.verification.link.discordId })
+    }
+
+    return result
   }
 
   public punishments(): PunishmentInstant {

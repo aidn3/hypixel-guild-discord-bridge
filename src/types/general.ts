@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
 
 declare type Awaitable<V> = PromiseLike<V> | V
+
+declare type Writeable<T> = { -readonly [P in keyof T]: T[P] }
 
 /* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-empty-object-type */
 // https://stackoverflow.com/a/49670389

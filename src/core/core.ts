@@ -68,12 +68,12 @@ export class Core extends Instance<InstanceType.Core> {
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
     registerMigration(this.sqliteManager, sqliteName)
 
+    this.mojangApi = new MojangApi(this.sqliteManager)
+
     this.profanity = new Profanity(this.moderationConfig)
-    this.punishments = new Punishments(application, this.logger)
+    this.punishments = new Punishments(this.sqliteManager, application, this.logger)
     this.commandsHeat = new CommandsHeat(application, this.moderationConfig, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
-
-    this.mojangApi = new MojangApi(this.sqliteManager)
 
     this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)
     this.autoComplete = new Autocomplete(application, this, this.eventHelper, this.logger, this.errorHandler)
@@ -103,6 +103,10 @@ export class Core extends Instance<InstanceType.Core> {
 
   public allPunishments(): SavedPunishment[] {
     return this.punishments.all()
+  }
+
+  public async awaitReady(): Promise<void> {
+    await this.punishments.ready
   }
 
   /**
