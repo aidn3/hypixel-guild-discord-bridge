@@ -19,7 +19,7 @@ export function sufficeToTime(suffice: string): number {
 }
 
 export function getDuration(short: string): Duration {
-  const regex = /(\d*)([ydhms]*)$/g
+  const regex = /^(\d*)([ydhms]*)$/g
   const match = regex.exec(short)
 
   if (match != undefined) {
