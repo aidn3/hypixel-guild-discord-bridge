@@ -262,7 +262,7 @@ async function handleMute(
     return `## Punishment\n${formatPunishment(punishment, undefined)}`
   }
 
-  await takeAction(context, responsible, target, header, HeatType.Kick, command, MuteChat, post)
+  await takeAction(context, responsible, target, header, HeatType.Mute, command, MuteChat, post)
 }
 
 async function handleKick(
