@@ -72,7 +72,7 @@ export class Core extends Instance<InstanceType.Core> {
 
     this.profanity = new Profanity(this.moderationConfig)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
-    this.commandsHeat = new CommandsHeat(application, this.moderationConfig, this.logger)
+    this.commandsHeat = new CommandsHeat(this.sqliteManager, application, this.moderationConfig, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)

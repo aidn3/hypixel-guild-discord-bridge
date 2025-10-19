@@ -1,7 +1,12 @@
+import fs from 'node:fs'
+
+import type Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application'
-import { ConfigManager } from '../../common/config-manager'
+import { InstanceType } from '../../common/application-event'
+import type { ConfigManager } from '../../common/config-manager'
+import type { SqliteManager } from '../../common/sqlite-manager'
 import type { User, UserIdentifier } from '../../common/user'
 import Duration from '../../utility/duration'
 import type { ModerationConfig } from '../core'
@@ -11,112 +16,207 @@ export class CommandsHeat {
   private static readonly WarnPercentage = 0.8
   private static readonly WarnEvery = Duration.minutes(30)
 
-  private readonly heatsConfig
   private readonly moderationConfig
 
-  constructor(application: Application, config: ConfigManager<ModerationConfig>, logger: Logger) {
+  constructor(
+    private readonly sqliteManager: SqliteManager,
+    application: Application,
+    config: ConfigManager<ModerationConfig>,
+    logger: Logger
+  ) {
     this.moderationConfig = config
-    this.heatsConfig = new ConfigManager<HeatConfig>(
-      application,
-      logger,
-      application.getConfigFilePath('commands-heat.json'),
-      {
-        heats: [],
-        lastWarning: []
-      }
+
+    sqliteManager.register(
+      'heatsCommands',
+      'CREATE TABLE IF NOT EXISTS "heatsCommands" (' +
+        '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+        '  originInstance TEXT NOT NULL,' +
+        '  userId TEXT NOT NULL,' +
+        '  type TEXT NOT NULL,' +
+        '  createdAt INTEGER NOT NULL' +
+        ' )'
     )
+
+    sqliteManager.register(
+      'heatsCommandsWarnings',
+      'CREATE TABLE IF NOT EXISTS "heatsCommandsWarnings" (' +
+        '  originInstance TEXT NOT NULL,' +
+        '  userId TEXT NOT NULL,' +
+        '  type TEXT NOT NULL,' +
+        '  warnedAt INTEGER NOT NULL,' +
+        '  PRIMARY KEY(originInstance, userId, type)' +
+        ' )'
+    )
+
+    sqliteManager.register(
+      'heatsCommandsIndex',
+      'CREATE INDEX IF NOT EXISTS heatsCommandsIndex ON "heatsCommands" (originInstance, userId);'
+    )
+
+    sqliteManager.registerCleaner(() => {
+      const database = sqliteManager.getDatabase()
+      database.transaction(() => {
+        const deleteStatement = database.prepare('DELETE FROM "heatsCommands" WHERE createdAt < ?')
+        const oldestTimestamp = Date.now() - CommandsHeat.ActionExpiresAfter.toMilliseconds()
+        const result = deleteStatement.run(Math.floor(oldestTimestamp / 1000)).changes
+        if (result > 0) logger.debug(`Deleted ${result} entry of expired heats-commands`)
+      })()
+    })
+
+    this.migrateAnyOldData(application, logger)
   }
 
   public add(user: User, type: HeatType): HeatResult {
     const currentTime = Date.now()
 
-    if (user.immune()) {
-      this.heatsConfig.data.heats.push({ identifier: user.getUserIdentifier(), timestamp: currentTime, type: type })
-      this.heatsConfig.markDirty()
+    const database = this.sqliteManager.getDatabase()
+    const userIdentifier = user.getUserIdentifier()
+    const allIdentifiers = user.allIdentifiers()
+    const action: HeatAction = { identifier: user.getUserIdentifier(), timestamp: currentTime, type: type }
+
+    const transaction = database.transaction(() => {
+      if (user.immune()) {
+        this.addEntries(database, [action])
+        return HeatResult.Allowed
+      }
+
+      const heatActions = this.getUserHeats(database, currentTime, allIdentifiers, type)
+      const typeInfo = this.resolveType(type)
+
+      this.addEntries(database, [action])
+
+      if (heatActions >= typeInfo.maxLimit) return HeatResult.Denied
+
+      // 1+ added to help with low warnLimit
+      if (heatActions + 1 >= typeInfo.warnLimit && !this.warned(database, currentTime, allIdentifiers, type)) {
+        this.setLastWarning(database, currentTime, userIdentifier, type)
+        return HeatResult.Warn
+      }
+
       return HeatResult.Allowed
-    }
+    })
 
-    const heatActions = this.getUserHeats(currentTime, user, type)
-    const typeInfo = this.resolveType(type)
-
-    this.heatsConfig.data.heats.push({ identifier: user.getUserIdentifier(), timestamp: currentTime, type: type })
-    this.heatsConfig.markDirty()
-
-    if (heatActions >= typeInfo.maxLimit) return HeatResult.Denied
-
-    // 1+ added to help with low warnLimit
-    if (heatActions + 1 >= typeInfo.warnLimit && !this.warned(currentTime, user, type)) {
-      this.setLastWarning(currentTime, user, type)
-      return HeatResult.Warn
-    }
-
-    return HeatResult.Allowed
+    return transaction()
   }
 
   public tryAdd(user: User, type: HeatType): HeatResult {
     const currentTime = Date.now()
 
-    if (user.immune()) {
-      this.heatsConfig.data.heats.push({ identifier: user.getUserIdentifier(), timestamp: currentTime, type: type })
-      this.heatsConfig.markDirty()
+    const database = this.sqliteManager.getDatabase()
+    const userIdentifier = user.getUserIdentifier()
+    const allIdentifiers = user.allIdentifiers()
+    const action: HeatAction = { identifier: user.getUserIdentifier(), timestamp: currentTime, type: type }
+    const transaction = database.transaction(() => {
+      if (user.immune()) {
+        this.addEntries(database, [action])
+        return HeatResult.Allowed
+      }
+
+      const heatActions = this.getUserHeats(database, currentTime, allIdentifiers, type)
+      const typeInfo = this.resolveType(type)
+
+      if (heatActions >= typeInfo.maxLimit) return HeatResult.Denied
+
+      this.addEntries(database, [action])
+
+      // 1+ added to help with low warnLimit
+      if (heatActions + 1 >= typeInfo.warnLimit && !this.warned(database, currentTime, allIdentifiers, type)) {
+        this.setLastWarning(database, currentTime, userIdentifier, type)
+        return HeatResult.Warn
+      }
+
       return HeatResult.Allowed
-    }
+    })
 
-    const heatActions = this.getUserHeats(currentTime, user, type)
-    const typeInfo = this.resolveType(type)
-
-    if (heatActions >= typeInfo.maxLimit) return HeatResult.Denied
-
-    this.heatsConfig.data.heats.push({ identifier: user.getUserIdentifier(), timestamp: currentTime, type: type })
-    this.heatsConfig.markDirty()
-
-    // 1+ added to help with low warnLimit
-    if (heatActions + 1 >= typeInfo.warnLimit && !this.warned(currentTime, user, type)) {
-      this.setLastWarning(currentTime, user, type)
-      return HeatResult.Warn
-    }
-
-    return HeatResult.Allowed
+    return transaction()
   }
 
-  private getUserHeats(currentTime: number, user: User, type: HeatType): number {
-    let count = 0
+  private addEntries(database: Database.Database, heatActions: HeatAction[]): void {
+    const insert = database.prepare(
+      'INSERT INTO "heatsCommands" (originInstance, userId, type, createdAt) VALUES (?, ?, ?, ?)'
+    )
 
-    for (const heat of this.heatsConfig.data.heats) {
-      if (heat.type !== type) continue
-      if (!user.equalsIdentifier(heat.identifier)) continue
-      if (heat.timestamp + CommandsHeat.ActionExpiresAfter.toMilliseconds() < currentTime) continue
-      count++
+    for (const heatAction of heatActions) {
+      insert.run(
+        heatAction.identifier.originInstance,
+        heatAction.identifier.userId,
+        heatAction.type,
+        Math.floor(heatAction.timestamp / 1000)
+      )
     }
-
-    return count
   }
 
-  private warned(currentTime: number, user: User, type: HeatType): boolean {
-    let lastWarning = -1
+  private getUserHeats(
+    database: Database.Database,
+    currentTime: number,
+    identifiers: UserIdentifier[],
+    type: HeatType
+  ): number {
+    let query = 'SELECT COUNT(*) FROM "heatsCommands" WHERE '
+    const parameters: unknown[] = []
 
-    for (const warning of this.heatsConfig.data.lastWarning) {
-      if (!user.equalsIdentifier(warning.identifier)) continue
-      if (warning.type !== type) continue
+    if (identifiers.length > 0) {
+      query += '('
+      for (let index = 0; index < identifiers.length; index++) {
+        const identifier = identifiers[index]
 
-      if (warning.timestamp > lastWarning) lastWarning = warning.timestamp
+        parameters.push(identifier.originInstance)
+        parameters.push(identifier.userId)
+
+        query += `(originInstance = ? AND userId = ?)`
+        if (index !== identifiers.length - 1) query += ' OR '
+      }
+      query += ') AND '
     }
 
-    return lastWarning + CommandsHeat.WarnEvery.toMilliseconds() > currentTime
+    query += 'type = ? AND createdAt > ?'
+    parameters.push(type)
+    parameters.push(Math.floor((currentTime - CommandsHeat.ActionExpiresAfter.toMilliseconds()) / 1000))
+
+    return database.prepare(query).pluck(true).get(parameters) as number
   }
 
-  private setLastWarning(timestamp: number, user: User, type: HeatType): void {
-    const warnings = this.heatsConfig.data.lastWarning
-    for (let index = 0; index < warnings.length; index++) {
-      const warning = warnings[index]
-      if (!user.equalsIdentifier(warning.identifier)) continue
+  private warned(
+    database: Database.Database,
+    currentTime: number,
+    identifiers: UserIdentifier[],
+    type: HeatType
+  ): boolean {
+    let query = 'SELECT IFNULL(MAX(warnedAt), 0) FROM "heatsCommandsWarnings" WHERE '
+    const parameters: unknown[] = []
 
-      warnings.splice(index, 1)
-      this.heatsConfig.markDirty()
+    if (identifiers.length > 0) {
+      query += '('
+      for (let index = 0; index < identifiers.length; index++) {
+        const identifier = identifiers[index]
+
+        parameters.push(identifier.originInstance)
+        parameters.push(identifier.userId)
+
+        query += `(originInstance = ? AND userId = ?)`
+        if (index !== identifiers.length - 1) query += ' OR '
+      }
+      query += ') AND '
     }
 
-    this.heatsConfig.data.lastWarning.push({ identifier: user.getUserIdentifier(), timestamp: timestamp, type: type })
-    this.heatsConfig.markDirty()
+    query += 'type = ?'
+    parameters.push(type)
+
+    const lastWarning = database.prepare(query).pluck(true).get(parameters) as number
+
+    return lastWarning * 1000 + CommandsHeat.WarnEvery.toMilliseconds() > currentTime
+  }
+
+  private setLastWarning(
+    database: Database.Database,
+    timestamp: number,
+    identifier: UserIdentifier,
+    type: HeatType
+  ): void {
+    const replace = database.prepare(
+      'INSERT OR REPLACE INTO "heatsCommandsWarnings" (originInstance, userId, type, warnedAt) VALUES(?, ?, ?, ?)'
+    )
+    replace.run(identifier.originInstance, identifier.userId, type, Math.floor(timestamp / 1000))
   }
 
   private resolveType(type: HeatType): { expire: Duration; maxLimit: number; warnLimit: number; warnEvery: Duration } {
@@ -147,20 +247,78 @@ export class CommandsHeat {
       return limits
     }
   }
+
+  private migrateAnyOldData(application: Application, logger: Logger): void {
+    interface OldEntry {
+      identifiers: string[]
+      heatActions: { timestamp: number; type: 'kick' | 'mute' }[]
+      lastWarning: Record<'kick' | 'mute', number>
+    }
+
+    interface OldType {
+      heats: OldEntry[]
+    }
+
+    const path = application.getConfigFilePath('commands-heat.json')
+    if (!fs.existsSync(path)) return
+    logger.info('Found old commands-heat file. Migrating this file into the new system...')
+
+    const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
+    const heatActions: HeatAction[] = []
+    let total = 0
+
+    for (const entry of oldObject.heats) {
+      total += entry.heatActions.length
+
+      const identifier = this.findIdentifier(entry.identifiers)
+      if (identifier == undefined) continue
+
+      for (const heatAction of entry.heatActions) {
+        let type: HeatType | undefined
+        switch (heatAction.type) {
+          case 'kick': {
+            type = HeatType.Kick
+            break
+          }
+          case 'mute': {
+            type = HeatType.Mute
+            break
+          }
+          default: {
+            continue
+          }
+        }
+
+        heatActions.push({ identifier: identifier, type: type, timestamp: heatAction.timestamp })
+      }
+    }
+
+    logger.info(`Successfully parsed ${heatActions.length} legacy commands-heat out of ${total}`)
+    const database = this.sqliteManager.getDatabase()
+    database.transaction(() => {
+      this.addEntries(database, heatActions)
+    })()
+
+    logger.debug('Deleting commands-heat legacy file...')
+    fs.rmSync(path)
+  }
+
+  findIdentifier(identifiers: string[]): UserIdentifier | undefined {
+    const uuid = identifiers.find((entry) => entry.length === 32)
+    if (uuid !== undefined) {
+      return { originInstance: InstanceType.Minecraft, userId: uuid }
+    }
+
+    const discordId = identifiers.find((entry) => /^\d+$/.test(entry))
+    if (discordId !== undefined) {
+      return { originInstance: InstanceType.Discord, userId: discordId }
+    }
+
+    return undefined
+  }
 }
 
 interface HeatAction {
-  identifier: UserIdentifier
-  type: HeatType
-  timestamp: number
-}
-
-interface HeatConfig {
-  heats: HeatAction[]
-  lastWarning: Warning[]
-}
-
-interface Warning {
   identifier: UserIdentifier
   type: HeatType
   timestamp: number

@@ -52,7 +52,7 @@ export default class Punishments {
     this.ready = Promise.resolve().then(() => this.migrateAnyOldData(application, logger))
   }
 
-  public async migrateAnyOldData(application: Application, logger: Logger): Promise<void> {
+  private async migrateAnyOldData(application: Application, logger: Logger): Promise<void> {
     interface OldEntry {
       userName: string
       userUuid?: string
