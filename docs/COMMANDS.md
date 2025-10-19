@@ -92,6 +92,7 @@ A shorter version can also be used: `!- rtca`
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | display a leaderboard message in this channel                    |
 | `/link`               | Link your Discord account with your Minecraft account            |
+| `/list-leaderboard`   | List all existing leaderboards                                   |
 | `/list`               | List players in your guild(s)                                    |
 | `/log`                | View guild activity logs                                         |
 | `/ping`               | Discord Ping                                                     |
