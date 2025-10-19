@@ -450,9 +450,12 @@ async function formatList(
   for (const punishment of chunk) {
     let user: User | undefined
     if (context !== undefined) {
-      user = await context.application.core.initializeUser(punishment, {
-        guild: context.interaction.guild ?? undefined
-      })
+      user = await context.application.core.initializeUser(
+        { originInstance: punishment.originInstance, userId: punishment.userId },
+        {
+          guild: context.interaction.guild ?? undefined
+        }
+      )
     }
 
     result += formatPunishment(punishment, user) + '\n\n'
