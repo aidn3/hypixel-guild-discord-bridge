@@ -16,7 +16,7 @@ import type {
 } from '../common/user'
 import { User } from '../common/user'
 
-import { registerMigration } from './migration'
+import { initializeCoreDatabase } from './initialize-database'
 import { CommandsHeat } from './moderation/commands-heat'
 import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
@@ -66,7 +66,7 @@ export class Core extends Instance<InstanceType.Core> {
 
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
-    registerMigration(this.sqliteManager, sqliteName)
+    initializeCoreDatabase(this.sqliteManager, sqliteName)
 
     this.mojangApi = new MojangApi(this.sqliteManager)
 

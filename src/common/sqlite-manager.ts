@@ -11,8 +11,8 @@ export class SqliteManager {
 
   private readonly configFilePath: string
   private readonly database: Database.Database
+  private readonly newlyCreated: boolean
 
-  private readonly registeredTables = new Set<string>()
   private closed = false
 
   private lastClean = -1
@@ -37,15 +37,14 @@ export class SqliteManager {
       this.close()
     })
 
+    this.newlyCreated = !fs.existsSync(filepath)
+
     this.database = new Database(filepath)
     this.database.pragma('journal_mode = WAL')
   }
 
-  public register(name: string, query: string): void {
-    assert.ok(!this.registeredTables.has(name.toLowerCase()), `name already registered: ${name}`)
-
-    this.getDatabase().exec(query)
-    this.registeredTables.add(name)
+  public isNewlyCreated(): boolean {
+    return this.newlyCreated
   }
 
   public registerCleaner(callback: () => void): void {
@@ -69,13 +68,15 @@ export class SqliteManager {
     const database = this.getDatabase()
 
     const transaction = database.transaction(() => {
+      const newlyCreated = this.isNewlyCreated()
+
       let finished = false
       let changed = false
       while (!finished) {
         const currentVersion = database.pragma('user_version', { simple: true }) as number
         const migrator = this.migrators.get(currentVersion)
         if (migrator !== undefined) {
-          migrator(database, this.logger)
+          migrator(database, this.logger, newlyCreated)
           changed = true
           continue
         }
@@ -85,7 +86,7 @@ export class SqliteManager {
           this.targetVersion,
           'migration process failed to reach the target version somehow??'
         )
-        if (changed) {
+        if (changed && !newlyCreated) {
           const backupPath = this.application.getBackupPath(sqliteName)
           this.application.applicationIntegrity.addConfigPath(backupPath)
           this.logger.debug(`Backing up old database before committing changes. backup path: ${backupPath}`)
@@ -130,4 +131,4 @@ export class SqliteManager {
   }
 }
 
-export type Migrator = (database: Database.Database, logger: Logger) => void
+export type Migrator = (database: Database.Database, logger: Logger, newlyCreated: boolean) => void

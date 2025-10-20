@@ -157,17 +157,7 @@ export class MojangApi {
 class MojangDatabase {
   private static readonly MaxAge = 7 * 24 * 60 * 60 * 1000
 
-  constructor(private readonly sqliteManager: SqliteManager) {
-    sqliteManager.register(
-      'mojang',
-      'CREATE TABLE IF NOT EXISTS "mojang" (' +
-        '  uuid TEXT PRIMARY KEY NOT NULL,' +
-        '  username TEXT UNIQUE NOT NULL,' +
-        '  loweredName TEXT UNIQUE NOT NULL,' + // username all lowercased to use make it easily indexable
-        '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
-        ' )'
-    )
-  }
+  constructor(private readonly sqliteManager: SqliteManager) {}
 
   public add(profiles: MojangProfile[]): void {
     const database = this.sqliteManager.getDatabase()

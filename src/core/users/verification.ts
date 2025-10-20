@@ -62,26 +62,7 @@ export class Verification {
 }
 
 class VerificationDatabase {
-  constructor(private readonly sqliteManager: SqliteManager) {
-    sqliteManager.register(
-      'links',
-      'CREATE TABLE IF NOT EXISTS "links" (' +
-        '  uuid TEXT NOT NULL,' +
-        '  discordId TEXT NOT NULL,' +
-        '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
-        '  PRIMARY KEY(uuid, discordId)' +
-        ' )'
-    )
-    sqliteManager.register(
-      'inferences',
-      "CREATE TABLE IF NOT EXISTS 'inferences' (" +
-        '  uuid TEXT NOT NULL,' +
-        '  discordId TEXT NOT NULL,' +
-        '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
-        '  PRIMARY KEY(uuid, discordId)' +
-        ' )'
-    )
-  }
+  constructor(private readonly sqliteManager: SqliteManager) {}
 
   public addLink(discordId: string, uuid: string): void {
     const database = this.sqliteManager.getDatabase()

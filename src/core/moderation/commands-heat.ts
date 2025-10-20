@@ -26,33 +26,6 @@ export class CommandsHeat {
   ) {
     this.moderationConfig = config
 
-    sqliteManager.register(
-      'heatsCommands',
-      'CREATE TABLE IF NOT EXISTS "heatsCommands" (' +
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
-        '  originInstance TEXT NOT NULL,' +
-        '  userId TEXT NOT NULL,' +
-        '  type TEXT NOT NULL,' +
-        '  createdAt INTEGER NOT NULL' +
-        ' )'
-    )
-
-    sqliteManager.register(
-      'heatsCommandsWarnings',
-      'CREATE TABLE IF NOT EXISTS "heatsCommandsWarnings" (' +
-        '  originInstance TEXT NOT NULL,' +
-        '  userId TEXT NOT NULL,' +
-        '  type TEXT NOT NULL,' +
-        '  warnedAt INTEGER NOT NULL,' +
-        '  PRIMARY KEY(originInstance, userId, type)' +
-        ' )'
-    )
-
-    sqliteManager.register(
-      'heatsCommandsIndex',
-      'CREATE INDEX IF NOT EXISTS heatsCommandsIndex ON "heatsCommands" (originInstance, userId);'
-    )
-
     sqliteManager.registerCleaner(() => {
       const database = sqliteManager.getDatabase()
       database.transaction(() => {

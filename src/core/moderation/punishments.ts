@@ -22,24 +22,6 @@ export default class Punishments {
     application: Application,
     logger: Logger
   ) {
-    sqliteManager.register(
-      'punishments',
-      'CREATE TABLE IF NOT EXISTS "punishments" (' +
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
-        '  originInstance TEXT NOT NULL,' +
-        '  userId TEXT NOT NULL,' +
-        '  type TEXT NOT NULL,' +
-        '  reason TEXT NOT NULL,' +
-        '  createdAt INTEGER NOT NULL,' +
-        '  till INTEGER NOT NULL' +
-        ' )'
-    )
-
-    sqliteManager.register(
-      'punishmentsIndex',
-      'CREATE INDEX IF NOT EXISTS punishmentsIndex ON "punishments" (originInstance, userId);'
-    )
-
     sqliteManager.registerCleaner(() => {
       const database = sqliteManager.getDatabase()
       database.transaction(() => {
