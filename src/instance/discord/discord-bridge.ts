@@ -24,7 +24,9 @@ import {
   Color,
   GuildPlayerEventType,
   InstanceType,
-  MinecraftReactiveEventType
+  MinecraftReactiveEventType,
+  PunishmentPurpose,
+  PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type { ConfigManager } from '../../common/config-manager.js'
@@ -162,6 +164,18 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     if (event.type === GuildPlayerEventType.Online && !this.config.data.guildOnline) return
     if (event.type === GuildPlayerEventType.Offline && !this.config.data.guildOffline) return
+
+    if (event.type === GuildPlayerEventType.Mute) {
+      const game =
+        event.user
+          .punishments()
+          .all()
+          .filter((punishment) => punishment.type === PunishmentType.Mute)
+          .toSorted((a, b) => b.createdAt - a.createdAt)
+          .at(0)?.purpose === PunishmentPurpose.Game
+
+      if (game) return
+    }
 
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
     const username = event.user.displayName()

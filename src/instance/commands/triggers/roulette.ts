@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -64,6 +64,7 @@ export default class Roulette extends ChatCommandHandler {
 
       context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
         Duration.minutes(15),
         'Lost in RussianRoulette game'
       )

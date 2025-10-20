@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -72,10 +72,20 @@ export default class Vengeance extends ChatCommandHandler {
     // 47% to lose.
     // 49% to draw.
     if (this.won()) {
-      targetUser.mute(context.eventHelper.fillBaseEvent(), Vengeance.MuteDuration, 'Lost in Vengeance game')
+      targetUser.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Vengeance.MuteDuration,
+        'Lost in Vengeance game'
+      )
       messages = context.app.language.data.commandVengeanceWin
     } else if (this.lose()) {
-      context.message.user.mute(context.eventHelper.fillBaseEvent(), Vengeance.MuteDuration, 'Lost in Vengeance game')
+      context.message.user.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Vengeance.MuteDuration,
+        'Lost in Vengeance game'
+      )
 
       this.countSinceLastWin++
       messages = context.app.language.data.commandVengeanceLose

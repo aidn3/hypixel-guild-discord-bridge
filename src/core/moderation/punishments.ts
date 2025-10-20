@@ -6,7 +6,7 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../application'
 import type { BasePunishment } from '../../common/application-event'
-import { InstanceType, PunishmentType } from '../../common/application-event'
+import { InstanceType, PunishmentPurpose, PunishmentType } from '../../common/application-event'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { User, UserIdentifier } from '../../common/user'
 
@@ -84,6 +84,7 @@ export default class Punishments {
       punishments.push({
         ...identifier,
         type: PunishmentType.Mute,
+        purpose: PunishmentPurpose.Manual,
         till: entry.till,
         reason: entry.reason,
         createdAt: currentTime
@@ -99,6 +100,7 @@ export default class Punishments {
       punishments.push({
         ...identifier,
         type: PunishmentType.Ban,
+        purpose: PunishmentPurpose.Manual,
         till: entry.till,
         reason: entry.reason,
         createdAt: currentTime
@@ -119,7 +121,7 @@ export default class Punishments {
   private addEntries(punishments: SavedPunishment[]): void {
     const database = this.sqliteManager.getDatabase()
     const insert = database.prepare(
-      'INSERT INTO "punishments" (originInstance, userId, type, reason, createdAt, till) VALUES (?, ?, ?, ?, ?, ?)'
+      'INSERT INTO "punishments" (originInstance, userId, type, purpose, reason, createdAt, till) VALUES (?, ?, ?, ?, ?, ?, ?)'
     )
 
     const transaction = database.transaction(() => {
@@ -128,6 +130,7 @@ export default class Punishments {
           punishment.originInstance,
           punishment.userId,
           punishment.type,
+          punishment.purpose,
           punishment.reason,
           Math.floor(punishment.createdAt / 1000),
           Math.floor(punishment.till / 1000)

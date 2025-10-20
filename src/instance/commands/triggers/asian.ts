@@ -1,4 +1,5 @@
 import type { ChatEvent } from '../../../common/application-event.js'
+import { PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -37,6 +38,7 @@ export default class Asian extends ChatCommandHandler {
     } else {
       context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
         Duration.minutes(1),
         `failed ${context.commandPrefix}${this.triggers[0]}`
       )

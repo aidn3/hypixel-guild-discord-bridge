@@ -10,7 +10,7 @@ import type Punishments from '../core/moderation/punishments'
 import type { SavedPunishment } from '../core/moderation/punishments'
 import type Duration from '../utility/duration'
 
-import type { BasePunishment, InformEvent, UserLink } from './application-event'
+import type { BasePunishment, InformEvent, PunishmentPurpose, UserLink } from './application-event'
 import { InstanceType, Permission, PunishmentType } from './application-event'
 import { Status } from './connectable-instance'
 
@@ -210,19 +210,26 @@ export class User {
     return savedPunishments
   }
 
-  public ban(executor: InformEvent, duration: Duration, reason: string): SavedPunishment {
-    return this.punish(executor, PunishmentType.Ban, duration, reason)
+  public ban(executor: InformEvent, purpose: PunishmentPurpose, duration: Duration, reason: string): SavedPunishment {
+    return this.punish(executor, PunishmentType.Ban, purpose, duration, reason)
   }
 
-  public mute(executor: InformEvent, duration: Duration, reason: string): SavedPunishment {
-    return this.punish(executor, PunishmentType.Mute, duration, reason)
+  public mute(executor: InformEvent, purpose: PunishmentPurpose, duration: Duration, reason: string): SavedPunishment {
+    return this.punish(executor, PunishmentType.Mute, purpose, duration, reason)
   }
 
-  private punish(executor: InformEvent, type: PunishmentType, duration: Duration, reason: string): SavedPunishment {
+  private punish(
+    executor: InformEvent,
+    type: PunishmentType,
+    purpose: PunishmentPurpose,
+    duration: Duration,
+    reason: string
+  ): SavedPunishment {
     const currentTime = Date.now()
 
     const punishment: BasePunishment = {
       type: type,
+      purpose: purpose,
       createdAt: currentTime,
       till: currentTime + duration.toMilliseconds(),
       reason: reason

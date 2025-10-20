@@ -312,6 +312,11 @@ export interface BasePunishment {
    */
   readonly type: PunishmentType
   /**
+   * Purpose of this punishment
+   */
+  readonly purpose: PunishmentPurpose
+
+  /**
    * The reason for the punishment
    */
   readonly reason: string
@@ -325,6 +330,18 @@ export interface BasePunishment {
    * Unix Epoch in milliseconds.
    */
   readonly till: number
+}
+
+export enum PunishmentPurpose {
+  /**
+   * Manual punishment added by a human.
+   */
+  Manual = 'manual',
+  /**
+   * Punishment created by a game for fun.
+   * Those punishments will not be broadcasted
+   */
+  Game = 'game'
 }
 
 export interface Punishment extends BasePunishment, InformEvent {

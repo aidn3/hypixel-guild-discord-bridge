@@ -1,4 +1,4 @@
-import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, PunishmentPurpose } from '../../../common/application-event.js'
 import Duration from '../../../utility/duration'
 import { sufficeToTime } from '../../../utility/shared-utility'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
@@ -36,6 +36,7 @@ export default {
       if (responsible !== context.clientInstance.username()) {
         targetUser.mute(
           context.eventHelper.fillBaseEvent(),
+          PunishmentPurpose.Manual,
           Duration.seconds(muteTime * sufficeToTime(muteSuffice)),
           context.message
         )

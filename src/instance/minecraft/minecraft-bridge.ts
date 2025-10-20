@@ -22,7 +22,9 @@ import {
   GuildPlayerEventType,
   InstanceSignalType,
   InstanceType,
-  MinecraftSendChatPriority
+  MinecraftSendChatPriority,
+  PunishmentPurpose,
+  PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -75,6 +77,18 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
+
+    if (event.type === GuildPlayerEventType.Mute) {
+      const game =
+        event.user
+          .punishments()
+          .all()
+          .filter((punishment) => punishment.type === PunishmentType.Mute)
+          .toSorted((a, b) => b.createdAt - a.createdAt)
+          .at(0)?.purpose === PunishmentPurpose.Game
+
+      if (game) return
+    }
 
     await this.handleInGameEvent(event)
   }

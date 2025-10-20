@@ -135,6 +135,7 @@ function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: bo
       '  originInstance TEXT NOT NULL,' +
       '  userId TEXT NOT NULL,' +
       '  type TEXT NOT NULL,' +
+      '  purpose TEXT NOT NULL,' +
       '  reason TEXT NOT NULL,' +
       '  createdAt INTEGER NOT NULL,' +
       '  till INTEGER NOT NULL' +

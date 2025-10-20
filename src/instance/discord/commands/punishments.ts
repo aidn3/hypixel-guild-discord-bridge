@@ -14,7 +14,13 @@ import {
   userMention
 } from 'discord.js'
 
-import { Color, InstanceType, Permission, PunishmentType } from '../../../common/application-event.js'
+import {
+  Color,
+  InstanceType,
+  Permission,
+  PunishmentPurpose,
+  PunishmentType
+} from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import type { DiscordUser, MojangProfile, User } from '../../../common/user'
 import { HeatResult, HeatType } from '../../../core/moderation/commands-heat'
@@ -232,7 +238,7 @@ async function handleBan(
   }
 
   const post = () => {
-    const punishment = target.ban(context.eventHelper.fillBaseEvent(), duration, reason)
+    const punishment = target.ban(context.eventHelper.fillBaseEvent(), PunishmentPurpose.Manual, duration, reason)
     return `## Punishment\n${formatPunishment(punishment, undefined)}`
   }
 
@@ -258,7 +264,7 @@ async function handleMute(
   }
 
   const post = () => {
-    const punishment = target.mute(context.eventHelper.fillBaseEvent(), duration, reason)
+    const punishment = target.mute(context.eventHelper.fillBaseEvent(), PunishmentPurpose.Manual, duration, reason)
     return `## Punishment\n${formatPunishment(punishment, undefined)}`
   }
 

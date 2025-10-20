@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -50,6 +50,7 @@ export default class Mute extends ChatCommandHandler {
     const user = await context.app.core.initializeMinecraftUser(userProfile, {})
     user.mute(
       context.eventHelper.fillBaseEvent(),
+      PunishmentPurpose.Game,
       Mute.TimeLength,
       `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     )
