@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import { bold, SlashCommandBuilder } from 'discord.js'
+import { bold, italic, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config'
@@ -22,14 +22,12 @@ export default {
     result += format(config.data.online30Days, Online30Days.name) + '\n'
     result += format(config.data.messages30Days, Messages30Days.name) + '\n'
 
-    await context.interaction.reply({
-      embeds: [
-        {
-          description: result.trim(),
-          footer: { text: DefaultCommandFooter }
-        }
-      ]
-    })
+    result = result.trim()
+    if (result.length === 0) {
+      result = italic('No leaderboard to show yet. Create some first!')
+    }
+
+    await context.interaction.reply({ embeds: [{ description: result, footer: { text: DefaultCommandFooter } }] })
   }
 } satisfies DiscordCommandHandler
 
