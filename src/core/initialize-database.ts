@@ -163,5 +163,8 @@ function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: bo
   )
   database.exec('CREATE INDEX heatsCommandsIndex ON "heatsCommands" (originInstance, userId);')
 
+  // reference: ./users/verification.ts
+  database.exec('DROP TABLE "inferences";')
+
   database.pragma('user_version = 2')
 }

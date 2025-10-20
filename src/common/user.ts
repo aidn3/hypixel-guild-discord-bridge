@@ -10,8 +10,8 @@ import type Punishments from '../core/moderation/punishments'
 import type { SavedPunishment } from '../core/moderation/punishments'
 import type Duration from '../utility/duration'
 
-import type { BasePunishment, InformEvent, Link } from './application-event'
-import { InstanceType, LinkType, Permission, PunishmentType } from './application-event'
+import type { BasePunishment, InformEvent, UserLink } from './application-event'
+import { InstanceType, Permission, PunishmentType } from './application-event'
 import { Status } from './connectable-instance'
 
 export interface InitializeOptions {
@@ -25,15 +25,11 @@ export class User {
     private readonly userIdentifier: UserIdentifier,
     private readonly userMojang: MojangProfile | undefined,
     private readonly userDiscord: DiscordProfile | undefined,
-    private readonly verification: Link
+    private readonly userLink: UserLink | undefined
   ) {
-    if (
-      (verification.type === LinkType.Confirmed || verification.type === LinkType.Inference) &&
-      userMojang !== undefined &&
-      userDiscord !== undefined
-    ) {
-      assert.strictEqual(userMojang.id, verification.link.uuid)
-      assert.strictEqual(userDiscord.id, verification.link.discordId)
+    if (userLink !== undefined && userMojang !== undefined && userDiscord !== undefined) {
+      assert.strictEqual(userMojang.id, userLink.uuid)
+      assert.strictEqual(userDiscord.id, userLink.discordId)
     }
   }
 
@@ -102,7 +98,7 @@ export class User {
   }
 
   public verified(): boolean {
-    return this.verification.type === LinkType.Confirmed
+    return this.userLink !== undefined
   }
 
   public immune(): boolean {
@@ -193,9 +189,9 @@ export class User {
     const discordProfile = this.discordProfile()
     if (discordProfile !== undefined) add({ originInstance: InstanceType.Discord, userId: discordProfile.id })
 
-    if (this.verification.type === LinkType.Confirmed) {
-      add({ originInstance: InstanceType.Minecraft, userId: this.verification.link.uuid })
-      add({ originInstance: InstanceType.Discord, userId: this.verification.link.discordId })
+    if (this.userLink !== undefined) {
+      add({ originInstance: InstanceType.Minecraft, userId: this.userLink.uuid })
+      add({ originInstance: InstanceType.Discord, userId: this.userLink.discordId })
     }
 
     return result

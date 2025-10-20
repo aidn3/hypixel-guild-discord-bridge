@@ -148,11 +148,6 @@ Alternatively, users can use chat command `!unlink` in-game in case they lose ac
 Staff and admins have access to verification management tool under the Discord slash command `/verification`.  
 The tool allow staff and admins to do various management actions such as checking the link status, unlinking other users, etc.
 
-Staff and admins can also set an **ALIAS** to users via the Discord slash command `/verification alias` as an alternative to normal linking.  
-**ALIAS** will only be used to set the username for chat messages but will NOT carry any weight otherwise,
-such as influencing the punishment system, leaderboards, etc.  
-**ALIAS** is meant to be an alternative to normal linking and hence can not set a link and alias at the same time.
-
 Staff can enforce all users to `/link` before speaking in Discord channels (where the application resides in)
 by executing the Discord slash command `/settings`, then navigating to `Discord` category, before pressing `Enforce Verification`.
 

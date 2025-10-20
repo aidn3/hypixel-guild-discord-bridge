@@ -645,29 +645,7 @@ export type CommandEvent = CommandLike
  */
 export type CommandFeedbackEvent = CommandLike
 
-export enum LinkType {
-  None = 'none',
-  Inference = 'inference',
-  Confirmed = 'confirmed'
-}
-
-export type Link = NoneLink | InferenceLink | ConfirmedLink
-
-export interface BaseLink<T extends LinkType> {
-  type: T
-}
-
-export type NoneLink = BaseLink<LinkType.None>
-
-export interface InferenceLink extends BaseLink<LinkType.Inference> {
-  link: LinkInfo
-}
-
-export interface ConfirmedLink extends BaseLink<LinkType.Confirmed> {
-  link: LinkInfo
-}
-
-export interface LinkInfo {
+export interface UserLink {
   uuid: string
   discordId: string
 }

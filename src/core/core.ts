@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type Application from '../application'
-import { InstanceType, LinkType } from '../common/application-event'
+import { InstanceType } from '../common/application-event'
 import { ConfigManager } from '../common/config-manager'
 import { Instance, InternalInstancePrefix } from '../common/instance'
 import { SqliteManager } from '../common/sqlite-manager'
@@ -137,12 +137,12 @@ export class Core extends Instance<InstanceType.Core> {
     const identifier: UserIdentifier = { userId: profile.id, originInstance: InstanceType.Discord }
 
     let mojangProfile: MojangProfile | undefined
-    const verification = await this.application.core.verification.findByDiscord(profile.id)
-    if (verification.type === LinkType.Confirmed) {
-      mojangProfile = await this.application.mojangApi.profileByUuid(verification.link.uuid)
+    const userLink = await this.application.core.verification.findByDiscord(profile.id)
+    if (userLink !== undefined) {
+      mojangProfile = await this.application.mojangApi.profileByUuid(userLink.uuid)
     }
 
-    const user = new User(this.application, this.userContext(), identifier, mojangProfile, profile, verification)
+    const user = new User(this.application, this.userContext(), identifier, mojangProfile, profile, userLink)
     assert.ok(user.isDiscordUser())
     return user
   }
@@ -157,12 +157,12 @@ export class Core extends Instance<InstanceType.Core> {
     const identifier: UserIdentifier = { userId: mojangProfile.id, originInstance: InstanceType.Minecraft }
 
     let profile: DiscordProfile | undefined
-    const verification = await this.application.core.verification.findByIngame(mojangProfile.id)
-    if (verification.type === LinkType.Confirmed) {
-      profile = this.application.discordInstance.profileById(verification.link.discordId, context.guild)
+    const userLink = await this.application.core.verification.findByIngame(mojangProfile.id)
+    if (userLink !== undefined) {
+      profile = this.application.discordInstance.profileById(userLink.discordId, context.guild)
     }
 
-    const user = new User(this.application, this.userContext(), identifier, mojangProfile, profile, verification)
+    const user = new User(this.application, this.userContext(), identifier, mojangProfile, profile, userLink)
     assert.ok(user.isMojangUser())
     return user
   }
@@ -186,7 +186,7 @@ export class Core extends Instance<InstanceType.Core> {
     }
 
     // default
-    return new User(this.application, this.userContext(), identifier, undefined, undefined, { type: LinkType.None })
+    return new User(this.application, this.userContext(), identifier, undefined, undefined, undefined)
   }
 
   private userContext(): ManagerContext {

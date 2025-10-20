@@ -5,8 +5,8 @@ import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
-import type { Link } from '../../../common/application-event.js'
-import { Color, InstanceType, LinkType } from '../../../common/application-event.js'
+import type { UserLink } from '../../../common/application-event.js'
+import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
@@ -179,7 +179,7 @@ async function listMembers(
       for (const member of sortedMembers) {
         if (!member.online || member.rank !== currentRank) continue
 
-        const link = await getVerification(app.core.verification, mojangProfiles, member.username)
+        const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
         const status = statuses.get(member.username.toLowerCase())
         guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
       }
@@ -187,7 +187,7 @@ async function listMembers(
         for (const member of sortedMembers) {
           if (member.online || member.rank !== currentRank) continue
 
-          const link = await getVerification(app.core.verification, mojangProfiles, member.username)
+          const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
           guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}`)
         }
       }
@@ -226,29 +226,29 @@ async function look(
   return result
 }
 
-async function getVerification(
+async function getUserLink(
   verification: Verification,
   mojangProfiles: Map<string, string | undefined>,
   username: string
-): Promise<Link> {
+): Promise<UserLink | undefined> {
   for (const [mojangUsername, uuid] of mojangProfiles) {
     if (mojangUsername.toLowerCase() !== username.toLowerCase()) continue
-    if (uuid === undefined) return { type: LinkType.None }
+    if (uuid === undefined) return undefined
 
     return verification.findByIngame(uuid)
   }
 
-  return { type: LinkType.None }
+  return undefined
 }
 
-function formatUser(username: string, link: Link): string {
+function formatUser(username: string, link: UserLink | undefined): string {
   let message = `**${escapeMarkdown(username)}**`
-  if (link.type === LinkType.Confirmed) message += ` (${userMention(link.link.discordId)})`
+  if (link !== undefined) message += ` (${userMention(link.discordId)})`
 
   return message
 }
 
-function formatLocation(username: string, link: Link, session: Status | undefined): string {
+function formatLocation(username: string, link: UserLink | undefined, session: Status | undefined): string {
   let message = `${formatUser(username, link)} `
 
   if (session === undefined) return message + ' is *__unknown?__*'

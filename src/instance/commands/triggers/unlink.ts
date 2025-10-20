@@ -2,10 +2,9 @@ import { hash } from 'node:crypto'
 
 import NodeCache from 'node-cache'
 
-import { InstanceType, LinkType } from '../../../common/application-event.js'
+import { InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists } from '../common/utility'
 
 export default class Unlink extends ChatCommandHandler {
   private readonly confirmationId = new NodeCache({ stdTTL: 60 })
@@ -34,8 +33,8 @@ export default class Unlink extends ChatCommandHandler {
       const count = context.app.core.verification.invalidate({ uuid: uuid })
       return count > 0 ? `${context.username}, Successfully unlinked!` : `${context.username}, Nothing to Unlink!`
     } else {
-      const link = await context.app.core.verification.findByIngame(uuid)
-      if (link.type === LinkType.None) {
+      const userLink = await context.app.core.verification.findByIngame(uuid)
+      if (userLink === undefined) {
         return `${context.username}, Nothing to Unlink!`
       }
 
