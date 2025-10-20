@@ -82,8 +82,7 @@ export default {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'username') {
       const response = context.application.core
-        .completeUsername(option.value)
-        .slice(0, 25)
+        .completeUsername(option.value, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     }

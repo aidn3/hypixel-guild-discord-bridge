@@ -9,7 +9,6 @@ import {
 
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
-import Autocomplete from '../../../core/users/autocomplete'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const IncludeCommand = 'include'
@@ -107,7 +106,7 @@ export default {
         throw new Error('Unknown list??')
       }
 
-      const response = Autocomplete.search(option.value, list)
+      const response = search(option.value, list)
         .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
@@ -250,4 +249,36 @@ async function handleRemove(
   }
 
   await context.interaction.reply({ embeds: [result] })
+}
+
+/**
+ * Return a sorted list from best match to least.
+ *
+ * The results are sorted alphabetically by:
+ * - matching the query with the start of a query
+ * - matching any part of a username with the query
+ *
+ * @param query the usernames to look for
+ * @param collection collection to look up the query in
+ */
+function search(query: string, collection: string[]): string[] {
+  const copy = [...collection]
+  copy.sort((a, b) => a.localeCompare(b))
+
+  const queryLowerCased = query.toLowerCase()
+  const results: string[] = []
+
+  for (const username of copy) {
+    if (!results.includes(username) && username.toLowerCase().startsWith(queryLowerCased)) {
+      results.push(username)
+    }
+  }
+
+  for (const username of copy) {
+    if (!results.includes(username) && username.toLowerCase().includes(queryLowerCased)) {
+      results.push(username)
+    }
+  }
+
+  return results
 }

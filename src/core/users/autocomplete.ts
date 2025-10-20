@@ -1,40 +1,41 @@
+import assert from 'node:assert'
+
 import type { Logger } from 'log4js'
 
 import type Application from '../../application'
 import { InstanceType } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
+import type { SqliteManager } from '../../common/sqlite-manager'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import Duration from '../../utility/duration'
 import type { Core } from '../core'
 
 export default class Autocomplete extends SubInstance<Core, InstanceType.Core, void> {
-  private readonly usernames: string[] = []
-  private readonly loweredCaseUsernames = new Set<string>()
-
-  private readonly guildRanks: string[] = []
+  private static readonly MaxLife = Duration.years(1)
 
   constructor(
     application: Application,
     clientInstance: Core,
     eventHelper: EventHelper<InstanceType.Core>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    private readonly sqliteManager: SqliteManager
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
     application.on('chat', (event) => {
-      this.addUsername(event.user.displayName())
+      this.addUsernames([event.user.displayName()])
     })
     application.on('guildPlayer', (event) => {
-      this.addUsername(event.user.mojangProfile().name)
+      this.addUsernames([event.user.mojangProfile().name])
     })
     application.on('command', (event) => {
-      this.addUsername(event.user.displayName())
+      this.addUsernames([event.user.displayName()])
     })
     application.on('commandFeedback', (event) => {
-      this.addUsername(event.user.displayName())
+      this.addUsernames([event.user.displayName()])
     })
 
     setInterval(() => {
@@ -52,63 +53,86 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
         ranksResolver.refresh()
       }
     })
+
+    this.sqliteManager.registerCleaner(() => {
+      const database = this.sqliteManager.getDatabase()
+      database.transaction(() => {
+        const oldestTimestamp = Date.now() - Autocomplete.MaxLife.toMilliseconds()
+        const cleanUsernames = database.prepare('DELETE FROM "autocompleteUsernames" WHERE timestamp < ?')
+        const cleanRanks = database.prepare('DELETE FROM "autocompleteRanks" WHERE timestamp < ?')
+
+        let count = 0
+        count += cleanUsernames.run(Math.floor(oldestTimestamp / 1000)).changes
+        count += cleanRanks.run(Math.floor(oldestTimestamp / 1000)).changes
+        if (count > 0) this.logger.debug(`Deleted ${count} old autocomplete entry`)
+      })()
+    })
   }
 
-  public username(query: string): string[] {
-    return Autocomplete.search(query, this.usernames)
+  public username(query: string, limit: number): string[] {
+    return this.fetch('autocompleteUsernames', query, limit)
   }
 
-  public rank(query: string): string[] {
-    return Autocomplete.search(query, this.guildRanks)
+  public rank(query: string, limit: number): string[] {
+    return this.fetch('autocompleteRanks', query, limit)
   }
 
-  /**
-   * Return a sorted list from best match to least.
-   *
-   * The results are sorted alphabetically by:
-   * - matching the query with the start of a query
-   * - matching any part of a username with the query
-   *
-   * @param query the usernames to look for
-   * @param collection collection to look up the query in
-   */
-  public static search(query: string, collection: string[]): string[] {
-    const copy = [...collection]
-    copy.sort((a, b) => a.localeCompare(b))
+  private fetch(table: string, query: string, limit: number): string[] {
+    assert.ok(limit >= 1, 'limit must be 1 or greater')
+    limit = Math.floor(limit)
 
-    const queryLowerCased = query.toLowerCase()
-    const results: string[] = []
+    query = query.replaceAll(/[%_]/g, '')
 
-    for (const username of copy) {
-      if (!results.includes(username) && username.toLowerCase().startsWith(queryLowerCased)) {
-        results.push(username)
+    const database = this.sqliteManager.getDatabase()
+    return database.transaction(() => {
+      const select = database.prepare(`SELECT content FROM "${table}" WHERE content LIKE ? LIMIT ?`)
+
+      const result: string[] = []
+      result.push(...(select.pluck(true).all(query + '%', limit) as string[]))
+
+      if (result.length >= limit) {
+        assert.strictEqual(result.length, limit)
+        return result
       }
-    }
 
-    for (const username of copy) {
-      if (!results.includes(username) && username.toLowerCase().includes(queryLowerCased)) {
-        results.push(username)
+      const restSelect = database.prepare(
+        `SELECT content FROM "${table}" WHERE content NOT IN (${result.map(() => '?').join(',')}) AND content LIKE ? LIMIT ?`
+      )
+
+      result.push(...(restSelect.pluck(true).all(...result, '%' + query + '%', limit - result.length) as string[]))
+
+      assert.ok(result.length <= limit)
+      return result
+    })()
+  }
+
+  private addUsernames(usernames: string[]): void {
+    this.add('autocompleteUsernames', usernames)
+  }
+
+  private addRanks(ranks: string[]): void {
+    this.add('autocompleteRanks', ranks)
+  }
+
+  private add(table: string, entries: string[]): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        `INSERT OR REPLACE INTO "${table}" (loweredContent, content, timestamp) VALUES (?, ?, ?)`
+      )
+      for (const entry of entries) {
+        insert.run(entry.toLowerCase().trim(), entry.trim(), Math.floor(Date.now() / 1000))
       }
-    }
+    })
 
-    return results
-  }
-
-  private addUsername(username: string): void {
-    const loweredCase = username.toLowerCase()
-    if (this.loweredCaseUsernames.has(loweredCase)) return
-    this.loweredCaseUsernames.add(loweredCase)
-    this.usernames.push(username)
-  }
-
-  private addRank(rank: string): void {
-    if (!this.guildRanks.includes(rank)) {
-      this.guildRanks.push(rank)
-    }
+    transaction()
   }
 
   private async fetchGuildInfo(): Promise<void> {
     const tasks = []
+    const usernames: string[] = []
+    const ranks: string[] = []
+
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       if (instance.currentStatus() !== Status.Connected) continue
 
@@ -116,8 +140,8 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
         .list(instance.instanceName, Duration.minutes(1))
         .then((guild) => {
           for (const member of guild.members) {
-            this.addRank(member.rank)
-            this.addUsername(member.username)
+            usernames.push(member.username)
+            ranks.push(member.rank)
           }
         })
         .catch(() => undefined)
@@ -126,6 +150,9 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
     }
 
     await Promise.all(tasks)
+
+    this.addUsernames(usernames)
+    this.addRanks(ranks)
   }
 
   private async resolveGuildRanks(): Promise<void> {
@@ -137,13 +164,15 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
       .map((uuid) => this.application.hypixelApi.getGuild('player', uuid).catch(() => undefined))
 
     const guilds = await Promise.all(guildsResolver)
+    const ranks: string[] = []
     for (const guild of guilds) {
       if (guild === undefined) continue
 
       for (const rank of guild.ranks) {
-        const rankName = rank.name
-        this.addRank(rankName)
+        ranks.push(rank.name)
       }
     }
+
+    this.addRanks(ranks)
   }
 }

@@ -76,7 +76,14 @@ export class Core extends Instance<InstanceType.Core> {
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.autoComplete = new Autocomplete(application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.autoComplete = new Autocomplete(
+      application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.sqliteManager
+    )
 
     this.verification = new Verification(this.sqliteManager)
     this.scoresManager = new ScoresManager(
@@ -89,12 +96,12 @@ export class Core extends Instance<InstanceType.Core> {
     )
   }
 
-  public completeUsername(query: string): string[] {
-    return this.autoComplete.username(query)
+  public completeUsername(query: string, limit: number): string[] {
+    return this.autoComplete.username(query, limit)
   }
 
-  public completeRank(query: string): string[] {
-    return this.autoComplete.rank(query)
+  public completeRank(query: string, limit: number): string[] {
+    return this.autoComplete.rank(query, limit)
   }
 
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {

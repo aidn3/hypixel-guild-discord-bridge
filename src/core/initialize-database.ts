@@ -167,5 +167,21 @@ function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: bo
   // reference: ./users/verification.ts
   database.exec('DROP TABLE "inferences";')
 
+  // reference: ./users/autocomplete.ts
+  database.exec(
+    "CREATE TABLE 'autocompleteUsernames' (" +
+      '  loweredContent TEXT PRIMARY KEY NOT NULL,' + // all lowercased to use make it easily indexable
+      '  content TEXT NOT NULL,' +
+      '  timestamp INTEGER NOT NULL' +
+      ')'
+  )
+  database.exec(
+    "CREATE TABLE 'autocompleteRanks' (" +
+      '  loweredContent TEXT PRIMARY KEY NOT NULL,' + // all lowercased to use make it easily indexable
+      '  content TEXT NOT NULL,' +
+      '  timestamp INTEGER NOT NULL' +
+      ')'
+  )
+
   database.pragma('user_version = 2')
 }
