@@ -51,12 +51,14 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const toxophilite = selectedProfile.essence?.perks?.toxophilite ?? 0
     const diamondInTheRough = selectedProfile.essence?.perks?.diamond_in_the_rough ?? 0
 
+    // 20% added for scarf shards
+    // It is set to max value till Hypixel updates their API to include the actual values
     const classExpBoosts = {
-      healer: (heartOfGold * 2) / 100 + 1,
-      berserk: (unbridledRage * 2) / 100 + 1,
-      mage: (coldEfficiency * 2) / 100 + 1,
-      archer: (toxophilite * 2) / 100 + 1,
-      tank: (diamondInTheRough * 2) / 100 + 1
+      healer: (heartOfGold * 2) / 100 + 1 + 0.2,
+      berserk: (unbridledRage * 2) / 100 + 1 + 0.2,
+      mage: (coldEfficiency * 2) / 100 + 1 + 0.2,
+      archer: (toxophilite * 2) / 100 + 1 + 0.2,
+      tank: (diamondInTheRough * 2) / 100 + 1 + 0.2
     } satisfies Record<ClassName, number>
 
     let totalRuns = 0
