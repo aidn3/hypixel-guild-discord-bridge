@@ -105,6 +105,10 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       }
     }
 
+    if (totalRuns === 0) {
+      return `${givenUsername} has reached c.a. ${targetAverage} already!`
+    }
+
     return `${givenUsername} is ${totalRuns} ${selectedFloor.toUpperCase()} away from c.a. ${targetAverage} (${classes
       .filter((c) => runsDone[c] > 0)
       .map((c) => `${c} ${runsDone[c]}`)
