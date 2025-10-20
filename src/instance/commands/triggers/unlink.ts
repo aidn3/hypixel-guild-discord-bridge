@@ -24,10 +24,7 @@ export default class Unlink extends ChatCommandHandler {
       return `${context.username}, Can only use this command in-game`
     }
 
-    const uuid = await getUuidIfExists(context.app.mojangApi, context.username)
-    if (uuid === undefined) {
-      return `${context.username}, Could not resolve your profile uuid??`
-    }
+    const uuid = context.message.user.mojangProfile().id
 
     if (this.confirmationId.get<string>(givenId) === uuid) {
       const count = context.app.core.verification.invalidate({ uuid: uuid })
