@@ -62,6 +62,7 @@ A shorter version can also be used: `!- rtca`
 | `rtca`           | Returns the number of runs needed to reach the average class level specified       |
 | `runs`           | Returns how many dungeon runs a player has done                                    |
 | `secrets`        | Returns how many secrets a player has done                                         |
+| `select`         | Randomly select an online guild member                                             |
 | `skill`          | Returns a player's skills levels                                                   |
 | `skywars`        | Returns a player's skywars common stats                                            |
 | `slayer`         | Returns a player's slayer level                                                    |
