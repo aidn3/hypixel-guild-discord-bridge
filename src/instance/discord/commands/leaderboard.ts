@@ -46,7 +46,8 @@ export default {
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage,
-          guildId: guildId
+          guildId: guildId,
+          user: context.user
         })
       })
       return
@@ -58,7 +59,8 @@ export default {
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage,
-          guildId: guildId
+          guildId: guildId,
+          user: context.user
         })
       })
       return
@@ -70,7 +72,8 @@ export default {
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage,
-          guildId: guildId
+          guildId: guildId,
+          user: context.user
         })
       })
       return

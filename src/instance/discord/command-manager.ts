@@ -155,6 +155,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
+        user: user,
         permission: permission,
         interaction: interaction,
         allCommands: [...this.commands.values()]
@@ -248,6 +249,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
+        user: user,
         permission: permission,
         interaction: interaction,
         allCommands: [...this.commands.values()],

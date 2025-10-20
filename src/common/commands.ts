@@ -15,6 +15,7 @@ import type { ChatEvent, InstanceType, Permission } from './application-event.js
 import type { ConfigManager } from './config-manager'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
+import type { DiscordUser } from './user'
 
 export abstract class ChatCommandHandler {
   public readonly triggers: string[]
@@ -101,6 +102,7 @@ interface DiscordContext {
   logger: Logger
   instanceName: string
 
+  user: DiscordUser
   permission: Permission
   errorHandler: UnexpectedErrorHandler
 

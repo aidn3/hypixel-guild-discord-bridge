@@ -11,6 +11,7 @@ import { ConfigManager } from '../../../common/config-manager.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { User } from '../../../common/user'
 import { formatTime } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance.js'
@@ -98,7 +99,8 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
             addFooter: false,
             addLastUpdateAt: true,
             page: 0,
-            guildId: entry.guildId
+            guildId: entry.guildId,
+            user: undefined
           }).then((leaderboard) => leaderboard.embed))
         assert.ok(cachedEmbed !== undefined)
 
@@ -173,6 +175,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     result += await this.createEntries(
       leaderboard,
       option.page,
+      option.user,
       (entry) => `**${entry.count.toLocaleString('en-US')}** messages`
     )
 
@@ -210,7 +213,12 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
 
     result += Leaderboard.addTimers(0)
     result += `Total time: **${formatTime(total * 1000)}**\n\n`
-    result += await this.createEntries(leaderboard, option.page, (entry) => `**${formatTime(entry.totalTime * 1000)}**`)
+    result += await this.createEntries(
+      leaderboard,
+      option.page,
+      option.user,
+      (entry) => `**${formatTime(entry.totalTime * 1000)}**`
+    )
 
     return {
       embed: {
@@ -251,6 +259,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     result += await this.createEntries(
       leaderboard,
       option.page,
+      option.user,
       (entry) => `**${entry.total.toLocaleString('en-US')}** points`
     )
 
@@ -302,6 +311,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   private async createEntries<T extends LeaderboardFormatEntry>(
     entries: T[],
     page: number,
+    user: User | undefined,
     format: (entry: T) => string
   ): Promise<string> {
     const chunk = entries.slice(Leaderboard.EntriesPerPage * page, Leaderboard.EntriesPerPage * (page + 1))
@@ -319,6 +329,33 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
       formatted += ` ${format(entry)}`
 
       result += formatted + '\n'
+    }
+
+    if (user !== undefined) {
+      result += '\n'
+
+      const mojangProfile = user.mojangProfile()
+      const discordProfile = user.discordProfile()
+      if (mojangProfile === undefined) {
+        result += `_Link your Mojang account to track yourself in the leaderboard!_`
+      } else {
+        const index = entries.findIndex((entry) => entry.uuid === mojangProfile.id)
+
+        if (index === -1) {
+          result += `${this.getEmoji(0)} • 0 ${escapeMarkdown(mojangProfile.name)}`
+          if (discordProfile?.id !== undefined) result += ` (${userMention(discordProfile.id)})`
+          result += ' Nothing to show'
+        } else {
+          const entry = entries[index]
+          assert.ok(entry.discordId == undefined || entry.discordId === discordProfile?.id)
+
+          result += `${this.getEmoji(index + 1)} • ${index + 1} ${escapeMarkdown(mojangProfile.name)}`
+          if (entry.discordId !== undefined) result += ` (${userMention(entry.discordId)})`
+          result += ` ${format(entry)}`
+        }
+      }
+
+      result += '\n'
     }
 
     return result
@@ -363,6 +400,7 @@ interface LeaderboardOptions {
   addLastUpdateAt: boolean
   page: number
   guildId: string | undefined
+  user: User | undefined
 }
 
 interface LeaderboardFormatEntry {
