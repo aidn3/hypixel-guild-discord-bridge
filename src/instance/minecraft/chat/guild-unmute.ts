@@ -8,13 +8,13 @@ export default {
     const regex = /^You have been unmuted!/g
 
     const match = regex.exec(context.message)
-    const username = context.clientInstance.username()
-    const uuid = context.clientInstance.uuid()
-    assert.ok(username !== undefined)
-    assert.ok(uuid !== undefined)
-    const botUser = await context.application.core.initializeMinecraftUser({ id: uuid, name: username }, {})
-
     if (match != undefined) {
+      const username = context.clientInstance.username()
+      const uuid = context.clientInstance.uuid()
+      assert.ok(username !== undefined)
+      assert.ok(uuid !== undefined)
+      const botUser = await context.application.core.initializeMinecraftUser({ id: uuid, name: username }, {})
+
       context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
