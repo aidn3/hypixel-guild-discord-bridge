@@ -11,7 +11,7 @@ export default class Execute extends ChatCommandHandler {
     })
   }
 
-  handler(context: ChatCommandContext): string {
+  async handler(context: ChatCommandContext): Promise<string> {
     const originalMessage = context.message
     if (originalMessage.instanceType !== InstanceType.Minecraft) {
       return 'Can only be executed from Minecraft'
@@ -23,13 +23,12 @@ export default class Execute extends ChatCommandHandler {
       return this.getExample(context.commandPrefix)
     }
 
-    context.app.emit('minecraftSend', {
-      ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: [originalMessage.instanceName],
-      priority: MinecraftSendChatPriority.High,
-      command: context.args.join(' ')
-    })
-
+    await context.app.sendMinecraft(
+      [originalMessage.instanceName],
+      MinecraftSendChatPriority.High,
+      undefined,
+      context.args.join(' ')
+    )
     return `Command has been executed.`
   }
 }

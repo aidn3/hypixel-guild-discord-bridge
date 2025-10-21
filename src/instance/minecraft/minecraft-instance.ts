@@ -3,8 +3,14 @@ import { setImmediate } from 'node:timers/promises'
 import { createClient, states } from 'minecraft-protocol'
 
 import type Application from '../../application.js'
-import type { ChannelType, MinecraftSendChatPriority } from '../../common/application-event.js'
-import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
+import type { ChannelType } from '../../common/application-event.js'
+import {
+  InstanceMessageType,
+  InstanceSignalType,
+  InstanceType,
+  MinecraftSendChatPriority,
+  Permission
+} from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { Timeout } from '../../utility/timeout.js'
 
@@ -102,6 +108,20 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     const adminUsername = this.minecraftManager.getConfig().data.adminUsername
     if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
+  }
+
+  override async signal(type: InstanceSignalType): Promise<void> {
+    if (this.currentStatus() === Status.Connected) {
+      if (type === InstanceSignalType.Restart) {
+        await this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, undefined)
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      } else if (type === InstanceSignalType.Shutdown) {
+        await this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, undefined)
+      }
+    }
+
+    return super.signal(type)
   }
 
   public async acquireLimbo(): Promise<Timeout<void>> {

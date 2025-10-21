@@ -69,14 +69,6 @@ export interface ApplicationEvents {
    * Display a useful message coming from the internal components
    */
   instanceMessage: (event: Readonly<InstanceMessage>) => void
-  /**
-   * Signal used to shut down/restart an instance.
-   *
-   * Signaling to shut down the application is possible.
-   * It will take some time for the application to shut down.
-   * Application will auto restart if a process monitor is used.
-   */
-  instanceSignal: (event: Readonly<InstanceSignal>) => void
 
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
@@ -104,10 +96,6 @@ export interface ApplicationEvents {
    * Minecraft instance raw chat
    */
   minecraftChat: (event: Readonly<MinecraftRawChatEvent>) => void
-  /**
-   * Command used to send a chat message/command through a minecraft instance
-   */
-  minecraftSend: (event: Readonly<MinecraftSendChat>) => void
 }
 
 /**
@@ -156,7 +144,6 @@ export enum Color {
 
 /**
  * The base interface for every event.
- * There are two main types of events: {@link InformEvent} and {@link SignalEvent}.
  */
 export interface BaseEvent extends InstanceIdentifier {
   /**
@@ -193,22 +180,9 @@ export interface InstanceIdentifier {
 }
 
 /**
- * One of the two types events.
  * Inform event is when an instance/component is informing other ones about an event happening.
  */
 export type InformEvent = BaseEvent
-
-/**
- * One of the two types events.
- * Send a signal as an event to all (or targeted) instance/component to command them.
- */
-export interface SignalEvent extends BaseEvent {
-  /**
-   * The instance name to send the signal to.
-   * Use `undefined` to send to all instances.
-   */
-  readonly targetInstanceName: string[]
-}
 
 /**
  * Used to associate an event with a previous one
@@ -738,26 +712,15 @@ interface BaseInstanceMessage extends InformEvent {
 export type InstanceMessage = BaseInstanceMessage | (BaseInstanceMessage & ReplyEvent)
 
 /**
- * Signal event used to command a Minecraft instance to send a command through chat
+ * When to handle the command.
+ *
+ * Warning: spamming multiple commands using <code>instant</code>
+ * can result in the client being throttled, which can not be properly detected
+ * due to the nature of <code>instant</code> not leaving room to such detections.
+ *
+ * Warning: Any priority other than <code>default</code> can lead to inaccurate detections,
+ * be it regarding {@link InformEvent#eventId} or whether the command even succeed in execution.
  */
-export interface MinecraftSendChat extends SignalEvent {
-  /**
-   * The command to send
-   */
-  readonly command: string
-  /**
-   * When to handle the command.
-   *
-   * Warning: spamming multiple commands using <code>instant</code>
-   * can result in the client being throttled, which can not be properly detected
-   * due to the nature of <code>instant</code> not leaving room to such detections.
-   *
-   * Warning: Any priority other than <code>default</code> can lead to inaccurate detections,
-   * be it regarding {@link InformEvent#eventId} or whether the command even succeed in execution.
-   */
-  readonly priority: MinecraftSendChatPriority
-}
-
 export enum MinecraftSendChatPriority {
   /**
    * let the instance decide when to handle the command.
@@ -774,16 +737,6 @@ export enum MinecraftSendChatPriority {
    * since it will completely disregard any queue and cooldown instantly sending it.
    */
   Instant = 'instant'
-}
-
-/**
- * Signal event used to control the application and instances
- */
-export interface InstanceSignal extends SignalEvent {
-  /**
-   * A flag indicating the signal
-   */
-  readonly type: InstanceSignalType
 }
 
 export enum InstanceSignalType {

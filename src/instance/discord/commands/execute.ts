@@ -21,12 +21,7 @@ export default {
     const command: string = context.interaction.options.getString('command', true)
     const instance: string = context.interaction.options.getString('instance', true)
 
-    context.application.emit('minecraftSend', {
-      ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: [instance],
-      priority: MinecraftSendChatPriority.High,
-      command: command
-    })
+    await context.application.sendMinecraft([instance], MinecraftSendChatPriority.High, undefined, command)
     await context.interaction.editReply(`Command executed: ${command}`)
   }
 } satisfies DiscordCommandHandler

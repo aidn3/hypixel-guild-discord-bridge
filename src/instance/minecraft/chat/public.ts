@@ -1,9 +1,4 @@
-import {
-  ChannelType,
-  InstanceType,
-  MinecraftSendChatPriority,
-  PunishmentType
-} from '../../../common/application-event.js'
+import { ChannelType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
 import { durationToMinecraftDuration } from '../../../utility/shared-utility'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 import { getUuidFromGuildChat } from '../common/common'
@@ -26,12 +21,11 @@ export default {
       const punishments = user.punishments()
       const mutedTill = punishments.punishedTill(PunishmentType.Mute)
       if (mutedTill) {
-        context.application.emit('minecraftSend', {
-          ...context.eventHelper.fillBaseEvent(),
-          targetInstanceName: context.application.getInstancesNames(InstanceType.Minecraft),
-          priority: MinecraftSendChatPriority.High,
-          command: `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`
-        })
+        await context.clientInstance.send(
+          `/guild mute ${username} ${durationToMinecraftDuration(mutedTill - Date.now())}`,
+          MinecraftSendChatPriority.High,
+          undefined
+        )
       }
 
       // if any other punishments active

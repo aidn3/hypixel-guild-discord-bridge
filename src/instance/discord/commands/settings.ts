@@ -1127,13 +1127,6 @@ async function minecraftInstanceAdd(
     embed.description += `- ${event.message}\n`
     refresher.refresh()
   }
-  registeredEvents.instanceSignal = (event) => {
-    if (!event.targetInstanceName.includes(instanceName)) return
-
-    assert.ok(embed.description)
-    embed.description += `- ${event.type} signal has been received\n`
-    refresher.refresh()
-  }
   registeredEvents.instanceAnnouncement = (event) => {
     if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 

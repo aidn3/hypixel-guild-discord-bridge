@@ -168,12 +168,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     }
 
     this.application.on('minecraftChat', chatListener)
-    this.application.emit('minecraftSend', {
-      ...this.eventHelper.fillBaseEvent(),
-      targetInstanceName: [instanceName],
-      priority: MinecraftSendChatPriority.High,
-      command: `/guild list`
-    })
+    await this.application.sendMinecraft([instanceName], MinecraftSendChatPriority.High, undefined, `/guild list`)
     const error = await timeout.wait()
     this.application.removeListener('minecraftChat', chatListener)
     if (error) throw error

@@ -80,24 +80,10 @@ export default class LoggerManager extends SubInstance<DiscordInstance, Instance
       )
     })
 
-    this.application.on('instanceSignal', (event) => {
-      void this.send(
-        `Instance [${event.instanceName}] > ${event.targetInstanceName.join(', ')} instance(s) received a signal with flag=${event.type}.`
-      ).catch(this.errorHandler.promiseCatch('handling instanceSignal event'))
-    })
-
     this.application.on('minecraftSelfBroadcast', (event) => {
       void this.send(`Instance [${event.instanceName}] > Minecraft instance ${event.username}/${event.uuid}`).catch(
         this.errorHandler.promiseCatch('handling minecraftSelfBroadcast event')
       )
-    })
-    this.application.on('minecraftSend', (event) => {
-      // Too spammy events that are automatically sent every half a minute
-      if (event.command === '/guild list' || event.command === '/guild online') return
-
-      void this.send(
-        `Instance [${event.instanceName}]> [target=${event.targetInstanceName.join(', ')}] ${event.command}`
-      ).catch(this.errorHandler.promiseCatch('handling minecraftSend event'))
     })
   }
 

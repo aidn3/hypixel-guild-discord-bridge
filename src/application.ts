@@ -13,7 +13,7 @@ import Logger4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
-import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
+import type { ApplicationEvents, InstanceIdentifier, MinecraftSendChatPriority } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
 import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
@@ -27,7 +27,7 @@ import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
-import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import type { LanguageConfig } from './language-config.js'
@@ -126,24 +126,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       : undefined
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
-
-    this.on('instanceSignal', (event) => {
-      if (event.targetInstanceName.includes(this.instanceName)) {
-        this.logger.info('Shutdown signal has been received. Shutting down this node.')
-        if (event.type === InstanceSignalType.Restart) {
-          this.logger.info('Node should auto restart if a process monitor service is used.')
-        }
-
-        this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-        void sleep(5000)
-          .then(() => {
-            this.logger.debug('shutting down application')
-            return this.shutdown()
-          })
-          .then(() => gracefullyExitProcess(2))
-          .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
-      }
-    })
   }
 
   public getConfigFilePath(filename: string): string {
@@ -213,6 +195,98 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     await Promise.all(tasks)
   }
 
+  /**
+   * Send chat/command via Minecraft instance
+   *
+   * @param instanceNames The instance names to send the command through.
+   * @param priority See {@link MinecraftSendChatPriority}
+   * @param eventId
+   * @param command The command to send
+   */
+  public async sendMinecraft(
+    instanceNames: string[],
+    priority: MinecraftSendChatPriority,
+    eventId: string | undefined,
+    command: string
+  ): Promise<void> {
+    const instances = []
+
+    for (const instanceName of instanceNames) {
+      const instance = this.instanceByName(instanceName)
+
+      if (instance === undefined) {
+        throw new Error(`no instance found with the name "${instanceName}"`)
+      } else if (instance instanceof MinecraftInstance) {
+        instances.push(instance)
+      } else {
+        throw new TypeError(`instance is not type MinecraftInstance. Actual=${instance.instanceType}`)
+      }
+    }
+
+    const tasks = []
+    for (const instance of instances) {
+      tasks.push(instance.send(command, priority, eventId))
+    }
+    await Promise.all(tasks)
+  }
+
+  /**
+   * Signal to shut down/restart an instance.
+   *
+   * Signaling to shut down the application is possible.
+   * It will take some time for the application to shut down.
+   * Application will auto restart if a process monitor is used.
+   *
+   * @param instanceNames The instance names to send the command through.
+   * @param type A flag indicating the signal
+   */
+  public async sendSignal(instanceNames: string[], type: InstanceSignalType): Promise<void> {
+    const instances = []
+
+    for (const instanceName of instanceNames) {
+      if (instanceName.toLowerCase() === this.instanceName.toLowerCase()) continue
+      const instance = this.instanceByName(instanceName)
+
+      if (instance === undefined) {
+        throw new Error(`no instance found with the name "${instanceName}"`)
+      } else if (instance instanceof ConnectableInstance) {
+        instances.push(instance)
+      } else {
+        throw new TypeError(`instance is not type ConnectableInstance.`)
+      }
+    }
+
+    const tasks = []
+    for (const instance of instances) {
+      tasks.push(instance.signal(type))
+    }
+    await Promise.all(tasks)
+
+    const signalMain = instanceNames.some(
+      (instanceName) => instanceName.toLowerCase() === this.instanceName.toLowerCase()
+    )
+    if (signalMain) {
+      await this.receivedSignal(type)
+    }
+  }
+
+  private async receivedSignal(type: InstanceSignalType): Promise<void> {
+    this.logger.info('Shutdown signal has been received. Shutting down this node.')
+
+    if (type === InstanceSignalType.Restart) {
+      this.logger.info('Node should auto restart if a process monitor service is used.')
+    }
+
+    this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
+    await sleep(5000)
+      .then(() => {
+        this.logger.debug('shutting down application')
+        return this.shutdown()
+      })
+      .then(() => gracefullyExitProcess(2))
+      .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
+  }
+
   public getInstancesNames(instanceType: InstanceType): string[] {
     return this.getAllInstancesIdentifiers()
       .filter((instance) => instance.instanceType === instanceType)
@@ -228,6 +302,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       instanceName: instance.instanceName,
       instanceType: instance.instanceType
     }))
+  }
+
+  private instanceByName(name: string): AllInstances | undefined {
+    return this.getAllInstances().find((instance) => instance.instanceName.toLowerCase() === name.toLowerCase())
   }
 
   private getAllInstances(): AllInstances[] {

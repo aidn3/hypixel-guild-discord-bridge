@@ -29,18 +29,18 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
     super(application, instance, eventHelper, logger, errorHandler)
 
     this.application.on('guildPlayer', (event) => {
-      this.onGuildPlayer(event)
+      void this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
     this.application.on('punishmentAdd', (event) => {
-      this.onPunishmentAdd(event)
+      void this.onPunishmentAdd(event).catch(this.errorHandler.promiseCatch('handling punishmentAdd event'))
     })
 
     this.application.on('punishmentForgive', (event) => {
-      this.onPunishmentForgive(event)
+      void this.onPunishmentForgive(event).catch(this.errorHandler.promiseCatch('handling punishmentForgive event'))
     })
   }
 
-  private onPunishmentAdd(event: Punishment): void {
+  private async onPunishmentAdd(event: Punishment): Promise<void> {
     if (event.instanceType === InstanceType.Minecraft) return
 
     const userUuid: string | undefined = event.user.mojangProfile()?.id
@@ -48,11 +48,11 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
 
     switch (event.type) {
       case PunishmentType.Mute: {
-        this.enforceMute(userUuid, event)
+        await this.enforceMute(userUuid, event)
         break
       }
       case PunishmentType.Ban: {
-        this.enforceBan(userUuid, event.reason)
+        await this.enforceBan(userUuid, event.reason)
         break
       }
       default: {
@@ -62,19 +62,19 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
     }
   }
 
-  private onPunishmentForgive(event: PunishmentForgive): void {
+  private async onPunishmentForgive(event: PunishmentForgive): Promise<void> {
     if (event.instanceType === InstanceType.Minecraft) return
 
     const userUuid: string | undefined = event.user.mojangProfile()?.id
     if (userUuid === undefined) return
-    this.unmute(userUuid)
+    await this.unmute(userUuid)
   }
 
-  private onGuildPlayer(event: GuildPlayerEvent): void {
+  private async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
     switch (event.type) {
       case GuildPlayerEventType.Unmute:
       case GuildPlayerEventType.Join: {
-        this.checkAndEnforce(event.user, [PunishmentType.Ban, PunishmentType.Mute])
+        await this.checkAndEnforce(event.user, [PunishmentType.Ban, PunishmentType.Mute])
         break
       }
       case GuildPlayerEventType.Mute:
@@ -82,19 +82,19 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
       case GuildPlayerEventType.Demote:
       case GuildPlayerEventType.Offline:
       case GuildPlayerEventType.Online: {
-        this.checkAndEnforce(event.user, [PunishmentType.Ban])
+        await this.checkAndEnforce(event.user, [PunishmentType.Ban])
       }
     }
   }
 
-  private checkAndEnforce(user: MinecraftUser, types: PunishmentType[]): void {
+  private async checkAndEnforce(user: MinecraftUser, types: PunishmentType[]): Promise<void> {
     const userUuid = user.mojangProfile().id
     const punishments = user.punishments()
 
     if (types.includes(PunishmentType.Ban)) {
       const longestPunishment = punishments.longestPunishment(PunishmentType.Mute)
       if (longestPunishment !== undefined) {
-        this.enforceBan(userUuid, longestPunishment.reason)
+        await this.enforceBan(userUuid, longestPunishment.reason)
         return
       }
     }
@@ -102,23 +102,22 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
     if (types.includes(PunishmentType.Mute)) {
       const longestPunishment = punishments.longestPunishment(PunishmentType.Mute)
       if (longestPunishment !== undefined) {
-        this.enforceMute(userUuid, longestPunishment)
+        await this.enforceMute(userUuid, longestPunishment)
         return
       }
     }
   }
 
-  private unmute(userUuid: string): void {
-    this.application.emit('minecraftSend', {
-      ...this.eventHelper.fillBaseEvent(),
-
-      priority: MinecraftSendChatPriority.High,
-      targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
-      command: `/guild unmute ${userUuid}`
-    })
+  private async unmute(userUuid: string): Promise<void> {
+    await this.application.sendMinecraft(
+      this.application.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild unmute ${userUuid}`
+    )
   }
 
-  private enforceMute(userUuid: string, event: Pick<Punishment, 'createdAt' | 'till'>): void {
+  private async enforceMute(userUuid: string, event: Pick<Punishment, 'createdAt' | 'till'>): Promise<void> {
     /*
      * Use the creation time if there is a server lag when forwarding the punishment.
      * This is done to avoid visual bugs that are shown when a message is displayed to users
@@ -134,20 +133,20 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
 
     const muteDuration = event.till - startTime
 
-    this.application.emit('minecraftSend', {
-      ...this.eventHelper.fillBaseEvent(),
-      targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
-      priority: MinecraftSendChatPriority.High,
-      command: `/guild mute ${userUuid} ${durationToMinecraftDuration(muteDuration)}`
-    })
+    await this.application.sendMinecraft(
+      this.application.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild mute ${userUuid} ${durationToMinecraftDuration(muteDuration)}`
+    )
   }
 
-  private enforceBan(userUuid: string, reason: string): void {
-    this.application.emit('minecraftSend', {
-      ...this.eventHelper.fillBaseEvent(),
-      targetInstanceName: this.application.getInstancesNames(InstanceType.Minecraft),
-      priority: MinecraftSendChatPriority.High,
-      command: `/guild kick ${userUuid} ${reason}`
-    })
+  private async enforceBan(userUuid: string, reason: string): Promise<void> {
+    await this.application.sendMinecraft(
+      this.application.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild kick ${userUuid} ${reason}`
+    )
   }
 }

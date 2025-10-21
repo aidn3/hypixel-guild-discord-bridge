@@ -39,12 +39,9 @@ export default class AutoRestartPlugin extends PluginInstance {
           message: 'Application Restarting: Scheduled restart'
         })
 
-        this.application.emit('instanceSignal', {
-          ...this.eventHelper.fillBaseEvent(),
-
-          type: InstanceSignalType.Restart,
-          targetInstanceName: [this.application.instanceName]
-        })
+        void this.application
+          .sendSignal([this.application.instanceName], InstanceSignalType.Restart)
+          .catch(this.errorHandler.promiseCatch('sending signal to restart application'))
       }
     }, AutoRestartPlugin.CheckEvery)
   }

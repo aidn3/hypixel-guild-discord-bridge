@@ -166,12 +166,7 @@ export async function checkChatTriggers(
   }
 
   app.on('minecraftChat', chatListener)
-  app.emit('minecraftSend', {
-    ...eventHelper.fillBaseEvent(),
-    targetInstanceName: targetInstance,
-    priority: MinecraftSendChatPriority.High,
-    command
-  })
+  await app.sendMinecraft(targetInstance, MinecraftSendChatPriority.High, undefined, command)
   await timeout.wait()
   app.removeListener('minecraftChat', chatListener)
 

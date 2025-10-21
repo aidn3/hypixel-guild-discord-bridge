@@ -11,16 +11,13 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
-  InstanceSignal,
   InstanceStatusEvent,
   MinecraftReactiveEvent,
-  MinecraftReactiveEventType,
-  MinecraftSendChat
+  MinecraftReactiveEventType
 } from '../../common/application-event.js'
 import {
   ChannelType,
   GuildPlayerEventType,
-  InstanceSignalType,
   InstanceType,
   MinecraftSendChatPriority,
   PunishmentPurpose,
@@ -41,14 +38,6 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     private readonly messageAssociation: MessageAssociation
   ) {
     super(application, clientInstance, logger, errorHandler)
-
-    this.application.on('instanceSignal', (event) => {
-      this.onInstanceSignal(event)
-    })
-
-    this.application.on('minecraftSend', (event) => {
-      void this.onMinecraftSend(event).catch(this.errorHandler.promiseCatch('handling incoming minecraftSend event'))
-    })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -175,29 +164,6 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   onCommandFeedback(event: CommandFeedbackEvent): void | Promise<void> {
     this.handleCommand(event, true)
-  }
-
-  private onInstanceSignal(event: InstanceSignal) {
-    if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      this.logger.log(`instance has received signal type ${event.type}`)
-
-      if (event.type === InstanceSignalType.Restart) {
-        void this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, event.eventId).catch(
-          this.errorHandler.promiseCatch('handling restart broadcast and reconnecting')
-        )
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (event.type === InstanceSignalType.Shutdown) {
-        void this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, event.eventId).catch(
-          this.errorHandler.promiseCatch('handling restart broadcast and reconnecting')
-        )
-      }
-    }
-  }
-
-  private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
-    if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      await this.send(event.command, event.priority, event.eventId)
-    }
   }
 
   private handleCommand(event: CommandEvent, feedback: boolean) {
