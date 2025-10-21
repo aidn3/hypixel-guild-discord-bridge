@@ -20,3 +20,5 @@ type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>
 }
 /* eslint-enable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-empty-object-type */
+
+type Exact<TExpected, TActual extends TExpected> = TExpected extends TActual ? TExpected : never
