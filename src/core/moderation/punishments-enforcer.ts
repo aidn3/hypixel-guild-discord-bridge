@@ -92,7 +92,7 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
     const punishments = user.punishments()
 
     if (types.includes(PunishmentType.Ban)) {
-      const longestPunishment = punishments.longestPunishment(PunishmentType.Mute)
+      const longestPunishment = punishments.longestPunishment(PunishmentType.Ban)
       if (longestPunishment !== undefined) {
         await this.enforceBan(userUuid, longestPunishment.reason)
         return
