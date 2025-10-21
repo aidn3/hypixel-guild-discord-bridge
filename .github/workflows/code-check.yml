@@ -3,7 +3,7 @@ name: 'Lint And Compile'
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
 
 jobs:
   CI:
