@@ -64,7 +64,8 @@
     "tiny-typed-emitter": "^2.1.0",
     "ts-interface-checker": "^1.0.2",
     "tsx": "^4.16.2",
-    "yaml": "^2.4.5"
+    "yaml": "^2.4.5",
+    "bufferutil": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
@@ -91,8 +92,5 @@
     "type-coverage": "^2.29.7",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.28.0"
-  },
-  "optionalDependencies": {
-    "bufferutil": "^4.0.8"
   }
 }
