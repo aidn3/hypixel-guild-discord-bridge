@@ -5,7 +5,11 @@
   "type": "module",
   "main": "index.ts",
   "engines": {
-    "node": ">=22.16"
+    "node": ">=22.16",
+    "npm": ">=10.0.0",
+    "pnpm": "forbidden, use npm instead",
+    "yarn": "forbidden, use npm instead",
+    "bun": "forbidden, use npm instead"
   },
   "scripts": {
     "start": "node --import tsx/esm index.ts",

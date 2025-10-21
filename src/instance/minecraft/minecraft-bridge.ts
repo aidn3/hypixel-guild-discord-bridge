@@ -57,7 +57,14 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
     await this.send(
-      await this.formatChatMessage(prefix, event.user.displayName(), replyUsername, event.message, event.instanceName),
+      await this.formatChatMessage(
+        prefix,
+        event.user.displayName(),
+        replyUsername,
+        event.message,
+        event.instanceName,
+        event.instanceType
+      ),
       MinecraftSendChatPriority.Default,
       event.eventId
     ).catch(this.errorHandler.promiseCatch('sending chat message'))
@@ -218,12 +225,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     username: string,
     replyUsername: string | undefined,
     message: string,
-    instanceName: string
+    instanceName: string,
+    instanceType: InstanceType
   ): Promise<string> {
     let full = `/${prefix} `
 
     if (this.application.generalConfig.data.originTag) {
-      full += `[${instanceName}] `
+      full += instanceType === InstanceType.Discord ? `[DC] ` : `[${instanceName}] `
     }
 
     full += username
