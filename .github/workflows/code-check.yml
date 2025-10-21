@@ -35,7 +35,7 @@ jobs:
         run: npx type-coverage --detail true --update true
 
       - name: Ensure a clean working directory
-        run: git diff --name-status --exit-code
+        run: git diff --exit-code
 
       - name: Test Compile TypeScript
         run: npx tsc --noEmit
