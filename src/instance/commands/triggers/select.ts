@@ -1,3 +1,4 @@
+import { ChannelType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
@@ -11,6 +12,10 @@ export default class Select extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    if (![ChannelType.Public, ChannelType.Officer].includes(context.message.channelType)) {
+      return `${context.username}, Command can only be executed in public and officer chat!`
+    }
+
     const usernames = await this.getUsernames(context)
     if (usernames.length === 0) return 'No guild member to select :('
 
