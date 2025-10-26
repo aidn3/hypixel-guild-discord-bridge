@@ -3,7 +3,8 @@ export default class Duration {
   private static readonly SecondsValue = 60
   private static readonly MinutesValue = 60
   private static readonly HoursValue = 24
-  private static readonly DaysValue = 31
+  private static readonly DaysValue = 30
+  private static readonly MonthsValue = 12
 
   private constructor(private readonly milliseconds: number) {}
 
@@ -25,6 +26,14 @@ export default class Duration {
 
   public static days(day: number): Duration {
     return this.hours(day * this.HoursValue)
+  }
+
+  public static months(month: number): Duration {
+    return this.days(month * this.DaysValue)
+  }
+
+  public static years(year: number): Duration {
+    return this.months(year * this.MonthsValue)
   }
 
   public toMilliseconds(): number {

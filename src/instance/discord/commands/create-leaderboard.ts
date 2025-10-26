@@ -47,7 +47,7 @@ export default {
       }
     }
 
-    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guildId: guildId }
+    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guildId: guildId, user: undefined }
     let leaderboard: { embed: APIEmbed; totalPages: number } | undefined
     let entries: LeaderboardEntry[] | undefined
 

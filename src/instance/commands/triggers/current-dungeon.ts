@@ -4,7 +4,7 @@ import Moment from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { MojangApi } from '../../../utility/mojang.js'
+import type { MojangApi } from '../../../core/users/mojang'
 import {
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,

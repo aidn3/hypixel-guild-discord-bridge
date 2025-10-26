@@ -1,5 +1,3 @@
-import type Application from '../application.js'
-
 import type { InstanceStatusEvent, InstanceType } from './application-event.js'
 import { InstanceSignalType } from './application-event.js'
 import { Instance } from './instance.js'
@@ -7,30 +5,18 @@ import { Instance } from './instance.js'
 export abstract class ConnectableInstance<T extends InstanceType> extends Instance<T> {
   private status: Status = Status.Fresh
 
-  protected constructor(app: Application, instanceName: string, instanceType: T) {
-    super(app, instanceName, instanceType)
+  public async signal(type: InstanceSignalType): Promise<void> {
+    this.logger.log(`instance has received signal type=${type}`)
 
-    this.application.on('instanceSignal', (event) => {
-      if (event.targetInstanceName.includes(this.instanceName)) {
-        this.logger.log(`instance has received signal type=${event.type}`)
-
-        if (event.type === InstanceSignalType.Restart) {
-          const promise = this.connect()
-          if (promise !== undefined && 'then' in promise) {
-            promise.catch(this.errorHandler.promiseCatch('handling instanceSignal'))
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (event.type === InstanceSignalType.Shutdown) {
-          const promise = this.disconnect()
-          if (promise !== undefined && 'then' in promise) {
-            promise.catch(this.errorHandler.promiseCatch('handling instanceSignal'))
-          }
-        } else {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          throw new Error(`unknown instanceSignal type=${event.type}`)
-        }
-      }
-    })
+    if (type === InstanceSignalType.Restart) {
+      await this.connect()
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } else if (type === InstanceSignalType.Shutdown) {
+      await this.disconnect()
+    } else {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`unknown instanceSignal type=${type}`)
+    }
   }
 
   public currentStatus(): Status {

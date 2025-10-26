@@ -2,13 +2,13 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import { ChannelType, Color, GuildPlayerEventType, type InstanceType } from '../../../common/application-event.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class Reaction extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class Reaction extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   public static JoinMessages = [
     'Welcome {username} to our guild! Do /g discord and !help for ingame commands :-)',
     "{username}, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",
@@ -64,7 +64,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.username)
+        message = message.replaceAll('{username}', event.user.displayName())
 
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
@@ -72,7 +72,7 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           channels: [ChannelType.Public],
           color: Color.Good,
 
-          username: event.username,
+          user: event.user,
           message: message
         })
       }
@@ -87,14 +87,14 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.username)
+        message = message.replaceAll('{username}', event.user.displayName())
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
           color: Color.Bad,
 
-          username: event.username,
+          user: event.user,
           message: message
         })
       }
@@ -109,14 +109,14 @@ export default class Reaction extends EventHandler<MinecraftInstance, InstanceTy
           return
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.username)
+        message = message.replaceAll('{username}', event.user.displayName())
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
           color: Color.Bad,
 
-          username: event.username,
+          user: event.user,
           message: message
         })
       }

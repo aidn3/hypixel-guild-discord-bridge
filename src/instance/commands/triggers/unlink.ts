@@ -5,8 +5,6 @@ import NodeCache from 'node-cache'
 import { InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { LinkType } from '../../users/features/verification.js'
-import { getUuidIfExists } from '../common/utility'
 
 export default class Unlink extends ChatCommandHandler {
   private readonly confirmationId = new NodeCache({ stdTTL: 60 })
@@ -22,21 +20,18 @@ export default class Unlink extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenId = context.args[0] ?? ''
 
-    if (context.instanceType !== InstanceType.Minecraft) {
+    if (context.message.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Can only use this command in-game`
     }
 
-    const uuid = await getUuidIfExists(context.app.mojangApi, context.username)
-    if (uuid === undefined) {
-      return `${context.username}, Could not resolve your profile uuid??`
-    }
+    const uuid = context.message.user.mojangProfile().id
 
     if (this.confirmationId.get<string>(givenId) === uuid) {
-      const count = context.app.usersManager.verification.invalidate({ uuid: uuid })
+      const count = context.app.core.verification.invalidate({ uuid: uuid })
       return count > 0 ? `${context.username}, Successfully unlinked!` : `${context.username}, Nothing to Unlink!`
     } else {
-      const link = await context.app.usersManager.verification.findByIngame(uuid)
-      if (link.type === LinkType.None) {
+      const userLink = await context.app.core.verification.findByIngame(uuid)
+      if (userLink === undefined) {
         return `${context.username}, Nothing to Unlink!`
       }
 

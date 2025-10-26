@@ -1,6 +1,6 @@
 import type Application from '../src/application.js'
 import type { InstanceIdentifier } from '../src/common/application-event.js'
-import { ChannelType, InstanceType, Permission } from '../src/common/application-event.js'
+import { ChannelType, InstanceType } from '../src/common/application-event.js'
 import EventHelper from '../src/common/event-helper.js'
 import { InternalInstancePrefix } from '../src/common/instance.js'
 
@@ -12,16 +12,18 @@ export class EventsUtility implements InstanceIdentifier {
   constructor(private readonly application: Application) {
     //this.application.applicationIntegrity.addLocalInstance(this)
   }
-  public simulateChat(username: string, message: string) {
+
+  public async simulateChat(username: string, message: string) {
     this.application.emit('chat', {
       ...this.eventHelper.fillBaseEvent(),
 
       channelId: '0',
       channelType: ChannelType.Public,
 
-      permission: Permission.Anyone,
-      userId: '123',
-      username: username,
+      user: await this.application.core.initializeDiscordUser(
+        { id: '123', displayName: username, avatar: undefined },
+        {}
+      ),
       replyUsername: undefined,
       message: message
     })

@@ -11,14 +11,21 @@ export default {
       const responsible = match[1]
       const target = match[2]
 
-      const mojangProfile = await context.application.mojangApi.profileByUsername(target).catch(() => undefined)
-      const identifiers = [target]
-      if (mojangProfile) identifiers.push(mojangProfile.id, mojangProfile.name)
+      const targetProfile = await context.application.mojangApi.profileByUsername(target)
+      const targetUser = await context.application.core.initializeMinecraftUser(
+        { id: targetProfile.id, name: target },
+        {}
+      )
 
-      context.application.moderation.punishments.remove({
-        ...context.eventHelper.fillBaseEvent(),
-        userIdentifiers: identifiers
-      })
+      const responsibleProfile = await context.application.mojangApi.profileByUsername(responsible)
+      const responsibleUser = await context.application.core.initializeMinecraftUser(
+        { id: responsibleProfile.id, name: responsible },
+        {}
+      )
+
+      if (responsible !== context.clientInstance.username()) {
+        targetUser.forgive(context.eventHelper.fillBaseEvent())
+      }
 
       context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
@@ -27,7 +34,9 @@ export default {
         channels: [ChannelType.Officer],
 
         type: GuildPlayerEventType.Unmute,
-        username: responsible,
+        user: targetUser,
+        responsible: responsibleUser,
+
         message: context.message,
         rawMessage: context.rawMessage
       })

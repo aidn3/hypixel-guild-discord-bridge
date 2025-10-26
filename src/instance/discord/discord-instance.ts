@@ -1,5 +1,6 @@
 import assert from 'node:assert'
 
+import type { Guild, GuildMember, Snowflake, User } from 'discord.js'
 import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
 
 import type { StaticDiscordConfig } from '../../application-config.js'
@@ -7,6 +8,7 @@ import type Application from '../../application.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
 import { ConfigManager } from '../../common/config-manager.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import type { DiscordProfile } from '../../common/user'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
@@ -116,9 +118,57 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     )
   }
 
-  public resolvePrivilegeLevel(userId: string, roles: string[]): Permission {
+  public profileById(userId: Snowflake, guild: Guild | undefined): DiscordProfile | undefined {
+    const user = this.client.users.cache.get(userId)
+    if (user !== undefined) return this.profileByUser(user, guild?.members.cache.get(userId))
+
+    return undefined
+  }
+
+  public profileByUser(user: User, guildMember: GuildMember | undefined): DiscordProfile {
+    return {
+      id: user.id,
+      displayName:
+        this.cleanUsername(guildMember?.displayName) ??
+        this.cleanUsername(user.username) ??
+        this.cleanUsername(user.displayName) ??
+        user.id,
+      avatar: guildMember?.avatarURL() ?? user.avatarURL() ?? undefined
+    }
+  }
+
+  private cleanUsername(username: string | undefined): string | undefined {
+    if (username === undefined) return undefined
+
+    // clear all non ASCII characters
+    // eslint-disable-next-line no-control-regex
+    username = username.replaceAll(/[^\u0000-\u007F]/g, '')
+
+    username = username.trim().slice(0, 16)
+
+    if (/^\w+$/.test(username)) return username
+    if (username.includes(' ')) return username.split(' ')[0]
+    return undefined
+  }
+
+  public resolvePermission(userId: string): Permission {
+    assert.strictEqual(this.currentStatus(), Status.Connected)
+    assert.ok(this.client.isReady())
+
     if (this.staticConfig.adminIds.includes(userId)) return Permission.Admin
 
+    let highestPermission = Permission.Anyone
+    for (const guild of this.client.guilds.cache.values()) {
+      const guildMember = guild.members.cache.get(userId)
+      if (guildMember === undefined) continue
+      const permissionLevel = this.resolvePrivilegeLevel(guildMember.roles.cache.keys().toArray())
+      if (permissionLevel > highestPermission) highestPermission = permissionLevel
+    }
+
+    return highestPermission
+  }
+
+  private resolvePrivilegeLevel(roles: string[]): Permission {
     if (roles.some((role) => this.config.data.officerRoleIds.includes(role))) {
       return Permission.Officer
     }

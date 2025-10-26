@@ -9,7 +9,6 @@ import {
 
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
-import Autocomplete from '../../users/features/autocomplete.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const IncludeCommand = 'include'
@@ -97,7 +96,7 @@ export default {
     if (subCommand === Remove) {
       const option = context.interaction.options.getFocused(true)
       if (option.name !== 'word') return
-      const config = context.application.moderation.getConfig()
+      const config = context.application.core.getModerationConfig()
       let list: string[] = []
       if (groupCommand === IncludeCommand) {
         list = config.data.profanityBlacklist
@@ -107,7 +106,7 @@ export default {
         throw new Error('Unknown list??')
       }
 
-      const response = Autocomplete.search(option.value, list)
+      const response = search(option.value, list)
         .slice(0, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
@@ -144,7 +143,7 @@ async function handleList(
   await context.interaction.deferReply()
 
   await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, (page) => {
-    const config = context.application.moderation.getConfig()
+    const config = context.application.core.getModerationConfig()
     let list: string[] | undefined
     if (group === IncludeCommand) {
       list = config.data.profanityBlacklist
@@ -173,7 +172,7 @@ async function handleAdd(
   context: DiscordCommandContext,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
-  const config = context.application.moderation.getConfig()
+  const config = context.application.core.getModerationConfig()
   let list: string[] | undefined = undefined
   if (group === IncludeCommand) {
     list = config.data.profanityBlacklist
@@ -207,7 +206,7 @@ async function handleAdd(
 
   if (changed) {
     config.markDirty()
-    context.application.moderation.reloadProfanity()
+    context.application.core.reloadProfanity()
   }
   await context.interaction.reply({ embeds: [result] })
 }
@@ -216,7 +215,7 @@ async function handleRemove(
   context: DiscordCommandContext,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
-  const config = context.application.moderation.getConfig()
+  const config = context.application.core.getModerationConfig()
   let list: string[] | undefined = undefined
   if (group === IncludeCommand) {
     list = config.data.profanityBlacklist
@@ -244,10 +243,42 @@ async function handleRemove(
     list.splice(index, 1)
 
     config.markDirty()
-    context.application.moderation.reloadProfanity()
+    context.application.core.reloadProfanity()
 
     result.description = `Word \`${escapeMarkdown(word)}\` has been removed from the list.`
   }
 
   await context.interaction.reply({ embeds: [result] })
+}
+
+/**
+ * Return a sorted list from best match to least.
+ *
+ * The results are sorted alphabetically by:
+ * - matching the query with the start of a query
+ * - matching any part of a username with the query
+ *
+ * @param query the usernames to look for
+ * @param collection collection to look up the query in
+ */
+function search(query: string, collection: string[]): string[] {
+  const copy = [...collection]
+  copy.sort((a, b) => a.localeCompare(b))
+
+  const queryLowerCased = query.toLowerCase()
+  const results: string[] = []
+
+  for (const username of copy) {
+    if (!results.includes(username) && username.toLowerCase().startsWith(queryLowerCased)) {
+      results.push(username)
+    }
+  }
+
+  for (const username of copy) {
+    if (!results.includes(username) && username.toLowerCase().includes(queryLowerCased)) {
+      results.push(username)
+    }
+  }
+
+  return results
 }

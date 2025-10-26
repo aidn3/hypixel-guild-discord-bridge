@@ -1,8 +1,5 @@
 import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
-// eslint-disable-next-line import/no-restricted-paths
-import { HeatType } from '../../moderation/commands-heat.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
-import { checkHeat } from '../common/common.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
@@ -12,9 +9,16 @@ export default {
     const match = regex.exec(context.message)
     if (match != undefined) {
       const username = match[1]
-      const issuedBy = match[2]
+      const responsibleUsername = match[2]
 
-      await checkHeat(context, issuedBy, HeatType.Kick)
+      const uuid = await context.application.mojangApi.profileByUsername(username).then((profile) => profile.id)
+      const user = await context.application.core.initializeMinecraftUser({ id: uuid, name: username }, {})
+
+      const responsible = await context.application.mojangApi.profileByUsername(responsibleUsername)
+      const responsibleProfile = await context.application.core.initializeMinecraftUser(
+        { name: responsibleUsername, id: responsible.id },
+        {}
+      )
 
       context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
@@ -23,7 +27,9 @@ export default {
         channels: [ChannelType.Public, ChannelType.Officer],
 
         type: GuildPlayerEventType.Kick,
-        username: username,
+        user: user,
+        responsible: responsibleProfile,
+
         message: context.message,
         rawMessage: context.rawMessage
       })

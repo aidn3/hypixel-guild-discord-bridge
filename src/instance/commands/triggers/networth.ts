@@ -7,7 +7,7 @@ import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, localizedNetworth, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedSkyblock, shortenNumber, usernameNotExists } from '../common/utility'
 
 export default class Networth extends ChatCommandHandler {
   constructor() {
@@ -53,6 +53,6 @@ export default class Networth extends ChatCommandHandler {
       .catch(() => undefined)
     if (nonCosmetic === undefined) return `${context.username}, cannot calculate the non-cosmetic networth?`
 
-    return `${givenUsername}'s networth: ${localizedNetworth(networth)}, non-cosmetic: ${localizedNetworth(nonCosmetic)}`
+    return `${givenUsername}'s networth: ${shortenNumber(networth)}, non-cosmetic: ${shortenNumber(nonCosmetic)}`
   }
 }

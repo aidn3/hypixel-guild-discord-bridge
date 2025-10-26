@@ -17,11 +17,7 @@ export default {
     const targetInstance: string = context.interaction.options.getString('instance', true)
     assert.ok(targetInstance)
 
-    context.application.emit('instanceSignal', {
-      ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: [targetInstance],
-      type: InstanceSignalType.Restart
-    })
+    await context.application.sendSignal([targetInstance], InstanceSignalType.Restart)
     await context.interaction.editReply('Reconnect signal has been sent!')
   }
 } satisfies DiscordCommandHandler
