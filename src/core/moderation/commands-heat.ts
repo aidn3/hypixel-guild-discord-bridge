@@ -229,7 +229,7 @@ export class CommandsHeat {
     }
 
     interface OldType {
-      heats: OldEntry[]
+      heats?: OldEntry[]
     }
 
     const path = application.getConfigFilePath('commands-heat.json')
@@ -237,6 +237,7 @@ export class CommandsHeat {
     logger.info('Found old commands-heat file. Migrating this file into the new system...')
 
     const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
+    oldObject.heats ??= []
     const heatActions: HeatAction[] = []
     let total = 0
 
