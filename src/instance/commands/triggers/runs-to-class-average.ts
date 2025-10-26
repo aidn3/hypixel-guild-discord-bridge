@@ -4,7 +4,7 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getDungeonLevelWithOverflow,
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -38,7 +38,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
     const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
     if (selectedProfile.dungeons?.player_classes === undefined) {

@@ -1,5 +1,5 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
-import Hypixel from 'hypixel-api-reborn'
+import { Errors } from 'hypixel-api-reborn'
 
 import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
@@ -28,17 +28,18 @@ export default {
     }
 
     try {
-      const player = await context.application.hypixelApi.getPlayer(mojangProfile.id, { noCacheCheck: true })
+      const player = await context.application.hypixelApi.getPlayer(mojangProfile.id)
+      if (player.isRaw()) throw new Error("Something wen't wrong while fetching data")
 
-      const discord = player.socialMedia.find((social) => social.id === 'DISCORD')?.link
-      if (discord === undefined || discord !== interaction.user.username) {
+      const discord = player.socialMedia.discord
+      if (discord === null || discord !== interaction.user.username) {
         await interaction.editReply({
           embeds: [
             {
               title: 'Failed To Link',
               description:
                 `Please update your in-game Hypixel socials for Discord from ` +
-                (discord === undefined ? 'None' : `\`${escapeMarkdown(discord)}\``) +
+                (discord === null ? 'None' : `\`${escapeMarkdown(discord)}\``) +
                 ` to \`${interaction.user.username}\``,
               color: Color.Bad,
               footer: { text: DefaultCommandFooter }
@@ -53,8 +54,7 @@ export default {
     } catch (error: unknown) {
       if (
         error instanceof Error &&
-        (error.message === Hypixel.Errors.PLAYER_DOES_NOT_EXIST ||
-          error.message === Hypixel.Errors.PLAYER_HAS_NEVER_LOGGED)
+        (error.message === Errors.MALFORMED_UUID || error.message === Errors.PLAYER_HAS_NEVER_LOGGED)
       ) {
         await interaction.editReply({
           embeds: [

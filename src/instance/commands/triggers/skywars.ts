@@ -22,7 +22,7 @@ export default class Skywars extends ChatCommandHandler {
     })
     if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
 
-    const stat = player.stats?.skywars
+    const stat = player.stats?.Skywars
     if (stat === undefined) return `${givenUsername} has never played Skywars before?`
 
     return `${givenUsername}'s skywars level is ${stat.level.toFixed(0)}✫ with K/D ratio of ${stat.KDRatio.toFixed(2)}.`
