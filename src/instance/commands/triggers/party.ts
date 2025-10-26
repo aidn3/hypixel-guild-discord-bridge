@@ -3,6 +3,7 @@ import Moment from 'moment'
 import { ChannelType, InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
 import { getDuration } from '../../../utility/shared-utility'
 
 interface Party {
@@ -30,9 +31,11 @@ export default class PartyManager {
   }
 
   allowedExecution(context: ChatCommandContext): string | undefined {
-    if (context.channelType === ChannelType.Officer || context.channelType === ChannelType.Public) {
-      if (context.instanceType === InstanceType.Minecraft) return undefined
-      if (context.instanceType === InstanceType.Discord) return undefined
+    const originalMessage = context.message
+    if (originalMessage.channelType === ChannelType.Officer || originalMessage.channelType === ChannelType.Public) {
+      if (originalMessage.instanceType === InstanceType.Minecraft) return undefined
+
+      if (originalMessage.instanceType === InstanceType.Discord) return undefined
     }
 
     return 'Parties commands can only be executed in public and officer chat of either minecraft or discord.'
@@ -76,7 +79,7 @@ class PartyStart extends ChatCommandHandler {
   private static readonly MinPartySize = 2
   private static readonly MaxPartySize = 100
   private static readonly MaxPurposeLength = 32
-  private static readonly MaxDuration = 12 * 60 * 60 // 12 hours in seconds
+  private static readonly MaxDuration = Duration.hours(12)
 
   private readonly partyManager
 
@@ -116,13 +119,13 @@ class PartyStart extends ChatCommandHandler {
     ) {
       return `${context.username}, party count muse be between ${PartyStart.MinPartySize} and ${PartyStart.MaxPartySize}`
     }
-    let durationInSeconds: number
+    let duration: Duration
     try {
-      durationInSeconds = getDuration(timeArgument)
+      duration = getDuration(timeArgument)
     } catch {
       return `${context.username}, party duration must be something like "4h" for 4 hours or "30m" for 30 minutes`
     }
-    if (durationInSeconds > PartyStart.MaxDuration) {
+    if (duration.toSeconds() > PartyStart.MaxDuration.toSeconds()) {
       return `${context.username}, party duration must be at most 12 hours. You can recreate the party any time if need more time!`
     }
 
@@ -134,7 +137,7 @@ class PartyStart extends ChatCommandHandler {
       username: context.username,
       count: count,
       purpose: purpose,
-      expiresAt: Date.now() + durationInSeconds * 1000
+      expiresAt: Date.now() + duration.toMilliseconds()
     } satisfies Party
 
     this.partyManager.activeParties.push(party)

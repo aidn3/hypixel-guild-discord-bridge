@@ -75,7 +75,7 @@ export default class List extends ChatCommandHandler {
   }
 
   private async onlineMembers(context: ChatCommandContext, instanceName: string): Promise<string[]> {
-    const guild = await context.app.usersManager.guildManager.list(instanceName)
+    const guild = await context.app.core.guildManager.list(instanceName)
     return guild.members.filter((member) => member.online).map((member) => member.username)
   }
 }

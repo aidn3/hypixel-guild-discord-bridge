@@ -2,11 +2,11 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
-import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
+import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
-import type EventHelper from '../../../common/event-helper.js'
+import { Timeout } from '../../../utility/timeout'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
@@ -66,7 +66,6 @@ export default {
       async (requestedPage) => {
         const chatResult = await getGuildLog(
           context.application,
-          context.eventHelper,
           targetInstanceName,
           selectedUsername,
           requestedPage + 1
@@ -81,9 +80,8 @@ export default {
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'username') {
-      const response = context.application.usersManager.autoComplete
-        .username(option.value)
-        .slice(0, 25)
+      const response = context.application.core
+        .completeUsername(option.value, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     }
@@ -92,60 +90,55 @@ export default {
 
 async function getGuildLog(
   app: Application,
-  eventHelper: EventHelper<InstanceType.Discord>,
   targetInstance: string,
   selectedUsername: string | undefined,
   page: number
 ): Promise<ChatResult> {
   const regexLog = /-+\n\s+ (?:<< |)Guild Log \(Page (\d+) of (\d+)\)(?: >>|)\n\n([\W\w]+)\n-+/g
-  return await new Promise((resolve) => {
-    const result: ChatResult = {}
+  const result: ChatResult = {}
 
-    const timeoutId = setTimeout(() => {
-      app.removeListener('minecraftChat', chatListener)
-      resolve({})
-    }, 5000)
+  const timeout = new Timeout<void>(5000)
 
-    const chatListener = function (event: MinecraftRawChatEvent): void {
-      if (event.instanceName !== targetInstance || event.message.length === 0) return
+  const chatListener = function (event: MinecraftRawChatEvent): void {
+    if (event.instanceName !== targetInstance || event.message.length === 0) return
 
-      if (event.message.startsWith('Your guild rank does not have permission to use this')) {
-        result.error = event.message.trim()
-      } else if (event.message.startsWith("Can't find a player by the name of")) {
-        result.error = event.message.trim()
-      }
-      const match = regexLog.exec(event.message)
-      if (match != undefined) {
-        const entries: GuildLogEntry[] = []
-        for (const entryRaw of match[3].trim().split('\n')) {
-          const entry = entryRaw.split(':')
-          entries.push({
-            time: Date.parse(entry[0] + ':' + entry[1]),
-            line: entry[2].trim()
-          })
-        }
-
-        result.guildLog = {
-          page: Number(match[1]),
-          total: Number(match[2]),
-          entries: entries
-        } satisfies GuildLog
-
-        clearTimeout(timeoutId)
-        app.removeListener('minecraftChat', chatListener)
-        resolve(result)
-      }
+    if (event.message.startsWith('Your guild rank does not have permission to use this')) {
+      result.error = event.message.trim()
+    } else if (event.message.startsWith("Can't find a player by the name of")) {
+      result.error = event.message.trim()
     }
+    const match = regexLog.exec(event.message)
+    if (match != undefined) {
+      const entries: GuildLogEntry[] = []
+      for (const entryRaw of match[3].trim().split('\n')) {
+        const entry = entryRaw.split(':')
+        entries.push({
+          time: Date.parse(entry[0] + ':' + entry[1]),
+          line: entry[2].trim()
+        })
+      }
 
-    app.on('minecraftChat', chatListener)
+      result.guildLog = {
+        page: Number(match[1]),
+        total: Number(match[2]),
+        entries: entries
+      } satisfies GuildLog
 
-    app.emit('minecraftSend', {
-      ...eventHelper.fillBaseEvent(),
-      targetInstanceName: [targetInstance],
-      priority: MinecraftSendChatPriority.High,
-      command: `/guild log ${selectedUsername ? selectedUsername + ' ' : ''}${page}`
-    })
-  })
+      timeout.resolve()
+    }
+  }
+
+  app.on('minecraftChat', chatListener)
+  await app.sendMinecraft(
+    [targetInstance],
+    MinecraftSendChatPriority.High,
+    undefined,
+    `/guild log ${selectedUsername ? selectedUsername + ' ' : ''}${page}`
+  )
+
+  await timeout.wait()
+  app.removeListener('minecraftChat', chatListener)
+  return timeout.timedOut() ? {} : result
 }
 
 interface ChatResult {

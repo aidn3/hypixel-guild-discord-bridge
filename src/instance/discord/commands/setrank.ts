@@ -41,15 +41,13 @@ export default {
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
     if (option.name === 'username') {
-      const response = context.application.usersManager.autoComplete
-        .username(option.value)
-        .slice(0, 25)
+      const response = context.application.core
+        .completeUsername(option.value, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     } else if (option.name === 'rank') {
-      const response = context.application.usersManager.autoComplete
-        .rank(option.value)
-        .slice(0, 25)
+      const response = context.application.core
+        .completeRank(option.value, 25)
         .map((choice) => ({ name: choice, value: choice }))
       await context.interaction.respond(response)
     }

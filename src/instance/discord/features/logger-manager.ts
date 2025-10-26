@@ -6,13 +6,13 @@ import type Application from '../../../application.js'
 import { InstanceType } from '../../../common/application-event.js'
 import type { ConfigManager } from '../../../common/config-manager.js'
 import { Status } from '../../../common/connectable-instance.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { DiscordConfig } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
-export default class LoggerManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+export default class LoggerManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
@@ -29,8 +29,8 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
     this.application.on('chat', (event) => {
       const displayUsername =
         event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
-          ? `${event.username}▸${event.replyUsername}`
-          : event.username
+          ? `${event.user.displayName()}▸${event.replyUsername}`
+          : event.user.displayName()
 
       void this.send(`Chat > ${event.channelType} ${event.instanceName} ${displayUsername}: ${event.message}`).catch(
         this.errorHandler.promiseCatch('handling chat event')
@@ -47,7 +47,7 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
       )
     })
     this.application.on('broadcast', (event) => {
-      void this.send(`Broadcast > ${event.username ? `${event.username}: ` : ''}${event.message}`).catch(
+      void this.send(`Broadcast > ${event.user ? `${event.user.displayName()}: ` : ''}${event.message}`).catch(
         this.errorHandler.promiseCatch('handling broadcast event')
       )
     })
@@ -80,24 +80,10 @@ export default class LoggerManager extends EventHandler<DiscordInstance, Instanc
       )
     })
 
-    this.application.on('instanceSignal', (event) => {
-      void this.send(
-        `Instance [${event.instanceName}] > ${event.targetInstanceName.join(', ')} instance(s) received a signal with flag=${event.type}.`
-      ).catch(this.errorHandler.promiseCatch('handling instanceSignal event'))
-    })
-
     this.application.on('minecraftSelfBroadcast', (event) => {
       void this.send(`Instance [${event.instanceName}] > Minecraft instance ${event.username}/${event.uuid}`).catch(
         this.errorHandler.promiseCatch('handling minecraftSelfBroadcast event')
       )
-    })
-    this.application.on('minecraftSend', (event) => {
-      // Too spammy events that are automatically sent every half a minute
-      if (event.command === '/guild list' || event.command === '/guild online') return
-
-      void this.send(
-        `Instance [${event.instanceName}]> [target=${event.targetInstanceName.join(', ')}] ${event.command}`
-      ).catch(this.errorHandler.promiseCatch('handling minecraftSend event'))
     })
   }
 

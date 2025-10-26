@@ -28,7 +28,7 @@ export default class GuildOnlineMetrics {
     const tasks: Promise<unknown>[] = []
     for (const instanceName of app.getInstancesNames(InstanceType.Minecraft)) {
       tasks.push(
-        app.usersManager.guildManager.list(instanceName).then((guild) => {
+        app.core.guildManager.list(instanceName).then((guild) => {
           this.guildOnlineMembersCount.set(
             { name: instanceName },
             guild.members.filter((member) => member.online).length

@@ -148,7 +148,7 @@ export class SendQueue {
     const types: CommandType[] = []
     let priority = 3
 
-    const chatPrefix = ['/ac', '/pc', '/gc', '/gchat', '/oc', '/ochat', '/msg', '/whisper', '/w', 'tell']
+    const chatPrefix = ['/ac', '/pc', '/gc', '/gchat', '/oc', '/ochat', '/msg', '/whisper', '/w', 'tell', '/boop']
     const guildPrefix = [
       '/g ',
       '/guild',

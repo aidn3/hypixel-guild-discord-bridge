@@ -45,7 +45,7 @@ const VampExpTable = {
 const HighestTierTable = {
   // 1 less due to index starting at 0
   zombie: 4,
-  spider: 3,
+  spider: 4,
   wolf: 3,
   enderman: 3,
   blaze: 3,

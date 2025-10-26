@@ -12,8 +12,8 @@ import { ChannelType, Color, InstanceType, Permission } from '../../common/appli
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
 import { CommandScope, OptionToAddMinecraftInstances } from '../../common/commands.js'
 import type { ConfigManager } from '../../common/config-manager.js'
-import EventHandler from '../../common/event-handler.js'
 import type EventHelper from '../../common/event-helper.js'
+import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 
 import AboutCommand from './commands/about.js'
@@ -28,6 +28,7 @@ import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import LeaderboardCommand from './commands/leaderboard.js'
 import LinkCommand from './commands/link.js'
+import ListLeaderboardCommand from './commands/list-leaderboard'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
 import PingCommand from './commands/ping.js'
@@ -44,7 +45,7 @@ import type { DiscordConfig } from './common/discord-config.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
-export class CommandManager extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
   private readonly config: ConfigManager<DiscordConfig>
 
@@ -113,6 +114,7 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       LeaderboardCommand,
       LinkCommand,
       ListCommand,
+      ListLeaderboardCommand,
       LogCommand,
       ExecuteCommand,
       PingCommand,
@@ -138,6 +140,14 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
       return
     }
 
+    const identifier = this.clientInstance.profileByUser(
+      interaction.user,
+      interaction.inCachedGuild() ? interaction.member : undefined
+    )
+    const user = await this.application.core.initializeDiscordUser(identifier, {
+      guild: interaction.guild ?? undefined
+    })
+    const permission = user.permission()
     if (command.autoComplete) {
       const context: DiscordAutoCompleteContext = {
         application: this.application,
@@ -145,10 +155,8 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
-        permission: this.clientInstance.resolvePrivilegeLevel(
-          interaction.user.id,
-          interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-        ),
+        user: user,
+        permission: permission,
         interaction: interaction,
         allCommands: [...this.commands.values()]
       }
@@ -173,10 +181,14 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
 
     try {
       const channelType = this.getChannelType(interaction.channelId)
-      const permission = this.clientInstance.resolvePrivilegeLevel(
-        interaction.user.id,
-        interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
+      const identifier = this.clientInstance.profileByUser(
+        interaction.user,
+        interaction.inCachedGuild() ? interaction.member : undefined
       )
+      const user = await this.application.core.initializeDiscordUser(identifier, {
+        guild: interaction.guild ?? undefined
+      })
+      const permission = user.permission()
 
       if (command == undefined) {
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)
@@ -237,10 +249,8 @@ export class CommandManager extends EventHandler<DiscordInstance, InstanceType.D
         logger: this.logger,
         errorHandler: this.errorHandler,
         instanceName: this.clientInstance.instanceName,
-        permission: this.clientInstance.resolvePrivilegeLevel(
-          interaction.user.id,
-          interaction.inCachedGuild() ? [...interaction.member.roles.cache.keys()] : []
-        ),
+        user: user,
+        permission: permission,
         interaction: interaction,
         allCommands: [...this.commands.values()],
 

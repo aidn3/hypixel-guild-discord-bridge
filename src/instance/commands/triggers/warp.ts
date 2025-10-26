@@ -41,7 +41,7 @@ export default class Warp extends ChatCommandHandler {
     const username = context.args[0]
     const instance = this.getActiveMinecraftInstanceName(
       context.app.minecraftManager,
-      context.instanceType === InstanceType.Minecraft ? context.instanceName : undefined
+      context.message.instanceType === InstanceType.Minecraft ? context.message.instanceName : undefined
     )
     if (instance === undefined) {
       return `No active connected Minecraft account exists to use`
@@ -146,7 +146,7 @@ export default class Warp extends ChatCommandHandler {
           channels: [ChannelType.Officer],
           color: Color.Bad,
 
-          username: someoneParty[1],
+          user: undefined,
           message:
             `Accidentally Joined ${someoneParty[1]}'s party!` +
             ' The offending person might be purposely doing it to abuse the service.'

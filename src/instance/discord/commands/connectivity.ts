@@ -6,7 +6,6 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandScope } from '../../../common/commands.js'
-import type EventHelper from '../../../common/event-helper.js'
 import { antiSpamString } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
@@ -54,7 +53,7 @@ export default {
     await context.interaction.deferReply()
 
     const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
-    const lists: Map<string, string[]> = await checkConnectivity(context.application, context.eventHelper)
+    const lists: Map<string, string[]> = await checkConnectivity(context.application)
 
     for (const instancesName of instancesNames) {
       if (!lists.has(instancesName)) lists.set(instancesName, [])
@@ -64,10 +63,7 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function checkConnectivity(
-  app: Application,
-  eventHelper: EventHelper<InstanceType.Discord>
-): Promise<Map<string, string[]>> {
+async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
   const receivedResponses = new Map<string, string[]>()
   const queryWords = [
     `Testing Connectivity 1 - @${antiSpamString()}`,
@@ -91,34 +87,39 @@ async function checkConnectivity(
 
   app.on('minecraftChat', chatListener)
 
-  app.emit('minecraftSend', {
-    ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
-    priority: MinecraftSendChatPriority.High,
-    command: `/ac ${queryWords[0]}`
-  })
-  app.emit('minecraftSend', {
-    ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
-    priority: MinecraftSendChatPriority.High,
-    command: `/gc ${queryWords[1]}`
-  })
-  app.emit('minecraftSend', {
-    ...eventHelper.fillBaseEvent(),
-    targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
-    priority: MinecraftSendChatPriority.High,
-    command: `/oc ${queryWords[2]}`
-  })
+  const tasks: Promise<void>[] = [
+    app.sendMinecraft(
+      app.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/ac ${queryWords[0]}`
+    ),
+    app.sendMinecraft(
+      app.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/gc ${queryWords[1]}`
+    ),
+    app.sendMinecraft(
+      app.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/oc ${queryWords[2]}`
+    )
+  ]
 
   for (const bot of app.minecraftManager.getMinecraftBots()) {
-    app.emit('minecraftSend', {
-      ...eventHelper.fillBaseEvent(),
-      targetInstanceName: app.getInstancesNames(InstanceType.Minecraft),
-      priority: MinecraftSendChatPriority.High,
-      command: `/msg ${bot.username} ${queryWords[3]}`
-    })
+    const task = app.sendMinecraft(
+      app.getInstancesNames(InstanceType.Minecraft),
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/msg ${bot.username} ${queryWords[3]}`
+    )
+
+    tasks.push(task)
   }
 
+  await Promise.all(tasks)
   await new Promise((resolve) => setTimeout(resolve, 5000))
   app.removeListener('minecraftChat', chatListener)
 

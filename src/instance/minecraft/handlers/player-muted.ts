@@ -3,13 +3,13 @@ import type { Logger } from 'log4js'
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
 import { ChannelType, Color } from '../../../common/application-event.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class PlayerMuted extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class PlayerMuted extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   public static readonly DefaultMessage = '{username} is currently muted and is unable to message right now.'
 
   constructor(
@@ -32,7 +32,7 @@ export default class PlayerMuted extends EventHandler<MinecraftInstance, Instanc
       if (!event.rawMessage.includes('§eHey!')) return
 
       let message = this.application.language.data.announceMutedPlayer
-      message = message.replaceAll('{username}', event.username)
+      message = message.replaceAll('{username}', event.user.displayName())
 
       this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
@@ -40,7 +40,7 @@ export default class PlayerMuted extends EventHandler<MinecraftInstance, Instanc
         channels: [ChannelType.Public],
         color: Color.Default,
 
-        username: event.username,
+        user: event.user,
         message: message
       })
     })

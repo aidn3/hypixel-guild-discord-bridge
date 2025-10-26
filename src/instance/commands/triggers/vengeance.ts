@@ -1,12 +1,8 @@
-import {
-  ChannelType,
-  InstanceType,
-  MinecraftSendChatPriority,
-  PunishmentType
-} from '../../../common/application-event.js'
+import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, usernameNotExists } from '../common/utility'
+import Duration from '../../../utility/duration'
+import { usernameNotExists } from '../common/utility'
 
 export default class Vengeance extends ChatCommandHandler {
   public static readonly LossMessages = [
@@ -35,6 +31,8 @@ export default class Vengeance extends ChatCommandHandler {
     '{target}? Dead? That was the only possible outcome.'
   ]
 
+  private static readonly MuteDuration = Duration.minutes(15)
+
   private countSinceLastWin = 0
   private consecutiveLose = 0
 
@@ -47,10 +45,10 @@ export default class Vengeance extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    if (context.instanceType !== InstanceType.Minecraft) {
+    if (context.message.instanceType !== InstanceType.Minecraft) {
       return `${context.username}, Command can only be executed in-game!`
     }
-    if (context.channelType !== ChannelType.Public) {
+    if (context.message.channelType !== ChannelType.Public) {
       return `${context.username}, Command can only be executed in public chat!`
     }
 
@@ -65,20 +63,31 @@ export default class Vengeance extends ChatCommandHandler {
       return `${context.username}, You can't take vengeance against everyone!`
     }
 
-    // ensure user input is safe since it will be used
-    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    const mojangProfile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
+    if (mojangProfile == undefined) return usernameNotExists(givenUsername)
+    const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, {})
 
     let messages: string[]
     // 3% to win.
     // 47% to lose.
     // 49% to draw.
     if (this.won()) {
-      this.mute(context, givenUsername)
+      targetUser.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Vengeance.MuteDuration,
+        'Lost in Vengeance game'
+      )
       messages = context.app.language.data.commandVengeanceWin
     } else if (this.lose()) {
+      context.message.user.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Vengeance.MuteDuration,
+        'Lost in Vengeance game'
+      )
+
       this.countSinceLastWin++
-      this.mute(context, context.username)
       messages = context.app.language.data.commandVengeanceLose
     } else {
       this.countSinceLastWin++
@@ -127,27 +136,5 @@ export default class Vengeance extends ChatCommandHandler {
 
     this.consecutiveLose = 0
     return false
-  }
-
-  private mute(context: ChatCommandContext, username: string): void {
-    context.app.emit('minecraftSend', {
-      ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
-      priority: MinecraftSendChatPriority.High,
-      command: `/g mute ${username} 15m`
-    })
-
-    context.app.moderation.punishments.add({
-      ...context.eventHelper.fillBaseEvent(),
-
-      userName: username,
-      // not really that important to resolve uuid since it ends fast and the punishment is just a game
-      userUuid: undefined,
-      userDiscordId: undefined,
-
-      type: PunishmentType.Mute,
-      till: Date.now() + 900_000,
-      reason: 'Lost in Vengeance game'
-    })
   }
 }

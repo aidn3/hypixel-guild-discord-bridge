@@ -21,6 +21,7 @@ A shorter version can also be used: `!- rtca`
 | `api`            | Returns a player's skyblock API status                                             |
 | `asian`          | Challenge yourself with math!                                                      |
 | `bedwars`        | Returns a player's bedwars common stats                                            |
+| `be`             | Returns a player's Bestiary stats                                                  |
 | `bits`           | Returns the best bit items to purchase for the most profit.                        |
 | `boop`           | /boop a player in-game                                                             |
 | `calculate`      | A basic calculator                                                                 |
@@ -29,6 +30,7 @@ A shorter version can also be used: `!- rtca`
 | `dadjoke`        | Show you a random dad joke                                                         |
 | `da`             | Show the remaining time till next Dark Auction                                     |
 | `devexcuse`      | Show you a random excuse for why this bot isn't working                            |
+| `eggs`           | Returns a player's skyblock easter eggs stats                                      |
 | `election`       | Show current Hypixel Skyblock Election                                             |
 | `execute`        | Runs a command directly                                                            |
 | `explain`        | Returns an explanation of the bot                                                  |
@@ -60,6 +62,7 @@ A shorter version can also be used: `!- rtca`
 | `rtca`           | Returns the number of runs needed to reach the average class level specified       |
 | `runs`           | Returns how many dungeon runs a player has done                                    |
 | `secrets`        | Returns how many secrets a player has done                                         |
+| `select`         | Randomly select an online guild member                                             |
 | `skill`          | Returns a player's skills levels                                                   |
 | `skywars`        | Returns a player's skywars common stats                                            |
 | `slayer`         | Returns a player's slayer level                                                    |
@@ -90,6 +93,7 @@ A shorter version can also be used: `!- rtca`
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | display a leaderboard message in this channel                    |
 | `/link`               | Link your Discord account with your Minecraft account            |
+| `/list-leaderboard`   | List all existing leaderboards                                   |
 | `/list`               | List players in your guild(s)                                    |
 | `/log`                | View guild activity logs                                         |
 | `/ping`               | Discord Ping                                                     |

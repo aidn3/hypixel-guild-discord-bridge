@@ -1,11 +1,7 @@
-import {
-  ChannelType,
-  InstanceType,
-  MinecraftSendChatPriority,
-  PunishmentType
-} from '../../../common/application-event.js'
+import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 
 export default class Mute extends ChatCommandHandler {
@@ -24,7 +20,7 @@ export default class Mute extends ChatCommandHandler {
     'I muted someone, but who? :)',
     'I am agent of chaos!'
   ]
-  private static readonly CommandCoolDown = 300_000
+  private static readonly TimeLength = Duration.minutes(5)
   private lastCommandExecutionAt = 0
 
   constructor() {
@@ -36,12 +32,12 @@ export default class Mute extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    if (context.instanceType !== InstanceType.Minecraft || context.channelType !== ChannelType.Public) {
+    if (context.message.instanceType !== InstanceType.Minecraft || context.message.channelType !== ChannelType.Public) {
       return 'Command can only be executed in-game in guild public channel'
     }
     const currentTime = Date.now()
-    if (this.lastCommandExecutionAt + Mute.CommandCoolDown > currentTime) {
-      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.CommandCoolDown - currentTime)}.`
+    if (this.lastCommandExecutionAt + Mute.TimeLength.toMilliseconds() > currentTime) {
+      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.TimeLength.toMilliseconds() - currentTime)}.`
     }
     this.lastCommandExecutionAt = currentTime
 
@@ -49,12 +45,15 @@ export default class Mute extends ChatCommandHandler {
     const usernames = await this.getUsernames(context)
     if (usernames.length === 0) return 'No username to randomly mute??'
 
-    const selectedUsername = this.selectUsername(context, usernames)
-    if (selectedUsername === undefined) {
-      return 'Could not choose a victim somehow :('
-    }
-
-    this.mute(context, selectedUsername)
+    const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
+    const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
+    const user = await context.app.core.initializeMinecraftUser(userProfile, {})
+    user.mute(
+      context.eventHelper.fillBaseEvent(),
+      PunishmentPurpose.Game,
+      Mute.TimeLength,
+      `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
+    )
 
     const messages = context.app.language.data.commandMuteGame
     return messages[Math.floor(Math.random() * messages.length)]
@@ -62,37 +61,16 @@ export default class Mute extends ChatCommandHandler {
       .replaceAll('{target}', selectedUsername)
   }
 
-  private mute(context: ChatCommandContext, selectedUsername: string): void {
-    context.app.emit('minecraftSend', {
-      ...context.eventHelper.fillBaseEvent(),
-      targetInstanceName: context.app.getInstancesNames(InstanceType.Minecraft),
-      priority: MinecraftSendChatPriority.High,
-      command: `/g mute ${selectedUsername} 5m`
-    })
-
-    context.app.moderation.punishments.add({
-      ...context.eventHelper.fillBaseEvent(),
-
-      userName: selectedUsername,
-      // not really that important to resolve uuid since it ends fast and the punishment is just a game
-      userUuid: undefined,
-      userDiscordId: undefined,
-
-      type: PunishmentType.Mute,
-      till: Date.now() + 300_000,
-      reason: `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
-    })
-  }
-
   private async getUsernames(context: ChatCommandContext): Promise<string[]> {
     const instances = context.app.minecraftManager.getAllInstances()
 
     const usernames: Promise<string[]>[] = []
     for (const instance of instances) {
-      const chunk = context.app.usersManager.guildManager
+      const chunk = context.app.core.guildManager
         .list(instance.instanceName)
         .then((guild) => guild.members)
         .then((members) => members.filter((member) => member.online).map((member) => member.username))
+        .then((usernames) => usernames.filter((username) => !context.app.minecraftManager.isMinecraftBot(username)))
         .catch(() => [] as string[])
 
       usernames.push(chunk)
@@ -100,16 +78,5 @@ export default class Mute extends ChatCommandHandler {
 
     const resolvedChunks = await Promise.all(usernames)
     return resolvedChunks.flat()
-  }
-
-  private selectUsername(context: ChatCommandContext, usernames: string[]): string | undefined {
-    for (let tries = 0; tries < 5; tries++) {
-      const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
-      if (context.app.minecraftManager.isMinecraftBot(selectedUsername)) continue
-
-      return selectedUsername
-    }
-
-    return undefined
   }
 }
