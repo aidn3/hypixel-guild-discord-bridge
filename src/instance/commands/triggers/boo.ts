@@ -31,8 +31,8 @@ export default class Boo extends ChatCommandHandler {
       return `Can use command again in ${Math.floor((this.lastCommandExecutionAt + Boo.CommandCoolDown - currentTime) / 1000)} seconds.`
     }
     const minecraftInstanceName =
-      context.instanceType === InstanceType.Minecraft
-        ? context.instanceName
+      context.message.instanceType === InstanceType.Minecraft
+        ? context.message.instanceName
         : this.getActiveMinecraftInstanceName(context.app.minecraftManager)
     if (minecraftInstanceName === undefined) {
       return `No active connected Minecraft account exists to use`
