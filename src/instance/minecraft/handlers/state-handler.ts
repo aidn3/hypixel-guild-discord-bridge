@@ -3,8 +3,8 @@ import type { Logger } from 'log4js'
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
 import { Status, StatusVisibility } from '../../../common/connectable-instance.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
@@ -12,7 +12,7 @@ import type MinecraftInstance from '../minecraft-instance.js'
 export const QuitOwnVolition = 'disconnect.quitting'
 
 export const QuitProxyError = 'Proxy encountered a problem while connecting'
-export default class StateHandler extends EventHandler<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class StateHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
   private static readonly MaxLoginAttempts = 5
   private loginAttempts
   private loggedIn

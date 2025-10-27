@@ -54,6 +54,7 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
   public isMinecraftBot(username: string): boolean {
     for (const value of this.minecraftBots.values()) {
       if (username.toLowerCase() === value.username.toLowerCase()) return true
+      if (username.toLowerCase() === value.uuid.toLowerCase()) return true
     }
 
     return false

@@ -150,22 +150,14 @@ export default [
           zones: [
             {
               target: 'src/common',
-              from: ['src/instance', 'src/plugins', 'src/types', 'src/utility'],
+              from: ['src/core', 'src/instance', 'src/types', 'src/utility'],
               message: 'Common files are used as public api and must not reference internal files'
             },
             {
-              target: 'src/plugins',
-              from: [
-                'src/types',
-                'src/plugins',
-                'src/instance/commands',
-                'src/instance/discord',
-                'src/instance/logger',
-                'src/instance/metrics',
-                'src/instance/minecraft',
-                'src/instance/socket'
-              ],
-              message: 'Plugin files must not reference other plugins or outside files'
+              target: 'src/core',
+              from: ['src/instance'],
+              message:
+                'Core files must not reference instances and other components. They must stay the "Core" that everything can use.'
             },
             {
               target: 'src/types',
@@ -174,104 +166,80 @@ export default [
             },
             {
               target: 'src/utility',
-              from: ['src/instance', 'src/types'],
+              from: ['src/core', 'src/instance', 'src/types'],
               message:
                 'Util must only reference other common files. Specific utility can be put in their respective instance common dir.'
             },
             {
               target: 'src/instance/commands',
               from: [
-                'src/plugins',
                 'src/types',
                 'src/instance/discord',
-                'src/instance/logger',
+                'src/instance/features',
                 'src/instance/metrics',
                 'src/instance/minecraft',
-                'src/instance/moderation',
-                'src/instance/socket'
+                'src/instance/prometheus'
               ],
               message: 'Instance must only access itself and common files'
             },
             {
               target: 'src/instance/discord',
               from: [
-                'src/plugins',
                 'src/types',
                 'src/instance/commands',
-                'src/instance/logger',
+                'src/instance/features',
                 'src/instance/metrics',
                 'src/instance/minecraft',
-                'src/instance/socket'
+                'src/instance/prometheus'
               ],
               message: 'Instance must only access itself and common files'
             },
             {
-              target: 'src/instance/logger',
+              target: 'src/instance/features',
               from: [
-                'src/plugins',
                 'src/types',
                 'src/instance/commands',
                 'src/instance/discord',
                 'src/instance/metrics',
                 'src/instance/minecraft',
-                'src/instance/moderation',
-                'src/instance/socket'
+                'src/instance/prometheus'
               ],
               message: 'Instance must only access itself and common files'
             },
             {
               target: 'src/instance/metrics',
               from: [
-                'src/plugins',
                 'src/types',
                 'src/instance/commands',
                 'src/instance/discord',
-                'src/instance/logger',
+                'src/instance/features',
+                'src/instance/metrics',
                 'src/instance/minecraft',
-                'src/instance/moderation',
-                'src/instance/socket'
+                'src/instance/prometheus'
               ],
               message: 'Instance must only access itself and common files'
             },
             {
               target: 'src/instance/minecraft',
               from: [
-                'src/plugins',
                 'src/types',
                 'src/instance/commands',
                 'src/instance/discord',
-                'src/instance/logger',
+                'src/instance/features',
                 'src/instance/metrics',
-                'src/instance/moderation',
-                'src/instance/socket'
+                'src/instance/prometheus'
               ],
               message: 'Instance must only access itself and common files'
             },
             {
-              target: 'src/instance/moderation',
+              target: 'src/instance/prometheus',
               from: [
-                'src/plugins',
                 'src/types',
                 'src/instance/commands',
                 'src/instance/discord',
-                'src/instance/logger',
+                'src/instance/features',
                 'src/instance/metrics',
-                'src/instance/minecraft',
-                'src/instance/socket'
-              ],
-              message: 'Instance must only access itself and common files'
-            },
-            {
-              target: 'src/instance/socket',
-              from: [
-                'src/plugins',
-                'src/types',
-                'src/instance/commands',
-                'src/instance/discord',
-                'src/instance/logger',
-                'src/instance/metrics',
-                'src/instance/minecraft',
-                'src/instance/moderation'
+                'src/instance/minecraft'
               ],
               message: 'Instance must only access itself and common files'
             }

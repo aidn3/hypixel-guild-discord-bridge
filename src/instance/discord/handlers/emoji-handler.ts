@@ -7,13 +7,13 @@ import type { Logger } from 'log4js'
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
 import { ConfigManager } from '../../../common/config-manager.js'
-import EventHandler from '../../../common/event-handler.js'
 import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { AllEmojis } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
-export default class EmojiHandler extends EventHandler<DiscordInstance, InstanceType.Discord, Client> {
+export default class EmojiHandler extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   private readonly registeredEmoji: ConfigManager<EmojiConfig>
 
   public constructor(

@@ -3,8 +3,14 @@ import { setImmediate } from 'node:timers/promises'
 import { createClient, states } from 'minecraft-protocol'
 
 import type Application from '../../application.js'
-import type { ChannelType, MinecraftSendChatPriority } from '../../common/application-event.js'
-import { InstanceMessageType, InstanceType, Permission } from '../../common/application-event.js'
+import type { ChannelType } from '../../common/application-event.js'
+import {
+  InstanceMessageType,
+  InstanceSignalType,
+  InstanceType,
+  MinecraftSendChatPriority,
+  Permission
+} from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { Timeout } from '../../utility/timeout.js'
 
@@ -17,6 +23,7 @@ import { CommandType, SendQueue } from './common/send-queue.js'
 import GameTogglesHandler from './handlers/game-toggles-handler.js'
 import LimboHandler from './handlers/limbo-handler.js'
 import PlayerMuted from './handlers/player-muted.js'
+import PunishmentHandler from './handlers/punishment-handler'
 import Reaction from './handlers/reaction.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
@@ -36,6 +43,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private stateHandler: StateHandler
   private selfbroadcastHandler: SelfbroadcastHandler
   private chatManager: ChatManager
+  private punishmentHandler: PunishmentHandler
   private gameToggle: GameTogglesHandler
   private reactionHandler: Reaction
   private playerMuted: PlayerMuted
@@ -84,6 +92,13 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       this.messageAssociation
     )
     this.gameToggle = new GameTogglesHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.punishmentHandler = new PunishmentHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler
+    )
     this.limboHandler = new LimboHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.reactionHandler = new Reaction(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.playerMuted = new PlayerMuted(this.application, this, this.eventHelper, this.logger, this.errorHandler)
@@ -93,6 +108,20 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     const adminUsername = this.minecraftManager.getConfig().data.adminUsername
     if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
+  }
+
+  override async signal(type: InstanceSignalType): Promise<void> {
+    if (this.currentStatus() === Status.Connected) {
+      if (type === InstanceSignalType.Restart) {
+        await this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, undefined)
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      } else if (type === InstanceSignalType.Shutdown) {
+        await this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, undefined)
+      }
+    }
+
+    return super.signal(type)
   }
 
   public async acquireLimbo(): Promise<Timeout<void>> {

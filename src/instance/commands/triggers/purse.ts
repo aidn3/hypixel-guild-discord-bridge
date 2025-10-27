@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, localizedNetworth, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedSkyblock, shortenNumber, usernameNotExists } from '../common/utility'
 
 export default class Purse extends ChatCommandHandler {
   constructor() {
@@ -32,9 +32,9 @@ export default class Purse extends ChatCommandHandler {
       return `${givenUsername}'s API is disabled.`
     }
 
-    const totalMessage = localizedNetworth((bank ?? 0) + (purse ?? 0))
-    const bankMessage = 'Bank ' + (bank === undefined ? 'OFF' : localizedNetworth(bank))
-    const purseMessage = 'Purse ' + (purse === undefined ? 'OFF' : localizedNetworth(purse))
+    const totalMessage = shortenNumber((bank ?? 0) + (purse ?? 0))
+    const bankMessage = 'Bank ' + (bank === undefined ? 'OFF' : shortenNumber(bank))
+    const purseMessage = 'Purse ' + (purse === undefined ? 'OFF' : shortenNumber(purse))
 
     return `${givenUsername}'s coins ${totalMessage} - ${bankMessage} - ${purseMessage}`
   }

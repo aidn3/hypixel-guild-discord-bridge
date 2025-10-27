@@ -13,26 +13,25 @@ import Logger4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
-import type { ApplicationEvents, InstanceIdentifier } from './common/application-event.js'
+import type { ApplicationEvents, InstanceIdentifier, MinecraftSendChatPriority } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
 import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
+import { Core } from './core/core'
+import type { MojangApi } from './core/users/mojang'
 import type { GeneralConfig } from './general-config.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
-import type MinecraftInstance from './instance/minecraft/minecraft-instance.js'
+import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
-import ModerationInstance from './instance/moderation/moderation-instance.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
-import UsersManager from './instance/users/users-manager.js'
 import type { LanguageConfig } from './language-config.js'
 import { DefaultLanguageConfig } from './language-config.js'
-import { MojangApi } from './utility/mojang.js'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
@@ -40,9 +39,8 @@ export type AllInstances =
   | DiscordInstance
   | PrometheusInstance
   | MetricsInstance
-  | UsersManager
+  | Core
   | MinecraftInstance
-  | ModerationInstance
   | PluginInstance
   | ApplicationIntegrity
   | MinecraftManager
@@ -65,15 +63,15 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly configsDirectory
   private readonly backupDirectory
   private readonly config: Readonly<ApplicationConfig>
+
   public readonly language: ConfigManager<LanguageConfig>
 
   public readonly generalConfig: ConfigManager<GeneralConfig>
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
   public readonly pluginsManager: PluginsManager
-  public readonly moderation: ModerationInstance
   public readonly commandsInstance: CommandsInstance
-  public readonly usersManager: UsersManager
+  public readonly core: Core
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
@@ -106,7 +104,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       mojangCacheTime: 300,
       hypixelCacheTime: 300
     })
-    this.mojangApi = new MojangApi(this)
     this.language = new ConfigManager<LanguageConfig>(
       this,
       this.logger,
@@ -114,8 +111,8 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       DefaultLanguageConfig
     )
 
-    this.moderation = new ModerationInstance(this, this.mojangApi)
-    this.usersManager = new UsersManager(this)
+    this.core = new Core(this)
+    this.mojangApi = this.core.mojangApi
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
 
@@ -129,24 +126,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       : undefined
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
-
-    this.on('instanceSignal', (event) => {
-      if (event.targetInstanceName.includes(this.instanceName)) {
-        this.logger.info('Shutdown signal has been received. Shutting down this node.')
-        if (event.type === InstanceSignalType.Restart) {
-          this.logger.info('Node should auto restart if a process monitor service is used.')
-        }
-
-        this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
-        void sleep(5000)
-          .then(() => {
-            this.logger.debug('shutting down application')
-            return this.shutdown()
-          })
-          .then(() => gracefullyExitProcess(2))
-          .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
-      }
-    })
   }
 
   public getConfigFilePath(filename: string): string {
@@ -178,6 +157,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async start(): Promise<void> {
+    await this.core.awaitReady()
     await this.pluginsManager.loadPlugins(this.rootDirectory)
 
     for (const instance of this.getAllInstances()) {
@@ -215,6 +195,98 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     await Promise.all(tasks)
   }
 
+  /**
+   * Send chat/command via Minecraft instance
+   *
+   * @param instanceNames The instance names to send the command through.
+   * @param priority See {@link MinecraftSendChatPriority}
+   * @param eventId
+   * @param command The command to send
+   */
+  public async sendMinecraft(
+    instanceNames: string[],
+    priority: MinecraftSendChatPriority,
+    eventId: string | undefined,
+    command: string
+  ): Promise<void> {
+    const instances = []
+
+    for (const instanceName of instanceNames) {
+      const instance = this.instanceByName(instanceName)
+
+      if (instance === undefined) {
+        throw new Error(`no instance found with the name "${instanceName}"`)
+      } else if (instance instanceof MinecraftInstance) {
+        instances.push(instance)
+      } else {
+        throw new TypeError(`instance is not type MinecraftInstance. Actual=${instance.instanceType}`)
+      }
+    }
+
+    const tasks = []
+    for (const instance of instances) {
+      tasks.push(instance.send(command, priority, eventId))
+    }
+    await Promise.all(tasks)
+  }
+
+  /**
+   * Signal to shut down/restart an instance.
+   *
+   * Signaling to shut down the application is possible.
+   * It will take some time for the application to shut down.
+   * Application will auto restart if a process monitor is used.
+   *
+   * @param instanceNames The instance names to send the command through.
+   * @param type A flag indicating the signal
+   */
+  public async sendSignal(instanceNames: string[], type: InstanceSignalType): Promise<void> {
+    const instances = []
+
+    for (const instanceName of instanceNames) {
+      if (instanceName.toLowerCase() === this.instanceName.toLowerCase()) continue
+      const instance = this.instanceByName(instanceName)
+
+      if (instance === undefined) {
+        throw new Error(`no instance found with the name "${instanceName}"`)
+      } else if (instance instanceof ConnectableInstance) {
+        instances.push(instance)
+      } else {
+        throw new TypeError(`instance is not type ConnectableInstance.`)
+      }
+    }
+
+    const tasks = []
+    for (const instance of instances) {
+      tasks.push(instance.signal(type))
+    }
+    await Promise.all(tasks)
+
+    const signalMain = instanceNames.some(
+      (instanceName) => instanceName.toLowerCase() === this.instanceName.toLowerCase()
+    )
+    if (signalMain) {
+      await this.receivedSignal(type)
+    }
+  }
+
+  private async receivedSignal(type: InstanceSignalType): Promise<void> {
+    this.logger.info('Shutdown signal has been received. Shutting down this node.')
+
+    if (type === InstanceSignalType.Restart) {
+      this.logger.info('Node should auto restart if a process monitor service is used.')
+    }
+
+    this.logger.info('Waiting 5 seconds for other nodes to receive the signal before shutting down.')
+    await sleep(5000)
+      .then(() => {
+        this.logger.debug('shutting down application')
+        return this.shutdown()
+      })
+      .then(() => gracefullyExitProcess(2))
+      .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
+  }
+
   public getInstancesNames(instanceType: InstanceType): string[] {
     return this.getAllInstancesIdentifiers()
       .filter((instance) => instance.instanceType === instanceType)
@@ -232,15 +304,18 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }))
   }
 
+  private instanceByName(name: string): AllInstances | undefined {
+    return this.getAllInstances().find((instance) => instance.instanceName.toLowerCase() === name.toLowerCase())
+  }
+
   private getAllInstances(): AllInstances[] {
     const instances = [
       ...this.pluginsManager.getAllInstances(),
-      this.usersManager,
+      this.core,
       this.applicationIntegrity,
 
       this.discordInstance, // discord second to send any notification about connecting
 
-      this.moderation,
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,

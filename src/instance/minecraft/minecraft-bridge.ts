@@ -11,18 +11,17 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
-  InstanceSignal,
   InstanceStatusEvent,
   MinecraftReactiveEvent,
-  MinecraftReactiveEventType,
-  MinecraftSendChat
+  MinecraftReactiveEventType
 } from '../../common/application-event.js'
 import {
   ChannelType,
   GuildPlayerEventType,
-  InstanceSignalType,
   InstanceType,
-  MinecraftSendChatPriority
+  MinecraftSendChatPriority,
+  PunishmentPurpose,
+  PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -39,14 +38,6 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     private readonly messageAssociation: MessageAssociation
   ) {
     super(application, clientInstance, logger, errorHandler)
-
-    this.application.on('instanceSignal', (event) => {
-      this.onInstanceSignal(event)
-    })
-
-    this.application.on('minecraftSend', (event) => {
-      void this.onMinecraftSend(event).catch(this.errorHandler.promiseCatch('handling incoming minecraftSend event'))
-    })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -66,7 +57,14 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
     await this.send(
-      await this.formatChatMessage(prefix, event.username, replyUsername, event.message, event.instanceName),
+      await this.formatChatMessage(
+        prefix,
+        event.user.displayName(),
+        replyUsername,
+        event.message,
+        event.instanceName,
+        event.instanceType
+      ),
       MinecraftSendChatPriority.Default,
       event.eventId
     ).catch(this.errorHandler.promiseCatch('sending chat message'))
@@ -75,6 +73,18 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
+
+    if (event.type === GuildPlayerEventType.Mute) {
+      const game =
+        event.user
+          .punishments()
+          .all()
+          .filter((punishment) => punishment.type === PunishmentType.Mute)
+          .toSorted((a, b) => b.createdAt - a.createdAt)
+          .at(0)?.purpose === PunishmentPurpose.Game
+
+      if (game) return
+    }
 
     await this.handleInGameEvent(event)
   }
@@ -163,29 +173,6 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.handleCommand(event, true)
   }
 
-  private onInstanceSignal(event: InstanceSignal) {
-    if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      this.logger.log(`instance has received signal type ${event.type}`)
-
-      if (event.type === InstanceSignalType.Restart) {
-        void this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, event.eventId).catch(
-          this.errorHandler.promiseCatch('handling restart broadcast and reconnecting')
-        )
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (event.type === InstanceSignalType.Shutdown) {
-        void this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, event.eventId).catch(
-          this.errorHandler.promiseCatch('handling restart broadcast and reconnecting')
-        )
-      }
-    }
-  }
-
-  private async onMinecraftSend(event: MinecraftSendChat): Promise<void> {
-    if (event.targetInstanceName.includes(this.clientInstance.instanceName)) {
-      await this.send(event.command, event.priority, event.eventId)
-    }
-  }
-
   private handleCommand(event: CommandEvent, feedback: boolean) {
     const reply = this.messageAssociation.getMessageId(event.originEventId)
     if (reply === undefined) {
@@ -195,7 +182,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       return
     }
 
-    if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.username)
+    if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.user.displayName())
     this.messageAssociation.addMessageId(event.eventId, reply)
 
     const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse}`
@@ -216,7 +203,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
         void this.send(
-          `/msg ${event.username} ${finalResponse}`,
+          `/msg ${event.user.mojangProfile().name} ${finalResponse}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         ).catch(this.errorHandler.promiseCatch('handling private command response display'))
@@ -238,12 +225,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     username: string,
     replyUsername: string | undefined,
     message: string,
-    instanceName: string
+    instanceName: string,
+    instanceType: InstanceType
   ): Promise<string> {
     let full = `/${prefix} `
 
     if (this.application.generalConfig.data.originTag) {
-      full += `[${instanceName}] `
+      full += instanceType === InstanceType.Discord ? `[DC] ` : `[${instanceName}] `
     }
 
     full += username

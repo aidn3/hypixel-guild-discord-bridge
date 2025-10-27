@@ -35,7 +35,7 @@ export default class StarfallCultPlugin extends PluginInstance {
           color: Color.Good,
           channels: [ChannelType.Public],
 
-          username: undefined,
+          user: undefined,
           message: this.application.language.data.starfallReminder
         })
       }

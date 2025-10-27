@@ -8,7 +8,7 @@ import type EventHelper from './event-helper.js'
 import type { Instance } from './instance.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export default abstract class EventHandler<K extends ConnectableInstance<T> | Instance<T>, T extends InstanceType, O> {
+export default abstract class SubInstance<K extends ConnectableInstance<T> | Instance<T>, T extends InstanceType, O> {
   protected application: Application
   protected clientInstance: K
   protected eventHelper: EventHelper<T>

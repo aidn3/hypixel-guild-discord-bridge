@@ -109,7 +109,7 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 }
 
 function fetchModerationOptions(application: Application): CategoryOption {
-  const moderation = application.moderation.getConfig()
+  const moderation = application.core.getModerationConfig()
 
   return {
     type: OptionType.Category,
@@ -506,7 +506,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
 }
 
 function fetchMetricsOptions(application: Application): CategoryOption {
-  const scoresManager = application.usersManager.scoresManager.config
+  const scoresManager = application.core.scoresManager.config
 
   return {
     type: OptionType.Category,
@@ -1125,13 +1125,6 @@ async function minecraftInstanceAdd(
 
     assert.ok(embed.description)
     embed.description += `- ${event.message}\n`
-    refresher.refresh()
-  }
-  registeredEvents.instanceSignal = (event) => {
-    if (!event.targetInstanceName.includes(instanceName)) return
-
-    assert.ok(embed.description)
-    embed.description += `- ${event.type} signal has been received\n`
     refresher.refresh()
   }
   registeredEvents.instanceAnnouncement = (event) => {
