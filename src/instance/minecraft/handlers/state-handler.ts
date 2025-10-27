@@ -96,6 +96,7 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
       return
     }
 
+    this.logger.debug(`Client quit with the reason: ${reason}`)
     this.tryRestarting()
   }
 
