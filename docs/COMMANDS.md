@@ -23,7 +23,7 @@ A shorter version can also be used: `!- rtca`
 | `bedwars`        | Returns a player's bedwars common stats                                            |
 | `be`             | Returns a player's Bestiary stats                                                  |
 | `bits`           | Returns the best bit items to purchase for the most profit.                        |
-| `boo`            | /boo  a player in-game                                                             |
+| `boo`            | /boo a player in-game                                                              |
 | `boop`           | /boop a player in-game                                                             |
 | `calculate`      | A basic calculator                                                                 |
 | `catacomb`       | Returns a player's catacombs level                                                 |
