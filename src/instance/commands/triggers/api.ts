@@ -1,6 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/utility'
 
 export default class Api extends ChatCommandHandler {
   constructor() {
@@ -17,35 +22,28 @@ export default class Api extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => {
-        return response.profiles?.find((profile) => profile.selected)
-      })
-      .catch(() => undefined)
-    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
-    const member = selectedProfile.members[uuid]
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    if (selectedProfile === undefined) return playerNeverPlayedSkyblock(givenUsername)
 
     const parts: string[] = []
     parts.push(
-      `Skills ${'experience' in member.player_data ? 'ON' : 'OFF'}`,
-      `Collection ${'collection' in member ? 'ON' : 'OFF'}`,
-      `Inventory ${'inventory' in member ? 'ON' : 'OFF'}`
+      `Skills ${selectedProfile.me.playerData.skills.combat.xp > 0 ? 'ON' : 'OFF'}`,
+      `Collection ${Object.keys(selectedProfile.me.collections).length > 0 ? 'ON' : 'OFF'}`,
+      `Inventory ${selectedProfile.me.inventory.inventory.base64 === null ? 'OFF' : 'ON'}`
     )
 
     const museum = await context.app.hypixelApi
-      .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })
+      .getSkyBlockMuseum(selectedProfile.profileId, { raw: true })
       .catch(() => undefined)
-    if (museum === undefined) {
-      parts.push(`Museum N/A`)
+    if (museum?.isRaw()) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      parts.push(`Museum ${uuid in museum.data.members ? 'ON' : 'OFF'}`)
     } else {
-      parts.push(`Museum ${uuid in museum.members ? 'ON' : 'OFF'}`)
+      parts.push(`Museum N/A`)
     }
 
-    if (Object.keys(selectedProfile.members).length > 1) {
-      parts.push(`Personal Bank ${'bank_account' in member.profile ? 'ON' : 'OFF'}`)
-    }
-    parts.push(`Banking ${'banking' in selectedProfile ? 'ON' : 'OFF'}`)
+    parts.push(`Personal Bank ${selectedProfile.me.profileStats.bankAccount > 0 ? 'ON' : 'OFF'}`)
+    parts.push(`Banking ${selectedProfile.banking.balance > 0 ? 'ON' : 'OFF'}`)
 
     return `${givenUsername}: ${parts.join(' - ')}`
   }

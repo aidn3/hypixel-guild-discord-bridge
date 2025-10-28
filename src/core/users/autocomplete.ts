@@ -167,6 +167,8 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
     const ranks: string[] = []
     for (const guild of guilds) {
       if (guild === undefined) continue
+      if (guild === null) continue
+      if (guild.isRaw()) continue
 
       for (const rank of guild.ranks) {
         ranks.push(rank.name)

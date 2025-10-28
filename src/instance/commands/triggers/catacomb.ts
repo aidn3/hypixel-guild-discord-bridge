@@ -1,4 +1,4 @@
-import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
+import type { SkyBlockMemberDungeonsClasses } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
@@ -6,7 +6,6 @@ import {
   getDungeonLevelWithOverflow,
   getSelectedSkyblockProfile,
   getUuidIfExists,
-  playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility'
@@ -29,40 +28,31 @@ export default class Catacomb extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const dungeons = selectedProfile.dungeons
-    if (!dungeons) {
-      return playerNeverPlayedDungeons(givenUsername)
-    }
-
-    const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
-
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${this.formatClass(dungeons)}.`
+    return `${givenUsername} is Catacombs ${selectedProfile.me.dungeons.level.level.toFixed(2)} ${this.formatClass(selectedProfile.me.dungeons.classes)}.`
   }
 
-  private formatClass(dungeon: SkyblockV2Dungeons): string {
-    const classes = dungeon.player_classes
-
+  private formatClass(classes: SkyBlockMemberDungeonsClasses): string {
     let xp = 0
     let name = '(None)'
 
-    if (classes?.healer?.experience && classes.healer.experience > xp) {
-      xp = classes.healer.experience
+    if (classes.healer.xp > xp) {
+      xp = classes.healer.xp
       name = 'Healer'
     }
-    if (classes?.mage?.experience && classes.mage.experience > xp) {
-      xp = classes.mage.experience
+    if (classes.mage.xp > xp) {
+      xp = classes.mage.xp
       name = 'Mage'
     }
-    if (classes?.berserk?.experience && classes.berserk.experience > xp) {
-      xp = classes.berserk.experience
+    if (classes.berserk.xp > xp) {
+      xp = classes.berserk.xp
       name = 'Berserk'
     }
-    if (classes?.archer?.experience && classes.archer.experience > xp) {
-      xp = classes.archer.experience
+    if (classes.archer.xp > xp) {
+      xp = classes.archer.xp
       name = 'Archer'
     }
-    if (classes?.tank?.experience && classes.tank.experience > xp) {
-      xp = classes.tank.experience
+    if (classes.tank.xp > xp) {
+      xp = classes.tank.xp
       name = 'Tank'
     }
     return `${name} ${getDungeonLevelWithOverflow(xp).toFixed(2)}`

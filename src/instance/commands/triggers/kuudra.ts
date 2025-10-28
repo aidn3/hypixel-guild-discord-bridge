@@ -3,7 +3,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
-  playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility'
@@ -26,12 +25,13 @@ export default class Kuudra extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    if (!selectedProfile.nether_island_player_data) return playerNeverEnteredCrimson(givenUsername)
-    const tiers = selectedProfile.nether_island_player_data.kuudra_completed_tiers
-
-    const completions = Object.entries(tiers)
-      .filter(([key]) => !key.startsWith('highest_wave'))
-      .map(([, value]) => value)
+    const completions = Object.entries({
+      basic: selectedProfile.me.crimsonIsle.kuudra.basicCompletions,
+      hot: selectedProfile.me.crimsonIsle.kuudra.hotCompletions,
+      burning: selectedProfile.me.crimsonIsle.kuudra.burningCompletions,
+      fiery: selectedProfile.me.crimsonIsle.kuudra.fieryCompletions,
+      infernal: selectedProfile.me.crimsonIsle.kuudra.infernalCompletions
+    }).map(([, value]) => value)
     return `${givenUsername}: ${completions.join('/')}`
   }
 }

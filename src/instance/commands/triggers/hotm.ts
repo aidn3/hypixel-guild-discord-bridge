@@ -1,6 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/utility'
 
 export default class HeartOfTheMountain extends ChatCommandHandler {
   constructor() {
@@ -18,17 +23,23 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
-    const hotm = selectedProfile.hotm
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    let response = `${givenUsername} is HOTM ${hotm.experience.level}`
+    let response = `${givenUsername} is HOTM ${selectedProfile.me.mining.hotm.level.level}`
 
     const powders: string[] = []
-    if (hotm.powder.mithril.total > 0)
-      powders.push(`${(hotm.powder.mithril.current + hotm.powder.mithril.spent).toLocaleString('en-US')} Mithril`)
-    if (hotm.powder.gemstone.total > 0)
-      powders.push(`${(hotm.powder.gemstone.current + hotm.powder.gemstone.spent).toLocaleString('en-US')} Gemstone`)
-    if (hotm.powder.glacite.total > 0)
-      powders.push(`${(hotm.powder.glacite.current + hotm.powder.glacite.spent).toLocaleString('en-US')} Glacite`)
+    if (selectedProfile.me.mining.powder.mithril.total > 0)
+      powders.push(
+        `${(selectedProfile.me.mining.powder.mithril.powder + selectedProfile.me.mining.powder.mithril.spent).toLocaleString('en-US')} Mithril`
+      )
+    if (selectedProfile.me.mining.powder.gemstone.total > 0)
+      powders.push(
+        `${(selectedProfile.me.mining.powder.gemstone.powder + selectedProfile.me.mining.powder.gemstone.spent).toLocaleString('en-US')} Gemstone`
+      )
+    if (selectedProfile.me.mining.powder.glacite.total > 0)
+      powders.push(
+        `${(selectedProfile.me.mining.powder.glacite.powder + selectedProfile.me.mining.powder.glacite.spent).toLocaleString('en-US')} Glacite`
+      )
     if (powders.length > 0) response += ` with powders (${powders.join(' - ')})`
 
     return response

@@ -8,7 +8,6 @@ import type { MojangApi } from '../../../core/users/mojang'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
-  playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility'
@@ -33,28 +32,26 @@ export default class CurrentDungeon extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const dungeons = selectedProfile.dungeons
-    if (dungeons === undefined) return playerNeverPlayedDungeons(givenUsername)
+    if (selectedProfile.me.dungeons.treasures.length === 0)
+      return `${givenUsername} hasn't done any dungeon runs lately.`
 
-    let runs = dungeons.treasures?.runs
-    if (runs === undefined || runs.length === 0) return `${givenUsername} hasn't done any dungeon runs lately.`
-
-    if (runs.length > 1) {
-      // runs aren't always chronologically ordered
-      runs = runs.toSorted((a, b) => b.completion_ts - a.completion_ts)
+    let runs = selectedProfile.me.dungeons.treasures
+    // runs aren't always chronologically ordered
+    if (selectedProfile.me.dungeons.treasures.length > 1) {
+      runs = runs.toSorted((a, b) => b.completionTimestamp - a.completionTimestamp)
     }
 
     const lastRun = runs[0]
-    const floorDisplayName = `${lastRun.dungeon_type === 'catacombs' ? 'F' : 'M'}${lastRun.dungeon_tier}`
+    const floorDisplayName = `${lastRun.type === 'catacombs' ? 'F' : 'M'}${lastRun.dungeonTier}`
 
     let message = ''
     let foundPlayer = false
     for (const participant of lastRun.participants) {
-      if (participant.player_uuid === uuid) {
+      if (participant.playerUUID === uuid) {
         message += await this.parseDisplayMessage(
           context.app.mojangApi,
-          participant.display_name,
-          participant.player_uuid
+          participant.displayName,
+          participant.playerUUID
         )
         foundPlayer = true
       }
@@ -62,8 +59,8 @@ export default class CurrentDungeon extends ChatCommandHandler {
     assert.ok(foundPlayer)
 
     message +=
-      lastRun.completion_ts + CurrentDungeon.ShowTimeAfter < Date.now()
-        ? ` was last seen ${Moment(lastRun.completion_ts).fromNow()}`
+      lastRun.completionTimestamp + CurrentDungeon.ShowTimeAfter < Date.now()
+        ? ` was last seen ${Moment(lastRun.completionTimestamp).fromNow()}`
         : ` is`
 
     message += ` playing ${floorDisplayName} `
@@ -74,9 +71,9 @@ export default class CurrentDungeon extends ChatCommandHandler {
 
       const participants = await Promise.all(
         lastRun.participants
-          .filter((participant) => participant.player_uuid !== uuid)
+          .filter((participant) => participant.playerUUID !== uuid)
           .map((participant) =>
-            this.parseDisplayMessage(context.app.mojangApi, participant.display_name, participant.player_uuid)
+            this.parseDisplayMessage(context.app.mojangApi, participant.displayName, participant.playerUUID)
           )
       )
       message += participants.join(', ')
