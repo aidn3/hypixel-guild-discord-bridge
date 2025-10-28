@@ -14,6 +14,7 @@ import Bestiary from './triggers/bestiary'
 import Bits from './triggers/bits.js'
 import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
+import Buildbattle from './triggers/buildbattle'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
@@ -87,6 +88,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Bestiary(),
       new Boo(),
       new Boop(),
+      new Buildbattle(),
       new Calculate(),
       new Catacomb(),
       new CurrentDungeon(),
