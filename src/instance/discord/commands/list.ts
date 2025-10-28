@@ -217,7 +217,9 @@ async function look(
     tasks.push(
       hypixelApi
         .getStatus(uuid)
-        .then((status) => result.set(username.toLowerCase(), status))
+        .then((status) => {
+          if (!status.isRaw()) result.set(username.toLowerCase(), status)
+        })
         .catch(errorHandler.promiseCatch(`fetching hypixel status of ${uuid} for command /list`))
     )
   }
