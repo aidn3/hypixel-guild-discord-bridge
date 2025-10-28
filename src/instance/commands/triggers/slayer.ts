@@ -3,6 +3,7 @@ import type { Slayer as SlayerType } from 'hypixel-api-reborn'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
+  capitalize,
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
@@ -84,8 +85,8 @@ export default class Slayer extends ChatCommandHandler {
     for (const [name, slayer] of Object.entries(slayerBosses)) {
       if (name === chosenSlayer) {
         return (
-          `${givenUsername}'s ${chosenSlayer} slayer: ` +
-          `Level ${this.getSlayerLevel(slayer.xp, name)} (${slayer.xp.toLocaleString()}) ` +
+          `${givenUsername}'s ${capitalize(chosenSlayer)} slayer: ` +
+          `Level ${this.getSlayerLevel(slayer.xp, name)} - ${slayer.xp.toLocaleString()} XP - ` +
           `Highest tier kills: ${this.getHighestTierKills(slayer, name).toLocaleString()}`
         )
       }
@@ -93,7 +94,7 @@ export default class Slayer extends ChatCommandHandler {
 
     const output: string[] = []
     for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output.push(`${name} ${this.getSlayerLevel(slayer.xp, name)}`)
+      output.push(`${capitalize(name)} ${this.getSlayerLevel(slayer.xp, name)}`)
     }
     return `${givenUsername}'s slayers: ${output.join(' - ')}`
   }

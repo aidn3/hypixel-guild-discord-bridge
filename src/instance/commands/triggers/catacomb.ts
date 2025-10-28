@@ -36,7 +36,7 @@ export default class Catacomb extends ChatCommandHandler {
 
     const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
 
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} ${this.formatClass(dungeons)}.`
+    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)}.`
   }
 
   private formatClass(dungeon: SkyblockV2Dungeons): string {
