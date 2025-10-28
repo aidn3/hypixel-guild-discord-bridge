@@ -12,6 +12,7 @@ import Asian from './triggers/asian.js'
 import Bedwars from './triggers/bedwars.js'
 import Bestiary from './triggers/bestiary'
 import Bits from './triggers/bits.js'
+import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
 import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
@@ -84,6 +85,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Bits(),
       new Bedwars(),
       new Bestiary(),
+      new Boo(),
       new Boop(),
       new Calculate(),
       new Catacomb(),
