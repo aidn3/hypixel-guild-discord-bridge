@@ -20,11 +20,8 @@ export default class Skywars extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
       /* return undefined */
     })
-    if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
+    if (player == undefined || player.isRaw()) return `${givenUsername} has never played on Hypixel before?`
 
-    const stat = player.stats?.Skywars
-    if (stat === undefined) return `${givenUsername} has never played Skywars before?`
-
-    return `${givenUsername}'s skywars level is ${stat.level.toFixed(0)}✫ with K/D ratio of ${stat.KDRatio.toFixed(2)}.`
+    return `${givenUsername}'s skywars level is ${player.stats.SkyWars.level.toFixed(0)}✫ with K/D ratio of ${player.stats.SkyWars.KDR.toFixed(2)}.`
   }
 }

@@ -45,6 +45,8 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
+    // TODO: @Kathund this doesn't exist in Hypixel-API-Reborn
+
     const heartOfGold = selectedProfile.essence?.perks?.heart_of_gold ?? 0
     const unbridledRage = selectedProfile.essence?.perks?.unbridled_rage ?? 0
     const coldEfficiency = selectedProfile.essence?.perks?.cold_efficiency ?? 0

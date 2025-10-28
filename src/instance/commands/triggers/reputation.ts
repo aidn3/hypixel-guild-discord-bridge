@@ -3,7 +3,6 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
-  playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility'
@@ -26,34 +25,20 @@ export default class Reputation extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    if (
-      selectedProfile.nether_island_player_data === undefined ||
-      !('selected_faction' in selectedProfile.nether_island_player_data)
-    ) {
-      return playerNeverEnteredCrimson(givenUsername)
-    }
-
-    const selectedFaction: string | undefined = selectedProfile.nether_island_player_data.selected_faction
-    const mageReputation: number | undefined = selectedProfile.nether_island_player_data.mages_reputation
-    const barbarianReputation: number | undefined = selectedProfile.nether_island_player_data.barbarians_reputation
+    const selectedFaction = selectedProfile.me.crimsonIsle.faction
+    const mageReputation = selectedProfile.me.crimsonIsle.magesReputation
+    const barbarianReputation = selectedProfile.me.crimsonIsle.barbariansReputation
 
     let message = givenUsername
 
+    // TODO: @Kathund Replace UNKNOWN with None
+    // TODO: Requires changes to Hypixel-API-Reborn
     message +=
-      selectedFaction === undefined
+      selectedFaction === 'UNKNOWN'
         ? ` is not in any faction`
         : ` is in ${selectedFaction.slice(0, 1).toUpperCase() + selectedFaction.slice(1).toLowerCase()} Faction`
 
-    const reputations: string[] = []
-    if (barbarianReputation !== undefined) {
-      reputations.push(`Barbarian reputation ${barbarianReputation.toLocaleString('en-US')}`)
-    }
-    if (mageReputation !== undefined) {
-      reputations.push(`Mages reputation ${mageReputation.toLocaleString('en-US')}`)
-    }
-    if (reputations.length > 0) {
-      message += ` with ${reputations.join(' - ')}`
-    }
+    message += ` with Barbarian reputation ${barbarianReputation.toLocaleString('en-US')} - Mages reputation ${mageReputation.toLocaleString('en-US')}`
 
     return message
   }

@@ -1,6 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, shortenNumber, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  shortenNumber,
+  usernameNotExists
+} from '../common/utility'
 
 export default class Purse extends ChatCommandHandler {
   constructor() {
@@ -17,24 +23,15 @@ export default class Purse extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => {
-        return response.profiles?.find((profile) => profile.selected)
-      })
-      .catch(() => undefined)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const bank = selectedProfile.banking?.balance
-    const purse = selectedProfile.members[uuid].currencies?.coin_purse
+    const bank = selectedProfile.banking.balance
+    const purse = selectedProfile.me.currencies.purse
 
-    if (bank === undefined && purse === undefined) {
-      return `${givenUsername}'s API is disabled.`
-    }
-
-    const totalMessage = shortenNumber((bank ?? 0) + (purse ?? 0))
-    const bankMessage = 'Bank ' + (bank === undefined ? 'OFF' : shortenNumber(bank))
-    const purseMessage = 'Purse ' + (purse === undefined ? 'OFF' : shortenNumber(purse))
+    const totalMessage = shortenNumber(bank + purse)
+    const bankMessage = 'Bank ' + shortenNumber(bank)
+    const purseMessage = 'Purse ' + shortenNumber(purse)
 
     return `${givenUsername}'s coins ${totalMessage} - ${bankMessage} - ${purseMessage}`
   }
