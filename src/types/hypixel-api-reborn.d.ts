@@ -56,11 +56,11 @@ declare module 'hypixel-api-reborn' {
       barbarians_reputation?: number
 
       kuudra_completed_tiers: {
-        none: number
-        hot: number
-        burning: number
-        fiery: number
-        infernal: number
+        none?: number
+        hot?: number
+        burning?: number
+        fiery?: number
+        infernal?: number
       }
     }
     slayer: SlayerProfile | undefined

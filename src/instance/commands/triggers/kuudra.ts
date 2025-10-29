@@ -29,9 +29,22 @@ export default class Kuudra extends ChatCommandHandler {
     if (!selectedProfile.nether_island_player_data) return playerNeverEnteredCrimson(givenUsername)
     const tiers = selectedProfile.nether_island_player_data.kuudra_completed_tiers
 
-    const completions = Object.entries(tiers)
-      .filter(([key]) => !key.startsWith('highest_wave'))
-      .map(([, value]) => value)
-    return `${givenUsername}: ${completions.join('/')}`
+    const entries: string[] = []
+    if (tiers.none) entries.push(`Basic ${tiers.none}`)
+    if (tiers.hot) entries.push(`Hot ${tiers.hot}`)
+    if (tiers.burning) entries.push(`Burning ${tiers.burning}`)
+    if (tiers.fiery) entries.push(`Fiery ${tiers.fiery}`)
+    if (tiers.infernal) entries.push(`Infernal ${tiers.infernal}`)
+
+    if (entries.length === 0) return `${givenUsername} has never done Kuudra before?`
+
+    const collection =
+      (tiers.none ?? 1) +
+      (tiers.hot ?? 0) * 2 +
+      (tiers.burning ?? 0) * 3 +
+      (tiers.fiery ?? 0) * 4 +
+      (tiers.infernal ?? 0) * 5
+
+    return `${givenUsername}: ${entries.join(' - ')} - Collection ${collection.toLocaleString('en-US')}`
   }
 }

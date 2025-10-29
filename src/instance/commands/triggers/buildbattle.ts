@@ -54,7 +54,7 @@ export default class Buildbattle extends ChatCommandHandler {
     const wins = stat.wins.gtb + stat.wins.pro + stat.wins.solo + stat.wins.teams
     const title = await this.getTitle(context, uuid, score)
 
-    return `${title} ${givenUsername}'s Build Battle score is ${score.toLocaleString('en-US')} with ${wins.toLocaleString('en-US')} Wins.`
+    return `${title} ${givenUsername}'s Build Battle score is ${score.toLocaleString('en-US')} with ${wins.toLocaleString('en-US')} wins.`
   }
 
   private async getTitle(context: ChatCommandContext, uuid: string, score: number): Promise<string> {

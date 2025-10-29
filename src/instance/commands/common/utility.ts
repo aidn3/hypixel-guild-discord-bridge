@@ -97,6 +97,10 @@ export function shortenNumber(value: number): string {
   return value.toFixed(Math.max(0, digitsCount - digits)) + suffix
 }
 
+export function capitalize(name: string): string {
+  return name.slice(0, 1).toUpperCase() + name.slice(1).toLowerCase()
+}
+
 export function usernameNotExists(givenUsername: string): string {
   return `Invalid username! (given: ${givenUsername})`
 }
