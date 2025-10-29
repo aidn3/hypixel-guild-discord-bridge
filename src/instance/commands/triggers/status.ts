@@ -20,14 +20,15 @@ export default class Status extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const session = await context.app.hypixelApi.getStatus(uuid, { noCaching: true }).catch(() => {
+    const session = await context.app.hypixelApi.getStatus(uuid, { noCacheCheck: true }).catch(() => {
       // eslint-disable-next-line unicorn/no-useless-undefined
       return undefined
     })
-    if (!session?.online) {
+    if (!session || session.isRaw()) throw new Error("Something wen't wrong while fetching session")
+    if (!session.online) {
       const player = await context.app.hypixelApi.getPlayer(uuid).catch(() => undefined)
-      if (player !== undefined) {
-        return `${givenUsername} was last online ${formatTime(Date.now() - player.lastLogoutTimestamp)} ago.`
+      if (player !== undefined && !player.isRaw() && player.lastLogoutAt) {
+        return `${givenUsername} was last online ${formatTime(Date.now() - player.lastLogoutAt.getTime())} ago.`
       }
     }
 

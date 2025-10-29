@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -22,11 +22,12 @@ export default class Timecharms extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const trophies = selectedProfile.rift?.gallery?.secured_trophies
-    if (trophies === undefined || trophies.length === 0) {
+    const trophies = selectedProfile.me.rift.gallery.securedTrophies
+
+    if (trophies.length === 0) {
       return `${givenUsername} has not secured any timecharm yet?`
     }
 
@@ -36,6 +37,7 @@ export default class Timecharms extends ChatCommandHandler {
     }
 
     let displayName: string
+
     switch (lastCharm.type) {
       case 'wyldly_supreme': {
         displayName = 'Supreme Timecharm (Black Lagoon)'
@@ -67,6 +69,10 @@ export default class Timecharms extends ChatCommandHandler {
       }
       case 'mountain': {
         displayName = 'Celestial Timecharm (Cerebral Citadel)'
+        break
+      }
+      default: {
+        displayName = 'UNKNOWN timecharm (UNKNOWN)'
       }
     }
 

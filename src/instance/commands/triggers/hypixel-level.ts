@@ -20,8 +20,8 @@ export default class HypixelLevel extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid).catch(() => {
       /* return undefined */
     })
-    if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
+    if (player == undefined || player.isRaw()) return `${givenUsername} has never played on Hypixel before?`
 
-    return `${givenUsername} is Hypixel level ${player.level}.`
+    return `${givenUsername} is Hypixel level ${player.level.level}.`
   }
 }

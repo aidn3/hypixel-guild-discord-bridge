@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -23,22 +23,20 @@ export default class Bestiary extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(givenUsername)
-    const bestiary = selectedProfile.bestiary
-    if (bestiary === undefined) return `${givenUsername} has never killed on this profile.`
 
     let response = `${givenUsername} has `
     response +=
-      bestiary.milestone?.last_claimed_milestone === undefined || bestiary.milestone.last_claimed_milestone === 0
+      selectedProfile.me.bestiary.lastClaimedMilestone === 0
         ? 'never claimed bestiary milestones on this profile.'
-        : `claimed ${bestiary.milestone.last_claimed_milestone} bestiary milestones.`
+        : `claimed ${selectedProfile.me.bestiary.lastClaimedMilestone} bestiary milestones.`
 
     if (bestiaryName !== undefined) {
-      const bestiaryStats = Object.keys(bestiary.kills)
+      const bestiaryStats = Object.keys(selectedProfile.me.bestiary.kills)
         .filter((key) => key !== 'last_killed_mob')
         .filter((key) => key.replaceAll('_', ' ').toLowerCase().includes(bestiaryName.toLowerCase()))
-        .map((key) => bestiary.kills[key])
+        .map((key) => selectedProfile.me.bestiary.kills[key])
         .reduce((a, b) => a + b, 0)
 
       if (bestiaryStats === 0) return `${givenUsername} has never killed anything like that on this profile.`

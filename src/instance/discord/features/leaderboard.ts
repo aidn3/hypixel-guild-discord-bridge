@@ -161,6 +161,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
 
     if (option.guildId !== undefined) {
       const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      if (guild === null || guild.isRaw()) throw new Error("Something wen't wrong while fetching a guild")
 
       leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({ uuid: uuid, discordId: undefined, count: 0 }))
       result += `Guild: **${escapeMarkdown(guild.name)}**\n`
@@ -198,6 +199,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
 
     if (option.guildId !== undefined) {
       const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      if (guild === null || guild.isRaw()) throw new Error("Something wen't wrong while fetching a guild")
       leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
         uuid: uuid,
         discordId: undefined,
@@ -239,6 +241,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
 
     if (option.guildId !== undefined) {
       const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      if (guild === null || guild.isRaw()) throw new Error("Something wen't wrong while fetching a guild")
       leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
         uuid: uuid,
         discordId: undefined,

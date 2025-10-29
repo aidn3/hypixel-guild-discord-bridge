@@ -1,8 +1,11 @@
-import assert from 'node:assert'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/utility'
 
 export default class Level extends ChatCommandHandler {
   constructor() {
@@ -19,19 +22,11 @@ export default class Level extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const response = await context.app.hypixelApi.getSkyblockProfiles(uuid, { raw: true })
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    if (!response.profiles) return playerNeverPlayedSkyblock(givenUsername)
-    const profile = response.profiles.find((p) => p.selected)
-    assert.ok(profile)
-
-    const selected = profile.members[uuid]
-    assert.ok(selected)
-
-    const exp = selected.leveling?.experience ?? 0
-    const level = (exp / 100).toFixed(2)
     let result = `${givenUsername}'s `
-    switch (profile.game_mode) {
+    switch (selectedProfile.gameMode) {
       case 'ironman': {
         result += 'ironman profile is level '
         break
@@ -48,7 +43,7 @@ export default class Level extends ChatCommandHandler {
         result += 'skyblock profile is level '
       }
     }
-    result += level
+    result += `${selectedProfile.me.leveling.level}`
 
     return result
   }

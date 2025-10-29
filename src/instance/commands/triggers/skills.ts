@@ -1,12 +1,17 @@
 import assert from 'node:assert'
 
-import type { Client, SkyblockMember } from 'hypixel-api-reborn'
+import type { SkyBlockMemberPlayerDataSkills } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/utility'
 
-const AbbreviationMappings: Record<keyof SkyblockMember['skills'], string> = {
+const AbbreviationMappings: Record<keyof SkyBlockMemberPlayerDataSkills, string> = {
   combat: 'combat',
   farming: 'farm',
   mining: 'mine',
@@ -18,7 +23,9 @@ const AbbreviationMappings: Record<keyof SkyblockMember['skills'], string> = {
   social: 'social',
   runecrafting: 'rune',
   taming: 'tame',
-  average: 'average'
+  average: 'avg',
+  nonCosmeticAverage: 'non cosmetic avg',
+  toString: 'what! if you trigger this please seek help. https://suicidepreventionlifeline.org'
 }
 
 export default class Skills extends ChatCommandHandler {
@@ -36,82 +43,31 @@ export default class Skills extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const result = await this.getParsedProfile(context.app.hypixelApi, uuid)
-    if (result === undefined) return playerNeverPlayedSkyblock(givenUsername)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const selectedProfile = result.profile
-    const farmingCap = result.farmingCap
-    const tamingCap = result.tamingCap
+    const skillAverage = selectedProfile.me.playerData.skills.average
 
-    let skillAverage: string | undefined
     const skillsMessage: string[] = []
-    for (const [name, skill] of Object.entries(selectedProfile.skills)) {
-      if (typeof skill === 'number') {
-        skillAverage = Math.floor(skill) === skill ? skill.toString(10) : skill.toFixed(1)
-        continue
-      }
-
-      let formattedLevel: string
-      if (name === 'farming') formattedLevel = this.formatLevel(skill.level, skill.progress, 50 + farmingCap)
-      else if (name === 'taming') formattedLevel = this.formatLevel(skill.level, skill.progress, 50 + tamingCap)
-      else formattedLevel = this.formatLevel(skill.level, skill.progress, undefined)
-
-      // @ts-expect-error string is index-able as key
-      skillsMessage.push(`${AbbreviationMappings[name] ?? name} ${formattedLevel}`)
+    for (const [name, skillData] of Object.entries({
+      fishing: selectedProfile.me.playerData.skills.fishing,
+      alchemy: selectedProfile.me.playerData.skills.alchemy,
+      runecrafting: selectedProfile.me.playerData.skills.runecrafting,
+      mining: selectedProfile.me.playerData.skills.mining,
+      farming: selectedProfile.me.playerData.skills.farming,
+      enchanting: selectedProfile.me.playerData.skills.enchanting,
+      taming: selectedProfile.me.playerData.skills.taming,
+      foraging: selectedProfile.me.playerData.skills.foraging,
+      social: selectedProfile.me.playerData.skills.social,
+      carpentry: selectedProfile.me.playerData.skills.carpentry,
+      combat: selectedProfile.me.playerData.skills.combat
+    })) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO: come back to this lol
+      // @ts-expect-error
+      skillsMessage.push(`${AbbreviationMappings[name] ?? name} ${skillData.level}`)
     }
-    assert.ok(skillAverage !== undefined)
     assert.ok(skillsMessage.length > 0)
 
     return `${givenUsername}: AVG ${skillAverage}, ${skillsMessage.join(', ')}`
-  }
-
-  async getParsedProfile(
-    hypixelApi: Client,
-    uuid: string
-  ): Promise<
-    | {
-        profile: SkyblockMember
-        farmingCap: number
-        tamingCap: number
-      }
-    | undefined
-  > {
-    const rawProfiles = await hypixelApi.getSkyblockProfiles(uuid, { raw: true })
-    if (!rawProfiles.profiles) return undefined
-
-    let cuteName: string | undefined
-    let farmingCap: number | undefined
-    let tamingCap: number | undefined
-    for (const profile of rawProfiles.profiles) {
-      if (profile.selected) {
-        cuteName = profile.cute_name
-        farmingCap = profile.members[uuid].jacobs_contest?.perks?.farming_level_cap ?? 0
-        tamingCap = profile.members[uuid].pets_data?.pet_care?.pet_types_sacrificed?.length ?? 0
-        break
-      }
-    }
-
-    assert.ok(cuteName !== undefined)
-    assert.ok(farmingCap !== undefined)
-    assert.ok(tamingCap !== undefined)
-
-    const parsedProfile = await hypixelApi
-      .getSkyblockProfiles(uuid)
-      .then((profiles) => profiles.find((profile) => profile.profileName === cuteName)?.me)
-
-    assert.ok(parsedProfile)
-    return { profile: parsedProfile, farmingCap: farmingCap, tamingCap: tamingCap }
-  }
-
-  private formatLevel(level: number, progress: number, levelCap: number | undefined): string {
-    if (Number.isNaN(progress) || progress === 100) {
-      return levelCap === undefined ? level.toFixed(0) : Math.min(level, levelCap).toFixed(0)
-    }
-
-    const formattedLevel = level + progress / 100
-    if (levelCap !== undefined && formattedLevel > levelCap) {
-      return Math.min(formattedLevel, levelCap).toFixed(0)
-    }
-    return formattedLevel.toFixed(1)
   }
 }

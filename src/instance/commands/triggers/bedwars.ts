@@ -20,11 +20,8 @@ export default class Bedwars extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
       /* return undefined */
     })
-    if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
+    if (player == undefined || player.isRaw()) return `${givenUsername} has never played on Hypixel before?`
 
-    const stat = player.stats?.bedwars
-    if (stat === undefined) return `${givenUsername} has never played Bedwars before?`
-
-    return `${givenUsername}'s bedwars level is ${stat.level.toFixed(0)}✫ with FKDR of ${stat.finalKDRatio.toFixed(2)}.`
+    return `${givenUsername}'s bedwars level is ${player.stats.BedWars.level.toFixed(0)}✫ with FKDR of ${player.stats.BedWars.FKDR.toFixed(2)}.`
   }
 }

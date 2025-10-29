@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   shortenNumber,
@@ -23,12 +23,12 @@ export default class Eggs extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    const easter = selectedProfile.events?.easter
-    const totalChocolate = easter?.total_chocolate ?? 0
-    const chocolateSpent = easter?.shop?.chocolate_spent ?? 0
+    const totalChocolate = selectedProfile.me.chocolateFactory.totalChocolate
+    // TODO: @Kathund this shit doesn't exist in reborn
+    const chocolateSpent = selectedProfile.me.chocolateFactory.chocolateSincePrestige - totalChocolate
     if (totalChocolate === 0) return `${givenUsername} does not have a chocolate factory.`
 
     return `${givenUsername} has produced ${shortenNumber(totalChocolate)} chocolate and spent ${shortenNumber(chocolateSpent)}.`

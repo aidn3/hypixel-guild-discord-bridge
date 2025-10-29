@@ -99,11 +99,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       originTag: false
     })
 
-    this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
-      cache: true,
-      mojangCacheTime: 300,
-      hypixelCacheTime: 300
-    })
+    this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, { cacheTime: 300 })
     this.language = new ConfigManager<LanguageConfig>(
       this,
       this.logger,

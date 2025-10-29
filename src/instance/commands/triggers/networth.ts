@@ -3,11 +3,18 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
+import { PrepareSkyBlockProfileForSkyHelperNetworth } from 'hypixel-api-reborn'
 import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, shortenNumber, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  shortenNumber,
+  usernameNotExists
+} from '../common/utility'
 
 export default class Networth extends ChatCommandHandler {
   constructor() {
@@ -23,36 +30,29 @@ export default class Networth extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(givenUsername)
 
-    const selectedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles?.find((p) => p.selected))
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
 
-    let museumData: object | undefined
-    try {
-      museumData = await context.app.hypixelApi
-        .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })
-        .then((museum) => museum.members[uuid] as object)
-    } catch {
-      return `${context.username}, error fetching museum data?`
-    }
+    const museum = await context.app.hypixelApi.getSkyBlockMuseum(selectedProfile.profileId, { raw: true })
+    if (!museum.isRaw()) throw new Error('Museum data is not Raw Data.')
 
-    const calculator = new ProfileNetworthCalculator(
-      selectedProfile.members[uuid],
-      museumData,
-      selectedProfile.banking?.balance ?? 0
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    const museumProfile: Record<string, any> | undefined = museum.data.members[selectedProfile.me.uuid]
+    if (museumProfile === undefined) throw new Error('Player has museum API off.')
+
+    const profileData = PrepareSkyBlockProfileForSkyHelperNetworth(selectedProfile)
+
+    const networthCalculator = new ProfileNetworthCalculator(
+      profileData,
+      museumProfile,
+      selectedProfile.banking.balance
     )
-    const networth = await calculator
-      .getNetworth({ onlyNetworth: true })
-      .then((response) => response.networth)
-      .catch(() => undefined)
-    if (networth === undefined) return `${context.username}, cannot calculate the networth?`
-    const nonCosmetic = await calculator
-      .getNonCosmeticNetworth({ onlyNetworth: true })
-      .then((response) => response.networth)
-      .catch(() => undefined)
-    if (nonCosmetic === undefined) return `${context.username}, cannot calculate the non-cosmetic networth?`
 
-    return `${givenUsername}'s networth: ${shortenNumber(networth)}, non-cosmetic: ${shortenNumber(nonCosmetic)}`
+    const networthData = await networthCalculator.getNetworth({ onlyNetworth: true })
+    if (networthData.noInventory) return `${givenUsername} has API off`
+    const nonCosmeticNetworthData = await networthCalculator.getNonCosmeticNetworth({ onlyNetworth: true })
+    if (nonCosmeticNetworthData.noInventory) return `${givenUsername} has API off`
+
+    return `${givenUsername}'s networth: ${shortenNumber(networthData.networth)}, non-cosmetic: ${shortenNumber(nonCosmeticNetworthData.networth)}`
   }
 }

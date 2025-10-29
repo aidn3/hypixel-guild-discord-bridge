@@ -217,7 +217,9 @@ async function look(
     tasks.push(
       hypixelApi
         .getStatus(uuid)
-        .then((status) => result.set(username.toLowerCase(), status))
+        .then((status) => {
+          if (!status.isRaw()) result.set(username.toLowerCase(), status)
+        })
         .catch(errorHandler.promiseCatch(`fetching hypixel status of ${uuid} for command /list`))
     )
   }
@@ -255,7 +257,7 @@ function formatLocation(username: string, link: UserLink | undefined, session: S
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  if (session.game != undefined) message += `playing __${escapeMarkdown(session.game.name)}__`
+  if (session.game != undefined) message += `playing __${escapeMarkdown(session.game.name ?? 'UNKNOWN')}__`
   if (session.mode != undefined) message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
   message += '*' // END discord markdown. italic
 

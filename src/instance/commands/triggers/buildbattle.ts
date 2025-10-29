@@ -5,6 +5,7 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Buildbattle extends ChatCommandHandler {
+  // TODO: @Kathund move this into Hypixel-API-Reborn See https://discord.com/channels/@me/1427156824645439488/1432985264959262802
   private static readonly Titles = [
     { value: 0, score: 'Rookie' },
     { value: 100, score: 'Untrained' },
@@ -45,13 +46,14 @@ export default class Buildbattle extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
       /* return undefined */
     })
-    if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
+    if (player == undefined || player.isRaw()) return `${givenUsername} has never played on Hypixel before?`
 
-    const stat = player.stats?.buildbattle
-    if (stat === undefined) return `${givenUsername} has never played Build Battle before?`
-
-    const score = stat.score
-    const wins = stat.wins.gtb + stat.wins.pro + stat.wins.solo + stat.wins.teams
+    const score = player.stats.BuildBattle.score
+    const wins =
+      player.stats.BuildBattle.wins.gtb +
+      player.stats.BuildBattle.wins.pro +
+      player.stats.BuildBattle.wins.solo +
+      player.stats.BuildBattle.wins.teams
     const title = await this.getTitle(context, uuid, score)
 
     return `${title} ${givenUsername}'s Build Battle score is ${score.toLocaleString('en-US')} with ${wins.toLocaleString('en-US')} Wins.`
@@ -60,9 +62,10 @@ export default class Buildbattle extends ChatCommandHandler {
   private async getTitle(context: ChatCommandContext, uuid: string, score: number): Promise<string> {
     // Check if they deserve the special leaderboard title
     const leaderboards = await context.app.hypixelApi.getLeaderboards()
+    if (leaderboards.isRaw()) throw new Error("Something wen't wrong while fetching leaderboards")
 
     const buildBattleLeaderboard = leaderboards.BUILD_BATTLE.find(
-      (leaderboard) => leaderboard.name === 'Lifetime' && leaderboard.title === 'Score'
+      (leaderboard) => leaderboard.prefix === 'Lifetime' && leaderboard.title === 'Score'
     )
     assert.ok(buildBattleLeaderboard !== undefined)
 

@@ -1,5 +1,3 @@
-import assert from 'node:assert'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
@@ -13,30 +11,27 @@ export default class Election extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const mayor = await context.app.hypixelApi.getSkyblockGovernment({ raw: true })
-    if (mayor.current === undefined) return 'Election booth not opened yet!'
+    // TODO: @Kathund rewrite the response from getSkyblockElection coz it's FUCKING SHIT AND I HATE IT AHGUY8FGYUDYFHUGUHFGDHUIDIHJNUVB
+    const mayor = await context.app.hypixelApi.getSkyBlockElection()
+    if (mayor.isRaw())
+      throw new Error("Something wen't wrong while fetching the government of skyblock. Clearly kathund is the mayor")
+    if (mayor.currentElection === null) return 'Election booth not opened yet!'
 
-    const candidates = mayor.current.candidates
-    const resultsHidden = candidates[0].votes === undefined
+    const candidates = mayor.currentElection.candidates
+    const resultsHidden = candidates[0].votesReceived === 0
     if (resultsHidden) {
       return `Hidden Election: ${candidates.map((candidate) => `${candidate.name} ${candidate.perks.length} perks`).join(' | ')}`
     }
 
     let winner = candidates[0]
     for (const candidate of candidates) {
-      assert.ok(candidate.votes !== undefined)
-      assert.ok(winner.votes !== undefined)
-      if (candidate.votes > winner.votes) winner = candidate
+      if (candidate.votesReceived > winner.votesReceived) winner = candidate
     }
 
-    let minister = candidates.find((candidate) => candidate.name !== winner.name)
-    assert.ok(minister !== undefined)
+    let minister = candidates.find((candidate) => candidate.name !== winner.name) ?? candidates[1]
     for (const candidate of candidates) {
       if (candidate.name === winner.name) continue
-
-      assert.ok(candidate.votes !== undefined)
-      assert.ok(minister.votes !== undefined)
-      if (candidate.votes > minister.votes) minister = candidate
+      if (candidate.votesReceived > minister.votesReceived) minister = candidate
     }
 
     let message = `Upcoming election: `

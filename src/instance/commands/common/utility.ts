@@ -1,6 +1,4 @@
-import assert from 'node:assert'
-
-import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
+import type { Client, SkyblockProfileWithMe } from 'hypixel-api-reborn'
 
 import type { MojangApi } from '../../../core/users/mojang'
 
@@ -14,26 +12,13 @@ export async function getUuidIfExists(mojangApi: MojangApi, username: string): P
     })
 }
 
-export async function getSelectedSkyblockProfileRaw(
+export async function getSelectedSkyblockProfile(
   hypixelApi: Client,
   uuid: string
-): Promise<SkyblockV2Member | undefined> {
-  const response = await hypixelApi.getSkyblockProfiles(uuid, { raw: true })
-
-  if (!response.profiles) return undefined
-  const profile = response.profiles.find((p) => p.selected)
-
-  const selected = profile?.members[uuid]
-  assert.ok(selected)
-  return selected
-}
-
-export async function getSelectedSkyblockProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
-  return await hypixelApi.getSkyblockProfiles(uuid).then((profiles) => {
-    const profile = profiles.find((profile) => profile.selected)?.me
-    assert.ok(profile)
-    return profile
-  })
+): Promise<SkyblockProfileWithMe | undefined> {
+  const profiles = await hypixelApi.getSkyBlockProfiles(uuid)
+  if (profiles.isRaw()) throw new Error("Something wen't wrong while fetching skyblock profiles")
+  return profiles.selectedProfile
 }
 
 export function getDungeonLevelWithOverflow(experience: number): number {
