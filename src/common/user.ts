@@ -140,7 +140,7 @@ export class User {
     }
 
     const mojangProfile = this.mojangProfile()
-    if (mojangProfile !== undefined && other.discordProfile()?.id === mojangProfile.id) {
+    if (mojangProfile !== undefined && other.mojangProfile()?.id === mojangProfile.id) {
       return true
     }
 
