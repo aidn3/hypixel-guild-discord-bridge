@@ -8,7 +8,7 @@ export default class Buildbattle extends ChatCommandHandler {
   private static readonly Titles = [
     { value: 0, score: 'Rookie' },
     { value: 100, score: 'Untrained' },
-    { value: 250, score: 'Amatuer' },
+    { value: 250, score: 'Amateur' },
     { value: 550, score: 'Prospect' },
     { value: 1000, score: 'Apprentice' },
     { value: 2000, score: 'Experienced' },
