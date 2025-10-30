@@ -84,8 +84,8 @@ export default {
         new SlashCommandSubcommandGroupBuilder()
           .setName('kick')
           .setDescription('kick a member from all Minecraft instances')
-          .addSubcommand(minecraftOption())
-          .addSubcommand(discordOption())
+          .addSubcommand(minecraftOption().addStringOption(reasonOption))
+          .addSubcommand(discordOption().addStringOption(reasonOption))
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
