@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Skywars extends ChatCommandHandler {
   constructor() {
@@ -15,12 +15,12 @@ export default class Skywars extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
       /* return undefined */
     })
-    if (player == undefined) return `${givenUsername} has never played on Hypixel before?`
+    if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     const stat = player.stats?.skywars
     if (stat === undefined) return `${givenUsername} has never played Skywars before?`

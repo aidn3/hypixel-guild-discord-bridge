@@ -21,10 +21,10 @@ export default class Bestiary extends ChatCommandHandler {
     const bestiaryName = context.args.at(1)
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (selectedProfile === undefined) return playerNeverPlayedSkyblock(givenUsername)
+    if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
     const bestiary = selectedProfile.bestiary
     if (bestiary === undefined) return `${givenUsername} has never killed on this profile.`
 

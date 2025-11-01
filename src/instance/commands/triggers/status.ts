@@ -18,7 +18,7 @@ export default class Status extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const session = await context.app.hypixelApi.getStatus(uuid, { noCaching: true }).catch(() => {
       // eslint-disable-next-line unicorn/no-useless-undefined

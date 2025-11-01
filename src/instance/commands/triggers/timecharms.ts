@@ -20,10 +20,10 @@ export default class Timecharms extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const trophies = selectedProfile.rift?.gallery?.secured_trophies
     if (trophies === undefined || trophies.length === 0) {

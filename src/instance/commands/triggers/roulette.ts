@@ -2,6 +2,7 @@ import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/ap
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
+import { canOnlyUseIngame } from '../common/utility'
 
 export default class Roulette extends ChatCommandHandler {
   public static readonly LossMessages = [
@@ -34,7 +35,7 @@ export default class Roulette extends ChatCommandHandler {
 
   handler(context: ChatCommandContext): string {
     if (context.message.instanceType !== InstanceType.Minecraft) {
-      return `${context.username}, Command can only be executed in-game!`
+      return canOnlyUseIngame(context)
     }
     if (context.message.channelType !== ChannelType.Public) {
       return `${context.username}, Command can only be executed in public chat!`

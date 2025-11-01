@@ -15,6 +15,7 @@ import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { ApplicationLanguages } from '../../../language-config'
 import { Timeout } from '../../../utility/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { ProxyConfig } from '../../minecraft/common/config.js'
@@ -601,193 +602,219 @@ function fetchLanguageOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
-        type: OptionType.Text,
-        name: 'Announce Player Muted',
+        type: OptionType.PresetList,
+        name: 'Application Language',
         description:
-          'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
-        style: InputStyle.Long,
-        min: 2,
-        max: 150,
-        getOption: () => language.data.announceMutedPlayer,
-        setOption: (value) => {
-          language.data.announceMutedPlayer = value
-          language.markDirty()
-        }
+          'Change application entire language from chat commands (e.g. `!iq`)' +
+          ' to staff moderation tools and everything in between. ' +
+          '**This menu will stay in the default language.**',
+        min: 1,
+        max: 1,
+        getOption: () => [language.data.language],
+        setOption: (values) => {
+          const selected = values[0] as ApplicationLanguages
+          assert.notStrictEqual(selected, undefined)
+          assert.ok(Object.values(ApplicationLanguages).includes(selected))
+
+          application.changeLanguage(selected)
+        },
+        options: Object.entries(ApplicationLanguages).map(([key, value]) => ({ label: key, value: value }))
       },
       {
-        type: OptionType.Category,
-        name: 'Automated Messages',
+        type: OptionType.EmbedCategory,
+        name: 'Change Text',
+        description: 'Fine tune application by manually changing various texts23.- and messages.',
         options: [
           {
             type: OptionType.Text,
-            name: 'Dark Auction Reminder',
-            description: 'Send a reminder when a skyblock dark auction is starting.',
+            name: 'Announce Player Muted',
+            description:
+              'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
             style: InputStyle.Long,
             min: 2,
             max: 150,
-            getOption: () => language.data.darkAuctionReminder,
+            getOption: () => language.data.announceMutedPlayer,
             setOption: (value) => {
-              language.data.darkAuctionReminder = value
+              language.data.announceMutedPlayer = value
               language.markDirty()
             }
           },
           {
-            type: OptionType.Text,
-            name: 'Starfall Cult Reminder',
-            description: 'Send a reminder when the skyblock starfall cult gathers.',
-            style: InputStyle.Long,
-            min: 2,
-            max: 150,
-            getOption: () => language.data.starfallReminder,
-            setOption: (value) => {
-              language.data.starfallReminder = value
-              language.markDirty()
-            }
-          }
-        ]
-      },
-      {
-        type: OptionType.Category,
-        name: 'Chat Commands',
-        description: 'Chat commands such as `!cata` and `!iq`.',
-        options: [
-          {
-            type: OptionType.List,
-            name: 'Mute',
-            description: 'Message to show when `!mute`.',
-            style: InputStyle.Short,
-            min: 0,
-            max: 100,
-            getOption: () => language.data.commandMuteGame,
-            setOption: (values) => {
-              language.data.commandMuteGame = values
-              language.markDirty()
-            }
-          },
-          {
-            type: OptionType.EmbedCategory,
-            name: 'Russian Roulette',
-            description: 'Chat Command `!rr`',
+            type: OptionType.Category,
+            name: 'Automated Messages',
             options: [
               {
-                type: OptionType.List,
-                name: 'Russian Roulette Win',
-                description: 'Message when winning chat command `!rr`.',
-                style: InputStyle.Short,
-                min: 0,
-                max: 100,
-                getOption: () => language.data.commandRouletteWin,
-                setOption: (values) => {
-                  language.data.commandRouletteWin = values
+                type: OptionType.Text,
+                name: 'Dark Auction Reminder',
+                description: 'Send a reminder when a skyblock dark auction is starting.',
+                style: InputStyle.Long,
+                min: 2,
+                max: 150,
+                getOption: () => language.data.darkAuctionReminder,
+                setOption: (value) => {
+                  language.data.darkAuctionReminder = value
                   language.markDirty()
                 }
               },
               {
-                type: OptionType.List,
-                name: 'Russian Roulette Lose',
-                description: 'Message when losing chat command `!rr`.',
-                style: InputStyle.Short,
-                min: 0,
-                max: 100,
-                getOption: () => language.data.commandRouletteLose,
-                setOption: (values) => {
-                  language.data.commandRouletteLose = values
+                type: OptionType.Text,
+                name: 'Starfall Cult Reminder',
+                description: 'Send a reminder when the skyblock starfall cult gathers.',
+                style: InputStyle.Long,
+                min: 2,
+                max: 150,
+                getOption: () => language.data.starfallReminder,
+                setOption: (value) => {
+                  language.data.starfallReminder = value
                   language.markDirty()
                 }
               }
             ]
           },
           {
-            type: OptionType.EmbedCategory,
-            name: 'Vengeance',
-            description: 'Chat Command `!v`',
+            type: OptionType.Category,
+            name: 'Chat Commands',
+            description: 'Chat commands such as `!cata` and `!iq`.',
             options: [
               {
                 type: OptionType.List,
-                name: 'Vengeance Win',
-                description: 'Message when winning chat command `!v`.',
+                name: 'Mute',
+                description: 'Message to show when `!mute`.',
                 style: InputStyle.Short,
                 min: 0,
                 max: 100,
-                getOption: () => language.data.commandVengeanceWin,
+                getOption: () => language.data.commandMuteGame,
                 setOption: (values) => {
-                  language.data.commandVengeanceWin = values
+                  language.data.commandMuteGame = values
+                  language.markDirty()
+                }
+              },
+              {
+                type: OptionType.EmbedCategory,
+                name: 'Russian Roulette',
+                description: 'Chat Command `!rr`',
+                options: [
+                  {
+                    type: OptionType.List,
+                    name: 'Russian Roulette Win',
+                    description: 'Message when winning chat command `!rr`.',
+                    style: InputStyle.Short,
+                    min: 0,
+                    max: 100,
+                    getOption: () => language.data.commandRouletteWin,
+                    setOption: (values) => {
+                      language.data.commandRouletteWin = values
+                      language.markDirty()
+                    }
+                  },
+                  {
+                    type: OptionType.List,
+                    name: 'Russian Roulette Lose',
+                    description: 'Message when losing chat command `!rr`.',
+                    style: InputStyle.Short,
+                    min: 0,
+                    max: 100,
+                    getOption: () => language.data.commandRouletteLose,
+                    setOption: (values) => {
+                      language.data.commandRouletteLose = values
+                      language.markDirty()
+                    }
+                  }
+                ]
+              },
+              {
+                type: OptionType.EmbedCategory,
+                name: 'Vengeance',
+                description: 'Chat Command `!v`',
+                options: [
+                  {
+                    type: OptionType.List,
+                    name: 'Vengeance Win',
+                    description: 'Message when winning chat command `!v`.',
+                    style: InputStyle.Short,
+                    min: 0,
+                    max: 100,
+                    getOption: () => language.data.commandVengeanceWin,
+                    setOption: (values) => {
+                      language.data.commandVengeanceWin = values
+                      language.markDirty()
+                    }
+                  },
+                  {
+                    type: OptionType.List,
+                    name: 'Vengeance Draw',
+                    description: 'Message when drawing chat command `!v`.',
+                    style: InputStyle.Short,
+                    min: 0,
+                    max: 100,
+                    getOption: () => language.data.commandVengeanceDraw,
+                    setOption: (values) => {
+                      language.data.commandVengeanceDraw = values
+                      language.markDirty()
+                    }
+                  },
+                  {
+                    type: OptionType.List,
+                    name: 'Vengeance Lose',
+                    description: 'Message when losing chat command `!v`.',
+                    style: InputStyle.Short,
+                    min: 0,
+                    max: 100,
+                    getOption: () => language.data.commandVengeanceLose,
+                    setOption: (values) => {
+                      language.data.commandVengeanceLose = values
+                      language.markDirty()
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            type: OptionType.Category,
+            name: 'Guild Reaction',
+            description: 'Auto replying and reacting to various in-game guild events.',
+            options: [
+              {
+                type: OptionType.List,
+                name: 'Join Message List',
+                description: 'Send a greeting message when a member joins the guild.',
+                style: InputStyle.Long,
+                min: 0,
+                max: 20,
+                getOption: () => language.data.guildJoinReaction,
+                setOption: (values) => {
+                  language.data.guildJoinReaction = values
                   language.markDirty()
                 }
               },
               {
                 type: OptionType.List,
-                name: 'Vengeance Draw',
-                description: 'Message when drawing chat command `!v`.',
-                style: InputStyle.Short,
+                name: 'Leave Message List',
+                description: 'Send a reaction message when a member leaves the guild.',
+                style: InputStyle.Long,
                 min: 0,
-                max: 100,
-                getOption: () => language.data.commandVengeanceDraw,
+                max: 20,
+                getOption: () => language.data.guildLeaveReaction,
                 setOption: (values) => {
-                  language.data.commandVengeanceDraw = values
+                  language.data.guildLeaveReaction = values
                   language.markDirty()
                 }
               },
               {
                 type: OptionType.List,
-                name: 'Vengeance Lose',
-                description: 'Message when losing chat command `!v`.',
-                style: InputStyle.Short,
+                name: 'Kick Message List',
+                description: 'Send a reaction message when a member is kicked from the guild.',
+                style: InputStyle.Long,
                 min: 0,
-                max: 100,
-                getOption: () => language.data.commandVengeanceLose,
+                max: 20,
+                getOption: () => language.data.guildKickReaction,
                 setOption: (values) => {
-                  language.data.commandVengeanceLose = values
+                  language.data.guildKickReaction = values
                   language.markDirty()
                 }
               }
             ]
-          }
-        ]
-      },
-      {
-        type: OptionType.Category,
-        name: 'Guild Reaction',
-        description: 'Auto replying and reacting to various in-game guild events.',
-        options: [
-          {
-            type: OptionType.List,
-            name: 'Join Message List',
-            description: 'Send a greeting message when a member joins the guild.',
-            style: InputStyle.Long,
-            min: 0,
-            max: 20,
-            getOption: () => language.data.guildJoinReaction,
-            setOption: (values) => {
-              language.data.guildJoinReaction = values
-              language.markDirty()
-            }
-          },
-          {
-            type: OptionType.List,
-            name: 'Leave Message List',
-            description: 'Send a reaction message when a member leaves the guild.',
-            style: InputStyle.Long,
-            min: 0,
-            max: 20,
-            getOption: () => language.data.guildLeaveReaction,
-            setOption: (values) => {
-              language.data.guildLeaveReaction = values
-              language.markDirty()
-            }
-          },
-          {
-            type: OptionType.List,
-            name: 'Kick Message List',
-            description: 'Send a reaction message when a member is kicked from the guild.',
-            style: InputStyle.Long,
-            min: 0,
-            max: 20,
-            getOption: () => language.data.guildKickReaction,
-            setOption: (values) => {
-              language.data.guildKickReaction = values
-              language.markDirty()
-            }
           }
         ]
       }

@@ -28,10 +28,10 @@ export default class PersonalBest extends ChatCommandHandler {
     if (resolvedFloor.error) return resolvedFloor.error
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const skyblockProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (!skyblockProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!skyblockProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeon = skyblockProfile.dungeons?.dungeon_types
     if (!dungeon) return playerNeverPlayedDungeons(givenUsername)

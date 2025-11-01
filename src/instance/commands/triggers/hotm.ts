@@ -15,7 +15,7 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     const hotm = selectedProfile.hotm

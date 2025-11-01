@@ -1,0 +1,8 @@
+{
+  "commands.explain": "{{username}}, أنا روبوت يربط هذه الدردشة بـ دسكورد!  لدي العديد من الأوامر التي يمكنك استخدامها، اطلع عليها جميعًا باستخدام  {{commandPrefix}}commands",
+  "commands.error.must-be-ingame": "{{username}}, !لا يمكنك استخدام هذا الأمر إلا داخل اللعبة",
+  "commands.error.must-be-admin": "{{username}}, يجب أن تكون مسؤولاً لاستخدام هذا الأمر!",
+  "commands.error.username-not-exists": " !اسم المستخدم غير صالح (given: {{username}}).",
+  "commands.error.never-joined-hypixel": "{{username}} لم يلعب على هايبكسل من قبل؟",
+  "commands.error.never-joined-skyblock": "{{username}}  لم يلعب سكاي بلوك من قبل؟"
+}

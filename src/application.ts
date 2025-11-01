@@ -8,6 +8,7 @@ import path from 'node:path'
 
 import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
+import type { i18n } from 'i18next'
 import type { Logger } from 'log4js'
 import Logger4js from 'log4js'
 import { TypedEmitter } from 'tiny-typed-emitter'
@@ -31,7 +32,7 @@ import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import type { LanguageConfig } from './language-config.js'
-import { DefaultLanguageConfig } from './language-config.js'
+import { ApplicationLanguages, DefaultLanguageConfig } from './language-config.js'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
@@ -75,7 +76,12 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
-  public constructor(config: ApplicationConfig, rootDirectory: string, configsDirectory: string) {
+  public constructor(
+    config: ApplicationConfig,
+    rootDirectory: string,
+    configsDirectory: string,
+    public readonly i18n: i18n
+  ) {
     super()
     this.setMaxListeners(50)
 
@@ -104,12 +110,20 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       mojangCacheTime: 300,
       hypixelCacheTime: 300
     })
+
     this.language = new ConfigManager<LanguageConfig>(
       this,
       this.logger,
       this.getConfigFilePath('language.json'),
       DefaultLanguageConfig
     )
+    if (!Object.values(ApplicationLanguages).includes(this.language.data.language)) {
+      this.logger.warn(`Saved language '${this.language.data.language}' is not supported.`)
+      this.logger.info(`Switching to default language '${DefaultLanguageConfig.language}'.`)
+      this.language.data.language = DefaultLanguageConfig.language
+      this.language.markDirty()
+    }
+    this.changeLanguage(this.language.data.language)
 
     this.core = new Core(this)
     this.mojangApi = this.core.mojangApi
@@ -154,6 +168,26 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public addShutdownListener(listener: () => void): void {
     this.shutdownListeners.push(listener)
+  }
+
+  public changeLanguage(language: ApplicationLanguages): void {
+    assert.ok(language)
+    assert.ok(
+      Object.values(ApplicationLanguages).includes(this.language.data.language),
+      `Language not supported: ${language}`
+    )
+    const languageName = Object.entries(ApplicationLanguages).find(([, value]) => value === language)?.[0]
+    assert.ok(languageName !== undefined, `Language ${languageName} is somehow not defined??`)
+
+    this.language.data.language = language
+    void this.i18n
+      .changeLanguage(language)
+      .then(() => {
+        this.logger.info(`Language changed successfully to ${languageName}.`)
+      })
+      .catch(this.errorHandler.promiseCatch(`changing language to ${languageName}`))
+
+    this.language.markDirty()
   }
 
   public async start(): Promise<void> {

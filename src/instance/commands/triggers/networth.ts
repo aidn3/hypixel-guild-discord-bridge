@@ -21,12 +21,12 @@ export default class Networth extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
       .then((response) => response.profiles?.find((p) => p.selected))
-    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     let museumData: object | undefined
     try {

@@ -9,6 +9,7 @@ import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
 import { Instance } from './src/common/instance'
 import { loadApplicationConfig } from './src/configuration-parser.js'
+import { loadI18 } from './src/i18next'
 import { gracefullyExitProcess } from './src/utility/shared-utility'
 
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
@@ -34,6 +35,9 @@ process.on('SIGINT', (signal) => {
 
 process.title = PackageJson.name
 
+Logger.info('Loading up languages...')
+const I18n = await loadI18()
+
 if (process.argv.includes('test-run')) {
   Logger.warn('Argument passed to run in testing mode')
   Logger.warn('Test Loading finished.')
@@ -52,7 +56,7 @@ if (!fs.existsSync(File)) {
 try {
   const RootDirectory = import.meta.dirname
   const ConfigsDirectory = path.resolve(RootDirectory, 'config')
-  app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory)
+  app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory, I18n.cloneInstance())
 
   const loggers = new Map<string, Logger4js.Logger>()
   app.on('all', (name, event) => {

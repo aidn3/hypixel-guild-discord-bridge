@@ -5,6 +5,7 @@ import NodeCache from 'node-cache'
 import { InstanceType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { canOnlyUseIngame } from '../common/utility'
 
 export default class Unlink extends ChatCommandHandler {
   private readonly confirmationId = new NodeCache({ stdTTL: 60 })
@@ -21,7 +22,7 @@ export default class Unlink extends ChatCommandHandler {
     const givenId = context.args[0] ?? ''
 
     if (context.message.instanceType !== InstanceType.Minecraft) {
-      return `${context.username}, Can only use this command in-game`
+      return canOnlyUseIngame(context)
     }
 
     const uuid = context.message.user.mojangProfile().id

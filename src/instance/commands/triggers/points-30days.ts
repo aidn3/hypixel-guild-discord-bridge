@@ -15,7 +15,7 @@ export default class Points30days extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const allPoints = context.app.core.scoresManager.getPoints30Days()
     const user = allPoints.find((entry) => entry.uuid === uuid)

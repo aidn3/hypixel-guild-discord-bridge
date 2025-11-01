@@ -6,7 +6,14 @@ import StarfallCultPlugin from './instance/features/implementations/starfall-cul
 import PlayerMuted from './instance/minecraft/handlers/player-muted.js'
 import Reaction from './instance/minecraft/handlers/reaction.js'
 
+export enum ApplicationLanguages {
+  English = 'en',
+  German = 'de',
+  Arabic = 'ar'
+}
+
 export interface LanguageConfig {
+  language: ApplicationLanguages
   darkAuctionReminder: string
   starfallReminder: string
 
@@ -27,6 +34,8 @@ export interface LanguageConfig {
 }
 
 export const DefaultLanguageConfig: Readonly<LanguageConfig> = {
+  language: ApplicationLanguages.English,
+
   darkAuctionReminder: DarkAuctionPlugin.DefaultMessage,
   starfallReminder: StarfallCultPlugin.DefaultMessage,
 

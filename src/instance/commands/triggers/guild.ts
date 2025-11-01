@@ -23,7 +23,7 @@ export default class Guild extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const guild = await context.app.hypixelApi.getGuild('player', uuid, {}).catch(() => {
       /* return undefined */
