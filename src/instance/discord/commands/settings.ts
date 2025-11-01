@@ -43,11 +43,12 @@ export default {
   handler: async function (context) {
     const options: EmbedCategoryOption = {
       type: OptionType.EmbedCategory,
-      name: 'Main',
-      description:
-        'Welcome to Application options!\n' +
-        'You can choose one of the categories below to expand it.\n\n' +
-        CategoryLabel,
+      get name() {
+        return context.application.i18n.t(($) => $['discord.commands.settings.main.title'])
+      },
+      get description() {
+        return context.application.i18n.t(($) => $['discord.commands.settings.main.description'])
+      },
 
       options: [
         {
