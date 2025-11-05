@@ -4,6 +4,8 @@ import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-rebor
 
 import type { MojangApi } from '../../../core/users/mojang'
 
+import type { ChatCommandContext } from 'src/common/commands'
+
 export async function getUuidIfExists(mojangApi: MojangApi, username: string): Promise<string | undefined> {
   return await mojangApi
     .profileByUsername(username)
@@ -101,12 +103,20 @@ export function capitalize(name: string): string {
   return name.slice(0, 1).toUpperCase() + name.slice(1).toLowerCase()
 }
 
-export function usernameNotExists(givenUsername: string): string {
-  return `Invalid username! (given: ${givenUsername})`
+export function usernameNotExists(context: ChatCommandContext, givenUsername: string): string {
+  return context.app.i18n.t(($) => $['commands.error.username-not-exists'], { username: givenUsername })
 }
 
-export function playerNeverPlayedSkyblock(username: string): string {
-  return `${username} has never played skyblock before?`
+export function canOnlyUseIngame(context: ChatCommandContext): string {
+  return context.app.i18n.t(($) => $['commands.error.must-be-ingame'], { username: context.username })
+}
+
+export function playerNeverPlayedHypixel(context: ChatCommandContext, username: string): string {
+  return context.app.i18n.t(($) => $['commands.error.never-joined-hypixel'], { username: username })
+}
+
+export function playerNeverPlayedSkyblock(context: ChatCommandContext, username: string): string {
+  return context.app.i18n.t(($) => $['commands.error.never-joined-skyblock'], { username: username })
 }
 
 export function playerNeverPlayedDungeons(username: string): string {

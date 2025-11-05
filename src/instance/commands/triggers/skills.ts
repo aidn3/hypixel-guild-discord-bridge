@@ -34,10 +34,10 @@ export default class Skills extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const result = await this.getParsedProfile(context.app.hypixelApi, uuid)
-    if (result === undefined) return playerNeverPlayedSkyblock(givenUsername)
+    if (result === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const selectedProfile = result.profile
     const farmingCap = result.farmingCap

@@ -2,7 +2,7 @@ import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/ap
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
-import { usernameNotExists } from '../common/utility'
+import { canOnlyUseIngame, usernameNotExists } from '../common/utility'
 
 export default class Vengeance extends ChatCommandHandler {
   public static readonly LossMessages = [
@@ -46,7 +46,7 @@ export default class Vengeance extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     if (context.message.instanceType !== InstanceType.Minecraft) {
-      return `${context.username}, Command can only be executed in-game!`
+      return canOnlyUseIngame(context)
     }
     if (context.message.channelType !== ChannelType.Public) {
       return `${context.username}, Command can only be executed in public chat!`
@@ -64,7 +64,7 @@ export default class Vengeance extends ChatCommandHandler {
     }
 
     const mojangProfile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
-    if (mojangProfile == undefined) return usernameNotExists(givenUsername)
+    if (mojangProfile == undefined) return usernameNotExists(context, givenUsername)
     const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, {})
 
     let messages: string[]

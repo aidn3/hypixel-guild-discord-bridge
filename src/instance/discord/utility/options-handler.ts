@@ -747,7 +747,9 @@ class ViewBuilder {
 
     // Show current selection count
     const currentSelection = option.getOption()
-    label += `\n-# **Selected:** ${currentSelection.length} option${currentSelection.length === 1 ? '' : 's'}`
+    if (currentSelection.length > 1) {
+      label += `\n-# **Selected:** ${currentSelection.length} option${currentSelection.length === 1 ? '' : 's'}`
+    }
 
     this.append({ type: ComponentType.TextDisplay, content: label })
 

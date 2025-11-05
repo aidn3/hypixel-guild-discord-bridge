@@ -28,10 +28,10 @@ export default class CurrentDungeon extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeons = selectedProfile.dungeons
     if (dungeons === undefined) return playerNeverPlayedDungeons(givenUsername)

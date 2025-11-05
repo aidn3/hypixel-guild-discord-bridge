@@ -20,11 +20,11 @@ export default class Secrets extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const hypixelProfile = await context.app.hypixelApi.getPlayer(uuid)
     const skyblockProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (!skyblockProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!skyblockProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeon = skyblockProfile.dungeons?.dungeon_types
     if (!dungeon) return playerNeverPlayedDungeons(givenUsername)

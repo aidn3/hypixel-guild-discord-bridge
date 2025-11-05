@@ -1,0 +1,19 @@
+{
+  "discord.commands.settings.essential": ":shield:",
+  "discord.commands.settings.recommended": ":beginner:",
+  "discord.commands.settings.warning": ":warning:",
+  "discord.commands.settings.header": "$t(discord.commands.settings.header1)\n$t(discord.commands.settings.header2)\n$t(discord.commands.settings.header3)\n\n$t(discord.commands.settings.faq)",
+  "discord.commands.settings.header1": "Options marked with $t(discord.commands.settings.essential) are essential. Change at your own risk.",
+  "discord.commands.settings.header2": "Options marked with $t(discord.commands.settings.recommended) are recommended for quality of life.",
+  "discord.commands.settings.header3": "Options marked with $t(discord.commands.settings.warning) should only be messed with if you know what you are doing.",
+  "discord.commands.settings.faq": "Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/master/docs/FAQ.md) for more information.",
+  "discord.commands.settings.main.title": "Main",
+  "discord.commands.settings.main.description": "Welcome to Application options!\nYou can choose one of the categories below to expand it.\n\n$t(discord.commands.settings.header)",
+
+  "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
+  "commands.error.must-be-ingame": "{{username}}, Can only use this command in-game!",
+  "commands.error.must-be-admin": "{{username}}, You must be an admin to use this command!",
+  "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",
+  "commands.error.never-joined-hypixel": "{{username}} has never played on Hypixel before?",
+  "commands.error.never-joined-skyblock": "{{username}} has never played skyblock before?"
+}

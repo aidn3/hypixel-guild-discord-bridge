@@ -1,6 +1,7 @@
 import { InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { canOnlyUseIngame } from '../common/utility'
 
 export default class Execute extends ChatCommandHandler {
   constructor() {
@@ -14,10 +15,10 @@ export default class Execute extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const originalMessage = context.message
     if (originalMessage.instanceType !== InstanceType.Minecraft) {
-      return 'Can only be executed from Minecraft'
+      return canOnlyUseIngame(context)
     }
     if (originalMessage.user.permission() !== Permission.Admin) {
-      return 'You are not a Bridge Admin!'
+      return context.app.i18n.t(($) => $['commands.error.must-be-admin'], { username: context.username })
     }
     if (context.args.length <= 0) {
       return this.getExample(context.commandPrefix)

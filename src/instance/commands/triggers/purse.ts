@@ -15,7 +15,7 @@ export default class Purse extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid, { raw: true })
@@ -23,7 +23,7 @@ export default class Purse extends ChatCommandHandler {
         return response.profiles?.find((profile) => profile.selected)
       })
       .catch(() => undefined)
-    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const bank = selectedProfile.banking?.balance
     const purse = selectedProfile.members[uuid].currencies?.coin_purse

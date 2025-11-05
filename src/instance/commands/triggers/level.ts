@@ -17,11 +17,11 @@ export default class Level extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const response = await context.app.hypixelApi.getSkyblockProfiles(uuid, { raw: true })
 
-    if (!response.profiles) return playerNeverPlayedSkyblock(givenUsername)
+    if (!response.profiles) return playerNeverPlayedSkyblock(context, givenUsername)
     const profile = response.profiles.find((p) => p.selected)
     assert.ok(profile)
 

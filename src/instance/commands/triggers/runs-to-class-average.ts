@@ -33,13 +33,13 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const selectedFloor = context.args[2]?.toLowerCase() ?? 'm7'
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
-    if (uuid == undefined) return usernameNotExists(givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
     const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
     const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (!selectedProfile) return playerNeverPlayedSkyblock(givenUsername)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     if (selectedProfile.dungeons?.player_classes === undefined) {
       return playerNeverPlayedDungeons(givenUsername)
