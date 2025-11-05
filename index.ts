@@ -35,7 +35,7 @@ process.on('SIGINT', (signal) => {
 
 process.title = PackageJson.name
 
-Logger.info('Loading up languages...')
+Logger.debug('Loading up languages...')
 const I18n = await loadI18()
 
 if (process.argv.includes('test-run')) {
