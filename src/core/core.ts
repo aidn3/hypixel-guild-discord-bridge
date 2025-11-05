@@ -2,7 +2,6 @@ import assert from 'node:assert'
 
 import type Application from '../application'
 import { InstanceType } from '../common/application-event'
-import { ConfigManager } from '../common/config-manager'
 import { Instance, InternalInstancePrefix } from '../common/instance'
 import { SqliteManager } from '../common/sqlite-manager'
 import type {
@@ -22,6 +21,7 @@ import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
 import { migrateAnyOldMinecraftData } from './minecraft/minecraft-migration'
 import { SessionsManager } from './minecraft/sessions-manager'
 import { CommandsHeat } from './moderation/commands-heat'
+import { ModerationConfigurations } from './moderation/moderation-configurations'
 import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
@@ -46,31 +46,13 @@ export class Core extends Instance<InstanceType.Core> {
 
   public minecraftConfigurations: MinecraftConfigurations
   public minecraftSessions: SessionsManager
+  public readonly moderationConfiguration: ModerationConfigurations
 
   private readonly sqliteManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
-  private readonly moderationConfig: ConfigManager<ModerationConfig>
 
   public constructor(application: Application) {
     super(application, InternalInstancePrefix + 'core', InstanceType.Core)
-
-    this.moderationConfig = new ConfigManager(
-      application,
-      this.logger,
-      application.getConfigFilePath('moderation.json'),
-      {
-        heatPunishment: true,
-        mutesPerDay: 10,
-        kicksPerDay: 5,
-
-        immuneDiscordUsers: [],
-        immuneMojangPlayers: [],
-
-        profanityEnabled: true,
-        profanityWhitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard'],
-        profanityBlacklist: []
-      }
-    )
 
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
@@ -87,11 +69,17 @@ export class Core extends Instance<InstanceType.Core> {
       this.minecraftSessions
     )
 
+    this.moderationConfiguration = new ModerationConfigurations(
+      this.configurationsManager,
+      this.application,
+      this.logger,
+      this.sqliteManager
+    )
     this.mojangApi = new MojangApi(this.sqliteManager)
 
-    this.profanity = new Profanity(this.moderationConfig)
+    this.profanity = new Profanity(this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
-    this.commandsHeat = new CommandsHeat(this.sqliteManager, application, this.moderationConfig, this.logger)
+    this.commandsHeat = new CommandsHeat(this.sqliteManager, application, this.moderationConfiguration, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)
@@ -133,13 +121,6 @@ export class Core extends Instance<InstanceType.Core> {
 
   public async awaitReady(): Promise<void> {
     await this.punishments.ready
-  }
-
-  /**
-   * @internal Only used by the config managers
-   */
-  public getModerationConfig(): ConfigManager<ModerationConfig> {
-    return this.moderationConfig
   }
 
   /**
@@ -219,20 +200,7 @@ export class Core extends Instance<InstanceType.Core> {
     return {
       commandsHeat: this.commandsHeat,
       punishments: this.punishments,
-      moderation: this.moderationConfig.data
+      moderation: this.moderationConfiguration
     }
   }
-}
-
-export interface ModerationConfig {
-  heatPunishment: boolean
-  mutesPerDay: number
-  kicksPerDay: number
-
-  immuneDiscordUsers: string[]
-  immuneMojangPlayers: string[]
-
-  profanityEnabled: boolean
-  profanityWhitelist: string[]
-  profanityBlacklist: string[]
 }

@@ -109,7 +109,7 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 }
 
 function fetchModerationOptions(application: Application): CategoryOption {
-  const moderation = application.core.getModerationConfig()
+  const moderation = application.core.moderationConfiguration
 
   return {
     type: OptionType.Category,
@@ -124,10 +124,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: `Enable Heat Punishment ${Essential}`,
             description: 'Enable to set limits to the amount of actions staff can take before being blocked.',
-            getOption: () => moderation.data.heatPunishment,
+            getOption: () => moderation.getHeatPunishment(),
             toggleOption: () => {
-              moderation.data.heatPunishment = !moderation.data.heatPunishment
-              moderation.markDirty()
+              moderation.setHeatPunishment(!moderation.getHeatPunishment())
             }
           },
           {
@@ -137,10 +136,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
             min: 0,
             max: 100,
-            getOption: () => moderation.data.kicksPerDay,
+            getOption: () => moderation.getKicksPerDay(),
             setOption: (value) => {
-              moderation.data.kicksPerDay = value
-              moderation.markDirty()
+              moderation.setKicksPerDay(value)
             }
           },
           {
@@ -150,10 +148,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
             min: 0,
             max: 100,
-            getOption: () => moderation.data.mutesPerDay,
+            getOption: () => moderation.getMutesPerDay(),
             setOption: (value) => {
-              moderation.data.mutesPerDay = value
-              moderation.markDirty()
+              moderation.setMutesPerDay(value)
             }
           }
         ]
@@ -168,10 +165,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             name: 'Immune Discord Users',
             min: 0,
             max: 10,
-            getOption: () => moderation.data.immuneDiscordUsers,
+            getOption: () => moderation.getImmuneDiscordUsers(),
             setOption: (values) => {
-              moderation.data.immuneDiscordUsers = values
-              moderation.markDirty()
+              moderation.setImmuneDiscordUsers(values)
             }
           },
           {
@@ -180,10 +176,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             style: InputStyle.Short,
             min: 0,
             max: 10,
-            getOption: () => moderation.data.immuneMojangPlayers,
+            getOption: () => moderation.getImmuneMojangPlayers(),
             setOption: (values) => {
-              moderation.data.immuneMojangPlayers = values
-              moderation.markDirty()
+              moderation.setImmuneMojangPlayers(values)
             }
           }
         ]
@@ -196,10 +191,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: `Profanity Filter ${Essential}`,
             description: 'Enable to filter and censor chat messages for profanity.',
-            getOption: () => moderation.data.profanityEnabled,
+            getOption: () => moderation.getProfanityEnabled(),
             toggleOption: () => {
-              moderation.data.profanityEnabled = !moderation.data.profanityEnabled
-              moderation.markDirty()
+              moderation.setProfanityEnabled(!moderation.getProfanityEnabled())
             }
           },
           {

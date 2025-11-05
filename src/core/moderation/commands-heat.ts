@@ -5,11 +5,11 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../application'
 import { InstanceType } from '../../common/application-event'
-import type { ConfigManager } from '../../common/config-manager'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { User, UserIdentifier } from '../../common/user'
 import Duration from '../../utility/duration'
-import type { ModerationConfig } from '../core'
+
+import type { ModerationConfigurations } from './moderation-configurations'
 
 export class CommandsHeat {
   private static readonly ActionExpiresAfter = Duration.days(1)
@@ -21,7 +21,7 @@ export class CommandsHeat {
   constructor(
     private readonly sqliteManager: SqliteManager,
     application: Application,
-    config: ConfigManager<ModerationConfig>,
+    config: ModerationConfigurations,
     logger: Logger
   ) {
     this.moderationConfig = config
@@ -193,14 +193,13 @@ export class CommandsHeat {
   }
 
   private resolveType(type: HeatType): { expire: Duration; maxLimit: number; warnLimit: number; warnEvery: Duration } {
-    const config = this.moderationConfig.data
     const common = { expire: CommandsHeat.ActionExpiresAfter, warnEvery: CommandsHeat.WarnEvery }
     switch (type) {
       case HeatType.Mute: {
-        return { ...common, ...CommandsHeat.resolveLimits(config.mutesPerDay) }
+        return { ...common, ...CommandsHeat.resolveLimits(this.moderationConfig.getMutesPerDay()) }
       }
       case HeatType.Kick: {
-        return { ...common, ...CommandsHeat.resolveLimits(config.kicksPerDay) }
+        return { ...common, ...CommandsHeat.resolveLimits(this.moderationConfig.getKicksPerDay()) }
       }
     }
 

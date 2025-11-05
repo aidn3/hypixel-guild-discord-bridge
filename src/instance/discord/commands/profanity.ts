@@ -8,7 +8,11 @@ import {
 } from 'discord.js'
 
 import { Color, Permission } from '../../../common/application-event.js'
-import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
+import type {
+  DiscordAutoCompleteContext,
+  DiscordCommandContext,
+  DiscordCommandHandler
+} from '../../../common/commands.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const IncludeCommand = 'include'
@@ -91,20 +95,14 @@ export default {
     }
   },
   autoComplete: async function (context) {
-    const groupCommand = context.interaction.options.getSubcommandGroup(true)
+    const groupCommand = context.interaction.options.getSubcommandGroup(true) as
+      | typeof IncludeCommand
+      | typeof ExcludeCommand
     const subCommand = context.interaction.options.getSubcommand(true)
     if (subCommand === Remove) {
       const option = context.interaction.options.getFocused(true)
       if (option.name !== 'word') return
-      const config = context.application.core.getModerationConfig()
-      let list: string[] = []
-      if (groupCommand === IncludeCommand) {
-        list = config.data.profanityBlacklist
-      } else if (groupCommand === ExcludeCommand) {
-        list = config.data.profanityWhitelist
-      } else {
-        throw new Error('Unknown list??')
-      }
+      const list = getList(context, groupCommand)
 
       const response = search(option.value, list)
         .slice(0, 25)
@@ -143,17 +141,7 @@ async function handleList(
   await context.interaction.deferReply()
 
   await interactivePaging(context.interaction, 0, DefaultTimeout, context.errorHandler, (page) => {
-    const config = context.application.core.getModerationConfig()
-    let list: string[] | undefined
-    if (group === IncludeCommand) {
-      list = config.data.profanityBlacklist
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    } else if (group === ExcludeCommand) {
-      list = config.data.profanityWhitelist
-    } else {
-      throw new Error('Unknown list??')
-    }
+    const list = getList(context, group)
 
     const entries = list.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
     const totalPages = Math.ceil(list.length / EntriesPerPage)
@@ -172,17 +160,7 @@ async function handleAdd(
   context: DiscordCommandContext,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
-  const config = context.application.core.getModerationConfig()
-  let list: string[] | undefined = undefined
-  if (group === IncludeCommand) {
-    list = config.data.profanityBlacklist
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  } else if (group === ExcludeCommand) {
-    list = config.data.profanityWhitelist
-  } else {
-    throw new Error('Unknown list??')
-  }
+  const list = getList(context, group)
 
   const words = context.interaction.options
     .getString('words', true)
@@ -205,7 +183,7 @@ async function handleAdd(
   }
 
   if (changed) {
-    config.markDirty()
+    setList(context, group, list)
     context.application.core.reloadProfanity()
   }
   await context.interaction.reply({ embeds: [result] })
@@ -215,18 +193,7 @@ async function handleRemove(
   context: DiscordCommandContext,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
-  const config = context.application.core.getModerationConfig()
-  let list: string[] | undefined = undefined
-  if (group === IncludeCommand) {
-    list = config.data.profanityBlacklist
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  } else if (group === ExcludeCommand) {
-    list = config.data.profanityWhitelist
-  } else {
-    throw new Error('Unknown list??')
-  }
-
+  const list = getList(context, group)
   const word = context.interaction.options.getString('word', true)
 
   const result = {
@@ -242,13 +209,46 @@ async function handleRemove(
   } else {
     list.splice(index, 1)
 
-    config.markDirty()
+    setList(context, group, list)
     context.application.core.reloadProfanity()
 
     result.description = `Word \`${escapeMarkdown(word)}\` has been removed from the list.`
   }
 
   await context.interaction.reply({ embeds: [result] })
+}
+
+function getList(
+  context: DiscordCommandContext | DiscordAutoCompleteContext,
+  group: typeof IncludeCommand | typeof ExcludeCommand
+): string[] {
+  const config = context.application.core.moderationConfiguration
+  if (group === IncludeCommand) {
+    return config.getProfanityBlacklist()
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  } else if (group === ExcludeCommand) {
+    return config.getProfanityWhitelist()
+  } else {
+    throw new Error('Unknown list??')
+  }
+}
+
+function setList(
+  context: DiscordCommandContext,
+  group: typeof IncludeCommand | typeof ExcludeCommand,
+  values: string[]
+): void {
+  const config = context.application.core.moderationConfiguration
+  if (group === IncludeCommand) {
+    config.setProfanityBlacklist(values)
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  } else if (group === ExcludeCommand) {
+    config.setProfanityWhitelist(values)
+  } else {
+    throw new Error('Unknown list??')
+  }
 }
 
 /**
