@@ -12,11 +12,11 @@ import {
   Permission
 } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
 import type { Timeout } from '../../utility/timeout.js'
 
 import ChatManager from './chat-manager.js'
 import ClientSession from './client-session.js'
-import type { MinecraftInstanceConfig } from './common/config.js'
 import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
@@ -53,20 +53,17 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
 
-  private readonly sessionDirectory: string
   private readonly config: MinecraftInstanceConfig
 
   constructor(
     app: Application,
     minecraftManager: MinecraftManager,
     instanceName: string,
-    config: MinecraftInstanceConfig,
-    sessionDirectory: string
+    config: MinecraftInstanceConfig
   ) {
     super(app, instanceName, InstanceType.Minecraft)
 
     this.minecraftManager = minecraftManager
-    this.sessionDirectory = sessionDirectory
     this.config = config
 
     this.messageAssociation = new MessageAssociation()
@@ -105,7 +102,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   }
 
   public resolvePermission(username: string, defaultPermission: Permission): Permission {
-    const adminUsername = this.minecraftManager.getConfig().data.adminUsername
+    const adminUsername = this.application.core.minecraftConfigurations.getAdminUsername()
     if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
     return defaultPermission
   }
@@ -143,7 +140,8 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       ...this.defaultBotConfig,
       username: this.config.name,
       auth: 'microsoft',
-      profilesFolder: this.sessionDirectory,
+      // @ts-expect-error profilesFolder is directly passed to 'prismarine-auth'.Authflow, which that library also allow a factory function
+      profilesFolder: this.application.core.minecraftSessions.getSessionsFactory(this.instanceName),
 
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {

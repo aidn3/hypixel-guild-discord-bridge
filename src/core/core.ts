@@ -16,7 +16,11 @@ import type {
 } from '../common/user'
 import { User } from '../common/user'
 
+import { ConfigurationsManager } from './configurations'
 import { initializeCoreDatabase } from './initialize-database'
+import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
+import { migrateAnyOldMinecraftData } from './minecraft/minecraft-migration'
+import { SessionsManager } from './minecraft/sessions-manager'
 import { CommandsHeat } from './moderation/commands-heat'
 import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
@@ -40,7 +44,11 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
 
+  public minecraftConfigurations: MinecraftConfigurations
+  public minecraftSessions: SessionsManager
+
   private readonly sqliteManager: SqliteManager
+  private readonly configurationsManager: ConfigurationsManager
   private readonly moderationConfig: ConfigManager<ModerationConfig>
 
   public constructor(application: Application) {
@@ -67,6 +75,17 @@ export class Core extends Instance<InstanceType.Core> {
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
     initializeCoreDatabase(this.sqliteManager, sqliteName)
+
+    this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
+    this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
+    this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
+    migrateAnyOldMinecraftData(
+      application,
+      this.logger,
+      this.sqliteManager,
+      this.minecraftConfigurations,
+      this.minecraftSessions
+    )
 
     this.mojangApi = new MojangApi(this.sqliteManager)
 

@@ -3,7 +3,7 @@ import type { Logger as Logger4Js } from 'log4js'
 
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 2
+const CurrentVersion = 3
 
 export function initializeCoreDatabase(sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -13,6 +13,9 @@ export function initializeCoreDatabase(sqliteManager: SqliteManager, name: strin
   })
   sqliteManager.registerMigrator(1, (database, logger, newlyCreated) => {
     migrateFrom1to2(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(2, (database, logger, newlyCreated) => {
+    migrateFrom2to3(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -184,4 +187,50 @@ function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: bo
   )
 
   database.pragma('user_version = 2')
+}
+
+function migrateFrom2to3(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 2 to 3')
+
+  // reference: minecraft/sessions-manager.ts
+  database.exec(
+    'CREATE TABLE "mojangSessions" (' +
+      '  name TEXT REFERENCES mojangInstances(name) COLLATE NOCASE NOT NULL,' +
+      '  cacheName TEXT NOT NULL,' +
+      '  value TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(name, cacheName)' +
+      ' )'
+  )
+
+  database.exec(
+    'CREATE TABLE "proxies" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  protocol TEXT NOT NULL,' +
+      '  host TEXT NOT NULL,' +
+      '  port INTEGER NOT NULL,' +
+      '  user TEXT DEFAULT NULL,' +
+      '  password TEXT DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' )'
+  )
+  database.exec(
+    'CREATE TABLE "mojangInstances" (' +
+      '  name TEXT PRIMARY KEY NOT NULL COLLATE NOCASE,' +
+      '  proxyId INTEGER REFERENCES proxies(id) NULL' +
+      ' )'
+  )
+
+  // reference: configurations.ts
+  database.exec(
+    'CREATE TABLE IF NOT EXISTS "configurations" (' +
+      '  category TEXT NOT NULL,' +
+      '  name TEXT NOT NULL,' +
+      '  value TEXT NOT NULL,' +
+      '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(category, name)' +
+      ' )'
+  )
+
+  database.pragma('user_version = 3')
 }

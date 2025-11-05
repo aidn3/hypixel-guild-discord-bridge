@@ -15,12 +15,10 @@ import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
+import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
 import { ApplicationLanguages } from '../../../language-config'
 import { Timeout } from '../../../utility/timeout.js'
-// eslint-disable-next-line import/no-restricted-paths
-import type { ProxyConfig } from '../../minecraft/common/config.js'
-// eslint-disable-next-line import/no-restricted-paths
-import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
 import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
@@ -218,7 +216,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
 function fetchQualityOptions(application: Application): CategoryOption {
   const plugins = application.pluginsManager.getConfig()
-  const minecraft = application.minecraftManager.getConfig()
+  const minecraft = application.core.minecraftConfigurations
 
   return {
     type: OptionType.Category,
@@ -250,10 +248,9 @@ function fetchQualityOptions(application: Application): CategoryOption {
         name: 'Announce Player Muted',
         description:
           'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
-        getOption: () => minecraft.data.announceMutedPlayer,
+        getOption: () => minecraft.getAnnounceMutedPlayer(),
         toggleOption: () => {
-          minecraft.data.announceMutedPlayer = !minecraft.data.announceMutedPlayer
-          minecraft.markDirty()
+          minecraft.setAnnounceMutedPlayer(!minecraft.getAnnounceMutedPlayer())
         }
       },
       {
@@ -265,30 +262,27 @@ function fetchQualityOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: 'Guild Join Reaction',
             description: 'Send a greeting message when a member joins the guild.',
-            getOption: () => minecraft.data.joinGuildReaction,
+            getOption: () => minecraft.getJoinGuildReaction(),
             toggleOption: () => {
-              minecraft.data.joinGuildReaction = !minecraft.data.joinGuildReaction
-              minecraft.markDirty()
+              minecraft.setJoinGuildReaction(!minecraft.getJoinGuildReaction())
             }
           },
           {
             type: OptionType.Boolean,
             name: 'Guild Leave Reaction',
             description: 'Send a reaction message when a member leaves the guild.',
-            getOption: () => minecraft.data.leaveGuildReaction,
+            getOption: () => minecraft.getLeaveGuildReaction(),
             toggleOption: () => {
-              minecraft.data.leaveGuildReaction = !minecraft.data.leaveGuildReaction
-              minecraft.markDirty()
+              minecraft.setLeaveGuildReaction(!minecraft.getLeaveGuildReaction())
             }
           },
           {
             type: OptionType.Boolean,
             name: 'Guild Kick Reaction',
             description: 'Send a reaction message when a member is kicked from the guild.',
-            getOption: () => minecraft.data.kickGuildReaction,
+            getOption: () => minecraft.getKickGuildReaction(),
             toggleOption: () => {
-              minecraft.data.kickGuildReaction = !minecraft.data.kickGuildReaction
-              minecraft.markDirty()
+              minecraft.setKickGuildReaction(!minecraft.getKickGuildReaction())
             }
           }
         ]
@@ -546,7 +540,7 @@ function fetchMetricsOptions(application: Application): CategoryOption {
 }
 
 function fetchCommandsOptions(application: Application): CategoryOption {
-  const minecraft = application.minecraftManager.getConfig()
+  const minecraft = application.core.minecraftConfigurations
   const commands = application.commandsInstance.getConfig()
 
   return {
@@ -581,7 +575,7 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Minecraft** category.',
-        getOption: () => minecraft.data.adminUsername
+        getOption: () => minecraft.getAdminUsername()
       },
       {
         type: OptionType.Label,
@@ -824,8 +818,7 @@ function fetchLanguageOptions(application: Application): CategoryOption {
 }
 
 function fetchMinecraftOptions(application: Application): CategoryOption {
-  const minecraft = application.minecraftManager.getConfig()
-  const sanitizer = application.minecraftManager.sanitizer.getConfig()
+  const minecraft = application.core.minecraftConfigurations
 
   return {
     type: OptionType.Category,
@@ -847,10 +840,9 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
             max: 16,
             min: 2,
 
-            getOption: () => minecraft.data.adminUsername,
+            getOption: () => minecraft.getAdminUsername(),
             setOption: (username) => {
-              minecraft.data.adminUsername = username
-              minecraft.markDirty()
+              minecraft.setAdminUsername(username)
             }
           }
         ]
@@ -871,20 +863,18 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
                 name: 'STuF',
                 description:
                   'Bypass Hypixel restriction on hyperlinks using STuF encoding. Only use if you know what STuF is!',
-                getOption: () => sanitizer.data.hideLinksViaStuf,
+                getOption: () => minecraft.getHideLinksViaStuf(),
                 toggleOption: () => {
-                  sanitizer.data.hideLinksViaStuf = !sanitizer.data.hideLinksViaStuf
-                  sanitizer.markDirty()
+                  minecraft.setHideLinksViaStuf(!minecraft.getHideLinksViaStuf())
                 }
               },
               {
                 type: OptionType.Boolean,
                 name: `Resolve Links ${Recommended}`,
                 description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
-                getOption: () => sanitizer.data.resolveHideLinks,
+                getOption: () => minecraft.getResolveHideLinks(),
                 toggleOption: () => {
-                  sanitizer.data.resolveHideLinks = !sanitizer.data.resolveHideLinks
-                  sanitizer.markDirty()
+                  minecraft.setResolveHideLinks(!minecraft.getResolveHideLinks())
                 }
               }
             ]
@@ -899,22 +889,9 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
                 name: `Enable Antispam ${Essential}`,
                 description:
                   'Use techniques to avoid hypixel blocking a message for "`You cannot say the same message twice!`".',
-                getOption: () => sanitizer.data.antispamEnabled,
+                getOption: () => minecraft.getAntispamEnabled(),
                 toggleOption: () => {
-                  sanitizer.data.antispamEnabled = !sanitizer.data.antispamEnabled
-                  sanitizer.markDirty()
-                }
-              },
-              {
-                type: OptionType.Number,
-                name: 'Max Additions',
-                description: 'How many letters to add at most to combat anti spam.',
-                min: 1,
-                max: 100,
-                getOption: () => sanitizer.data.antispamMaxAdditions,
-                setOption: (value) => {
-                  sanitizer.data.antispamMaxAdditions = value
-                  sanitizer.markDirty()
+                  minecraft.setAntispamEnabled(!minecraft.getAntispamEnabled())
                 }
               }
             ]
@@ -963,7 +940,8 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
 }
 
 async function minecraftInstancesStatus(application: Application, interaction: ButtonInteraction): Promise<boolean> {
-  const config = application.minecraftManager.getConfig().data
+  const config = application.core.minecraftSessions
+  const savedInstances = config.getAllInstances()
   const instances = application.minecraftManager.getAllInstances()
 
   const embed: APIEmbed = {
@@ -976,7 +954,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   assert.ok(embed.fields)
 
   const registeredInstances = instances.filter((instance) =>
-    config.instances.some((configInstance) => instance.instanceName === configInstance.name)
+    savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
   )
   embed.fields.push({
     name: 'Registered Instances',
@@ -989,7 +967,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   } satisfies APIEmbedField)
 
   const dynamicInstances = instances.filter(
-    (instance) => !config.instances.some((configInstance) => instance.instanceName === configInstance.name)
+    (instance) => !savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
   )
   if (dynamicInstances.length > 0) {
     embed.fields.push({
@@ -1000,7 +978,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
     } satisfies APIEmbedField)
   }
 
-  const unavailableInstances = config.instances
+  const unavailableInstances = savedInstances
     .map((instance) => instance.name)
     .filter((configName) => !instances.some((instance) => instance.instanceName === configName))
   if (unavailableInstances.length > 0) {
@@ -1186,12 +1164,7 @@ async function minecraftInstanceAdd(
     embed.description += `- Creating a fresh Minecraft instance\n`
     await application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
 
-    const config = application.minecraftManager.getConfig()
-    config.data.instances.push({
-      name: instanceName,
-      proxy: proxy
-    })
-    config.save()
+    application.core.minecraftSessions.addInstance({ name: instanceName, proxy: proxy })
     embed.description += `- Instance has been added to settings for future reboot\n`
   } catch (error: unknown) {
     embed.description += `- ERROR: Failed to add minecraft instance. ${errorMessage(error)}\n`
@@ -1328,7 +1301,7 @@ function parseSocks5(url: string): ProxyConfig {
     throw new Error('invalid proxy type. Only "socks5" is supported.')
   }
 
-  return { host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
+  return { id: 0, host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
 }
 
 function errorMessage(error: unknown): string {

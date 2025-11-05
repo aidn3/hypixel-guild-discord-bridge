@@ -1,17 +1,15 @@
 import DefaultAxios from 'axios'
 
-import type { ConfigManager } from '../../../common/config-manager.js'
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
 import { stufEncode } from '../common/stuf.js'
 
-import type { SanitizerConfig } from './sanitizer.js'
-
 export class LinksSanitizer {
-  constructor(private readonly config: ConfigManager<SanitizerConfig>) {}
+  constructor(private readonly config: MinecraftConfigurations) {}
 
   public async process(message: string): Promise<string> {
-    if (this.config.data.hideLinksViaStuf) {
+    if (this.config.getHideLinksViaStuf()) {
       message = stufEncode(message)
-    } else if (this.config.data.resolveHideLinks) {
+    } else if (this.config.getResolveHideLinks()) {
       message = await this.resolveLinkHide(message)
     } else {
       message = this.hideLink(message)

@@ -56,7 +56,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
 
       if (
         event.type === GuildPlayerEventType.Join &&
-        this.application.minecraftManager.getConfig().data.joinGuildReaction
+        this.application.core.minecraftConfigurations.getJoinGuildReaction()
       ) {
         const messages = this.application.language.data.guildJoinReaction
         if (messages.length === 0) {
@@ -79,7 +79,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
 
       if (
         event.type === GuildPlayerEventType.Leave &&
-        this.application.minecraftManager.getConfig().data.leaveGuildReaction
+        this.application.core.minecraftConfigurations.getLeaveGuildReaction()
       ) {
         const messages = this.application.language.data.guildLeaveReaction
         if (messages.length === 0) {
@@ -101,7 +101,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
 
       if (
         event.type === GuildPlayerEventType.Kick &&
-        this.application.minecraftManager.getConfig().data.kickGuildReaction
+        this.application.core.minecraftConfigurations.getKickGuildReaction()
       ) {
         const messages = this.application.language.data.guildKickReaction
         if (messages.length === 0) {
