@@ -17,6 +17,7 @@ import { User } from '../common/user'
 
 import { ConfigurationsManager } from './configurations'
 import { initializeCoreDatabase } from './initialize-database'
+import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
 import { migrateAnyOldMinecraftData } from './minecraft/minecraft-migration'
 import { SessionsManager } from './minecraft/sessions-manager'
@@ -44,9 +45,10 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
 
-  public minecraftConfigurations: MinecraftConfigurations
-  public minecraftSessions: SessionsManager
+  public readonly minecraftConfigurations: MinecraftConfigurations
+  public readonly minecraftSessions: SessionsManager
   public readonly moderationConfiguration: ModerationConfigurations
+  public readonly minecraftAccounts: MinecraftAccounts
 
   private readonly sqliteManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
@@ -61,6 +63,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
     this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
+    this.minecraftAccounts = new MinecraftAccounts(this.sqliteManager, this.application, this.logger)
     migrateAnyOldMinecraftData(
       application,
       this.logger,

@@ -221,6 +221,17 @@ function migrateFrom2to3(database: Database, logger: Logger4Js, newlyCreated: bo
       ' )'
   )
 
+  // reference: minecraft/account-settings.ts
+  database.exec(
+    'CREATE TABLE "mojangProfileSettings" (' +
+      '  id TEXT PRIMARY KEY NOT NULL COLLATE NOCASE,' +
+      '  playerOnlineStatusEnabled INTEGER NOT NULL DEFAULT 0,' +
+      '  guildAllEnabled INTEGER NOT NULL DEFAULT 0,' +
+      '  guildChatEnabled INTEGER NOT NULL DEFAULT 0,' +
+      '  guildNotificationsEnabled INTEGER NOT NULL DEFAULT 0' +
+      ' )'
+  )
+
   // reference: configurations.ts
   database.exec(
     'CREATE TABLE IF NOT EXISTS "configurations" (' +
