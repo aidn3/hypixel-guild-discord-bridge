@@ -50,7 +50,9 @@ export class Configuration {
   }
 
   public getNumber(name: string, defaultValue: number): number {
-    return this.get(name, defaultValue)
+    return this.get(name, defaultValue, (raw: string | number) =>
+      typeof raw === 'number' ? raw : Number.parseInt(raw, 10)
+    )
   }
 
   public setNumber(name: string, value: number): void {
