@@ -1,70 +1,10 @@
-import fs from 'node:fs'
-
-import type { Logger } from 'log4js'
-
-import type Application from '../../application'
-import type { SqliteManager } from '../../common/sqlite-manager'
 import type { Configuration, ConfigurationsManager } from '../configurations'
 
 export class ModerationConfigurations {
   private readonly configuration: Configuration
 
-  constructor(manager: ConfigurationsManager, application: Application, logger: Logger, sqliteManager: SqliteManager) {
+  constructor(manager: ConfigurationsManager) {
     this.configuration = manager.create('moderation')
-
-    this.migrateAnyOldData(application, logger, sqliteManager)
-  }
-
-  private migrateAnyOldData(application: Application, logger: Logger, sqliteManager: SqliteManager): void {
-    interface ModerationConfig {
-      heatPunishment: boolean
-      mutesPerDay: number
-      kicksPerDay: number
-
-      immuneDiscordUsers: string[]
-      immuneMojangPlayers: string[]
-
-      profanityEnabled: boolean
-      profanityWhitelist: string[]
-      profanityBlacklist: string[]
-    }
-
-    const path = application.getConfigFilePath('moderation.json')
-    if (!fs.existsSync(path)) return
-    logger.info('Found old moderation file. Migrating it into the new system...')
-
-    sqliteManager.getDatabase().transaction(() => {
-      const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<ModerationConfig>
-      if (oldObject.heatPunishment !== undefined) {
-        this.setHeatPunishment(oldObject.heatPunishment)
-      }
-      if (oldObject.mutesPerDay !== undefined) {
-        this.setMutesPerDay(oldObject.mutesPerDay)
-      }
-      if (oldObject.kicksPerDay !== undefined) {
-        this.setKicksPerDay(oldObject.kicksPerDay)
-      }
-
-      if (oldObject.immuneDiscordUsers !== undefined) {
-        this.setImmuneDiscordUsers(oldObject.immuneDiscordUsers)
-      }
-      if (oldObject.immuneMojangPlayers !== undefined) {
-        this.setImmuneMojangPlayers(oldObject.immuneMojangPlayers)
-      }
-
-      if (oldObject.profanityEnabled !== undefined) {
-        this.setProfanityEnabled(oldObject.profanityEnabled)
-      }
-      if (oldObject.profanityWhitelist !== undefined) {
-        this.setProfanityWhitelist(oldObject.profanityWhitelist)
-      }
-      if (oldObject.profanityBlacklist !== undefined) {
-        this.setProfanityBlacklist(oldObject.profanityBlacklist)
-      }
-    })()
-
-    logger.info(`Successfully parsed old moderation file. Deleting the old file...`)
-    fs.rmSync(path)
   }
 
   public getHeatPunishment(): boolean {

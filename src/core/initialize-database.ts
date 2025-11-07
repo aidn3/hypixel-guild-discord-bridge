@@ -1,21 +1,26 @@
-import type { Database } from 'better-sqlite3'
-import type { Logger as Logger4Js } from 'log4js'
+import crypto from 'node:crypto'
+import fs from 'node:fs'
+import path from 'node:path'
 
+import type { Database } from 'better-sqlite3'
+import type { Logger, Logger as Logger4Js } from 'log4js'
+
+import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
 const CurrentVersion = 3
 
-export function initializeCoreDatabase(sqliteManager: SqliteManager, name: string): void {
+export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
 
-  sqliteManager.registerMigrator(0, (database, logger, newlyCreated) => {
+  sqliteManager.registerMigrator(0, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom0to1(database, logger, newlyCreated)
   })
-  sqliteManager.registerMigrator(1, (database, logger, newlyCreated) => {
-    migrateFrom1to2(database, logger, newlyCreated)
+  sqliteManager.registerMigrator(1, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom1to2(application, database, logger, postCleanupActions, newlyCreated)
   })
-  sqliteManager.registerMigrator(2, (database, logger, newlyCreated) => {
-    migrateFrom2to3(database, logger, newlyCreated)
+  sqliteManager.registerMigrator(2, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom2to3(application, database, logger, postCleanupActions, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -128,7 +133,13 @@ function migrateFrom0to1(database: Database, logger: Logger4Js, newlyCreated: bo
   database.pragma('user_version = 1')
 }
 
-function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+function migrateFrom1to2(
+  application: Application,
+  database: Database,
+  logger: Logger4Js,
+  postCleanupActions: (() => void)[],
+  newlyCreated: boolean
+): void {
   if (!newlyCreated) logger.debug('Migrating database from version 1 to 2')
 
   // reference: moderation/punishments.ts
@@ -166,6 +177,7 @@ function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: bo
       ' )'
   )
   database.exec('CREATE INDEX heatsCommandsIndex ON "heatsCommands" (originInstance, userId);')
+  migrateCommandsHeat(application, logger, postCleanupActions, database)
 
   // reference: ./users/verification.ts
   database.exec('DROP TABLE "inferences";')
@@ -189,8 +201,27 @@ function migrateFrom1to2(database: Database, logger: Logger4Js, newlyCreated: bo
   database.pragma('user_version = 2')
 }
 
-function migrateFrom2to3(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+function migrateFrom2to3(
+  application: Application,
+  database: Database,
+  logger: Logger4Js,
+  postCleanupActions: (() => void)[],
+  newlyCreated: boolean
+): void {
   if (!newlyCreated) logger.debug('Migrating database from version 2 to 3')
+
+  // reference: configurations.ts
+  database.exec(
+    'CREATE TABLE IF NOT EXISTS "configurations" (' +
+      '  category TEXT NOT NULL,' +
+      '  name TEXT NOT NULL,' +
+      '  value TEXT NOT NULL,' +
+      '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(category, name)' +
+      ' )'
+  )
+  migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
+  migrateModeration(application, logger, postCleanupActions, database)
 
   // reference: minecraft/sessions-manager.ts
   database.exec(
@@ -202,7 +233,6 @@ function migrateFrom2to3(database: Database, logger: Logger4Js, newlyCreated: bo
       '  PRIMARY KEY(name, cacheName)' +
       ' )'
   )
-
   database.exec(
     'CREATE TABLE "proxies" (' +
       '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
@@ -220,6 +250,8 @@ function migrateFrom2to3(database: Database, logger: Logger4Js, newlyCreated: bo
       '  proxyId INTEGER REFERENCES proxies(id) NULL' +
       ' )'
   )
+  const instanceNames = migrateMinecraftConfig(application, logger, postCleanupActions, database)
+  migrateMinecraftSessionFiles(application, logger, postCleanupActions, database, instanceNames)
 
   // reference: minecraft/account-settings.ts
   database.exec(
@@ -231,17 +263,357 @@ function migrateFrom2to3(database: Database, logger: Logger4Js, newlyCreated: bo
       '  guildNotificationsEnabled INTEGER NOT NULL DEFAULT 0' +
       ' )'
   )
-
-  // reference: configurations.ts
-  database.exec(
-    'CREATE TABLE IF NOT EXISTS "configurations" (' +
-      '  category TEXT NOT NULL,' +
-      '  name TEXT NOT NULL,' +
-      '  value TEXT NOT NULL,' +
-      '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
-      '  PRIMARY KEY(category, name)' +
-      ' )'
-  )
+  migrateMinecraftAccountsSettings(application, logger, postCleanupActions, database)
 
   database.pragma('user_version = 3')
+}
+
+function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
+  const uuid = identifiers.find((entry) => entry.length === 32)
+  if (uuid !== undefined) {
+    return { originInstance: 'minecraft', userId: uuid }
+  }
+
+  const discordId = identifiers.find((entry) => /^\d+$/.test(entry))
+  if (discordId !== undefined) {
+    return { originInstance: 'discord', userId: discordId }
+  }
+
+  return undefined
+}
+
+function setConfiguration(database: Database, category: string, name: string, value: string | number): void {
+  const prepared = database.prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
+  prepared.run(category, name, value)
+}
+
+function migrateModeration(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface ModerationConfig {
+    heatPunishment: boolean
+    mutesPerDay: number
+    kicksPerDay: number
+
+    immuneDiscordUsers: string[]
+    immuneMojangPlayers: string[]
+
+    profanityEnabled: boolean
+    profanityWhitelist: string[]
+    profanityBlacklist: string[]
+  }
+
+  const path = application.getConfigFilePath('moderation.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old moderation file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<ModerationConfig>
+  if (oldObject.heatPunishment !== undefined) {
+    setConfiguration(database, 'moderation', 'heatPunishment', oldObject.heatPunishment ? '1' : '0')
+  }
+  if (oldObject.mutesPerDay !== undefined) {
+    setConfiguration(database, 'moderation', 'mutesPerDay', oldObject.mutesPerDay.toString(10))
+  }
+  if (oldObject.kicksPerDay !== undefined) {
+    setConfiguration(database, 'moderation', 'kicksPerDay', oldObject.kicksPerDay.toString(10))
+  }
+
+  if (oldObject.immuneDiscordUsers !== undefined) {
+    setConfiguration(database, 'moderation', 'immuneDiscordUsers', JSON.stringify(oldObject.immuneDiscordUsers))
+  }
+  if (oldObject.immuneMojangPlayers !== undefined) {
+    setConfiguration(database, 'moderation', 'immuneMojangPlayers', JSON.stringify(oldObject.immuneMojangPlayers))
+  }
+
+  if (oldObject.profanityEnabled !== undefined) {
+    setConfiguration(database, 'moderation', 'profanityEnabled', oldObject.profanityEnabled ? '1' : '0')
+  }
+  if (oldObject.profanityWhitelist !== undefined) {
+    setConfiguration(database, 'moderation', 'profanityWhitelist', JSON.stringify(oldObject.profanityWhitelist))
+  }
+  if (oldObject.profanityBlacklist !== undefined) {
+    setConfiguration(database, 'moderation', 'profanityBlacklist', JSON.stringify(oldObject.profanityBlacklist))
+  }
+
+  logger.info(`Successfully parsed old moderation file. Scheduling the old file for deletion...`)
+  postCleanupActions.push(() => {
+    fs.rmSync(path)
+  })
+}
+
+function migrateCommandsHeat(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface OldEntry {
+    identifiers: string[]
+    heatActions: { timestamp: number; type: 'kick' | 'mute' }[]
+    lastWarning: Record<'kick' | 'mute', number>
+  }
+
+  interface OldType {
+    heats?: OldEntry[]
+  }
+
+  const path = application.getConfigFilePath('commands-heat.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old commands-heat file. Migrating this file into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
+  oldObject.heats ??= []
+
+  let total = 0
+  let addedHeatActions = 0
+  const insert = database.prepare(
+    'INSERT INTO "heatsCommands" (originInstance, userId, type, createdAt) VALUES (?, ?, ?, ?)'
+  )
+  for (const entry of oldObject.heats) {
+    total += entry.heatActions.length
+
+    const identifier = findIdentifier(entry.identifiers)
+    if (identifier == undefined) continue
+
+    for (const heatAction of entry.heatActions) {
+      insert.run(identifier.originInstance, identifier.userId, heatAction.type, Math.floor(heatAction.timestamp / 1000))
+      addedHeatActions++
+    }
+  }
+
+  logger.info(`Successfully parsed ${addedHeatActions} legacy commands-heat out of ${total}`)
+  postCleanupActions.push(() => {
+    fs.rmSync(path)
+  })
+}
+
+function migrateMinecraftAntispamConfig(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface SanitizerConfig {
+    hideLinksViaStuf: boolean
+    resolveHideLinks: boolean
+    antispamEnabled: boolean
+  }
+
+  const path = application.getConfigFilePath('minecraft-antispam.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Minecraft antispam file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<SanitizerConfig>
+  if (oldObject.hideLinksViaStuf !== undefined) {
+    setConfiguration(database, 'minecraft', 'hideLinksViaStuf', oldObject.hideLinksViaStuf ? '1' : '0')
+  }
+  if (oldObject.resolveHideLinks !== undefined) {
+    setConfiguration(database, 'minecraft', 'resolveHideLinks', oldObject.resolveHideLinks ? '1' : '0')
+  }
+  if (oldObject.antispamEnabled !== undefined) {
+    setConfiguration(database, 'minecraft', 'antispamEnabled', oldObject.antispamEnabled ? '1' : '0')
+  }
+
+  logger.debug('Deleting legacy Minecraft antispam file...')
+  postCleanupActions.push(() => {
+    fs.rmSync(path)
+  })
+}
+
+function migrateMinecraftConfig(
+  application: Application,
+  logger: Logger,
+  postActions: (() => void)[],
+  database: Database
+): string[] {
+  // legacy types
+  interface OldMinecraftInstanceConfig {
+    name: string
+    proxy: OldProxyConfig | undefined
+  }
+
+  interface OldProxyConfig {
+    host: string
+    port: number
+    user: string | undefined
+    password: string | undefined
+    protocol: 'http' | 'socks5'
+  }
+
+  interface OldMinecraftConfig {
+    adminUsername: string
+    instances: OldMinecraftInstanceConfig[]
+
+    announceMutedPlayer: boolean
+
+    joinGuildReaction: boolean
+    leaveGuildReaction: boolean
+    kickGuildReaction: boolean
+  }
+
+  const path = application.getConfigFilePath('minecraft-manager.json')
+  if (!fs.existsSync(path)) return []
+  logger.info('Found old Minecraft configuration file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<OldMinecraftConfig>
+
+  if (oldObject.adminUsername !== undefined) {
+    setConfiguration(database, 'minecraft', 'adminUsername', oldObject.adminUsername)
+  }
+
+  if (oldObject.announceMutedPlayer !== undefined) {
+    setConfiguration(database, 'minecraft', 'announceMutedPlayer', oldObject.announceMutedPlayer ? '1' : '0')
+  }
+  if (oldObject.joinGuildReaction !== undefined) {
+    setConfiguration(database, 'minecraft', 'joinGuildReaction', oldObject.joinGuildReaction ? '1' : '0')
+  }
+  if (oldObject.leaveGuildReaction !== undefined) {
+    setConfiguration(database, 'minecraft', 'leaveGuildReaction', oldObject.leaveGuildReaction ? '1' : '0')
+  }
+  if (oldObject.kickGuildReaction !== undefined) {
+    setConfiguration(database, 'minecraft', 'kickGuildReaction', oldObject.kickGuildReaction ? '1' : '0')
+  }
+
+  const instanceNames: string[] = []
+  if (oldObject.instances !== undefined) {
+    const instanceInsert = database.prepare('INSERT INTO "mojangInstances" (name, proxyId) VALUES (?, ?)')
+    const proxyInsert = database.prepare(
+      'INSERT INTO "proxies" (protocol, host, port, user, password) VALUES (?, ?, ?, ?, ?)'
+    )
+
+    for (const instance of oldObject.instances) {
+      let proxyId: number | bigint | undefined
+
+      if (instance.proxy !== undefined) {
+        proxyId = proxyInsert.run(
+          instance.proxy.protocol,
+          instance.proxy.host,
+          instance.proxy.port,
+          instance.proxy.user,
+          instance.proxy.password
+        ).lastInsertRowid
+      }
+      instanceInsert.run(instance.name, proxyId)
+
+      instanceNames.push(instance.name)
+    }
+  }
+
+  logger.info(`Successfully parsed old Minecraft configuration file. `)
+  logger.debug('Deleting Minecraft configuration legacy file...')
+  postActions.push(() => {
+    fs.rmSync(path)
+  })
+
+  return instanceNames
+}
+
+function migrateMinecraftSessionFiles(
+  application: Application,
+  logger: Logger,
+  postActions: (() => void)[],
+  database: Database,
+  instanceNames: string[]
+): void {
+  const sessionDirectoryName = 'minecraft-sessions'
+  const sessionDirectory = application.getConfigFilePath(sessionDirectoryName)
+  if (!fs.existsSync(sessionDirectory)) return
+
+  const allFiles = fs.readdirSync(sessionDirectory)
+  if (allFiles.length === 0) {
+    logger.warn('Legacy Minecraft sessions directory found but empty. Deleting it')
+    postActions.push(() => {
+      fs.rmSync(sessionDirectory)
+    })
+    return
+  }
+
+  let migratedFiles = 0
+  const statement = database.prepare(
+    'INSERT OR REPLACE INTO "mojangSessions" (name, cacheName, value, createdAt) VALUES (?, ?, ?, ?)'
+  )
+  for (const instanceName of new Set<string>(instanceNames).values()) {
+    const hash = crypto.createHash('sha1').update(instanceName, 'binary').digest('hex').slice(0, 6)
+
+    for (const sessionFile of allFiles) {
+      const regex = /^(\w+)_(\w+)-cache\.json$/g
+      const match = regex.exec(instanceName)
+      if (match) {
+        const regexHash = match[1]
+        const regexType = match[2]
+        if (regexHash !== hash) continue
+
+        const fullPath = path.join(sessionDirectory, sessionFile)
+        logger.debug(`Migrating Minecraft session file: ${fullPath}`)
+        const sessionData = fs.readFileSync(fullPath, 'utf8')
+
+        statement.run(instanceName, regexType, JSON.stringify(JSON.parse(sessionData)), Math.floor(Date.now() / 1000))
+        migratedFiles++
+      }
+    }
+  }
+
+  const message = `Migrated ${migratedFiles} Minecraft session file out of ${allFiles.length}.`
+
+  if (migratedFiles === allFiles.length) {
+    logger.info(message)
+  } else {
+    logger.warn(message)
+    logger.warn('Other Minecraft session files will be permanently deleted.')
+  }
+
+  postActions.push(() => {
+    fs.rmSync(sessionDirectory, { recursive: true })
+  })
+}
+
+function migrateMinecraftAccountsSettings(
+  application: Application,
+  logger: Logger,
+  postActions: (() => void)[],
+  database: Database
+): void {
+  interface OldGameToggleConfig {
+    playerOnlineStatusEnabled: boolean
+
+    guildAllEnabled: boolean
+    guildChatEnabled: boolean
+    guildNotificationsEnabled: boolean
+  }
+
+  const directory = application.getConfigFilePath('minecraft-toggles')
+  if (!fs.existsSync(directory)) return
+
+  const allFiles = fs.readdirSync(directory)
+  if (allFiles.length === 0) {
+    logger.warn('Legacy Minecraft accounts directory found but empty. Deleting it')
+    fs.rmdirSync(directory)
+    return
+  }
+
+  const insert = database.prepare('INSERT OR REPLACE INTO "mojangProfileSettings" VALUES (?, ?, ?, ?, ?)')
+  for (const sessionFile of allFiles) {
+    const uuid = sessionFile.split('.')[0] // remove .json extension
+    const fullPath = path.join(directory, sessionFile)
+    logger.debug(`Migrating Minecraft account file: ${fullPath}`)
+
+    const sessionData = fs.readFileSync(fullPath, 'utf8')
+    const oldData = JSON.parse(sessionData) as Partial<OldGameToggleConfig>
+
+    insert.run(
+      uuid,
+      oldData.playerOnlineStatusEnabled ? 1 : 0,
+      oldData.guildAllEnabled ? 1 : 0,
+      oldData.guildChatEnabled ? 1 : 0,
+      oldData.guildNotificationsEnabled ? 1 : 0
+    )
+  }
+
+  logger.info(`Migrated ${allFiles.length} Minecraft account file. Deleting the old directory...`)
+  postActions.push(() => {
+    fs.rmSync(directory, { recursive: true })
+  })
 }

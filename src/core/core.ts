@@ -19,7 +19,6 @@ import { ConfigurationsManager } from './configurations'
 import { initializeCoreDatabase } from './initialize-database'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
-import { migrateAnyOldMinecraftData } from './minecraft/minecraft-migration'
 import { SessionsManager } from './minecraft/sessions-manager'
 import { CommandsHeat } from './moderation/commands-heat'
 import { ModerationConfigurations } from './moderation/moderation-configurations'
@@ -58,31 +57,19 @@ export class Core extends Instance<InstanceType.Core> {
 
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
-    initializeCoreDatabase(this.sqliteManager, sqliteName)
+    initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
     this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
-    this.minecraftAccounts = new MinecraftAccounts(this.sqliteManager, this.application, this.logger)
-    migrateAnyOldMinecraftData(
-      application,
-      this.logger,
-      this.sqliteManager,
-      this.minecraftConfigurations,
-      this.minecraftSessions
-    )
+    this.minecraftAccounts = new MinecraftAccounts(this.sqliteManager)
 
-    this.moderationConfiguration = new ModerationConfigurations(
-      this.configurationsManager,
-      this.application,
-      this.logger,
-      this.sqliteManager
-    )
+    this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
 
     this.profanity = new Profanity(this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
-    this.commandsHeat = new CommandsHeat(this.sqliteManager, application, this.moderationConfiguration, this.logger)
+    this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)

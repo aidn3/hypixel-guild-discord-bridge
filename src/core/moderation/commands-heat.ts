@@ -1,10 +1,6 @@
-import fs from 'node:fs'
-
 import type Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
-import type Application from '../../application'
-import { InstanceType } from '../../common/application-event'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { User, UserIdentifier } from '../../common/user'
 import Duration from '../../utility/duration'
@@ -20,7 +16,6 @@ export class CommandsHeat {
 
   constructor(
     private readonly sqliteManager: SqliteManager,
-    application: Application,
     config: ModerationConfigurations,
     logger: Logger
   ) {
@@ -35,8 +30,6 @@ export class CommandsHeat {
         if (result > 0) logger.debug(`Deleted ${result} entry of expired heats-commands`)
       })()
     })
-
-    this.migrateAnyOldData(application, logger)
   }
 
   public add(user: User, type: HeatType): HeatResult {
@@ -218,76 +211,6 @@ export class CommandsHeat {
       limits.warnLimit = maxLimit * this.WarnPercentage
       return limits
     }
-  }
-
-  private migrateAnyOldData(application: Application, logger: Logger): void {
-    interface OldEntry {
-      identifiers: string[]
-      heatActions: { timestamp: number; type: 'kick' | 'mute' }[]
-      lastWarning: Record<'kick' | 'mute', number>
-    }
-
-    interface OldType {
-      heats?: OldEntry[]
-    }
-
-    const path = application.getConfigFilePath('commands-heat.json')
-    if (!fs.existsSync(path)) return
-    logger.info('Found old commands-heat file. Migrating this file into the new system...')
-
-    const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
-    oldObject.heats ??= []
-    const heatActions: HeatAction[] = []
-    let total = 0
-
-    for (const entry of oldObject.heats) {
-      total += entry.heatActions.length
-
-      const identifier = this.findIdentifier(entry.identifiers)
-      if (identifier == undefined) continue
-
-      for (const heatAction of entry.heatActions) {
-        let type: HeatType | undefined
-        switch (heatAction.type) {
-          case 'kick': {
-            type = HeatType.Kick
-            break
-          }
-          case 'mute': {
-            type = HeatType.Mute
-            break
-          }
-          default: {
-            continue
-          }
-        }
-
-        heatActions.push({ identifier: identifier, type: type, timestamp: heatAction.timestamp })
-      }
-    }
-
-    logger.info(`Successfully parsed ${heatActions.length} legacy commands-heat out of ${total}`)
-    const database = this.sqliteManager.getDatabase()
-    database.transaction(() => {
-      this.addEntries(database, heatActions)
-    })()
-
-    logger.debug('Deleting commands-heat legacy file...')
-    fs.rmSync(path)
-  }
-
-  findIdentifier(identifiers: string[]): UserIdentifier | undefined {
-    const uuid = identifiers.find((entry) => entry.length === 32)
-    if (uuid !== undefined) {
-      return { originInstance: InstanceType.Minecraft, userId: uuid }
-    }
-
-    const discordId = identifiers.find((entry) => /^\d+$/.test(entry))
-    if (discordId !== undefined) {
-      return { originInstance: InstanceType.Discord, userId: discordId }
-    }
-
-    return undefined
   }
 }
 
