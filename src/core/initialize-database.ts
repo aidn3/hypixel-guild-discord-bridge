@@ -220,6 +220,7 @@ function migrateFrom2to3(
       '  PRIMARY KEY(category, name)' +
       ' )'
   )
+  migrateGeneralConfig(application, logger, postCleanupActions, database)
   migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
   migrateModeration(application, logger, postCleanupActions, database)
 
@@ -298,6 +299,35 @@ function findIdentifier(identifiers: string[]): { originInstance: string; userId
 function setConfiguration(database: Database, category: string, name: string, value: string | number): void {
   const prepared = database.prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
   prepared.run(category, name, value)
+}
+
+function migrateGeneralConfig(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface GeneralConfig {
+    autoRestart: boolean
+    originTag: boolean
+  }
+
+  const path = application.getConfigFilePath('application.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old general Application configuration file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<GeneralConfig>
+  if (oldObject.autoRestart !== undefined) {
+    setConfiguration(database, 'general', 'autoRestart', oldObject.autoRestart ? '1' : '0')
+  }
+  if (oldObject.originTag !== undefined) {
+    setConfiguration(database, 'general', 'originTag', oldObject.originTag ? '1' : '0')
+  }
+
+  postCleanupActions.push(() => {
+    logger.debug('Deleting legacy general Application configuration file...')
+    fs.rmSync(path)
+  })
 }
 
 function migrateModeration(

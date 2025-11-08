@@ -15,6 +15,7 @@ import type {
 } from '../common/user'
 import { User } from '../common/user'
 
+import { ApplicationConfigurations } from './application-configurations'
 import { ConfigurationsManager } from './configurations'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { initializeCoreDatabase } from './initialize-database'
@@ -56,6 +57,8 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly moderationConfiguration: ModerationConfigurations
   public readonly minecraftAccounts: MinecraftAccounts
 
+  public readonly applicationConfigurations: ApplicationConfigurations
+
   // database
   private readonly sqliteManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
@@ -68,8 +71,10 @@ export class Core extends Instance<InstanceType.Core> {
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
-
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
+
+    this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
+
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
     this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
     this.minecraftAccounts = new MinecraftAccounts(this.sqliteManager)

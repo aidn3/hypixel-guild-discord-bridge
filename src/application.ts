@@ -22,7 +22,6 @@ import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { Core } from './core/core'
 import type { MojangApi } from './core/users/mojang'
-import type { GeneralConfig } from './general-config.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
@@ -67,7 +66,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public readonly language: ConfigManager<LanguageConfig>
 
-  public readonly generalConfig: ConfigManager<GeneralConfig>
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
   public readonly pluginsManager: PluginsManager
@@ -99,11 +97,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.backupDirectory = path.join(configsDirectory, 'backup')
     this.applicationIntegrity.addConfigPath(this.backupDirectory)
     fs.mkdirSync(this.backupDirectory, { recursive: true })
-
-    this.generalConfig = new ConfigManager(this, this.logger, this.getConfigFilePath('application.json'), {
-      autoRestart: false,
-      originTag: false
-    })
 
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,

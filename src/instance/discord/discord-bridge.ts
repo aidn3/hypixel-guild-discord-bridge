@@ -136,7 +136,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             ? `${username}⇾${event.replyUsername}`
             : username
 
-        if (this.application.generalConfig.data.originTag) {
+        if (this.application.core.applicationConfigurations.getOriginTag()) {
           displayUsername += event.instanceType === InstanceType.Discord ? ` [DC]` : ` [${event.instanceName}]`
         }
 

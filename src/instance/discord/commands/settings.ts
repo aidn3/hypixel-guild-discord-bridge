@@ -77,7 +77,7 @@ export default {
 } satisfies DiscordCommandHandler
 
 function fetchGeneralOptions(application: Application): CategoryOption {
-  const generalConfig = application.generalConfig
+  const generalConfig = application.core.applicationConfigurations
 
   return {
     type: OptionType.Category,
@@ -88,20 +88,18 @@ function fetchGeneralOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: `Auto Restart ${Recommended}`,
         description: 'Schedule restarting every 24 hours.',
-        getOption: () => generalConfig.data.autoRestart,
+        getOption: () => generalConfig.getAutoRestart(),
         toggleOption: () => {
-          generalConfig.data.autoRestart = !generalConfig.data.autoRestart
-          generalConfig.markDirty()
+          generalConfig.setAutoRestart(!generalConfig.getAutoRestart())
         }
       },
       {
         type: OptionType.Boolean,
         name: `Add origin tag`,
         description: "Adds an origin tag to messages that show where it's coming from.",
-        getOption: () => generalConfig.data.originTag,
+        getOption: () => generalConfig.getOriginTag(),
         toggleOption: () => {
-          generalConfig.data.originTag = !generalConfig.data.originTag
-          generalConfig.markDirty()
+          generalConfig.setOriginTag(!generalConfig.getOriginTag())
         }
       }
     ]
