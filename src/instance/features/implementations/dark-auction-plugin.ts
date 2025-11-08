@@ -56,6 +56,6 @@ export default class DarkAuctionPlugin extends PluginInstance {
   }
 
   private enabled(): boolean {
-    return this.pluginsManager.getConfig().data.darkAuctionReminder
+    return this.application.core.applicationConfigurations.getDarkAuctionReminder()
   }
 }

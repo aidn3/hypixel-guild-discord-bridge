@@ -207,7 +207,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
 }
 
 function fetchQualityOptions(application: Application): CategoryOption {
-  const plugins = application.pluginsManager.getConfig()
+  const plugins = application.core.applicationConfigurations
   const minecraft = application.core.minecraftConfigurations
 
   return {
@@ -219,20 +219,18 @@ function fetchQualityOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: 'Darkauction Reminder',
         description: 'Send a reminder when a skyblock dark auction is starting.',
-        getOption: () => plugins.data.darkAuctionReminder,
+        getOption: () => plugins.getDarkAuctionReminder(),
         toggleOption: () => {
-          plugins.data.darkAuctionReminder = !plugins.data.darkAuctionReminder
-          plugins.markDirty()
+          plugins.setDarkAuctionReminder(!plugins.getDarkAuctionReminder())
         }
       },
       {
         type: OptionType.Boolean,
         name: 'Starfall Cult Reminder',
         description: 'Send a reminder when the skyblock starfall cult gathers.',
-        getOption: () => plugins.data.starfallCultReminder,
+        getOption: () => plugins.getStarfallCultReminder(),
         toggleOption: () => {
-          plugins.data.starfallCultReminder = !plugins.data.starfallCultReminder
-          plugins.markDirty()
+          plugins.setStarfallCultReminder(!plugins.getStarfallCultReminder())
         }
       },
       {

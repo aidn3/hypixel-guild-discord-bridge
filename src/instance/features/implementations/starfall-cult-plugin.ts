@@ -43,7 +43,7 @@ export default class StarfallCultPlugin extends PluginInstance {
   }
 
   private enabled(): boolean {
-    return this.pluginsManager.getConfig().data.starfallCultReminder
+    return this.application.core.applicationConfigurations.getStarfallCultReminder()
   }
 
   private static getSkyblockTime(): { day: number } {

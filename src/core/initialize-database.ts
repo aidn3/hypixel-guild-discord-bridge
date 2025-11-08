@@ -221,6 +221,7 @@ function migrateFrom2to3(
       ' )'
   )
   migrateGeneralConfig(application, logger, postCleanupActions, database)
+  migrateFeaturesConfig(application, logger, postCleanupActions, database)
   migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
   migrateModeration(application, logger, postCleanupActions, database)
 
@@ -326,6 +327,35 @@ function migrateGeneralConfig(
 
   postCleanupActions.push(() => {
     logger.debug('Deleting legacy general Application configuration file...')
+    fs.rmSync(path)
+  })
+}
+
+function migrateFeaturesConfig(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface PluginConfig {
+    starfallCultReminder: boolean
+    darkAuctionReminder: boolean
+  }
+
+  const path = application.getConfigFilePath('features-manager.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Plugins configuration file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<PluginConfig>
+  if (oldObject.darkAuctionReminder !== undefined) {
+    setConfiguration(database, 'general', 'darkAuctionReminder', oldObject.darkAuctionReminder ? '1' : '0')
+  }
+  if (oldObject.starfallCultReminder !== undefined) {
+    setConfiguration(database, 'general', 'starfallCultReminder', oldObject.starfallCultReminder ? '1' : '0')
+  }
+
+  postCleanupActions.push(() => {
+    logger.debug('Deleting old Plugins configuration file...')
     fs.rmSync(path)
   })
 }
