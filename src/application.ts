@@ -23,6 +23,7 @@ import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { Core } from './core/core'
 import type { MojangApi } from './core/users/mojang'
 import ApplicationIntegrity from './instance/application-integrity.js'
+import AutoRestart from './instance/auto-restart'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
@@ -30,6 +31,7 @@ import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
+import { SkyblockReminders } from './instance/skyblock-reminders'
 import type { LanguageConfig } from './language-config.js'
 import { ApplicationLanguages, DefaultLanguageConfig } from './language-config.js'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
@@ -43,6 +45,8 @@ export type AllInstances =
   | MinecraftInstance
   | PluginInstance
   | ApplicationIntegrity
+  | SkyblockReminders
+  | AutoRestart
   | MinecraftManager
   | PluginsManager
 
@@ -73,6 +77,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly core: Core
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
+
+  private readonly skyblockReminders: SkyblockReminders
+  private readonly autoRestart: AutoRestart
 
   public constructor(
     config: ApplicationConfig,
@@ -133,6 +140,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       : undefined
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
+
+    this.skyblockReminders = new SkyblockReminders(this)
+    this.autoRestart = new AutoRestart(this)
   }
 
   public getConfigFilePath(filename: string): string {
@@ -346,7 +356,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,
-      ...this.minecraftManager.getAllInstances()
+      ...this.minecraftManager.getAllInstances(),
+      this.skyblockReminders,
+      this.autoRestart
     ].filter((instance) => instance != undefined)
 
     this.applicationIntegrity.checkLocalInstancesIntegrity(instances)

@@ -7,21 +7,11 @@ import { InstanceType } from '../../common/application-event.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type PluginInstance from '../../common/plugin-instance.js'
 
-import AutoRestartPlugin from './implementations/auto-restart-plugin.js'
-import DarkAuctionPlugin from './implementations/dark-auction-plugin.js'
-import StarfallCultPlugin from './implementations/starfall-cult-plugin.js'
-
 export class PluginsManager extends Instance<InstanceType.Utility> {
   private readonly instances: PluginInstance[] = []
 
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Utility)
-
-    this.instances.push(
-      new AutoRestartPlugin(application, this),
-      new DarkAuctionPlugin(application, this),
-      new StarfallCultPlugin(application, this)
-    )
   }
 
   public checkConflicts(pluginsNames: string[]): { pluginName: string; incompatibleWith: string }[] {
