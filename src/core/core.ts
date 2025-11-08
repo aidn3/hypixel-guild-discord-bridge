@@ -34,24 +34,29 @@ import ScoresManager from './users/scores-manager'
 import { Verification } from './users/verification'
 
 export class Core extends Instance<InstanceType.Core> {
+  // moderation
   private readonly commandsHeat: CommandsHeat
   private readonly profanity: Profanity
   private readonly punishments: Punishments
   private readonly enforcer: PunishmentsEnforcer
 
+  // users
   private readonly autoComplete: Autocomplete
   public readonly guildManager: GuildManager
   public readonly mojangApi: MojangApi
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
 
+  // discord
   public readonly discordLeaderboards: DiscordLeaderboards
 
+  // minecraft
   public readonly minecraftConfigurations: MinecraftConfigurations
   public readonly minecraftSessions: SessionsManager
   public readonly moderationConfiguration: ModerationConfigurations
   public readonly minecraftAccounts: MinecraftAccounts
 
+  // database
   private readonly sqliteManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
 
