@@ -596,7 +596,7 @@ function migrateMinecraftSessionFiles(
   if (allFiles.length === 0) {
     logger.warn('Legacy Minecraft sessions directory found but empty. Deleting it')
     postActions.push(() => {
-      fs.rmSync(sessionDirectory)
+      fs.rmdirSync(sessionDirectory)
     })
     return
   }
