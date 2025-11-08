@@ -287,7 +287,6 @@ function fetchQualityOptions(application: Application): CategoryOption {
 
 function fetchDiscordOptions(application: Application): CategoryOption {
   const discord = application.discordInstance.getConfig()
-  const leaderboard = application.discordInstance.leaderboard.getConfig()
   const deleterConfig = application.discordInstance.getDeleterConfig()
 
   return {
@@ -341,30 +340,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           discord.data.textToImage = !discord.data.textToImage
           discord.markDirty()
         }
-      },
-      {
-        type: OptionType.Category,
-        name: 'Leaderboards',
-        description: 'How leaderboards are displayed.',
-        header:
-          '**These events are recommended for best user experience.**\n' +
-          'Do not turn off unless you know what you are doing.\n\n' +
-          CategoryLabel,
-        options: [
-          {
-            type: OptionType.Number,
-            name: `Update Frequency (In Minutes)`,
-            description:
-              'How frequent to update the displayed leaderboards. WARNING: Fast updates might introduce instability!',
-            min: 1,
-            max: 43_200,
-            getOption: () => leaderboard.data.updateEveryMinutes,
-            setOption: (value) => {
-              leaderboard.data.updateEveryMinutes = value
-              leaderboard.markDirty()
-            }
-          }
-        ]
       },
       {
         type: OptionType.Category,

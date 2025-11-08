@@ -265,6 +265,19 @@ function migrateFrom2to3(
   )
   migrateMinecraftAccountsSettings(application, logger, postCleanupActions, database)
 
+  // reference: discord/discord-leaderboards.ts
+  database.exec(
+    'CREATE TABLE "discordLeaderboards" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  type TEXT NOT NULL COLLATE NOCASE,' +
+      '  channelId TEXT NOT NULL,' +
+      '  guildId TEXT,' +
+      '  updatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' )'
+  )
+  migrateDiscordLeaderboards(application, logger, postCleanupActions, database)
+
   database.pragma('user_version = 3')
 }
 
@@ -509,6 +522,63 @@ function migrateMinecraftConfig(
   })
 
   return instanceNames
+}
+
+function migrateDiscordLeaderboards(
+  application: Application,
+  logger: Logger,
+  postActions: (() => void)[],
+  database: Database
+): void {
+  // legacy types
+  interface OldLeaderboardConfig {
+    messages30Days: OldLeaderboardEntry[]
+    online30Days: OldLeaderboardEntry[]
+    points30Days: OldLeaderboardEntry[]
+  }
+
+  interface OldLeaderboardEntry {
+    lastUpdate: number
+    channelId: string
+    messageId: string
+    guildId: string | undefined
+  }
+
+  const path = application.getConfigFilePath('discord-leaderboards.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Discord leaderboard file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<OldLeaderboardConfig>
+
+  const insert = database.prepare(
+    'INSERT OR REPLACE INTO "discordLeaderboards" (messageId, type,channelId, guildId) VALUES (?, ?, ?, ?)'
+  )
+
+  let count = 0
+  if (oldObject.messages30Days !== undefined) {
+    for (const entry of oldObject.messages30Days) {
+      count++
+      insert.run(entry.messageId, 'messages30Days', entry.channelId, entry.guildId)
+    }
+  }
+  if (oldObject.online30Days !== undefined) {
+    for (const entry of oldObject.online30Days) {
+      count++
+      insert.run(entry.messageId, 'online30Days', entry.channelId, entry.guildId)
+    }
+  }
+  if (oldObject.points30Days !== undefined) {
+    for (const entry of oldObject.points30Days) {
+      count++
+      insert.run(entry.messageId, 'points30Days', entry.channelId, entry.guildId)
+    }
+  }
+
+  logger.info(`Successfully parsed ${count++} Discord leaderboards from the legacy file.`)
+  postActions.push(() => {
+    logger.debug('Deleting old Discord leaderboards file...')
+    fs.rmSync(path)
+  })
 }
 
 function migrateMinecraftSessionFiles(

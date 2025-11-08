@@ -16,6 +16,7 @@ import type {
 import { User } from '../common/user'
 
 import { ConfigurationsManager } from './configurations'
+import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { initializeCoreDatabase } from './initialize-database'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
@@ -44,6 +45,8 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
 
+  public readonly discordLeaderboards: DiscordLeaderboards
+
   public readonly minecraftConfigurations: MinecraftConfigurations
   public readonly minecraftSessions: SessionsManager
   public readonly moderationConfiguration: ModerationConfigurations
@@ -58,6 +61,8 @@ export class Core extends Instance<InstanceType.Core> {
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
+
+    this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)

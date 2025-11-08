@@ -3,8 +3,8 @@ import assert from 'node:assert'
 import { bold, italic, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import type { LeaderboardEntry } from '../../../core/discord/discord-leaderboards'
 import { DefaultCommandFooter } from '../common/discord-config'
-import type { LeaderboardEntry } from '../features/leaderboard'
 
 import { Messages30Days, Online30Days, Points30Days } from './create-leaderboard'
 
@@ -15,12 +15,24 @@ export default {
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())
 
-    const config = context.application.discordInstance.leaderboard.getConfig()
+    const entries = context.application.core.discordLeaderboards.getAll()
 
     let result = ''
-    result += format(config.data.points30Days, Points30Days.name) + '\n'
-    result += format(config.data.online30Days, Online30Days.name) + '\n'
-    result += format(config.data.messages30Days, Messages30Days.name) + '\n'
+    result +=
+      format(
+        entries.filter((entry) => entry.type === 'points30Days'),
+        Points30Days.name
+      ) + '\n'
+    result +=
+      format(
+        entries.filter((entry) => entry.type === 'online30Days'),
+        Online30Days.name
+      ) + '\n'
+    result +=
+      format(
+        entries.filter((entry) => entry.type === 'messages30Days'),
+        Messages30Days.name
+      ) + '\n'
 
     result = result.trim()
     if (result.length === 0) {
