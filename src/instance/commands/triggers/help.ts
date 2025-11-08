@@ -35,11 +35,9 @@ export default class Help extends ChatCommandHandler {
   }
 
   private commandPages(context: ChatCommandContext): string[][] {
+    const disabledCommands = context.app.core.commandsConfigurations.getDisabledCommands()
     const allCommands = context.allCommands
-      .filter(
-        (command) =>
-          !command.triggers.some((trigger) => context.config.data.disabledCommands.includes(trigger.toLowerCase()))
-      )
+      .filter((command) => !command.triggers.some((trigger) => disabledCommands.includes(trigger.toLowerCase())))
       .map((command) => command.triggers[0])
     const pages: string[][] = []
 

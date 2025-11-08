@@ -506,7 +506,7 @@ function fetchMetricsOptions(application: Application): CategoryOption {
 
 function fetchCommandsOptions(application: Application): CategoryOption {
   const minecraft = application.core.minecraftConfigurations
-  const commands = application.commandsInstance.getConfig()
+  const commands = application.core.commandsConfigurations
 
   return {
     type: OptionType.Category,
@@ -517,10 +517,9 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: `Enable Chat Commands ${Recommended}`,
         description: 'Enable commands such as `!cata` and `!iq`',
-        getOption: () => commands.data.enabled,
+        getOption: () => commands.getCommandsEnabled(),
         toggleOption: () => {
-          commands.data.enabled = !commands.data.enabled
-          commands.markDirty()
+          commands.setCommandsEnabled(!commands.getCommandsEnabled())
         }
       },
       {
@@ -530,10 +529,9 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         style: InputStyle.Tiny,
         min: 1,
         max: 2, // to allow "b!" prefix for example at most
-        getOption: () => commands.data.chatPrefix,
+        getOption: () => commands.getChatPrefix(),
         setOption: (newValue) => {
-          commands.data.chatPrefix = newValue
-          commands.markDirty()
+          commands.setChatPrefix(newValue)
         }
       },
       {
@@ -546,8 +544,10 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Label,
         name: 'Disabled Chat Commands',
         description: 'This can only be changed via `!toggle`.',
-        getOption: () =>
-          commands.data.disabledCommands.length === 0 ? 'none' : commands.data.disabledCommands.join(', ')
+        getOption: () => {
+          const disabledCommands = commands.getDisabledCommands()
+          return disabledCommands.length === 0 ? 'none' : disabledCommands.join(', ')
+        }
       }
     ]
   }

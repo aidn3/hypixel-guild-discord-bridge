@@ -224,6 +224,7 @@ function migrateFrom2to3(
   migrateFeaturesConfig(application, logger, postCleanupActions, database)
   migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
   migrateModeration(application, logger, postCleanupActions, database)
+  migrateCommandsConfig(application, logger, postCleanupActions, database)
 
   // reference: minecraft/sessions-manager.ts
   database.exec(
@@ -356,6 +357,39 @@ function migrateFeaturesConfig(
 
   postCleanupActions.push(() => {
     logger.debug('Deleting old Plugins configuration file...')
+    fs.rmSync(path)
+  })
+}
+
+function migrateCommandsConfig(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface CommandsConfig {
+    enabled: boolean
+    chatPrefix: string
+    disabledCommands: string[]
+  }
+
+  const path = application.getConfigFilePath('commands.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Chat Commands configuration file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<CommandsConfig>
+  if (oldObject.enabled !== undefined) {
+    setConfiguration(database, 'commands', 'enabled', oldObject.enabled ? '1' : '0')
+  }
+  if (oldObject.chatPrefix !== undefined) {
+    setConfiguration(database, 'commands', 'chatPrefix', oldObject.chatPrefix)
+  }
+  if (oldObject.disabledCommands !== undefined) {
+    setConfiguration(database, 'commands', 'disabledCommands', JSON.stringify(oldObject.disabledCommands))
+  }
+
+  postCleanupActions.push(() => {
+    logger.debug('Deleting old Chat Commands configuration file...')
     fs.rmSync(path)
   })
 }
