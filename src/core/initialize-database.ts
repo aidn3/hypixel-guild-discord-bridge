@@ -220,7 +220,7 @@ function migrateFrom2to3(
       '  value TEXT NOT NULL,' +
       '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
       '  PRIMARY KEY(category, name)' +
-      ' )'
+      ' ) STRICT'
   )
   if (!newlyCreated) {
     migrateGeneralConfig(application, logger, postCleanupActions, database)
@@ -238,7 +238,7 @@ function migrateFrom2to3(
       '  value TEXT NOT NULL,' +
       '  createdAt INTEGER NOT NULL,' +
       '  PRIMARY KEY(name, cacheName)' +
-      ' )'
+      ' ) STRICT'
   )
   database.exec(
     'CREATE TABLE "proxies" (' +
@@ -249,13 +249,13 @@ function migrateFrom2to3(
       '  user TEXT DEFAULT NULL,' +
       '  password TEXT DEFAULT NULL,' +
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
-      ' )'
+      ' ) STRICT'
   )
   database.exec(
     'CREATE TABLE "mojangInstances" (' +
       '  name TEXT PRIMARY KEY NOT NULL COLLATE NOCASE,' +
       '  proxyId INTEGER REFERENCES proxies(id) NULL' +
-      ' )'
+      ' ) STRICT'
   )
   if (!newlyCreated) {
     const instanceNames = migrateMinecraftConfig(application, logger, postCleanupActions, database)
@@ -270,7 +270,7 @@ function migrateFrom2to3(
       '  guildAllEnabled INTEGER NOT NULL DEFAULT 0,' +
       '  guildChatEnabled INTEGER NOT NULL DEFAULT 0,' +
       '  guildNotificationsEnabled INTEGER NOT NULL DEFAULT 0' +
-      ' )'
+      ' ) STRICT'
   )
   if (!newlyCreated) {
     migrateMinecraftAccountsSettings(application, logger, postCleanupActions, database)
@@ -285,7 +285,7 @@ function migrateFrom2to3(
       '  guildId TEXT,' +
       '  updatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
-      ' )'
+      ' ) STRICT'
   )
   if (!newlyCreated) {
     migrateDiscordLeaderboards(application, logger, postCleanupActions, database)
