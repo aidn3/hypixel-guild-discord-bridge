@@ -14,7 +14,6 @@ import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
 import type { DiscordConfig } from './common/discord-config.js'
 import MessageAssociation from './common/message-association.js'
-import type { MessageDeleterConfig } from './common/message-deletor.js'
 import DiscordBridge from './discord-bridge.js'
 import Leaderboard from './features/leaderboard.js'
 import LoggerManager from './features/logger-manager.js'
@@ -182,10 +181,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
 
   public getConfig(): ConfigManager<DiscordConfig> {
     return this.config
-  }
-
-  public getDeleterConfig(): ConfigManager<MessageDeleterConfig> {
-    return this.bridge.messageDeleter.getConfig()
   }
 
   public getStaticConfig(): Readonly<StaticDiscordConfig> {

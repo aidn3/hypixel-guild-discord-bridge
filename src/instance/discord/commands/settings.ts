@@ -18,6 +18,7 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
 import { ApplicationLanguages } from '../../../language-config'
+import Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
@@ -283,7 +284,7 @@ function fetchQualityOptions(application: Application): CategoryOption {
 
 function fetchDiscordOptions(application: Application): CategoryOption {
   const discord = application.discordInstance.getConfig()
-  const deleterConfig = application.discordInstance.getDeleterConfig()
+  const deleterConfig = application.core.discordConfigurations
 
   return {
     type: OptionType.Category,
@@ -374,10 +375,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             description: 'Temporary events are `Online` and `Offline` events.',
             min: 1,
             max: 43_200,
-            getOption: () => deleterConfig.data.expireSeconds,
+            getOption: () => deleterConfig.getDurationTemporarilyInteractions().toSeconds(),
             setOption: (value) => {
-              deleterConfig.data.expireSeconds = value
-              deleterConfig.markDirty()
+              deleterConfig.setDurationTemporarilyInteractions(Duration.seconds(value))
             }
           },
           {
@@ -386,10 +386,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             description: 'How many to keep in a channel before starting to delete the older ones.',
             min: 1,
             max: 1000,
-            getOption: () => deleterConfig.data.maxInteractions,
+            getOption: () => deleterConfig.getMaxTemporarilyInteractions(),
             setOption: (value) => {
-              deleterConfig.data.maxInteractions = value
-              deleterConfig.markDirty()
+              deleterConfig.setMaxTemporarilyInteractions(value)
             }
           }
         ]

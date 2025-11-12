@@ -68,7 +68,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     // TODO: properly reference client
     // @ts-expect-error client is private variable
-    this.messageDeleter = new MessageDeleter(application, logger, errorHandler, this.clientInstance.client)
+    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.client)
     this.messageToImage = new MessageToImage(config)
 
     this.application.on('instanceMessage', (event) => {
@@ -206,10 +206,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
 
     if (removeLater) {
-      this.messageDeleter.add({
-        createdAt: Date.now(),
-        messages: messages.map((message) => ({ channelId: message.channelId, messageId: message.id }))
-      })
+      const currentTime = Date.now()
+      const entries = messages.map((message) => ({
+        channelId: message.channelId,
+        messageId: message.id,
+        createdAt: currentTime
+      }))
+      this.messageDeleter.add(entries)
     }
   }
 

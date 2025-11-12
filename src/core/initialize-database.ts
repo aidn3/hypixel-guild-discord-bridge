@@ -291,6 +291,18 @@ function migrateFrom2to3(
     migrateDiscordLeaderboards(application, logger, postCleanupActions, database)
   }
 
+  // reference: discord/discord-temporarily-interactions.ts
+  database.exec(
+    'CREATE TABLE "discordTempInteractions" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  if (!newlyCreated) {
+    migrateDiscordTemporarilyInteractions(application, logger, postCleanupActions, database)
+  }
+
   database.pragma('user_version = 3')
 }
 
@@ -681,6 +693,56 @@ function migrateDiscordLeaderboards(
   logger.info(`Successfully parsed ${count++} Discord leaderboards from the legacy file.`)
   postActions.push(() => {
     logger.debug('Deleting old Discord leaderboards file...')
+    fs.rmSync(path)
+  })
+}
+
+function migrateDiscordTemporarilyInteractions(
+  application: Application,
+  logger: Logger,
+  postActions: (() => void)[],
+  database: Database
+): void {
+  // legacy types
+  interface MessageDeleterConfig {
+    expireSeconds: number
+    maxInteractions: number
+    interactions: OldDiscordMessage[]
+  }
+
+  interface OldDiscordMessage {
+    createdAt: number
+    messages: { channelId: string; messageId: string }[]
+  }
+
+  const path = application.getConfigFilePath('discord-temp-events.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Discord temporarily interactions file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<MessageDeleterConfig>
+
+  if (oldObject.expireSeconds !== undefined) {
+    setConfiguration(database, 'discord', 'temporarilyInteractionsDuration', oldObject.expireSeconds)
+  }
+  if (oldObject.maxInteractions !== undefined) {
+    setConfiguration(database, 'discord', 'temporarilyInteractionsCount', oldObject.maxInteractions)
+  }
+
+  if (oldObject.interactions !== undefined) {
+    const insert = database.prepare(
+      'INSERT OR REPLACE INTO "discordTempInteractions" (messageId, channelId, createdAt) VALUES (?, ?, ?)'
+    )
+
+    for (const interaction of oldObject.interactions) {
+      for (const message of interaction.messages) {
+        insert.run(message.messageId, message.channelId, Math.floor(interaction.createdAt / 1000))
+      }
+    }
+  }
+
+  logger.info(`Successfully parsed Discord temporarily interactions from the legacy file.`)
+  postActions.push(() => {
+    logger.debug('Deleting old Discord temporarily interactions file...')
     fs.rmSync(path)
   })
 }

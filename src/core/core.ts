@@ -18,7 +18,9 @@ import { User } from '../common/user'
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
 import { ConfigurationsManager } from './configurations'
+import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
+import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { initializeCoreDatabase } from './initialize-database'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
@@ -50,7 +52,9 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly verification: Verification
 
   // discord
+  public readonly discordConfigurations: DiscordConfigurations
   public readonly discordLeaderboards: DiscordLeaderboards
+  public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
 
   // minecraft
   public readonly minecraftConfigurations: MinecraftConfigurations
@@ -72,8 +76,14 @@ export class Core extends Instance<InstanceType.Core> {
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
-    this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
+
+    this.discordConfigurations = new DiscordConfigurations(this.configurationsManager)
+    this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
+    this.discordTemporarilyInteractions = new DiscordTemporarilyInteractions(
+      this.sqliteManager,
+      this.discordConfigurations
+    )
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)

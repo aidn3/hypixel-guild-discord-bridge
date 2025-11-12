@@ -1,109 +1,78 @@
-import assert from 'node:assert'
-
 import type { Client } from 'discord.js'
-import type { Logger } from 'log4js'
+import { Routes } from 'discord.js'
+import PromiseQueue from 'promise-queue'
 
-import type Application from '../../../application.js'
-import { ConfigManager } from '../../../common/config-manager.js'
+import type Application from '../../../application'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { DiscordMessage } from '../../../core/discord/discord-temporarily-interactions'
+import Duration from '../../../utility/duration'
 
 export default class MessageDeleter {
-  private static readonly DefaultExpiresSeconds = 15 * 60
-  private static readonly CheckEveryMilliseconds = 5 * 1000
-  private readonly config
+  private static readonly CheckEvery = Duration.seconds(5)
+  private readonly queue = new PromiseQueue(1)
 
   constructor(
-    application: Application,
-    logger: Logger,
+    private readonly application: Application,
     private readonly errorHandler: UnexpectedErrorHandler,
     private readonly client: Client
   ) {
-    this.config = new ConfigManager<MessageDeleterConfig>(
-      application,
-      logger,
-      application.getConfigFilePath('discord-temp-events.json'),
-      {
-        expireSeconds: MessageDeleter.DefaultExpiresSeconds,
-        maxInteractions: 5,
-        interactions: []
-      }
-    )
-
     setInterval(() => {
-      this.clean()
-    }, MessageDeleter.CheckEveryMilliseconds)
+      const totalQueue = this.queue.getPendingLength() + this.queue.getQueueLength()
+      if (totalQueue === 0) this.queueClean()
+    }, MessageDeleter.CheckEvery.toMilliseconds())
   }
 
-  public getConfig(): ConfigManager<MessageDeleterConfig> {
-    return this.config
+  public add(messages: DiscordMessage[]): void {
+    this.application.core.discordTemporarilyInteractions.add(messages)
+    this.queueClean()
   }
 
-  public add(messages: DiscordMessage): void {
-    this.config.data.interactions.push(messages)
-    this.config.markDirty()
+  private queueClean(): void {
+    void this.queue
+      .add(() => {
+        return this.clean().catch(this.errorHandler.promiseCatch('deleting old interactions'))
+      })
+      .catch(this.errorHandler.promiseCatch('queue failed when trying to delete old interactions'))
   }
 
-  public clean(): void {
-    const currentTime = Date.now()
-    const newArray = []
-    const tasks: Promise<unknown>[] = []
+  public async clean(): Promise<void> {
+    const expiredInteractions = this.application.core.discordTemporarilyInteractions.findToDelete()
 
-    // discard expired interactions first
-    for (const interaction of this.config.data.interactions) {
-      if (interaction.createdAt + this.config.data.expireSeconds * 1000 >= currentTime) {
-        newArray.push(interaction)
-        continue
+    const bulk = new Map<string, string[]>()
+    for (const expiredInteraction of expiredInteractions) {
+      let messages = bulk.get(expiredInteraction.channelId)
+      if (messages === undefined) {
+        messages = []
+        bulk.set(expiredInteraction.channelId, messages)
       }
 
-      tasks.push(...this.delete(interaction))
+      messages.push(expiredInteraction.messageId)
     }
 
-    // discard overflowing old interactions
-    newArray.sort((a, b) => b.createdAt - a.createdAt)
-    while (newArray.length > this.config.data.maxInteractions) {
-      const interaction = newArray.pop()
-      assert.ok(interaction)
-      tasks.push(...this.delete(interaction))
+    const tasks = []
+    for (const [channelId, messages] of bulk) {
+      for (const message of messages) {
+        /*
+         * direct rest api is used since the library client requires
+         * to first fetch the channel THEN do the delete request.
+         * this cuts it down to a single request.
+         *
+         * Although it is possible to bulk delete messages, it REQUIRES ManageMessages permission in that channel,
+         * even when the messages are owned by the user.
+         * And it has limitations such as: messages must not be older than 14 days and must be between 2 and 100. etc.
+         * Right now, it doesn't make sense to create a complicated setup to ensure everything is working optimally.
+         * So it is left for the future when it is needed.
+         */
+        const task = this.client.rest
+          .delete(Routes.channelMessage(channelId, message))
+          .catch(this.errorHandler.promiseCatch(`deleting temporarily event channel=${channelId},message=${message}`))
+        tasks.push(task)
+      }
     }
 
-    if (newArray.length !== this.config.data.interactions.length) {
-      this.config.data.interactions = newArray
-      this.config.markDirty()
-    }
+    await Promise.allSettled(tasks)
 
-    void Promise.all(tasks).catch(this.errorHandler.promiseCatch('deleting old interactions'))
+    const messages = expiredInteractions.map((message) => message.messageId)
+    this.application.core.discordTemporarilyInteractions.remove(messages)
   }
-
-  private delete(interaction: DiscordMessage): Promise<unknown>[] {
-    const tasks: Promise<unknown>[] = []
-
-    for (const message of interaction.messages) {
-      const task = this.client.channels
-        .fetch(message.channelId)
-        .then((channel) => {
-          assert.ok(channel?.isSendable())
-          return channel.messages.fetch(message.messageId)
-        })
-        .then((message) => {
-          assert.ok(message)
-          return message.delete()
-        })
-        .catch(this.errorHandler.promiseCatch(`deleting channel=${message.channelId},message=${message.messageId}`))
-
-      tasks.push(task)
-    }
-
-    return tasks
-  }
-}
-
-export interface MessageDeleterConfig {
-  expireSeconds: number
-  maxInteractions: number
-  interactions: DiscordMessage[]
-}
-
-export interface DiscordMessage {
-  createdAt: number
-  messages: { channelId: string; messageId: string }[]
 }
