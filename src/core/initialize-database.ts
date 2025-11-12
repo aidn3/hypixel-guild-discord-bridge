@@ -177,7 +177,9 @@ function migrateFrom1to2(
       ' )'
   )
   database.exec('CREATE INDEX heatsCommandsIndex ON "heatsCommands" (originInstance, userId);')
-  migrateCommandsHeat(application, logger, postCleanupActions, database)
+  if (!newlyCreated) {
+    migrateCommandsHeat(application, logger, postCleanupActions, database)
+  }
 
   // reference: ./users/verification.ts
   database.exec('DROP TABLE "inferences";')
@@ -220,11 +222,13 @@ function migrateFrom2to3(
       '  PRIMARY KEY(category, name)' +
       ' )'
   )
-  migrateGeneralConfig(application, logger, postCleanupActions, database)
-  migrateFeaturesConfig(application, logger, postCleanupActions, database)
-  migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
-  migrateModeration(application, logger, postCleanupActions, database)
-  migrateCommandsConfig(application, logger, postCleanupActions, database)
+  if (!newlyCreated) {
+    migrateGeneralConfig(application, logger, postCleanupActions, database)
+    migrateFeaturesConfig(application, logger, postCleanupActions, database)
+    migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
+    migrateModeration(application, logger, postCleanupActions, database)
+    migrateCommandsConfig(application, logger, postCleanupActions, database)
+  }
 
   // reference: minecraft/sessions-manager.ts
   database.exec(
@@ -253,8 +257,10 @@ function migrateFrom2to3(
       '  proxyId INTEGER REFERENCES proxies(id) NULL' +
       ' )'
   )
-  const instanceNames = migrateMinecraftConfig(application, logger, postCleanupActions, database)
-  migrateMinecraftSessionFiles(application, logger, postCleanupActions, database, instanceNames)
+  if (!newlyCreated) {
+    const instanceNames = migrateMinecraftConfig(application, logger, postCleanupActions, database)
+    migrateMinecraftSessionFiles(application, logger, postCleanupActions, database, instanceNames)
+  }
 
   // reference: minecraft/account-settings.ts
   database.exec(
@@ -266,7 +272,9 @@ function migrateFrom2to3(
       '  guildNotificationsEnabled INTEGER NOT NULL DEFAULT 0' +
       ' )'
   )
-  migrateMinecraftAccountsSettings(application, logger, postCleanupActions, database)
+  if (!newlyCreated) {
+    migrateMinecraftAccountsSettings(application, logger, postCleanupActions, database)
+  }
 
   // reference: discord/discord-leaderboards.ts
   database.exec(
@@ -279,7 +287,9 @@ function migrateFrom2to3(
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ' )'
   )
-  migrateDiscordLeaderboards(application, logger, postCleanupActions, database)
+  if (!newlyCreated) {
+    migrateDiscordLeaderboards(application, logger, postCleanupActions, database)
+  }
 
   database.pragma('user_version = 3')
 }
