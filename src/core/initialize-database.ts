@@ -303,6 +303,18 @@ function migrateFrom2to3(
     migrateDiscordTemporarilyInteractions(application, logger, postCleanupActions, database)
   }
 
+  // reference: discord/discord-emojis.ts
+  database.exec(
+    'CREATE TABLE "discordEmojis" (' +
+      '  name TEXT PRIMARY KEY NOT NULL COLLATE NOCASE,' +
+      '  hash TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  if (!newlyCreated) {
+    migrateDiscordEmojis(application, logger, postCleanupActions, database)
+  }
+
   database.pragma('user_version = 3')
 }
 
@@ -743,6 +755,38 @@ function migrateDiscordTemporarilyInteractions(
   logger.info(`Successfully parsed Discord temporarily interactions from the legacy file.`)
   postActions.push(() => {
     logger.debug('Deleting old Discord temporarily interactions file...')
+    fs.rmSync(path)
+  })
+}
+
+function migrateDiscordEmojis(
+  application: Application,
+  logger: Logger,
+  postActions: (() => void)[],
+  database: Database
+): void {
+  // legacy types
+  interface EmojiConfig {
+    savedEmojis: { name: string; hash: string }[]
+  }
+
+  const path = application.getConfigFilePath('discord-registered-emoji.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Discord Emojis file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<EmojiConfig>
+
+  if (oldObject.savedEmojis !== undefined) {
+    const insert = database.prepare('INSERT OR REPLACE INTO "discordEmojis" (name, hash) VALUES (?, ?)')
+
+    for (const savedEmoji of oldObject.savedEmojis) {
+      insert.run(savedEmoji.name, savedEmoji.hash)
+    }
+  }
+
+  logger.info(`Successfully parsed ${oldObject.savedEmojis?.length ?? 0} Discord Emojis from the legacy file.`)
+  postActions.push(() => {
+    logger.debug('Deleting old Discord Emojis file...')
     fs.rmSync(path)
   })
 }

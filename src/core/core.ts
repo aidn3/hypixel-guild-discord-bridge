@@ -19,6 +19,7 @@ import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
 import { ConfigurationsManager } from './configurations'
 import { DiscordConfigurations } from './discord/discord-configurations'
+import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { initializeCoreDatabase } from './initialize-database'
@@ -55,6 +56,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordConfigurations: DiscordConfigurations
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
+  public readonly discordEmojis: DiscordEmojis
 
   // minecraft
   public readonly minecraftConfigurations: MinecraftConfigurations
@@ -84,6 +86,7 @@ export class Core extends Instance<InstanceType.Core> {
       this.sqliteManager,
       this.discordConfigurations
     )
+    this.discordEmojis = new DiscordEmojis(this.sqliteManager)
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
