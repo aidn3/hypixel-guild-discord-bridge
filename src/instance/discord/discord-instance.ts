@@ -6,13 +6,11 @@ import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
 import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
-import { ConfigManager } from '../../common/config-manager.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { DiscordProfile } from '../../common/user'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
-import type { DiscordConfig } from './common/discord-config.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
 import Leaderboard from './features/leaderboard.js'
@@ -25,7 +23,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   readonly commandsManager: CommandManager
   readonly leaderboard: Leaderboard
 
-  private readonly config: ConfigManager<DiscordConfig>
   private readonly client: Client
 
   private readonly stateHandler: StateHandler
@@ -44,21 +41,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     super(app, InstanceType.Discord, InstanceType.Discord)
 
     this.staticConfig = config
-    this.config = new ConfigManager(app, this.logger, app.getConfigFilePath('discord.json'), {
-      publicChannelIds: [],
-      officerChannelIds: [],
-      helperRoleIds: [],
-      officerRoleIds: [],
-
-      loggerChannelIds: [],
-
-      alwaysReplyReaction: false,
-      enforceVerification: false,
-      textToImage: false,
-
-      guildOnline: true,
-      guildOffline: true
-    })
 
     this.client = new Client({
       makeCache: Options.cacheEverything(),
@@ -82,34 +64,18 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     this.chatManager = new ChatManager(
       this.application,
       this,
-      this.config,
       this.messageAssociation,
       this.eventHelper,
       this.logger,
       this.errorHandler
     )
-    this.commandsManager = new CommandManager(
-      this.application,
-      this,
-      this.config,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler
-    )
-    this.loggerManager = new LoggerManager(
-      this.application,
-      this,
-      this.config,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler
-    )
+    this.commandsManager = new CommandManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.loggerManager = new LoggerManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.leaderboard = new Leaderboard(this.application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.bridge = new DiscordBridge(
       this.application,
       this,
-      this.config,
       this.messageAssociation,
       this.logger,
       this.errorHandler,
@@ -168,19 +134,16 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   }
 
   private resolvePrivilegeLevel(roles: string[]): Permission {
-    if (roles.some((role) => this.config.data.officerRoleIds.includes(role))) {
+    const config = this.application.core.discordConfigurations
+    if (roles.some((role) => config.getOfficerRoleIds().includes(role))) {
       return Permission.Officer
     }
 
-    if (roles.some((role) => this.config.data.helperRoleIds.includes(role))) {
+    if (roles.some((role) => config.getHelperRoleIds().includes(role))) {
       return Permission.Helper
     }
 
     return Permission.Anyone
-  }
-
-  public getConfig(): ConfigManager<DiscordConfig> {
-    return this.config
   }
 
   public getStaticConfig(): Readonly<StaticDiscordConfig> {

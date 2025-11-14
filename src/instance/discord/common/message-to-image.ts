@@ -2,9 +2,7 @@ import process from 'node:process'
 
 import { createCanvas, registerFont } from 'canvas'
 
-import type { ConfigManager } from '../../../common/config-manager.js'
-
-import type { DiscordConfig } from './discord-config.js'
+import type Application from '../../../application'
 
 registerFont('./resources/fonts/MinecraftRegular-Bmg3.ttf', { family: 'Minecraft' })
 registerFont('./resources/fonts/unifont.ttf', { family: 'unifont' })
@@ -34,10 +32,11 @@ export default class MessageToImage {
   private static readonly WidthMargin = 20
   private readonly sizeMultiplier = 0.87
 
-  constructor(private readonly config: ConfigManager<DiscordConfig>) {}
+  constructor(private readonly application: Application) {}
 
   public shouldRenderImage(): boolean {
-    if (!this.config.data.textToImage) return false
+    const config = this.application.core.discordConfigurations
+    if (!config.getTextToImage()) return false
 
     // BUG: image renderer (PANGO library compiled in C) has trouble recognizing fonts on windows platforms.
     // running in on windows will spit out errors on process level outside Node.js control

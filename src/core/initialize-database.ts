@@ -224,6 +224,7 @@ function migrateFrom2to3(
   )
   if (!newlyCreated) {
     migrateGeneralConfig(application, logger, postCleanupActions, database)
+    migrateDiscordConfigurations(application, logger, postCleanupActions, database)
     migrateFeaturesConfig(application, logger, postCleanupActions, database)
     migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
     migrateModeration(application, logger, postCleanupActions, database)
@@ -650,6 +651,73 @@ function migrateMinecraftConfig(
   })
 
   return instanceNames
+}
+
+function migrateDiscordConfigurations(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface DiscordConfig {
+    publicChannelIds: string[]
+    officerChannelIds: string[]
+    helperRoleIds: string[]
+    officerRoleIds: string[]
+
+    loggerChannelIds: string[]
+
+    alwaysReplyReaction: boolean
+    enforceVerification: boolean
+    textToImage: boolean
+
+    guildOnline: boolean
+    guildOffline: boolean
+  }
+
+  const path = application.getConfigFilePath('discord.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Discord general configurations file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<DiscordConfig>
+  if (oldObject.publicChannelIds !== undefined) {
+    setConfiguration(database, 'discord', 'publicChannelIds', JSON.stringify(oldObject.publicChannelIds))
+  }
+  if (oldObject.officerChannelIds !== undefined) {
+    setConfiguration(database, 'discord', 'officerChannelIds', JSON.stringify(oldObject.officerChannelIds))
+  }
+  if (oldObject.helperRoleIds !== undefined) {
+    setConfiguration(database, 'discord', 'helperRoleIds', JSON.stringify(oldObject.helperRoleIds))
+  }
+  if (oldObject.officerRoleIds !== undefined) {
+    setConfiguration(database, 'discord', 'officerRoleIds', JSON.stringify(oldObject.officerRoleIds))
+  }
+  if (oldObject.loggerChannelIds !== undefined) {
+    setConfiguration(database, 'discord', 'loggerChannelIds', JSON.stringify(oldObject.loggerChannelIds))
+  }
+
+  if (oldObject.alwaysReplyReaction !== undefined) {
+    setConfiguration(database, 'discord', 'alwaysReplyReaction', oldObject.alwaysReplyReaction ? '1' : '0')
+  }
+  if (oldObject.enforceVerification !== undefined) {
+    setConfiguration(database, 'discord', 'enforceVerification', oldObject.enforceVerification ? '1' : '0')
+  }
+  if (oldObject.textToImage !== undefined) {
+    setConfiguration(database, 'discord', 'textToImage', oldObject.textToImage ? '1' : '0')
+  }
+
+  if (oldObject.guildOnline !== undefined) {
+    setConfiguration(database, 'discord', 'guildOnline', oldObject.guildOnline ? '1' : '0')
+  }
+  if (oldObject.guildOffline !== undefined) {
+    setConfiguration(database, 'discord', 'guildOffline', oldObject.guildOffline ? '1' : '0')
+  }
+
+  logger.info(`Successfully parsed old Discord general configurations file.`)
+  postCleanupActions.push(() => {
+    logger.debug('Deleting old Discord general configurations file...')
+    fs.rmSync(path)
+  })
 }
 
 function migrateDiscordLeaderboards(

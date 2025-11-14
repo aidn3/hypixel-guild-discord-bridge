@@ -283,7 +283,7 @@ function fetchQualityOptions(application: Application): CategoryOption {
 }
 
 function fetchDiscordOptions(application: Application): CategoryOption {
-  const discord = application.discordInstance.getConfig()
+  const discord = application.core.discordConfigurations
   const deleterConfig = application.core.discordConfigurations
 
   return {
@@ -300,10 +300,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         min: 0,
         max: 5,
 
-        getOption: () => discord.data.publicChannelIds,
+        getOption: () => discord.getPublicChannelIds(),
         setOption: (values) => {
-          discord.data.publicChannelIds = values
-          discord.markDirty()
+          discord.setPublicChannelIds(values)
         }
       },
       {
@@ -311,20 +310,18 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         name: 'Always Reply',
         description:
           'Enable to always send a text reply instead of reactions when a problem occurs. E.g when a message is blocked',
-        getOption: () => discord.data.alwaysReplyReaction,
+        getOption: () => discord.getAlwaysReplyReaction(),
         toggleOption: () => {
-          discord.data.alwaysReplyReaction = !discord.data.alwaysReplyReaction
-          discord.markDirty()
+          discord.setAlwaysReplyReaction(!discord.getAlwaysReplyReaction())
         }
       },
       {
         type: OptionType.Boolean,
         name: 'Enforce Verification',
         description: 'Enable to always require verification via `/verify` to chat using the application.',
-        getOption: () => discord.data.enforceVerification,
+        getOption: () => discord.getEnforceVerification(),
         toggleOption: () => {
-          discord.data.enforceVerification = !discord.data.enforceVerification
-          discord.markDirty()
+          discord.setEnforceVerification(!discord.getEnforceVerification())
         }
       },
       {
@@ -332,10 +329,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         name: 'Minecraft Text Images',
         description:
           'Render chat messages the same way they are rendered in Minecraft in-game. **DOES NOT WORK ON WINDOWS OS.**',
-        getOption: () => discord.data.textToImage,
+        getOption: () => discord.getTextToImage(),
         toggleOption: () => {
-          discord.data.textToImage = !discord.data.textToImage
-          discord.markDirty()
+          discord.setTextToImage(!discord.getTextToImage())
         }
       },
       {
@@ -352,10 +348,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             name: `Member Online ${Recommended}`,
             description:
               'Show a temporary message in the designated public discord channels when a guild member comes online.',
-            getOption: () => discord.data.guildOnline,
+            getOption: () => discord.getGuildOnline(),
             toggleOption: () => {
-              discord.data.guildOnline = !discord.data.guildOnline
-              discord.markDirty()
+              discord.setGuildOnline(!discord.getGuildOnline())
             }
           },
           {
@@ -363,10 +358,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             name: `Member Offline ${Recommended}`,
             description:
               'Show a temporary message in the designated public discord channels when a guild member goes offline.',
-            getOption: () => discord.data.guildOffline,
+            getOption: () => discord.getGuildOffline(),
             toggleOption: () => {
-              discord.data.guildOffline = !discord.data.guildOffline
-              discord.markDirty()
+              discord.setGuildOffline(!discord.getGuildOffline())
             }
           },
           {
@@ -408,10 +402,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.officerChannelIds,
+            getOption: () => discord.getOfficerChannelIds(),
             setOption: (values) => {
-              discord.data.officerChannelIds = values
-              discord.markDirty()
+              discord.setOfficerChannelIds(values)
             }
           },
           {
@@ -423,10 +416,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.loggerChannelIds,
+            getOption: () => discord.getLoggerChannelIds(),
             setOption: (values) => {
-              discord.data.loggerChannelIds = values
-              discord.markDirty()
+              discord.setLoggerChannelIds(values)
             }
           },
           {
@@ -438,10 +430,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.helperRoleIds,
+            getOption: () => discord.getHelperRoleIds(),
             setOption: (values) => {
-              discord.data.helperRoleIds = values
-              discord.markDirty()
+              discord.setHelperRoleIds(values)
             }
           },
           {
@@ -453,10 +444,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.officerRoleIds,
+            getOption: () => discord.getOfficerRoleIds(),
             setOption: (values) => {
-              discord.data.officerRoleIds = values
-              discord.markDirty()
+              discord.setOfficerRoleIds(values)
             }
           }
         ]
