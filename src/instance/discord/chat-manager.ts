@@ -7,13 +7,11 @@ import type { Logger } from 'log4js'
 import type Application from '../../application.js'
 import type { InstanceType } from '../../common/application-event.js'
 import { ChannelType, PunishmentType } from '../../common/application-event.js'
-import type { ConfigManager } from '../../common/config-manager.js'
 import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { DiscordUser } from '../../common/user'
 
-import type { DiscordConfig } from './common/discord-config.js'
 import { FilteredReaction, MutedReaction, UnverifiedReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
@@ -25,19 +23,16 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
 
   private readonly messageAssociation: MessageAssociation
   private readonly lastMuteWarn = new Map<string, number>()
-  private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    config: ConfigManager<DiscordConfig>,
     messageAssociation: MessageAssociation,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = config
     this.messageAssociation = messageAssociation
   }
 
@@ -52,11 +47,11 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
   private async onMessage(event: Message): Promise<void> {
     if (event.author.bot) return
 
-    const config = this.config.data
+    const config = this.application.core.discordConfigurations
     let channelType: ChannelType
-    if (config.publicChannelIds.includes(event.channel.id)) {
+    if (config.getPublicChannelIds().includes(event.channel.id)) {
       channelType = ChannelType.Public
-    } else if (config.officerChannelIds.includes(event.channel.id)) {
+    } else if (config.getOfficerChannelIds().includes(event.channel.id)) {
       channelType = ChannelType.Officer
     } else if (event.guildId) {
       return
@@ -67,7 +62,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     const userProfile = this.clientInstance.profileByUser(event.author, event.member ?? undefined)
     const user = await this.application.core.initializeDiscordUser(userProfile, {})
 
-    if (!user.verified() && this.config.data.enforceVerification) {
+    if (!user.verified() && config.getEnforceVerification()) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
       if (emoji !== undefined) await event.react(emoji)
 
@@ -119,7 +114,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
 
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === FilteredReaction.name)
       if (emoji !== undefined) await event.react(emoji)
-      if (emoji === undefined || this.config.data.alwaysReplyReaction) {
+      if (emoji === undefined || config.getAlwaysReplyReaction()) {
         await event.reply({
           content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
         })

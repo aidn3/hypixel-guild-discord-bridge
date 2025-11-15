@@ -26,7 +26,7 @@ export default class PlayerMuted extends SubInstance<MinecraftInstance, Instance
         event.instanceType !== this.clientInstance.instanceType
       )
         return
-      if (!this.application.minecraftManager.getConfig().data.announceMutedPlayer) return
+      if (!this.application.core.minecraftConfigurations.getAnnounceMutedPlayer()) return
 
       if (!event.message.startsWith("Hey! I'm currently muted")) return
       if (!event.rawMessage.includes('§eHey!')) return

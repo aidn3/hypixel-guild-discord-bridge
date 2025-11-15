@@ -2,37 +2,14 @@ import { hash } from 'node:crypto'
 import fs from 'node:fs/promises'
 
 import type { ApplicationEmojiManager, Client } from 'discord.js'
-import type { Logger } from 'log4js'
 
-import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
-import { ConfigManager } from '../../../common/config-manager.js'
-import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { EmojiConfig } from '../../../core/discord/discord-emojis'
 import { AllEmojis } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
 export default class EmojiHandler extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
-  private readonly registeredEmoji: ConfigManager<EmojiConfig>
-
-  public constructor(
-    application: Application,
-    clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
-    logger: Logger,
-    errorHandler: UnexpectedErrorHandler
-  ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
-
-    this.registeredEmoji = new ConfigManager(
-      application,
-      logger,
-      application.getConfigFilePath('discord-registered-emoji.json'),
-      { savedEmojis: [] }
-    )
-  }
-
   override registerEvents(client: Client): void {
     client.on('clientReady', (readyClient) => {
       void this.registerEmojis(readyClient.application.emojis).catch(
@@ -43,16 +20,20 @@ export default class EmojiHandler extends SubInstance<DiscordInstance, InstanceT
 
   private async registerEmojis(manager: ApplicationEmojiManager): Promise<void> {
     const registeredEmojis = await manager.fetch()
+    const savedEmojis = this.application.core.discordEmojis.getAll()
+    const toSaveEmojis: EmojiConfig[] = []
+
     for (const emoji of AllEmojis) {
       this.logger.trace(`Checking emoji ${emoji.name}`)
       const imageData = await fs.readFile(emoji.path)
       const imageHash = hash('sha256', imageData, 'hex')
       const registeredEmoji = registeredEmojis.find((existingEmoji) => existingEmoji.name === emoji.name)
-      const savedEmoji = this.registeredEmoji.data.savedEmojis.find((savedEmoji) => savedEmoji.name === emoji.name)
+      const savedEmoji = savedEmojis.find((savedEmoji) => savedEmoji.name === emoji.name)
 
       if (registeredEmoji !== undefined) {
         if (savedEmoji?.hash === imageHash) {
           this.logger.trace(`Emoji ${emoji.name} is registered already and matches the resource file. skipping...`)
+          toSaveEmojis.push({ name: emoji.name, hash: imageHash })
           continue
         }
 
@@ -74,15 +55,9 @@ export default class EmojiHandler extends SubInstance<DiscordInstance, InstanceT
       this.logger.info(`Registering emoji=${emoji.path} under the name ${emoji.name}`)
       await manager.create({ name: emoji.name, attachment: imageData })
 
-      let savedEmojis = this.registeredEmoji.data.savedEmojis
-      savedEmojis = savedEmojis.filter((savedEmoji) => savedEmoji.name !== emoji.name)
-      savedEmojis.push({ name: emoji.name, hash: imageHash })
-      this.registeredEmoji.data.savedEmojis = savedEmojis
-      this.registeredEmoji.markDirty()
+      toSaveEmojis.push({ name: emoji.name, hash: imageHash })
     }
-  }
-}
 
-interface EmojiConfig {
-  savedEmojis: { name: string; hash: string }[]
+    this.application.core.discordEmojis.replaceAll(toSaveEmojis)
+  }
 }

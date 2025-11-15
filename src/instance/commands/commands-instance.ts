@@ -2,7 +2,6 @@ import type Application from '../../application.js'
 import type { ChatEvent, CommandLike } from '../../common/application-event.js'
 import { InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
-import { ConfigManager } from '../../common/config-manager.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
 
@@ -67,18 +66,10 @@ import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
-  private static readonly DefaultCommandPrefix: string = '!'
   public readonly commands: ChatCommandHandler[]
-  private readonly config: ConfigManager<CommandsConfig>
 
   constructor(app: Application) {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
-
-    this.config = new ConfigManager(app, this.logger, app.getConfigFilePath('commands.json'), {
-      enabled: true,
-      chatPrefix: CommandsInstance.DefaultCommandPrefix,
-      disabledCommands: []
-    })
 
     this.commands = [
       new Api(),
@@ -165,10 +156,6 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     }
   }
 
-  public getConfig(): ConfigManager<CommandsConfig> {
-    return this.config
-  }
-
   connect(): void {
     this.checkCommandsIntegrity()
     this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
@@ -180,9 +167,11 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
   async handle(event: ChatEvent): Promise<void> {
     if (this.currentStatus() !== Status.Connected) return
-    if (!event.message.startsWith(this.config.data.chatPrefix)) return
 
-    const commandName = event.message.slice(this.config.data.chatPrefix.length).split(' ')[0].toLowerCase()
+    const chatPrefix = this.application.core.commandsConfigurations.getChatPrefix()
+    if (!event.message.startsWith(chatPrefix)) return
+
+    const commandName = event.message.slice(chatPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
@@ -190,7 +179,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     if (
-      this.config.data.disabledCommands.includes(command.triggers[0].toLowerCase()) &&
+      this.application.core.commandsConfigurations.getDisabledCommands().includes(command.triggers[0].toLowerCase()) &&
       event.user.permission() === Permission.Anyone
     ) {
       return
@@ -205,8 +194,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         errorHandler: this.errorHandler,
 
         allCommands: this.commands,
-        config: this.config,
-        commandPrefix: this.config.data.chatPrefix,
+        commandPrefix: chatPrefix,
 
         message: event,
         username: event.user.mojangProfile()?.name ?? event.user.displayName(),
@@ -284,10 +272,4 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       }
     }
   }
-}
-
-export interface CommandsConfig {
-  enabled: boolean
-  chatPrefix: string
-  disabledCommands: string[]
 }

@@ -1,8 +1,6 @@
 import StringComparison from 'string-comparison'
 
-import type { ConfigManager } from '../../../common/config-manager.js'
-
-import type { SanitizerConfig } from './sanitizer.js'
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
 
 export default class Antispam {
   static readonly MaxHistory = 3
@@ -11,7 +9,7 @@ export default class Antispam {
 
   private readonly history = new Map<string, string[]>()
 
-  constructor(private readonly config: ConfigManager<SanitizerConfig>) {}
+  constructor(private readonly config: MinecraftConfigurations) {}
 
   public process(instanceName: string, message: string): string {
     let history = this.history.get(instanceName)
@@ -20,7 +18,7 @@ export default class Antispam {
       this.history.set(instanceName, history)
     }
 
-    if (!this.config.data.antispamEnabled) {
+    if (!this.config.getAntispamEnabled()) {
       history.push(message)
       if (history.length > Antispam.MaxHistory) {
         history.splice(0, history.length - Antispam.MaxHistory)
@@ -32,10 +30,7 @@ export default class Antispam {
     let newMessage = message
 
     let addedRandom = 0
-    while (
-      this.similarity(newMessage, history) > Antispam.SafeScore &&
-      addedRandom < this.config.data.antispamMaxAdditions
-    ) {
+    while (this.similarity(newMessage, history) > Antispam.SafeScore && addedRandom < Antispam.MaxAdditions) {
       if (addedRandom === 0) newMessage = newMessage.trim() + ' @'
       newMessage += this.randomLetter()
       addedRandom++

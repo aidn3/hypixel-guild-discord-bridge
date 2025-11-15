@@ -66,6 +66,7 @@ export class SqliteManager {
 
   public migrate(sqliteName: string): void {
     const database = this.getDatabase()
+    const postCleanupActions: (() => void)[] = []
 
     const transaction = database.transaction(() => {
       const newlyCreated = this.isNewlyCreated()
@@ -76,7 +77,7 @@ export class SqliteManager {
         const currentVersion = database.pragma('user_version', { simple: true }) as number
         const migrator = this.migrators.get(currentVersion)
         if (migrator !== undefined) {
-          migrator(database, this.logger, newlyCreated)
+          migrator(database, this.logger, postCleanupActions, newlyCreated)
           changed = true
           continue
         }
@@ -99,6 +100,15 @@ export class SqliteManager {
     })
 
     transaction()
+    if (postCleanupActions.length > 0) {
+      this.logger.debug('Starting cleaning up...')
+
+      for (const postAction of postCleanupActions) {
+        postAction()
+      }
+
+      this.logger.debug('Finished all cleanups.')
+    }
   }
 
   public close(): void {
@@ -131,4 +141,9 @@ export class SqliteManager {
   }
 }
 
-export type Migrator = (database: Database.Database, logger: Logger, newlyCreated: boolean) => void
+export type Migrator = (
+  database: Database.Database,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  newlyCreated: boolean
+) => void

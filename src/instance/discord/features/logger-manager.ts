@@ -4,27 +4,21 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import { InstanceType } from '../../../common/application-event.js'
-import type { ConfigManager } from '../../../common/config-manager.js'
 import { Status } from '../../../common/connectable-instance.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import type { DiscordConfig } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
 export default class LoggerManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
-  private readonly config: ConfigManager<DiscordConfig>
-
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    config: ConfigManager<DiscordConfig>,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = config
 
     this.application.on('chat', (event) => {
       const displayUsername =
@@ -91,7 +85,8 @@ export default class LoggerManager extends SubInstance<DiscordInstance, Instance
     const currentStatus = this.clientInstance.currentStatus()
     if (currentStatus === Status.Ended) return
 
-    const channels = this.config.data.loggerChannelIds
+    const config = this.application.core.discordConfigurations
+    const channels = config.getLoggerChannelIds()
     for (const channelId of channels) {
       try {
         // TODO: properly reference client

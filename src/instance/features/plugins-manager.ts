@@ -4,36 +4,14 @@ import process from 'node:process'
 
 import type Application from '../../application.js'
 import { InstanceType } from '../../common/application-event.js'
-import { ConfigManager } from '../../common/config-manager.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import type PluginInstance from '../../common/plugin-instance.js'
 
-import type { PluginConfig } from './common/plugins-config.js'
-import AutoRestartPlugin from './implementations/auto-restart-plugin.js'
-import DarkAuctionPlugin from './implementations/dark-auction-plugin.js'
-import StarfallCultPlugin from './implementations/starfall-cult-plugin.js'
-
 export class PluginsManager extends Instance<InstanceType.Utility> {
-  private readonly config: ConfigManager<PluginConfig>
   private readonly instances: PluginInstance[] = []
 
   constructor(application: Application) {
     super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Utility)
-
-    this.config = new ConfigManager(application, this.logger, application.getConfigFilePath('features-manager.json'), {
-      darkAuctionReminder: true,
-      starfallCultReminder: true
-    })
-
-    this.instances.push(
-      new AutoRestartPlugin(application, this),
-      new DarkAuctionPlugin(application, this),
-      new StarfallCultPlugin(application, this)
-    )
-  }
-
-  public getConfig(): ConfigManager<PluginConfig> {
-    return this.config
   }
 
   public checkConflicts(pluginsNames: string[]): { pluginName: string; incompatibleWith: string }[] {

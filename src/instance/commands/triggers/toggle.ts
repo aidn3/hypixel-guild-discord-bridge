@@ -22,20 +22,19 @@ export default class Toggle extends ChatCommandHandler {
 
     const query = context.args[0]
     const commands = context.allCommands
-    const config = context.config
+    const config = context.app.core.commandsConfigurations
 
     const command = commands.find((c) => c.triggers.includes(query.toLowerCase()))
     if (command == undefined) return `Command does not exist`
 
-    if (config.data.disabledCommands.includes(command.triggers[0].toLowerCase())) {
-      config.data.disabledCommands = config.data.disabledCommands.filter(
-        (disabledCommand) => disabledCommand !== command.triggers[0].toLowerCase()
-      )
-      config.markDirty()
+    let disabledCommands = config.getDisabledCommands()
+    if (disabledCommands.includes(command.triggers[0].toLowerCase())) {
+      disabledCommands = disabledCommands.filter((trigger) => trigger !== command.triggers[0].toLowerCase())
+      config.setDisabledCommands(disabledCommands)
       return `Command ${query} is now enabled.`
     } else {
-      config.data.disabledCommands.push(command.triggers[0].toLowerCase())
-      config.markDirty()
+      disabledCommands.push(command.triggers[0].toLowerCase())
+      config.setDisabledCommands(disabledCommands)
       return `Command ${query} is now disabled.`
     }
   }
