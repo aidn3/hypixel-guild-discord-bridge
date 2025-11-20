@@ -66,7 +66,6 @@ export default {
         fetchMinecraftOptions(context.application),
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
-        fetchMetricsOptions(context.application),
         fetchCommandsOptions(context.application),
         fetchLanguageOptions(context.application)
       ]
@@ -450,44 +449,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             }
           }
         ]
-      }
-    ]
-  }
-}
-
-function fetchMetricsOptions(application: Application): CategoryOption {
-  const scoresManager = application.core.scoresManager.config
-
-  return {
-    type: OptionType.Category,
-    name: 'Metrics',
-    header: CategoryLabel,
-    options: [
-      {
-        type: OptionType.Number,
-        name: `Messages Persistence (In Days)`,
-        description:
-          'How long to keep records of members messages stats. WARNING: High persistence will increase storage usage and might introduce lag.',
-        min: 1,
-        max: 1068,
-        getOption: () => scoresManager.data.deleteMessagesOlderThan,
-        setOption: (value) => {
-          scoresManager.data.deleteMessagesOlderThan = value
-          scoresManager.markDirty()
-        }
-      },
-      {
-        type: OptionType.Number,
-        name: `Members Persistence (In Days)`,
-        description:
-          'How long to keep records of members being in the guild or online, etc. WARNING: High persistence will increase storage usage and might introduce lag.',
-        min: 1,
-        max: 1068,
-        getOption: () => scoresManager.data.deleteMembersOlderThan,
-        setOption: (value) => {
-          scoresManager.data.deleteMembersOlderThan = value
-          scoresManager.markDirty()
-        }
       }
     ]
   }

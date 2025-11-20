@@ -316,6 +316,18 @@ function migrateFrom2to3(
     migrateDiscordEmojis(application, logger, postCleanupActions, database)
   }
 
+  // reference: users/scores-manager.ts
+  database.exec(
+    'CREATE TABLE "minecraftBots" (' +
+      '  uuid TEXT PRIMARY KEY NOT NULL,' +
+      '  updatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  if (!newlyCreated) {
+    migrateScoresManagerConfig(application, logger, postCleanupActions, database)
+  }
+
   database.pragma('user_version = 3')
 }
 
@@ -963,5 +975,35 @@ function migrateMinecraftAccountsSettings(
   logger.info(`Migrated ${allFiles.length} Minecraft account file. Deleting the old directory...`)
   postActions.push(() => {
     fs.rmSync(directory, { recursive: true })
+  })
+}
+
+function migrateScoresManagerConfig(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface ScoreManagerConfig {
+    minecraftBotUuids: string[]
+  }
+
+  const path = application.getConfigFilePath('scores-manager.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old Scores configuration file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<ScoreManagerConfig>
+  if (oldObject.minecraftBotUuids !== undefined) {
+    const insert = database.prepare(
+      'INSERT INTO "minecraftBots" (uuid) VALUES (?) ON CONFLICT(uuid) DO UPDATE SET updatedAt = (unixepoch())'
+    )
+    for (const minecraftBotUuid of oldObject.minecraftBotUuids) {
+      insert.run(minecraftBotUuid)
+    }
+  }
+
+  postCleanupActions.push(() => {
+    logger.debug('Deleting legacy Scores configuration file...')
+    fs.rmSync(path)
   })
 }
