@@ -901,7 +901,7 @@ function migrateMinecraftSessionFiles(
 
     for (const sessionFile of allFiles) {
       const regex = /^(\w+)_(\w+)-cache\.json$/g
-      const match = regex.exec(instanceName)
+      const match = regex.exec(sessionFile)
       if (match) {
         const regexHash = match[1]
         const regexType = match[2]
