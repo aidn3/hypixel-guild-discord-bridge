@@ -572,8 +572,8 @@ function migrateMinecraftAntispamConfig(
     setConfiguration(database, 'minecraft', 'antispamEnabled', oldObject.antispamEnabled ? '1' : '0')
   }
 
-  logger.debug('Deleting legacy Minecraft antispam file...')
   postCleanupActions.push(() => {
+    logger.debug('Deleting legacy Minecraft antispam file...')
     fs.rmSync(path)
   })
 }
