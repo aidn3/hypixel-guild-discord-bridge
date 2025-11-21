@@ -31,7 +31,7 @@ export default class PlayerMuted extends SubInstance<MinecraftInstance, Instance
       if (!event.message.startsWith("Hey! I'm currently muted")) return
       if (!event.rawMessage.includes('§eHey!')) return
 
-      let message = this.application.language.data.announceMutedPlayer
+      let message = this.application.core.languageConfigurations.getAnnounceMutedPlayer()
       message = message.replaceAll('{username}', event.user.displayName())
 
       this.application.emit('broadcast', {

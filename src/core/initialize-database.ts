@@ -224,6 +224,7 @@ function migrateFrom2to3(
   )
   if (!newlyCreated) {
     migrateGeneralConfig(application, logger, postCleanupActions, database)
+    migrateLanguageConfigurations(application, logger, postCleanupActions, database)
     migrateDiscordConfigurations(application, logger, postCleanupActions, database)
     migrateFeaturesConfig(application, logger, postCleanupActions, database)
     migrateMinecraftAntispamConfig(application, logger, postCleanupActions, database)
@@ -1004,6 +1005,89 @@ function migrateScoresManagerConfig(
 
   postCleanupActions.push(() => {
     logger.debug('Deleting legacy Scores configuration file...')
+    fs.rmSync(path)
+  })
+}
+
+function migrateLanguageConfigurations(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface LanguageConfig {
+    language: string
+    darkAuctionReminder: string
+    starfallReminder: string
+
+    commandMuteGame: string[]
+
+    commandRouletteWin: string[]
+    commandRouletteLose: string[]
+
+    commandVengeanceWin: string[]
+    commandVengeanceDraw: string[]
+    commandVengeanceLose: string[]
+
+    announceMutedPlayer: string
+
+    guildJoinReaction: string[]
+    guildLeaveReaction: string[]
+    guildKickReaction: string[]
+  }
+
+  const path = application.getConfigFilePath('language.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old language configurations file. Migrating it into the new system...')
+
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as Partial<LanguageConfig>
+  if (oldObject.language !== undefined) {
+    setConfiguration(database, 'language', 'language', oldObject.language)
+  }
+  if (oldObject.darkAuctionReminder !== undefined) {
+    setConfiguration(database, 'language', 'darkAuctionReminder', oldObject.darkAuctionReminder)
+  }
+  if (oldObject.starfallReminder !== undefined) {
+    setConfiguration(database, 'language', 'starfallReminder', oldObject.starfallReminder)
+  }
+
+  if (oldObject.commandMuteGame !== undefined) {
+    setConfiguration(database, 'language', 'commandMuteGame', JSON.stringify(oldObject.commandMuteGame))
+  }
+  if (oldObject.commandRouletteWin !== undefined) {
+    setConfiguration(database, 'language', 'commandRouletteWin', JSON.stringify(oldObject.commandRouletteWin))
+  }
+  if (oldObject.commandRouletteLose !== undefined) {
+    setConfiguration(database, 'language', 'commandRouletteLose', JSON.stringify(oldObject.commandRouletteLose))
+  }
+
+  if (oldObject.commandVengeanceWin !== undefined) {
+    setConfiguration(database, 'language', 'commandVengeanceWin', JSON.stringify(oldObject.commandVengeanceWin))
+  }
+  if (oldObject.commandVengeanceDraw !== undefined) {
+    setConfiguration(database, 'language', 'commandVengeanceDraw', JSON.stringify(oldObject.commandVengeanceDraw))
+  }
+  if (oldObject.commandVengeanceLose !== undefined) {
+    setConfiguration(database, 'language', 'commandVengeanceLose', JSON.stringify(oldObject.commandVengeanceLose))
+  }
+
+  if (oldObject.announceMutedPlayer !== undefined) {
+    setConfiguration(database, 'language', 'announceMutedPlayer', oldObject.announceMutedPlayer)
+  }
+
+  if (oldObject.guildJoinReaction !== undefined) {
+    setConfiguration(database, 'language', 'guildJoinReaction', JSON.stringify(oldObject.guildJoinReaction))
+  }
+  if (oldObject.guildLeaveReaction !== undefined) {
+    setConfiguration(database, 'language', 'guildLeaveReaction', JSON.stringify(oldObject.guildLeaveReaction))
+  }
+  if (oldObject.guildKickReaction !== undefined) {
+    setConfiguration(database, 'language', 'guildKickReaction', JSON.stringify(oldObject.guildKickReaction))
+  }
+
+  logger.info(`Successfully parsed old language configurations file.`)
+  postCleanupActions.push(() => {
+    logger.debug('Deleting old language configurations file...')
     fs.rmSync(path)
   })
 }

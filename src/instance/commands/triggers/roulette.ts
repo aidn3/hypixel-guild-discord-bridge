@@ -70,13 +70,13 @@ export default class Roulette extends ChatCommandHandler {
         'Lost in RussianRoulette game'
       )
 
-      const messages = context.app.language.data.commandRouletteLose
+      const messages = context.app.core.languageConfigurations.getCommandRouletteLose()
       return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)
     } else {
       this.countSinceLastLose++
     }
 
-    const messages = context.app.language.data.commandRouletteWin
+    const messages = context.app.core.languageConfigurations.getCommandRouletteWin()
     return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)
   }
 }

@@ -15,9 +15,9 @@ import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { ApplicationLanguages } from '../../../core/language-configurations'
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
-import { ApplicationLanguages } from '../../../language-config'
 import Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -504,7 +504,7 @@ function fetchCommandsOptions(application: Application): CategoryOption {
 }
 
 function fetchLanguageOptions(application: Application): CategoryOption {
-  const language = application.language
+  const language = application.core.languageConfigurations
 
   return {
     type: OptionType.Category,
@@ -520,7 +520,7 @@ function fetchLanguageOptions(application: Application): CategoryOption {
           '**This menu will stay in the default language.**',
         min: 1,
         max: 1,
-        getOption: () => [language.data.language],
+        getOption: () => [language.getLanguage()],
         setOption: (values) => {
           const selected = values[0] as ApplicationLanguages
           assert.notStrictEqual(selected, undefined)
@@ -543,10 +543,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
             style: InputStyle.Long,
             min: 2,
             max: 150,
-            getOption: () => language.data.announceMutedPlayer,
+            getOption: () => language.getAnnounceMutedPlayer(),
             setOption: (value) => {
-              language.data.announceMutedPlayer = value
-              language.markDirty()
+              language.setAnnounceMutedPlayer(value)
             }
           },
           {
@@ -560,10 +559,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 2,
                 max: 150,
-                getOption: () => language.data.darkAuctionReminder,
+                getOption: () => language.getDarkAuctionReminder(),
                 setOption: (value) => {
-                  language.data.darkAuctionReminder = value
-                  language.markDirty()
+                  language.setDarkAuctionReminder(value)
                 }
               },
               {
@@ -573,10 +571,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 2,
                 max: 150,
-                getOption: () => language.data.starfallReminder,
+                getOption: () => language.getStarfallReminder(),
                 setOption: (value) => {
-                  language.data.starfallReminder = value
-                  language.markDirty()
+                  language.setStarfallReminder(value)
                 }
               }
             ]
@@ -593,10 +590,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Short,
                 min: 0,
                 max: 100,
-                getOption: () => language.data.commandMuteGame,
+                getOption: () => language.getCommandMuteGame(),
                 setOption: (values) => {
-                  language.data.commandMuteGame = values
-                  language.markDirty()
+                  language.setCommandMuteGame(values)
                 }
               },
               {
@@ -611,10 +607,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandRouletteWin,
+                    getOption: () => language.getCommandRouletteWin(),
                     setOption: (values) => {
-                      language.data.commandRouletteWin = values
-                      language.markDirty()
+                      language.setCommandRouletteWin(values)
                     }
                   },
                   {
@@ -624,10 +619,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandRouletteLose,
+                    getOption: () => language.getCommandRouletteLose(),
                     setOption: (values) => {
-                      language.data.commandRouletteLose = values
-                      language.markDirty()
+                      language.setCommandRouletteLose(values)
                     }
                   }
                 ]
@@ -644,10 +638,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandVengeanceWin,
+                    getOption: () => language.getCommandVengeanceWin(),
                     setOption: (values) => {
-                      language.data.commandVengeanceWin = values
-                      language.markDirty()
+                      language.setCommandVengeanceWin(values)
                     }
                   },
                   {
@@ -657,10 +650,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandVengeanceDraw,
+                    getOption: () => language.getCommandVengeanceDraw(),
                     setOption: (values) => {
-                      language.data.commandVengeanceDraw = values
-                      language.markDirty()
+                      language.setCommandVengeanceDraw(values)
                     }
                   },
                   {
@@ -670,10 +662,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandVengeanceLose,
+                    getOption: () => language.getCommandVengeanceLose(),
                     setOption: (values) => {
-                      language.data.commandVengeanceLose = values
-                      language.markDirty()
+                      language.setCommandVengeanceLose(values)
                     }
                   }
                 ]
@@ -692,10 +683,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 0,
                 max: 20,
-                getOption: () => language.data.guildJoinReaction,
+                getOption: () => language.getGuildJoinReaction(),
                 setOption: (values) => {
-                  language.data.guildJoinReaction = values
-                  language.markDirty()
+                  language.setGuildJoinReaction(values)
                 }
               },
               {
@@ -705,10 +695,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 0,
                 max: 20,
-                getOption: () => language.data.guildLeaveReaction,
+                getOption: () => language.getGuildLeaveReaction(),
                 setOption: (values) => {
-                  language.data.guildLeaveReaction = values
-                  language.markDirty()
+                  language.setGuildLeaveReaction(values)
                 }
               },
               {
@@ -718,10 +707,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 0,
                 max: 20,
-                getOption: () => language.data.guildKickReaction,
+                getOption: () => language.getGuildKickReaction(),
                 setOption: (values) => {
-                  language.data.guildKickReaction = values
-                  language.markDirty()
+                  language.setGuildKickReaction(values)
                 }
               }
             ]

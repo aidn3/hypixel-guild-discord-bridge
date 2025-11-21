@@ -23,6 +23,7 @@ import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { initializeCoreDatabase } from './initialize-database'
+import { LanguageConfigurations } from './language-configurations'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
 import { SessionsManager } from './minecraft/sessions-manager'
@@ -65,6 +66,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly minecraftAccounts: MinecraftAccounts
 
   public readonly applicationConfigurations: ApplicationConfigurations
+  public readonly languageConfigurations: LanguageConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
 
   // database
@@ -89,6 +91,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
+    this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
 
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)

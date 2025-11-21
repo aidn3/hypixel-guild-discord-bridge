@@ -58,7 +58,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
         event.type === GuildPlayerEventType.Join &&
         this.application.core.minecraftConfigurations.getJoinGuildReaction()
       ) {
-        const messages = this.application.language.data.guildJoinReaction
+        const messages = this.application.core.languageConfigurations.getGuildJoinReaction()
         if (messages.length === 0) {
           this.logger.error('There is no guild join reaction messages. Dropping the reaction entirely.')
           return
@@ -81,7 +81,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
         event.type === GuildPlayerEventType.Leave &&
         this.application.core.minecraftConfigurations.getLeaveGuildReaction()
       ) {
-        const messages = this.application.language.data.guildLeaveReaction
+        const messages = this.application.core.languageConfigurations.getGuildLeaveReaction()
         if (messages.length === 0) {
           this.logger.error('There is no guild leave reaction messages. Dropping the reaction entirely.')
           return
@@ -103,7 +103,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
         event.type === GuildPlayerEventType.Kick &&
         this.application.core.minecraftConfigurations.getKickGuildReaction()
       ) {
-        const messages = this.application.language.data.guildKickReaction
+        const messages = this.application.core.languageConfigurations.getGuildKickReaction()
         if (messages.length === 0) {
           this.logger.error('There is no guild kick reaction messages. Dropping the reaction entirely.')
           return

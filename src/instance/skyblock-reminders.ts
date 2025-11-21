@@ -34,10 +34,9 @@ export class SkyblockReminders extends Instance<InstanceType.Utility> {
         const remainingMinutes = 55 - currentMinute
         assert.ok(remainingMinutes > 0)
 
-        const message = this.application.language.data.darkAuctionReminder.replaceAll(
-          '{minutes}',
-          remainingMinutes.toString(10)
-        )
+        const message = this.application.core.languageConfigurations
+          .getDarkAuctionReminder()
+          .replaceAll('{minutes}', remainingMinutes.toString(10))
 
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
@@ -72,7 +71,7 @@ export class SkyblockReminders extends Instance<InstanceType.Utility> {
           channels: [ChannelType.Public],
 
           user: undefined,
-          message: this.application.language.data.starfallReminder
+          message: this.application.core.languageConfigurations.getStarfallReminder()
         })
       }
     }, 5000)

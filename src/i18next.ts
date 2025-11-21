@@ -5,7 +5,7 @@ import Arabic from '../resources/locales/ar.json'
 import German from '../resources/locales/de.json'
 import English from '../resources/locales/en.json'
 
-import { ApplicationLanguages } from './language-config'
+import { ApplicationLanguages } from './core/language-configurations'
 
 export async function loadI18(): Promise<i18n> {
   const instance = createInstance({

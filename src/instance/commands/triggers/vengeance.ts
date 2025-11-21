@@ -78,7 +78,7 @@ export default class Vengeance extends ChatCommandHandler {
         Vengeance.MuteDuration,
         'Lost in Vengeance game'
       )
-      messages = context.app.language.data.commandVengeanceWin
+      messages = context.app.core.languageConfigurations.getCommandVengeanceWin()
     } else if (this.lose()) {
       context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
@@ -88,10 +88,10 @@ export default class Vengeance extends ChatCommandHandler {
       )
 
       this.countSinceLastWin++
-      messages = context.app.language.data.commandVengeanceLose
+      messages = context.app.core.languageConfigurations.getCommandVengeanceLose()
     } else {
       this.countSinceLastWin++
-      messages = context.app.language.data.commandVengeanceDraw
+      messages = context.app.core.languageConfigurations.getCommandVengeanceDraw()
     }
 
     return messages[Math.floor(Math.random() * messages.length)]
