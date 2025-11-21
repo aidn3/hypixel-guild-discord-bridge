@@ -657,8 +657,8 @@ function migrateMinecraftConfig(
   }
 
   logger.info(`Successfully parsed old Minecraft configuration file. `)
-  logger.debug('Deleting Minecraft configuration legacy file...')
   postActions.push(() => {
+    logger.debug('Deleting Minecraft configuration legacy file...')
     fs.rmSync(path)
   })
 
