@@ -1,5 +1,4 @@
 {
-  "cache_comment": "Options added to 'log4js' library",
   "appenders": {
     "logs": {
       "type": "dateFile",
