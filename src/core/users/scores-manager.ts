@@ -5,7 +5,6 @@ import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
 import { ChannelType, InstanceType } from '../../common/application-event'
-import { ConfigManager } from '../../common/config-manager'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import type { SqliteManager } from '../../common/sqlite-manager'
@@ -15,9 +14,9 @@ import Duration from '../../utility/duration'
 import type { Core } from '../core'
 
 export default class ScoresManager extends SubInstance<Core, InstanceType.Core, void> {
-  private static readonly DeleteMemberOlderThan = 365
-  private static readonly DeleteMessagesOlderThan = 365
-  private static readonly LeniencyTimeSeconds = 5 * 60
+  public static readonly DeleteMembersOlderThan = Duration.years(1)
+  public static readonly DeleteMessagesOlderThan = Duration.years(1)
+  public static readonly LeniencyTime = Duration.minutes(5)
 
   private static readonly InstantInterval = 60 * 1000
   private static readonly FetchMembersEvery = 50 * 1000
@@ -31,7 +30,6 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
   private lastUpdatePointsAlltime = -1
 
   private readonly queue = new PromiseQueue(1)
-  readonly config: ConfigManager<ScoreManagerConfig>
   private readonly database: ScoreDatabase
 
   constructor(
@@ -43,18 +41,11 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
     sqliteManager: SqliteManager
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = new ConfigManager(application, logger, application.getConfigFilePath('scores-manager.json'), {
-      deleteMessagesOlderThan: ScoresManager.DeleteMessagesOlderThan,
-      deleteMembersOlderThan: ScoresManager.DeleteMemberOlderThan,
-      leniencyTimeSeconds: ScoresManager.LeniencyTimeSeconds,
-
-      minecraftBotUuids: []
-    })
 
     this.database = new ScoreDatabase(this, sqliteManager)
 
     this.application.on('minecraftSelfBroadcast', (event) => {
-      this.addBotUuid(event.uuid)
+      this.database.addBotUuid(event.uuid)
     })
 
     this.application.on('chat', (event) => {
@@ -110,13 +101,13 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
 
   public getMessages30Days(): TotalMessagesLeaderboard[] {
     const currentDate = Date.now()
-    const ignores = this.config.data.minecraftBotUuids
+    const ignores = this.database.getBotUuids()
     return this.database.getGuildMessagesLeaderboard(ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate)
   }
 
   public getMinecraftMessages30Days(limit: number): { top: MessagesLeaderboard[]; total: number } {
     const currentDate = Date.now()
-    const ignores = this.config.data.minecraftBotUuids
+    const ignores = this.database.getBotUuids()
     return this.database.getMinecraftMessages(ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate, limit)
   }
 
@@ -127,7 +118,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
 
   public getOnline30Days(): MemberLeaderboard[] {
     const currentDate = Date.now()
-    const ignores = this.config.data.minecraftBotUuids
+    const ignores = this.database.getBotUuids()
     return this.database.getTime('OnlineMembers', ignores, currentDate - 30 * 24 * 60 * 60 * 1000, currentDate)
   }
 
@@ -167,7 +158,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
   }
 
   private normalizePoints(points: Map<string, ActivityTotalPoints>): ActivityTotalPoints[] {
-    for (const minecraftBotUuid of this.config.data.minecraftBotUuids) {
+    for (const minecraftBotUuid of this.database.getBotUuids()) {
       points.delete(minecraftBotUuid)
     }
     for (const minecraftBot of this.application.minecraftManager.getMinecraftBots()) {
@@ -181,13 +172,6 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
     leaderboard.sort((a, b) => b.total - a.total)
 
     return leaderboard
-  }
-
-  private addBotUuid(uuid: string): void {
-    if (this.config.data.minecraftBotUuids.includes(uuid)) return
-
-    this.config.data.minecraftBotUuids.push(uuid)
-    this.config.markDirty()
   }
 
   private async fetchGuilds(): Promise<void> {
@@ -204,7 +188,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
           uuid: member.uuid,
           fromTimestamp: member.joinedAtTimestamp,
           toTimestamp: currentTimestamp,
-          leniencyMilliseconds: this.config.data.leniencyTimeSeconds * 1000
+          leniencyMilliseconds: ScoresManager.LeniencyTime.toMilliseconds()
         })
       }
       this.logger.trace(`Supplementing ${timeframes.length} guild members timeframe data for bot uuid ${botUuid}`)
@@ -215,14 +199,14 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
   private async fetchMembers(): Promise<void> {
     const instances = this.application.minecraftManager.getAllInstances()
     for (const bot of this.application.minecraftManager.getMinecraftBots()) {
-      this.addBotUuid(bot.uuid)
+      this.database.addBotUuid(bot.uuid)
     }
 
     const tasks: Promise<unknown>[] = []
 
     for (const instance of instances) {
       const botUuid = instance.uuid()
-      if (botUuid !== undefined) this.addBotUuid(botUuid)
+      if (botUuid !== undefined) this.database.addBotUuid(botUuid)
 
       if (instance.currentStatus() === Status.Connected) {
         const onlineTask = this.application.core.guildManager
@@ -232,12 +216,11 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
           .then((profiles) => {
             const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
             const currentTime = Date.now()
-            const leniency = this.getLeniency()
             const entries: Timeframe[] = uuids.map((uuid) => ({
               uuid: uuid,
               fromTimestamp: currentTime,
               toTimestamp: currentTime,
-              leniencyMilliseconds: leniency
+              leniencyMilliseconds: ScoresManager.LeniencyTime.toMilliseconds()
             }))
             this.database.addOnlineMembers(entries)
           })
@@ -250,12 +233,11 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
           .then((profiles) => {
             const uuids = [...profiles.values()].filter((uuid) => uuid !== undefined)
             const currentTime = Date.now()
-            const leniency = this.getLeniency()
             const entries: Timeframe[] = uuids.map((uuid) => ({
               uuid: uuid,
               fromTimestamp: currentTime,
               toTimestamp: currentTime,
-              leniencyMilliseconds: leniency
+              leniencyMilliseconds: ScoresManager.LeniencyTime.toMilliseconds()
             }))
             this.database.addMembers(entries)
           })
@@ -300,10 +282,6 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
     const currentTime = Date.now()
     const remaining = currentTime % ScoresManager.InstantInterval
     return currentTime - remaining
-  }
-
-  private getLeniency(): number {
-    return this.config.data.leniencyTimeSeconds * 1000
   }
 }
 
@@ -773,10 +751,24 @@ class ScoreDatabase {
     return transaction()
   }
 
+  public getBotUuids(): string[] {
+    return this.sqliteManager.getDatabase().prepare('SELECT uuid FROM "minecraftBots"').pluck(true).all() as string[]
+  }
+
+  public addBotUuid(uuid: string): void {
+    const insert = this.sqliteManager
+      .getDatabase()
+      .prepare(
+        'INSERT INTO "minecraftBots" (uuid) VALUES (?) ON CONFLICT(uuid) DO UPDATE SET updatedAt = (unixepoch())'
+      )
+
+    insert.run(uuid)
+  }
+
   public clean(): number {
     const currentTime = Math.floor(Date.now() / 1000)
-    const oldestMessageTimestamp = currentTime - this.scoresManager.config.data.deleteMessagesOlderThan * 24 * 60 * 60
-    const oldestMemberTimestamp = currentTime - this.scoresManager.config.data.deleteMembersOlderThan * 24 * 60 * 60
+    const oldestMessageTimestamp = currentTime - ScoresManager.DeleteMessagesOlderThan.toSeconds()
+    const oldestMemberTimestamp = currentTime - ScoresManager.DeleteMembersOlderThan.toSeconds()
 
     const database = this.sqliteManager.getDatabase()
 
@@ -813,14 +805,6 @@ interface Timeframe {
   fromTimestamp: number
   toTimestamp: number
   leniencyMilliseconds: number
-}
-
-interface ScoreManagerConfig {
-  deleteMessagesOlderThan: number
-  deleteMembersOlderThan: number
-  leniencyTimeSeconds: number
-
-  minecraftBotUuids: string[]
 }
 
 interface MessagesLeaderboard {

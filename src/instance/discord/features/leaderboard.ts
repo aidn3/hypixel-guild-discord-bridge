@@ -7,22 +7,20 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
 import type { InstanceType } from '../../../common/application-event.js'
-import { ConfigManager } from '../../../common/config-manager.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { User } from '../../../common/user'
+import type { LeaderboardEntry } from '../../../core/discord/discord-leaderboards'
+import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance.js'
 
 export default class Leaderboard extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly EntriesPerPage = 10
-
-  private static readonly CheckUpdateEvery = 60 * 1000
-
-  private static readonly DefaultUpdateEveryMinutes = 30
-  private readonly config: ConfigManager<LeaderboardConfig>
+  private static readonly CheckUpdateEvery = Duration.minutes(1)
+  private static readonly UpdateEvery = Duration.minutes(30)
 
   constructor(
     application: Application,
@@ -33,40 +31,9 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    this.config = new ConfigManager(application, logger, application.getConfigFilePath('discord-leaderboards.json'), {
-      updateEveryMinutes: Leaderboard.DefaultUpdateEveryMinutes,
-      messages30Days: [],
-      online30Days: [],
-      points30Days: []
-    })
-
-    // Migrate data to include guildId
-    const entries = [
-      ...this.config.data.messages30Days,
-      ...this.config.data.online30Days,
-      ...this.config.data.points30Days
-    ]
-    for (const entry of entries) {
-      if (!('guildId' in entry)) {
-        /*
-         * commented out log message because "undefined" is never saved in ConfigManager (aka serialized JSON objects)
-         * so the log message is repeated nonstop. This is left here for future migration outside serialized JSON objects.
-         */
-        // this.logger.debug(`Migrating leaderboard to new format with guildId: ${JSON.stringify(entry)}`)
-        // this.config.markDirty()
-
-        // @ts-expect-error guildId not exist indeed, but we are forcefully adding it.
-        entry.guildId = undefined
-      }
-    }
-
     setInterval(() => {
       void this.updateLeaderboards().catch(this.errorHandler.promiseCatch('updating the leaderboards'))
-    }, Leaderboard.CheckUpdateEvery)
-  }
-
-  public getConfig(): ConfigManager<LeaderboardConfig> {
-    return this.config
+    }, Leaderboard.CheckUpdateEvery.toMilliseconds())
   }
 
   private async updateLeaderboards(): Promise<void> {
@@ -75,55 +42,86 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     const client = this.clientInstance.client
     assert.ok(client.isReady())
 
-    await this.updateLeaderboard(client, this.config.data.messages30Days, (options) => this.getMessage30Days(options))
-    await this.updateLeaderboard(client, this.config.data.online30Days, (options) => this.getOnline30Days(options))
-    await this.updateLeaderboard(client, this.config.data.points30Days, (options) => this.getPoints30Days(options))
-  }
+    const DefaultOptions = { addFooter: false, addLastUpdateAt: true, page: 0, user: undefined }
 
-  private async updateLeaderboard(
-    client: Client<true>,
-    entries: LeaderboardEntry[],
-    generate: (entry: LeaderboardOptions) => Promise<{ embed: APIEmbed; totalPages: number }>
-  ): Promise<void> {
-    let cachedEmbed: APIEmbed | undefined = undefined
-    for (let index = 0; index < entries.length; index++) {
-      const entry = entries[index]
+    const entries = this.application.core.discordLeaderboards.getAll()
+    const toDelete: string[] = []
+    const toUpdate: { messageId: string; updatedAt: number }[] = []
+    const cache = new Map<LeaderboardEntry['type'], APIEmbed>()
 
-      if (entry.lastUpdate + this.config.data.updateEveryMinutes * 60 * 1000 > Date.now()) continue
+    for (const entry of entries) {
+      if (entry.updatedAt + Leaderboard.UpdateEvery.toMilliseconds() > Date.now()) continue
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        cachedEmbed =
-          cachedEmbed ??
-          (await generate({
-            addFooter: false,
-            addLastUpdateAt: true,
-            page: 0,
-            guildId: entry.guildId,
-            user: undefined
-          }).then((leaderboard) => leaderboard.embed))
+        let cachedEmbed: APIEmbed | undefined
+        switch (entry.type) {
+          case 'messages30Days': {
+            cachedEmbed = cache.get('messages30Days')
+            cachedEmbed ??= await this.getMessage30Days({ ...DefaultOptions, guildId: entry.guildId }).then(
+              (response) => response.embed
+            )
+            break
+          }
+
+          case 'online30Days': {
+            cachedEmbed = cache.get('online30Days')
+            cachedEmbed ??= await this.getOnline30Days({ ...DefaultOptions, guildId: entry.guildId }).then(
+              (response) => response.embed
+            )
+            break
+          }
+          case 'points30Days': {
+            cachedEmbed = cache.get('points30Days')
+            cachedEmbed ??= await this.getPoints30Days({ ...DefaultOptions, guildId: entry.guildId }).then(
+              (response) => response.embed
+            )
+            break
+          }
+          default: {
+            // entry.type is 'never' but that is why we are checking
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+            this.logger.warn('Unknown Discord leaderboard type=' + entry.type + '. Skipping it...')
+            continue
+          }
+        }
         assert.ok(cachedEmbed !== undefined)
 
-        const shouldKeep = await this.update(client, entry, cachedEmbed)
-        if (!shouldKeep) {
-          entries.splice(index, 1)
-          this.config.markDirty()
-          index--
+        const { keep, updated } = await this.update(client, entry, cachedEmbed)
+        if (!keep) {
+          toDelete.push(entry.messageId)
+        }
+        if (updated) {
+          toUpdate.push({ messageId: entry.messageId, updatedAt: Date.now() })
         }
       } catch (error: unknown) {
         this.logger.error(error)
       }
     }
+
+    if (toDelete.length > 0) {
+      this.application.core.discordLeaderboards.remove(toDelete)
+    }
+    if (toUpdate.length > 0) {
+      this.application.core.discordLeaderboards.updateTime(toUpdate)
+    }
   }
 
-  private async update(client: Client, entry: LeaderboardEntry, embed: APIEmbed): Promise<boolean> {
+  private async update(
+    client: Client,
+    entry: LeaderboardEntry,
+    embed: APIEmbed
+  ): Promise<{
+    keep: boolean
+    updated: boolean
+  }> {
     try {
       const channel = await client.channels.fetch(entry.channelId)
       assert.ok(channel?.isSendable())
 
       const message = await channel.messages.fetch(entry.messageId)
       await message.edit({ embeds: [embed] })
-      entry.lastUpdate = Date.now()
+      return { keep: true, updated: true }
     } catch (error: unknown) {
       if (error instanceof DiscordAPIError) {
         // https://discord.com/developers/docs/topics/opcodes-and-status-codes
@@ -131,25 +129,26 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
           case 10_003: {
             this.logger.warn(`Could not update leaderboard (deleted channel): ${JSON.stringify(entry)}`)
             this.logger.warn('This leaderboard will be dropped.')
-            return false
+            return { keep: false, updated: false }
           }
           case 10_008: {
             this.logger.warn(`Could not update leaderboard (deleted message): ${JSON.stringify(entry)}`)
             this.logger.warn('This leaderboard will be dropped.')
-            return false
+            return { keep: false, updated: false }
           }
           case 50_001: {
             this.logger.error(
               `Application does not have permission to access the leaderboard: ${JSON.stringify(entry)}`
             )
-            return true
+            return { keep: true, updated: false }
           }
           // No default
         }
       }
-    }
 
-    return true
+      this.logger.error(error)
+      return { keep: true, updated: false }
+    }
   }
 
   public async getMessage30Days(option: LeaderboardOptions): Promise<{
@@ -379,20 +378,6 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     }
     return ':four_leaf_clover:'
   }
-}
-
-export interface LeaderboardConfig {
-  updateEveryMinutes: number
-  messages30Days: LeaderboardEntry[]
-  online30Days: LeaderboardEntry[]
-  points30Days: LeaderboardEntry[]
-}
-
-export interface LeaderboardEntry {
-  lastUpdate: number
-  channelId: string
-  messageId: string
-  guildId: string | undefined
 }
 
 interface LeaderboardOptions {

@@ -55,7 +55,7 @@ export default class Mute extends ChatCommandHandler {
       `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     )
 
-    const messages = context.app.language.data.commandMuteGame
+    const messages = context.app.core.languageConfigurations.getCommandMuteGame()
     return messages[Math.floor(Math.random() * messages.length)]
       .replaceAll('{username}', context.username)
       .replaceAll('{target}', selectedUsername)

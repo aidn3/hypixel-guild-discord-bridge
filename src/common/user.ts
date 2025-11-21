@@ -4,8 +4,8 @@ import assert from 'node:assert'
 import type { Guild } from 'discord.js'
 
 import type Application from '../application'
-import type { ModerationConfig } from '../core/core'
 import type { CommandsHeat, HeatResult, HeatType } from '../core/moderation/commands-heat'
+import type { ModerationConfigurations } from '../core/moderation/moderation-configurations'
 import type Punishments from '../core/moderation/punishments'
 import type { SavedPunishment } from '../core/moderation/punishments'
 import type Duration from '../utility/duration'
@@ -88,8 +88,8 @@ export class User {
 
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
-      const minecraftManager = this.application.minecraftManager
-      if (mojangProfile.name.toLowerCase() === minecraftManager.getConfig().data.adminUsername.toLowerCase()) {
+      const configurations = this.application.core.minecraftConfigurations
+      if (mojangProfile.name.toLowerCase() === configurations.getAdminUsername().toLowerCase()) {
         return Permission.Admin
       }
     }
@@ -111,14 +111,14 @@ export class User {
       }
       if (
         mojangProfile.name.toLowerCase() ===
-        this.application.minecraftManager.getConfig().data.adminUsername.toLowerCase()
+        this.application.core.minecraftConfigurations.getAdminUsername().toLowerCase()
       ) {
         return true
       }
       if (
-        this.context.moderation.immuneMojangPlayers.some(
-          (entry) => entry.toLowerCase() === mojangProfile.name.toLowerCase()
-        )
+        this.context.moderation
+          .getImmuneMojangPlayers()
+          .some((entry) => entry.toLowerCase() === mojangProfile.name.toLowerCase())
       ) {
         return true
       }
@@ -126,7 +126,7 @@ export class User {
 
     const discordProfile = this.discordProfile()
     // noinspection RedundantIfStatementJS
-    if (discordProfile !== undefined && this.context.moderation.immuneDiscordUsers.includes(discordProfile.id)) {
+    if (discordProfile !== undefined && this.context.moderation.getImmuneDiscordUsers().includes(discordProfile.id)) {
       return true
     }
 
@@ -348,5 +348,5 @@ export interface UserIdentifier {
 export interface ManagerContext {
   commandsHeat: CommandsHeat
   punishments: Punishments
-  moderation: DeepReadonly<ModerationConfig>
+  moderation: ModerationConfigurations
 }

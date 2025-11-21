@@ -11,7 +11,7 @@ export default class Toggled extends ChatCommandHandler {
   }
 
   handler(context: ChatCommandContext): string {
-    const disabledCommands = context.app.commandsInstance.getConfig().data.disabledCommands
+    const disabledCommands = context.app.core.commandsConfigurations.getDisabledCommands()
     if (disabledCommands.length === 0) {
       return `${context.username}, there are no disabled commands! Use ${context.commandPrefix}disable`
     }

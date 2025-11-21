@@ -15,12 +15,11 @@ import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { ApplicationLanguages } from '../../../language-config'
+import { ApplicationLanguages } from '../../../core/language-configurations'
+import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
+import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
+import Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout.js'
-// eslint-disable-next-line import/no-restricted-paths
-import type { ProxyConfig } from '../../minecraft/common/config.js'
-// eslint-disable-next-line import/no-restricted-paths
-import { ProxyProtocol } from '../../minecraft/common/config.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
 import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
@@ -67,7 +66,6 @@ export default {
         fetchMinecraftOptions(context.application),
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
-        fetchMetricsOptions(context.application),
         fetchCommandsOptions(context.application),
         fetchLanguageOptions(context.application)
       ]
@@ -79,7 +77,7 @@ export default {
 } satisfies DiscordCommandHandler
 
 function fetchGeneralOptions(application: Application): CategoryOption {
-  const generalConfig = application.generalConfig
+  const generalConfig = application.core.applicationConfigurations
 
   return {
     type: OptionType.Category,
@@ -90,20 +88,18 @@ function fetchGeneralOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: `Auto Restart ${Recommended}`,
         description: 'Schedule restarting every 24 hours.',
-        getOption: () => generalConfig.data.autoRestart,
+        getOption: () => generalConfig.getAutoRestart(),
         toggleOption: () => {
-          generalConfig.data.autoRestart = !generalConfig.data.autoRestart
-          generalConfig.markDirty()
+          generalConfig.setAutoRestart(!generalConfig.getAutoRestart())
         }
       },
       {
         type: OptionType.Boolean,
         name: `Add origin tag`,
         description: "Adds an origin tag to messages that show where it's coming from.",
-        getOption: () => generalConfig.data.originTag,
+        getOption: () => generalConfig.getOriginTag(),
         toggleOption: () => {
-          generalConfig.data.originTag = !generalConfig.data.originTag
-          generalConfig.markDirty()
+          generalConfig.setOriginTag(!generalConfig.getOriginTag())
         }
       }
     ]
@@ -111,7 +107,7 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 }
 
 function fetchModerationOptions(application: Application): CategoryOption {
-  const moderation = application.core.getModerationConfig()
+  const moderation = application.core.moderationConfiguration
 
   return {
     type: OptionType.Category,
@@ -126,10 +122,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: `Enable Heat Punishment ${Essential}`,
             description: 'Enable to set limits to the amount of actions staff can take before being blocked.',
-            getOption: () => moderation.data.heatPunishment,
+            getOption: () => moderation.getHeatPunishment(),
             toggleOption: () => {
-              moderation.data.heatPunishment = !moderation.data.heatPunishment
-              moderation.markDirty()
+              moderation.setHeatPunishment(!moderation.getHeatPunishment())
             }
           },
           {
@@ -139,10 +134,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
             min: 0,
             max: 100,
-            getOption: () => moderation.data.kicksPerDay,
+            getOption: () => moderation.getKicksPerDay(),
             setOption: (value) => {
-              moderation.data.kicksPerDay = value
-              moderation.markDirty()
+              moderation.setKicksPerDay(value)
             }
           },
           {
@@ -152,10 +146,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
 
             min: 0,
             max: 100,
-            getOption: () => moderation.data.mutesPerDay,
+            getOption: () => moderation.getMutesPerDay(),
             setOption: (value) => {
-              moderation.data.mutesPerDay = value
-              moderation.markDirty()
+              moderation.setMutesPerDay(value)
             }
           }
         ]
@@ -170,10 +163,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             name: 'Immune Discord Users',
             min: 0,
             max: 10,
-            getOption: () => moderation.data.immuneDiscordUsers,
+            getOption: () => moderation.getImmuneDiscordUsers(),
             setOption: (values) => {
-              moderation.data.immuneDiscordUsers = values
-              moderation.markDirty()
+              moderation.setImmuneDiscordUsers(values)
             }
           },
           {
@@ -182,10 +174,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             style: InputStyle.Short,
             min: 0,
             max: 10,
-            getOption: () => moderation.data.immuneMojangPlayers,
+            getOption: () => moderation.getImmuneMojangPlayers(),
             setOption: (values) => {
-              moderation.data.immuneMojangPlayers = values
-              moderation.markDirty()
+              moderation.setImmuneMojangPlayers(values)
             }
           }
         ]
@@ -198,10 +189,9 @@ function fetchModerationOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: `Profanity Filter ${Essential}`,
             description: 'Enable to filter and censor chat messages for profanity.',
-            getOption: () => moderation.data.profanityEnabled,
+            getOption: () => moderation.getProfanityEnabled(),
             toggleOption: () => {
-              moderation.data.profanityEnabled = !moderation.data.profanityEnabled
-              moderation.markDirty()
+              moderation.setProfanityEnabled(!moderation.getProfanityEnabled())
             }
           },
           {
@@ -217,8 +207,8 @@ function fetchModerationOptions(application: Application): CategoryOption {
 }
 
 function fetchQualityOptions(application: Application): CategoryOption {
-  const plugins = application.pluginsManager.getConfig()
-  const minecraft = application.minecraftManager.getConfig()
+  const plugins = application.core.applicationConfigurations
+  const minecraft = application.core.minecraftConfigurations
 
   return {
     type: OptionType.Category,
@@ -229,20 +219,18 @@ function fetchQualityOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: 'Darkauction Reminder',
         description: 'Send a reminder when a skyblock dark auction is starting.',
-        getOption: () => plugins.data.darkAuctionReminder,
+        getOption: () => plugins.getDarkAuctionReminder(),
         toggleOption: () => {
-          plugins.data.darkAuctionReminder = !plugins.data.darkAuctionReminder
-          plugins.markDirty()
+          plugins.setDarkAuctionReminder(!plugins.getDarkAuctionReminder())
         }
       },
       {
         type: OptionType.Boolean,
         name: 'Starfall Cult Reminder',
         description: 'Send a reminder when the skyblock starfall cult gathers.',
-        getOption: () => plugins.data.starfallCultReminder,
+        getOption: () => plugins.getStarfallCultReminder(),
         toggleOption: () => {
-          plugins.data.starfallCultReminder = !plugins.data.starfallCultReminder
-          plugins.markDirty()
+          plugins.setStarfallCultReminder(!plugins.getStarfallCultReminder())
         }
       },
       {
@@ -250,10 +238,9 @@ function fetchQualityOptions(application: Application): CategoryOption {
         name: 'Announce Player Muted',
         description:
           'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
-        getOption: () => minecraft.data.announceMutedPlayer,
+        getOption: () => minecraft.getAnnounceMutedPlayer(),
         toggleOption: () => {
-          minecraft.data.announceMutedPlayer = !minecraft.data.announceMutedPlayer
-          minecraft.markDirty()
+          minecraft.setAnnounceMutedPlayer(!minecraft.getAnnounceMutedPlayer())
         }
       },
       {
@@ -265,30 +252,27 @@ function fetchQualityOptions(application: Application): CategoryOption {
             type: OptionType.Boolean,
             name: 'Guild Join Reaction',
             description: 'Send a greeting message when a member joins the guild.',
-            getOption: () => minecraft.data.joinGuildReaction,
+            getOption: () => minecraft.getJoinGuildReaction(),
             toggleOption: () => {
-              minecraft.data.joinGuildReaction = !minecraft.data.joinGuildReaction
-              minecraft.markDirty()
+              minecraft.setJoinGuildReaction(!minecraft.getJoinGuildReaction())
             }
           },
           {
             type: OptionType.Boolean,
             name: 'Guild Leave Reaction',
             description: 'Send a reaction message when a member leaves the guild.',
-            getOption: () => minecraft.data.leaveGuildReaction,
+            getOption: () => minecraft.getLeaveGuildReaction(),
             toggleOption: () => {
-              minecraft.data.leaveGuildReaction = !minecraft.data.leaveGuildReaction
-              minecraft.markDirty()
+              minecraft.setLeaveGuildReaction(!minecraft.getLeaveGuildReaction())
             }
           },
           {
             type: OptionType.Boolean,
             name: 'Guild Kick Reaction',
             description: 'Send a reaction message when a member is kicked from the guild.',
-            getOption: () => minecraft.data.kickGuildReaction,
+            getOption: () => minecraft.getKickGuildReaction(),
             toggleOption: () => {
-              minecraft.data.kickGuildReaction = !minecraft.data.kickGuildReaction
-              minecraft.markDirty()
+              minecraft.setKickGuildReaction(!minecraft.getKickGuildReaction())
             }
           }
         ]
@@ -298,9 +282,8 @@ function fetchQualityOptions(application: Application): CategoryOption {
 }
 
 function fetchDiscordOptions(application: Application): CategoryOption {
-  const discord = application.discordInstance.getConfig()
-  const leaderboard = application.discordInstance.leaderboard.getConfig()
-  const deleterConfig = application.discordInstance.getDeleterConfig()
+  const discord = application.core.discordConfigurations
+  const deleterConfig = application.core.discordConfigurations
 
   return {
     type: OptionType.Category,
@@ -316,10 +299,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         min: 0,
         max: 5,
 
-        getOption: () => discord.data.publicChannelIds,
+        getOption: () => discord.getPublicChannelIds(),
         setOption: (values) => {
-          discord.data.publicChannelIds = values
-          discord.markDirty()
+          discord.setPublicChannelIds(values)
         }
       },
       {
@@ -327,20 +309,18 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         name: 'Always Reply',
         description:
           'Enable to always send a text reply instead of reactions when a problem occurs. E.g when a message is blocked',
-        getOption: () => discord.data.alwaysReplyReaction,
+        getOption: () => discord.getAlwaysReplyReaction(),
         toggleOption: () => {
-          discord.data.alwaysReplyReaction = !discord.data.alwaysReplyReaction
-          discord.markDirty()
+          discord.setAlwaysReplyReaction(!discord.getAlwaysReplyReaction())
         }
       },
       {
         type: OptionType.Boolean,
         name: 'Enforce Verification',
         description: 'Enable to always require verification via `/verify` to chat using the application.',
-        getOption: () => discord.data.enforceVerification,
+        getOption: () => discord.getEnforceVerification(),
         toggleOption: () => {
-          discord.data.enforceVerification = !discord.data.enforceVerification
-          discord.markDirty()
+          discord.setEnforceVerification(!discord.getEnforceVerification())
         }
       },
       {
@@ -348,35 +328,10 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         name: 'Minecraft Text Images',
         description:
           'Render chat messages the same way they are rendered in Minecraft in-game. **DOES NOT WORK ON WINDOWS OS.**',
-        getOption: () => discord.data.textToImage,
+        getOption: () => discord.getTextToImage(),
         toggleOption: () => {
-          discord.data.textToImage = !discord.data.textToImage
-          discord.markDirty()
+          discord.setTextToImage(!discord.getTextToImage())
         }
-      },
-      {
-        type: OptionType.Category,
-        name: 'Leaderboards',
-        description: 'How leaderboards are displayed.',
-        header:
-          '**These events are recommended for best user experience.**\n' +
-          'Do not turn off unless you know what you are doing.\n\n' +
-          CategoryLabel,
-        options: [
-          {
-            type: OptionType.Number,
-            name: `Update Frequency (In Minutes)`,
-            description:
-              'How frequent to update the displayed leaderboards. WARNING: Fast updates might introduce instability!',
-            min: 1,
-            max: 43_200,
-            getOption: () => leaderboard.data.updateEveryMinutes,
-            setOption: (value) => {
-              leaderboard.data.updateEveryMinutes = value
-              leaderboard.markDirty()
-            }
-          }
-        ]
       },
       {
         type: OptionType.Category,
@@ -392,10 +347,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             name: `Member Online ${Recommended}`,
             description:
               'Show a temporary message in the designated public discord channels when a guild member comes online.',
-            getOption: () => discord.data.guildOnline,
+            getOption: () => discord.getGuildOnline(),
             toggleOption: () => {
-              discord.data.guildOnline = !discord.data.guildOnline
-              discord.markDirty()
+              discord.setGuildOnline(!discord.getGuildOnline())
             }
           },
           {
@@ -403,10 +357,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             name: `Member Offline ${Recommended}`,
             description:
               'Show a temporary message in the designated public discord channels when a guild member goes offline.',
-            getOption: () => discord.data.guildOffline,
+            getOption: () => discord.getGuildOffline(),
             toggleOption: () => {
-              discord.data.guildOffline = !discord.data.guildOffline
-              discord.markDirty()
+              discord.setGuildOffline(!discord.getGuildOffline())
             }
           },
           {
@@ -415,10 +368,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             description: 'Temporary events are `Online` and `Offline` events.',
             min: 1,
             max: 43_200,
-            getOption: () => deleterConfig.data.expireSeconds,
+            getOption: () => deleterConfig.getDurationTemporarilyInteractions().toSeconds(),
             setOption: (value) => {
-              deleterConfig.data.expireSeconds = value
-              deleterConfig.markDirty()
+              deleterConfig.setDurationTemporarilyInteractions(Duration.seconds(value))
             }
           },
           {
@@ -427,10 +379,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             description: 'How many to keep in a channel before starting to delete the older ones.',
             min: 1,
             max: 1000,
-            getOption: () => deleterConfig.data.maxInteractions,
+            getOption: () => deleterConfig.getMaxTemporarilyInteractions(),
             setOption: (value) => {
-              deleterConfig.data.maxInteractions = value
-              deleterConfig.markDirty()
+              deleterConfig.setMaxTemporarilyInteractions(value)
             }
           }
         ]
@@ -450,10 +401,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.officerChannelIds,
+            getOption: () => discord.getOfficerChannelIds(),
             setOption: (values) => {
-              discord.data.officerChannelIds = values
-              discord.markDirty()
+              discord.setOfficerChannelIds(values)
             }
           },
           {
@@ -465,10 +415,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.loggerChannelIds,
+            getOption: () => discord.getLoggerChannelIds(),
             setOption: (values) => {
-              discord.data.loggerChannelIds = values
-              discord.markDirty()
+              discord.setLoggerChannelIds(values)
             }
           },
           {
@@ -480,10 +429,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.helperRoleIds,
+            getOption: () => discord.getHelperRoleIds(),
             setOption: (values) => {
-              discord.data.helperRoleIds = values
-              discord.markDirty()
+              discord.setHelperRoleIds(values)
             }
           },
           {
@@ -495,10 +443,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             min: 0,
             max: 5,
 
-            getOption: () => discord.data.officerRoleIds,
+            getOption: () => discord.getOfficerRoleIds(),
             setOption: (values) => {
-              discord.data.officerRoleIds = values
-              discord.markDirty()
+              discord.setOfficerRoleIds(values)
             }
           }
         ]
@@ -507,47 +454,9 @@ function fetchDiscordOptions(application: Application): CategoryOption {
   }
 }
 
-function fetchMetricsOptions(application: Application): CategoryOption {
-  const scoresManager = application.core.scoresManager.config
-
-  return {
-    type: OptionType.Category,
-    name: 'Metrics',
-    header: CategoryLabel,
-    options: [
-      {
-        type: OptionType.Number,
-        name: `Messages Persistence (In Days)`,
-        description:
-          'How long to keep records of members messages stats. WARNING: High persistence will increase storage usage and might introduce lag.',
-        min: 1,
-        max: 1068,
-        getOption: () => scoresManager.data.deleteMessagesOlderThan,
-        setOption: (value) => {
-          scoresManager.data.deleteMessagesOlderThan = value
-          scoresManager.markDirty()
-        }
-      },
-      {
-        type: OptionType.Number,
-        name: `Members Persistence (In Days)`,
-        description:
-          'How long to keep records of members being in the guild or online, etc. WARNING: High persistence will increase storage usage and might introduce lag.',
-        min: 1,
-        max: 1068,
-        getOption: () => scoresManager.data.deleteMembersOlderThan,
-        setOption: (value) => {
-          scoresManager.data.deleteMembersOlderThan = value
-          scoresManager.markDirty()
-        }
-      }
-    ]
-  }
-}
-
 function fetchCommandsOptions(application: Application): CategoryOption {
-  const minecraft = application.minecraftManager.getConfig()
-  const commands = application.commandsInstance.getConfig()
+  const minecraft = application.core.minecraftConfigurations
+  const commands = application.core.commandsConfigurations
 
   return {
     type: OptionType.Category,
@@ -558,10 +467,9 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Boolean,
         name: `Enable Chat Commands ${Recommended}`,
         description: 'Enable commands such as `!cata` and `!iq`',
-        getOption: () => commands.data.enabled,
+        getOption: () => commands.getCommandsEnabled(),
         toggleOption: () => {
-          commands.data.enabled = !commands.data.enabled
-          commands.markDirty()
+          commands.setCommandsEnabled(!commands.getCommandsEnabled())
         }
       },
       {
@@ -571,31 +479,32 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         style: InputStyle.Tiny,
         min: 1,
         max: 2, // to allow "b!" prefix for example at most
-        getOption: () => commands.data.chatPrefix,
+        getOption: () => commands.getChatPrefix(),
         setOption: (newValue) => {
-          commands.data.chatPrefix = newValue
-          commands.markDirty()
+          commands.setChatPrefix(newValue)
         }
       },
       {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Minecraft** category.',
-        getOption: () => minecraft.data.adminUsername
+        getOption: () => minecraft.getAdminUsername()
       },
       {
         type: OptionType.Label,
         name: 'Disabled Chat Commands',
         description: 'This can only be changed via `!toggle`.',
-        getOption: () =>
-          commands.data.disabledCommands.length === 0 ? 'none' : commands.data.disabledCommands.join(', ')
+        getOption: () => {
+          const disabledCommands = commands.getDisabledCommands()
+          return disabledCommands.length === 0 ? 'none' : disabledCommands.join(', ')
+        }
       }
     ]
   }
 }
 
 function fetchLanguageOptions(application: Application): CategoryOption {
-  const language = application.language
+  const language = application.core.languageConfigurations
 
   return {
     type: OptionType.Category,
@@ -611,7 +520,7 @@ function fetchLanguageOptions(application: Application): CategoryOption {
           '**This menu will stay in the default language.**',
         min: 1,
         max: 1,
-        getOption: () => [language.data.language],
+        getOption: () => [language.getLanguage()],
         setOption: (values) => {
           const selected = values[0] as ApplicationLanguages
           assert.notStrictEqual(selected, undefined)
@@ -634,10 +543,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
             style: InputStyle.Long,
             min: 2,
             max: 150,
-            getOption: () => language.data.announceMutedPlayer,
+            getOption: () => language.getAnnounceMutedPlayer(),
             setOption: (value) => {
-              language.data.announceMutedPlayer = value
-              language.markDirty()
+              language.setAnnounceMutedPlayer(value)
             }
           },
           {
@@ -651,10 +559,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 2,
                 max: 150,
-                getOption: () => language.data.darkAuctionReminder,
+                getOption: () => language.getDarkAuctionReminder(),
                 setOption: (value) => {
-                  language.data.darkAuctionReminder = value
-                  language.markDirty()
+                  language.setDarkAuctionReminder(value)
                 }
               },
               {
@@ -664,10 +571,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 2,
                 max: 150,
-                getOption: () => language.data.starfallReminder,
+                getOption: () => language.getStarfallReminder(),
                 setOption: (value) => {
-                  language.data.starfallReminder = value
-                  language.markDirty()
+                  language.setStarfallReminder(value)
                 }
               }
             ]
@@ -684,10 +590,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Short,
                 min: 0,
                 max: 100,
-                getOption: () => language.data.commandMuteGame,
+                getOption: () => language.getCommandMuteGame(),
                 setOption: (values) => {
-                  language.data.commandMuteGame = values
-                  language.markDirty()
+                  language.setCommandMuteGame(values)
                 }
               },
               {
@@ -702,10 +607,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandRouletteWin,
+                    getOption: () => language.getCommandRouletteWin(),
                     setOption: (values) => {
-                      language.data.commandRouletteWin = values
-                      language.markDirty()
+                      language.setCommandRouletteWin(values)
                     }
                   },
                   {
@@ -715,10 +619,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandRouletteLose,
+                    getOption: () => language.getCommandRouletteLose(),
                     setOption: (values) => {
-                      language.data.commandRouletteLose = values
-                      language.markDirty()
+                      language.setCommandRouletteLose(values)
                     }
                   }
                 ]
@@ -735,10 +638,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandVengeanceWin,
+                    getOption: () => language.getCommandVengeanceWin(),
                     setOption: (values) => {
-                      language.data.commandVengeanceWin = values
-                      language.markDirty()
+                      language.setCommandVengeanceWin(values)
                     }
                   },
                   {
@@ -748,10 +650,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandVengeanceDraw,
+                    getOption: () => language.getCommandVengeanceDraw(),
                     setOption: (values) => {
-                      language.data.commandVengeanceDraw = values
-                      language.markDirty()
+                      language.setCommandVengeanceDraw(values)
                     }
                   },
                   {
@@ -761,10 +662,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                     style: InputStyle.Short,
                     min: 0,
                     max: 100,
-                    getOption: () => language.data.commandVengeanceLose,
+                    getOption: () => language.getCommandVengeanceLose(),
                     setOption: (values) => {
-                      language.data.commandVengeanceLose = values
-                      language.markDirty()
+                      language.setCommandVengeanceLose(values)
                     }
                   }
                 ]
@@ -783,10 +683,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 0,
                 max: 20,
-                getOption: () => language.data.guildJoinReaction,
+                getOption: () => language.getGuildJoinReaction(),
                 setOption: (values) => {
-                  language.data.guildJoinReaction = values
-                  language.markDirty()
+                  language.setGuildJoinReaction(values)
                 }
               },
               {
@@ -796,10 +695,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 0,
                 max: 20,
-                getOption: () => language.data.guildLeaveReaction,
+                getOption: () => language.getGuildLeaveReaction(),
                 setOption: (values) => {
-                  language.data.guildLeaveReaction = values
-                  language.markDirty()
+                  language.setGuildLeaveReaction(values)
                 }
               },
               {
@@ -809,10 +707,9 @@ function fetchLanguageOptions(application: Application): CategoryOption {
                 style: InputStyle.Long,
                 min: 0,
                 max: 20,
-                getOption: () => language.data.guildKickReaction,
+                getOption: () => language.getGuildKickReaction(),
                 setOption: (values) => {
-                  language.data.guildKickReaction = values
-                  language.markDirty()
+                  language.setGuildKickReaction(values)
                 }
               }
             ]
@@ -824,8 +721,7 @@ function fetchLanguageOptions(application: Application): CategoryOption {
 }
 
 function fetchMinecraftOptions(application: Application): CategoryOption {
-  const minecraft = application.minecraftManager.getConfig()
-  const sanitizer = application.minecraftManager.sanitizer.getConfig()
+  const minecraft = application.core.minecraftConfigurations
 
   return {
     type: OptionType.Category,
@@ -847,10 +743,9 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
             max: 16,
             min: 2,
 
-            getOption: () => minecraft.data.adminUsername,
+            getOption: () => minecraft.getAdminUsername(),
             setOption: (username) => {
-              minecraft.data.adminUsername = username
-              minecraft.markDirty()
+              minecraft.setAdminUsername(username)
             }
           }
         ]
@@ -871,20 +766,18 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
                 name: 'STuF',
                 description:
                   'Bypass Hypixel restriction on hyperlinks using STuF encoding. Only use if you know what STuF is!',
-                getOption: () => sanitizer.data.hideLinksViaStuf,
+                getOption: () => minecraft.getHideLinksViaStuf(),
                 toggleOption: () => {
-                  sanitizer.data.hideLinksViaStuf = !sanitizer.data.hideLinksViaStuf
-                  sanitizer.markDirty()
+                  minecraft.setHideLinksViaStuf(!minecraft.getHideLinksViaStuf())
                 }
               },
               {
                 type: OptionType.Boolean,
                 name: `Resolve Links ${Recommended}`,
                 description: 'Try resolving the link content like `(video)` instead of showing generic `(link)`. ',
-                getOption: () => sanitizer.data.resolveHideLinks,
+                getOption: () => minecraft.getResolveHideLinks(),
                 toggleOption: () => {
-                  sanitizer.data.resolveHideLinks = !sanitizer.data.resolveHideLinks
-                  sanitizer.markDirty()
+                  minecraft.setResolveHideLinks(!minecraft.getResolveHideLinks())
                 }
               }
             ]
@@ -899,22 +792,9 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
                 name: `Enable Antispam ${Essential}`,
                 description:
                   'Use techniques to avoid hypixel blocking a message for "`You cannot say the same message twice!`".',
-                getOption: () => sanitizer.data.antispamEnabled,
+                getOption: () => minecraft.getAntispamEnabled(),
                 toggleOption: () => {
-                  sanitizer.data.antispamEnabled = !sanitizer.data.antispamEnabled
-                  sanitizer.markDirty()
-                }
-              },
-              {
-                type: OptionType.Number,
-                name: 'Max Additions',
-                description: 'How many letters to add at most to combat anti spam.',
-                min: 1,
-                max: 100,
-                getOption: () => sanitizer.data.antispamMaxAdditions,
-                setOption: (value) => {
-                  sanitizer.data.antispamMaxAdditions = value
-                  sanitizer.markDirty()
+                  minecraft.setAntispamEnabled(!minecraft.getAntispamEnabled())
                 }
               }
             ]
@@ -963,7 +843,8 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
 }
 
 async function minecraftInstancesStatus(application: Application, interaction: ButtonInteraction): Promise<boolean> {
-  const config = application.minecraftManager.getConfig().data
+  const config = application.core.minecraftSessions
+  const savedInstances = config.getAllInstances()
   const instances = application.minecraftManager.getAllInstances()
 
   const embed: APIEmbed = {
@@ -976,7 +857,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   assert.ok(embed.fields)
 
   const registeredInstances = instances.filter((instance) =>
-    config.instances.some((configInstance) => instance.instanceName === configInstance.name)
+    savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
   )
   embed.fields.push({
     name: 'Registered Instances',
@@ -989,7 +870,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   } satisfies APIEmbedField)
 
   const dynamicInstances = instances.filter(
-    (instance) => !config.instances.some((configInstance) => instance.instanceName === configInstance.name)
+    (instance) => !savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
   )
   if (dynamicInstances.length > 0) {
     embed.fields.push({
@@ -1000,7 +881,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
     } satisfies APIEmbedField)
   }
 
-  const unavailableInstances = config.instances
+  const unavailableInstances = savedInstances
     .map((instance) => instance.name)
     .filter((configName) => !instances.some((instance) => instance.instanceName === configName))
   if (unavailableInstances.length > 0) {
@@ -1186,12 +1067,7 @@ async function minecraftInstanceAdd(
     embed.description += `- Creating a fresh Minecraft instance\n`
     await application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
 
-    const config = application.minecraftManager.getConfig()
-    config.data.instances.push({
-      name: instanceName,
-      proxy: proxy
-    })
-    config.save()
+    application.core.minecraftSessions.addInstance({ name: instanceName, proxy: proxy })
     embed.description += `- Instance has been added to settings for future reboot\n`
   } catch (error: unknown) {
     embed.description += `- ERROR: Failed to add minecraft instance. ${errorMessage(error)}\n`
@@ -1328,7 +1204,7 @@ function parseSocks5(url: string): ProxyConfig {
     throw new Error('invalid proxy type. Only "socks5" is supported.')
   }
 
-  return { host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
+  return { id: 0, host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
 }
 
 function errorMessage(error: unknown): string {

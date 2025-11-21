@@ -2,20 +2,19 @@ import assert from 'node:assert'
 
 import BadWords from 'bad-words'
 
-import type { ConfigManager } from '../../common/config-manager'
-import type { ModerationConfig } from '../core'
+import type { ModerationConfigurations } from './moderation-configurations'
 
 export class Profanity {
   public profanityFilter: BadWords.BadWords
 
-  constructor(private readonly config: ConfigManager<ModerationConfig>) {
+  constructor(private readonly config: ModerationConfigurations) {
     this.profanityFilter = this.createFilter()
   }
 
   private createFilter(): BadWords.BadWords {
     const profanityFilter = new BadWords()
-    profanityFilter.removeWords(...this.config.data.profanityWhitelist)
-    profanityFilter.addWords(...this.config.data.profanityBlacklist)
+    profanityFilter.removeWords(...this.config.getProfanityWhitelist())
+    profanityFilter.addWords(...this.config.getProfanityBlacklist())
 
     return profanityFilter
   }
@@ -25,7 +24,7 @@ export class Profanity {
   }
 
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
-    if (!this.config.data.profanityEnabled)
+    if (!this.config.getProfanityEnabled())
       return {
         filteredMessage: message,
         changed: false

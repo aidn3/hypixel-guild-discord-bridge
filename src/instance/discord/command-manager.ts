@@ -11,7 +11,6 @@ import type Application from '../../application.js'
 import { ChannelType, Color, InstanceType, Permission } from '../../common/application-event.js'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../common/commands.js'
 import { CommandScope, OptionToAddMinecraftInstances } from '../../common/commands.js'
-import type { ConfigManager } from '../../common/config-manager.js'
 import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -41,24 +40,20 @@ import SetrankCommand from './commands/setrank.js'
 import SettingsCommand from './commands/settings.js'
 import UnlinkCommand from './commands/unlink.js'
 import VerificationCommand from './commands/verification.js'
-import type { DiscordConfig } from './common/discord-config.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
-  private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    config: ConfigManager<DiscordConfig>,
     eventHelper: EventHelper<InstanceType.Discord>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.config = config
     this.addDefaultCommands()
   }
 
@@ -327,9 +322,9 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
   }
 
   private getChannelType(channelId: string): ChannelType | undefined {
-    const config = this.config.data
-    if (config.publicChannelIds.includes(channelId)) return ChannelType.Public
-    if (config.officerChannelIds.includes(channelId)) return ChannelType.Officer
+    const config = this.application.core.discordConfigurations
+    if (config.getPublicChannelIds().includes(channelId)) return ChannelType.Public
+    if (config.getOfficerChannelIds().includes(channelId)) return ChannelType.Officer
     return undefined
   }
 

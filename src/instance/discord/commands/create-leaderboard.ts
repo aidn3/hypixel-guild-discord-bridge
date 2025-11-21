@@ -5,7 +5,6 @@ import { MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import type { LeaderboardEntry } from '../features/leaderboard'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
 export const Online30Days = { name: 'Top Online Member (30 days)', value: 'online30Days' }
@@ -33,7 +32,6 @@ export default {
     assert.ok(channel.isSendable(), 'not text based channel?')
     await context.interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-    const config = context.application.discordInstance.leaderboard.getConfig()
     const type = context.interaction.options.getString('type', true)
     const guildName = context.interaction.options.getString('guild-name') ?? undefined
     let guildId: string | undefined
@@ -49,35 +47,42 @@ export default {
 
     const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guildId: guildId, user: undefined }
     let leaderboard: { embed: APIEmbed; totalPages: number } | undefined
-    let entries: LeaderboardEntry[] | undefined
+    let leaderboardType: 'messages30Days' | 'online30Days' | 'points30Days' | undefined
 
     switch (type) {
       case Messages30Days.value: {
         leaderboard = await context.application.discordInstance.leaderboard.getMessage30Days(parameters)
-        entries = config.data.messages30Days
+        leaderboardType = 'messages30Days'
         break
       }
 
       case Online30Days.value: {
         leaderboard = await context.application.discordInstance.leaderboard.getOnline30Days(parameters)
-        entries = config.data.online30Days
+        leaderboardType = 'online30Days'
         break
       }
 
       case Points30Days.value: {
         leaderboard = await context.application.discordInstance.leaderboard.getPoints30Days(parameters)
-        entries = config.data.points30Days
+        leaderboardType = 'points30Days'
+        break
       }
-    }
 
-    if (leaderboard === undefined || entries === undefined) {
-      throw new Error(`leaderboard type not found: ${type}`)
+      default: {
+        throw new Error(`leaderboard type not found: ${type}`)
+      }
     }
 
     const messageId = await send(context.interaction, channel, leaderboard.embed)
     if (messageId === undefined) return
-    entries.push({ messageId: messageId, channelId: channel.id, lastUpdate: Date.now(), guildId: guildId })
-    config.markDirty()
+    context.application.core.discordLeaderboards.addOrSet({
+      messageId: messageId,
+      channelId: channel.id,
+      type: leaderboardType,
+      guildId: guildId,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    })
   }
 } satisfies DiscordCommandHandler
 

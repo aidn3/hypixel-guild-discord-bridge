@@ -2,7 +2,6 @@ import assert from 'node:assert'
 
 import type Application from '../application'
 import { InstanceType } from '../common/application-event'
-import { ConfigManager } from '../common/config-manager'
 import { Instance, InternalInstancePrefix } from '../common/instance'
 import { SqliteManager } from '../common/sqlite-manager'
 import type {
@@ -16,8 +15,20 @@ import type {
 } from '../common/user'
 import { User } from '../common/user'
 
+import { ApplicationConfigurations } from './application-configurations'
+import { CommandsConfigurations } from './commands/commands-configurations'
+import { ConfigurationsManager } from './configurations'
+import { DiscordConfigurations } from './discord/discord-configurations'
+import { DiscordEmojis } from './discord/discord-emojis'
+import { DiscordLeaderboards } from './discord/discord-leaderboards'
+import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { initializeCoreDatabase } from './initialize-database'
+import { LanguageConfigurations } from './language-configurations'
+import { MinecraftAccounts } from './minecraft/minecraft-accounts'
+import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
+import { SessionsManager } from './minecraft/sessions-manager'
 import { CommandsHeat } from './moderation/commands-heat'
+import { ModerationConfigurations } from './moderation/moderation-configurations'
 import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
@@ -29,50 +40,70 @@ import ScoresManager from './users/scores-manager'
 import { Verification } from './users/verification'
 
 export class Core extends Instance<InstanceType.Core> {
+  // moderation
   private readonly commandsHeat: CommandsHeat
   private readonly profanity: Profanity
   private readonly punishments: Punishments
   private readonly enforcer: PunishmentsEnforcer
 
+  // users
   private readonly autoComplete: Autocomplete
   public readonly guildManager: GuildManager
   public readonly mojangApi: MojangApi
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
 
+  // discord
+  public readonly discordConfigurations: DiscordConfigurations
+  public readonly discordLeaderboards: DiscordLeaderboards
+  public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
+  public readonly discordEmojis: DiscordEmojis
+
+  // minecraft
+  public readonly minecraftConfigurations: MinecraftConfigurations
+  public readonly minecraftSessions: SessionsManager
+  public readonly moderationConfiguration: ModerationConfigurations
+  public readonly minecraftAccounts: MinecraftAccounts
+
+  public readonly applicationConfigurations: ApplicationConfigurations
+  public readonly languageConfigurations: LanguageConfigurations
+  public readonly commandsConfigurations: CommandsConfigurations
+
+  // database
   private readonly sqliteManager: SqliteManager
-  private readonly moderationConfig: ConfigManager<ModerationConfig>
+  private readonly configurationsManager: ConfigurationsManager
 
   public constructor(application: Application) {
     super(application, InternalInstancePrefix + 'core', InstanceType.Core)
 
-    this.moderationConfig = new ConfigManager(
-      application,
-      this.logger,
-      application.getConfigFilePath('moderation.json'),
-      {
-        heatPunishment: true,
-        mutesPerDay: 10,
-        kicksPerDay: 5,
-
-        immuneDiscordUsers: [],
-        immuneMojangPlayers: [],
-
-        profanityEnabled: true,
-        profanityWhitelist: ['sadist', 'hell', 'damn', 'god', 'shit', 'balls', 'retard'],
-        profanityBlacklist: []
-      }
-    )
-
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
-    initializeCoreDatabase(this.sqliteManager, sqliteName)
+    initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
+    this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
+
+    this.discordConfigurations = new DiscordConfigurations(this.configurationsManager)
+    this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
+    this.discordTemporarilyInteractions = new DiscordTemporarilyInteractions(
+      this.sqliteManager,
+      this.discordConfigurations
+    )
+    this.discordEmojis = new DiscordEmojis(this.sqliteManager)
+
+    this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
+    this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
+    this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
+
+    this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
+    this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
+    this.minecraftAccounts = new MinecraftAccounts(this.sqliteManager)
+
+    this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
 
-    this.profanity = new Profanity(this.moderationConfig)
+    this.profanity = new Profanity(this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
-    this.commandsHeat = new CommandsHeat(this.sqliteManager, application, this.moderationConfig, this.logger)
+    this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)
@@ -114,13 +145,6 @@ export class Core extends Instance<InstanceType.Core> {
 
   public async awaitReady(): Promise<void> {
     await this.punishments.ready
-  }
-
-  /**
-   * @internal Only used by the config managers
-   */
-  public getModerationConfig(): ConfigManager<ModerationConfig> {
-    return this.moderationConfig
   }
 
   /**
@@ -200,20 +224,7 @@ export class Core extends Instance<InstanceType.Core> {
     return {
       commandsHeat: this.commandsHeat,
       punishments: this.punishments,
-      moderation: this.moderationConfig.data
+      moderation: this.moderationConfiguration
     }
   }
-}
-
-export interface ModerationConfig {
-  heatPunishment: boolean
-  mutesPerDay: number
-  kicksPerDay: number
-
-  immuneDiscordUsers: string[]
-  immuneMojangPlayers: string[]
-
-  profanityEnabled: boolean
-  profanityWhitelist: string[]
-  profanityBlacklist: string[]
 }

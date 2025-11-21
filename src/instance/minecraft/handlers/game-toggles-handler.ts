@@ -1,6 +1,4 @@
 import assert from 'node:assert'
-import fs from 'node:fs'
-import path from 'node:path'
 
 import type { Logger } from 'log4js'
 import type { Client } from 'minecraft-protocol'
@@ -8,16 +6,14 @@ import type { Client } from 'minecraft-protocol'
 import type Application from '../../../application.js'
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { ChannelType, Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
-import { ConfigManager } from '../../../common/config-manager.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { GameToggleConfig } from '../../../core/minecraft/minecraft-accounts'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class GameTogglesHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
-  private readonly toggleDirectory: string
-
   /*
    Wait for client to be afk in the world before allowing the routine
    */
@@ -34,7 +30,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private prepared = false
   private sentCommands = 0
 
-  private config: ConfigManager<GameToggleConfig> | undefined
+  private config: GameToggleConfig | undefined
   private lastUuid: string | undefined = undefined
 
   constructor(
@@ -46,82 +42,89 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    this.toggleDirectory = this.application.getConfigFilePath('minecraft-toggles')
-    fs.mkdirSync(this.toggleDirectory, { recursive: true })
-
     setInterval(() => {
       if (!this.ready) return
-      this.sendToggles()
+
+      const uuid = this.clientInstance.uuid()
+      if (uuid === undefined) return
+
+      const config = this.getConfig(uuid)
+      this.sendToggles(config)
     }, GameTogglesHandler.ResendEveryMilliseconds)
 
     this.application.on('chat', (event) => {
       if (event.instanceName !== this.clientInstance.instanceName) return
-      assert.ok(this.config)
+
+      const uuid = this.clientInstance.uuid()
+      assert.ok(uuid !== undefined)
+      const config = this.getConfig(uuid)
 
       if (event.channelType === ChannelType.Public || event.channelType === ChannelType.Officer) {
-        this.config.data.guildChatEnabled = true
-        this.config.markDirty()
+        config.guildChatEnabled = true
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
     })
 
     this.application.on('minecraftChat', (event: MinecraftRawChatEvent) => {
       if (event.message.length === 0 || event.instanceName !== this.clientInstance.instanceName) return
-      if (this.config === undefined) {
+
+      const uuid = this.clientInstance.uuid()
+      if (uuid === undefined) {
         this.logger.warn("minecraftChat event was received while the handler isn't ready yet. Ignoring this event.")
         return
       }
+      const config = this.getConfig(uuid)
 
       if (event.message.startsWith('Your online status has been set to Online')) {
-        this.config.data.playerOnlineStatusEnabled = true
-        this.config.markDirty()
+        config.playerOnlineStatusEnabled = true
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
 
       if (event.message.startsWith('Enabled guild online mode!')) {
-        this.config.data.guildAllEnabled = false
-        this.config.markDirty()
+        config.guildAllEnabled = false
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
       if (event.message.startsWith('Disabled guild online mode!')) {
-        this.config.data.guildAllEnabled = true
-        this.config.markDirty()
+        config.guildAllEnabled = true
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
 
       if (event.message.startsWith('Enabled guild chat!')) {
-        this.config.data.guildChatEnabled = true
-        this.config.markDirty()
+        config.guildChatEnabled = true
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
       if (event.message.startsWith('Disabled guild chat!')) {
-        this.config.data.guildChatEnabled = false
-        this.config.markDirty()
+        config.guildChatEnabled = false
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
 
       if (event.message.startsWith('Enabled guild join/leave notifications!')) {
-        this.config.data.guildNotificationsEnabled = true
-        this.config.markDirty()
+        config.guildNotificationsEnabled = true
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
       if (event.message.startsWith('Disabled guild join/leave notifications!')) {
-        this.config.data.guildNotificationsEnabled = false
-        this.config.markDirty()
+        config.guildNotificationsEnabled = false
+        this.application.core.minecraftAccounts.set(uuid, config)
       }
     })
   }
 
-  private allPrepared(config: ConfigManager<GameToggleConfig>): boolean {
+  private allPrepared(config: GameToggleConfig): boolean {
     return (
-      config.data.playerOnlineStatusEnabled &&
-      config.data.guildAllEnabled &&
-      config.data.guildChatEnabled &&
-      config.data.guildNotificationsEnabled
+      config.playerOnlineStatusEnabled &&
+      config.guildAllEnabled &&
+      config.guildChatEnabled &&
+      config.guildNotificationsEnabled
     )
   }
 
-  private sendToggles(): void {
+  private sendToggles(config: GameToggleConfig): void {
     if (this.sentCommands > 0) {
       this.logger.warn('Commands are already queued for game-toggles-handler. Skipping this loop')
       return
     }
 
-    assert.ok(this.config)
-    if (!this.prepared && this.allPrepared(this.config)) {
+    if (!this.prepared && this.allPrepared(config)) {
       this.prepared = true
       this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
@@ -135,11 +138,11 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       return
     }
 
-    if (!this.config.data.playerOnlineStatusEnabled) this.queueSend('/status online')
+    if (!config.playerOnlineStatusEnabled) this.queueSend('/status online')
 
-    if (!this.config.data.guildAllEnabled) this.queueSend('/guild onlinemode')
-    if (!this.config.data.guildChatEnabled) this.queueSend('/guild toggle')
-    if (!this.config.data.guildNotificationsEnabled) this.queueSend('/guild notifications')
+    if (!config.guildAllEnabled) this.queueSend('/guild onlinemode')
+    if (!config.guildChatEnabled) this.queueSend('/guild toggle')
+    if (!config.guildNotificationsEnabled) this.queueSend('/guild notifications')
   }
 
   private queueSend(command: string): void {
@@ -159,12 +162,12 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private initializeReadySignal(client: Client): void {
     // first spawn packet
     client.on('login', () => {
-      this.retrieveConfig()
+      this.setPrepared()
       this.resetReady()
     })
     // change world packet
     client.on('respawn', () => {
-      this.retrieveConfig()
+      this.setPrepared()
       this.resetReady()
     })
   }
@@ -173,44 +176,30 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     this.ready = false
 
     this.readyRefresh ??= setTimeout(() => {
+      const uuid = this.clientInstance.uuid()
+      assert.ok(uuid !== undefined)
+      const config = this.application.core.minecraftAccounts.get(uuid)
+
       this.ready = true
-      this.sendToggles() // already waited for the client to be ready
+      this.sendToggles(config) // already waited for the client to be ready
     }, GameTogglesHandler.TillReadyMilliseconds)
 
     this.readyRefresh.refresh()
   }
 
-  private retrieveConfig() {
+  private setPrepared(): void {
     const newUuid = this.clientInstance.uuid()
     const username = this.clientInstance.username()
     assert.ok(newUuid !== undefined)
     assert.ok(username !== undefined)
 
-    this.lastUuid ??= newUuid
-    if (newUuid !== this.lastUuid) {
-      throw new Error(
-        `Minecraft instance integrity is violated. Instance started with account uuid=${this.lastUuid}, but now changed to uuid=${newUuid}`
-      )
-    }
-
-    if (this.config === undefined) {
-      this.config = new ConfigManager(
-        this.application,
-        this.logger,
-        path.join(this.toggleDirectory, `${newUuid}.json`),
-        {
-          playerOnlineStatusEnabled: false,
-
-          guildAllEnabled: false,
-          guildChatEnabled: false,
-          guildNotificationsEnabled: false
-        }
-      )
-
-      if (this.allPrepared(this.config)) {
-        this.prepared = true
-      } else {
-        this.prepared = false
+    const config = this.application.core.minecraftAccounts.get(newUuid)
+    if (this.allPrepared(config)) {
+      this.prepared = true
+    } else {
+      this.prepared = false
+      if (this.lastUuid === undefined) {
+        this.lastUuid = newUuid
         this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
@@ -227,12 +216,19 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       }
     }
   }
-}
 
-interface GameToggleConfig {
-  playerOnlineStatusEnabled: boolean
+  private getConfig(currentUuid: string): GameToggleConfig {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    assert.ok(currentUuid !== undefined)
 
-  guildAllEnabled: boolean
-  guildChatEnabled: boolean
-  guildNotificationsEnabled: boolean
+    this.lastUuid ??= currentUuid
+    if (currentUuid !== this.lastUuid) {
+      throw new Error(
+        `Minecraft instance integrity is violated. Instance started with account uuid=${this.lastUuid}, but now changed to uuid=${currentUuid}`
+      )
+    }
+
+    this.config ??= this.application.core.minecraftAccounts.get(currentUuid)
+    return this.config
+  }
 }

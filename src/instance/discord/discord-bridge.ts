@@ -29,13 +29,11 @@ import {
   PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
-import type { ConfigManager } from '../../common/config-manager.js'
 import { StatusVisibility } from '../../common/connectable-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { User } from '../../common/user'
 import { beautifyInstanceName } from '../../utility/shared-utility'
 
-import type { DiscordConfig } from './common/discord-config.js'
 import { BlockReaction, GuildMutedReaction, RepeatReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type { DiscordAssociatedMessage } from './common/message-association.js'
@@ -49,12 +47,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   private readonly messageToImage
 
   private readonly staticConfig: Readonly<StaticDiscordConfig>
-  private readonly config: ConfigManager<DiscordConfig>
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    config: ConfigManager<DiscordConfig>,
     messageAssociation: MessageAssociation,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
@@ -62,14 +58,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   ) {
     super(application, clientInstance, logger, errorHandler)
 
-    this.config = config
     this.messageAssociation = messageAssociation
     this.staticConfig = staticDiscordConfig
 
     // TODO: properly reference client
     // @ts-expect-error client is private variable
-    this.messageDeleter = new MessageDeleter(application, logger, errorHandler, this.clientInstance.client)
-    this.messageToImage = new MessageToImage(config)
+    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.client)
+    this.messageToImage = new MessageToImage(application)
 
     this.application.on('instanceMessage', (event) => {
       void this.queue
@@ -92,8 +87,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    const config = this.config.data
-    for (const channelId of config.publicChannelIds) {
+    const config = this.application.core.discordConfigurations
+    for (const channelId of config.getPublicChannelIds()) {
       // TODO: properly reference client
       // @ts-expect-error client is private variable
       const channel = await this.clientInstance.client.channels.fetch(channelId)
@@ -136,7 +131,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             ? `${username}⇾${event.replyUsername}`
             : username
 
-        if (this.application.generalConfig.data.originTag) {
+        if (this.application.core.applicationConfigurations.getOriginTag()) {
           displayUsername += event.instanceType === InstanceType.Discord ? ` [DC]` : ` [${event.instanceName}]`
         }
 
@@ -162,8 +157,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    if (event.type === GuildPlayerEventType.Online && !this.config.data.guildOnline) return
-    if (event.type === GuildPlayerEventType.Offline && !this.config.data.guildOffline) return
+    const config = this.application.core.discordConfigurations
+    if (event.type === GuildPlayerEventType.Online && !config.getGuildOnline()) return
+    if (event.type === GuildPlayerEventType.Offline && !config.getGuildOffline()) return
 
     if (event.type === GuildPlayerEventType.Mute) {
       const game =
@@ -206,10 +202,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
 
     if (removeLater) {
-      this.messageDeleter.add({
-        createdAt: Date.now(),
-        messages: messages.map((message) => ({ channelId: message.channelId, messageId: message.id }))
-      })
+      const currentTime = Date.now()
+      const entries = messages.map((message) => ({
+        channelId: message.channelId,
+        messageId: message.id,
+        createdAt: currentTime
+      }))
+      this.messageDeleter.add(entries)
     }
   }
 
@@ -327,11 +326,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private resolveChannels(channels: ChannelType[]): string[] {
-    const config = this.config.data
+    const config = this.application.core.discordConfigurations
 
     const results: string[] = []
-    if (channels.includes(ChannelType.Public)) results.push(...config.publicChannelIds)
-    if (channels.includes(ChannelType.Officer)) results.push(...config.officerChannelIds)
+    if (channels.includes(ChannelType.Public)) results.push(...config.getPublicChannelIds())
+    if (channels.includes(ChannelType.Officer)) results.push(...config.getOfficerChannelIds())
 
     return results
   }

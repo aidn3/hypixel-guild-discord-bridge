@@ -2,9 +2,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+import type { Configuration } from 'log4js'
 import Logger4js from 'log4js'
 
-import LoggerConfig from './config/log4js-config.json' with { type: 'json' }
 import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
 import { Instance } from './src/common/instance'
@@ -12,6 +12,16 @@ import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next'
 import { gracefullyExitProcess } from './src/utility/shared-utility'
 
+const RootDirectory = import.meta.dirname
+const ConfigsDirectory = path.resolve(RootDirectory, 'config')
+fs.mkdirSync(ConfigsDirectory, { recursive: true })
+
+const LoggerConfigName = 'log4js-config.json'
+const LoggerPath = path.join(ConfigsDirectory, LoggerConfigName)
+if (!fs.existsSync(LoggerPath)) {
+  fs.copyFileSync(path.join(RootDirectory, 'src', LoggerConfigName), LoggerPath)
+}
+const LoggerConfig = JSON.parse(fs.readFileSync(LoggerPath, 'utf8')) as Configuration
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
 let app: Application | undefined
 
@@ -54,8 +64,6 @@ if (!fs.existsSync(File)) {
 }
 
 try {
-  const RootDirectory = import.meta.dirname
-  const ConfigsDirectory = path.resolve(RootDirectory, 'config')
   app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory, I18n.cloneInstance())
 
   const loggers = new Map<string, Logger4js.Logger>()

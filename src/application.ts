@@ -16,14 +16,14 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier, MinecraftSendChatPriority } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
-import { ConfigManager } from './common/config-manager.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { Core } from './core/core'
+import { ApplicationLanguages, LanguageConfigurations } from './core/language-configurations'
 import type { MojangApi } from './core/users/mojang'
-import type { GeneralConfig } from './general-config.js'
 import ApplicationIntegrity from './instance/application-integrity.js'
+import AutoRestart from './instance/auto-restart'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
@@ -31,8 +31,7 @@ import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
-import type { LanguageConfig } from './language-config.js'
-import { ApplicationLanguages, DefaultLanguageConfig } from './language-config.js'
+import { SkyblockReminders } from './instance/skyblock-reminders'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
@@ -44,6 +43,8 @@ export type AllInstances =
   | MinecraftInstance
   | PluginInstance
   | ApplicationIntegrity
+  | SkyblockReminders
+  | AutoRestart
   | MinecraftManager
   | PluginsManager
 
@@ -65,9 +66,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   private readonly backupDirectory
   private readonly config: Readonly<ApplicationConfig>
 
-  public readonly language: ConfigManager<LanguageConfig>
-
-  public readonly generalConfig: ConfigManager<GeneralConfig>
   public readonly discordInstance: DiscordInstance
   public readonly minecraftManager: MinecraftManager
   public readonly pluginsManager: PluginsManager
@@ -75,6 +73,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   public readonly core: Core
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
+
+  private readonly skyblockReminders: SkyblockReminders
+  private readonly autoRestart: AutoRestart
 
   public constructor(
     config: ApplicationConfig,
@@ -100,33 +101,23 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     this.applicationIntegrity.addConfigPath(this.backupDirectory)
     fs.mkdirSync(this.backupDirectory, { recursive: true })
 
-    this.generalConfig = new ConfigManager(this, this.logger, this.getConfigFilePath('application.json'), {
-      autoRestart: false,
-      originTag: false
-    })
-
     this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
       cache: true,
       mojangCacheTime: 300,
       hypixelCacheTime: 300
     })
 
-    this.language = new ConfigManager<LanguageConfig>(
-      this,
-      this.logger,
-      this.getConfigFilePath('language.json'),
-      DefaultLanguageConfig
-    )
-    if (!Object.values(ApplicationLanguages).includes(this.language.data.language)) {
-      this.logger.warn(`Saved language '${this.language.data.language}' is not supported.`)
-      this.logger.info(`Switching to default language '${DefaultLanguageConfig.language}'.`)
-      this.language.data.language = DefaultLanguageConfig.language
-      this.language.markDirty()
-    }
-    this.changeLanguage(this.language.data.language)
-
     this.core = new Core(this)
     this.mojangApi = this.core.mojangApi
+
+    let selectedLanguage = this.core.languageConfigurations.getLanguage()
+    if (!Object.values(ApplicationLanguages).includes(selectedLanguage)) {
+      this.logger.warn(`Saved language '${selectedLanguage}' is not supported.`)
+      this.logger.info(`Switching to default language '${LanguageConfigurations.DefaultLanguage}'.`)
+
+      selectedLanguage = LanguageConfigurations.DefaultLanguage
+    }
+    this.changeLanguage(selectedLanguage)
 
     this.discordInstance = new DiscordInstance(this, this.config.discord)
 
@@ -140,6 +131,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       : undefined
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
+
+    this.skyblockReminders = new SkyblockReminders(this)
+    this.autoRestart = new AutoRestart(this)
   }
 
   public getConfigFilePath(filename: string): string {
@@ -172,22 +166,17 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
   public changeLanguage(language: ApplicationLanguages): void {
     assert.ok(language)
-    assert.ok(
-      Object.values(ApplicationLanguages).includes(this.language.data.language),
-      `Language not supported: ${language}`
-    )
+    assert.ok(Object.values(ApplicationLanguages).includes(language), `Language not supported: ${language}`)
     const languageName = Object.entries(ApplicationLanguages).find(([, value]) => value === language)?.[0]
     assert.ok(languageName !== undefined, `Language ${languageName} is somehow not defined??`)
 
-    this.language.data.language = language
+    this.core.languageConfigurations.setLanguage(language)
     void this.i18n
       .changeLanguage(language)
       .then(() => {
         this.logger.info(`Language changed successfully to ${languageName}.`)
       })
       .catch(this.errorHandler.promiseCatch(`changing language to ${languageName}`))
-
-    this.language.markDirty()
   }
 
   public async start(): Promise<void> {
@@ -353,7 +342,9 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,
-      ...this.minecraftManager.getAllInstances()
+      ...this.minecraftManager.getAllInstances(),
+      this.skyblockReminders,
+      this.autoRestart
     ].filter((instance) => instance != undefined)
 
     this.applicationIntegrity.checkLocalInstancesIntegrity(instances)

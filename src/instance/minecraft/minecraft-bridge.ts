@@ -230,7 +230,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   ): Promise<string> {
     let full = `/${prefix} `
 
-    if (this.application.generalConfig.data.originTag) {
+    if (this.application.core.applicationConfigurations.getOriginTag()) {
       full += instanceType === InstanceType.Discord ? `[DC] ` : `[${instanceName}] `
     }
 
