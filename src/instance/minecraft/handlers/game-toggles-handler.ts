@@ -195,6 +195,8 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
 
     const config = this.application.core.minecraftAccounts.get(newUuid)
     if (this.allPrepared(config)) {
+      this.prepared = true
+    } else {
       this.prepared = false
       if (this.lastUuid === undefined) {
         this.lastUuid = newUuid
@@ -212,8 +214,6 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
             'Do not execute anything till the discovery phase has finished.'
         })
       }
-    } else {
-      this.prepared = true
     }
   }
 
