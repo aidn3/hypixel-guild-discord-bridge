@@ -14,6 +14,7 @@ import { gracefullyExitProcess } from './src/utility/shared-utility'
 
 const RootDirectory = import.meta.dirname
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
+fs.mkdirSync(ConfigsDirectory, { recursive: true })
 
 const LoggerConfigName = 'log4js-config.json'
 const LoggerPath = path.join(ConfigsDirectory, LoggerConfigName)
