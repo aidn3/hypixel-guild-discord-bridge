@@ -196,19 +196,22 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     const config = this.application.core.minecraftAccounts.get(newUuid)
     if (this.allPrepared(config)) {
       this.prepared = false
-      this.application.emit('broadcast', {
-        ...this.eventHelper.fillBaseEvent(),
+      if (this.lastUuid === undefined) {
+        this.lastUuid = newUuid
+        this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
 
-        channels: [ChannelType.Public],
-        color: Color.Info,
+          channels: [ChannelType.Public],
+          color: Color.Info,
 
-        user: undefined,
-        message:
-          `Minecraft account ${username}/${newUuid} is not prepared to be used in the application yet.\n` +
-          'Application will run through a discovery phase for one minute to prepare the account. ' +
-          'In the mean time, communication and messages might be experience interruptions. ' +
-          'Do not execute anything till the discovery phase has finished.'
-      })
+          user: undefined,
+          message:
+            `Minecraft account ${username}/${newUuid} is not prepared to be used in the application yet.\n` +
+            'Application will run through a discovery phase for one minute to prepare the account. ' +
+            'In the mean time, communication and messages might be experience interruptions. ' +
+            'Do not execute anything till the discovery phase has finished.'
+        })
+      }
     } else {
       this.prepared = true
     }
