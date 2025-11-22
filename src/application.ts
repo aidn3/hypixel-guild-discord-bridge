@@ -203,10 +203,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async shutdown(): Promise<void> {
-    for (const shutdownListener of this.shutdownListeners) {
-      shutdownListener()
-    }
-
     const tasks: Awaitable<unknown>[] = []
     for (const instance of this.getAllInstances().toReversed()) {
       // reversed to go backward of `start()`
@@ -216,6 +212,10 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
       }
     }
     await Promise.all(tasks)
+
+    for (const shutdownListener of this.shutdownListeners) {
+      shutdownListener()
+    }
   }
 
   /**
