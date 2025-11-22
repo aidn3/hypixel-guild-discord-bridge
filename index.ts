@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+import { satisfies } from 'compare-versions'
 import type { Configuration } from 'log4js'
 import Logger4js from 'log4js'
 
@@ -11,6 +12,20 @@ import { Instance } from './src/common/instance'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next'
 import { gracefullyExitProcess } from './src/utility/shared-utility'
+
+const RequiredNodeVersion = PackageJson.engines.node
+const ActualNodeVersion = process.versions.node
+if (!satisfies(ActualNodeVersion, RequiredNodeVersion)) {
+  // eslint-disable-next-line no-restricted-syntax
+  console.error(
+    `Application can not start due to Node.js being outdated.\n` +
+      `This application depends on Node.js to work.\n` +
+      `Please update Node.js before trying to launch the application again.\n` +
+      'You can download Node.js latest version here: https://nodejs.org/en/download\n' +
+      `Current version: ${ActualNodeVersion}, Required version: ${RequiredNodeVersion}`
+  )
+  process.exit(1)
+}
 
 const RootDirectory = import.meta.dirname
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
