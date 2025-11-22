@@ -14,8 +14,8 @@ import Duration from '../../utility/duration'
 import type { Core } from '../core'
 
 export default class ScoresManager extends SubInstance<Core, InstanceType.Core, void> {
-  public static readonly DeleteMembersOlderThan = Duration.years(1)
-  public static readonly DeleteMessagesOlderThan = Duration.years(1)
+  public static readonly DeleteMembersOlderThan = Duration.years(3)
+  public static readonly DeleteMessagesOlderThan = Duration.years(3)
   public static readonly LeniencyTime = Duration.minutes(5)
 
   private static readonly InstantInterval = 60 * 1000
