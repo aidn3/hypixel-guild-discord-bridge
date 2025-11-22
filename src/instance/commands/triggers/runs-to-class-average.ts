@@ -11,9 +11,15 @@ import {
   usernameNotExists
 } from '../common/utility'
 
+// Credit: https://adjectils.com/dungeon.html
 const FloorsBaseExp = {
-  m6: 120_000,
-  m7: 360_000
+  m7: 300_000,
+  m6: 110_000,
+  m5: 70_000,
+  m4: 55_000,
+  m3: 35_000,
+  m2: 20_000,
+  m1: 15_000
 }
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
@@ -51,14 +57,24 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const toxophilite = selectedProfile.essence?.perks?.toxophilite ?? 0
     const diamondInTheRough = selectedProfile.essence?.perks?.diamond_in_the_rough ?? 0
 
-    // 20% added for scarf shards
-    // It is set to max value till Hypixel updates their API to include the actual values
+    /*
+     * Bonuses:
+     * - Scarf Shards 20%
+     * - Scarf accessory Grimoire 6%
+     * - 50% XP boost when did runs on selected floor maxed at 26 runs (50% on MM) (https://wiki.hypixel.net/Dungeoneering#Dungeoneering_XP_Gain)
+     * - 10% Expert Ring
+     * - 2% Maxed Hecatomb Enchantment
+     *
+     *  All stats are set to max assuming that the player who is using the command is already prepared to do hundreds of runs
+     */
+    const GlobalBoost = 0.2 + 0.06 + 0.5 + 0.1 + 0.02
+
     const classExpBoosts = {
-      healer: (heartOfGold * 2) / 100 + 1 + 0.2,
-      berserk: (unbridledRage * 2) / 100 + 1 + 0.2,
-      mage: (coldEfficiency * 2) / 100 + 1 + 0.2,
-      archer: (toxophilite * 2) / 100 + 1 + 0.2,
-      tank: (diamondInTheRough * 2) / 100 + 1 + 0.2
+      healer: (heartOfGold * 2) / 100 + 1 + GlobalBoost,
+      berserk: (unbridledRage * 2) / 100 + 1 + GlobalBoost,
+      mage: (coldEfficiency * 2) / 100 + 1 + GlobalBoost,
+      archer: (toxophilite * 2) / 100 + 1 + GlobalBoost,
+      tank: (diamondInTheRough * 2) / 100 + 1 + GlobalBoost
     } satisfies Record<ClassName, number>
 
     let totalRuns = 0
