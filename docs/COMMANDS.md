@@ -34,6 +34,7 @@ A shorter version can also be used: `!- rtca`
 | `dadjoke`        | Show you a random dad joke                                                         |
 | `da`             | Show the remaining time till next Dark Auction                                     |
 | `devexcuse`      | Show you a random excuse for why this bot isn't working                            |
+| `discord`        | Returns a player's Discord social                                                  |
 | `eggs`           | Returns a player's skyblock easter eggs stats                                      |
 | `election`       | Show current Hypixel Skyblock Election                                             |
 | `execute`        | Runs a command directly                                                            |

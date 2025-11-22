@@ -93,6 +93,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   public profileByUser(user: User, guildMember: GuildMember | undefined): DiscordProfile {
     return {
       id: user.id,
+      username: user.username,
       displayName:
         this.cleanUsername(guildMember?.displayName) ??
         this.cleanUsername(user.username) ??

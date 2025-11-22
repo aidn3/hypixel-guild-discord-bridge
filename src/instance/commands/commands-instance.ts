@@ -22,6 +22,7 @@ import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
+import Discord from './triggers/discord'
 import Eggs from './triggers/eggs'
 import Election from './triggers/election.js'
 import Execute from './triggers/execute.js'
@@ -91,6 +92,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
+      new Discord(),
       new Eggs(),
       new Election(),
       new EightBallCommand(),

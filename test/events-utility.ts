@@ -21,7 +21,7 @@ export class EventsUtility implements InstanceIdentifier {
       channelType: ChannelType.Public,
 
       user: await this.application.core.initializeDiscordUser(
-        { id: '123', displayName: username, avatar: undefined },
+        { id: '123', username: username, displayName: username, avatar: undefined },
         {}
       ),
       replyUsername: undefined,
