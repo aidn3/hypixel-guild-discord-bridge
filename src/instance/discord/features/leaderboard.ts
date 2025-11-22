@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, Client } from 'discord.js'
-import { DiscordAPIError, escapeMarkdown, userMention } from 'discord.js'
+import type { APIEmbed, ButtonInteraction, Client, MessageActionRowComponentData } from 'discord.js'
+import { ButtonStyle, ComponentType, DiscordAPIError, escapeMarkdown, MessageFlags, userMention } from 'discord.js'
 import type { Guild } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 
@@ -16,11 +16,13 @@ import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance.js'
+import { DefaultTimeout, interactivePaging } from '../utility/discord-pager'
 
 export default class Leaderboard extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
   private static readonly EntriesPerPage = 10
   private static readonly CheckUpdateEvery = Duration.minutes(1)
   private static readonly UpdateEvery = Duration.minutes(30)
+  private static readonly MyPositionId = 'my-position'
 
   constructor(
     application: Application,
@@ -34,6 +36,77 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     setInterval(() => {
       void this.updateLeaderboards().catch(this.errorHandler.promiseCatch('updating the leaderboards'))
     }, Leaderboard.CheckUpdateEvery.toMilliseconds())
+
+    // TODO: properly reference client
+    // @ts-expect-error client is private variable
+    const client = this.clientInstance.client
+    client.on('interactionCreate', (interaction) => {
+      if (!interaction.isButton() || !interaction.isMessageComponent()) return
+
+      switch (interaction.customId) {
+        case Leaderboard.MyPositionId: {
+          void this.handleMyPositionInteraction(interaction).catch(
+            this.errorHandler.promiseCatch('handling "My position" button in a sticky leaderboard.')
+          )
+        }
+      }
+    })
+  }
+
+  private async handleMyPositionInteraction(interaction: ButtonInteraction): Promise<void> {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+    const messageId = interaction.message.id
+    const leaderboardConfig = this.application.core.discordLeaderboards
+      .getAll()
+      .find((entry) => entry.messageId === messageId)
+    if (leaderboardConfig === undefined) {
+      await interaction.editReply({ content: 'This leaderboard is not managed by the Application anymore :(' })
+      return
+    }
+
+    const identifier = this.clientInstance.profileByUser(
+      interaction.user,
+      interaction.inCachedGuild() ? interaction.member : undefined
+    )
+    const user = await this.application.core.initializeDiscordUser(identifier, {
+      guild: interaction.guild ?? undefined
+    })
+
+    const DefaultOptions = {
+      guildId: leaderboardConfig.guildId,
+      addFooter: true,
+      addLastUpdateAt: false,
+      user: user
+    } satisfies Partial<LeaderboardOptions>
+    switch (leaderboardConfig.type) {
+      case 'messages30Days': {
+        await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, async (requestedPage) => {
+          return await this.getMessage30Days({ ...DefaultOptions, page: requestedPage })
+        })
+        return
+      }
+
+      case 'online30Days': {
+        await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, async (requestedPage) => {
+          return await this.getOnline30Days({ ...DefaultOptions, page: requestedPage })
+        })
+        return
+      }
+      case 'points30Days': {
+        await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, async (requestedPage) => {
+          return await this.getPoints30Days({ ...DefaultOptions, page: requestedPage })
+        })
+        return
+      }
+      default: {
+        // entry.type is 'never' but that is why we are checking
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        this.logger.warn('Unknown Discord leaderboard type=' + leaderboardConfig.type)
+        await interaction.editReply({ content: 'This leaderboard is not supported somehow :(' })
+        return
+      }
+    }
   }
 
   private async updateLeaderboards(): Promise<void> {
@@ -47,35 +120,29 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     const entries = this.application.core.discordLeaderboards.getAll()
     const toDelete: string[] = []
     const toUpdate: { messageId: string; updatedAt: number }[] = []
-    const cache = new Map<LeaderboardEntry['type'], APIEmbed>()
+    const cache = new Map<LeaderboardEntry['type'], LeaderboardResult>()
 
     for (const entry of entries) {
       if (entry.updatedAt + Leaderboard.UpdateEvery.toMilliseconds() > Date.now()) continue
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
       try {
-        let cachedEmbed: APIEmbed | undefined
+        let cachedResult: LeaderboardResult | undefined
         switch (entry.type) {
           case 'messages30Days': {
-            cachedEmbed = cache.get('messages30Days')
-            cachedEmbed ??= await this.getMessage30Days({ ...DefaultOptions, guildId: entry.guildId }).then(
-              (response) => response.embed
-            )
+            cachedResult = cache.get('messages30Days')
+            cachedResult ??= await this.getMessage30Days({ ...DefaultOptions, guildId: entry.guildId })
             break
           }
 
           case 'online30Days': {
-            cachedEmbed = cache.get('online30Days')
-            cachedEmbed ??= await this.getOnline30Days({ ...DefaultOptions, guildId: entry.guildId }).then(
-              (response) => response.embed
-            )
+            cachedResult = cache.get('online30Days')
+            cachedResult ??= await this.getOnline30Days({ ...DefaultOptions, guildId: entry.guildId })
             break
           }
           case 'points30Days': {
-            cachedEmbed = cache.get('points30Days')
-            cachedEmbed ??= await this.getPoints30Days({ ...DefaultOptions, guildId: entry.guildId }).then(
-              (response) => response.embed
-            )
+            cachedResult = cache.get('points30Days')
+            cachedResult ??= await this.getPoints30Days({ ...DefaultOptions, guildId: entry.guildId })
             break
           }
           default: {
@@ -85,9 +152,8 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
             continue
           }
         }
-        assert.ok(cachedEmbed !== undefined)
 
-        const { keep, updated } = await this.update(client, entry, cachedEmbed)
+        const { keep, updated } = await this.update(client, entry, cachedResult)
         if (!keep) {
           toDelete.push(entry.messageId)
         }
@@ -110,7 +176,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   private async update(
     client: Client,
     entry: LeaderboardEntry,
-    embed: APIEmbed
+    result: LeaderboardResult
   ): Promise<{
     keep: boolean
     updated: boolean
@@ -120,7 +186,10 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
       assert.ok(channel?.isSendable())
 
       const message = await channel.messages.fetch(entry.messageId)
-      await message.edit({ embeds: [embed] })
+      await message.edit({
+        embeds: [result.embed],
+        components: [{ type: ComponentType.ActionRow, components: result.components }]
+      })
       return { keep: true, updated: true }
     } catch (error: unknown) {
       if (error instanceof DiscordAPIError) {
@@ -151,10 +220,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     }
   }
 
-  public async getMessage30Days(option: LeaderboardOptions): Promise<{
-    embed: APIEmbed
-    totalPages: number
-  }> {
+  public async getMessage30Days(option: LeaderboardOptions): Promise<LeaderboardResult> {
     let leaderboard = this.application.core.scoresManager.getMessages30Days()
     let result = ''
 
@@ -184,14 +250,12 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
         description: result,
         footer: option.addFooter ? { text: DefaultCommandFooter } : undefined
       },
+      components: this.generateActionComponents(),
       totalPages: Leaderboard.totalPages(leaderboard)
     }
   }
 
-  public async getOnline30Days(option: LeaderboardOptions): Promise<{
-    embed: APIEmbed
-    totalPages: number
-  }> {
+  public async getOnline30Days(option: LeaderboardOptions): Promise<LeaderboardResult> {
     let leaderboard = this.application.core.scoresManager.getOnline30Days()
     let result = ''
 
@@ -225,14 +289,12 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
         description: result,
         footer: option.addFooter ? { text: DefaultCommandFooter } : undefined
       },
+      components: this.generateActionComponents(),
       totalPages: Leaderboard.totalPages(leaderboard)
     }
   }
 
-  public async getPoints30Days(option: LeaderboardOptions): Promise<{
-    embed: APIEmbed
-    totalPages: number
-  }> {
+  public async getPoints30Days(option: LeaderboardOptions): Promise<LeaderboardResult> {
     let leaderboard = this.application.core.scoresManager.getPoints30Days()
     let result = ''
 
@@ -268,6 +330,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
         description: result,
         footer: option.addFooter ? { text: DefaultCommandFooter } : undefined
       },
+      components: this.generateActionComponents(),
       totalPages: Leaderboard.totalPages(leaderboard)
     }
   }
@@ -378,6 +441,24 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     }
     return ':four_leaf_clover:'
   }
+
+  private generateActionComponents(): MessageActionRowComponentData[] {
+    return [
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Primary,
+        customId: Leaderboard.MyPositionId,
+        label: 'My position',
+        emoji: { name: '🎯' }
+      }
+    ]
+  }
+}
+
+export interface LeaderboardResult {
+  embed: APIEmbed
+  components: MessageActionRowComponentData[]
+  totalPages: number
 }
 
 interface LeaderboardOptions {

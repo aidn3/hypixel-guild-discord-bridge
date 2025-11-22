@@ -38,7 +38,7 @@ const NoEmbed: APIEmbed = {
 }
 
 export async function interactivePaging(
-  interaction: CommandInteraction,
+  interaction: CommandInteraction | ButtonInteraction,
   currentPage = 0,
   duration = DefaultTimeout,
   errorHandler: UnexpectedErrorHandler,
