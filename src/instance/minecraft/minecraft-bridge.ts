@@ -12,13 +12,13 @@ import type {
   GuildGeneralEvent,
   GuildPlayerEvent,
   InstanceStatusEvent,
-  MinecraftReactiveEvent,
-  MinecraftReactiveEventType
+  MinecraftReactiveEvent
 } from '../../common/application-event.js'
 import {
   ChannelType,
   GuildPlayerEventType,
   InstanceType,
+  MinecraftReactiveEventType,
   MinecraftSendChatPriority,
   PunishmentPurpose,
   PunishmentType
@@ -113,6 +113,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, reply)
     switch (reply.channel) {
       case ChannelType.Public: {
+        if (
+          event.type === MinecraftReactiveEventType.RequireGuild &&
+          event.instanceName === this.clientInstance.instanceName
+        ) {
+          return
+        }
+
         await this.send(
           `/gc @[${event.instanceName}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
@@ -122,6 +129,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       }
 
       case ChannelType.Officer: {
+        if (
+          event.type === MinecraftReactiveEventType.RequireGuild &&
+          event.instanceName === this.clientInstance.instanceName
+        ) {
+          return
+        }
+
         await this.send(
           `/oc @[${event.instanceName}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
