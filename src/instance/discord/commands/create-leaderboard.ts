@@ -1,10 +1,11 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, CommandInteraction, SendableChannels } from 'discord.js'
-import { MessageFlags, SlashCommandBuilder } from 'discord.js'
+import type { APIEmbed, CommandInteraction, MessageActionRowComponentData, SendableChannels } from 'discord.js'
+import { ComponentType, MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import type { LeaderboardResult } from '../features/leaderboard'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
 export const Online30Days = { name: 'Top Online Member (30 days)', value: 'online30Days' }
@@ -46,7 +47,7 @@ export default {
     }
 
     const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guildId: guildId, user: undefined }
-    let leaderboard: { embed: APIEmbed; totalPages: number } | undefined
+    let leaderboard: LeaderboardResult | undefined
     let leaderboardType: 'messages30Days' | 'online30Days' | 'points30Days' | undefined
 
     switch (type) {
@@ -73,7 +74,7 @@ export default {
       }
     }
 
-    const messageId = await send(context.interaction, channel, leaderboard.embed)
+    const messageId = await send(context.interaction, channel, leaderboard.embed, leaderboard.components)
     if (messageId === undefined) return
     context.application.core.discordLeaderboards.addOrSet({
       messageId: messageId,
@@ -89,10 +90,13 @@ export default {
 async function send(
   interaction: CommandInteraction,
   channel: SendableChannels,
-  embed: APIEmbed
+  embed: APIEmbed,
+  components: MessageActionRowComponentData[]
 ): Promise<string | undefined> {
   try {
-    const messageId = await channel.send({ embeds: [embed] }).then((message) => message.id)
+    const messageId = await channel
+      .send({ embeds: [embed], components: [{ type: ComponentType.ActionRow, components: components }] })
+      .then((message) => message.id)
     await interaction.editReply('Leaderboard has been created.')
     return messageId
   } catch {
