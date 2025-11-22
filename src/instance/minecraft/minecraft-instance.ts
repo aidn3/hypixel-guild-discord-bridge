@@ -8,8 +8,7 @@ import {
   InstanceMessageType,
   InstanceSignalType,
   InstanceType,
-  MinecraftSendChatPriority,
-  Permission
+  MinecraftSendChatPriority
 } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
@@ -28,7 +27,6 @@ import Reaction from './handlers/reaction.js'
 import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
-import type { MinecraftManager } from './minecraft-manager.js'
 
 export default class MinecraftInstance extends ConnectableInstance<InstanceType.Minecraft> {
   readonly defaultBotConfig = {
@@ -37,7 +35,6 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     version: '1.8.9'
   }
 
-  private readonly minecraftManager: MinecraftManager
   private clientSession: ClientSession | undefined
 
   private stateHandler: StateHandler
@@ -55,15 +52,9 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
   private readonly config: MinecraftInstanceConfig
 
-  constructor(
-    app: Application,
-    minecraftManager: MinecraftManager,
-    instanceName: string,
-    config: MinecraftInstanceConfig
-  ) {
+  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig) {
     super(app, instanceName, InstanceType.Minecraft)
 
-    this.minecraftManager = minecraftManager
     this.config = config
 
     this.messageAssociation = new MessageAssociation()
@@ -99,12 +90,6 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.limboHandler = new LimboHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.reactionHandler = new Reaction(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.playerMuted = new PlayerMuted(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-  }
-
-  public resolvePermission(username: string, defaultPermission: Permission): Permission {
-    const adminUsername = this.application.core.minecraftConfigurations.getAdminUsername()
-    if (username.toLowerCase() === adminUsername.toLowerCase()) return Permission.Admin
-    return defaultPermission
   }
 
   override async signal(type: InstanceSignalType): Promise<void> {

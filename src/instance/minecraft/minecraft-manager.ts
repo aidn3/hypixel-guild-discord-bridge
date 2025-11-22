@@ -39,7 +39,7 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
   public loadInstances(): void {
     const instances = this.application.core.minecraftSessions.getAllInstances()
     for (const instanceConfig of instances) {
-      this.instances.add(new MinecraftInstance(this.application, this, instanceConfig.name, instanceConfig))
+      this.instances.add(new MinecraftInstance(this.application, instanceConfig.name, instanceConfig))
     }
   }
 
@@ -48,7 +48,7 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
       throw new Error('Minecraft instance name already exists')
     }
 
-    const instance = new MinecraftInstance(this.application, this, config.name, config)
+    const instance = new MinecraftInstance(this.application, config.name, config)
     this.instances.add(instance)
 
     try {
