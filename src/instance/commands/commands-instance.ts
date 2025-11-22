@@ -57,6 +57,7 @@ import Skills from './triggers/skills.js'
 import Skywars from './triggers/skywars'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
+import SpecialMayors from './triggers/special-mayors'
 import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
@@ -126,6 +127,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Skywars(),
       new Slayer(),
       new Soopy(),
+      new SpecialMayors(),
       new Starfall(),
       new StatusCommand(),
       new Timecharms(),

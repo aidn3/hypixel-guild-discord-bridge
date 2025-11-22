@@ -71,6 +71,7 @@ A shorter version can also be used: `!- rtca`
 | `skywars`        | Returns a player's skywars common stats                                            |
 | `slayer`         | Returns a player's slayer level                                                    |
 | `soopy`          | Use SoopyV2 API to execute commands                                                |
+| `specialmayors`  | Show when Skyblock special mayors are coming                                       |
 | `starfall`       | When is the next Skyblock Starfall event                                           |
 | `status`         | Show a player's Hypixel status and current location                                |
 | `timecharm`      | Returns a player's rift obtained time charms                                       |
