@@ -114,4 +114,5 @@ Use Discord slash command `/settings` to configure the application:
 - The Project is inspired by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
 - [Soopyboo32](https://github.com/Soopyboo32) for providing [an awesome command API](https://soopy.dev/commands)
 - Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches
+- [WildWolfsblut](https://github.com/WildWolfsblut) for helping with various designs and structures
 - All contributors whether by code, ideas/suggestions or testing

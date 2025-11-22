@@ -1,3 +1,7 @@
+/*
+ * Credit WildWolfsblut <https://github.com/WildWolfsblut>
+ * for helping with ./src/core design and structure
+ */
 import assert from 'node:assert'
 
 import type Application from '../application'
