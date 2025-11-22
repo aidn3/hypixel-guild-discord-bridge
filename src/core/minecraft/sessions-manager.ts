@@ -178,7 +178,10 @@ class Session implements Cache {
 
   async getCached(): Promise<Record<string, unknown>> {
     await Promise.resolve() // require async/await per interface definition
+    return this.getCacheSync()
+  }
 
+  private getCacheSync(): Record<string, unknown> {
     const database = this.sqliteManager.getDatabase()
     const statement = database.prepare('SELECT value FROM "mojangSessions" WHERE name = ? AND cacheName = ?')
     const result = statement.pluck(true).get(this.name, this.cacheName) as string | undefined
@@ -187,16 +190,21 @@ class Session implements Cache {
 
   async setCached(value: Record<string, unknown>): Promise<void> {
     await Promise.resolve() // require async/await per interface definition
+    this.setCachedSync(value)
+  }
 
+  private setCachedSync(value: Record<string, unknown>): void {
     this.sessionsManager.setSession(this.instanceName, this.name, this.cacheName, value)
   }
 
   async setCachedPartial(value: Record<string, unknown>): Promise<void> {
-    const transaction = this.sqliteManager.getDatabase().transaction(async () => {
-      const partial = await this.getCached()
-      await this.setCached({ partial, ...value })
+    await Promise.resolve() // require async/await per interface definition
+
+    const transaction = this.sqliteManager.getDatabase().transaction(() => {
+      const partial = this.getCacheSync()
+      this.setCachedSync({ partial, ...value })
     })
 
-    await transaction()
+    transaction()
   }
 }
