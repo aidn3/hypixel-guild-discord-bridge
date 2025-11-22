@@ -132,17 +132,17 @@ export class SkyblockEvents {
 
   private static readonly DerpyMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 440 })
   private static readonly JerryMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 448 })
-  private static readonly ScorpionMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 456 })
+  private static readonly ScorpiusMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 456 })
 
   public static getSpecialMayors(currentTime: number): {
     derpy: EventAppointment
     jerry: EventAppointment
-    scorpion: EventAppointment
+    scorpius: EventAppointment
   } {
     return {
       derpy: this.getSpecialMayorAppointment(currentTime, this.DerpyMayorBaseTime),
       jerry: this.getSpecialMayorAppointment(currentTime, this.JerryMayorBaseTime),
-      scorpion: this.getSpecialMayorAppointment(currentTime, this.ScorpionMayorBaseTime)
+      scorpius: this.getSpecialMayorAppointment(currentTime, this.ScorpiusMayorBaseTime)
     }
   }
 
