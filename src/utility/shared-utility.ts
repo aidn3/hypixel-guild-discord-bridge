@@ -143,3 +143,35 @@ export function beautifyInstanceName(instanceName: string): string {
 
   return instanceName
 }
+
+/**
+ * Return a sorted list from best match to least.
+ *
+ * The results are sorted alphabetically by:
+ * - matching the query with the start of a query
+ * - matching any part of a username with the query
+ *
+ * @param query the usernames to look for
+ * @param collection collection to look up the query in
+ */
+export function search(query: string, collection: string[]): string[] {
+  const copy = [...collection]
+  copy.sort((a, b) => a.localeCompare(b))
+
+  const queryLowerCased = query.toLowerCase()
+  const results: string[] = []
+
+  for (const username of copy) {
+    if (!results.includes(username) && username.toLowerCase().startsWith(queryLowerCased)) {
+      results.push(username)
+    }
+  }
+
+  for (const username of copy) {
+    if (!results.includes(username) && username.toLowerCase().includes(queryLowerCased)) {
+      results.push(username)
+    }
+  }
+
+  return results
+}
