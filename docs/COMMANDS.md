@@ -28,6 +28,7 @@ A shorter version can also be used: `!- rtca`
 | `buildbattle`    | Returns a player's Build Battle common stats                                       |
 | `calculate`      | A basic calculator                                                                 |
 | `catacomb`       | Returns a player's catacombs level                                                 |
+| `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
 | `currentdungeon` | Returns a player's last dungeon run                                                |
 | `dadjoke`        | Show you a random dad joke                                                         |
 | `da`             | Show the remaining time till next Dark Auction                                     |

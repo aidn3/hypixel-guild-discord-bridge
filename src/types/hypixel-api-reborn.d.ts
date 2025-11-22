@@ -173,6 +173,9 @@ declare module 'hypixel-api-reborn' {
   export interface SkyblockPlayerEaster {
     total_chocolate?: number
     shop?: { chocolate_spent?: number }
+    // eggs names and collected amount. not set if not collected.
+    // There are other objects inside not related to rabbits, but ignored here since not required YET.
+    rabbits: Record<string, number | object>
   }
 
   export interface MayorV2 {
