@@ -188,6 +188,7 @@ declare module 'hypixel-api-reborn' {
   }
 
   export interface MayorCandidateV2 {
+    key: string
     name: string
     perks: MayorPerkV2[]
     votes?: number

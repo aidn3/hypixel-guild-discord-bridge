@@ -68,13 +68,14 @@ export default class RunsToClassAverage extends ChatCommandHandler {
      *  All stats are set to max assuming that the player who is using the command is already prepared to do hundreds of runs
      */
     const GlobalBoost = 0.2 + 0.06 + 0.5 + 0.1 + 0.02
+    const additionalBoost = await this.getAdditionalBoost(context)
 
     const classExpBoosts = {
-      healer: (heartOfGold * 2) / 100 + 1 + GlobalBoost,
-      berserk: (unbridledRage * 2) / 100 + 1 + GlobalBoost,
-      mage: (coldEfficiency * 2) / 100 + 1 + GlobalBoost,
-      archer: (toxophilite * 2) / 100 + 1 + GlobalBoost,
-      tank: (diamondInTheRough * 2) / 100 + 1 + GlobalBoost
+      healer: (heartOfGold * 2) / 100 + 1 + GlobalBoost + additionalBoost,
+      berserk: (unbridledRage * 2) / 100 + 1 + GlobalBoost + additionalBoost,
+      mage: (coldEfficiency * 2) / 100 + 1 + GlobalBoost + additionalBoost,
+      archer: (toxophilite * 2) / 100 + 1 + GlobalBoost + additionalBoost,
+      tank: (diamondInTheRough * 2) / 100 + 1 + GlobalBoost + additionalBoost
     } satisfies Record<ClassName, number>
 
     let totalRuns = 0
@@ -139,5 +140,18 @@ export default class RunsToClassAverage extends ChatCommandHandler {
         .map((level) => Math.min(level, targetAverage))
         .reduce((a, b) => a + b, 0) / classesXp.length
     )
+  }
+
+  private async getAdditionalBoost(context: ChatCommandContext): Promise<number> {
+    let totalBoost = 0
+
+    const government = await context.app.hypixelApi.getSkyblockGovernment({ raw: true })
+    if (government.mayor.key === 'aura') {
+      totalBoost += 0.55 // It is 55% instead of 50%. Why? I don't know. Maybe bugged
+    } else if (government.mayor.key === 'derpy') {
+      totalBoost += 0.5
+    }
+
+    return totalBoost
   }
 }
