@@ -691,7 +691,8 @@ export type InstanceAnnouncement = InformEvent
 
 export enum InstanceMessageType {
   MinecraftAuthenticationCode = 'minecraft-authentication-code',
-  MinecraftTruncateMessage = 'minecraft-truncate-message'
+  MinecraftTruncateMessage = 'minecraft-truncate-message',
+  MinecraftInstanceNotAutoConnect = 'minecraft-instance-not-auto-connect'
 }
 
 /**

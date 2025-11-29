@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { Logger } from 'log4js'
 import type { Cache, CacheFactory } from 'prismarine-auth'
 
@@ -36,6 +38,20 @@ export class SessionsManager {
       'INSERT OR REPLACE INTO "mojangSessions" (name, cacheName, value, createdAt) VALUES (?, ?, ?, ?)'
     )
     statement.run(name, cacheName, JSON.stringify(value), Math.floor(Date.now() / 1000))
+  }
+
+  public setInstanceAutoConnect(instanceName: string, enabled: boolean): void {
+    const database = this.sqliteManager.getDatabase()
+    const statement = database.prepare('UPDATE "mojangInstances" SET connect = ? WHERE name = ?')
+    const result = statement.run(enabled ? '1' : '0', instanceName)
+    assert.strictEqual(result.changes, 1, 'Did not manage to change the instance auto-connect settings?')
+  }
+
+  public getInstanceAutoConnect(instanceName: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const statement = database.prepare('SELECT "connect" FROM  "mojangInstances" WHERE name = ?')
+    const result = statement.pluck(true).get(instanceName) as number | undefined
+    return result === undefined ? true : result === 1
   }
 
   public getAllInstances(): readonly MinecraftInstanceConfig[] {
