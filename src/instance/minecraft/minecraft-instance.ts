@@ -93,12 +93,20 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   }
 
   override async signal(type: InstanceSignalType): Promise<void> {
-    if (this.currentStatus() === Status.Connected) {
-      if (type === InstanceSignalType.Restart) {
-        await this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, undefined)
+    const connected = this.currentStatus() === Status.Connected
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (type === InstanceSignalType.Shutdown) {
+    if (type === InstanceSignalType.Restart) {
+      this.application.core.minecraftSessions.setInstanceAutoConnect(this.instanceName, true)
+
+      if (connected) {
+        await this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, undefined)
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } else if (type === InstanceSignalType.Shutdown) {
+      this.application.core.minecraftSessions.setInstanceAutoConnect(this.instanceName, false)
+
+      if (connected) {
         await this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, undefined)
       }
     }
@@ -121,6 +129,21 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   }
 
   public automaticReconnect(): void {
+    const autoConnect = this.application.core.minecraftSessions.getInstanceAutoConnect(this.instanceName)
+    if (!autoConnect) {
+      this.logger.debug(
+        `instance is attempting to connect automatically but configured to not auto-connect. Attempt stopped.`
+      )
+
+      this.application.emit('instanceMessage', {
+        ...this.eventHelper.fillBaseEvent(),
+
+        type: InstanceMessageType.MinecraftInstanceNotAutoConnect,
+        message: `Minecraft instance is set to not auto connect. A manual connect signal is needed to start.`
+      })
+      return
+    }
+
     const client = createClient({
       ...this.defaultBotConfig,
       username: this.config.name,
