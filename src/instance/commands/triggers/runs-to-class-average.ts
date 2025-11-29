@@ -36,7 +36,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
     const selectedFloor = context.args[1]?.toLowerCase() ?? 'm7'
-    const targetAverage = context.args[2] ? Number.parseInt(context.args[1], 10) : 50
+    const targetAverage = context.args[2] ? Number.parseInt(context.args[2], 10) : 50
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
