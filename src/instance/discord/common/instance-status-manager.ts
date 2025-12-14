@@ -507,7 +507,8 @@ export class InstanceStatusManager {
           }),
           color: Color.Info
         }
-      ]
+      ],
+      components: [{ type: ComponentType.ActionRow, components: this.generateButtons() }]
     }
   }
 
