@@ -262,7 +262,6 @@ export class InstanceStatusManager {
         )
       }
       return undefined
-      // TODO: avoid spamming authentication code every 15minutes
     }
 
     const currentStatus = this.getStatus(event)
