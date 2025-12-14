@@ -25,7 +25,7 @@
   "instance.status.failed": "FAILED",
 
   "discord.status.chat-interrupted": "Chat with {{instanceName}} has been interrupted.",
-  "discord.status.chat-resumed": "Chat is connected with {{instanceName}} .",
+  "discord.status.chat-resumed": "Chat is connected with {{instanceName}}.",
   "discord.status.chat-failed": "Chat with {{instanceName}} has been permanently interrupted. Manual intervention is required!",
   "discord.status.chat-notice": "Something happened with {{instanceName}} that may require intervention.",
   "discord.status.requires-authentication": "{{instanceName}} is pending authentication.",
