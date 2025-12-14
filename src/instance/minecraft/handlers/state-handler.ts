@@ -7,6 +7,7 @@ import { Status } from '../../../common/connectable-instance.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance'
@@ -15,7 +16,9 @@ export const QuitOwnVolition = 'disconnect.quitting'
 
 export const QuitProxyError = 'Proxy encountered a problem while connecting'
 export default class StateHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
-  private static readonly MaxLoginAttempts = 5
+  private static readonly MaxLoginAttempts = 100
+  private static readonly MaxDuration = Duration.minutes(5)
+
   private loginAttempts
   private loggedIn
 
@@ -196,7 +199,7 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
     }
 
     let loginDelay = (this.loginAttempts + 1) * 5000
-    if (loginDelay > 60_000) loginDelay = 60_000
+    if (loginDelay > StateHandler.MaxDuration.toMilliseconds()) loginDelay = StateHandler.MaxDuration.toMilliseconds()
 
     this.clientInstance.setAndBroadcastNewStatusWithMessage(Status.Connecting, {
       type: InstanceMessageType.MinecraftRestarting,
