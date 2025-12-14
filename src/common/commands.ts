@@ -107,7 +107,7 @@ interface DiscordContext {
 
 export interface DiscordCommandContext extends DiscordContext {
   interaction: ChatInputCommandInteraction
-  showPermissionDenied: () => Promise<void>
+  showPermissionDenied: (requiredPermission: Exclude<Permission, Permission.Anyone>) => Promise<void>
 }
 
 export interface DiscordAutoCompleteContext extends DiscordContext {

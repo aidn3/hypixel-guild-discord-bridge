@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
@@ -41,6 +43,7 @@ import SettingsCommand from './commands/settings.js'
 import UnlinkCommand from './commands/unlink.js'
 import VerificationCommand from './commands/verification.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
+import { translateNoPermission } from './common/discord-language'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
@@ -197,10 +200,12 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
 
       if (permission < (command.permission ?? Permission.Anyone)) {
         this.logger.debug('No permission to execute this command')
-
+        assert.ok(command.permission !== undefined)
+        assert.ok(command.permission !== Permission.Anyone)
         await interaction.reply({
-          content: "You don't have permission to execute this command",
-          flags: MessageFlags.Ephemeral
+          content: translateNoPermission(this.application, command.permission),
+          flags: MessageFlags.Ephemeral,
+          allowedMentions: { parse: [] }
         })
         return
       }
@@ -249,16 +254,18 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
         interaction: interaction,
         allCommands: [...this.commands.values()],
 
-        showPermissionDenied: async () => {
+        showPermissionDenied: async (requiredPermission: Exclude<Permission, Permission.Anyone>) => {
           if (interaction.deferred || interaction.replied) {
             await interaction.editReply({
-              content: "You don't have permission to execute this command"
+              content: translateNoPermission(this.application, requiredPermission),
+              allowedMentions: { parse: [] }
             })
             return
           } else {
             await interaction.reply({
-              content: "You don't have permission to execute this command",
-              flags: MessageFlags.Ephemeral
+              content: translateNoPermission(this.application, requiredPermission),
+              flags: MessageFlags.Ephemeral,
+              allowedMentions: { parse: [] }
             })
             return
           }

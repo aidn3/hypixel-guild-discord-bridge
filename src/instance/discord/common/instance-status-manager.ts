@@ -9,7 +9,7 @@ import { ButtonStyle, ComponentType, escapeMarkdown, MessageFlags } from 'discor
 
 import type Application from '../../../application'
 import type { InstanceStatus } from '../../../common/application-event'
-import { Color, InstanceMessageType } from '../../../common/application-event'
+import { Color, InstanceMessageType, Permission } from '../../../common/application-event'
 import { Status } from '../../../common/connectable-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
 import { DiscordInstanceHistoryButtonType } from '../../../core/discord/instance-history-button'
@@ -23,9 +23,11 @@ import { beautifyInstanceName } from '../../../utility/shared-utility'
 import type DiscordInstance from '../discord-instance'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager'
 
+import { translateNoPermission } from './discord-language'
 import type MessageAssociation from './message-association'
 
 export class InstanceStatusManager {
+  private static readonly PermissionToView = Permission.Helper
   private static readonly EntriesPerPage = 5
   private static readonly DetailsButtonId = 'show-instance-details'
 
@@ -54,6 +56,23 @@ export class InstanceStatusManager {
     const entry = this.application.core.discordInstanceHistoryButton.getButton(interaction.message.id)
     if (entry === undefined) {
       await interaction.editReply('Message too old to find the history??')
+      return
+    }
+
+    const identifier = this.clientInstance.profileByUser(
+      interaction.user,
+      interaction.inCachedGuild() ? interaction.member : undefined
+    )
+    const user = await this.application.core.initializeDiscordUser(identifier, {
+      guild: interaction.guild ?? undefined
+    })
+
+    const permission = user.permission()
+    if (permission < InstanceStatusManager.PermissionToView) {
+      await interaction.editReply({
+        content: translateNoPermission(this.application, InstanceStatusManager.PermissionToView),
+        allowedMentions: { parse: [] }
+      })
       return
     }
 
@@ -133,7 +152,10 @@ export class InstanceStatusManager {
       }
 
       return {
-        embed: { title: `Status History for ${beautifyInstanceName(entry.instanceName)}`, description: result.trim() },
+        embed: {
+          title: `Status History for ${beautifyInstanceName(entry.instanceName)}`,
+          description: result.trim()
+        },
         totalPages: Math.ceil(entries.length / InstanceStatusManager.EntriesPerPage)
       }
     })

@@ -31,6 +31,11 @@
   "discord.status.requires-authentication": "{{instanceName}} is pending authentication.",
   "discord.status.instance-started": "Connection {{instanceName}} has started to initiate.",
 
+  "discord.message.no-permission": "You do not have permission to do this.",
+  "discord.message.no-permission-roles": "$t(discord.message.no-permission)\nYou must have one of these roles: {{roles, list(style: short; type: disjunction)}}",
+  "discord.message.no-permission-admin": "$t(discord.message.no-permission)\nYou must be one of these admins: {{admins, list(style: short; type: disjunction)}}",
+  "discord.message.no-permission-roles-admin": "$t(discord.message.no-permission-roles)\nOr, you must be one of these admins: {{admins, list(style: short; type: disjunction)}}",
+
   "discord.commands.settings.essential": ":shield:",
   "discord.commands.settings.recommended": ":beginner:",
   "discord.commands.settings.warning": ":warning:",
