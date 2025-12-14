@@ -7,16 +7,16 @@ import type { Logger } from 'log4js'
 import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import type {
-  BaseInGameEvent,
+  BaseEvent,
   BroadcastEvent,
   ChatEvent,
   CommandEvent,
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
-  InstanceMessage,
-  InstanceMessageType,
-  InstanceStatusEvent,
+  InstanceReactive,
+  InstanceReactiveType,
+  InstanceStatus,
   MinecraftReactiveEvent
 } from '../../common/application-event.js'
 import {
@@ -29,12 +29,12 @@ import {
   PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
-import { StatusVisibility } from '../../common/connectable-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { User } from '../../common/user'
 import { beautifyInstanceName } from '../../utility/shared-utility'
 
 import { BlockReaction, GuildMutedReaction, RepeatReaction } from './common/discord-config.js'
+import { InstanceStatusManager } from './common/instance-status-manager'
 import type MessageAssociation from './common/message-association.js'
 import type { DiscordAssociatedMessage } from './common/message-association.js'
 import MessageDeleter from './common/message-deletor.js'
@@ -45,6 +45,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   public readonly messageDeleter: MessageDeleter
   private readonly messageAssociation: MessageAssociation
   private readonly messageToImage
+
+  private readonly instanceStatusManager: InstanceStatusManager
 
   private readonly staticConfig: Readonly<StaticDiscordConfig>
 
@@ -61,22 +63,26 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.messageAssociation = messageAssociation
     this.staticConfig = staticDiscordConfig
 
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.client)
+    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.getClient())
     this.messageToImage = new MessageToImage(application)
+    this.instanceStatusManager = new InstanceStatusManager(
+      this.application,
+      this.clientInstance,
+      this.messageAssociation,
+      this.errorHandler
+    )
 
-    this.application.on('instanceMessage', (event) => {
+    this.application.on('instanceReactive', (event) => {
       void this.queue
-        .add(async () => this.onInstanceMessageEvent(event))
-        .catch(this.errorHandler.promiseCatch('handling event instanceMessage'))
+        .add(async () => this.onInstanceReactiveEvent(event))
+        .catch(this.errorHandler.promiseCatch('handling event instanceReactive'))
     })
   }
 
-  async onInstance(event: InstanceStatusEvent): Promise<void> {
+  async onInstance(event: InstanceStatus): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
-    if (event.visibility === StatusVisibility.Silent) return
     switch (event.instanceType) {
+      case InstanceType.Main:
       case InstanceType.Commands:
       case InstanceType.Prometheus:
       case InstanceType.Metrics:
@@ -87,29 +93,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    const config = this.application.core.discordConfigurations
-    for (const channelId of config.getPublicChannelIds()) {
-      // TODO: properly reference client
-      // @ts-expect-error client is private variable
-      const channel = await this.clientInstance.client.channels.fetch(channelId)
-      if (!channel?.isSendable()) continue
-
-      const message = await channel.send({
-        embeds: [
-          {
-            description:
-              escapeMarkdown(beautifyInstanceName(event.instanceName)) + ' > ' + escapeMarkdown(event.message),
-            color: Color.Info
-          }
-        ],
-        allowedMentions: { parse: [] }
-      })
-      this.messageAssociation.addMessageId(event.eventId, {
-        guildId: message.guildId ?? undefined,
-        channelId: message.channelId,
-        messageId: message.id
-      })
-    }
+    await this.instanceStatusManager.send(event)
   }
 
   async onChat(event: ChatEvent): Promise<void> {
@@ -198,7 +182,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         color: event.color
       } satisfies APIEmbed
 
-      messages = await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), embed)
+      messages = await this.sendEmbedToChannels(
+        { ...event, type: undefined },
+        this.resolveChannels(event.channels),
+        embed
+      )
     }
 
     if (removeLater) {
@@ -223,7 +211,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const image = this.messageToImage.generateMessageImage(event.rawMessage)
       await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), image)
     } else {
-      await this.sendEmbedToChannels(event, this.resolveChannels(event.channels), undefined)
+      await this.sendEmbedToChannels({ ...event, type: undefined }, this.resolveChannels(event.channels), undefined)
     }
   }
 
@@ -233,9 +221,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if ((this.lastMinecraftEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
     this.lastMinecraftEvent.set(event.type, Date.now())
 
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const client = this.clientInstance.client
+    const client = this.clientInstance.getClient()
 
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
     for (const replyId of replyIds) {
@@ -343,26 +329,24 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.sendCommandResponse(event, true)
   }
 
-  private lastInstanceEvent = new Map<InstanceMessageType, number>()
+  private lastInstanceReactiveEvent = new Map<InstanceReactiveType, number>()
 
-  async onInstanceMessageEvent(event: InstanceMessage): Promise<void> {
-    if (
-      event.instanceType === this.clientInstance.instanceType &&
-      event.instanceName === this.clientInstance.instanceName
-    )
-      return
+  async onInstanceReactiveEvent(event: InstanceReactive): Promise<void> {
+    if ((this.lastInstanceReactiveEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
+    this.lastInstanceReactiveEvent.set(event.type, Date.now())
 
-    if ((this.lastInstanceEvent.get(event.type) ?? 0) + 5000 > Date.now()) return
-    this.lastInstanceEvent.set(event.type, Date.now())
-
-    const replyIds = this.messageAssociation.getMessageId('originEventId' in event ? event.originEventId : undefined)
+    const replyIds = this.messageAssociation.getMessageId(event.originEventId)
 
     for (const replyId of replyIds) {
       try {
-        await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
+        await this.replyWithEmbed(
+          event.eventId,
+          replyId,
+          await this.generateEmbed({ ...event, type: undefined }, replyId.guildId)
+        )
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message. sending the event independently')
-        await this.sendEmbedToChannels(event, [replyId.channelId], undefined)
+        await this.sendEmbedToChannels({ ...event, type: undefined }, [replyId.channelId], undefined)
       }
     }
   }
@@ -378,10 +362,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return finalMessage
   }
 
-  private async generateEmbed(
-    event: BaseInGameEvent<string> | BroadcastEvent | GuildPlayerEvent | MinecraftReactiveEvent | InstanceMessage,
-    guildId: string | undefined
-  ): Promise<APIEmbed> {
+  private async generateEmbed(event: GenerateEmbedType, guildId: string | undefined): Promise<APIEmbed> {
     const embed: APIEmbed = {
       description: escapeMarkdown(event.message),
 
@@ -399,11 +380,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     // all enums are unique and must unique for this to work.
     // the other solutions is just too complicated
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if ('type' in event && event.type === MinecraftReactiveEventType.RequireGuild && guildId !== undefined) {
-      // TODO: properly reference client
-      // @ts-expect-error client is private variable
-      const commands = await this.clientInstance.client.guilds.fetch(guildId).then((guild) => guild.commands.fetch())
+      const commands = await this.clientInstance
+        .getClient()
+        .guilds.fetch(guildId)
+        .then((guild) => guild.commands.fetch())
       const joinCommand = commands.find((command) => command.name === 'join')
       const setupCommand = commands.find((command) => command.name === 'setup')
 
@@ -418,9 +399,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async replyWithEmbed(eventId: string, replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const channel = await this.clientInstance.client.channels.fetch(replyId.channelId)
+    const channel = await this.clientInstance.getClient().channels.fetch(replyId.channelId)
     assert.ok(channel != undefined)
     assert.ok(channel.isSendable())
 
@@ -437,7 +416,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendEmbedToChannels(
-    event: BaseInGameEvent<string> | BroadcastEvent | CommandEvent | InstanceMessage,
+    event: GenerateEmbedType & Pick<BaseEvent, 'eventId'>,
     channels: string[],
     preGeneratedEmbed: APIEmbed | undefined
   ): Promise<Message<true>[]> {
@@ -445,9 +424,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     for (const channelId of channels) {
       try {
-        // TODO: properly reference client
-        // @ts-expect-error client is private variable
-        const channel = await this.clientInstance.client.channels.fetch(channelId)
+        const channel = await this.clientInstance.getClient().channels.fetch(channelId)
         if (channel == undefined) continue
         assert.ok(channel.isSendable())
         assert.ok(channel.type === DiscordChannelType.GuildText)
@@ -455,7 +432,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         const embed =
           preGeneratedEmbed ??
           // commands always have a preGenerated embed
-          (await this.generateEmbed(event as BaseInGameEvent<string> | BroadcastEvent, channel.guildId))
+          (await this.generateEmbed(event, channel.guildId))
         const message = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } })
 
         messages.push(message)
@@ -477,9 +454,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     for (const channelId of channels) {
       try {
-        // TODO: properly reference client
-        // @ts-expect-error client is private variable
-        const channel = await this.clientInstance.client.channels.fetch(channelId)
+        const channel = await this.clientInstance.getClient().channels.fetch(channelId)
         if (channel == undefined) continue
         assert.ok(channel.isSendable())
         assert.ok(channel.type === DiscordChannelType.GuildText)
@@ -542,20 +517,24 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     const cachedWebhook = this.webhooks.get(channelId)
     if (cachedWebhook !== undefined) return cachedWebhook
 
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const channel = (await this.clientInstance.client.channels.fetch(
-      channelId
-    )) as unknown as TextBasedChannelFields | null
+    const client = this.clientInstance.getClient()
+    assert.ok(client.isReady())
+
+    const channel = (await client.channels.fetch(channelId)) as unknown as TextBasedChannelFields | null
     if (channel == undefined) throw new Error(`no access to channel ${channelId}?`)
     const webhooks = await channel.fetchWebhooks()
 
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    let webhook = webhooks.find((h) => h.owner?.id === this.clientInstance.client.user?.id)
+    let webhook = webhooks.find((h) => h.owner?.id === client.user.id)
     webhook ??= await channel.createWebhook({ name: 'Hypixel-Guild-Bridge' })
 
     this.webhooks.set(channelId, webhook)
     return webhook
   }
+}
+
+type GenerateEmbedType = Pick<BaseEvent, 'instanceName'> & {
+  message: string
+  user?: User
+  color?: Color
+  type?: MinecraftReactiveEventType | undefined
 }

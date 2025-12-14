@@ -10,7 +10,7 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
-  InstanceStatusEvent,
+  InstanceStatus,
   InstanceType,
   MinecraftReactiveEvent
 } from './application-event.js'
@@ -96,7 +96,7 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
 
   protected abstract onMinecraftChatEvent(event: MinecraftReactiveEvent): void | Promise<void>
 
-  protected abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
+  protected abstract onInstance(event: InstanceStatus): void | Promise<void>
 
   protected abstract onBroadcast(event: BroadcastEvent): void | Promise<void>
 }

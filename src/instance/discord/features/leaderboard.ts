@@ -37,9 +37,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
       void this.updateLeaderboards().catch(this.errorHandler.promiseCatch('updating the leaderboards'))
     }, Leaderboard.CheckUpdateEvery.toMilliseconds())
 
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const client = this.clientInstance.client
+    const client = this.clientInstance.getClient()
     client.on('interactionCreate', (interaction) => {
       if (!interaction.isButton() || !interaction.isMessageComponent()) return
 
@@ -110,9 +108,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async updateLeaderboards(): Promise<void> {
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const client = this.clientInstance.client
+    const client = this.clientInstance.getClient()
     assert.ok(client.isReady())
 
     const DefaultOptions = { addFooter: false, addLastUpdateAt: true, page: 0, user: undefined }

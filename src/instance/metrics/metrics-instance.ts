@@ -64,7 +64,8 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
         }, MetricsInstance.SendEvery)
     */
 
-    this.setAndBroadcastNewStatus(Status.Connected, 'instance ready and will be sending periodical anonymous metrics')
+    this.logger.debug('instance ready and will be sending periodical anonymous metrics')
+    this.setAndBroadcastNewStatus(Status.Connected)
   }
 
   disconnect(): Promise<void> | void {
@@ -76,6 +77,6 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
       this.intervalId = undefined
     }
 
-    this.setAndBroadcastNewStatus(Status.Ended, 'instance has stopped')
+    this.setAndBroadcastNewStatus(Status.Ended)
   }
 }

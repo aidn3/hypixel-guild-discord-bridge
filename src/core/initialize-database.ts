@@ -347,6 +347,50 @@ function migrateFrom3to4(
   // reference: minecraft/sessions-manager.ts
   database.exec('ALTER TABLE "mojangInstances" ADD COLUMN "connect" INTEGER NOT NULL DEFAULT 1;')
 
+  // reference: instance/status-history.ts
+  database.exec(
+    'CREATE TABLE "instanceStatusHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  instanceType TEXT NOT NULL,' +
+      '  fromStatus TEXT NOT NULL,' +
+      '  toStatus TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "instanceMessageHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  instanceType TEXT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  value TEXT DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  // reference: discord/instance-history-button.ts
+  database.exec(
+    'CREATE TABLE "discordInstanceHistoryButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  instanceType TEXT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  startTime INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  endTime INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordInstanceHistoryLastButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(channelId, instanceName)' +
+      ' ) STRICT'
+  )
+
   database.pragma('user_version = 4')
 }
 

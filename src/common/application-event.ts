@@ -1,4 +1,4 @@
-import type { Status, StatusVisibility } from './connectable-instance.js'
+import type { Status } from './connectable-instance.js'
 import type { DiscordUser, MinecraftUser, User } from './user'
 
 /*
@@ -60,15 +60,15 @@ export interface ApplicationEvents {
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  instanceStatus: (event: Readonly<InstanceStatusEvent>) => void
+  instanceStatus: (event: Readonly<InstanceStatus>) => void
   /**
    * Announce instance existence to other instances
    */
   instanceAnnouncement: (event: Readonly<InstanceAnnouncement>) => void
   /**
-   * Display a useful message coming from the internal components
+   * Display a useful message coming from the internal components due to an action from another event
    */
-  instanceMessage: (event: Readonly<InstanceMessage>) => void
+  instanceReactive: (event: Readonly<InstanceReactive>) => void
 
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
@@ -158,6 +158,10 @@ export interface BaseEvent extends InstanceIdentifier {
    *  - discord instance can use that to associate the event with the message the user sent
    */
   readonly eventId: string
+  /**
+   * When the event was created. A unix timestamp in milliseconds
+   */
+  readonly createdAt: number
 }
 
 /**
@@ -534,7 +538,16 @@ export enum MinecraftReactiveEventType {
    * @see GuildPlayerEventType#Mute
    * @see GuildPlayerEventType#Muted
    */
-  GuildMuted = 'guild_muted'
+  GuildMuted = 'guild_muted',
+  /**
+   * When a queued to send message is truncated before it is sent.
+   * Example:
+   * - Discord instance sends a chat message
+   * - Minecraft instance receives the messages and begins scheduling it to be sent
+   * - Minecraft instance applies a custom transformer on the message like truncating it when the message is too large
+   * - Minecraft instance sends a reply event informing Discord instance that the message has been truncated
+   */
+  MessageTruncated = 'truncated'
 }
 
 /**
@@ -641,24 +654,26 @@ export interface UserLink {
   discordId: string
 }
 
+interface InstanceStatusWithBroadcast extends InformEvent {
+  readonly message: InstanceMessage
+  readonly status: undefined
+}
+
+interface InstanceStatusWithChange extends InformEvent {
+  readonly message: undefined
+  readonly status: StatusChange
+}
+
+interface InstanceStatusWithBoth extends InformEvent {
+  readonly message: InstanceMessage
+  // Status.Connected status can only be sent without any message to ease parsing
+  readonly status: StatusChange & { to: Exclude<Status, Status.Connected> }
+}
+
 /**
  * Events used when an instance changes its status
  */
-export interface InstanceStatusEvent extends InformEvent {
-  /**
-   * The instance event status
-   */
-  readonly status: Status
-  /**
-   * Whether the event should be shown to the end user
-   */
-  readonly visibility: StatusVisibility.Show | StatusVisibility.Silent
-  /**
-   * Humanly formatted message of the situation
-   */
-  readonly message: string
-}
-
+export type InstanceStatus = InstanceStatusWithBroadcast | InstanceStatusWithChange | InstanceStatusWithBoth
 /**
  * Event sent with every received minecraft chat
  */
@@ -690,27 +705,52 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 export type InstanceAnnouncement = InformEvent
 
 export enum InstanceMessageType {
-  MinecraftAuthenticationCode = 'minecraft-authentication-code',
-  MinecraftTruncateMessage = 'minecraft-truncate-message',
-  MinecraftInstanceNotAutoConnect = 'minecraft-instance-not-auto-connect'
+  MinecraftAuthenticationCode = 'minecraftAuthenticationCode',
+  MinecraftInstanceNotAutoConnect = 'minecraftInstanceNotAutoConnect',
+  MinecraftEnded = 'minecraftEnded',
+  MinecraftRestarting = 'minecraftRestarting',
+  MinecraftKicked = 'minecraftKicked',
+  MinecraftInternetProblems = 'minecraftInternetProblems',
+  MinecraftXboxDown = 'minecraftXboxDown',
+  MinecraftXboxThrottled = 'minecraftXboxThrottled',
+  MinecraftNoAccount = 'minecraftNoAccount',
+  MinecraftProxyBroken = 'minecraftProxyBroken',
+  MinecraftIncompatible = 'minecraftIncompatible',
+  MinecraftBanned = 'minecraftBanned',
+  MinecraftFailedTooManyTimes = 'minecraftFailedTooManyTimes',
+  MinecraftKickedLoggedFromAnotherLocation = 'minecraftKickedLoggedFromAnotherLocation'
 }
 
 /**
  * Event that contains information that might prove useful.
  * Used to display internal status of the application internal components to the user outside the console.
  */
-interface BaseInstanceMessage extends InformEvent {
+export interface InstanceMessage {
   /**
    * Type of the message
    */
-  type: InstanceMessageType
+  readonly type: InstanceMessageType
   /**
-   * The message content that explains the status
+   * The custom content to add on top of the {@link #type}.
+   * This field must be only for non-verbal data like a dynamic link or an authentication code etc.
+   * Otherwise, (extend and) use {@link #type}.
    */
-  readonly message: string
+  readonly value: string | undefined
 }
 
-export type InstanceMessage = BaseInstanceMessage | (BaseInstanceMessage & ReplyEvent)
+export interface StatusChange {
+  from: Status
+  to: Status
+}
+
+export interface InstanceReactive extends ReplyEvent {
+  type: InstanceReactiveType
+  message: string
+}
+
+export enum InstanceReactiveType {
+  MessageTruncated = 'messageTruncated'
+}
 
 /**
  * When to handle the command.

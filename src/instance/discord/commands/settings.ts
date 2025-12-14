@@ -15,6 +15,7 @@ import type Application from '../../../application.js'
 import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { translateInstanceMessage, translateInstanceStatus } from '../../../core/instance/instance-language'
 import { ApplicationLanguages } from '../../../core/language-configurations'
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
@@ -1033,7 +1034,14 @@ async function minecraftInstanceAdd(
     if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
     assert.ok(embed.description)
-    embed.description += `- ${event.message}\n`
+    if (event.status !== undefined) {
+      embed.description += `- ${translateInstanceStatus(application.i18n, event.status)}\n`
+    }
+    if (event.message !== undefined) {
+      embed.description += `- ${translateInstanceMessage(application.i18n, event.message.type)}`
+      embed.description += event.message.value === undefined ? '\n' : `: ${event.message.value}\n`
+    }
+
     refresher.refresh()
   }
   registeredEvents.instanceAnnouncement = (event) => {
@@ -1041,13 +1049,6 @@ async function minecraftInstanceAdd(
 
     assert.ok(embed.description)
     embed.description += `- Instance has been created\n`
-    refresher.refresh()
-  }
-  registeredEvents.instanceMessage = (event) => {
-    if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
-
-    assert.ok(embed.description)
-    embed.description += `- ${event.message}\n`
     refresher.refresh()
   }
   registeredEvents.minecraftSelfBroadcast = (event) => {

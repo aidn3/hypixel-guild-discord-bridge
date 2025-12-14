@@ -11,7 +11,7 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
-  InstanceStatusEvent,
+  InstanceStatus,
   MinecraftReactiveEvent
 } from '../../common/application-event.js'
 import {
@@ -41,7 +41,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onInstance(event: InstanceStatusEvent): void | Promise<void> {
+  onInstance(event: InstanceStatus): void | Promise<void> {
     // TODO: implement onInstance on minecraft side
     // maybe not implement either if it gives better UX
     return undefined
@@ -179,15 +179,15 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       await this.send(`/oc ${message}`, MinecraftSendChatPriority.Default, event.eventId)
   }
 
-  onCommand(event: CommandEvent): void | Promise<void> {
-    this.handleCommand(event, false)
+  async onCommand(event: CommandEvent): Promise<void> {
+    await this.handleCommand(event, false)
   }
 
-  onCommandFeedback(event: CommandFeedbackEvent): void | Promise<void> {
-    this.handleCommand(event, true)
+  async onCommandFeedback(event: CommandFeedbackEvent): Promise<void> {
+    await this.handleCommand(event, true)
   }
 
-  private handleCommand(event: CommandEvent, feedback: boolean) {
+  private async handleCommand(event: CommandEvent, feedback: boolean) {
     const reply = this.messageAssociation.getMessageId(event.originEventId)
     if (reply === undefined) {
       this.logger.error(
@@ -199,34 +199,34 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.user.displayName())
     this.messageAssociation.addMessageId(event.eventId, reply)
 
-    const finalResponse = `${feedback ? '{f} ' : ''}${event.commandResponse}`
+    const response = `${feedback ? '{f} ' : ''}${event.commandResponse}`
+    const sanitizedResponse = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
+      this.clientInstance.instanceName,
+      response
+    )
+    let prefix = ''
     switch (reply.channel) {
       case ChannelType.Public: {
-        void this.send(`/gc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId).catch(
-          this.errorHandler.promiseCatch('handling public command response display')
-        )
+        prefix = 'gc'
         break
       }
       case ChannelType.Officer: {
-        void this.send(`/oc ${finalResponse}`, MinecraftSendChatPriority.Default, event.eventId).catch(
-          this.errorHandler.promiseCatch('handling private command response display')
-        )
+        prefix = 'oc'
         break
       }
       case ChannelType.Private: {
         if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
           return
-        void this.send(
-          `/msg ${event.user.mojangProfile().name} ${finalResponse}`,
-          MinecraftSendChatPriority.Default,
-          event.eventId
-        ).catch(this.errorHandler.promiseCatch('handling private command response display'))
+        prefix = `/msg ${event.user.mojangProfile().name}`
         break
       }
       default: {
+        reply satisfies never
         break
       }
     }
+
+    await this.send(`${prefix} ${sanitizedResponse}`, MinecraftSendChatPriority.Default, event.eventId)
   }
 
   private async send(message: string, priority: MinecraftSendChatPriority, eventId: string | undefined): Promise<void> {

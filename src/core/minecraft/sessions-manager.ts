@@ -32,6 +32,23 @@ export class SessionsManager {
     return transaction()
   }
 
+  public clearCachedSessions(instanceName: string): number {
+    const MainSessionName = 'live'
+
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const statement = database.prepare('DELETE FROM "mojangSessions" WHERE name = ? AND cacheName != ?')
+      const result = statement.run(instanceName, MainSessionName).changes
+      if (result !== 0) {
+        this.logger.debug(`Deleted ${result} Minecraft cached session files with the name=${instanceName}`)
+      }
+
+      return result
+    })
+
+    return transaction()
+  }
+
   public setSession(instanceName: string, name: string, cacheName: string, value: Record<string, unknown>): void {
     const database = this.sqliteManager.getDatabase()
     const statement = database.prepare(

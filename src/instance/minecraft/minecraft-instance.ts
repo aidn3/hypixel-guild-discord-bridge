@@ -6,6 +6,7 @@ import type Application from '../../application.js'
 import type { ChannelType } from '../../common/application-event.js'
 import {
   InstanceMessageType,
+  InstanceReactiveType,
   InstanceSignalType,
   InstanceType,
   MinecraftSendChatPriority
@@ -135,12 +136,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
         `instance is attempting to connect automatically but configured to not auto-connect. Attempt stopped.`
       )
 
-      this.application.emit('instanceMessage', {
-        ...this.eventHelper.fillBaseEvent(),
-
-        type: InstanceMessageType.MinecraftInstanceNotAutoConnect,
-        message: `Minecraft instance is set to not auto connect. A manual connect signal is needed to start.`
-      })
+      this.broadcastInstanceMessage({ type: InstanceMessageType.MinecraftInstanceNotAutoConnect, value: undefined })
       return
     }
 
@@ -153,11 +149,9 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
-        this.application.emit('instanceMessage', {
-          ...this.eventHelper.fillBaseEvent(),
-
+        this.broadcastInstanceMessage({
           type: InstanceMessageType.MinecraftAuthenticationCode,
-          message: `Login pending. Authenticate using this link: ${code.verification_uri}?otc=${code.user_code}`
+          value: `${code.verification_uri}?otc=${code.user_code}`
         })
       }
     })
@@ -172,7 +166,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.reactionHandler.registerEvents(this.clientSession)
     this.playerMuted.registerEvents(this.clientSession)
 
-    this.setAndBroadcastNewStatus(Status.Connecting, 'Minecraft instance has been created')
+    this.setAndBroadcastNewStatus(Status.Connecting)
   }
 
   async disconnect(): Promise<void> {
@@ -180,7 +174,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
     // wait till next cycle to let the clients close properly
     await setImmediate()
-    this.setAndBroadcastNewStatus(Status.Ended, 'Minecraft instance has been disconnected')
+    this.setAndBroadcastNewStatus(Status.Ended)
   }
 
   username(): string | undefined {
@@ -230,13 +224,15 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     if (message.length > 256) {
       message = message.slice(0, 253) + '...'
 
-      this.application.emit('instanceMessage', {
-        ...this.eventHelper.fillBaseEvent(),
+      if (originEventId !== undefined) {
+        this.application.emit('instanceReactive', {
+          ...this.eventHelper.fillBaseEvent(),
 
-        originEventId: originEventId,
-        type: InstanceMessageType.MinecraftTruncateMessage,
-        message: `Message is too long! It has been shortened to fit minecraft message`
-      })
+          originEventId: originEventId,
+          type: InstanceReactiveType.MessageTruncated,
+          message: `Message is too long! It has been shortened to fit minecraft message`
+        })
+      }
     }
 
     this.logger.debug(`Queuing message to send: ${message}`)

@@ -166,11 +166,13 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
   connect(): void {
     this.checkCommandsIntegrity()
-    this.setAndBroadcastNewStatus(Status.Connected, 'chat commands are ready to serve')
+    this.setAndBroadcastNewStatus(Status.Connected)
+    this.logger.debug('chat commands are ready to serve')
   }
 
   disconnect(): Promise<void> | void {
-    this.setAndBroadcastNewStatus(Status.Ended, 'chat commands have been disabled')
+    this.setAndBroadcastNewStatus(Status.Ended)
+    this.logger.debug('chat commands have been disabled')
   }
 
   async handle(event: ChatEvent): Promise<void> {
@@ -237,6 +239,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       case InstanceType.Discord: {
         return {
           eventId: this.eventHelper.generate(),
+          createdAt: Date.now(),
+
           instanceName: event.instanceName,
           instanceType: event.instanceType,
 
@@ -252,6 +256,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       case InstanceType.Minecraft: {
         return {
           eventId: this.eventHelper.generate(),
+          createdAt: Date.now(),
+
           instanceName: event.instanceName,
           instanceType: event.instanceType,
 
@@ -267,6 +273,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       default: {
         return {
           eventId: this.eventHelper.generate(),
+          createdAt: Date.now(),
+
           instanceName: event.instanceName,
           instanceType: event.instanceType,
 

@@ -1,4 +1,4 @@
-import type { InstanceStatusEvent, InstanceType } from './application-event.js'
+import type { InstanceMessage, InstanceStatus, InstanceType } from './application-event.js'
 import { InstanceSignalType } from './application-event.js'
 import { Instance } from './instance.js'
 
@@ -27,25 +27,56 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
    * Change instance status and inform other instances about the status.
    * Function will just return if the status is the same.
    * @param status The status to set
-   * @param reason Any message to supply for other instances in case of displaying a human-readable message.
-   * @param visibility whether to broadcast the status change and how to broadcast it
    */
-  public setAndBroadcastNewStatus(
-    status: Status,
-    reason: string,
-    visibility: StatusVisibility = StatusVisibility.Show
-  ): void {
+  public setAndBroadcastNewStatus(status: Status): void {
     if (this.status === status) return
+    const oldStatus = this.status
     this.status = status
-    if (visibility === StatusVisibility.Hidden) return
-    this.application.emit('instanceStatus', {
+
+    const event = {
       ...this.eventHelper.fillBaseEvent(),
 
-      status: status,
-      visibility: visibility,
+      status: { from: oldStatus, to: status },
+      message: undefined
+    } satisfies InstanceStatus
+    this.broadcastStatusEvent(event)
+  }
 
-      message: reason
-    } satisfies InstanceStatusEvent)
+  public setAndBroadcastNewStatusWithMessage(
+    status: Exclude<Status, Status.Connected>,
+    message: InstanceMessage
+  ): void {
+    if (this.status === status) return
+    const oldStatus = this.status
+    this.status = status
+
+    const event = {
+      ...this.eventHelper.fillBaseEvent(),
+
+      status: { from: oldStatus, to: status },
+      message: message
+    } satisfies InstanceStatus
+    this.broadcastStatusEvent(event)
+  }
+
+  public broadcastInstanceMessage(message: InstanceMessage): void {
+    const event = {
+      ...this.eventHelper.fillBaseEvent(),
+
+      status: undefined,
+      message: message
+    } satisfies InstanceStatus
+
+    this.broadcastStatusEvent(event)
+  }
+
+  private broadcastStatusEvent(event: InstanceStatus): void {
+    // Directly add the entry into the database before broadcasting it,
+    // so listeners can query database for entire history directly after
+    // without worry if they ever wish to
+    this.application.core.statusHistory.add(event)
+
+    this.application.emit('instanceStatus', event)
   }
 
   /**
@@ -67,21 +98,6 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
    * Not disposing of the old client may result in double listeners.
    */
   public abstract disconnect(): Promise<void> | void
-}
-
-export enum StatusVisibility {
-  /**
-   * Broadcast the status and instruct all instances to display it everywhere
-   */
-  Show = 'show',
-  /**
-   * Broadcast the status and instruct all instances to process them but not display anything
-   */
-  Silent = 'silent',
-  /**
-   * Do not broadcast the event anywhere
-   */
-  Hidden = 'hidden'
 }
 
 export enum Status {
