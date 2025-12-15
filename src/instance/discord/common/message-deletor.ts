@@ -6,6 +6,7 @@ import type Application from '../../../application'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { DiscordMessage } from '../../../core/discord/discord-temporarily-interactions'
 import Duration from '../../../utility/duration'
+import { setIntervalAsync } from '../../../utility/scheduling'
 
 export default class MessageDeleter {
   private static readonly CheckEvery = Duration.seconds(5)
@@ -16,23 +17,22 @@ export default class MessageDeleter {
     private readonly errorHandler: UnexpectedErrorHandler,
     private readonly client: Client
   ) {
-    setInterval(() => {
-      const totalQueue = this.queue.getPendingLength() + this.queue.getQueueLength()
-      if (totalQueue === 0) this.queueClean()
-    }, MessageDeleter.CheckEvery.toMilliseconds())
+    setIntervalAsync(
+      async () => {
+        const totalQueue = this.queue.getPendingLength() + this.queue.getQueueLength()
+        if (totalQueue === 0) await this.queueClean()
+      },
+      { delay: MessageDeleter.CheckEvery, errorHandler: this.errorHandler.promiseCatch('deleting old interactions') }
+    )
   }
 
-  public add(messages: DiscordMessage[]): void {
+  public async add(messages: DiscordMessage[]): Promise<void> {
     this.application.core.discordTemporarilyInteractions.add(messages)
-    this.queueClean()
+    await this.queueClean()
   }
 
-  private queueClean(): void {
-    void this.queue
-      .add(() => {
-        return this.clean().catch(this.errorHandler.promiseCatch('deleting old interactions'))
-      })
-      .catch(this.errorHandler.promiseCatch('queue failed when trying to delete old interactions'))
+  private async queueClean(): Promise<void> {
+    await this.queue.add(() => this.clean())
   }
 
   public async clean(): Promise<void> {

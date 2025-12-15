@@ -21,10 +21,10 @@ export default class LoggerManager extends SubInstance<DiscordInstance, Instance
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    this.application.on('guildPlayer', (event) => {
+    this.application.on('guildPlayer', async (event) => {
       if (event.type == GuildPlayerEventType.Online || event.type == GuildPlayerEventType.Offline) return
 
-      void this.send(`Guild > ${event.instanceName}: ${event.message}`).catch(
+      await this.send(`Guild > ${event.instanceName}: ${event.message}`).catch(
         this.errorHandler.promiseCatch('handling guildPlayer event')
       )
     })

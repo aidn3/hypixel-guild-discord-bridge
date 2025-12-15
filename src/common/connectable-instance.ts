@@ -28,7 +28,7 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
    * Function will just return if the status is the same.
    * @param status The status to set
    */
-  public setAndBroadcastNewStatus(status: Status): void {
+  public async setAndBroadcastNewStatus(status: Status): Promise<void> {
     if (this.status === status) return
     const oldStatus = this.status
     this.status = status
@@ -39,13 +39,13 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
       status: { from: oldStatus, to: status },
       message: undefined
     } satisfies InstanceStatus
-    this.broadcastStatusEvent(event)
+    await this.broadcastStatusEvent(event)
   }
 
-  public setAndBroadcastNewStatusWithMessage(
+  public async setAndBroadcastNewStatusWithMessage(
     status: Exclude<Status, Status.Connected>,
     message: InstanceMessage
-  ): void {
+  ): Promise<void> {
     if (this.status === status) return
     const oldStatus = this.status
     this.status = status
@@ -56,10 +56,10 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
       status: { from: oldStatus, to: status },
       message: message
     } satisfies InstanceStatus
-    this.broadcastStatusEvent(event)
+    await this.broadcastStatusEvent(event)
   }
 
-  public broadcastInstanceMessage(message: InstanceMessage): void {
+  public async broadcastInstanceMessage(message: InstanceMessage): Promise<void> {
     const event = {
       ...this.eventHelper.fillBaseEvent(),
 
@@ -67,16 +67,16 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
       message: message
     } satisfies InstanceStatus
 
-    this.broadcastStatusEvent(event)
+    await this.broadcastStatusEvent(event)
   }
 
-  private broadcastStatusEvent(event: InstanceStatus): void {
+  private async broadcastStatusEvent(event: InstanceStatus): Promise<void> {
     // Directly add the entry into the database before broadcasting it,
     // so listeners can query database for entire history directly after
     // without worry if they ever wish to
     this.application.core.statusHistory.add(event)
 
-    this.application.emit('instanceStatus', event)
+    await this.application.emit('instanceStatus', event)
   }
 
   /**

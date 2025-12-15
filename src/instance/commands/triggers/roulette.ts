@@ -33,7 +33,7 @@ export default class Roulette extends ChatCommandHandler {
     })
   }
 
-  handler(context: ChatCommandContext): string {
+  async handler(context: ChatCommandContext): Promise<string> {
     if (context.message.instanceType !== InstanceType.Minecraft) {
       return canOnlyUseIngame(context)
     }
@@ -63,7 +63,7 @@ export default class Roulette extends ChatCommandHandler {
     if (Math.random() < currentChance) {
       this.countSinceLastLose = 0
 
-      context.message.user.mute(
+      await context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,
         Duration.minutes(15),

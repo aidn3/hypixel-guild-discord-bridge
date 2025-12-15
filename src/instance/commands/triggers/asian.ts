@@ -28,15 +28,17 @@ export default class Asian extends ChatCommandHandler {
       if (guess === math.answer) timeout.resolve(guess)
     }
 
-    context.sendFeedback(`${context.username}, quick: ${math.expression}`)
     context.app.on('chat', listener)
+    await context.sendFeedback(`${context.username}, quick: ${math.expression}`)
+    timeout.refresh()
+
     const result = await timeout.wait()
-    context.app.removeListener('chat', listener)
+    context.app.off('chat', listener)
 
     if (result === math.answer) {
       return 'Big brain!'
     } else {
-      context.message.user.mute(
+      await context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,
         Duration.minutes(1),

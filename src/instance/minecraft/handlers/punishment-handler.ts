@@ -24,14 +24,14 @@ export default class PunishmentHandler extends SubInstance<MinecraftInstance, In
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.application.on('guildPlayer', (event) => {
+    this.application.on('guildPlayer', async (event) => {
       if (
         event.instanceName !== this.clientInstance.instanceName ||
         event.instanceType !== this.clientInstance.instanceType
       )
         return
 
-      void this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
+      await this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
   }
 
@@ -62,7 +62,7 @@ export default class PunishmentHandler extends SubInstance<MinecraftInstance, In
     const heatResult = event.responsible.addModerationAction(heatType)
 
     if (heatResult === HeatResult.Warn) {
-      this.application.emit('broadcast', {
+      await this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
         channels: [ChannelType.Public, ChannelType.Officer],
         color: Color.Info,
@@ -71,7 +71,7 @@ export default class PunishmentHandler extends SubInstance<MinecraftInstance, In
         message: `${username}, you have been issuing too many dangerous commands in a short time. Slow down!`
       })
     } else if (heatResult === HeatResult.Denied) {
-      this.application.emit('broadcast', {
+      await this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
         channels: [ChannelType.Public, ChannelType.Officer],
         color: Color.Bad,

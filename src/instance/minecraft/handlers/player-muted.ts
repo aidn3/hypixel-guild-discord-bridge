@@ -20,7 +20,7 @@ export default class PlayerMuted extends SubInstance<MinecraftInstance, Instance
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.application.on('chat', (event) => {
+    this.application.on('chat', async (event) => {
       if (
         event.instanceName !== this.clientInstance.instanceName ||
         event.instanceType !== this.clientInstance.instanceType
@@ -34,7 +34,7 @@ export default class PlayerMuted extends SubInstance<MinecraftInstance, Instance
       let message = this.application.core.languageConfigurations.getAnnounceMutedPlayer()
       message = message.replaceAll('{username}', event.user.displayName())
 
-      this.application.emit('broadcast', {
+      await this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
 
         channels: [ChannelType.Public],

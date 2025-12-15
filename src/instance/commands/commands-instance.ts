@@ -143,8 +143,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
     this.checkCommandsIntegrity()
 
-    this.application.on('chat', (event) => {
-      void this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
+    this.application.on('chat', async (event) => {
+      await this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
@@ -164,14 +164,14 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     }
   }
 
-  connect(): void {
+  async connect(): Promise<void> {
     this.checkCommandsIntegrity()
-    this.setAndBroadcastNewStatus(Status.Connected)
+    await this.setAndBroadcastNewStatus(Status.Connected)
     this.logger.debug('chat commands are ready to serve')
   }
 
-  disconnect(): Promise<void> | void {
-    this.setAndBroadcastNewStatus(Status.Ended)
+  async disconnect(): Promise<void> {
+    await this.setAndBroadcastNewStatus(Status.Ended)
     this.logger.debug('chat commands have been disabled')
   }
 
@@ -210,15 +210,15 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         username: event.user.mojangProfile()?.name ?? event.user.displayName(),
         args: commandsArguments,
 
-        sendFeedback: (feedbackResponse) => {
-          this.feedback(event, command.triggers[0], feedbackResponse)
+        sendFeedback: async (feedbackResponse) => {
+          await this.feedback(event, command.triggers[0], feedbackResponse)
         }
       })
 
-      this.reply(event, command.triggers[0], commandResponse)
+      await this.reply(event, command.triggers[0], commandResponse)
     } catch (error) {
       this.logger.error('Error while handling command', error)
-      this.reply(
+      await this.reply(
         event,
         command.triggers[0],
         `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
@@ -226,12 +226,12 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     }
   }
 
-  private reply(event: ChatEvent, commandName: string, response: string): void {
-    this.application.emit('command', this.format(event, commandName, response))
+  private async reply(event: ChatEvent, commandName: string, response: string): Promise<void> {
+    await this.application.emit('command', this.format(event, commandName, response))
   }
 
-  private feedback(event: ChatEvent, commandName: string, response: string): void {
-    this.application.emit('commandFeedback', this.format(event, commandName, response))
+  private async feedback(event: ChatEvent, commandName: string, response: string): Promise<void> {
+    await this.application.emit('commandFeedback', this.format(event, commandName, response))
   }
 
   private format(event: ChatEvent, commandName: string, response: string): CommandLike {

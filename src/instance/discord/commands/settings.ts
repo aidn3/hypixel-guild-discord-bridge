@@ -12,7 +12,7 @@ import {
 } from 'discord.js'
 
 import type Application from '../../../application.js'
-import { type ApplicationEvents, Color, InstanceType, Permission } from '../../../common/application-event.js'
+import { Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { translateInstanceMessage, translateInstanceStatus } from '../../../core/instance/instance-language'
@@ -959,7 +959,6 @@ async function minecraftInstanceAdd(
 
   const EmbedTitle = 'Adding new minecraft instance'
   const InitiationTimeout = 30 * 60 * 1000
-  type ApplicationListeners<T> = { [P in keyof T]?: T[P] }
 
   try {
     application.applicationIntegrity.ensureInstanceName({
@@ -1027,43 +1026,53 @@ async function minecraftInstanceAdd(
     sendChainPromise = sendChainPromise.then(updateEmbed)
   }, 1000)
 
-  const registeredEvents: ApplicationListeners<ApplicationEvents> = {}
   const sleepTimeout = new Timeout<true>(InitiationTimeout)
+  const abortController = new AbortController()
 
-  registeredEvents.instanceStatus = (event) => {
-    if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
+  application.on(
+    'instanceStatus',
+    (event) => {
+      if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    assert.ok(embed.description)
-    if (event.status !== undefined) {
-      embed.description += `- ${translateInstanceStatus(application.i18n, event.status)}\n`
-    }
-    if (event.message !== undefined) {
-      embed.description += `- ${translateInstanceMessage(application.i18n, event.message.type)}`
-      embed.description += event.message.value === undefined ? '\n' : `: ${event.message.value}\n`
-    }
+      assert.ok(embed.description)
+      if (event.status !== undefined) {
+        embed.description += `- ${translateInstanceStatus(application.i18n, event.status)}\n`
+      }
+      if (event.message !== undefined) {
+        embed.description += `- ${translateInstanceMessage(application.i18n, event.message.type)}`
+        embed.description += event.message.value === undefined ? '\n' : `: ${event.message.value}\n`
+      }
 
-    refresher.refresh()
-  }
-  registeredEvents.instanceAnnouncement = (event) => {
-    if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
+      refresher.refresh()
+    },
+    { signal: abortController.signal }
+  )
 
-    assert.ok(embed.description)
-    embed.description += `- Instance has been created\n`
-    refresher.refresh()
-  }
-  registeredEvents.minecraftSelfBroadcast = (event) => {
-    if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
+  application.on(
+    'instanceAnnouncement',
+    (event) => {
+      if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    assert.ok(embed.description)
-    embed.description += `- Instance has logged in as ${event.username} (${event.uuid})\n`
-    embed.color = Color.Good
+      assert.ok(embed.description)
+      embed.description += `- Instance has been created\n`
+      refresher.refresh()
+    },
+    { signal: abortController.signal }
+  )
+  application.on(
+    'minecraftSelfBroadcast',
+    (event) => {
+      if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
 
-    sleepTimeout.resolve(true)
-  }
+      assert.ok(embed.description)
+      embed.description += `- Instance has logged in as ${event.username} (${event.uuid})\n`
+      embed.color = Color.Good
 
-  for (const [name, listener] of Object.entries(registeredEvents)) {
-    application.on(name as keyof ApplicationEvents, listener)
-  }
+      sleepTimeout.resolve(true)
+    },
+    { signal: abortController.signal }
+  )
+
   try {
     embed.description += `- Creating a fresh Minecraft instance\n`
     await application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
@@ -1077,9 +1086,7 @@ async function minecraftInstanceAdd(
   }
   await sleepTimeout.wait()
 
-  for (const [name, listener] of Object.entries(registeredEvents)) {
-    application.removeListener(name as keyof ApplicationEvents, listener)
-  }
+  abortController.abort()
   clearTimeout(refresher)
   await sendChainPromise.then(updateEmbed)
   return true

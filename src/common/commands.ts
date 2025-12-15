@@ -46,7 +46,7 @@ export interface ChatCommandContext {
   username: string
   args: string[]
 
-  sendFeedback: (feedback: string) => void
+  sendFeedback: (feedback: string) => Promise<void>
 }
 
 export interface DiscordCommandHandler {

@@ -24,10 +24,10 @@ export default {
       )
 
       if (responsible !== context.clientInstance.username()) {
-        targetUser.forgive(context.eventHelper.fillBaseEvent())
+        await targetUser.forgive(context.eventHelper.fillBaseEvent())
       }
 
-      context.application.emit('guildPlayer', {
+      await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Good,

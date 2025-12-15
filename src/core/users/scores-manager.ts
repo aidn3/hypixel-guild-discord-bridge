@@ -11,6 +11,7 @@ import type { SqliteManager } from '../../common/sqlite-manager'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import Duration from '../../utility/duration'
+import { setIntervalAsync } from '../../utility/scheduling'
 import type { Core } from '../core'
 
 export default class ScoresManager extends SubInstance<Core, InstanceType.Core, void> {
@@ -19,7 +20,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
   public static readonly LeniencyTime = Duration.minutes(5)
 
   private static readonly InstantInterval = 60 * 1000
-  private static readonly FetchMembersEvery = 50 * 1000
+  private static readonly FetchMembersEvery = Duration.seconds(50)
 
   private static readonly ScoresExpireAt = Duration.minutes(1)
 
@@ -78,25 +79,20 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
       }
     })
 
-    setInterval(() => {
-      void this.queue
-        .add(async () => {
-          await this.fetchGuilds()
-        })
-        .catch(this.errorHandler.promiseCatch('fetching guilds'))
-    }, Duration.minutes(30).toMilliseconds())
+    setIntervalAsync(() => this.queue.add(() => this.fetchGuilds()), {
+      delay: Duration.minutes(30),
+      errorHandler: this.errorHandler.promiseCatch('fetching guilds')
+    })
 
-    setInterval(() => {
-      void this.queue
-        .add(async () => {
-          await this.fetchMembers()
-        })
-        .catch(this.errorHandler.promiseCatch('fetching and adding members'))
-    }, ScoresManager.FetchMembersEvery)
+    setIntervalAsync(() => this.queue.add(() => this.fetchMembers()), {
+      delay: ScoresManager.FetchMembersEvery,
+      errorHandler: this.errorHandler.promiseCatch('fetching and adding members')
+    })
 
-    setInterval(() => {
-      void this.migrateUsernames().catch(this.errorHandler.promiseCatch('migrating Mojang usernames to UUID'))
-    }, Duration.minutes(30).toMilliseconds())
+    setIntervalAsync(() => this.migrateUsernames(), {
+      delay: Duration.minutes(30),
+      errorHandler: this.errorHandler.promiseCatch('migrating Mojang usernames to UUID')
+    })
   }
 
   public getMessages30Days(): TotalMessagesLeaderboard[] {

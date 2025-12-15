@@ -31,7 +31,7 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
       events: new Map()
     }
 
-    this.application.on('all', (name) => {
+    this.application.onAny((name) => {
       const count = this.stats.events.get(name) ?? 0
       this.stats.events.set(name, count + 1)
     })
@@ -48,7 +48,7 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
       })
   }
 
-  connect(): void {
+  async connect(): Promise<void> {
     this.logger.info('Thank you for enabling metrics!')
     if (this.intervalId !== undefined) {
       clearInterval(this.intervalId)
@@ -65,10 +65,10 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
     */
 
     this.logger.debug('instance ready and will be sending periodical anonymous metrics')
-    this.setAndBroadcastNewStatus(Status.Connected)
+    await this.setAndBroadcastNewStatus(Status.Connected)
   }
 
-  disconnect(): Promise<void> | void {
+  async disconnect(): Promise<void> {
     if (this.intervalId === undefined) {
       // TODO: enable metrics back when finished
       // this.logger.warn('Received disconnect() request but instance already disconnected')
@@ -77,6 +77,6 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
       this.intervalId = undefined
     }
 
-    this.setAndBroadcastNewStatus(Status.Ended)
+    await this.setAndBroadcastNewStatus(Status.Ended)
   }
 }

@@ -202,29 +202,39 @@ export class User {
     return new PunishmentInstant(this, punishments)
   }
 
-  public forgive(executor: InformEvent): SavedPunishment[] {
+  public async forgive(executor: InformEvent): Promise<SavedPunishment[]> {
     const savedPunishments = this.context.punishments.remove(this)
 
-    this.application.emit('punishmentForgive', { ...executor, user: this })
+    await this.application.emit('punishmentForgive', { ...executor, user: this })
 
     return savedPunishments
   }
 
-  public ban(executor: InformEvent, purpose: PunishmentPurpose, duration: Duration, reason: string): SavedPunishment {
-    return this.punish(executor, PunishmentType.Ban, purpose, duration, reason)
+  public async ban(
+    executor: InformEvent,
+    purpose: PunishmentPurpose,
+    duration: Duration,
+    reason: string
+  ): Promise<SavedPunishment> {
+    return await this.punish(executor, PunishmentType.Ban, purpose, duration, reason)
   }
 
-  public mute(executor: InformEvent, purpose: PunishmentPurpose, duration: Duration, reason: string): SavedPunishment {
-    return this.punish(executor, PunishmentType.Mute, purpose, duration, reason)
+  public async mute(
+    executor: InformEvent,
+    purpose: PunishmentPurpose,
+    duration: Duration,
+    reason: string
+  ): Promise<SavedPunishment> {
+    return await this.punish(executor, PunishmentType.Mute, purpose, duration, reason)
   }
 
-  private punish(
+  private async punish(
     executor: InformEvent,
     type: PunishmentType,
     purpose: PunishmentPurpose,
     duration: Duration,
     reason: string
-  ): SavedPunishment {
+  ): Promise<SavedPunishment> {
     const currentTime = Date.now()
 
     const punishment: BasePunishment = {
@@ -238,7 +248,7 @@ export class User {
     const savedPunishment = { ...punishment, ...this.getUserIdentifier() }
 
     this.context.punishments.add(savedPunishment)
-    this.application.emit('punishmentAdd', { ...executor, user: this, ...punishment })
+    await this.application.emit('punishmentAdd', { ...executor, user: this, ...punishment })
 
     return savedPunishment
   }

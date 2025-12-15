@@ -1,6 +1,6 @@
 import type { Logger } from 'log4js'
 
-type PromiseCatchHandler = (error: unknown) => void
+export type PromiseCatchHandler = (error: unknown) => void
 export default class UnexpectedErrorHandler {
   private readonly logger: Logger
 

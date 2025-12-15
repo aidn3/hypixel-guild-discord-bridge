@@ -170,7 +170,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     this.application.on('minecraftChat', chatListener)
     await this.application.sendMinecraft([instanceName], MinecraftSendChatPriority.High, undefined, `/guild list`)
     const error = await timeout.wait()
-    this.application.removeListener('minecraftChat', chatListener)
+    this.application.off('minecraftChat', chatListener)
     if (error) throw error
     if (timeout.timedOut()) throw new Error('Timed out before fully fetching guild listing data')
 

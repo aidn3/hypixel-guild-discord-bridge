@@ -9,7 +9,9 @@ export default class StateHandler extends SubInstance<DiscordInstance, InstanceT
   override registerEvents(client: Client): void {
     client.on('clientReady', (client) => {
       this.logger.info('Discord client ready, logged in as ' + client.user.tag)
-      this.clientInstance.setAndBroadcastNewStatus(Status.Connected)
+      void this.clientInstance
+        .setAndBroadcastNewStatus(Status.Connected)
+        .catch(this.errorHandler.promiseCatch('handling clientReady event from Discord'))
     })
   }
 }

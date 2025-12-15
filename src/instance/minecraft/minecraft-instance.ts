@@ -119,24 +119,27 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     return this.limboHandler.acquire()
   }
 
-  connect(): void {
+  async connect(): Promise<void> {
     if (this.clientSession !== undefined) {
       this.clientSession.silentQuit = true
       this.clientSession.client.end(QuitOwnVolition)
     }
 
     this.stateHandler.resetLoginAttempts()
-    this.automaticReconnect()
+    await this.automaticReconnect()
   }
 
-  public automaticReconnect(): void {
+  public async automaticReconnect(): Promise<void> {
     const autoConnect = this.application.core.minecraftSessions.getInstanceAutoConnect(this.instanceName)
     if (!autoConnect) {
       this.logger.debug(
         `instance is attempting to connect automatically but configured to not auto-connect. Attempt stopped.`
       )
 
-      this.broadcastInstanceMessage({ type: InstanceMessageType.MinecraftInstanceNotAutoConnect, value: undefined })
+      await this.broadcastInstanceMessage({
+        type: InstanceMessageType.MinecraftInstanceNotAutoConnect,
+        value: undefined
+      })
       return
     }
 
@@ -149,10 +152,10 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
-        this.broadcastInstanceMessage({
+        void this.broadcastInstanceMessage({
           type: InstanceMessageType.MinecraftAuthenticationCode,
           value: `${code.verification_uri}?otc=${code.user_code}`
-        })
+        }).catch(this.errorHandler.promiseCatch('broadcasting authentication code'))
       }
     })
 
@@ -166,7 +169,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     this.reactionHandler.registerEvents(this.clientSession)
     this.playerMuted.registerEvents(this.clientSession)
 
-    this.setAndBroadcastNewStatus(Status.Connecting)
+    await this.setAndBroadcastNewStatus(Status.Connecting)
   }
 
   async disconnect(): Promise<void> {
@@ -174,7 +177,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
     // wait till next cycle to let the clients close properly
     await setImmediate()
-    this.setAndBroadcastNewStatus(Status.Ended)
+    await this.setAndBroadcastNewStatus(Status.Ended)
   }
 
   username(): string | undefined {
@@ -225,7 +228,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       message = message.slice(0, 253) + '...'
 
       if (originEventId !== undefined) {
-        this.application.emit('instanceReactive', {
+        await this.application.emit('instanceReactive', {
           ...this.eventHelper.fillBaseEvent(),
 
           originEventId: originEventId,

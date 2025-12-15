@@ -16,6 +16,8 @@ import { CommandScope, OptionToAddMinecraftInstances } from '../../common/comman
 import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import Duration from '../../utility/duration'
+import { setTimeoutAsync } from '../../utility/scheduling'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
@@ -83,9 +85,10 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
   }
 
   private listenToRegisterCommands(client: Client<true>): void {
-    const timeoutId = setTimeout(() => {
-      this.registerDiscordCommand(client)
-    }, 5 * 1000)
+    const timeoutId = setTimeoutAsync(() => this.registerDiscordCommand(client), {
+      delay: Duration.seconds(5),
+      errorHandler: this.errorHandler.promiseCatch('registering slash commands')
+    })
 
     this.application.on('minecraftSelfBroadcast', (): void => {
       timeoutId.refresh()
@@ -312,7 +315,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
     }
   }
 
-  private registerDiscordCommand(client: Client<true>): void {
+  private async registerDiscordCommand(client: Client<true>): Promise<void> {
     this.logger.debug('Registering commands')
 
     const token = client.token
@@ -322,7 +325,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
     for (const [, guild] of client.guilds.cache) {
       this.logger.debug(`Informing guild ${guild.id} about commands`)
       const rest = new REST().setToken(token)
-      void rest
+      await rest
         .put(Routes.applicationGuildCommands(clientId, guild.id), { body: commandsJson })
         .catch(this.errorHandler.promiseCatch('registering discord commands'))
     }

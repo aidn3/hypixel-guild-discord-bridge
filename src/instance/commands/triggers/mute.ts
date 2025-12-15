@@ -41,14 +41,14 @@ export default class Mute extends ChatCommandHandler {
     }
     this.lastCommandExecutionAt = currentTime
 
-    context.sendFeedback('Choosing a victim...')
+    await context.sendFeedback('Choosing a victim...')
     const usernames = await this.getUsernames(context)
     if (usernames.length === 0) return 'No username to randomly mute??'
 
     const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
     const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
     const user = await context.app.core.initializeMinecraftUser(userProfile, {})
-    user.mute(
+    await user.mute(
       context.eventHelper.fillBaseEvent(),
       PunishmentPurpose.Game,
       Mute.TimeLength,

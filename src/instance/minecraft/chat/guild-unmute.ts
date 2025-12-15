@@ -15,7 +15,7 @@ export default {
       assert.ok(uuid !== undefined)
       const botUser = await context.application.core.initializeMinecraftUser({ id: uuid, name: username }, {})
 
-      context.application.emit('guildPlayer', {
+      await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Good,

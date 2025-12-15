@@ -2,7 +2,7 @@ import { Color, MinecraftReactiveEventType } from '../../../common/application-e
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     const regex = /^We blocked your comment "[\W\w]+" because/g
 
     const match = regex.exec(context.message)
@@ -12,7 +12,7 @@ export default {
         context.logger.warn('No originEventId detected. Dropping the event')
         return
       }
-      context.application.emit('minecraftChatEvent', {
+      await context.application.emit('minecraftChatEvent', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,

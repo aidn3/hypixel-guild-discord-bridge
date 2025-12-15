@@ -18,7 +18,7 @@ const Messages = [
 ]
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     const regex = /^You cannot say the same message twice!/g
 
     const match = regex.exec(context.message)
@@ -30,7 +30,7 @@ export default {
         return
       }
 
-      context.application.emit('minecraftChatEvent', {
+      await context.application.emit('minecraftChatEvent', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Info,

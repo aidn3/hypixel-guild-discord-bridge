@@ -11,20 +11,20 @@ export default class SelfbroadcastHandler extends SubInstance<
   override registerEvents(clientSession: ClientSession): void {
     // first spawn packet
     clientSession.client.on('login', () => {
-      this.onSpawn()
+      void this.onSpawn().catch(this.errorHandler.promiseCatch('handling onSpawn() function'))
     })
     // change world packet
     clientSession.client.on('respawn', () => {
-      this.onSpawn()
+      void this.onSpawn().catch(this.errorHandler.promiseCatch('handling onSpawn() function'))
     })
   }
 
-  private onSpawn(): void {
+  private async onSpawn(): Promise<void> {
     const username = this.clientInstance.username()
     const uuid = this.clientInstance.uuid()
 
     if (username != undefined && uuid != undefined) {
-      this.application.emit('minecraftSelfBroadcast', {
+      await this.application.emit('minecraftSelfBroadcast', {
         ...this.eventHelper.fillBaseEvent(),
 
         uuid,

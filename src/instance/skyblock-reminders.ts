@@ -3,6 +3,8 @@ import assert from 'node:assert'
 import type Application from '../application'
 import { ChannelType, Color, InstanceType } from '../common/application-event'
 import { Instance } from '../common/instance'
+import Duration from '../utility/duration'
+import { setIntervalAsync } from '../utility/scheduling'
 
 export class SkyblockReminders extends Instance<InstanceType.Utility> {
   public static readonly DefaultDarkAuctionMessage = 'Dark Auction in {minutes} minute(s)!'
@@ -19,62 +21,68 @@ export class SkyblockReminders extends Instance<InstanceType.Utility> {
     let lastHourCheck = -1
     let lastMinuteCheck = -1
 
-    setInterval(() => {
-      if (!this.application.core.applicationConfigurations.getDarkAuctionReminder()) return
+    setIntervalAsync(
+      async () => {
+        if (!this.application.core.applicationConfigurations.getDarkAuctionReminder()) return
 
-      const date = new Date()
-      const currentHour = date.getHours()
-      const currentMinute = date.getMinutes()
+        const date = new Date()
+        const currentHour = date.getHours()
+        const currentMinute = date.getMinutes()
 
-      if (lastHourCheck === currentHour && lastMinuteCheck === currentMinute) return
-      lastHourCheck = currentHour
-      lastMinuteCheck = currentMinute
+        if (lastHourCheck === currentHour && lastMinuteCheck === currentMinute) return
+        lastHourCheck = currentHour
+        lastMinuteCheck = currentMinute
 
-      if ([50, 54].includes(currentMinute)) {
-        const remainingMinutes = 55 - currentMinute
-        assert.ok(remainingMinutes > 0)
+        if ([50, 54].includes(currentMinute)) {
+          const remainingMinutes = 55 - currentMinute
+          assert.ok(remainingMinutes > 0)
 
-        const message = this.application.core.languageConfigurations
-          .getDarkAuctionReminder()
-          .replaceAll('{minutes}', remainingMinutes.toString(10))
+          const message = this.application.core.languageConfigurations
+            .getDarkAuctionReminder()
+            .replaceAll('{minutes}', remainingMinutes.toString(10))
 
-        this.application.emit('broadcast', {
-          ...this.eventHelper.fillBaseEvent(),
+          await this.application.emit('broadcast', {
+            ...this.eventHelper.fillBaseEvent(),
 
-          channels: [ChannelType.Public],
-          color: Color.Good,
+            channels: [ChannelType.Public],
+            color: Color.Good,
 
-          user: undefined,
-          message: message
-        })
-      }
-    }, 5000)
+            user: undefined,
+            message: message
+          })
+        }
+      },
+      { errorHandler: this.errorHandler.promiseCatch('show dark auction reminder'), delay: Duration.seconds(5) }
+    )
   }
 
   private startStarfallCultReminder(): void {
     let lastSkyblockDay = -1
 
-    setInterval(() => {
-      if (!this.application.core.applicationConfigurations.getStarfallCultReminder()) return
+    setIntervalAsync(
+      async () => {
+        if (!this.application.core.applicationConfigurations.getStarfallCultReminder()) return
 
-      const date = SkyblockReminders.getSkyblockTime()
-      const currentSkyblockDay = date.day
+        const date = SkyblockReminders.getSkyblockTime()
+        const currentSkyblockDay = date.day
 
-      if (lastSkyblockDay === currentSkyblockDay) return
-      lastSkyblockDay = currentSkyblockDay
+        if (lastSkyblockDay === currentSkyblockDay) return
+        lastSkyblockDay = currentSkyblockDay
 
-      if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
-        this.application.emit('broadcast', {
-          ...this.eventHelper.fillBaseEvent(),
+        if ([7, 14, 21, 28].includes(currentSkyblockDay)) {
+          await this.application.emit('broadcast', {
+            ...this.eventHelper.fillBaseEvent(),
 
-          color: Color.Good,
-          channels: [ChannelType.Public],
+            color: Color.Good,
+            channels: [ChannelType.Public],
 
-          user: undefined,
-          message: this.application.core.languageConfigurations.getStarfallReminder()
-        })
-      }
-    }, 5000)
+            user: undefined,
+            message: this.application.core.languageConfigurations.getStarfallReminder()
+          })
+        }
+      },
+      { errorHandler: this.errorHandler.promiseCatch('show starfall reminder'), delay: Duration.seconds(5) }
+    )
   }
 
   private static getSkyblockTime(): { day: number } {

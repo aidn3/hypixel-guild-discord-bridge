@@ -14,7 +14,7 @@ export class EventsUtility implements InstanceIdentifier {
   }
 
   public async simulateChat(username: string, message: string) {
-    this.application.emit('chat', {
+    await this.application.emit('chat', {
       ...this.eventHelper.fillBaseEvent(),
 
       channelId: '0',

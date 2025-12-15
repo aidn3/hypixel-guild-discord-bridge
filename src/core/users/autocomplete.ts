@@ -10,6 +10,7 @@ import type { SqliteManager } from '../../common/sqlite-manager'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import Duration from '../../utility/duration'
+import { setIntervalAsync, setTimeoutAsync } from '../../utility/scheduling'
 import type { Core } from '../core'
 
 export default class Autocomplete extends SubInstance<Core, InstanceType.Core, void> {
@@ -38,13 +39,15 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
       this.addUsernames([event.user.displayName()])
     })
 
-    setInterval(() => {
-      void this.fetchGuildInfo().catch(this.errorHandler.promiseCatch('fetching guild info for autocomplete'))
-    }, 60_000)
+    setIntervalAsync(async () => this.fetchGuildInfo(), {
+      delay: Duration.seconds(60),
+      errorHandler: this.errorHandler.promiseCatch('fetching guild info for autocomplete')
+    })
 
-    const ranksResolver = setTimeout(() => {
-      void this.resolveGuildRanks().catch(this.errorHandler.promiseCatch('resolving guild ranks'))
-    }, 10 * 1000)
+    const ranksResolver = setTimeoutAsync(async () => this.resolveGuildRanks(), {
+      delay: Duration.seconds(10),
+      errorHandler: this.errorHandler.promiseCatch('resolving guild ranks')
+    })
     application.on('minecraftSelfBroadcast', (): void => {
       ranksResolver.refresh()
     })

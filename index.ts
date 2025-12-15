@@ -82,7 +82,7 @@ try {
   app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory, I18n.cloneInstance())
 
   const loggers = new Map<string, Logger4js.Logger>()
-  app.on('all', (name, event) => {
+  app.onAny((name, event) => {
     let instanceLogger = loggers.get(event.instanceName)
     if (instanceLogger === undefined) {
       instanceLogger = Instance.createLogger(event.instanceName)

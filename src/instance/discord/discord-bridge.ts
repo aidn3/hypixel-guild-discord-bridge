@@ -72,8 +72,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       this.errorHandler
     )
 
-    this.application.on('instanceReactive', (event) => {
-      void this.queue
+    this.application.on('instanceReactive', async (event) => {
+      await this.queue
         .add(async () => this.onInstanceReactiveEvent(event))
         .catch(this.errorHandler.promiseCatch('handling event instanceReactive'))
     })
@@ -196,7 +196,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         messageId: message.id,
         createdAt: currentTime
       }))
-      this.messageDeleter.add(entries)
+      await this.messageDeleter.add(entries)
     }
   }
 

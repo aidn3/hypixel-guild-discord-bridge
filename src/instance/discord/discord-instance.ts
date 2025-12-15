@@ -171,7 +171,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     this.connected = true
 
     this.logger.debug('Discord connecting')
-    this.setAndBroadcastNewStatus(Status.Connecting)
+    await this.setAndBroadcastNewStatus(Status.Connecting)
 
     this.stateHandler.registerEvents(this.client)
     this.statusHandler.registerEvents(this.client)
@@ -186,7 +186,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
 
   async disconnect(): Promise<void> {
     await this.client.destroy()
-    this.setAndBroadcastNewStatus(Status.Ended)
+    await this.setAndBroadcastNewStatus(Status.Ended)
     this.logger.debug('discord instance has disconnected')
   }
 }
