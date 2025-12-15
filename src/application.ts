@@ -7,7 +7,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { setImmediate } from 'node:timers/promises'
 
-import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { i18n } from 'i18next'
 import type { Logger } from 'log4js'
@@ -204,15 +203,13 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async shutdown(): Promise<void> {
-    const tasks: Awaitable<unknown>[] = []
     for (const instance of this.getAllInstances().toReversed()) {
       // reversed to go backward of `start()`
       if (instance instanceof ConnectableInstance && instance.currentStatus() !== Status.Fresh) {
         this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)
-        tasks.push(instance.disconnect())
+        await instance.disconnect()
       }
     }
-    await Promise.all(tasks)
 
     // wait till next cycle to let all events flush out
     // This might not be needed if events can be sent with async/await
