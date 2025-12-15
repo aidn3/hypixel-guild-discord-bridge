@@ -74,6 +74,7 @@ export function getDungeonLevelWithOverflow(experience: number): number {
 }
 
 export function shortenNumber(value: number): string {
+  if (value === 0) return value.toFixed(0)
   let suffix = ''
 
   if (value > 1000) {
