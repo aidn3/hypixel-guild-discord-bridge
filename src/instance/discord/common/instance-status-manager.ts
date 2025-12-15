@@ -182,7 +182,8 @@ export class InstanceStatusManager {
         result.onlySend,
         result.status,
         channel,
-        result.lastMessageId
+        result.lastMessageId,
+        result.replyMessageId
       )
 
       this.messageAssociation.addMessageId(event.eventId, {
@@ -199,7 +200,8 @@ export class InstanceStatusManager {
     onlySend: boolean,
     status: DiscordInstanceHistoryButtonType,
     channel: SendableChannels,
-    editMessageId: string | undefined
+    editMessageId: string | undefined,
+    replyMessageId: string | undefined
   ): Promise<Message> {
     if (editMessageId !== undefined) {
       try {
@@ -220,7 +222,16 @@ export class InstanceStatusManager {
       }
     }
 
-    const message = await channel.send({ ...payload, allowedMentions: { parse: [] } })
+    let message: Message | undefined
+    if (replyMessageId !== undefined) {
+      const replyMessage = await channel.messages.fetch(replyMessageId).catch(() => undefined)
+
+      if (replyMessage !== undefined) {
+        message = await replyMessage.reply({ ...payload, allowedMentions: { parse: [] } })
+      }
+    }
+    message ??= await channel.send({ ...payload, allowedMentions: { parse: [] } })
+
     this.application.core.discordInstanceHistoryButton.add({
       instanceName: event.instanceName,
       instanceType: event.instanceType,
@@ -235,6 +246,7 @@ export class InstanceStatusManager {
 
     return message
   }
+
   private getStatus(event: InstanceStatus): DiscordInstanceHistoryButtonType {
     if (event.status?.to === Status.Connected) return DiscordInstanceHistoryButtonType.Success
     else if (event.status?.to === Status.Failed) return DiscordInstanceHistoryButtonType.Failed
@@ -250,6 +262,7 @@ export class InstanceStatusManager {
         onlySend: boolean
         status: DiscordInstanceHistoryButtonType
         lastMessageId: string | undefined
+        replyMessageId: string | undefined
       }
     | undefined {
     const lastMessage = this.application.core.discordInstanceHistoryButton.lastButton(channelId, event.instanceName)
@@ -271,14 +284,16 @@ export class InstanceStatusManager {
           payload: this.generateInterrupted(event.instanceName),
           onlySend: false,
           status: currentStatus,
-          lastMessageId: undefined
+          lastMessageId: undefined,
+          replyMessageId: undefined
         }
       } else if (event.status?.from === Status.Fresh && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
         return {
           payload: this.generateInitiation(event.instanceName),
           onlySend: false,
           status: currentStatus,
-          lastMessageId: undefined
+          lastMessageId: undefined,
+          replyMessageId: undefined
         }
       }
 
@@ -288,7 +303,8 @@ export class InstanceStatusManager {
             payload: this.generateFailed(event.instanceName),
             onlySend: false,
             status: currentStatus,
-            lastMessageId: undefined
+            lastMessageId: undefined,
+            replyMessageId: undefined
           }
         }
         case DiscordInstanceHistoryButtonType.Notice: {
@@ -296,7 +312,8 @@ export class InstanceStatusManager {
             payload: this.generateNotice(event.instanceName),
             onlySend: false,
             status: currentStatus,
-            lastMessageId: undefined
+            lastMessageId: undefined,
+            replyMessageId: undefined
           }
         }
         case DiscordInstanceHistoryButtonType.Success: {
@@ -304,7 +321,8 @@ export class InstanceStatusManager {
             payload: this.generateSuccess(event.instanceName),
             onlySend: false,
             status: currentStatus,
-            lastMessageId: undefined
+            lastMessageId: undefined,
+            replyMessageId: undefined
           }
         }
         default: {
@@ -320,7 +338,8 @@ export class InstanceStatusManager {
         payload: this.generateSuccess(event.instanceName),
         onlySend: false,
         status: currentStatus,
-        lastMessageId: undefined
+        lastMessageId: undefined,
+        replyMessageId: lastMessage.messageId
       }
 
       // combine multiple authentication messages if all contain the same display message "this.generateAuthentication(...)"
@@ -337,7 +356,8 @@ export class InstanceStatusManager {
           payload: this.generateAuthentication(event.instanceName),
           onlySend: false,
           status: DiscordInstanceHistoryButtonType.Notice,
-          lastMessageId: lastMessage.messageId
+          lastMessageId: lastMessage.messageId,
+          replyMessageId: undefined
         }
       }
 
@@ -345,7 +365,8 @@ export class InstanceStatusManager {
         payload: this.generateAuthentication(event.instanceName),
         onlySend: true,
         status: DiscordInstanceHistoryButtonType.Notice,
-        lastMessageId: undefined
+        lastMessageId: undefined,
+        replyMessageId: undefined
       }
 
       //combine notice/failed with previous failed
@@ -356,7 +377,8 @@ export class InstanceStatusManager {
             payload: this.generateFailed(event.instanceName),
             onlySend: true,
             status: currentStatus,
-            lastMessageId: lastMessage.messageId
+            lastMessageId: lastMessage.messageId,
+            replyMessageId: undefined
           }
         }
         case DiscordInstanceHistoryButtonType.Notice: {
@@ -364,7 +386,8 @@ export class InstanceStatusManager {
             payload: this.generateNotice(event.instanceName),
             onlySend: true,
             status: currentStatus,
-            lastMessageId: lastMessage.messageId
+            lastMessageId: lastMessage.messageId,
+            replyMessageId: undefined
           }
         }
         default: {
@@ -376,7 +399,8 @@ export class InstanceStatusManager {
         payload: this.generateInitiation(event.instanceName),
         onlySend: false,
         status: currentStatus,
-        lastMessageId: lastMessage.messageId
+        lastMessageId: lastMessage.messageId,
+        replyMessageId: undefined
       }
     } else if (
       lastMessage.type === DiscordInstanceHistoryButtonType.Notice &&
@@ -386,14 +410,16 @@ export class InstanceStatusManager {
         payload: this.generateNotice(event.instanceName),
         onlySend: true,
         status: currentStatus,
-        lastMessageId: lastMessage.messageId
+        lastMessageId: lastMessage.messageId,
+        replyMessageId: undefined
       }
     } else if (event.status?.from === Status.Connected && currentStatus === DiscordInstanceHistoryButtonType.Notice) {
       return {
         payload: this.generateInterrupted(event.instanceName),
         onlySend: false,
         status: currentStatus,
-        lastMessageId: undefined
+        lastMessageId: undefined,
+        replyMessageId: undefined
       }
     } else if (
       lastMessage.type === DiscordInstanceHistoryButtonType.Notice &&
@@ -403,7 +429,8 @@ export class InstanceStatusManager {
         payload: this.generateFailed(event.instanceName),
         onlySend: false,
         status: currentStatus,
-        lastMessageId: lastMessage.messageId
+        lastMessageId: lastMessage.messageId,
+        replyMessageId: undefined
       }
     } else {
       switch (currentStatus) {
@@ -412,7 +439,8 @@ export class InstanceStatusManager {
             payload: this.generateFailed(event.instanceName),
             onlySend: false,
             status: currentStatus,
-            lastMessageId: undefined
+            lastMessageId: undefined,
+            replyMessageId: undefined
           }
         }
         case DiscordInstanceHistoryButtonType.Notice: {
@@ -420,7 +448,8 @@ export class InstanceStatusManager {
             payload: this.generateNotice(event.instanceName),
             onlySend: false,
             status: currentStatus,
-            lastMessageId: undefined
+            lastMessageId: undefined,
+            replyMessageId: undefined
           }
         }
         default: {
