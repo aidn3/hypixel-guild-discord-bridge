@@ -5,6 +5,7 @@ import assert from 'node:assert'
 import type Events from 'node:events'
 import fs from 'node:fs'
 import path from 'node:path'
+import { setImmediate } from 'node:timers/promises'
 
 import type { Awaitable } from 'discord.js'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
@@ -213,7 +214,11 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     }
     await Promise.all(tasks)
 
-    for (const shutdownListener of this.shutdownListeners) {
+    // wait till next cycle to let all events flush out
+    // This might not be needed if events can be sent with async/await
+    await setImmediate()
+
+    for (const shutdownListener of this.shutdownListeners.toReversed()) {
       shutdownListener()
     }
   }
