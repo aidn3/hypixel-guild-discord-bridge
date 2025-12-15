@@ -114,7 +114,7 @@ export class InstanceStatusManager {
       let result = ''
       for (let index = start; index < end; index++) {
         const element = entries[index]
-        result += `${index + 1}. <t:${Math.floor(element.createdAt / 1000)}> `
+        result += `${index + 1}. <t:${Math.floor(element.createdAt / 1000)}:S> `
 
         switch (element.entryType) {
           case StatusHistoryEntryType.Message: {
