@@ -207,11 +207,11 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     let prefix = ''
     switch (reply.channel) {
       case ChannelType.Public: {
-        prefix = 'gc'
+        prefix = '/gc'
         break
       }
       case ChannelType.Officer: {
-        prefix = 'oc'
+        prefix = '/oc'
         break
       }
       case ChannelType.Private: {
