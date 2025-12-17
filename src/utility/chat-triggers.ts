@@ -89,7 +89,8 @@ export const InviteAcceptChat: RegexChat = {
     /^You invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild. They have 5 minutes to accept/,
     /^You sent an offline invite to (?:\[[+A-Z]{1,10}] )*(\w{3,32})! They will have 5 minutes to accept once they come online!/,
     /^You've already invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild! Wait for them to accept!/,
-    /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) joined the guild!/
+    /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) joined the guild!/,
+    /^You joined [\w\W]+!$/
   ],
   failure: [
     ...GeneralChat.failure,
