@@ -2,6 +2,7 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 import type { Client } from 'minecraft-protocol'
+import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application.js'
 import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
@@ -12,6 +13,7 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 import type { GameToggleConfig } from '../../../core/minecraft/minecraft-accounts'
 import Duration from '../../../utility/duration'
 import { setIntervalAsync, setTimeoutAsync } from '../../../utility/scheduling'
+import { sleep } from '../../../utility/shared-utility'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
@@ -31,6 +33,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private ready = false
   private prepared = false
   private sentCommands = 0
+  private singletonQueue = new PromiseQueue(1)
 
   private config: GameToggleConfig | undefined
   private lastUuid: string | undefined = undefined
@@ -52,7 +55,10 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
         if (uuid === undefined) return
 
         const config = this.getConfig(uuid)
-        await this.sendToggles(config)
+
+        if (this.singletonQueue.getQueueLength() == 0 && this.singletonQueue.getPendingLength() == 0) {
+          await this.singletonQueue.add(() => this.sendToggles(config))
+        }
       },
       {
         delay: GameTogglesHandler.ResendEvery,
@@ -151,12 +157,22 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       return
     }
 
-    if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
-    if (!config.selectedEnglish) await this.queueSend('/language english')
+    const lock = await this.clientInstance.acquireLimbo()
+    try {
+      // exit limbo and go to main lobby, since some settings are only available there
+      await this.clientInstance.send('/lobby', MinecraftSendChatPriority.High, undefined)
+      await sleep(2000)
 
-    if (!config.guildAllEnabled) await this.queueSend('/guild onlinemode')
-    if (!config.guildChatEnabled) await this.queueSend('/guild toggle')
-    if (!config.guildNotificationsEnabled) await this.queueSend('/guild notifications')
+      if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
+      if (!config.selectedEnglish) await this.queueSend('/language english')
+
+      if (!config.guildAllEnabled) await this.queueSend('/guild onlinemode')
+      if (!config.guildChatEnabled) await this.queueSend('/guild toggle')
+      if (!config.guildNotificationsEnabled) await this.queueSend('/guild notifications')
+    } finally {
+      // free lock
+      lock.resolve()
+    }
   }
 
   private async queueSend(command: string): Promise<void> {
@@ -196,7 +212,11 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
         const config = this.application.core.minecraftAccounts.get(uuid)
 
         this.ready = true
-        await this.sendToggles(config) // already waited for the client to be ready
+
+        // already waited for the client to be ready
+        if (this.singletonQueue.getQueueLength() == 0 && this.singletonQueue.getPendingLength() == 0) {
+          await this.singletonQueue.add(() => this.sendToggles(config))
+        }
       },
       {
         delay: GameTogglesHandler.TillReady,
