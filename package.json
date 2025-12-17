@@ -1,6 +1,6 @@
 {
   "name": "hypixel-guild-discord-bridge",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "A Hypixel guild chat and Discord chat bridge",
   "type": "module",
   "main": "index.ts",
@@ -32,7 +32,7 @@
     "chat",
     "bridge"
   ],
-  "author": "aidn5 (aidn.david3@gmail.com)",
+  "author": "aidn5 (development@aidn5.com)",
   "typeCoverage": {
     "atLeast": 100
   },
