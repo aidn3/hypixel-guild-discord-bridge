@@ -13,6 +13,7 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 import AdvertiseChat from './chat/advertise.js'
 import BlockChat from './chat/block.js'
 import DemoteChat from './chat/demote.js'
+import GuildKick from './chat/guild-kick'
 import GuildMute from './chat/guild-mute'
 import GuildMuted from './chat/guild-muted'
 import GuildUnmute from './chat/guild-unmute'
@@ -62,6 +63,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       AdvertiseChat,
       BlockChat,
       DemoteChat,
+      GuildKick,
       GuildMute,
       GuildMuted,
       GuildUnmute,

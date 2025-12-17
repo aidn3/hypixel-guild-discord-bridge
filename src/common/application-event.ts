@@ -375,6 +375,7 @@ export enum GuildPlayerEventType {
   Leave = 'leave',
   /**
    * When a player is kicked out of a guild
+   * @see {@link #Kicked}
    */
   Kick = 'kick',
 
@@ -435,7 +436,12 @@ export enum GuildPlayerEventType {
    * When the account itself joins a guild
    * @see {@link #Join}
    */
-  Joined = 'joined'
+  Joined = 'joined',
+  /**
+   * When the account itself is kicked from the guild
+   * @see {@link #Kick}
+   */
+  Kicked = 'kicked'
 }
 
 export interface BaseInGameEvent<K extends string> extends InformEvent, MinecraftRawMessage {
@@ -711,6 +717,7 @@ export type InstanceAnnouncement = InformEvent
 
 export enum InstanceMessageType {
   MinecraftAuthenticationCode = 'minecraftAuthenticationCode',
+  MinecraftGuildKicked = 'minecraftGuildKicked',
   MinecraftInstanceNotAutoConnect = 'minecraftInstanceNotAutoConnect',
   MinecraftEnded = 'minecraftEnded',
   MinecraftRestarting = 'minecraftRestarting',

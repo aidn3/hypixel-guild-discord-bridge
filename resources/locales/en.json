@@ -15,6 +15,7 @@
   "instance.message.no-account": "Does the account own minecraft? changing skin and reconnecting might help fix the problem.",
   "instance.message.proxy-problem": "Encountered a problem while working with Minecraft instance proxy.",
   "instance.message.restarting": "Minecraft instance will try to restart soon.",
+  "instance.message.guild-kicked": "Minecraft account has been kicked off the guild.",
 
   "instance.status.change": "Status changed from {{from}} to {{to}}.",
   "instance.status.fresh": "FRESH",
