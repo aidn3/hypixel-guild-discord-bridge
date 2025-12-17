@@ -10,7 +10,7 @@ import type {
   CommandFeedbackEvent,
   GuildGeneralEvent,
   GuildPlayerEvent,
-  InstanceStatusEvent,
+  InstanceStatus,
   InstanceType,
   MinecraftReactiveEvent
 } from './application-event.js'
@@ -40,45 +40,45 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
     this.logger = logger
     this.errorHandler = errorHandler
 
-    this.application.on('command', (event) => {
-      void this.queue
+    this.application.on('command', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onCommand(event)))
         .catch(this.errorHandler.promiseCatch('handling command event'))
     })
-    this.application.on('commandFeedback', (event) => {
-      void this.queue
+    this.application.on('commandFeedback', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onCommandFeedback(event)))
         .catch(this.errorHandler.promiseCatch('handling command feedback'))
     })
 
-    this.application.on('chat', (event) => {
-      void this.queue
+    this.application.on('chat', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onChat(event)))
         .catch(this.errorHandler.promiseCatch('handling chat event'))
     })
 
-    this.application.on('guildPlayer', (event) => {
-      void this.queue
+    this.application.on('guildPlayer', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onGuildPlayer(event)))
         .catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
-    this.application.on('guildGeneral', (event) => {
-      void this.queue
+    this.application.on('guildGeneral', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onGuildGeneral(event)))
         .catch(this.errorHandler.promiseCatch('handling guildGeneral event'))
     })
-    this.application.on('minecraftChatEvent', (event) => {
-      void this.queue
+    this.application.on('minecraftChatEvent', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onMinecraftChatEvent(event)))
         .catch(this.errorHandler.promiseCatch('handling minecraftChat event'))
     })
-    this.application.on('instanceStatus', (event) => {
-      void this.queue
+    this.application.on('instanceStatus', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onInstance(event)))
         .catch(this.errorHandler.promiseCatch('handling instance event'))
     })
-    this.application.on('broadcast', (event) => {
-      void this.queue
+    this.application.on('broadcast', async (event) => {
+      await this.queue
         .add(() => Promise.resolve(this.onBroadcast(event)))
         .catch(this.errorHandler.promiseCatch('handling broadcast event'))
     })
@@ -96,7 +96,7 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
 
   protected abstract onMinecraftChatEvent(event: MinecraftReactiveEvent): void | Promise<void>
 
-  protected abstract onInstance(event: InstanceStatusEvent): void | Promise<void>
+  protected abstract onInstance(event: InstanceStatus): void | Promise<void>
 
   protected abstract onBroadcast(event: BroadcastEvent): void | Promise<void>
 }

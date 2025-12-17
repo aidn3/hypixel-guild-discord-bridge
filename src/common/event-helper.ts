@@ -14,6 +14,7 @@ export default class EventHelper<K extends InstanceType> {
   public fillBaseEvent(): BaseEvent & { instanceType: K } {
     return {
       eventId: this.generate(),
+      createdAt: Date.now(),
 
       instanceType: this.instanceType,
       instanceName: this.instanceName

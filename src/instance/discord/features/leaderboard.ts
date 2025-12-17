@@ -13,6 +13,7 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 import type { User } from '../../../common/user'
 import type { LeaderboardEntry } from '../../../core/discord/discord-leaderboards'
 import Duration from '../../../utility/duration'
+import { setIntervalAsync } from '../../../utility/scheduling'
 import { formatTime } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance.js'
@@ -33,13 +34,12 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    setInterval(() => {
-      void this.updateLeaderboards().catch(this.errorHandler.promiseCatch('updating the leaderboards'))
-    }, Leaderboard.CheckUpdateEvery.toMilliseconds())
+    setIntervalAsync(async () => this.updateLeaderboards(), {
+      delay: Leaderboard.CheckUpdateEvery,
+      errorHandler: this.errorHandler.promiseCatch('updating the leaderboards')
+    })
 
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const client = this.clientInstance.client
+    const client = this.clientInstance.getClient()
     client.on('interactionCreate', (interaction) => {
       if (!interaction.isButton() || !interaction.isMessageComponent()) return
 
@@ -110,9 +110,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async updateLeaderboards(): Promise<void> {
-    // TODO: properly reference client
-    // @ts-expect-error client is private variable
-    const client = this.clientInstance.client
+    const client = this.clientInstance.getClient()
     assert.ok(client.isReady())
 
     const DefaultOptions = { addFooter: false, addLastUpdateAt: true, page: 0, user: undefined }

@@ -47,7 +47,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    this.application.on('guildPlayer', (event) => {
+    this.application.on('guildPlayer', async (event) => {
       if (
         event.instanceName !== this.clientInstance.instanceName ||
         event.instanceType !== this.clientInstance.instanceType
@@ -66,7 +66,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
         let message = messages[Math.floor(Math.random() * messages.length)]
         message = message.replaceAll('{username}', event.user.displayName())
 
-        this.application.emit('broadcast', {
+        await this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
@@ -88,7 +88,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
         message = message.replaceAll('{username}', event.user.displayName())
-        this.application.emit('broadcast', {
+        await this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],
@@ -110,7 +110,7 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
         }
         let message = messages[Math.floor(Math.random() * messages.length)]
         message = message.replaceAll('{username}', event.user.displayName())
-        this.application.emit('broadcast', {
+        await this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],

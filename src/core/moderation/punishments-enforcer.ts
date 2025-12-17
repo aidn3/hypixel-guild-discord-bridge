@@ -28,15 +28,15 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
   ) {
     super(application, instance, eventHelper, logger, errorHandler)
 
-    this.application.on('guildPlayer', (event) => {
-      void this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
+    this.application.on('guildPlayer', async (event) => {
+      await this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
-    this.application.on('punishmentAdd', (event) => {
-      void this.onPunishmentAdd(event).catch(this.errorHandler.promiseCatch('handling punishmentAdd event'))
+    this.application.on('punishmentAdd', async (event) => {
+      await this.onPunishmentAdd(event).catch(this.errorHandler.promiseCatch('handling punishmentAdd event'))
     })
 
-    this.application.on('punishmentForgive', (event) => {
-      void this.onPunishmentForgive(event).catch(this.errorHandler.promiseCatch('handling punishmentForgive event'))
+    this.application.on('punishmentForgive', async (event) => {
+      await this.onPunishmentForgive(event).catch(this.errorHandler.promiseCatch('handling punishmentForgive event'))
     })
   }
 

@@ -4,7 +4,7 @@ import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-
 let lastWarning = 0
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     const regex = /^Your mute will expire in/g
 
     const match = regex.exec(context.message)
@@ -14,7 +14,7 @@ export default {
         context.logger.warn('No originEventId detected. Dropping the event')
         return
       }
-      context.application.emit('minecraftChatEvent', {
+      await context.application.emit('minecraftChatEvent', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Bad,

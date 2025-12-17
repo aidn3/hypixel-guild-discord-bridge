@@ -11,7 +11,7 @@ export default {
       const uuid = await context.application.mojangApi.profileByUsername(username).then((profile) => profile.id)
       const user = await context.application.core.initializeMinecraftUser({ name: username, id: uuid }, {})
 
-      context.application.emit('guildPlayer', {
+      await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Bad,

@@ -195,9 +195,8 @@ export class CommandsHeat {
         return { ...common, ...CommandsHeat.resolveLimits(this.moderationConfig.getKicksPerDay()) }
       }
     }
-
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    throw new Error(`Type ${type} does not exists??`)
+    throw new Error(`Type ${type satisfies never} does not exists??`)
   }
 
   private static resolveLimits(maxLimit: number): { maxLimit: number; warnLimit: number } {

@@ -10,6 +10,8 @@ import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { GameToggleConfig } from '../../../core/minecraft/minecraft-accounts'
+import Duration from '../../../utility/duration'
+import { setIntervalAsync, setTimeoutAsync } from '../../../utility/scheduling'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
@@ -17,14 +19,14 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   /*
    Wait for client to be afk in the world before allowing the routine
    */
-  private static readonly TillReadyMilliseconds = 10 * 1000
+  private static readonly TillReady = Duration.seconds(10)
   private readyRefresh: undefined | NodeJS.Timeout
 
   /*
     Periodical check to ensure everything is toggled and ready.
     Send toggle commands if something isn't proper
    */
-  private static readonly ResendEveryMilliseconds = 10 * 1000
+  private static readonly ResendEvery = Duration.seconds(10)
 
   private ready = false
   private prepared = false
@@ -42,15 +44,21 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    setInterval(() => {
-      if (!this.ready) return
+    setIntervalAsync(
+      async () => {
+        if (!this.ready) return
 
-      const uuid = this.clientInstance.uuid()
-      if (uuid === undefined) return
+        const uuid = this.clientInstance.uuid()
+        if (uuid === undefined) return
 
-      const config = this.getConfig(uuid)
-      this.sendToggles(config)
-    }, GameTogglesHandler.ResendEveryMilliseconds)
+        const config = this.getConfig(uuid)
+        await this.sendToggles(config)
+      },
+      {
+        delay: GameTogglesHandler.ResendEvery,
+        errorHandler: this.errorHandler.promiseCatch('check and send periodical game toggles if needed')
+      }
+    )
 
     this.application.on('chat', (event) => {
       if (event.instanceName !== this.clientInstance.instanceName) return
@@ -118,7 +126,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     )
   }
 
-  private sendToggles(config: GameToggleConfig): void {
+  private async sendToggles(config: GameToggleConfig): Promise<void> {
     if (this.sentCommands > 0) {
       this.logger.warn('Commands are already queued for game-toggles-handler. Skipping this loop')
       return
@@ -126,7 +134,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
 
     if (!this.prepared && this.allPrepared(config)) {
       this.prepared = true
-      this.application.emit('broadcast', {
+      await this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
 
         channels: [ChannelType.Public],
@@ -138,16 +146,16 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       return
     }
 
-    if (!config.playerOnlineStatusEnabled) this.queueSend('/status online')
+    if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
 
-    if (!config.guildAllEnabled) this.queueSend('/guild onlinemode')
-    if (!config.guildChatEnabled) this.queueSend('/guild toggle')
-    if (!config.guildNotificationsEnabled) this.queueSend('/guild notifications')
+    if (!config.guildAllEnabled) await this.queueSend('/guild onlinemode')
+    if (!config.guildChatEnabled) await this.queueSend('/guild toggle')
+    if (!config.guildNotificationsEnabled) await this.queueSend('/guild notifications')
   }
 
-  private queueSend(command: string): void {
+  private async queueSend(command: string): Promise<void> {
     this.sentCommands++
-    void this.clientInstance
+    await this.clientInstance
       .send(command, MinecraftSendChatPriority.High, undefined)
       .catch(this.errorHandler.promiseCatch('executing a command'))
       .finally(() => {
@@ -162,12 +170,12 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private initializeReadySignal(client: Client): void {
     // first spawn packet
     client.on('login', () => {
-      this.setPrepared()
+      void this.setPrepared().catch(this.errorHandler.promiseCatch('set game-toggle status to prepared'))
       this.resetReady()
     })
     // change world packet
     client.on('respawn', () => {
-      this.setPrepared()
+      void this.setPrepared().catch(this.errorHandler.promiseCatch('set game-toggle status to prepared'))
       this.resetReady()
     })
   }
@@ -175,19 +183,25 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private resetReady(): void {
     this.ready = false
 
-    this.readyRefresh ??= setTimeout(() => {
-      const uuid = this.clientInstance.uuid()
-      assert.ok(uuid !== undefined)
-      const config = this.application.core.minecraftAccounts.get(uuid)
+    this.readyRefresh ??= setTimeoutAsync(
+      async () => {
+        const uuid = this.clientInstance.uuid()
+        assert.ok(uuid !== undefined)
+        const config = this.application.core.minecraftAccounts.get(uuid)
 
-      this.ready = true
-      this.sendToggles(config) // already waited for the client to be ready
-    }, GameTogglesHandler.TillReadyMilliseconds)
+        this.ready = true
+        await this.sendToggles(config) // already waited for the client to be ready
+      },
+      {
+        delay: GameTogglesHandler.TillReady,
+        errorHandler: this.errorHandler.promiseCatch('checking and sending toggles after being ready')
+      }
+    )
 
     this.readyRefresh.refresh()
   }
 
-  private setPrepared(): void {
+  private async setPrepared(): Promise<void> {
     const newUuid = this.clientInstance.uuid()
     const username = this.clientInstance.username()
     assert.ok(newUuid !== undefined)
@@ -200,7 +214,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       this.prepared = false
       if (this.lastUuid === undefined) {
         this.lastUuid = newUuid
-        this.application.emit('broadcast', {
+        await this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Public],

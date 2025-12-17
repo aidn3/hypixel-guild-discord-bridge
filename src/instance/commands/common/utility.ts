@@ -74,6 +74,7 @@ export function getDungeonLevelWithOverflow(experience: number): number {
 }
 
 export function shortenNumber(value: number): string {
+  if (value === 0) return value.toFixed(0)
   let suffix = ''
 
   if (value > 1000) {
@@ -93,7 +94,7 @@ export function shortenNumber(value: number): string {
     suffix = 't'
   }
 
-  const digits = Math.floor(Math.log10(value)) + 1
+  const digits = Math.floor(Math.log10(Math.abs(value))) + 1
   const digitsCount = 3
 
   return value.toFixed(Math.max(0, digitsCount - digits)) + suffix

@@ -87,15 +87,19 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
   override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      this.onMessage(chatMessage.toString(), chatMessage.toMotd(), chatMessage.json)
+      void this.onMessage(chatMessage.toString(), chatMessage.toMotd(), chatMessage.json).catch(
+        this.errorHandler.promiseCatch('processing minecraft raw chat')
+      )
     })
 
     clientSession.client.on('playerChat', (data: object) => {
-      this.onFormattedMessage(clientSession, data)
+      void this.onFormattedMessage(clientSession, data).catch(
+        this.errorHandler.promiseCatch('processing minecraft raw chat')
+      )
     })
   }
 
-  private onFormattedMessage(clientSession: ClientSession, data: object): void {
+  private async onFormattedMessage(clientSession: ClientSession, data: object): Promise<void> {
     const message = (data as { formattedMessage?: string }).formattedMessage
     let resultMessage: ChatMessage & Partial<{ unsigned: ChatMessage }>
 
@@ -133,14 +137,14 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       resultMessage = clientSession.prismChat.fromNotch(message)
     }
 
-    this.onMessage(resultMessage.toString(), resultMessage.toMotd(), resultMessage.json)
+    await this.onMessage(resultMessage.toString(), resultMessage.toMotd(), resultMessage.json)
   }
 
-  private onMessage(message: string, rawMessage: string, jsonMessage: unknown): void {
+  private async onMessage(message: string, rawMessage: string, jsonMessage: unknown): Promise<void> {
     message = stufDecode(message)
 
     for (const module of this.chatModules) {
-      void Promise.resolve(
+      await Promise.resolve(
         module.onChat({
           application: this.application,
 
@@ -159,7 +163,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       ).catch(this.errorHandler.promiseCatch('handling chat trigger'))
     }
 
-    this.application.emit('minecraftChat', {
+    await this.application.emit('minecraftChat', {
       ...this.eventHelper.fillBaseEvent(),
       message: message,
       rawMessage: rawMessage

@@ -137,7 +137,7 @@ async function getGuildLog(
   )
 
   await timeout.wait()
-  app.removeListener('minecraftChat', chatListener)
+  app.off('minecraftChat', chatListener)
   return timeout.timedOut() ? {} : result
 }
 

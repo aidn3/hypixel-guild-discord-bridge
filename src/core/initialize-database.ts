@@ -8,7 +8,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 3
+const CurrentVersion = 4
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -21,6 +21,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(2, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom2to3(application, database, logger, postCleanupActions, newlyCreated)
+  })
+  sqliteManager.registerMigrator(3, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom3to4(application, database, logger, postCleanupActions, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -330,6 +333,65 @@ function migrateFrom2to3(
   }
 
   database.pragma('user_version = 3')
+}
+
+function migrateFrom3to4(
+  application: Application,
+  database: Database,
+  logger: Logger4Js,
+  postCleanupActions: (() => void)[],
+  newlyCreated: boolean
+): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 3 to 4')
+
+  // reference: minecraft/sessions-manager.ts
+  database.exec('ALTER TABLE "mojangInstances" ADD COLUMN "connect" INTEGER NOT NULL DEFAULT 1;')
+
+  // reference: instance/status-history.ts
+  database.exec(
+    'CREATE TABLE "instanceStatusHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  instanceType TEXT NOT NULL,' +
+      '  fromStatus TEXT NOT NULL,' +
+      '  toStatus TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "instanceMessageHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  instanceType TEXT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  value TEXT DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  // reference: discord/instance-history-button.ts
+  database.exec(
+    'CREATE TABLE "discordInstanceHistoryButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  instanceType TEXT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  startTime INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  endTime INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordInstanceHistoryLastButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  instanceName TEXT NOT NULL COLLATE NOCASE,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(channelId, instanceName)' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 4')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

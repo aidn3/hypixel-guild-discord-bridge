@@ -170,14 +170,17 @@ export class OptionsHandler {
   }
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
-    this.originalReply = await interaction.reply({
+    const originalReply = await interaction.reply({
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
 
-    const collector = this.originalReply.createMessageComponentCollector({
-      filter: (messageInteraction) => messageInteraction.user.id === interaction.user.id
+    this.originalReply = originalReply
+    const replyId = await originalReply.fetch().then((message) => message.id)
+    const collector = originalReply.createMessageComponentCollector({
+      filter: (messageInteraction) =>
+        messageInteraction.user.id === interaction.user.id && messageInteraction.message.id === replyId
     })
     const timeoutId = setTimeout(() => {
       collector.stop()

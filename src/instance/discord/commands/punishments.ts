@@ -162,7 +162,7 @@ export default {
     switch (groupCommand) {
       case 'ban': {
         if (context.permission < Permission.Officer) {
-          await context.showPermissionDenied()
+          await context.showPermissionDenied(Permission.Officer)
           return
         }
 
@@ -180,7 +180,7 @@ export default {
       }
       case 'kick': {
         if (context.permission < Permission.Officer) {
-          await context.showPermissionDenied()
+          await context.showPermissionDenied(Permission.Officer)
           return
         }
 
@@ -191,7 +191,7 @@ export default {
       }
       case 'forgive': {
         if (context.permission < Permission.Officer) {
-          await context.showPermissionDenied()
+          await context.showPermissionDenied(Permission.Officer)
           return
         }
 
@@ -236,8 +236,8 @@ async function handleBan(
     command = `/guild kick ${mojangProfile.id} Banned for ${formatTime(duration.toMilliseconds())}. Reason: ${reason}`
   }
 
-  const post = () => {
-    const punishment = target.ban(context.eventHelper.fillBaseEvent(), PunishmentPurpose.Manual, duration, reason)
+  const post = async () => {
+    const punishment = await target.ban(context.eventHelper.fillBaseEvent(), PunishmentPurpose.Manual, duration, reason)
     return `## Punishment\n${formatPunishment(punishment, undefined)}`
   }
 
@@ -262,8 +262,13 @@ async function handleMute(
     command = `/guild mute ${mojangProfile.id} ${durationToMinecraftDuration(duration.toMilliseconds())}`
   }
 
-  const post = () => {
-    const punishment = target.mute(context.eventHelper.fillBaseEvent(), PunishmentPurpose.Manual, duration, reason)
+  const post = async () => {
+    const punishment = await target.mute(
+      context.eventHelper.fillBaseEvent(),
+      PunishmentPurpose.Manual,
+      duration,
+      reason
+    )
     return `## Punishment\n${formatPunishment(punishment, undefined)}`
   }
 
@@ -300,10 +305,10 @@ async function handleForgive(context: DiscordCommandContext, responsible: Discor
     command = `/guild unmute ${mojangProfile.id}`
   }
 
-  const post = () => {
+  const post = async () => {
     let result = '## Forgiven punishment(s)\n'
 
-    const forgivenPunishments = target.forgive(context.eventHelper.fillBaseEvent())
+    const forgivenPunishments = await target.forgive(context.eventHelper.fillBaseEvent())
     if (forgivenPunishments.length === 0) {
       result += 'No saved punishment found to forgive. All good!'
     } else {
@@ -327,7 +332,7 @@ async function takeAction(
   heatType: HeatType,
   command: string | undefined,
   chatTrigger: RegexChat,
-  post: () => string | undefined
+  post: () => Promise<string> | string | undefined
 ): Promise<void> {
   const heat = responsible.tryAddModerationAction(heatType)
   if (heat === HeatResult.Denied) {
@@ -366,7 +371,7 @@ async function takeAction(
     if (triggerResult.status !== 'success') noError = false
   }
 
-  const postResponse = post()
+  const postResponse = await post()
   if (typeof postResponse === 'string' && postResponse.trim().length > 0) {
     result += '\n\n' + postResponse.trim()
   }

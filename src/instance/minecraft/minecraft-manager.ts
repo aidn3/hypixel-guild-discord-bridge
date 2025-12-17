@@ -52,7 +52,7 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
     this.instances.add(instance)
 
     try {
-      instance.connect()
+      await instance.connect()
     } catch (error: unknown) {
       await instance.disconnect().catch(() => undefined) // it might throw an error if connecting is throwing one already
       this.instances.delete(instance)

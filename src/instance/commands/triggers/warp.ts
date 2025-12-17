@@ -71,7 +71,7 @@ export default class Warp extends ChatCommandHandler {
   }
 
   async warpPlayer(instance: MinecraftInstance, context: ChatCommandContext, username: string): Promise<string> {
-    context.sendFeedback(`Preparing to warp ${username}`)
+    await context.sendFeedback(`Preparing to warp ${username}`)
     const lock = await instance.acquireLimbo()
 
     // leave any existing party
@@ -121,7 +121,7 @@ export default class Warp extends ChatCommandHandler {
   ): Promise<string | undefined> {
     const timeout = new Timeout<string | undefined>(30_000, "Player didn't accept the invite.")
 
-    const chatListener = (event: MinecraftRawChatEvent) => {
+    const chatListener = async (event: MinecraftRawChatEvent) => {
       if (event.instanceName !== instance.instanceName) return
 
       if (event.message.startsWith("You cannot invite that player since they're not online.")) {
@@ -140,7 +140,7 @@ export default class Warp extends ChatCommandHandler {
       if (someoneParty) {
         timeout.resolve(`Accidentally Joined ${someoneParty[1]}'s party!`)
 
-        application.emit('broadcast', {
+        await application.emit('broadcast', {
           ...context.eventHelper.fillBaseEvent(),
 
           channels: [ChannelType.Officer],
@@ -154,7 +154,7 @@ export default class Warp extends ChatCommandHandler {
       }
     }
 
-    context.sendFeedback(`Sending party invite to warp ${username}`)
+    await context.sendFeedback(`Sending party invite to warp ${username}`)
 
     application.on('minecraftChat', chatListener)
     // Inviting multiple people prevents the bot from accidentally joining the target party
@@ -163,7 +163,7 @@ export default class Warp extends ChatCommandHandler {
     await instance.send(`/party invite ${username} ${username}`, MinecraftSendChatPriority.High, undefined)
 
     const result = await timeout.wait()
-    application.removeListener('minecraftChat', chatListener)
+    application.off('minecraftChat', chatListener)
 
     return result
   }

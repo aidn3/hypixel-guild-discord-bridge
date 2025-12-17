@@ -1,4 +1,4 @@
-import type { Status, StatusVisibility } from './connectable-instance.js'
+import type { Status } from './connectable-instance.js'
 import type { DiscordUser, MinecraftUser, User } from './user'
 
 /*
@@ -15,87 +15,80 @@ import type { DiscordUser, MinecraftUser, User } from './user'
  */
 export interface ApplicationEvents {
   /**
-   * Receive all events
-   * @param name event name
-   * @param event event object
-   */
-  all: (name: keyof ApplicationEvents, event: Readonly<BaseEvent>) => void
-
-  /**
    * User sending messages
    */
-  chat: (event: Readonly<ChatEvent>) => void
+  chat: Readonly<ChatEvent>
   /**
    * User join/leave/offline/online/mute/kick/etc
    */
-  guildPlayer: (event: Readonly<GuildPlayerEvent>) => void
+  guildPlayer: Readonly<GuildPlayerEvent>
   /**
    * When a guild emits an event that isn't specific for any player or user.
    * Events such as reach a general guild quest goal.
    */
-  guildGeneral: (event: Readonly<GuildGeneralEvent>) => void
+  guildGeneral: Readonly<GuildGeneralEvent>
   /**
    * In-game events such as interactions blocked/etc.
    * @see MinecraftReactiveEventType
    */
-  minecraftChatEvent: (event: Readonly<MinecraftReactiveEvent>) => void
+  minecraftChatEvent: Readonly<MinecraftReactiveEvent>
   /**
    * User executing a command.
    * Each command execution can send only one command event.
    * If multiple response is needed, either format the text using blank lines/etc. or use {@linkcode CommandFeedbackEvent}
    */
-  command: (event: Readonly<CommandEvent>) => void
+  command: Readonly<CommandEvent>
   /**
    * Command sending a followup responses.
    * This can be used to send multiple responses.
    * Useful when working with long term commands that takes time to finish.
    * It provides a way to give feedback on the command.
    */
-  commandFeedback: (event: Readonly<CommandFeedbackEvent>) => void
+  commandFeedback: Readonly<CommandFeedbackEvent>
   /**
    * When a plugin or a component wishes to broadcast a message to all instances.
    */
-  broadcast: (event: Readonly<BroadcastEvent>) => void
+  broadcast: Readonly<BroadcastEvent>
 
   /**
    * Internal instance start/connect/disconnect/etc
    */
-  instanceStatus: (event: Readonly<InstanceStatusEvent>) => void
+  instanceStatus: Readonly<InstanceStatus>
   /**
    * Announce instance existence to other instances
    */
-  instanceAnnouncement: (event: Readonly<InstanceAnnouncement>) => void
+  instanceAnnouncement: Readonly<InstanceAnnouncement>
   /**
-   * Display a useful message coming from the internal components
+   * Display a useful message coming from the internal components due to an action from another event
    */
-  instanceMessage: (event: Readonly<InstanceMessage>) => void
+  instanceReactive: Readonly<InstanceReactive>
 
   /**
    *  Broadcast any punishment to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
-  punishmentAdd: (event: Readonly<Punishment>) => void
+  punishmentAdd: Readonly<Punishment>
   /**
    *  Broadcast any punishments removed to other instances. Such as mute, ban, etc.
    *  This is an internal event and shouldn't be sent by anyone except the internal punishment-system
    *  @internal
    */
-  punishmentForgive: (event: Readonly<PunishmentForgive>) => void
+  punishmentForgive: Readonly<PunishmentForgive>
   /**
    * Reports an occurrence of a profanity filtering that occurred.
    */
-  profanityWarning: (event: Readonly<ProfanityWarningEvent>) => void
+  profanityWarning: Readonly<ProfanityWarningEvent>
 
   /**
    * Used to broadcast which in-game username/uuid belongs to which bot.
    * Useful to distinguish in-game between players and bots
    */
-  minecraftSelfBroadcast: (event: Readonly<MinecraftSelfBroadcast>) => void
+  minecraftSelfBroadcast: Readonly<MinecraftSelfBroadcast>
   /**
    * Minecraft instance raw chat
    */
-  minecraftChat: (event: Readonly<MinecraftRawChatEvent>) => void
+  minecraftChat: Readonly<MinecraftRawChatEvent>
 }
 
 /**
@@ -158,6 +151,10 @@ export interface BaseEvent extends InstanceIdentifier {
    *  - discord instance can use that to associate the event with the message the user sent
    */
   readonly eventId: string
+  /**
+   * When the event was created. A unix timestamp in milliseconds
+   */
+  readonly createdAt: number
 }
 
 /**
@@ -534,7 +531,16 @@ export enum MinecraftReactiveEventType {
    * @see GuildPlayerEventType#Mute
    * @see GuildPlayerEventType#Muted
    */
-  GuildMuted = 'guild_muted'
+  GuildMuted = 'guild_muted',
+  /**
+   * When a queued to send message is truncated before it is sent.
+   * Example:
+   * - Discord instance sends a chat message
+   * - Minecraft instance receives the messages and begins scheduling it to be sent
+   * - Minecraft instance applies a custom transformer on the message like truncating it when the message is too large
+   * - Minecraft instance sends a reply event informing Discord instance that the message has been truncated
+   */
+  MessageTruncated = 'truncated'
 }
 
 /**
@@ -641,24 +647,26 @@ export interface UserLink {
   discordId: string
 }
 
+interface InstanceStatusWithBroadcast extends InformEvent {
+  readonly message: InstanceMessage
+  readonly status: undefined
+}
+
+interface InstanceStatusWithChange extends InformEvent {
+  readonly message: undefined
+  readonly status: StatusChange
+}
+
+interface InstanceStatusWithBoth extends InformEvent {
+  readonly message: InstanceMessage
+  // Status.Connected status can only be sent without any message to ease parsing
+  readonly status: StatusChange & { to: Exclude<Status, Status.Connected> }
+}
+
 /**
  * Events used when an instance changes its status
  */
-export interface InstanceStatusEvent extends InformEvent {
-  /**
-   * The instance event status
-   */
-  readonly status: Status
-  /**
-   * Whether the event should be shown to the end user
-   */
-  readonly visibility: StatusVisibility.Show | StatusVisibility.Silent
-  /**
-   * Humanly formatted message of the situation
-   */
-  readonly message: string
-}
-
+export type InstanceStatus = InstanceStatusWithBroadcast | InstanceStatusWithChange | InstanceStatusWithBoth
 /**
  * Event sent with every received minecraft chat
  */
@@ -690,26 +698,52 @@ export interface MinecraftSelfBroadcast extends InformEvent {
 export type InstanceAnnouncement = InformEvent
 
 export enum InstanceMessageType {
-  MinecraftAuthenticationCode = 'minecraft-authentication-code',
-  MinecraftTruncateMessage = 'minecraft-truncate-message'
+  MinecraftAuthenticationCode = 'minecraftAuthenticationCode',
+  MinecraftInstanceNotAutoConnect = 'minecraftInstanceNotAutoConnect',
+  MinecraftEnded = 'minecraftEnded',
+  MinecraftRestarting = 'minecraftRestarting',
+  MinecraftKicked = 'minecraftKicked',
+  MinecraftInternetProblems = 'minecraftInternetProblems',
+  MinecraftXboxDown = 'minecraftXboxDown',
+  MinecraftXboxThrottled = 'minecraftXboxThrottled',
+  MinecraftNoAccount = 'minecraftNoAccount',
+  MinecraftProxyBroken = 'minecraftProxyBroken',
+  MinecraftIncompatible = 'minecraftIncompatible',
+  MinecraftBanned = 'minecraftBanned',
+  MinecraftFailedTooManyTimes = 'minecraftFailedTooManyTimes',
+  MinecraftKickedLoggedFromAnotherLocation = 'minecraftKickedLoggedFromAnotherLocation'
 }
 
 /**
  * Event that contains information that might prove useful.
  * Used to display internal status of the application internal components to the user outside the console.
  */
-interface BaseInstanceMessage extends InformEvent {
+export interface InstanceMessage {
   /**
    * Type of the message
    */
-  type: InstanceMessageType
+  readonly type: InstanceMessageType
   /**
-   * The message content that explains the status
+   * The custom content to add on top of the {@link #type}.
+   * This field must be only for non-verbal data like a dynamic link or an authentication code etc.
+   * Otherwise, (extend and) use {@link #type}.
    */
-  readonly message: string
+  readonly value: string | undefined
 }
 
-export type InstanceMessage = BaseInstanceMessage | (BaseInstanceMessage & ReplyEvent)
+export interface StatusChange {
+  from: Status
+  to: Status
+}
+
+export interface InstanceReactive extends ReplyEvent {
+  type: InstanceReactiveType
+  message: string
+}
+
+export enum InstanceReactiveType {
+  MessageTruncated = 'messageTruncated'
+}
 
 /**
  * When to handle the command.

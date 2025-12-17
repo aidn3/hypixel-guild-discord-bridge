@@ -19,7 +19,7 @@ export default {
 
       const event = context.eventHelper.fillBaseEvent()
       context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Private, username: username })
-      context.application.emit('chat', {
+      await context.application.emit('chat', {
         ...event,
 
         channelType: ChannelType.Private,

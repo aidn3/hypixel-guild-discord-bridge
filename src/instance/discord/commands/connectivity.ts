@@ -121,7 +121,7 @@ async function checkConnectivity(app: Application): Promise<Map<string, string[]
 
   await Promise.all(tasks)
   await new Promise((resolve) => setTimeout(resolve, 5000))
-  app.removeListener('minecraftChat', chatListener)
+  app.off('minecraftChat', chatListener)
 
   return receivedResponses
 }

@@ -37,7 +37,7 @@ export default {
 
       const { filteredMessage, changed } = context.application.core.filterProfanity(playerMessage)
       if (changed) {
-        context.application.emit('profanityWarning', {
+        await context.application.emit('profanityWarning', {
           ...context.eventHelper.fillBaseEvent(),
 
           channelType: ChannelType.Public,
@@ -50,7 +50,7 @@ export default {
 
       const event = context.eventHelper.fillBaseEvent()
       context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Public })
-      context.application.emit('chat', {
+      await context.application.emit('chat', {
         ...event,
 
         channelType: ChannelType.Public,

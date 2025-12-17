@@ -31,15 +31,7 @@ export class SendQueue {
     private readonly errorHandler: UnexpectedErrorHandler,
     private readonly sender: (command: string) => void
   ) {
-    void Promise.resolve()
-      .then(async () => {
-        try {
-          await this.startCycle()
-        } catch (error: unknown) {
-          errorHandler.promiseCatch('queuing commands via minecraft instance')(error)
-        }
-      })
-      .catch(errorHandler.promiseCatch('sending queue loop'))
+    void this.startCycle().catch(errorHandler.promiseCatch('queuing commands via minecraft instance'))
   }
 
   public notifyChatEvent(channel: ChannelType, message: string): void {

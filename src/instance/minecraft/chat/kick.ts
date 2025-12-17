@@ -20,7 +20,7 @@ export default {
         {}
       )
 
-      context.application.emit('guildPlayer', {
+      await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Bad,

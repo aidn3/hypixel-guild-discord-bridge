@@ -72,7 +72,7 @@ export default class Vengeance extends ChatCommandHandler {
     // 47% to lose.
     // 49% to draw.
     if (this.won()) {
-      targetUser.mute(
+      await targetUser.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,
         Vengeance.MuteDuration,
@@ -80,7 +80,7 @@ export default class Vengeance extends ChatCommandHandler {
       )
       messages = context.app.core.languageConfigurations.getCommandVengeanceWin()
     } else if (this.lose()) {
-      context.message.user.mute(
+      await context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,
         Vengeance.MuteDuration,

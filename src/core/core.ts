@@ -26,7 +26,9 @@ import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
+import { InstanceHistoryButton } from './discord/instance-history-button'
 import { initializeCoreDatabase } from './initialize-database'
+import { StatusHistory } from './instance/status-history'
 import { LanguageConfigurations } from './language-configurations'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
@@ -61,6 +63,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordConfigurations: DiscordConfigurations
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
+  public readonly discordInstanceHistoryButton: InstanceHistoryButton
   public readonly discordEmojis: DiscordEmojis
 
   // minecraft
@@ -69,6 +72,10 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly moderationConfiguration: ModerationConfigurations
   public readonly minecraftAccounts: MinecraftAccounts
 
+  // instance
+  public readonly statusHistory: StatusHistory
+
+  // misc
   public readonly applicationConfigurations: ApplicationConfigurations
   public readonly languageConfigurations: LanguageConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
@@ -92,7 +99,10 @@ export class Core extends Instance<InstanceType.Core> {
       this.sqliteManager,
       this.discordConfigurations
     )
+    this.discordInstanceHistoryButton = new InstanceHistoryButton(this.sqliteManager, this.logger)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
+
+    this.statusHistory = new StatusHistory(this.sqliteManager, this.logger)
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
@@ -222,6 +232,17 @@ export class Core extends Instance<InstanceType.Core> {
 
     // default
     return new User(this.application, this.userContext(), identifier, undefined, undefined, undefined)
+  }
+
+  public discordMessagesDeleted(messagesIds: string[]): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      this.discordLeaderboards.remove(messagesIds)
+      this.discordTemporarilyInteractions.remove(messagesIds)
+      this.discordInstanceHistoryButton.remove(messagesIds)
+    })
+
+    transaction()
   }
 
   private userContext(): ManagerContext {

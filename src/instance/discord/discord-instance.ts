@@ -57,6 +57,12 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     this.client.on('error', (error: Error) => {
       this.logger.error(error)
     })
+    this.client.on('messageDelete', (message) => {
+      this.application.core.discordMessagesDeleted([message.id])
+    })
+    this.client.on('messageDeleteBulk', (messages) => {
+      this.application.core.discordMessagesDeleted(messages.map((message) => message.id))
+    })
 
     this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
@@ -147,6 +153,10 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     return Permission.Anyone
   }
 
+  public getClient(): Client {
+    return this.client
+  }
+
   public getStaticConfig(): Readonly<StaticDiscordConfig> {
     return this.staticConfig
   }
@@ -160,7 +170,8 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     }
     this.connected = true
 
-    this.setAndBroadcastNewStatus(Status.Connecting, 'Discord connecting')
+    this.logger.debug('Discord connecting')
+    await this.setAndBroadcastNewStatus(Status.Connecting)
 
     this.stateHandler.registerEvents(this.client)
     this.statusHandler.registerEvents(this.client)
@@ -175,6 +186,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
 
   async disconnect(): Promise<void> {
     await this.client.destroy()
-    this.setAndBroadcastNewStatus(Status.Ended, 'discord instance has disconnected')
+    await this.setAndBroadcastNewStatus(Status.Ended)
+    this.logger.debug('discord instance has disconnected')
   }
 }

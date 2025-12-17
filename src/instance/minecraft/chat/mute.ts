@@ -34,7 +34,7 @@ export default {
       )
 
       if (responsible !== context.clientInstance.username()) {
-        targetUser.mute(
+        await targetUser.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Manual,
           Duration.seconds(muteTime * sufficeToTime(muteSuffice)),
@@ -42,7 +42,7 @@ export default {
         )
       }
 
-      context.application.emit('guildPlayer', {
+      await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Bad,

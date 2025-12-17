@@ -2,12 +2,12 @@ import { ChannelType, Color, GuildGeneralEventType } from '../../../common/appli
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
-  onChat: function (context: MinecraftChatContext): void {
+  onChat: async function (context: MinecraftChatContext): Promise<void> {
     const regex = /^GUILD QUEST TIER [1-9] COMPLETED!/g
 
     const match = regex.exec(context.message.trim())
     if (match != undefined) {
-      context.application.emit('guildGeneral', {
+      await context.application.emit('guildGeneral', {
         ...context.eventHelper.fillBaseEvent(),
 
         color: Color.Good,

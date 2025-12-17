@@ -46,7 +46,7 @@ export interface ChatCommandContext {
   username: string
   args: string[]
 
-  sendFeedback: (feedback: string) => void
+  sendFeedback: (feedback: string) => Promise<void>
 }
 
 export interface DiscordCommandHandler {
@@ -107,7 +107,7 @@ interface DiscordContext {
 
 export interface DiscordCommandContext extends DiscordContext {
   interaction: ChatInputCommandInteraction
-  showPermissionDenied: () => Promise<void>
+  showPermissionDenied: (requiredPermission: Exclude<Permission, Permission.Anyone>) => Promise<void>
 }
 
 export interface DiscordAutoCompleteContext extends DiscordContext {

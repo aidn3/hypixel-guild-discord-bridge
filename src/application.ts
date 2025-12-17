@@ -2,16 +2,15 @@
 // @typescript-eslint/explicit-member-accessibility needed since this is part of the public api
 
 import assert from 'node:assert'
-import type Events from 'node:events'
 import fs from 'node:fs'
 import path from 'node:path'
+import { setImmediate } from 'node:timers/promises'
 
-import type { Awaitable } from 'discord.js'
+import Emittery from 'emittery'
 import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { i18n } from 'i18next'
 import type { Logger } from 'log4js'
 import Logger4js from 'log4js'
-import { TypedEmitter } from 'tiny-typed-emitter'
 
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier, MinecraftSendChatPriority } from './common/application-event.js'
@@ -48,7 +47,7 @@ export type AllInstances =
   | MinecraftManager
   | PluginsManager
 
-export default class Application extends TypedEmitter<ApplicationEvents> implements InstanceIdentifier {
+export default class Application extends Emittery<ApplicationEvents> implements InstanceIdentifier {
   public readonly instanceName: string = InstanceType.Main
   public readonly instanceType: InstanceType = InstanceType.Main
 
@@ -84,7 +83,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     public readonly i18n: i18n
   ) {
     super()
-    this.setMaxListeners(50)
 
     this.logger = Logger4js.getLogger('Application')
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
@@ -92,7 +90,6 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
     this.applicationIntegrity = new ApplicationIntegrity(this)
 
-    emitAll(this, this.applicationIntegrity) // first thing to redirect all events
     this.config = config
     this.configsDirectory = configsDirectory
     this.rootDirectory = rootDirectory
@@ -190,7 +187,7 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
 
       if (checkedInstance instanceof MetricsInstance) {
         if (this.config.general.shareMetrics) {
-          checkedInstance.connect()
+          await checkedInstance.connect()
         }
       } else if (checkedInstance instanceof ConnectableInstance) {
         this.logger.debug(`Connecting instance type=${instance.instanceType},name=${instance.instanceName}`)
@@ -203,17 +200,19 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
   }
 
   public async shutdown(): Promise<void> {
-    const tasks: Awaitable<unknown>[] = []
     for (const instance of this.getAllInstances().toReversed()) {
       // reversed to go backward of `start()`
       if (instance instanceof ConnectableInstance && instance.currentStatus() !== Status.Fresh) {
         this.logger.debug(`Disconnecting instance type=${instance.instanceType},name=${instance.instanceName}`)
-        tasks.push(instance.disconnect())
+        await instance.disconnect()
       }
     }
-    await Promise.all(tasks)
 
-    for (const shutdownListener of this.shutdownListeners) {
+    // wait till next cycle to let all events flush out
+    // This might not be needed if events can be sent with async/await
+    await setImmediate()
+
+    for (const shutdownListener of this.shutdownListeners.toReversed()) {
       shutdownListener()
     }
   }
@@ -351,17 +350,3 @@ export default class Application extends TypedEmitter<ApplicationEvents> impleme
     return instances
   }
 }
-
-/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
-function emitAll(emitter: Events, applicationIntegrity: ApplicationIntegrity): void {
-  const old = emitter.emit
-  emitter.emit = (event: string, ...callerArguments): boolean => {
-    if (event !== 'all') {
-      applicationIntegrity.checkEventIntegrity(event, callerArguments[0])
-      emitter.emit('all', event, ...callerArguments)
-    }
-    return old.call(emitter, event, ...callerArguments)
-  }
-}
-
-/* eslint-enable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
