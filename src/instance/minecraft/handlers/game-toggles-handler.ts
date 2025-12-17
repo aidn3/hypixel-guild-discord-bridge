@@ -94,7 +94,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
         this.application.core.minecraftAccounts.set(uuid, config)
       }
       if (event.message.startsWith('Selected language: ')) {
-        config.selectedEnglish = event.message.startsWith('Selected Language: English')
+        config.selectedEnglish = event.message.startsWith('Selected language: English')
         this.application.core.minecraftAccounts.set(uuid, config)
       }
 
