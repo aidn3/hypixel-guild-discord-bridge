@@ -59,6 +59,7 @@ A shorter version can also be used: `!- rtca`
 | `pb`             | Returns a players best dungeon run time                                            |
 | `points30`       | Returns user's 30 days activity points                                             |
 | `points`         | Returns user's all time activity points                                            |
+| `praise`         | praise a player                                                                    |
 | `purse`          | Returns a player's skyblock coins                                                  |
 | `rep`            | Returns a player's crimson isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |
