@@ -6,13 +6,14 @@ export class MinecraftAccounts {
   public set(uuid: string, options: GameToggleConfig): void {
     const database = this.sqliteManager.getDatabase()
 
-    const insert = database.prepare('INSERT OR REPLACE INTO "mojangProfileSettings" VALUES (?, ?, ?, ?, ?)')
+    const insert = database.prepare('INSERT OR REPLACE INTO "mojangProfileSettings" VALUES (?, ?, ?, ?, ?, ?)')
     insert.run(
       uuid,
       options.playerOnlineStatusEnabled ? 1 : 0,
       options.guildAllEnabled ? 1 : 0,
       options.guildChatEnabled ? 1 : 0,
-      options.guildNotificationsEnabled ? 1 : 0
+      options.guildNotificationsEnabled ? 1 : 0,
+      options.selectedEnglish ? 1 : 0
     )
   }
 
@@ -23,6 +24,7 @@ export class MinecraftAccounts {
 
     return {
       playerOnlineStatusEnabled: !!result?.playerOnlineStatusEnabled,
+      selectedEnglish: !!result?.selectedEnglish,
       guildAllEnabled: !!result?.guildAllEnabled,
       guildChatEnabled: !!result?.guildChatEnabled,
       guildNotificationsEnabled: !!result?.guildNotificationsEnabled
@@ -32,6 +34,7 @@ export class MinecraftAccounts {
 
 export interface GameToggleConfig {
   playerOnlineStatusEnabled: boolean
+  selectedEnglish: boolean
 
   guildAllEnabled: boolean
   guildChatEnabled: boolean
