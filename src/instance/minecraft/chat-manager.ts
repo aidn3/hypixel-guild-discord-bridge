@@ -30,6 +30,7 @@ import PrivateChat from './chat/private.js'
 import PromoteChat from './chat/promote.js'
 import PublicChat from './chat/public.js'
 import QuestChat from './chat/quest.js'
+import RankGiftChat from './chat/rank-gift'
 import RepeatChat from './chat/repeat.js'
 import RequestChat from './chat/request.js'
 import RequireGuildChat from './chat/require-guild.js'
@@ -77,6 +78,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       PromoteChat,
       QuestChat,
       PublicChat,
+      RankGiftChat,
       RepeatChat,
       RequestChat,
       RequireGuildChat,

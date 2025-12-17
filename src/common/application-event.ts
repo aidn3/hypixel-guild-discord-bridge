@@ -424,7 +424,12 @@ export enum GuildPlayerEventType {
   /**
    * When a player comes online
    */
-  Online = 'online'
+  Online = 'online',
+
+  /**
+   * When a guild member gifts a Hypixel rank to another guild member
+   */
+  Gifted = 'gifted'
 }
 
 export interface BaseInGameEvent<K extends string> extends InformEvent, MinecraftRawMessage {
@@ -465,6 +470,7 @@ export type GuildPlayerResponsibleTypes =
   | GuildPlayerEventType.Kick
   | GuildPlayerEventType.Mute
   | GuildPlayerEventType.Unmute
+  | GuildPlayerEventType.Gifted
 
 export type GuildPlayerSoloTypes = Exclude<GuildPlayerEventType, GuildPlayerResponsibleTypes>
 
