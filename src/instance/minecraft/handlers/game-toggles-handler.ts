@@ -143,17 +143,20 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       return
     }
 
-    if (!this.prepared && this.allPrepared(config)) {
-      this.prepared = true
-      await this.application.emit('broadcast', {
-        ...this.eventHelper.fillBaseEvent(),
+    if (this.allPrepared(config)) {
+      if (!this.prepared) {
+        this.prepared = true
+        await this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
 
-        channels: [ChannelType.Public],
-        color: Color.Good,
+          channels: [ChannelType.Public],
+          color: Color.Good,
 
-        user: undefined,
-        message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
-      })
+          user: undefined,
+          message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
+        })
+      }
+
       return
     }
 
