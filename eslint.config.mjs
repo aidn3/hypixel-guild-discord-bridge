@@ -49,6 +49,7 @@ export default [
           message: 'usage of console object is not allowed. use node:assert or logger4j instead'
         }
       ],
+      'unicorn/no-immediate-mutation': 0,
       'unicorn/no-process-exit': 0,
       'unicorn/prefer-single-call': 0,
       'unicorn/filename-case': 2,
