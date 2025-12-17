@@ -94,7 +94,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
         this.application.core.minecraftAccounts.set(uuid, config)
       }
       if (event.message.startsWith('Selected language: ')) {
-        config.selectedEnglish = event.message.startsWith('Selected Language: English')
+        config.selectedEnglish = event.message.startsWith('Selected language: English')
         this.application.core.minecraftAccounts.set(uuid, config)
       }
 
@@ -130,7 +130,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private allPrepared(config: GameToggleConfig): boolean {
     return (
       config.playerOnlineStatusEnabled &&
-      // config.selectedEnglish &&
+      config.selectedEnglish &&
       config.guildAllEnabled &&
       config.guildChatEnabled &&
       config.guildNotificationsEnabled
@@ -143,17 +143,20 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       return
     }
 
-    if (!this.prepared && this.allPrepared(config)) {
-      this.prepared = true
-      await this.application.emit('broadcast', {
-        ...this.eventHelper.fillBaseEvent(),
+    if (this.allPrepared(config)) {
+      if (!this.prepared) {
+        this.prepared = true
+        await this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
 
-        channels: [ChannelType.Public],
-        color: Color.Good,
+          channels: [ChannelType.Public],
+          color: Color.Good,
 
-        user: undefined,
-        message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
-      })
+          user: undefined,
+          message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
+        })
+      }
+
       return
     }
 
@@ -161,15 +164,17 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     try {
       // exit limbo and go to main lobby, since some settings are only available there
       await this.clientInstance.send('/lobby', MinecraftSendChatPriority.High, undefined)
-      await sleep(2000)
+      await sleep(4000)
 
       if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
-      //if (!config.selectedEnglish) await this.queueSend('/language english')
+      if (!config.selectedEnglish) await this.queueSend('/language english')
 
       if (!config.guildAllEnabled) await this.queueSend('/guild onlinemode')
       if (!config.guildChatEnabled) await this.queueSend('/guild toggle')
       if (!config.guildNotificationsEnabled) await this.queueSend('/guild notifications')
     } finally {
+      // Wait for the server to receive and process commands before releasing lock
+      await sleep(5000)
       // free lock
       lock.resolve()
     }
