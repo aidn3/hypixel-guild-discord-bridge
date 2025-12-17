@@ -87,6 +87,10 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
         config.playerOnlineStatusEnabled = true
         this.application.core.minecraftAccounts.set(uuid, config)
       }
+      if (event.message.startsWith('Selected language: ')) {
+        config.selectedEnglish = event.message.startsWith('Selected Language: English')
+        this.application.core.minecraftAccounts.set(uuid, config)
+      }
 
       if (event.message.startsWith('Enabled guild online mode!')) {
         config.guildAllEnabled = false
@@ -120,6 +124,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private allPrepared(config: GameToggleConfig): boolean {
     return (
       config.playerOnlineStatusEnabled &&
+      config.selectedEnglish &&
       config.guildAllEnabled &&
       config.guildChatEnabled &&
       config.guildNotificationsEnabled
@@ -147,6 +152,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     }
 
     if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
+    if (!config.selectedEnglish) await this.queueSend('/language english')
 
     if (!config.guildAllEnabled) await this.queueSend('/guild onlinemode')
     if (!config.guildChatEnabled) await this.queueSend('/guild toggle')

@@ -8,7 +8,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 4
+const CurrentVersion = 5
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -24,6 +24,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(3, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom3to4(application, database, logger, postCleanupActions, newlyCreated)
+  })
+  sqliteManager.registerMigrator(4, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom4to5(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -392,6 +395,14 @@ function migrateFrom3to4(
   )
 
   database.pragma('user_version = 4')
+}
+
+function migrateFrom4to5(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 4 to 5')
+
+  database.exec('ALTER TABLE "mojangProfileSettings" ADD COLUMN "selectedEnglish" INTEGER NOT NULL DEFAULT 0;')
+
+  database.pragma('user_version = 5')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
