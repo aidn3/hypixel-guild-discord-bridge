@@ -130,7 +130,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   private allPrepared(config: GameToggleConfig): boolean {
     return (
       config.playerOnlineStatusEnabled &&
-      // config.selectedEnglish &&
+      config.selectedEnglish &&
       config.guildAllEnabled &&
       config.guildChatEnabled &&
       config.guildNotificationsEnabled
@@ -161,15 +161,17 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     try {
       // exit limbo and go to main lobby, since some settings are only available there
       await this.clientInstance.send('/lobby', MinecraftSendChatPriority.High, undefined)
-      await sleep(2000)
+      await sleep(4000)
 
       if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
-      //if (!config.selectedEnglish) await this.queueSend('/language english')
+      if (!config.selectedEnglish) await this.queueSend('/language english')
 
       if (!config.guildAllEnabled) await this.queueSend('/guild onlinemode')
       if (!config.guildChatEnabled) await this.queueSend('/guild toggle')
       if (!config.guildNotificationsEnabled) await this.queueSend('/guild notifications')
     } finally {
+      // Wait for the server to receive and process commands before releasing lock
+      await sleep(5000)
       // free lock
       lock.resolve()
     }
