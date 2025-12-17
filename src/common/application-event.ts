@@ -366,6 +366,7 @@ export enum GuildPlayerEventType {
   Request = 'request',
   /**
    * When a player joins a guild
+   * @see {@link #Joined}
    */
   Join = 'join',
   /**
@@ -429,7 +430,12 @@ export enum GuildPlayerEventType {
   /**
    * When a guild member gifts a Hypixel rank to another guild member
    */
-  Gifted = 'gifted'
+  Gifted = 'gifted',
+  /**
+   * When the account itself joins a guild
+   * @see {@link #Join}
+   */
+  Joined = 'joined'
 }
 
 export interface BaseInGameEvent<K extends string> extends InformEvent, MinecraftRawMessage {

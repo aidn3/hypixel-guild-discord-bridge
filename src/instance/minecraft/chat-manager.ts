@@ -17,6 +17,7 @@ import GuildMute from './chat/guild-mute'
 import GuildMuted from './chat/guild-muted'
 import GuildUnmute from './chat/guild-unmute'
 import JoinChat from './chat/join.js'
+import JoinedChat from './chat/joined'
 import KickChat from './chat/kick.js'
 import LeaveChat from './chat/leave.js'
 import LevelChat from './chat/level'
@@ -65,6 +66,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       GuildMuted,
       GuildUnmute,
       JoinChat,
+      JoinedChat,
       KickChat,
       LeaveChat,
       LevelChat,
