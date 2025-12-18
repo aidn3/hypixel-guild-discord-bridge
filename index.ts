@@ -45,7 +45,15 @@ process.on('uncaughtException', function (error) {
   Logger.fatal(error)
   process.exitCode = 1
 })
+
+let shutdownStarted = false
 process.on('SIGINT', (signal) => {
+  if (shutdownStarted) {
+    Logger.info(`Process has caught ${signal} signal. Already shutting down. Wait!!`)
+    return
+  }
+
+  shutdownStarted = true
   Logger.info(`Process has caught ${signal} signal.`)
   if (app !== undefined) {
     Logger.debug('Shutting down application')
