@@ -31,6 +31,7 @@ import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import { SkyblockReminders } from './instance/skyblock-reminders'
+import { SpontaneousEvents } from './instance/spontaneous-events'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
@@ -43,6 +44,7 @@ export type AllInstances =
   | PluginInstance
   | ApplicationIntegrity
   | SkyblockReminders
+  | SpontaneousEvents
   | AutoRestart
   | MinecraftManager
   | PluginsManager
@@ -74,6 +76,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
   private readonly metricsInstance: MetricsInstance
 
   private readonly skyblockReminders: SkyblockReminders
+  private readonly spontaneousEvents: SpontaneousEvents
   private readonly autoRestart: AutoRestart
 
   public constructor(
@@ -130,6 +133,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.commandsInstance = new CommandsInstance(this)
 
     this.skyblockReminders = new SkyblockReminders(this)
+    this.spontaneousEvents = new SpontaneousEvents(this)
     this.autoRestart = new AutoRestart(this)
   }
 
@@ -343,6 +347,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
       this.commandsInstance,
       ...this.minecraftManager.getAllInstances(),
       this.skyblockReminders,
+      this.spontaneousEvents,
       this.autoRestart
     ].filter((instance) => instance != undefined)
 

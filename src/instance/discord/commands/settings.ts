@@ -19,6 +19,7 @@ import { translateInstanceMessage, translateInstanceStatus } from '../../../core
 import { ApplicationLanguages } from '../../../core/language-configurations'
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
+import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -208,6 +209,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
 }
 
 function fetchQualityOptions(application: Application): CategoryOption {
+  const events = application.core.spontaneousEventsConfigurations
   const plugins = application.core.applicationConfigurations
   const minecraft = application.core.minecraftConfigurations
 
@@ -216,6 +218,119 @@ function fetchQualityOptions(application: Application): CategoryOption {
     name: 'Quality Of Life',
     header: CategoryLabel,
     options: [
+      {
+        type: OptionType.Category,
+        name: 'Quick Chat Events',
+        description: 'Automatically start an interactive chat event when there is enough activity.',
+        header: CategoryLabel,
+        options: [
+          {
+            type: OptionType.Boolean,
+            name: 'Enable Quick Chat Events',
+            description: 'Control whether the feature is active.',
+            getOption: () => events.getEnabled(),
+            toggleOption: () => {
+              events.setEnabled(!events.getEnabled())
+            }
+          },
+          {
+            type: OptionType.Number,
+            name: 'Cooldown Between Events',
+            description: 'How long to wait before another event starts (in minutes).',
+            min: 1,
+            max: 1440,
+            getOption: () => {
+              return Math.ceil(events.getCooldownDuration().toMinutes())
+            },
+            setOption: (value) => {
+              events.setCooldownDuration(Duration.minutes(value))
+            }
+          },
+          {
+            type: OptionType.PresetList,
+            name: 'Allowed Events',
+            description: 'What type of events are allowed to start.',
+            min: 0,
+            max: Object.values(SpontaneousEventsNames).length,
+            options: [
+              {
+                label: 'Quick Math',
+                value: SpontaneousEventsNames.QuickMath,
+                description: 'Create a math question and the fastest who can answer wins.'
+              },
+              {
+                label: 'Counting Chain',
+                value: SpontaneousEventsNames.CountingChain,
+                description: 'Create a counting chain where the before last person to stop gets muted for 5 minutes.'
+              },
+              {
+                label: 'Unscramble',
+                value: SpontaneousEventsNames.Unscramble,
+                description: 'A word is scrambled and the fastest who can answer wins.'
+              },
+              {
+                label: 'Trivia',
+                value: SpontaneousEventsNames.Trivia,
+                description: 'Ask a trivia with options answers. Answer is later revealed.'
+              }
+            ],
+            getOption: () => events.getEnabledEvents(),
+            setOption: (values) => {
+              events.setEnabledEvents(values as SpontaneousEventsNames[])
+            }
+          },
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Advanced Options',
+            description:
+              'Control When To Start An Event. ' +
+              'Only change these if you **REALLY know what you are doing**! ' +
+              'All conditions must be met before an event starts.',
+            options: [
+              {
+                type: OptionType.Number,
+                name: 'Activity Duration',
+                description:
+                  'How long should the chat be active before it is considered active enough for an event (in minutes).',
+                min: 1,
+                max: 312_480,
+                getOption: () => {
+                  return Math.ceil(events.getActivityDuration().toMinutes())
+                },
+                setOption: (value) => {
+                  events.setActivityDuration(Duration.minutes(value))
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: 'Minimum Active Users',
+                description: 'How many users must be active in chat to start an event.',
+                min: 1,
+                max: 100,
+                getOption: () => {
+                  return events.getMinimumUsers()
+                },
+                setOption: (value) => {
+                  events.setMinimumUsers(value)
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: 'Minimum Sent Messages',
+                description: 'How many messages must be sent in chat before starting an event.',
+                min: 5,
+                max: 10_000,
+                getOption: () => {
+                  return events.getMinimumMessages()
+                },
+                setOption: (value) => {
+                  events.setMinimumMessages(value)
+                }
+              }
+            ]
+          }
+        ]
+      },
       {
         type: OptionType.Boolean,
         name: 'Darkauction Reminder',
