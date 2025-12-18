@@ -1,3 +1,8 @@
+/*
+ * Credit: https://github.com/michelegera/devexcuses-api
+ * License: https://github.com/michelegera/devexcuses-api/blob/main/LICENSE.txt
+ */
+
 import DefaultAxios from 'axios'
 import PromiseQueue from 'promise-queue'
 import Yaml from 'yaml'
