@@ -52,34 +52,34 @@ export class LanguageConfigurations {
   }
 
   public setCommandMuteGame(values: string[]): void {
-    this.configuration.getStringArray('commandMuteGame', values)
+    this.configuration.setStringArray('commandMuteGame', values)
   }
 
   public getCommandRouletteWin(): string[] {
     return this.configuration.getStringArray('commandRouletteWin', Roulette.WinMessages)
   }
   public setCommandRouletteWin(values: string[]): void {
-    this.configuration.getStringArray('commandRouletteWin', values)
+    this.configuration.setStringArray('commandRouletteWin', values)
   }
   public getCommandRouletteLose(): string[] {
     return this.configuration.getStringArray('commandRouletteLose', Roulette.LossMessages)
   }
   public setCommandRouletteLose(values: string[]): void {
-    this.configuration.getStringArray('commandRouletteLose', values)
+    this.configuration.setStringArray('commandRouletteLose', values)
   }
 
   public getCommandVengeanceWin(): string[] {
     return this.configuration.getStringArray('commandVengeanceWin', Vengeance.WinMessages)
   }
   public setCommandVengeanceWin(values: string[]): void {
-    this.configuration.getStringArray('commandVengeanceWin', values)
+    this.configuration.setStringArray('commandVengeanceWin', values)
   }
 
   public getCommandVengeanceDraw(): string[] {
     return this.configuration.getStringArray('commandVengeanceDraw', Vengeance.DrawMessages)
   }
   public setCommandVengeanceDraw(values: string[]): void {
-    this.configuration.getStringArray('commandVengeanceDraw', values)
+    this.configuration.setStringArray('commandVengeanceDraw', values)
   }
 
   public getCommandVengeanceLose(): string[] {

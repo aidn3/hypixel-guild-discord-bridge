@@ -39,6 +39,7 @@ import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
 import PunishmentsEnforcer from './moderation/punishments-enforcer'
+import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import Autocomplete from './users/autocomplete'
 import { GuildManager } from './users/guild-manager'
 import { MojangApi } from './users/mojang'
@@ -79,6 +80,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly applicationConfigurations: ApplicationConfigurations
   public readonly languageConfigurations: LanguageConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
+  public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
 
   // database
   private readonly sqliteManager: SqliteManager
@@ -107,6 +109,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
+    this.spontaneousEventsConfigurations = new SpontaneousEventsConfigurations(this.configurationsManager)
 
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
     this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
