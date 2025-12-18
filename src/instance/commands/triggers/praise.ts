@@ -13,7 +13,11 @@ export default class Praise extends ChatCommandHandler {
   handler(context: ChatCommandContext): string {
     const givenUsername = context.args[0] ?? context.username
 
-    const messages = context.app.i18n.t(($) => $['commands.praise'], { returnObjects: true, name: givenUsername })
+    // easter egg
+    const messages =
+      Math.random() > 0.01
+        ? context.app.i18n.t(($) => $['commands.praise'], { returnObjects: true, name: givenUsername })
+        : context.app.i18n.t(($) => $['commands.insult'], { returnObjects: true, name: givenUsername })
     return messages[Math.floor(Math.random() * messages.length)]
   }
 }
