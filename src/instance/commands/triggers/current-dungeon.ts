@@ -1,11 +1,13 @@
 import assert from 'node:assert'
 
+import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
 import Moment from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import type { MojangApi } from '../../../core/users/mojang'
 import {
+  getDungeonLevelWithOverflow,
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedDungeons,
@@ -52,6 +54,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
     for (const participant of lastRun.participants) {
       if (participant.player_uuid === uuid) {
         message += await this.parseDisplayMessage(
+          dungeons,
           context.app.mojangApi,
           participant.display_name,
           participant.player_uuid
@@ -76,7 +79,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
         lastRun.participants
           .filter((participant) => participant.player_uuid !== uuid)
           .map((participant) =>
-            this.parseDisplayMessage(context.app.mojangApi, participant.display_name, participant.player_uuid)
+            this.parseDisplayMessage(dungeons, context.app.mojangApi, participant.display_name, participant.player_uuid)
           )
       )
       message += participants.join(', ')
@@ -87,7 +90,12 @@ export default class CurrentDungeon extends ChatCommandHandler {
     return message
   }
 
-  private async parseDisplayMessage(mojangApi: MojangApi, message: string, uuid: string): Promise<string> {
+  private async parseDisplayMessage(
+    dungeonProfile: SkyblockV2Dungeons,
+    mojangApi: MojangApi,
+    message: string,
+    uuid: string
+  ): Promise<string> {
     const cleanMessage = message.trim().replaceAll(/§./g, '')
     const regex = /^(\w{2,16}): (\w+) \((\d+)\)$/g
     const match = regex.exec(cleanMessage)
@@ -97,10 +105,23 @@ export default class CurrentDungeon extends ChatCommandHandler {
     const className = match[2]
     const classLevel = match[3]
 
+    assert.ok(/^\d+$/.test(classLevel))
+    let parsedLevel = Number.parseInt(classLevel, 10)
+    if (parsedLevel === 50) {
+      const classes = dungeonProfile.player_classes
+      const classNameKey = className.toLowerCase().trim() as 'healer' | 'mage' | 'berserk' | 'archer' | 'tank'
+      assert.ok(classes !== undefined)
+
+      const experience = classes[classNameKey]?.experience
+      assert.ok(experience !== undefined)
+
+      parsedLevel = getDungeonLevelWithOverflow(experience)
+    }
+
     const updatedUsername = await mojangApi
       .profileByUuid(uuid)
       .then((profile) => profile.name)
       .catch(() => oldUsername)
-    return `${updatedUsername} (${className} ${classLevel})`
+    return `${updatedUsername} (${className} ${parsedLevel.toFixed(0)})`
   }
 }
