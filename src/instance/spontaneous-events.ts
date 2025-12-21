@@ -247,7 +247,7 @@ class CountingChain extends SpontaneousEventHandler {
       await this.broadcastMessage(`Never mind the counting chain :(`, Color.Info)
     } else {
       await this.broadcastMessage(
-        `${beforeLast.displayName()} was the before last to stop counting. How dare you!`,
+        `${beforeLast.displayName()} was the 2nd to last to stop counting. How dare you!`,
         Color.Good
       )
       await beforeLast.mute(
@@ -559,7 +559,7 @@ class Trivia extends SpontaneousEventHandler {
     {
       question: 'Which actor played Neo in The Matrix?',
       correctAnswer: 'Keanu Reeves',
-      otherAnswers: ['Brad Pitt', 'Tom Cruise', 'Johnny Depp (if someone gets this wrong you should mute them :3)']
+      otherAnswers: ['Brad Pitt', 'Tom Cruise', 'Johnny Depp']
     },
     {
       question: 'What does RAM stand for?',
