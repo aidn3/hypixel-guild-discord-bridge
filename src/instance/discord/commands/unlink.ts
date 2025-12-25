@@ -13,6 +13,15 @@ export default {
     await interaction.deferReply()
 
     const count = context.application.core.verification.invalidate({ discordId: interaction.user.id })
+    if (count > 0) {
+      try {
+        await context.application.discordInstance.verificationRoleManager.updateUser(interaction.user.id, {
+          guild: interaction.guild ?? undefined
+        })
+      } catch (error: unknown) {
+        context.logger.error('Failed to sync verification roles after unlinking', error)
+      }
+    }
     await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
   }
 } satisfies DiscordCommandHandler

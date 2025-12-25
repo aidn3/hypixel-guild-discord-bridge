@@ -14,6 +14,7 @@ Most notable changes:
 - Add `version: 2`
 - Add `shareMetrics` to `general`
 - Move `discord.adminId` to `discord.adminIds` and make it into a list
+- Elements of `discord.adminIds` must be **strings** (quote them); numeric values will be coerced to strings at runtime
 - Remove all options in `discord` section except `key` and `adminIds`
 - Remove `profanity`, `commands`, `minecraft`, `loggers` sections since they have been moved out to an internal
   configuration at `./config/` directory that is directly controlled by the application via discord command `/settings`

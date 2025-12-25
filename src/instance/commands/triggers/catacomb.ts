@@ -1,9 +1,8 @@
-import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { formatNumber, titleCase } from '../../../common/helper-functions.js'
+import { getLevelByXp } from '../common/skills'
 import {
-  getDungeonLevelWithOverflow,
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedDungeons,
@@ -11,12 +10,15 @@ import {
   usernameNotExists
 } from '../common/utility'
 
+const DungeonClasses = ['healer', 'mage', 'berserk', 'archer', 'tank'] as const
+type DungeonClass = (typeof DungeonClasses)[number]
+
 export default class Catacomb extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['catacomb', 'catacombs', 'cata'],
-      description: "Returns a player's catacombs level",
-      example: `cata %s`
+      triggers: ['catacombs', 'cata', 'dungeons'],
+      description: 'Skyblock Dungeons stats of specified user.',
+      example: `catacombs %s`
     })
   }
 
@@ -30,41 +32,36 @@ export default class Catacomb extends ChatCommandHandler {
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeons = selectedProfile.dungeons
-    if (!dungeons) {
-      return playerNeverPlayedDungeons(givenUsername)
-    }
+    if (!dungeons) return playerNeverPlayedDungeons(givenUsername)
 
-    const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
+    const catacombsExperience = dungeons.dungeon_types?.catacombs?.experience ?? 0
+    const catacombsLevel = getLevelByXp(catacombsExperience, { type: 'dungeoneering' }).levelWithProgress
 
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)}.`
-  }
+    const playerClasses = dungeons.player_classes
+    if (!playerClasses) return playerNeverPlayedDungeons(givenUsername)
 
-  private formatClass(dungeon: SkyblockV2Dungeons): string {
-    const classes = dungeon.player_classes
+    const classLevels: { className: DungeonClass; level: number }[] = DungeonClasses.map((className) => {
+      const experience = playerClasses[className]?.experience ?? 0
+      return {
+        className: className,
+        level: getLevelByXp(experience, { type: 'dungeoneering' }).levelWithProgress
+      }
+    })
 
-    let xp = 0
-    let name = '(None)'
+    const classAverage = classLevels.reduce((total, entry) => total + entry.level, 0) / classLevels.length
+    const classesDisplay = classLevels
+      .map((entry) => `${formatNumber(entry.level, 2)}${entry.className[0].toUpperCase()}`)
+      .join(', ')
 
-    if (classes?.healer?.experience && classes.healer.experience > xp) {
-      xp = classes.healer.experience
-      name = 'Healer'
-    }
-    if (classes?.mage?.experience && classes.mage.experience > xp) {
-      xp = classes.mage.experience
-      name = 'Mage'
-    }
-    if (classes?.berserk?.experience && classes.berserk.experience > xp) {
-      xp = classes.berserk.experience
-      name = 'Berserk'
-    }
-    if (classes?.archer?.experience && classes.archer.experience > xp) {
-      xp = classes.archer.experience
-      name = 'Archer'
-    }
-    if (classes?.tank?.experience && classes.tank.experience > xp) {
-      xp = classes.tank.experience
-      name = 'Tank'
-    }
-    return `${name} ${getDungeonLevelWithOverflow(xp).toFixed(2)}`
+    const selectedClass = titleCase(dungeons.selected_dungeon_class ?? 'none')
+    const secretsFound = dungeons.secrets ?? 0
+
+    return (
+      `${givenUsername}'s Catacombs: ${formatNumber(catacombsLevel, 2)} | ` +
+      `Selected Class: ${selectedClass} | ` +
+      `Class Average: ${formatNumber(classAverage, 2)} | ` +
+      `Secrets Found: ${formatNumber(secretsFound, 0)} | ` +
+      `Classes: ${classesDisplay}`
+    )
   }
 }

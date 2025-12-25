@@ -15,6 +15,7 @@ import Logger4js from 'log4js'
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier, MinecraftSendChatPriority } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
+import { BridgeResolver } from './common/bridge-resolver.js'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
@@ -26,23 +27,27 @@ import AutoRestart from './instance/auto-restart'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
+import HypixelUpdates from './instance/hypixel-updates'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import { SkyblockReminders } from './instance/skyblock-reminders'
 import { SpontaneousEvents } from './instance/spontaneous-events'
+import WebServer from './instance/web-server'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
   | CommandsInstance
   | DiscordInstance
   | PrometheusInstance
+  | WebServer
   | MetricsInstance
   | Core
   | MinecraftInstance
   | PluginInstance
   | ApplicationIntegrity
+  | HypixelUpdates
   | SkyblockReminders
   | SpontaneousEvents
   | AutoRestart
@@ -58,6 +63,38 @@ export default class Application extends Emittery<ApplicationEvents> implements 
   public readonly hypixelApi: HypixelClient
   public readonly mojangApi: MojangApi
 
+  public get hypixelApiKey(): string {
+    return this.config.general.hypixelApiKey
+  }
+
+  public getStatsChannelsConfig(): ApplicationConfig['statsChannels'] {
+    return this.config.statsChannels
+  }
+
+  public getVerificationConfig(): ApplicationConfig['verification'] {
+    return this.config.verification
+  }
+
+  public getGuildRequirementsConfig(): ApplicationConfig['guildRequirements'] {
+    return this.config.guildRequirements
+  }
+
+  public getInactivityConfig(): ApplicationConfig['inactivity'] {
+    return this.config.inactivity
+  }
+
+  public getSkyblockEventsConfig(): ApplicationConfig['skyblockEvents'] {
+    return this.config.skyblockEvents
+  }
+
+  public getHypixelUpdatesConfig(): ApplicationConfig['hypixelUpdates'] {
+    return this.config.hypixelUpdates
+  }
+
+  public getWebConfig(): ApplicationConfig['web'] {
+    return this.config.web
+  }
+
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
   private readonly shutdownListeners: (() => void)[] = []
@@ -72,10 +109,13 @@ export default class Application extends Emittery<ApplicationEvents> implements 
   public readonly pluginsManager: PluginsManager
   public readonly commandsInstance: CommandsInstance
   public readonly core: Core
+  public readonly bridgeResolver: BridgeResolver
   private readonly prometheusInstance: PrometheusInstance | undefined
+  private readonly webServer: WebServer | undefined
   private readonly metricsInstance: MetricsInstance
 
   private readonly skyblockReminders: SkyblockReminders
+  private readonly hypixelUpdates: HypixelUpdates
   private readonly spontaneousEvents: SpontaneousEvents
   private readonly autoRestart: AutoRestart
 
@@ -109,6 +149,9 @@ export default class Application extends Emittery<ApplicationEvents> implements 
 
     this.core = new Core(this)
     this.mojangApi = this.core.mojangApi
+    this.bridgeResolver = new BridgeResolver(this.config.bridges)
+    // Connect bridge resolver to dynamic config from database
+    this.bridgeResolver.setDynamicConfig(this.core.bridgeConfigurations)
 
     let selectedLanguage = this.core.languageConfigurations.getLanguage()
     if (!Object.values(ApplicationLanguages).includes(selectedLanguage)) {
@@ -129,10 +172,12 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.prometheusInstance = this.config.prometheus.enabled
       ? new PrometheusInstance(this, this.config.prometheus)
       : undefined
+    this.webServer = this.config.web?.enabled ? new WebServer(this, this.config.web) : undefined
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
 
     this.skyblockReminders = new SkyblockReminders(this)
+    this.hypixelUpdates = new HypixelUpdates(this)
     this.spontaneousEvents = new SpontaneousEvents(this)
     this.autoRestart = new AutoRestart(this)
   }
@@ -343,10 +388,12 @@ export default class Application extends Emittery<ApplicationEvents> implements 
       this.discordInstance, // discord second to send any notification about connecting
 
       this.prometheusInstance,
+      this.webServer,
       this.metricsInstance,
       this.commandsInstance,
       ...this.minecraftManager.getAllInstances(),
       this.skyblockReminders,
+      this.hypixelUpdates,
       this.spontaneousEvents,
       this.autoRestart
     ].filter((instance) => instance != undefined)

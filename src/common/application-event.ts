@@ -174,6 +174,12 @@ export interface InstanceIdentifier {
    * The instance type the event is happening in
    */
   readonly instanceType: InstanceType
+  /**
+   * Optional bridge identifier for multi-guild support.
+   * When set, events are only routed to instances/channels in the same bridge.
+   * When undefined, events use the legacy global routing behavior.
+   */
+  readonly bridgeId?: string
 }
 
 /**

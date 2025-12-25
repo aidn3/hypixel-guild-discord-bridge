@@ -20,6 +20,10 @@ export class Verification {
     this.database.addLink(discordId, uuid)
   }
 
+  public getAllLinks(): UserLink[] {
+    return this.database.getAllLinks()
+  }
+
   public invalidate(options: { discordId?: string; uuid?: string }): number {
     let count = 0
     if (options.uuid !== undefined) count += this.database.invalidateUuid(options.uuid)
@@ -54,6 +58,12 @@ class VerificationDatabase {
     const database = this.sqliteManager.getDatabase()
     const select = database.prepare('SELECT uuid, discordId FROM "links" WHERE discordId = ? LIMIT 1')
     return select.get(discordId) as UserLink | undefined
+  }
+
+  public getAllLinks(): UserLink[] {
+    const database = this.sqliteManager.getDatabase()
+    const select = database.prepare('SELECT uuid, discordId FROM "links"')
+    return select.all() as UserLink[]
   }
 
   public invalidateUuid(uuid: string): number {

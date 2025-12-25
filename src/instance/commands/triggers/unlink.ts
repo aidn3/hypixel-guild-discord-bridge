@@ -28,7 +28,15 @@ export default class Unlink extends ChatCommandHandler {
     const uuid = context.message.user.mojangProfile().id
 
     if (this.confirmationId.get<string>(givenId) === uuid) {
+      const userLink = await context.app.core.verification.findByIngame(uuid)
       const count = context.app.core.verification.invalidate({ uuid: uuid })
+      if (count > 0 && userLink) {
+        try {
+          await context.app.discordInstance.verificationRoleManager.updateUser(userLink.discordId)
+        } catch (error: unknown) {
+          context.logger.error('Failed to sync verification roles after unlinking', error)
+        }
+      }
       return count > 0 ? `${context.username}, Successfully unlinked!` : `${context.username}, Nothing to Unlink!`
     } else {
       const userLink = await context.app.core.verification.findByIngame(uuid)

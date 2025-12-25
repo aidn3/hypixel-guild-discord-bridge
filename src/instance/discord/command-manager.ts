@@ -21,12 +21,16 @@ import { setTimeoutAsync } from '../../utility/scheduling'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
+import BlacklistCommand from './commands/blacklist.js'
 import ConnectivityCommand from './commands/connectivity.js'
 import CreateLeaderboardCommand from './commands/create-leaderboard.js'
 import DemoteCommand from './commands/demote.js'
 import DisconnectCommand from './commands/disconnect.js'
 import ExecuteCommand from './commands/execute.js'
+import GexpCheckCommand from './commands/gexp-check.js'
+import GuildTopCommand from './commands/guildtop.js'
 import HelpCommand from './commands/help.js'
+import InactivityCommand from './commands/inactivity.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import LeaderboardCommand from './commands/leaderboard.js'
@@ -39,6 +43,7 @@ import ProfanityCommand from './commands/profanity.js'
 import PromoteCommand from './commands/promote.js'
 import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
+import RequirementsCommand from './commands/requirements.js'
 import RestartCommand from './commands/restart.js'
 import SetrankCommand from './commands/setrank.js'
 import SettingsCommand from './commands/settings.js'
@@ -107,12 +112,16 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       SettingsCommand,
       ConnectivityCommand,
       CreateLeaderboardCommand,
+      GexpCheckCommand,
+      GuildTopCommand,
       DemoteCommand,
       DisconnectCommand,
       HelpCommand,
       InviteCommand,
+      InactivityCommand,
       JoinCommand,
       LeaderboardCommand,
+      BlacklistCommand,
       LinkCommand,
       ListCommand,
       ListLeaderboardCommand,
@@ -123,6 +132,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       PromoteCommand,
       PunishmentsCommand,
       ReconnectCommand,
+      RequirementsCommand,
       SetrankCommand,
       RestartCommand,
       UnlinkCommand,

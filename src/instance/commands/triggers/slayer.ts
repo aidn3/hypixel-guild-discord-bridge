@@ -1,126 +1,152 @@
-import type { Slayer as SlayerType } from 'hypixel-api-reborn'
+import type { SkyblockV2Member, Slayer } from 'hypixel-api-reborn'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { formatNumber, titleCase } from '../../../common/helper-functions.js'
 import {
-  capitalize,
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfileData,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   playerNeverPlayedSlayers,
   usernameNotExists
 } from '../common/utility'
 
-const Slayers: Record<string, string[]> = {
-  zombie: ['revenant', 'rev', 'zombie'],
-  spider: ['tarantula', 'tara', 'spider', 'tar'],
-  wolf: ['sven', 'wolf'],
-  enderman: ['voidgloom', 'eman', 'enderman'],
-  blaze: ['inferno', 'demonlord', 'blaze'],
-  vampire: ['riftstalker', 'bloodfiend', 'vamp', 'vampire'],
-  overview: ['all', 'summary']
-}
-const SlayerExpTable = {
-  /* eslint-disable @typescript-eslint/naming-convention */
-  1: 5,
-  2: 15,
-  3: 200,
-  4: 1000,
-  5: 5000,
-  6: 20_000,
-  7: 100_000,
-  8: 400_000,
-  9: 1_000_000
-  /* eslint-enable @typescript-eslint/naming-convention */
-}
-const VampExpTable = {
-  /* eslint-disable @typescript-eslint/naming-convention */
-  1: 20,
-  2: 75,
-  3: 240,
-  4: 840,
-  5: 2400
-  /* eslint-enable @typescript-eslint/naming-convention */
+const SlayerTypes = ['zombie', 'spider', 'wolf', 'enderman', 'blaze', 'vampire'] as const
+type SlayerType = (typeof SlayerTypes)[number]
+
+const SlayerXpTable: Record<SlayerType, number[]> = {
+  zombie: [5, 15, 200, 1000, 5000, 20_000, 100_000, 400_000, 1_000_000],
+  spider: [5, 25, 200, 1000, 5000, 20_000, 100_000, 400_000, 1_000_000],
+  wolf: [5, 30, 250, 1500, 5000, 20_000, 100_000, 400_000, 1_000_000],
+  enderman: [10, 30, 250, 1500, 5000, 20_000, 100_000, 400_000, 1_000_000],
+  blaze: [10, 30, 250, 1500, 5000, 20_000, 100_000, 400_000, 1_000_000],
+  vampire: [20, 75, 240, 840, 2400]
 }
 
-const HighestTierTable = {
-  // 1 less due to index starting at 0
-  zombie: 4,
-  spider: 4,
-  wolf: 3,
-  enderman: 3,
-  blaze: 3,
-  vampire: 4
+interface SlayerLevel {
+  xp: number
+  level: number
+  xpForNext: number
+  progress: number
+  totalKills: number
+  kills: Record<string, number>
 }
 
-export default class Slayer extends ChatCommandHandler {
+type SlayerSummary = Record<SlayerType, SlayerLevel>
+
+export default class SlayerCommand extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['slayer', 'sl', 'slyr'],
-      description: "Returns a player's slayer level",
-      example: `slayer eman %s`
+      triggers: ['slayer', 'slayers'],
+      description: 'Slayer of specified user.',
+      example: `slayer %s`
     })
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] ?? context.username
-    const givenSlayer = context.args[1] ?? 'overview'
+    const slayerType = this.parseSlayerType(context.args[1])
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
-    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
+    const selected = await getSelectedSkyblockProfileData(context.app.hypixelApi, uuid)
+    if (!selected) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const slayerBosses = selectedProfile.slayer?.slayer_bosses
-    if (!slayerBosses) return playerNeverPlayedSlayers(givenUsername)
+    const slayerData = getSlayerSummary(selected.member)
+    if (!slayerData) return playerNeverPlayedSlayers(givenUsername)
 
-    let chosenSlayer: string | undefined
-    for (const [key, names] of Object.entries(Slayers)) {
-      if (names.includes(givenSlayer.toLowerCase())) {
-        chosenSlayer = key
-      }
+    if (slayerType) {
+      const data = slayerData[slayerType]
+      return (
+        `${givenUsername}'s ${titleCase(slayerType)} - ${data.level} Levels | ` + `Experience: ${formatNumber(data.xp)}`
+      )
     }
 
-    for (const [name, slayer] of Object.entries(slayerBosses)) {
-      if (name === chosenSlayer) {
-        return (
-          `${givenUsername}'s ${capitalize(chosenSlayer)} slayer: ` +
-          `Level ${this.getSlayerLevel(slayer.xp, name)} - ${slayer.xp.toLocaleString()} XP - ` +
-          `Highest tier kills: ${this.getHighestTierKills(slayer, name).toLocaleString()}`
-        )
-      }
-    }
+    const summary = SlayerTypes.map((type) => {
+      const data = slayerData[type]
+      return `${titleCase(type)}: ${data.level} (${formatNumber(data.xp)})`
+    }).join(' | ')
 
-    const output: string[] = []
-    for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output.push(`${capitalize(name)} ${this.getSlayerLevel(slayer.xp, name)}`)
-    }
-    return `${givenUsername}'s slayers: ${output.join(' - ')}`
+    return `${givenUsername}'s Slayer: ${summary}`
   }
 
-  private getSlayerLevel(exp: number, slayer: string): number {
-    let maxLevel: number
-    let expTable: Record<number, number>
+  private parseSlayerType(value: string | undefined): SlayerType | undefined {
+    if (!value) return undefined
+    const normalized = value.toLowerCase()
+    return SlayerTypes.find((type) => type === normalized)
+  }
+}
 
-    if (slayer === 'vampire') {
-      maxLevel = 5 // vampire slayer only goes to level 5
-      expTable = VampExpTable
-    } else {
-      maxLevel = 9
-      expTable = SlayerExpTable
-    }
+function getSlayerSummary(profile: SkyblockV2Member): SlayerSummary | null {
+  if (!profile.slayer?.slayer_bosses) return null
 
-    let level = 0
-    for (let x = 1; x <= maxLevel && expTable[x] <= exp; x++) {
-      level = x
+  return {
+    zombie: getSlayerLevel(profile, 'zombie'),
+    spider: getSlayerLevel(profile, 'spider'),
+    wolf: getSlayerLevel(profile, 'wolf'),
+    enderman: getSlayerLevel(profile, 'enderman'),
+    blaze: getSlayerLevel(profile, 'blaze'),
+    vampire: getSlayerLevel(profile, 'vampire')
+  }
+}
+
+function getSlayerLevel(profile: SkyblockV2Member, slayer: SlayerType): SlayerLevel {
+  const slayerData = profile.slayer?.slayer_bosses?.[slayer]
+  const experience = slayerData?.xp ?? 0
+  const xpTable = SlayerXpTable[slayer]
+
+  if (experience <= 0) {
+    return {
+      xp: 0,
+      level: 0,
+      xpForNext: xpTable[0] ?? 0,
+      progress: 0,
+      totalKills: 0,
+      kills: {}
     }
-    return level
   }
 
-  private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
-    const highestTier = HighestTierTable[slayerName as keyof typeof HighestTierTable]
-    const index = `boss_kills_tier_${highestTier}`
-    return slayerData[index as keyof SlayerType] ?? 0
+  let level = 0
+  for (const [index, element] of xpTable.entries()) {
+    if (element <= experience) level = index + 1
   }
+
+  const maxLevel = xpTable.length
+  const xpForNext = level < maxLevel ? Math.ceil(xpTable[level]) : 0
+  const progress = xpForNext === 0 ? 0 : Math.max(0, Math.min(experience / xpForNext, 1))
+
+  const { totalKills, kills } = getSlayerKills(slayerData, slayer)
+
+  return {
+    xp: experience,
+    totalKills,
+    level,
+    xpForNext,
+    progress,
+    kills
+  }
+}
+
+function getSlayerKills(
+  slayerData: Slayer | undefined,
+  slayer: SlayerType
+): { totalKills: number; kills: Record<string, number> } {
+  const kills: Record<string, number> = {}
+  let total = 0
+
+  if (slayer === 'zombie') kills['5'] = 0
+  if (!slayerData) return { totalKills: total, kills }
+
+  for (const [key, value] of Object.entries(slayerData)) {
+    if (!key.startsWith('boss_kills_tier_')) continue
+    const tier = Number.parseInt(key.slice(-1), 10)
+    if (Number.isNaN(tier)) continue
+
+    const killCount = typeof value === 'number' ? value : 0
+    total += killCount
+    kills[(tier + 1).toString()] = killCount
+  }
+
+  return { totalKills: total, kills }
 }

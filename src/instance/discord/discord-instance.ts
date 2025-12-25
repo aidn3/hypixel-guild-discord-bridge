@@ -13,15 +13,21 @@ import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
+import GuildRequirements from './features/guild-requirements.js'
 import Leaderboard from './features/leaderboard.js'
 import LoggerManager from './features/logger-manager.js'
+import StatsChannels from './features/stats-channels.js'
+import VerificationRoleManager from './features/verification-role-manager.js'
 import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
 export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
   readonly commandsManager: CommandManager
+  readonly guildRequirements: GuildRequirements
   readonly leaderboard: Leaderboard
+  readonly statsChannels: StatsChannels
+  readonly verificationRoleManager: VerificationRoleManager
 
   private readonly client: Client
 
@@ -77,7 +83,22 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     )
     this.commandsManager = new CommandManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.loggerManager = new LoggerManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.guildRequirements = new GuildRequirements(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler
+    )
     this.leaderboard = new Leaderboard(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.statsChannels = new StatsChannels(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.verificationRoleManager = new VerificationRoleManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler
+    )
 
     this.bridge = new DiscordBridge(
       this.application,
@@ -180,6 +201,9 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     this.commandsManager.registerEvents(this.client)
     this.leaderboard.registerEvents(this.client)
     this.loggerManager.registerEvents(this.client)
+    this.guildRequirements.registerEvents(this.client)
+    this.statsChannels.registerEvents(this.client)
+    this.verificationRoleManager.registerEvents(this.client)
 
     await this.client.login(this.staticConfig.key)
   }

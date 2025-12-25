@@ -8,6 +8,7 @@ import { InternalInstancePrefix } from '../../common/instance.js'
 import EightBallCommand from './triggers/8ball.js'
 import Api from './triggers/api.js'
 import Asian from './triggers/asian.js'
+import AuctionHouse from './triggers/auction.js'
 import Bedwars from './triggers/bedwars.js'
 import Bestiary from './triggers/bestiary'
 import Bits from './triggers/bits.js'
@@ -18,17 +19,23 @@ import Calculate from './triggers/calculate.js'
 import Catacomb from './triggers/catacomb.js'
 import Chocolate from './triggers/chocolate'
 import Collection from './triggers/collection'
+import Crimson from './triggers/crimson.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
 import Discord from './triggers/discord'
+import Dojo from './triggers/dojo.js'
 import Eggs from './triggers/eggs'
 import Election from './triggers/election.js'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
+import FairySouls from './triggers/fairysouls.js'
 import Fetchur from './triggers/fetchur.js'
+import Forge from './triggers/forge.js'
+import Garden from './triggers/garden.js'
 import Guild from './triggers/guild.js'
+import GuildExperience from './triggers/guildexp.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
@@ -43,6 +50,7 @@ import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
+import Player from './triggers/player.js'
 import Points30days from './triggers/points-30days'
 import PointsAll from './triggers/points-all'
 import Praise from './triggers/praise'
@@ -56,6 +64,7 @@ import Runs from './triggers/runs.js'
 import Secrets from './triggers/secrets.js'
 import Select from './triggers/select'
 import Skills from './triggers/skills.js'
+import Skyblock from './triggers/skyblock.js'
 import Skywars from './triggers/skywars'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
@@ -65,10 +74,13 @@ import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
 import Toggled from './triggers/toggled.js'
+import TrophyFish from './triggers/trophyfish.js'
 import Unlink from './triggers/unlink.js'
+import Unscramble from './triggers/unscramble.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
+import Woolwars from './triggers/woolwars.js'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
@@ -79,6 +91,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     this.commands = [
       new Api(),
       new Asian(),
+      new AuctionHouse(),
       new Bits(),
       new Bedwars(),
       new Bestiary(),
@@ -89,18 +102,24 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Catacomb(),
       new Chocolate(),
       new Collection(),
+      new Crimson(),
       new CurrentDungeon(),
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
       new Discord(),
+      new Dojo(),
       new Eggs(),
       new Election(),
       new EightBallCommand(),
       new Execute(),
       new Explain(),
+      new FairySouls(),
       new Fetchur(),
+      new Forge(),
+      new Garden(),
       new Guild(),
+      new GuildExperience(),
       new Help(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
@@ -115,6 +134,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
+      new Player(),
       new Points30days(),
       new PointsAll(),
       new Praise(),
@@ -128,6 +148,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Secrets(),
       new Select(),
       new Skills(),
+      new Skyblock(),
       new Skywars(),
       new Slayer(),
       new Soopy(),
@@ -135,12 +156,15 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Starfall(),
       new StatusCommand(),
       new Timecharms(),
+      new TrophyFish(),
       new Toggle(),
       new Toggled(),
+      new Unscramble(),
       new Unlink(),
       new Vengeance(),
       new Warp(),
-      new Weight()
+      new Weight(),
+      new Woolwars()
     ]
 
     this.checkCommandsIntegrity()

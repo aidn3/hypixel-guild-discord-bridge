@@ -110,7 +110,7 @@ A shorter version can also be used: `!- rtca`
 | `/reconnect`          | reconnect minecraft clients                                      |
 | `/restart`            | Send signal to restart the bridge                                |
 | `/setrank`            | setrank guild member in-game                                     |
-| `/settings`           | Control application settings.                                    |
+| `/settings`           | Control application settings. Use the **Search** button in the settings UI to filter options by text.                                    |
 | `/unlink`             | unlink your Discord account from your Minecraft account          |
 | `/verification`       | Manage users links                                               |
 

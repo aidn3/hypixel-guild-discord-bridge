@@ -1,5 +1,5 @@
 import type { APIEmbed, APIEmbedField } from 'discord.js'
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder, userMention } from 'discord.js'
 
 import type { UserLink } from '../../../common/application-event.js'
 import { Color, Permission } from '../../../common/application-event.js'
@@ -42,6 +42,17 @@ export default {
           .addUserOption((option) =>
             option.setName('user').setDescription('User to associate with the username').setRequired(true)
           )
+      )
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('force-update')
+          .setDescription('Force update verification roles for a user')
+          .addUserOption((option) => option.setName('user').setDescription('User to update').setRequired(true))
+      )
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('update-all')
+          .setDescription('Force update verification roles for all linked users')
       ),
 
   permission: Permission.Helper,
@@ -65,6 +76,14 @@ export default {
       }
       case 'unlink-discord': {
         await handleUnlinkDiscord(context)
+        break
+      }
+      case 'force-update': {
+        await handleForceUpdate(context)
+        break
+      }
+      case 'update-all': {
+        await handleUpdateAll(context)
         break
       }
     }
@@ -92,7 +111,17 @@ async function handleUnlinkMinecraft(context: Readonly<DiscordCommandContext>) {
     return
   }
 
+  const link = await context.application.core.verification.findByIngame(mojangProfile.id)
   const count = context.application.core.verification.invalidate({ uuid: mojangProfile.id })
+  if (count > 0 && link) {
+    try {
+      await context.application.discordInstance.verificationRoleManager.updateUser(link.discordId, {
+        guild: interaction.guild ?? undefined
+      })
+    } catch (error: unknown) {
+      context.logger.error('Failed to sync verification roles after unlinking', error)
+    }
+  }
   await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
 }
 
@@ -102,6 +131,15 @@ async function handleUnlinkDiscord(context: Readonly<DiscordCommandContext>) {
 
   const user = interaction.options.getUser('user', true)
   const count = context.application.core.verification.invalidate({ discordId: user.id })
+  if (count > 0) {
+    try {
+      await context.application.discordInstance.verificationRoleManager.updateUser(user.id, {
+        guild: interaction.guild ?? undefined
+      })
+    } catch (error: unknown) {
+      context.logger.error('Failed to sync verification roles after unlinking', error)
+    }
+  }
   await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
 }
 
@@ -130,6 +168,59 @@ async function handleQueryDiscord(context: Readonly<DiscordCommandContext>) {
   const user = interaction.options.getUser('user', true)
   const link = await context.application.core.verification.findByDiscord(user.id)
   await interaction.editReply({ embeds: [await formatLink(context.application.mojangApi, link, `<@${user.id}>`)] })
+}
+
+async function handleForceUpdate(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  await interaction.deferReply()
+
+  if (!context.application.getVerificationConfig()) {
+    await interaction.editReply('Verification roles are not configured.')
+    return
+  }
+
+  const user = interaction.options.getUser('user', true)
+  try {
+    const result = await context.application.discordInstance.verificationRoleManager.updateUser(user.id, {
+      guild: interaction.guild ?? undefined
+    })
+    await interaction.editReply(
+      `Updated ${userMention(user.id)}. ` +
+        `Guilds: ${result.updatedGuilds}, ` +
+        `Roles added: ${result.rolesAdded}, ` +
+        `Roles removed: ${result.rolesRemoved}, ` +
+        `Nicknames updated: ${result.nicknamesUpdated}.`
+    )
+  } catch (error: unknown) {
+    context.logger.error('Failed to force update verification roles', error)
+    await interaction.editReply('Failed to update verification roles. Check logs for details.')
+  }
+}
+
+async function handleUpdateAll(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  await interaction.deferReply()
+
+  if (!context.application.getVerificationConfig()) {
+    await interaction.editReply('Verification roles are not configured.')
+    return
+  }
+
+  try {
+    const result = await context.application.discordInstance.verificationRoleManager.updateAll({
+      guild: interaction.guild ?? undefined
+    })
+    await interaction.editReply(
+      `Updated ${result.updatedUsers} users (failed ${result.failedUsers}). ` +
+        `Guilds: ${result.updatedGuilds}, ` +
+        `Roles added: ${result.rolesAdded}, ` +
+        `Roles removed: ${result.rolesRemoved}, ` +
+        `Nicknames updated: ${result.nicknamesUpdated}.`
+    )
+  } catch (error: unknown) {
+    context.logger.error('Failed to update verification roles for all users', error)
+    await interaction.editReply('Failed to update verification roles. Check logs for details.')
+  }
 }
 
 async function formatLink(mojangApi: MojangApi, link: UserLink | undefined, displayName: string): Promise<APIEmbed> {

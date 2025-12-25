@@ -49,6 +49,14 @@ export default {
       }
 
       context.application.core.verification.addConfirmedLink(interaction.user.id, mojangProfile.id)
+      try {
+        await context.application.discordInstance.verificationRoleManager.updateUser(interaction.user.id, {
+          uuid: mojangProfile.id,
+          guild: interaction.guild ?? undefined
+        })
+      } catch (error: unknown) {
+        context.logger.error('Failed to sync verification roles after linking', error)
+      }
       await interaction.editReply('Successfully linked!')
     } catch (error: unknown) {
       if (

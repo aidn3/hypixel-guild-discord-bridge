@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
+import type { Client, SkyblockMember, SkyblockV2Member, SkyblockV2Profile } from 'hypixel-api-reborn'
 
 import type { MojangApi } from '../../../core/users/mojang'
 
@@ -28,6 +28,22 @@ export async function getSelectedSkyblockProfileRaw(
   const selected = profile?.members[uuid]
   assert.ok(selected)
   return selected
+}
+
+export async function getSelectedSkyblockProfileData(
+  hypixelApi: Client,
+  uuid: string
+): Promise<{ profile: SkyblockV2Profile; member: SkyblockV2Member } | undefined> {
+  const response = await hypixelApi.getSkyblockProfiles(uuid, { raw: true })
+
+  if (!response.profiles) return undefined
+  const profile = response.profiles.find((p) => p.selected)
+  if (!profile) return undefined
+
+  const member = profile.members[uuid]
+  if (!member) return undefined
+
+  return { profile, member }
 }
 
 export async function getSelectedSkyblockProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {

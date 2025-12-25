@@ -54,7 +54,9 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   private readonly config: MinecraftInstanceConfig
 
   constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig) {
-    super(app, instanceName, InstanceType.Minecraft)
+    // Resolve the bridge ID for this instance from the application's bridge resolver
+    const bridgeId = app.bridgeResolver.getBridgeIdForInstance(instanceName)
+    super(app, instanceName, InstanceType.Minecraft, bridgeId)
 
     this.config = config
 

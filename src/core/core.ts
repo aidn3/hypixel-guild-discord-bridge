@@ -22,6 +22,7 @@ import { User } from '../common/user'
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
 import { ConfigurationsManager } from './configurations'
+import { BridgeConfigurations } from './discord/bridge-configurations'
 import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
@@ -42,6 +43,7 @@ import PunishmentsEnforcer from './moderation/punishments-enforcer'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import Autocomplete from './users/autocomplete'
 import { GuildManager } from './users/guild-manager'
+import { Inactivity } from './users/inactivity'
 import { MojangApi } from './users/mojang'
 import ScoresManager from './users/scores-manager'
 import { Verification } from './users/verification'
@@ -58,9 +60,11 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly guildManager: GuildManager
   public readonly mojangApi: MojangApi
   public readonly scoresManager: ScoresManager
+  public readonly inactivity: Inactivity
   public readonly verification: Verification
 
   // discord
+  public readonly bridgeConfigurations: BridgeConfigurations
   public readonly discordConfigurations: DiscordConfigurations
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
@@ -95,6 +99,7 @@ export class Core extends Instance<InstanceType.Core> {
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
 
+    this.bridgeConfigurations = new BridgeConfigurations(this.configurationsManager)
     this.discordConfigurations = new DiscordConfigurations(this.configurationsManager)
     this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
     this.discordTemporarilyInteractions = new DiscordTemporarilyInteractions(
@@ -134,6 +139,7 @@ export class Core extends Instance<InstanceType.Core> {
     )
 
     this.verification = new Verification(this.sqliteManager)
+    this.inactivity = new Inactivity(this.sqliteManager)
     this.scoresManager = new ScoresManager(
       application,
       this,

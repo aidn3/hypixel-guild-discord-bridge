@@ -62,7 +62,7 @@ git clone https://github.com/aidn3/hypixel-guild-discord-bridge
 
 - Explore the project files and copy the contents of `config_example.yaml` into `config.yaml`
 - Open `config.yaml` and fill in the information (Security: `config.yaml` contains sensitive information. Keep it safe!)
-- In `config.yaml` fill out `general.hypixelApiKey` and `discord.key` and `discord.adminIds`
+- In `config.yaml` fill out `general.hypixelApiKey` and `discord.key` and `discord.adminIds` (IDs should be strings; numeric IDs will be coerced to strings)
 - (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
 
 ### Install And Run

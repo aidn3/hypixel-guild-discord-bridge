@@ -48,8 +48,17 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     if (event.author.bot) return
 
     const config = this.application.core.discordConfigurations
+    const bridgeResolver = this.application.bridgeResolver
+
+    // First, check if this channel belongs to a specific bridge
+    const bridgeId = bridgeResolver.getBridgeIdForChannel(event.channel.id)
+    const bridgeChannelType = bridgeResolver.getChannelTypeForChannel(event.channel.id)
+
     let channelType: ChannelType
-    if (config.getPublicChannelIds().includes(event.channel.id)) {
+    if (bridgeResolver.isMultiBridgeEnabled() && bridgeChannelType !== undefined) {
+      // Multi-bridge mode: use the bridge-specific channel type
+      channelType = bridgeChannelType === 'public' ? ChannelType.Public : ChannelType.Officer
+    } else if (config.getPublicChannelIds().includes(event.channel.id)) {
       channelType = ChannelType.Public
     } else if (config.getOfficerChannelIds().includes(event.channel.id)) {
       channelType = ChannelType.Officer
@@ -126,6 +135,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
 
       channelType: channelType,
       channelId: event.channel.id,
+      bridgeId: bridgeId,
 
       user: user,
       replyUsername: readableReplyUsername,

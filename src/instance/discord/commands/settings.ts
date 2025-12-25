@@ -64,6 +64,7 @@ export default {
               .join(', ')
         },
         fetchGeneralOptions(context.application),
+        fetchBridgeOptions(context.application),
         fetchDiscordOptions(context.application),
         fetchMinecraftOptions(context.application),
         fetchModerationOptions(context.application),
@@ -105,6 +106,180 @@ function fetchGeneralOptions(application: Application): CategoryOption {
         }
       }
     ]
+  }
+}
+
+function fetchBridgeOptions(application: Application): CategoryOption {
+  const bridgeConfig = application.core.bridgeConfigurations
+
+  // Generate options for each existing bridge
+  const bridgeSubOptions: CategoryOption['options'] = []
+
+  // Add option to create a new bridge
+  bridgeSubOptions.push({
+    type: OptionType.Action,
+    name: 'Create New Bridge',
+    description: 'Create a new bridge to connect Minecraft instances to specific Discord channels.',
+    label: 'create',
+    style: ButtonStyle.Success,
+    onInteraction: async (interaction, errorHandler) => {
+      await interaction.showModal({
+        customId: 'bridge-create',
+        title: 'Create New Bridge',
+        components: [
+          {
+            type: ComponentType.ActionRow,
+            components: [
+              {
+                type: ComponentType.TextInput,
+                customId: 'bridge-id',
+                style: TextInputStyle.Short,
+                label: 'Bridge ID (unique identifier)',
+                placeholder: 'e.g. guild1, main-guild, etc.',
+                minLength: 1,
+                maxLength: 32,
+                required: true
+              }
+            ]
+          }
+        ]
+      })
+
+      const modalInteraction = await interaction.awaitModalSubmit({
+        time: 300_000,
+        filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+      })
+
+      const bridgeId = modalInteraction.fields.getTextInputValue('bridge-id').trim().toLowerCase()
+
+      // Check if bridge already exists
+      const existingBridges = bridgeConfig.getAllBridgeIds()
+      if (existingBridges.includes(bridgeId)) {
+        await modalInteraction.reply({
+          embeds: [
+            {
+              title: 'Bridge Creation Failed',
+              description: `A bridge with ID \`${escapeMarkdown(bridgeId)}\` already exists.`,
+              color: Color.Error,
+              footer: { text: DefaultCommandFooter }
+            }
+          ],
+          flags: MessageFlags.Ephemeral
+        })
+        return true
+      }
+
+      bridgeConfig.addBridgeId(bridgeId)
+      application.bridgeResolver.rebuildLookupMaps()
+
+      await modalInteraction.reply({
+        embeds: [
+          {
+            title: 'Bridge Created',
+            description:
+              `Bridge \`${escapeMarkdown(bridgeId)}\` has been created.\n\n` +
+              `**Next steps:**\n` +
+              `1. Go back to Settings → Bridges → ${bridgeId}\n` +
+              `2. Set the Public and Officer channels\n` +
+              `3. Add Minecraft instance names to the bridge`,
+            color: Color.Good,
+            footer: { text: DefaultCommandFooter }
+          }
+        ],
+        flags: MessageFlags.Ephemeral
+      })
+      return true
+    }
+  })
+
+  // Add existing bridges as sub-options
+  const existingBridges = bridgeConfig.getAllBridgeIds()
+  for (const bridgeId of existingBridges) {
+    bridgeSubOptions.push({
+      type: OptionType.Category,
+      name: `Bridge: ${bridgeId}`,
+      description: `Configure bridge "${bridgeId}"`,
+      header:
+        `**Bridge Configuration: ${bridgeId}**\n\n` +
+        `Configure which Minecraft instances and Discord channels belong to this bridge.\n` +
+        `Messages will only be routed between instances/channels in the same bridge.`,
+      options: [
+        {
+          type: OptionType.Channel,
+          name: `Public Channels`,
+          description: `Public guild chat channels for bridge "${bridgeId}"`,
+          min: 0,
+          max: 5,
+          getOption: () => bridgeConfig.getPublicChannelIds(bridgeId),
+          setOption: (values) => {
+            bridgeConfig.setPublicChannelIds(bridgeId, values)
+            application.bridgeResolver.rebuildLookupMaps()
+          }
+        },
+        {
+          type: OptionType.Channel,
+          name: `Officer Channels`,
+          description: `Officer guild chat channels for bridge "${bridgeId}"`,
+          min: 0,
+          max: 5,
+          getOption: () => bridgeConfig.getOfficerChannelIds(bridgeId),
+          setOption: (values) => {
+            bridgeConfig.setOfficerChannelIds(bridgeId, values)
+            application.bridgeResolver.rebuildLookupMaps()
+          }
+        },
+        {
+          type: OptionType.List,
+          name: `Minecraft Instances`,
+          description: `Minecraft instance names that belong to bridge "${bridgeId}"`,
+          style: InputStyle.Short,
+          min: 0,
+          max: 10,
+          getOption: () => bridgeConfig.getMinecraftInstances(bridgeId),
+          setOption: (values) => {
+            bridgeConfig.setMinecraftInstances(bridgeId, values)
+            application.bridgeResolver.rebuildLookupMaps()
+          }
+        },
+        {
+          type: OptionType.Action,
+          name: `Delete Bridge`,
+          description: `Permanently delete bridge "${bridgeId}" and all its configurations.`,
+          label: 'delete',
+          style: ButtonStyle.Danger,
+          onInteraction: async (interaction) => {
+            bridgeConfig.removeBridgeId(bridgeId)
+            application.bridgeResolver.rebuildLookupMaps()
+
+            await interaction.reply({
+              embeds: [
+                {
+                  title: 'Bridge Deleted',
+                  description: `Bridge \`${escapeMarkdown(bridgeId)}\` has been deleted.`,
+                  color: Color.Good,
+                  footer: { text: DefaultCommandFooter }
+                }
+              ],
+              flags: MessageFlags.Ephemeral
+            })
+            return true
+          }
+        }
+      ]
+    })
+  }
+
+  return {
+    type: OptionType.Category,
+    name: 'Bridges (Multi-Guild)',
+    header:
+      '**Multi-Guild Bridge Configuration**\n\n' +
+      'Bridges allow you to run multiple isolated guild chats within a single application.\n' +
+      'Each bridge connects specific Minecraft instances to specific Discord channels.\n\n' +
+      'Messages from a Minecraft instance will only be sent to channels in the same bridge.\n' +
+      'Messages from a Discord channel will only be sent to Minecraft instances in the same bridge.\n\n' +
+      `**Currently configured bridges:** ${existingBridges.length === 0 ? 'None (using legacy single-guild mode)' : existingBridges.join(', ')}`,
+    options: bridgeSubOptions
   }
 }
 

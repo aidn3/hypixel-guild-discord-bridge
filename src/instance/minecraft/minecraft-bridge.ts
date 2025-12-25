@@ -30,6 +30,8 @@ import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class MinecraftBridge extends Bridge<MinecraftInstance> {
+  private readonly bridgeId: string | undefined
+
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
@@ -38,6 +40,20 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     private readonly messageAssociation: MessageAssociation
   ) {
     super(application, clientInstance, logger, errorHandler)
+
+    // Resolve the bridge ID for this Minecraft instance
+    this.bridgeId = this.application.bridgeResolver.getBridgeIdForInstance(this.clientInstance.instanceName)
+  }
+
+  /**
+   * Check if this instance should process an event based on bridge membership.
+   * Returns true if:
+   * - Multi-bridge mode is disabled (legacy behavior)
+   * - The event's bridgeId matches this instance's bridgeId
+   * - Either bridgeId is undefined (global event or unconfigured instance)
+   */
+  private shouldProcessEvent(event: { bridgeId?: string }): boolean {
+    return this.application.bridgeResolver.shouldProcessEvent(event.bridgeId, this.clientInstance.instanceName)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,6 +66,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async onChat(event: ChatEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.channelType === ChannelType.Private) return
+    if (!this.shouldProcessEvent(event)) return
 
     const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
     const prefix = event.channelType === ChannelType.Public ? 'gc' : 'oc'
@@ -73,6 +90,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
+    if (!this.shouldProcessEvent(event)) return
 
     if (event.type === GuildPlayerEventType.Mute) {
       const game =
@@ -91,6 +109,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
+    if (!this.shouldProcessEvent(event)) return
 
     await this.handleInGameEvent(event)
   }
@@ -169,6 +188,8 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
+    if (!this.shouldProcessEvent(event)) return
+
     const message = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
       this.clientInstance.instanceName,
       event.message

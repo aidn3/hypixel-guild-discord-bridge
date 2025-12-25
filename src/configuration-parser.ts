@@ -13,6 +13,14 @@ export function loadApplicationConfig(filepath: fs.PathOrFileDescriptor): Applic
   const fileString = fs.readFileSync(filepath, 'utf8')
   const config = Yaml.parse(fileString) as unknown
 
+  // Normalize `discord.adminIds` to strings so YAML numeric literals are accepted
+  if (config && typeof config === 'object' && 'discord' in config) {
+    const discord = (config as Record<string, any>).discord
+    if (discord && Array.isArray(discord.adminIds)) {
+      discord.adminIds = discord.adminIds.map((v: unknown) => String(v))
+    }
+  }
+
   // @ts-expect-error the validity of the object has not been checked yet till at last
   if (config.version === undefined || typeof config.version !== 'number' || config.version < ApplicationConfigVersion) {
     throw new Error(

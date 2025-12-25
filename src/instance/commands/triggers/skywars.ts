@@ -1,12 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedHypixel, shortenNumber, usernameNotExists } from '../common/utility'
 
 export default class Skywars extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['skywars', 'skywar', 'sw'],
-      description: "Returns a player's skywars common stats",
+      description: "Returns a player's skywars stats",
       example: `sw %s`
     })
   }
@@ -22,9 +22,21 @@ export default class Skywars extends ChatCommandHandler {
     })
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    const stat = player.stats?.skywars
-    if (stat === undefined) return `${givenUsername} has never played Skywars before?`
+    const stats = player.stats?.skywars
+    if (stats === undefined) return `${givenUsername} has never played Skywars before?`
 
-    return `${givenUsername}'s skywars level is ${stat.level.toFixed(0)}✫ with K/D ratio of ${stat.KDRatio.toFixed(2)}.`
+    const level = stats.level
+    const kills = stats.kills
+    const kdRatio = stats.KDRatio
+    const wins = stats.wins
+    const wlRatio = stats.WLRatio
+    const coins = stats.coins
+
+    return (
+      `[${level.toFixed(0)}✫] ${givenUsername} ` +
+      `Kills: ${shortenNumber(kills)} KDR: ${kdRatio.toFixed(2)} | ` +
+      `Wins: ${shortenNumber(wins)} WLR: ${wlRatio.toFixed(2)} | ` +
+      `Coins: ${shortenNumber(coins)}`
+    )
   }
 }

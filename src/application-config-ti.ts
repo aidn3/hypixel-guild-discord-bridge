@@ -20,17 +20,127 @@ export const PrometheusConfig = t.iface([], {
   "prefix": "string",
 });
 
+export const WebConfig = t.iface([], {
+  "enabled": "boolean",
+  "port": "number",
+  "token": "string",
+  "minecraftInstance": t.opt("string"),
+});
+
+export const StatsChannelConfig = t.iface([], {
+  "id": "string",
+  "name": "string",
+});
+
+export const StatsChannelsConfig = t.iface([], {
+  "enabled": "boolean",
+  "updateIntervalMinutes": "number",
+  "channels": t.array("StatsChannelConfig"),
+  "guildName": t.opt("string"),
+  "minecraftInstance": t.opt("string"),
+});
+
+export const VerificationRoleConfig = t.iface([], {
+  "enabled": "boolean",
+  "roleId": "string",
+});
+
+export const LevelRole = t.iface([], {
+  "type": "string",
+  "requirement": t.union("number", "string"),
+  "roleId": "string",
+});
+
+export const VerificationConfig = t.iface([], {
+  "nickname": "string",
+  "roles": t.iface([], {
+    "verified": "VerificationRoleConfig",
+    "guildMember": "VerificationRoleConfig",
+    "custom": t.array("LevelRole"),
+  }),
+  "autoRoleUpdater": t.iface([], {
+    "enabled": "boolean",
+    "interval": "number",
+  }),
+});
+
+export const GuildRequirementsThresholds = t.iface([], {
+  "bedwarsStars": "number",
+  "bedwarsFKDR": "number",
+  "skywarsStars": "number",
+  "skywarsKDR": "number",
+  "duelsWins": "number",
+  "duelsWLR": "number",
+  "skyblockLevel": "number",
+});
+
+export const GuildRequirementsConfig = t.iface([], {
+  "enabled": "boolean",
+  "requirements": "GuildRequirementsThresholds",
+  "autoAccept": t.opt("boolean"),
+});
+
+export const InactivityConfig = t.iface([], {
+  "enabled": "boolean",
+  "maxDays": "number",
+  "channelIds": t.array("string"),
+});
+
+export const SkyblockEventsNotifiers = t.iface([], {
+  [t.indexKey]: "boolean",
+});
+
+export const SkyblockEventCustomTimes = t.iface([], {
+  [t.indexKey]: t.array("string"),
+});
+
+export const SkyblockEventsConfig = t.iface([], {
+  "enabled": "boolean",
+  "notifiers": t.opt("SkyblockEventsNotifiers"),
+  "customTimes": t.opt("SkyblockEventCustomTimes"),
+});
+
+export const HypixelUpdatesConfig = t.iface([], {
+  "enabled": "boolean",
+  "hypixelNews": t.opt("boolean"),
+  "statusUpdates": t.opt("boolean"),
+  "skyblockVersion": t.opt("boolean"),
+  "alphaPlayerCount": t.opt("boolean"),
+  "pollIntervalMinutes": t.opt("number"),
+  "alphaCheckIntervalMinutes": t.opt("number"),
+});
+
 export const ApplicationConfig = t.iface([], {
   "version": t.lit(2),
   "general": "GeneralConfig",
   "discord": "StaticDiscordConfig",
   "prometheus": "PrometheusConfig",
+  "web": t.opt("WebConfig"),
+  "statsChannels": t.opt("StatsChannelsConfig"),
+  "verification": t.opt("VerificationConfig"),
+  "guildRequirements": t.opt("GuildRequirementsConfig"),
+  "inactivity": t.opt("InactivityConfig"),
+  "skyblockEvents": t.opt("SkyblockEventsConfig"),
+  "hypixelUpdates": t.opt("HypixelUpdatesConfig"),
 });
 
 const exportedTypeSuite: t.ITypeSuite = {
   GeneralConfig,
   StaticDiscordConfig,
   PrometheusConfig,
+  WebConfig,
+  StatsChannelConfig,
+  StatsChannelsConfig,
+  VerificationRoleConfig,
+  LevelRole,
+  VerificationConfig,
+  GuildRequirementsThresholds,
+  GuildRequirementsConfig,
+  InactivityConfig,
+  SkyblockEventsNotifiers,
+  SkyblockEventCustomTimes,
+  SkyblockEventsConfig,
+  HypixelUpdatesConfig,
   ApplicationConfig,
 };
 export default exportedTypeSuite;

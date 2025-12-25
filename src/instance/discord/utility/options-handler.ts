@@ -150,11 +150,14 @@ interface OptionId {
 
 export class OptionsHandler {
   public static readonly BackButton = 'back-button'
+  public static readonly SearchButton = 'search-button'
+  public static readonly ClearSearchButton = 'clear-search-button'
   private static readonly InactivityTime = 600_000
   private originalReply: InteractionResponse | undefined
   private enabled = true
   private path: string[] = []
   private ids = new Map<string, OptionId>()
+  private searchQuery: string | undefined
 
   constructor(private readonly mainCategory: CategoryOption | EmbedCategoryOption) {
     let currentId = 0
@@ -171,7 +174,7 @@ export class OptionsHandler {
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
     const originalReply = await interaction.reply({
-      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled, this.searchQuery).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
@@ -195,7 +198,7 @@ export class OptionsHandler {
           await (alreadyReplied
             ? this.updateView()
             : messageInteraction.update({
-                components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+                components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled, this.searchQuery).create()],
                 flags: MessageFlags.IsComponentsV2,
                 allowedMentions: { parse: [] }
               }))
@@ -212,7 +215,7 @@ export class OptionsHandler {
   private async updateView(interaction?: ModalMessageModalSubmitInteraction): Promise<void> {
     if (interaction !== undefined) {
       await interaction.update({
-        components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+        components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled, this.searchQuery).create()],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [] }
       })
@@ -221,7 +224,7 @@ export class OptionsHandler {
 
     assert.ok(this.originalReply)
     await this.originalReply.edit({
-      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled, this.searchQuery).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
@@ -231,6 +234,52 @@ export class OptionsHandler {
     interaction: CollectedInteraction,
     errorHandler: UnexpectedErrorHandler
   ): Promise<boolean> {
+    // Search handling
+    if (interaction.customId === OptionsHandler.SearchButton) {
+      assert.ok(interaction.isButton())
+
+      await interaction.showModal({
+        customId: 'settings-search',
+        title: 'Search Settings',
+        components: [
+          {
+            type: ComponentType.ActionRow,
+            components: [
+              {
+                type: ComponentType.TextInput,
+                customId: 'settings-search-input',
+                style: TextInputStyle.Short,
+                label: 'Filter options by text',
+                required: false,
+                value: this.searchQuery ?? undefined
+              }
+            ]
+          }
+        ]
+      })
+
+      interaction
+        .awaitModalSubmit({
+          time: 300_000,
+          filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+        })
+        .then(async (modalInteraction) => {
+          assert.ok(modalInteraction.isFromMessage())
+
+          const value = modalInteraction.fields.getTextInputValue('settings-search-input').trim()
+          this.searchQuery = value.length === 0 ? undefined : value
+          await this.updateView(modalInteraction)
+        })
+        .catch(errorHandler.promiseCatch('handling search modal submit'))
+
+      return true
+    }
+
+    if (interaction.customId === OptionsHandler.ClearSearchButton) {
+      this.searchQuery = undefined
+      return false
+    }
+
     if (interaction.customId === OptionsHandler.BackButton) {
       this.path.pop()
       return false
@@ -517,12 +566,78 @@ class ViewBuilder {
     private readonly mainCategory: CategoryOption | EmbedCategoryOption,
     private readonly ids: Map<string, OptionId>,
     private readonly path: string[],
-    private readonly enabled: boolean
+    private readonly enabled: boolean,
+    private readonly searchQuery?: string
   ) {}
 
   public create(): ContainerComponentData {
     if (this.hasCreated) throw new Error('This instance has already been used to create a view.')
     this.hasCreated = true
+
+    // If a search query is set, build a search results category and render it
+    if (this.searchQuery !== undefined && this.searchQuery.length > 0) {
+      const lowerQuery = this.searchQuery.toLowerCase()
+
+      const flattened = this.flattenWithPath(this.mainCategory)
+
+      const matchedOptions = flattened
+        .filter(({ item, path }) => {
+          let haystack = `${path.join(' > ')} ${item.name} ${item.description ?? ''}`
+
+          try {
+            switch (item.type) {
+              case OptionType.Label: {
+                if (item.getOption !== undefined) haystack += ` ${item.getOption()}`
+                break
+              }
+              case OptionType.Boolean: {
+                haystack += ` ${item.getOption()}`
+                break
+              }
+              case OptionType.Text: {
+                haystack += ` ${item.getOption()}`
+                break
+              }
+              case OptionType.Number: {
+                haystack += ` ${item.getOption()}`
+                break
+              }
+              case OptionType.List:
+              case OptionType.PresetList: {
+                haystack += ` ${(item.getOption() as unknown as string[]).join(' ')}`
+                break
+              }
+              case OptionType.Channel:
+              case OptionType.Role:
+              case OptionType.User: {
+                haystack += ` ${(item.getOption() as unknown as string[]).join(' ')}`
+                break
+              }
+              default: {
+                // No-op
+              }
+            }
+          } catch {
+            // ignore errors while trying to introspect options
+          }
+
+          return haystack.toLowerCase().includes(lowerQuery)
+        })
+        .map(({ item, path }) => {
+          // shallow copy with prefixed name to include parent path context
+          const prefixedName = path.length > 0 ? `${path.join(' > ')} > ${item.name}` : item.name
+          return { ...item, name: prefixedName } as OptionItem
+        })
+
+      const searchCategory: CategoryOption = {
+        type: OptionType.Category,
+        name: `Search results for "${escapeMarkdown(this.searchQuery)}"`,
+        options: matchedOptions
+      }
+
+      this.createCategoryView(searchCategory)
+      return { type: ComponentType.Container, components: this.components } satisfies ContainerComponentData
+    }
 
     this.createCategoryView(this.getOption())
     return { type: ComponentType.Container, components: this.components } satisfies ContainerComponentData
@@ -611,6 +726,32 @@ class ViewBuilder {
           }
         })
       }
+
+      // Add search controls (available everywhere)
+      this.append({
+        type: ComponentType.ActionRow,
+        components: [
+          {
+            type: ComponentType.Button,
+            label: this.searchQuery ? `Search (edit)` : 'Search',
+            customId: OptionsHandler.SearchButton,
+            style: ButtonStyle.Primary,
+            disabled: !this.enabled
+          },
+          {
+            type: ComponentType.Button,
+            label: 'Clear Search',
+            customId: OptionsHandler.ClearSearchButton,
+            style: ButtonStyle.Secondary,
+            disabled: !this.enabled || this.searchQuery === undefined
+          }
+        ]
+      })
+
+      if (this.searchQuery !== undefined && this.searchQuery.length > 0) {
+        this.append({ type: ComponentType.TextDisplay, content: `**Search:** ${escapeMarkdown(this.searchQuery)}` })
+      }
+
       if ('header' in currentCategory && currentCategory.header !== undefined) {
         this.append({ type: ComponentType.TextDisplay, content: currentCategory.header })
       } else if (currentCategory.description !== undefined) {
@@ -938,6 +1079,25 @@ class ViewBuilder {
     assert.ok(category.type === OptionType.Category || category.type === OptionType.EmbedCategory)
 
     return category
+  }
+
+  private flattenWithPath(
+    current: CategoryOption | EmbedCategoryOption,
+    parentPath: string[] = []
+  ): Array<{ item: OptionItem; path: string[] }> {
+    const results: Array<{ item: OptionItem; path: string[] }> = []
+
+    for (const option of current.options) {
+      // Include the option itself
+      results.push({ item: option, path: parentPath })
+
+      // Recurse into categories
+      if (option.type === OptionType.Category || option.type === OptionType.EmbedCategory) {
+        results.push(...this.flattenWithPath(option, [...parentPath, option.name]))
+      }
+    }
+
+    return results
   }
 
   private createTitle(): string {
