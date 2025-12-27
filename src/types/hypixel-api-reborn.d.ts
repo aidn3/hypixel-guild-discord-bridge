@@ -34,7 +34,13 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
-    currencies?: { coin_purse?: number }
+    currencies?: {
+      coin_purse?: number
+      essence?: Record<
+        'WITHER' | 'DRAGON' | 'UNDEAD' | 'DIAMOND' | 'SPIDER' | 'GOLD' | 'ICE' | 'CRIMSON',
+        { current: number }
+      >
+    }
     dungeons: SkyblockV2Dungeons | undefined
     rift?: SkyblockV2Rift
     accessory_bag_storage?: {

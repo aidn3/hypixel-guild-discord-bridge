@@ -27,6 +27,7 @@ import Discord from './triggers/discord'
 import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
 import Election from './triggers/election.js'
+import Essence from './triggers/essence'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
 import Fetchur from './triggers/fetchur.js'
@@ -102,6 +103,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Eggs(),
       new Election(),
       new EightBallCommand(),
+      new Essence(),
       new Execute(),
       new Explain(),
       new Fetchur(),
