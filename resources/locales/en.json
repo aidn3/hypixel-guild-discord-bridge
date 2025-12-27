@@ -58,6 +58,8 @@
   "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",
   "commands.error.never-joined-hypixel": "{{username}} has never played on Hypixel before?",
   "commands.error.never-joined-skyblock": "{{username}} has never played skyblock before?",
+  "commands.error.never-played-dojo": "{{username}} has never played Skyblock Dojo before?",
+
   "commands.praise": [
     "{{name}} is a very good boy/girl",
     "*Pats {{name}}'s head*",

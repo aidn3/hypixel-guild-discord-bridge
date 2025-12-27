@@ -55,6 +55,16 @@ declare module 'hypixel-api-reborn' {
       mages_reputation?: number
       barbarians_reputation?: number
 
+      dojo?: Partial<{
+        dojo_points_mob_kb: number
+        dojo_points_wall_jump: number
+        dojo_points_sword_swap: number
+        dojo_points_archer: number
+        dojo_points_snake: number
+        dojo_points_fireball: number
+        dojo_points_lock_head: number
+      }>
+
       kuudra_completed_tiers: {
         none?: number
         hot?: number
