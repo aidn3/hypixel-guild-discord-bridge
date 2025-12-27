@@ -46,10 +46,19 @@ export function translateInstanceMessage(i18n: i18n, key: InstanceMessageType): 
       return i18n.t(($) => $['instance.message.proxy-problem'])
     }
     case InstanceMessageType.MinecraftRestarting: {
-      return i18n.t(($) => $['instance.message.no-autoconnect'])
+      return i18n.t(($) => $['instance.message.restarting'])
     }
     case InstanceMessageType.MinecraftGuildKicked: {
       return i18n.t(($) => $['instance.message.guild-kicked'])
+    }
+    case InstanceMessageType.MinecraftConnectionTerminated: {
+      return i18n.t(($) => $['instance.message.connection-terminated'])
+    }
+    case InstanceMessageType.ShutdownSignal: {
+      return i18n.t(($) => $['instance.message.signal-shutdown'])
+    }
+    case InstanceMessageType.RestartSignal: {
+      return i18n.t(($) => $['instance.message.signal-restart'])
     }
     default: {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

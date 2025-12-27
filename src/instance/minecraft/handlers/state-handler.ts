@@ -104,6 +104,11 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
         await this.clientInstance.setAndBroadcastNewStatus(Status.Ended)
       }
       return
+    } else {
+      await this.clientInstance.setAndBroadcastNewStatusWithMessage(Status.Ended, {
+        type: InstanceMessageType.MinecraftConnectionTerminated,
+        value: reason
+      })
     }
 
     this.logger.debug(`Client quit with the reason: ${reason}`)
