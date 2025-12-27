@@ -30,6 +30,7 @@ import Election from './triggers/election.js'
 import Essence from './triggers/essence'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
+import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
 import Forge from './triggers/forge'
 import Guild from './triggers/guild.js'
@@ -107,6 +108,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Essence(),
       new Execute(),
       new Explain(),
+      new Fairysouls(),
       new Fetchur(),
       new Forge(),
       new Guild(),
