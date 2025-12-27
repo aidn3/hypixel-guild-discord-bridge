@@ -77,6 +77,7 @@ import Unlink from './triggers/unlink.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
+import Woolwars from './triggers/woolwars'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
@@ -156,7 +157,8 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Unlink(),
       new Vengeance(),
       new Warp(),
-      new Weight()
+      new Weight(),
+      new Woolwars()
     ]
 
     this.checkCommandsIntegrity()

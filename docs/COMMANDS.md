@@ -56,6 +56,7 @@ A shorter version can also be used: `!- rtca`
 | `list`           | List online members in a guild                                                     |
 | `magicalpower`   | Returns a player's highest recorded skyblock Magical Power                         |
 | `mayor`          | Show current Hypixel Skyblock Election                                             |
+| `megawalls`      | Returns a player's Megawalls stats                                                 |
 | `mute`           | mute a random online person for 5 minutes for no good reason                       |
 | `networth`       | Returns a calculation of a player's networth                                       |
 | `parties`        | List all active parties in guild                                                   |
@@ -90,7 +91,7 @@ A shorter version can also be used: `!- rtca`
 | `vengeance`      | Try your luck against another player for a 15 minute mute                          |
 | `warp`           | Warp a player out of a lobby                                                       |
 | `weight`         | Returns a player's senither weight                                                 |
-| `skywars`        | Returns a player's skywars common stats                                            |
+| `woolwars`       | Returns a player's Woolwars stats                                                  |
 
 ## Discord Commands
 

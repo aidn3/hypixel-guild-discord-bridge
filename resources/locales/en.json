@@ -57,6 +57,8 @@
   "commands.67": "Something happened to {{username}}. Want to know? Do {{command}}",
   "commands.trophyfish.none": "{{username}} has never trophy fished before?",
   "commands.megawalls.none": "{{username}} has never played Megawalls before.",
+  "commands.woolwars.none": "{{username}} has never played Woolwars before.",
+  "commands.woolwars.response": "{{username}}'s Woolwars: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
   "commands.error.must-be-ingame": "{{username}}, Can only use this command in-game!",
   "commands.error.must-be-admin": "{{username}}, You must be an admin to use this command!",
   "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",
