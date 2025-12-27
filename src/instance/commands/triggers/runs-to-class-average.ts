@@ -51,6 +51,10 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
+    // TODO: fix perks changed location into "leveling" section.
+    //  As it is right now, all the values here are 0.
+    //  however, the rtca is accurate as it is right now.
+    //  Further testing should be done later when volatile perks like Aura mayor are gone.
     const heartOfGold = selectedProfile.essence?.perks?.heart_of_gold ?? 0
     const unbridledRage = selectedProfile.essence?.perks?.unbridled_rage ?? 0
     const coldEfficiency = selectedProfile.essence?.perks?.cold_efficiency ?? 0
