@@ -27,12 +27,12 @@ export default class Megawalls extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.megawalls.none'], { username: givenUsername })
     }
 
-    const parts: string[] = []
-    parts.push(`Games ${stat.playedGames.toLocaleString('en-US')}`)
-    parts.push(`Wins ${stat.wins.toLocaleString('en-US')}`)
-    parts.push(`Kills ${stat.finalKills.toLocaleString('en-US')}`)
-    parts.push(`FKDR ${stat.KDRatio.toFixed(2)}`)
-
-    return `${givenUsername}'s Megawalls: ${parts.join(' - ')}.`
+    return context.app.i18n.t(($) => $['commands.megawalls.response'], {
+      username: givenUsername,
+      games: stat.playedGames,
+      wins: stat.wins,
+      kills: stat.kills,
+      kdr: stat.KDRatio
+    })
   }
 }

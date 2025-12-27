@@ -57,6 +57,9 @@
   "commands.67": "Something happened to {{username}}. Want to know? Do {{command}}",
   "commands.trophyfish.none": "{{username}} has never trophy fished before?",
   "commands.megawalls.none": "{{username}} has never played Megawalls before.",
+  "commands.megawalls.response": "{{username}}'s Megawalls: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
+  "commands.uhc.none": "{{username}} has never played UHC before.",
+  "commands.uhc.response": "{{username}} is UHC level {{level}}✫ - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}",
   "commands.woolwars.none": "{{username}} has never played Woolwars before.",
   "commands.woolwars.response": "{{username}}'s Woolwars: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
   "commands.error.must-be-ingame": "{{username}}, Can only use this command in-game!",
@@ -64,7 +67,8 @@
   "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",
   "commands.error.never-joined-hypixel": "{{username}} has never played on Hypixel before?",
   "commands.error.never-joined-skyblock": "{{username}} has never played skyblock before?",
-  "commands.error.never-played-dojo": "{{username}} has never played Skyblock Dojo before?",
+  "commands.dojo.none": "{{username}} has never played Skyblock Dojo before?",
+  "commands.dojo.response": "{{username}} Dojo: \nTotal {{total, number}}\n - Force {{force, number}}\n - Stamina {{stamina, number}}\n - Matery {{mastery, number}}\n - Discipline {{discipline, number}}\n - Swiftness {{swiftness, number}}\n - Control {{control, number}}\n - Tenacity {{tenacity, number}}",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

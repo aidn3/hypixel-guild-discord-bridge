@@ -32,10 +32,9 @@ export default class Dojo extends ChatCommandHandler {
 
     const stats = selectedProfile.nether_island_player_data.dojo
     if (stats === undefined) {
-      return context.app.i18n.t(($) => $['commands.error.never-played-dojo'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.dojo.none'], { username: givenUsername })
     }
 
-    const parts: string[] = []
     const total =
       (stats.dojo_points_mob_kb ?? 0) +
       (stats.dojo_points_wall_jump ?? 0) +
@@ -45,15 +44,16 @@ export default class Dojo extends ChatCommandHandler {
       (stats.dojo_points_lock_head ?? 0) +
       (stats.dojo_points_fireball ?? 0)
 
-    parts.push(`Total ${total}`)
-    parts.push(`Force ${stats.dojo_points_mob_kb ?? 0}`)
-    parts.push(`Stamina ${stats.dojo_points_wall_jump ?? 0}`)
-    parts.push(`Mastery ${stats.dojo_points_archer ?? 0}`)
-    parts.push(`Discipline ${stats.dojo_points_sword_swap ?? 0}`)
-    parts.push(`Swiftness ${stats.dojo_points_snake ?? 0}`)
-    parts.push(`Control ${stats.dojo_points_lock_head ?? 0}`)
-    parts.push(`Tenacity ${stats.dojo_points_fireball ?? 0}`)
-
-    return `${givenUsername} Dojo: \n${parts.join('\n - ')}`
+    return context.app.i18n.t(($) => $['commands.dojo.response'], {
+      username: givenUsername,
+      total: total,
+      force: stats.dojo_points_mob_kb ?? 0,
+      stamina: stats.dojo_points_wall_jump ?? 0,
+      mastery: stats.dojo_points_archer ?? 0,
+      discipline: stats.dojo_points_sword_swap ?? 0,
+      swiftness: stats.dojo_points_snake ?? 0,
+      control: stats.dojo_points_lock_head ?? 0,
+      tenacity: stats.dojo_points_fireball ?? 0
+    })
   }
 }

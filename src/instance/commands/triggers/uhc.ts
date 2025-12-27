@@ -23,8 +23,16 @@ export default class Uhc extends ChatCommandHandler {
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     const stat = player.stats?.uhc
-    if (stat === undefined) return `${givenUsername} has never played UHC before?`
+    if (stat === undefined) {
+      return context.app.i18n.t(($) => $['commands.uhc.none'], { username: givenUsername })
+    }
 
-    return `${givenUsername} is UHC level ${stat.starLevel}✫ | KDR ${stat.KDRatio} | Wins ${stat.wins}`
+    return context.app.i18n.t(($) => $['commands.uhc.response'], {
+      username: givenUsername,
+      level: stat.starLevel,
+      wins: stat.wins,
+      kills: stat.kills,
+      kdr: stat.KDRatio
+    })
   }
 }
