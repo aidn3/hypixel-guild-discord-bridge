@@ -22,7 +22,7 @@ export default class Warp extends ChatCommandHandler {
 
   constructor() {
     super({
-      triggers: ['warp'],
+      triggers: ['warp', 'warpout'],
       description: 'Warp a player out of a lobby',
       example: `warp Steve`
     })
