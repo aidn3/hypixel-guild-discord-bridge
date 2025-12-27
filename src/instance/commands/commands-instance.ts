@@ -44,6 +44,7 @@ import Level from './triggers/level.js'
 import List from './triggers/list.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
+import Megawalls from './triggers/megawalls'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
@@ -123,6 +124,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new List(),
       new MagicalPower(),
       new Mayor(),
+      new Megawalls(),
       new Mute(),
       new Networth(),
       ...new PartyManager().resolveCommands(),
