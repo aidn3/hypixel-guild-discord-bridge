@@ -5,6 +5,7 @@ import type { ChatCommandHandler } from '../../common/commands.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
 
+import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Api from './triggers/api.js'
 import Asian from './triggers/asian.js'
@@ -89,6 +90,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Catacomb(),
       new Chocolate(),
       new Collection(),
+      new Command67(),
       new CurrentDungeon(),
       new DadJoke(),
       new DarkAuction(),

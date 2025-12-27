@@ -52,6 +52,7 @@
   "discord.commands.settings.main.description": "Welcome to Application options!\nYou can choose one of the categories below to expand it.\n\n$t(discord.commands.settings.header)",
 
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
+  "commands.67": "Something happened to {{username}}. Want to know? Do {{command}}",
   "commands.error.must-be-ingame": "{{username}}, Can only use this command in-game!",
   "commands.error.must-be-admin": "{{username}}, You must be an admin to use this command!",
   "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",
