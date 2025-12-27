@@ -655,10 +655,13 @@ class Trivia extends SpontaneousEventHandler {
     const listener = (event: ChatEvent) => {
       if (event.channelType !== ChannelType.Public) return
 
-      const match = event.message.trim().split(' ')[0].toLowerCase().trim()
-      if (!Trivia.IndexLetters.includes(match)) return
+      const match = /^(\w)(?=\b)[\s!@#$%^&*()_+\-=`~?>|\\\][{}]*$/g.exec(event.message.toLowerCase().trim())
+      if (!match) return
+      const matchedResult = match[1].toLowerCase()
 
-      for (const answeredUsers of [...correctUsers, ...incorrectUsers]) {
+      if (!Trivia.IndexLetters.includes(matchedResult)) return
+
+      for (const answeredUsers of incorrectUsers) {
         if (answeredUsers.equalsUser(event.user)) return
       }
 
