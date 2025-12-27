@@ -44,6 +44,7 @@ declare module 'hypixel-api-reborn' {
     dungeons: SkyblockV2Dungeons | undefined
     rift?: SkyblockV2Rift
     fairy_soul?: { total_collected: number }
+    trophy_fish?: Record<string, number> & { last_caught?: string; rewards?: number[] }
     accessory_bag_storage?: {
       selected_power?: string
       highest_magical_power: number

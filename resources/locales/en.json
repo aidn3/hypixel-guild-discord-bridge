@@ -55,6 +55,7 @@
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
   "commands.forge.none": "{{username}} does not have anything in forge.",
   "commands.67": "Something happened to {{username}}. Want to know? Do {{command}}",
+  "commands.trophyfish.none": "{{username}} has never trophy fished before?",
   "commands.error.must-be-ingame": "{{username}}, Can only use this command in-game!",
   "commands.error.must-be-admin": "{{username}}, You must be an admin to use this command!",
   "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",

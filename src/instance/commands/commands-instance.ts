@@ -70,6 +70,7 @@ import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
 import Toggled from './triggers/toggled.js'
+import TrophyFish from './triggers/trophy-fish'
 import Uhc from './triggers/uhc'
 import Unlink from './triggers/unlink.js'
 import Vengeance from './triggers/vengeance.js'
@@ -148,6 +149,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Timecharms(),
       new Toggle(),
       new Toggled(),
+      new TrophyFish(),
       new Uhc(),
       new Unlink(),
       new Vengeance(),
