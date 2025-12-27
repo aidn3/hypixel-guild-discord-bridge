@@ -649,8 +649,7 @@ class Trivia extends SpontaneousEventHandler {
   override async startEvent(): Promise<void> {
     const trivia = this.createQuiz()
 
-    const timeout = new Timeout<ChatEvent>(30_000)
-    const correctUsers: User[] = []
+    const timeout = new Timeout<User>(30_000)
     const incorrectUsers: User[] = []
 
     const listener = (event: ChatEvent) => {
@@ -663,8 +662,8 @@ class Trivia extends SpontaneousEventHandler {
         if (answeredUsers.equalsUser(event.user)) return
       }
 
-      if (match === trivia.answerLetter.toLowerCase()) {
-        correctUsers.push(event.user)
+      if (matchedResult === trivia.answerLetter.toLowerCase()) {
+        timeout.resolve(event.user)
       } else {
         incorrectUsers.push(event.user)
       }
@@ -674,17 +673,17 @@ class Trivia extends SpontaneousEventHandler {
     await this.broadcastMessage(`Quick Trivia: ${trivia.question}`, Color.Good)
     timeout.refresh()
 
-    await timeout.wait()
+    const wonUser = await timeout.wait()
     this.application.off('chat', listener)
 
     // eslint-disable-next-line unicorn/prefer-ternary
-    if (correctUsers.length === 0) {
+    if (wonUser === undefined) {
       await this.broadcastMessage(
-        `The answer is: ${trivia.answerDisplay}. Remember you can only answer with the letter!`,
+        `The answer is: ${trivia.answerDisplay}. Remember you can only answer once and must be with the letter!`,
         Color.Info
       )
     } else {
-      await this.broadcastMessage(`Good job ${correctUsers.map((user) => user.displayName()).join(', ')}!`, Color.Good)
+      await this.broadcastMessage(`Good job ${wonUser.displayName()}!`, Color.Good)
     }
   }
 
