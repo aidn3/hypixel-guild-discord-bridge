@@ -16,6 +16,7 @@
   "instance.message.proxy-problem": "Encountered a problem while working with Minecraft instance proxy.",
   "instance.message.restarting": "Minecraft instance will try to restart soon.",
   "instance.message.guild-kicked": "Minecraft account has been kicked off the guild.",
+  "instance.message.connection-terminated": "Connection has been closed.",
 
   "instance.status.change": "Status changed from {{from}} to {{to}}.",
   "instance.status.fresh": "FRESH",

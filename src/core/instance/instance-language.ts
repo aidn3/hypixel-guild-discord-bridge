@@ -51,6 +51,9 @@ export function translateInstanceMessage(i18n: i18n, key: InstanceMessageType): 
     case InstanceMessageType.MinecraftGuildKicked: {
       return i18n.t(($) => $['instance.message.guild-kicked'])
     }
+    case InstanceMessageType.MinecraftConnectionTerminated: {
+      return i18n.t(($) => $['instance.message.connection-terminated'])
+    }
     default: {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Unknown instance type ${key satisfies never}`)
