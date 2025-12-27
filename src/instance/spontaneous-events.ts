@@ -220,19 +220,31 @@ class CountingChain extends SpontaneousEventHandler {
     let lastUser: User | undefined
     let currentCount = 0
 
-    const listener = (event: ChatEvent) => {
+    const listener = async (event: ChatEvent) => {
       if (event.channelType !== ChannelType.Public) return
-      if (lastUser !== undefined && event.user.equalsUser(lastUser)) return
+      const sameAsLastUser = lastUser !== undefined && event.user.equalsUser(lastUser)
 
-      const match = /^\d+/g.exec(event.message)
+      const match = /^[\s!@#$%^&*()_+\-=`~?>|\\\][{}]*(\d+)(?:\s.*|)$/g.exec(event.message)
       if (!match) return
 
-      const nextPossibleCount = Number.parseInt(match[0], 10)
+      const nextPossibleCount = Number.parseInt(match[1], 10)
       if (nextPossibleCount === currentCount + 1) {
+        if (sameAsLastUser) return
+
         timeout.refresh()
         currentCount = nextPossibleCount
         beforeLast = lastUser
         lastUser = event.user
+
+        this.logger.debug(`Counting chain reached ${currentCount}`)
+        if (/^10+$/g.test(currentCount.toString(10))) {
+          await this.broadcastMessage(`Reached ${currentCount.toLocaleString('en-US')} counting chain!`, Color.Good)
+          timeout.refresh()
+        }
+      } else if (nextPossibleCount <= currentCount && lastUser !== undefined) {
+        timeout.refresh()
+        await this.broadcastMessage(`Last Reached number is ${currentCount} by ${lastUser.displayName()}!`, Color.Info)
+        timeout.refresh()
       }
     }
 
