@@ -220,19 +220,31 @@ class CountingChain extends SpontaneousEventHandler {
     let lastUser: User | undefined
     let currentCount = 0
 
-    const listener = (event: ChatEvent) => {
+    const listener = async (event: ChatEvent) => {
       if (event.channelType !== ChannelType.Public) return
-      if (lastUser !== undefined && event.user.equalsUser(lastUser)) return
+      const sameAsLastUser = lastUser !== undefined && event.user.equalsUser(lastUser)
 
-      const match = /^\d+/g.exec(event.message)
+      const match = /^[\s!@#$%^&*()_+\-=`~?>|\\\][{}]*(\d+)(?:\s.*|)$/g.exec(event.message)
       if (!match) return
 
-      const nextPossibleCount = Number.parseInt(match[0], 10)
+      const nextPossibleCount = Number.parseInt(match[1], 10)
       if (nextPossibleCount === currentCount + 1) {
+        if (sameAsLastUser) return
+
         timeout.refresh()
         currentCount = nextPossibleCount
         beforeLast = lastUser
         lastUser = event.user
+
+        this.logger.debug(`Counting chain reached ${currentCount}`)
+        if (/^10+$/g.test(currentCount.toString(10))) {
+          await this.broadcastMessage(`Reached ${currentCount.toLocaleString('en-US')} counting chain!`, Color.Good)
+          timeout.refresh()
+        }
+      } else if (nextPossibleCount <= currentCount && lastUser !== undefined) {
+        timeout.refresh()
+        await this.broadcastMessage(`Last Reached number is ${currentCount} by ${lastUser.displayName()}!`, Color.Info)
+        timeout.refresh()
       }
     }
 
@@ -649,22 +661,24 @@ class Trivia extends SpontaneousEventHandler {
   override async startEvent(): Promise<void> {
     const trivia = this.createQuiz()
 
-    const timeout = new Timeout<ChatEvent>(30_000)
-    const correctUsers: User[] = []
+    const timeout = new Timeout<User>(30_000)
     const incorrectUsers: User[] = []
 
     const listener = (event: ChatEvent) => {
       if (event.channelType !== ChannelType.Public) return
 
-      const match = event.message.trim().split(' ')[0].toLowerCase().trim()
-      if (!Trivia.IndexLetters.includes(match)) return
+      const match = /^(\w)(?=\b)[\s!@#$%^&*()_+\-=`~?>|\\\][{}]*$/g.exec(event.message.toLowerCase().trim())
+      if (!match) return
+      const matchedResult = match[1].toLowerCase()
 
-      for (const answeredUsers of [...correctUsers, ...incorrectUsers]) {
+      if (!Trivia.IndexLetters.includes(matchedResult)) return
+
+      for (const answeredUsers of incorrectUsers) {
         if (answeredUsers.equalsUser(event.user)) return
       }
 
-      if (match === trivia.answerLetter.toLowerCase()) {
-        correctUsers.push(event.user)
+      if (matchedResult === trivia.answerLetter.toLowerCase()) {
+        timeout.resolve(event.user)
       } else {
         incorrectUsers.push(event.user)
       }
@@ -674,17 +688,17 @@ class Trivia extends SpontaneousEventHandler {
     await this.broadcastMessage(`Quick Trivia: ${trivia.question}`, Color.Good)
     timeout.refresh()
 
-    await timeout.wait()
+    const wonUser = await timeout.wait()
     this.application.off('chat', listener)
 
     // eslint-disable-next-line unicorn/prefer-ternary
-    if (correctUsers.length === 0) {
+    if (wonUser === undefined) {
       await this.broadcastMessage(
-        `The answer is: ${trivia.answerDisplay}. Remember you can only answer with the letter!`,
+        `The answer is: ${trivia.answerDisplay}. Remember you can only answer once and must be with the letter!`,
         Color.Info
       )
     } else {
-      await this.broadcastMessage(`Good job ${correctUsers.map((user) => user.displayName()).join(', ')}!`, Color.Good)
+      await this.broadcastMessage(`Good job ${wonUser.displayName()}!`, Color.Good)
     }
   }
 
