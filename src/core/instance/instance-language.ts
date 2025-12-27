@@ -46,7 +46,7 @@ export function translateInstanceMessage(i18n: i18n, key: InstanceMessageType): 
       return i18n.t(($) => $['instance.message.proxy-problem'])
     }
     case InstanceMessageType.MinecraftRestarting: {
-      return i18n.t(($) => $['instance.message.no-autoconnect'])
+      return i18n.t(($) => $['instance.message.restarting'])
     }
     case InstanceMessageType.MinecraftGuildKicked: {
       return i18n.t(($) => $['instance.message.guild-kicked'])
