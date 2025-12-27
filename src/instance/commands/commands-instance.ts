@@ -31,6 +31,7 @@ import Essence from './triggers/essence'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
 import Fetchur from './triggers/fetchur.js'
+import Forge from './triggers/forge'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
@@ -107,6 +108,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Execute(),
       new Explain(),
       new Fetchur(),
+      new Forge(),
       new Guild(),
       new Help(),
       new HeartOfTheMountain(),

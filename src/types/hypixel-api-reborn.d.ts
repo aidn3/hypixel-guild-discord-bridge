@@ -84,6 +84,7 @@ declare module 'hypixel-api-reborn' {
     events?: SkyblockPlayerEvents
     pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
     essence?: SkyblockV2Essence
+    forge?: SkyblockForge
   }
 
   export interface SkyblockV2Inventory {
@@ -192,6 +193,15 @@ declare module 'hypixel-api-reborn' {
     // eggs names and collected amount. not set if not collected.
     // There are other objects inside not related to rabbits, but ignored here since not required YET.
     rabbits: Record<string, number | object>
+  }
+
+  export interface SkyblockForge {
+    forge_processes: { forge_1: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7', SkyblockForgeEntry> }
+  }
+
+  export interface SkyblockForgeEntry {
+    id: string
+    startTime: number
   }
 
   export interface MayorV2 {
