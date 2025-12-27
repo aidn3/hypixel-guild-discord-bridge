@@ -17,6 +17,7 @@ A shorter version can also be used: `!- rtca`
 
 | Command          | Description                                                                        |
 | ---------------- | ---------------------------------------------------------------------------------- |
+| `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
 | `api`            | Returns a player's skyblock API status                                             |
 | `asian`          | Challenge yourself with math!                                                      |
@@ -27,7 +28,7 @@ A shorter version can also be used: `!- rtca`
 | `boop`           | /boop a player in-game                                                             |
 | `buildbattle`    | Returns a player's Build Battle common stats                                       |
 | `calculate`      | A basic calculator                                                                 |
-| `catacomb`       | Returns a player's catacombs level                                                 |
+| `catacombs`      | Returns a player's catacombs level                                                 |
 | `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
 | `collection`     | Returns a player's skyblock collection stats                                       |
 | `currentdungeon` | Returns a player's last dungeon run                                                |
@@ -35,11 +36,15 @@ A shorter version can also be used: `!- rtca`
 | `da`             | Show the remaining time till next Dark Auction                                     |
 | `devexcuse`      | Show you a random excuse for why this bot isn't working                            |
 | `discord`        | Returns a player's Discord social                                                  |
+| `dojo`           | Returns a player's crimson isle's Dojo stats                                       |
 | `eggs`           | Returns a player's skyblock easter eggs stats                                      |
 | `election`       | Show current Hypixel Skyblock Election                                             |
+| `essence`        | Returns a player's Skyblock essence                                                |
 | `execute`        | Runs a command directly                                                            |
 | `explain`        | Returns an explanation of the bot                                                  |
+| `fairysouls`     | Returns a player's Skyblock fairysouls progress                                    |
 | `fetchur`        | Show what Fetchur NPC is requesting                                                |
+| `forge`          | Returns a player's Skyblock forge slots                                            |
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |
 | `hotm`           | Returns a player's hotm and powder                                                 |
@@ -79,10 +84,13 @@ A shorter version can also be used: `!- rtca`
 | `timecharm`      | Returns a player's rift obtained time charms                                       |
 | `toggle`         | Enable/disable commands                                                            |
 | `toggled`        | Show disabled commands                                                             |
+| `trophyfish`     | Returns a player's Skyblock trophy fishing progress                                |
+| `uhc`            | Returns a player's UHC stats                                                       |
 | `unlink`         | Unlink Minecraft account from Discord                                              |
 | `vengeance`      | Try your luck against another player for a 15 minute mute                          |
 | `warp`           | Warp a player out of a lobby                                                       |
 | `weight`         | Returns a player's senither weight                                                 |
+| `skywars`        | Returns a player's skywars common stats                                            |
 
 ## Discord Commands
 
