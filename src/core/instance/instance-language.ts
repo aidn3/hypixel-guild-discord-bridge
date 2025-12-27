@@ -54,6 +54,12 @@ export function translateInstanceMessage(i18n: i18n, key: InstanceMessageType): 
     case InstanceMessageType.MinecraftConnectionTerminated: {
       return i18n.t(($) => $['instance.message.connection-terminated'])
     }
+    case InstanceMessageType.ShutdownSignal: {
+      return i18n.t(($) => $['instance.message.signal-shutdown'])
+    }
+    case InstanceMessageType.RestartSignal: {
+      return i18n.t(($) => $['instance.message.signal-restart'])
+    }
     default: {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Unknown instance type ${key satisfies never}`)

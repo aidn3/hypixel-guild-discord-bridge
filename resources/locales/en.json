@@ -2,6 +2,8 @@
   "instance.message.authentication-code": "Instance requires to authenticate Minecraft account. Authentication pending.",
   "instance.message.authentication-code-expired": "(Authentication expired)",
 
+  "instance.message.signal-restart": "Received a signal to restart this instance.",
+  "instance.message.signal-shutdown": "Received a signal to shutdown this instance.",
   "instance.message.no-autoconnect": "Minecraft instance is set to not auto connect. A manual connect signal is needed to start.",
   "instance.message.minecraft-kicked": "Minecraft account has been kicked off the server.",
   "instance.message.minecraft-banned": "Minecraft account has been banned.",

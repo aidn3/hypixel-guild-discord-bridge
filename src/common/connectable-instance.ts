@@ -1,5 +1,5 @@
 import type { InstanceMessage, InstanceStatus, InstanceType } from './application-event.js'
-import { InstanceSignalType } from './application-event.js'
+import { InstanceMessageType, InstanceSignalType } from './application-event.js'
 import { Instance } from './instance.js'
 
 export abstract class ConnectableInstance<T extends InstanceType> extends Instance<T> {
@@ -9,13 +9,15 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
     this.logger.log(`instance has received signal type=${type}`)
 
     if (type === InstanceSignalType.Restart) {
+      await this.broadcastInstanceMessage({ type: InstanceMessageType.RestartSignal, value: undefined })
       await this.connect()
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     } else if (type === InstanceSignalType.Shutdown) {
+      await this.broadcastInstanceMessage({ type: InstanceMessageType.ShutdownSignal, value: undefined })
       await this.disconnect()
     } else {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      throw new Error(`unknown instanceSignal type=${type}`)
+      throw new Error(`unknown instanceSignal type=${type satisfies never}`)
     }
   }
 

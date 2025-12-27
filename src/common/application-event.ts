@@ -731,7 +731,9 @@ export enum InstanceMessageType {
   MinecraftBanned = 'minecraftBanned',
   MinecraftFailedTooManyTimes = 'minecraftFailedTooManyTimes',
   MinecraftKickedLoggedFromAnotherLocation = 'minecraftKickedLoggedFromAnotherLocation',
-  MinecraftConnectionTerminated = 'minecraftConnectionTerminated'
+  MinecraftConnectionTerminated = 'minecraftConnectionTerminated',
+  ShutdownSignal = 'shutdownSignal',
+  RestartSignal = 'restartSignal'
 }
 
 /**
