@@ -16,7 +16,7 @@ import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
 import Buildbattle from './triggers/buildbattle'
 import Calculate from './triggers/calculate.js'
-import Catacomb from './triggers/catacomb.js'
+import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import Collection from './triggers/collection'
 import CurrentDungeon from './triggers/current-dungeon.js'
@@ -87,7 +87,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Boop(),
       new Buildbattle(),
       new Calculate(),
-      new Catacomb(),
+      new Catacombs(),
       new Chocolate(),
       new Collection(),
       new Command67(),
