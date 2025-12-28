@@ -1,6 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
+  capitalize,
   getSelectedSkyblockProfileRaw,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
@@ -35,14 +36,34 @@ export default class Bestiary extends ChatCommandHandler {
         : `claimed ${bestiary.milestone.last_claimed_milestone} bestiary milestones.`
 
     if (bestiaryName !== undefined) {
-      const bestiaryStats = Object.keys(bestiary.kills)
-        .filter((key) => key !== 'last_killed_mob')
-        .filter((key) => key.replaceAll('_', ' ').toLowerCase().includes(bestiaryName.toLowerCase()))
-        .map((key) => bestiary.kills[key])
-        .reduce((a, b) => a + b, 0)
+      const acceptedNames = new Map<string, number>()
+      for (const [name, count] of Object.entries(bestiary.kills)) {
+        if (name === 'last_killed_mob' || typeof count !== 'number') continue
 
-      if (bestiaryStats === 0) return `${givenUsername} has never killed anything like that on this profile.`
-      response += ` ${bestiaryStats.toLocaleString('en-US')} total kill on ${bestiaryName}!`
+        const nameNormalized = name
+          .replaceAll(/_\d+$/g, '')
+          .split('_')
+          .map((part) => capitalize(part))
+          .map((part) => part.trim())
+          .filter((part) => part.length > 0)
+          .join(' ')
+
+        if (!nameNormalized.toLowerCase().includes(bestiaryName.toLowerCase())) continue
+        const acceptedValue = acceptedNames.get(nameNormalized) ?? 0
+        acceptedNames.set(nameNormalized, acceptedValue + count)
+      }
+
+      if (acceptedNames.size === 0) {
+        return `${givenUsername} has never killed anything like that on this profile.`
+      } else {
+        const entries = acceptedNames
+          .entries()
+          .toArray()
+          .toSorted(([, a], [, b]) => b - a)
+          .slice(0, 3)
+
+        response += ` ${entries.map(([name, count]) => `${name} ${count.toLocaleString('en-US')}`).join(' - ')}`
+      }
     }
 
     return response
