@@ -52,6 +52,7 @@ A shorter version can also be used: `!- rtca`
 | `hlevel`         | Returns a player's Hypixel common stats                                            |
 | `insult`         | insult a player                                                                    |
 | `iq`             | Returns a player's IQ (0-200)                                                      |
+| `jacob`          | Returns a player's skyblock Jacob contest stats                                    |
 | `kuudra`         | Returns a player's kuudra runs                                                     |
 | `level`          | Returns a player's skyblock level                                                  |
 | `list`           | List online members in a guild                                                     |

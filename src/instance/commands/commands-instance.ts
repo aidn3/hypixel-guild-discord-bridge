@@ -40,6 +40,7 @@ import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
 import Iq from './triggers/iq.js'
+import Jacob from './triggers/jacob'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import List from './triggers/list.js'
@@ -122,6 +123,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new HypixelLevel(),
       new Insult(),
       new Iq(),
+      new Jacob(),
       new Kuudra(),
       new Level(),
       new List(),

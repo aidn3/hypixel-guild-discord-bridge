@@ -58,6 +58,7 @@
   "commands.trophyfish.none": "{{username}} has never trophy fished before?",
   "commands.megawalls.none": "{{username}} has never played Megawalls before.",
   "commands.megawalls.response": "{{username}}'s Megawalls: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
+  "commands.jacob.response": "{{username}}'s Jacob: Platinum {{platinum, number}} - Diamond {{diamond, number}} - Gold {{gold, number}} - Farming Cap {{farmingCap, number}}/10 - Double Drops {{doubleDrops, number}}/15",
   "commands.uhc.none": "{{username}} has never played UHC before.",
   "commands.armor.none": "{{username}} does not have any armor.",
   "commands.armor.none-maybe": "{{username}} does not have any armor?",
