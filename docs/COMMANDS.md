@@ -20,6 +20,7 @@ A shorter version can also be used: `!- rtca`
 | `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
 | `api`            | Returns a player's skyblock API status                                             |
+| `armor`          | Returns a player's Skyblock armor                                                  |
 | `asian`          | Challenge yourself with math!                                                      |
 | `bedwars`        | Returns a player's bedwars common stats                                            |
 | `be`             | Returns a player's Bestiary stats                                                  |

@@ -55,7 +55,7 @@ declare module 'hypixel-api-reborn' {
       kills: Record<string, number> & { last_killed_mob: string }
       milestone?: { last_claimed_milestone?: number }
     }
-    inventory?: { bag_contents?: { talisman_bag: SkyblockV2Inventory } }
+    inventory?: { bag_contents?: { talisman_bag: SkyblockV2Inventory }; inv_armor?: SkyblockV2Inventory }
     profile: { bank_account?: number }
     player_data: { experience?: Record<string, number> }
     nether_island_player_data?: {
