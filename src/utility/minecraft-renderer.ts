@@ -1,3 +1,9 @@
+/*
+ * @author Altpaper <https://github.com/Altpapier>
+ * @license MIT <https://github.com/Altpapier/hypixel-discord-guild-bridge/blob/master/LICENSE>
+ * @see https://github.com/Altpapier/hypixel-discord-guild-bridge/blob/master/helper/loreRenderer.js
+ * @see https://github.com/Altpapier/hypixel-discord-guild-bridge/blob/master/helper/messageToImage.js
+ */
 import assert from 'node:assert'
 import process from 'node:process'
 
