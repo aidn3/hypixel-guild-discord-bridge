@@ -22,6 +22,7 @@ import type {
 import {
   ChannelType,
   Color,
+  ContentType,
   GuildPlayerEventType,
   InstanceType,
   MinecraftReactiveEventType,
@@ -31,6 +32,7 @@ import {
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { User } from '../../common/user'
+import MinecraftRenderer from '../../utility/minecraft-renderer'
 import { beautifyInstanceName } from '../../utility/shared-utility'
 
 import { BlockReaction, GuildMutedReaction, RepeatReaction } from './common/discord-config.js'
@@ -38,13 +40,11 @@ import { InstanceStatusManager } from './common/instance-status-manager'
 import type MessageAssociation from './common/message-association.js'
 import type { DiscordAssociatedMessage } from './common/message-association.js'
 import MessageDeleter from './common/message-deletor.js'
-import MessageToImage from './common/message-to-image.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class DiscordBridge extends Bridge<DiscordInstance> {
   public readonly messageDeleter: MessageDeleter
   private readonly messageAssociation: MessageAssociation
-  private readonly messageToImage
 
   private readonly instanceStatusManager: InstanceStatusManager
 
@@ -64,7 +64,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.staticConfig = staticDiscordConfig
 
     this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.getClient())
-    this.messageToImage = new MessageToImage(application)
     this.instanceStatusManager = new InstanceStatusManager(
       this.application,
       this.clientInstance,
@@ -103,10 +102,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     for (const channelId of channels) {
       if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
 
-      if (event.instanceType === InstanceType.Minecraft && this.messageToImage.shouldRenderImage()) {
+      if (
+        event.instanceType === InstanceType.Minecraft &&
+        this.minecraftRenderImageEnabled() &&
+        MinecraftRenderer.renderSupported()
+      ) {
         const formattedMessage = this.removeGuildPrefix(event.rawMessage)
-        const image = this.messageToImage.generateMessageImage(formattedMessage)
-        await this.sendImageToChannels(event.eventId, [channelId], image)
+        const image = MinecraftRenderer.generateMessageImage(formattedMessage)
+        await this.sendImageToChannels(event.eventId, [channelId], [image])
       } else {
         const webhook = await this.getWebhook(channelId)
 
@@ -161,14 +164,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     const username = event.user.displayName()
 
     let messages: Message[]
-    if (this.messageToImage.shouldRenderImage()) {
+    if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
       const formattedMessage = this.removeGuildPrefix(event.rawMessage)
 
-      messages = await this.sendImageToChannels(
-        event.eventId,
-        this.resolveChannels(event.channels),
-        this.messageToImage.generateMessageImage(formattedMessage)
-      )
+      messages = await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [
+        MinecraftRenderer.generateMessageImage(formattedMessage)
+      ])
     } else {
       const clickableUsername = hyperlink(username, event.user.profileLink())
 
@@ -207,9 +208,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
       return
 
-    if (this.messageToImage.shouldRenderImage()) {
-      const image = this.messageToImage.generateMessageImage(event.rawMessage)
-      await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), image)
+    if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
+      const image = MinecraftRenderer.generateMessageImage(event.rawMessage)
+      await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [image])
     } else {
       await this.sendEmbedToChannels({ ...event, type: undefined }, this.resolveChannels(event.channels), undefined)
     }
@@ -253,13 +254,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           }
         }
 
-        if (this.messageToImage.shouldRenderImage()) {
+        if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
           assert.ok(channel?.isSendable())
           await channel.send({
-            files: [new AttachmentBuilder(this.messageToImage.generateMessageImage(event.rawMessage))]
+            files: [new AttachmentBuilder(MinecraftRenderer.generateMessageImage(event.rawMessage))]
           })
         } else {
-          await this.replyWithEmbed(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
+          await this.reply(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
         }
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message')
@@ -275,7 +276,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       return
 
     const channels = this.resolveChannels(event.channels)
-    if (this.messageToImage.shouldRenderImage()) {
+    if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
       let formatted: string
       switch (event.color) {
         case Color.Good: {
@@ -300,8 +301,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           formatted = `§b`
         }
       }
-      const image = this.messageToImage.generateMessageImage(formatted + event.message)
-      await this.sendImageToChannels(event.eventId, channels, image)
+      const image = MinecraftRenderer.generateMessageImage(formatted + event.message)
+      await this.sendImageToChannels(event.eventId, channels, [image])
     } else {
       await this.sendEmbedToChannels(event, channels, undefined)
     }
@@ -339,7 +340,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     for (const replyId of replyIds) {
       try {
-        await this.replyWithEmbed(
+        await this.reply(
           event.eventId,
           replyId,
           await this.generateEmbed({ ...event, type: undefined }, replyId.guildId)
@@ -398,13 +399,19 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return embed
   }
 
-  private async replyWithEmbed(eventId: string, replyId: DiscordAssociatedMessage, embed: APIEmbed): Promise<void> {
+  private async reply(
+    eventId: string,
+    replyId: DiscordAssociatedMessage,
+    embed: APIEmbed | undefined,
+    attachments: AttachmentBuilder[] = []
+  ): Promise<void> {
     const channel = await this.clientInstance.getClient().channels.fetch(replyId.channelId)
     assert.ok(channel != undefined)
     assert.ok(channel.isSendable())
 
     const result = await channel.send({
-      embeds: [embed],
+      embeds: embed === undefined ? undefined : [embed],
+      files: attachments,
       reply: { messageReference: replyId.messageId },
       allowedMentions: { parse: [] }
     })
@@ -449,7 +456,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return messages
   }
 
-  private async sendImageToChannels(eventId: string, channels: string[], image: Buffer): Promise<Message<true>[]> {
+  private async sendImageToChannels(
+    eventId: string,
+    channels: string[],
+    images: Buffer[],
+    text?: string
+  ): Promise<Message<true>[]> {
     const messages: Message<true>[] = []
 
     for (const channelId of channels) {
@@ -459,7 +471,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         assert.ok(channel.isSendable())
         assert.ok(channel.type === DiscordChannelType.GuildText)
 
-        const message = await channel.send({ files: [image] })
+        const message = await channel.send({ content: text, files: images })
 
         messages.push(message)
         this.messageAssociation.addMessageId(eventId, {
@@ -475,10 +487,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return messages
   }
 
-  private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
-    const replyEmbed: APIEmbed = {
+  private formatEmbedCommand(
+    event: CommandEvent,
+    feedback: boolean
+  ): { embed: APIEmbed | undefined; attachments: AttachmentBuilder[] } {
+    const attachments: AttachmentBuilder[] = []
+    let embedNeeded = false
+    const embed: APIEmbed = {
       color: Color.Good,
-      description: `**${escapeMarkdown(event.commandResponse)}**`,
 
       title: escapeMarkdown(event.user.displayName()),
       footer: {
@@ -486,18 +502,92 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    this.assignAvatar(replyEmbed, event.user)
+    const { text, images } = this.extractCommandInfo(event.commandResponse)
 
+    if (text !== undefined) {
+      embedNeeded = true
+      embed.description = text
+    }
+    if (images.length === 1 && text !== undefined) {
+      embedNeeded = true
+
+      embed.image = { url: 'attachment://image.png' }
+      attachments.push(new AttachmentBuilder(images[0], { name: 'image.png' }))
+    } else {
+      attachments.push(...images.map((image) => new AttachmentBuilder(image)))
+    }
+
+    this.assignAvatar(embed, event.user)
+
+    return { embed: embedNeeded ? embed : undefined, attachments }
+  }
+
+  private formatImageCommand(
+    event: CommandEvent,
+    feedback: boolean
+  ): { content: string | undefined; images: Buffer[] } | undefined {
+    let content: string | undefined
+    const resultImages: Buffer[] = []
+
+    const { text, images } = this.extractCommandInfo(event.commandResponse)
+
+    if (images.length === 0) {
+      assert.ok(text !== undefined)
+      if (!MinecraftRenderer.renderSupported()) return undefined
+
+      const message = this.formatRenderedImage(feedback ? 'FEED' : 'COMMAND', text)
+      resultImages.push(MinecraftRenderer.generateMessageImage(message))
+    } else {
+      content = text
+      resultImages.push(...images)
+    }
+
+    return { content, images: resultImages }
+  }
+
+  private extractCommandInfo(content: CommandEvent['commandResponse']): { text: string | undefined; images: Buffer[] } {
+    let text: string | undefined
+    const images: Buffer[] = []
+
+    switch (content.type) {
+      case ContentType.TextBased: {
+        text = content.content
+
+        if (content.extra !== undefined) {
+          images.push(content.extra)
+        }
+        break
+      }
+      case ContentType.ImageBased: {
+        images.push(...content.content)
+        if (content.extra !== undefined) {
+          text = content.extra
+        }
+        break
+      }
+    }
+    assert.ok(text !== undefined || images.length > 0)
+
+    return { text, images }
+  }
+
+  private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
+    let cachedEmbed: { embed: APIEmbed | undefined; attachments: AttachmentBuilder[] } | undefined
+    let cachedImage: { content: string | undefined; images: Buffer[] } | undefined
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
+
     for (const replyId of replyIds) {
       try {
-        if (this.messageToImage.shouldRenderImage()) {
-          const message = this.formatRenderedImage(feedback ? 'FEED' : 'COMMAND', event.commandResponse)
-          const image = this.messageToImage.generateMessageImage(message)
-          await this.sendImageToChannels(event.eventId, [replyId.channelId], image)
-        } else {
-          await this.replyWithEmbed(event.eventId, replyId, replyEmbed)
+        if (this.minecraftRenderImageEnabled()) {
+          cachedImage ??= this.formatImageCommand(event, feedback)
+          if (cachedImage !== undefined) {
+            await this.sendImageToChannels(event.eventId, [replyId.channelId], cachedImage.images, cachedImage.content)
+            return
+          }
         }
+
+        cachedEmbed ??= this.formatEmbedCommand(event, feedback)
+        await this.reply(event.eventId, replyId, cachedEmbed.embed, cachedEmbed.attachments)
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message')
       }
@@ -529,6 +619,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     this.webhooks.set(channelId, webhook)
     return webhook
+  }
+
+  private minecraftRenderImageEnabled(): boolean {
+    const config = this.application.core.discordConfigurations
+    return config.getTextToImage()
   }
 }
 

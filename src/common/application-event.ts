@@ -623,9 +623,37 @@ export interface BaseCommandEvent extends InformEvent, ReplyEvent {
   readonly commandName: string
   /**
    * The command response after the execution.
-   * Used if @{link #alreadyReplied} is set to `false`
    */
-  readonly commandResponse: string
+  readonly commandResponse: Content
+}
+
+/**
+ * Content component to be presented in human-readable manner
+ */
+export type Content = TextContent | ImageContent
+
+export enum ContentType {
+  TextBased = 'textBased',
+  ImageBased = 'imageBased'
+}
+
+/**
+ * Text-based content with possibility of adding optional information on top like a thumbnail etc.
+ */
+export interface TextContent {
+  type: ContentType.TextBased
+  content: string
+  extra: Buffer | undefined
+}
+
+/**
+ * Image-based content with possibility of adding optional information on top like a description, etc
+ */
+export interface ImageContent {
+  type: ContentType.ImageBased
+  content: Buffer[]
+  extra?: string
+  unsupported: string
 }
 
 export interface DiscordCommandEvent extends BaseCommandEvent {

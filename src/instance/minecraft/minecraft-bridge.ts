@@ -16,6 +16,7 @@ import type {
 } from '../../common/application-event.js'
 import {
   ChannelType,
+  ContentType,
   GuildPlayerEventType,
   InstanceType,
   MinecraftReactiveEventType,
@@ -199,7 +200,18 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (reply.channel === ChannelType.Private) assert.ok(reply.username === event.user.displayName())
     this.messageAssociation.addMessageId(event.eventId, reply)
 
-    const response = `${feedback ? '{f} ' : ''}${event.commandResponse}`
+    let response = feedback ? '{f} ' : ''
+    switch (event.commandResponse.type) {
+      case ContentType.TextBased: {
+        response += event.commandResponse.content
+        break
+      }
+      case ContentType.ImageBased: {
+        response += event.commandResponse.unsupported
+        break
+      }
+    }
+
     const sanitizedResponse = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
       this.clientInstance.instanceName,
       response

@@ -1,6 +1,6 @@
 import type Application from '../../application.js'
-import type { ChatEvent, CommandLike } from '../../common/application-event.js'
-import { InstanceType, Permission } from '../../common/application-event.js'
+import type { ChatEvent, CommandLike, Content } from '../../common/application-event.js'
+import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
@@ -231,30 +231,36 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         args: commandsArguments,
 
         sendFeedback: async (feedbackResponse) => {
-          await this.feedback(event, command.triggers[0], feedbackResponse)
+          await this.feedback(event, command.triggers[0], this.formatContent(feedbackResponse))
         }
       })
 
-      await this.reply(event, command.triggers[0], commandResponse)
+      await this.reply(event, command.triggers[0], this.formatContent(commandResponse))
     } catch (error) {
       this.logger.error('Error while handling command', error)
       await this.reply(
         event,
         command.triggers[0],
-        `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
+        this.formatContent(
+          `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
+        )
       )
     }
   }
 
-  private async reply(event: ChatEvent, commandName: string, response: string): Promise<void> {
+  private formatContent(value: string | Content): Content {
+    return typeof value === 'string' ? { type: ContentType.TextBased, content: value, extra: undefined } : value
+  }
+
+  private async reply(event: ChatEvent, commandName: string, response: Content): Promise<void> {
     await this.application.emit('command', this.format(event, commandName, response))
   }
 
-  private async feedback(event: ChatEvent, commandName: string, response: string): Promise<void> {
+  private async feedback(event: ChatEvent, commandName: string, response: Content): Promise<void> {
     await this.application.emit('commandFeedback', this.format(event, commandName, response))
   }
 
-  private format(event: ChatEvent, commandName: string, response: string): CommandLike {
+  private format(event: ChatEvent, commandName: string, response: Content): CommandLike {
     switch (event.instanceType) {
       case InstanceType.Discord: {
         return {

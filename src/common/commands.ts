@@ -9,7 +9,7 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 
-import type { ChatEvent, InstanceType, Permission } from './application-event.js'
+import type { ChatEvent, Content, InstanceType, Permission } from './application-event.js'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 import type { DiscordUser } from './user'
@@ -29,7 +29,7 @@ export abstract class ChatCommandHandler {
     return `Example: ${commandPrefix}${this.example}`
   }
 
-  public abstract handler(context: ChatCommandContext): Promise<string> | string
+  public abstract handler(context: ChatCommandContext): Promise<Content | string> | Content | string
 }
 
 export interface ChatCommandContext {
@@ -46,7 +46,7 @@ export interface ChatCommandContext {
   username: string
   args: string[]
 
-  sendFeedback: (feedback: string) => Promise<void>
+  sendFeedback: (feedback: Content | string) => Promise<void>
 }
 
 export interface DiscordCommandHandler {
