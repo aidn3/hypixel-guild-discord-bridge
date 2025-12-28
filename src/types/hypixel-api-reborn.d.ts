@@ -11,6 +11,8 @@ declare module 'hypixel-api-reborn' {
 
     getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
 
+    getSkyblockBazaar(options?: methodOptions & { raw: true }): Promise<Bazaar>
+
     getSkyblockMuseum(
       query: string,
       profileId: string,
@@ -59,6 +61,7 @@ declare module 'hypixel-api-reborn' {
       bag_contents?: { talisman_bag: SkyblockV2Inventory }
       inv_armor?: SkyblockV2Inventory
       equipment_contents?: SkyblockV2Inventory
+      sacks_counts: Record<string, number>
     }
     profile: { bank_account?: number }
     player_data: { experience?: Record<string, number> }
@@ -241,6 +244,15 @@ declare module 'hypixel-api-reborn' {
   export interface MayorPerkV2 {
     name: string
     minister: boolean
+  }
+
+  interface Bazaar {
+    products: Record<string, BazaarItem>
+  }
+
+  interface BazaarItem {
+    sell_summary: { pricePerUnit: number }[]
+    quick_status: { sellPrice: number; buyPrice: number }
   }
 
   interface SkyblockMuseumRaw {

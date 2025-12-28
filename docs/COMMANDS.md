@@ -76,6 +76,7 @@ A shorter version can also be used: `!- rtca`
 | `roulette`       | Try your luck for a 15 minute mute                                                 |
 | `rtca`           | Returns the number of runs needed to reach the average class level specified       |
 | `runs`           | Returns how many dungeon runs a player has done                                    |
+| `sacks`          | Returns a player's Skyblock sacks content value                                    |
 | `secrets`        | Returns how many secrets a player has done                                         |
 | `select`         | Randomly select an online guild member                                             |
 | `skill`          | Returns a player's skills levels                                                   |

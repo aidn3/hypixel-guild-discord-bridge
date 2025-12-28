@@ -62,6 +62,7 @@ import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
+import Sacks from './triggers/sacks'
 import Secrets from './triggers/secrets.js'
 import Select from './triggers/select'
 import Skills from './triggers/skills.js'
@@ -146,6 +147,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Roulette(),
       new Runs(),
       new RunsToClassAverage(),
+      new Sacks(),
       new Secrets(),
       new Select(),
       new Skills(),
