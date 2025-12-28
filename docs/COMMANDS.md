@@ -40,6 +40,7 @@ A shorter version can also be used: `!- rtca`
 | `dojo`           | Returns a player's crimson isle's Dojo stats                                       |
 | `eggs`           | Returns a player's skyblock easter eggs stats                                      |
 | `election`       | Show current Hypixel Skyblock Election                                             |
+| `eq`             | Returns a player's Skyblock equipments                                             |
 | `essence`        | Returns a player's Skyblock essence                                                |
 | `execute`        | Runs a command directly                                                            |
 | `explain`        | Returns an explanation of the bot                                                  |
