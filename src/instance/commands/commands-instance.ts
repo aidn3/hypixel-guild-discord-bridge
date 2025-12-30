@@ -36,6 +36,7 @@ import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
 import Forge from './triggers/forge'
 import Garden from './triggers/garden'
+import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
@@ -123,6 +124,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Forge(),
       new Garden(),
       new Guild(),
+      new GuildCheck(),
       new Help(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
