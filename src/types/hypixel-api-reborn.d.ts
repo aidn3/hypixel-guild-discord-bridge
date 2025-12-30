@@ -12,6 +12,7 @@ declare module 'hypixel-api-reborn' {
     getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
 
     getSkyblockBazaar(options?: methodOptions & { raw: true }): Promise<Bazaar>
+    getSkyblockGarden(profileId: string, options?: methodOptions & { raw: true }): Promise<Garden>
 
     getSkyblockMuseum(
       query: string,
@@ -253,6 +254,15 @@ declare module 'hypixel-api-reborn' {
   interface BazaarItem {
     sell_summary: { pricePerUnit: number }[]
     quick_status: { sellPrice: number; buyPrice: number }
+  }
+
+  export interface Garden {
+    garden: {
+      garden_experience: number
+      commission_data: { completed: Record<string, number> }
+      resources_collected: Record<string, number>
+      crop_upgrade_levels: Record<string, number>
+    }
   }
 
   interface SkyblockMuseumRaw {

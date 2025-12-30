@@ -35,6 +35,7 @@ import Explain from './triggers/explain.js'
 import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
 import Forge from './triggers/forge'
+import Garden from './triggers/garden'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
@@ -120,6 +121,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Fairysouls(),
       new Fetchur(),
       new Forge(),
+      new Garden(),
       new Guild(),
       new Help(),
       new HeartOfTheMountain(),

@@ -47,6 +47,7 @@ A shorter version can also be used: `!- rtca`
 | `fairysouls`     | Returns a player's Skyblock fairysouls progress                                    |
 | `fetchur`        | Show what Fetchur NPC is requesting                                                |
 | `forge`          | Returns a player's Skyblock forge slots                                            |
+| `garden`         | Returns a player's Garden stats                                                    |
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |
 | `hotm`           | Returns a player's hotm and powder                                                 |
