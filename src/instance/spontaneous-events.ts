@@ -275,10 +275,10 @@ class CountingChain extends SpontaneousEventHandler {
 class Unscramble extends SpontaneousEventHandler {
   private static readonly ScrambleWords = [
     // generic
-    ...'apple banana orange grape lemon cherry peach mango kiwi plum table chair couch desk shelf'.split(' '),
+    ...'apple banana grape lemon cherry peach mango kiwi plum table chair couch desk shelf'.split(' '),
     ...'blanket carpet curtain house garden porch fence roof window door floor stairs attic water coffee'.split(' '),
     ...'juice soda milk bread cheese butter egg dog cat bird fish horse rabbit mouse snake frog sun'.split(' '),
-    ...'star cloud rain snow wind storm thunder lightning red blue green yellow orange purple pink brown'.split(' '),
+    ...'star cloud rain snow wind storm thunder lightning red blue green yellow purple pink brown'.split(' '),
     ...'white happy sad angry scared brave tired sleepy hungry thirsty excited run walk jump swim'.split(' '),
     ...'sing read write draw car bike bus train plane boat ship truck scooter school teacher student'.split(' '),
     ...'pencil paper eraser ruler clock map pillow tea moon black dance book lamp turtle climb taxi'.split(' '),
@@ -295,7 +295,7 @@ class Unscramble extends SpontaneousEventHandler {
 
     // minecraft
     ...''.split('smelting diamond banner netherrack packedice bone zombie'),
-    ...'block pickaxe shovel axe hoe sword bow arrow helmet chestplate leggings boots furnace crafting'.split(' '),
+    ...'block pickaxe shovel axe hoe sword bow arrow helmet chestplate boots furnace crafting'.split(' '),
     ...'enchanting brewing redstone piston lever button pressureplate torch lantern glowstone obsidian'.split(' '),
     ...'emerald gold iron coal charcoal lapis quartz netherite slimeball feather leather wool carpet'.split(' '),
     ...'map compass clock bucket water lava sand gravel dirt grass stone cobblestone mossy basalt'.split(' '),
