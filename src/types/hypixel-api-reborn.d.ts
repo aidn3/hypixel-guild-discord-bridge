@@ -37,6 +37,7 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
+    player_id: string
     currencies?: {
       coin_purse?: number
       essence?: Record<
@@ -247,11 +248,11 @@ declare module 'hypixel-api-reborn' {
     minister: boolean
   }
 
-  interface Bazaar {
+  export interface Bazaar {
     products: Record<string, BazaarItem>
   }
 
-  interface BazaarItem {
+  export interface BazaarItem {
     sell_summary: { pricePerUnit: number }[]
     quick_status: { sellPrice: number; buyPrice: number }
   }
