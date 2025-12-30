@@ -1,12 +1,14 @@
 import type Application from '../../application.js'
-import type { ChatEvent, CommandLike } from '../../common/application-event.js'
-import { InstanceType, Permission } from '../../common/application-event.js'
+import type { ChatEvent, CommandLike, Content } from '../../common/application-event.js'
+import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import { InternalInstancePrefix } from '../../common/instance.js'
 
+import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Api from './triggers/api.js'
+import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
 import Bedwars from './triggers/bedwars.js'
 import Bestiary from './triggers/bestiary'
@@ -15,7 +17,7 @@ import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
 import Buildbattle from './triggers/buildbattle'
 import Calculate from './triggers/calculate.js'
-import Catacomb from './triggers/catacomb.js'
+import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import Collection from './triggers/collection'
 import CurrentDungeon from './triggers/current-dungeon.js'
@@ -23,22 +25,31 @@ import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
 import Discord from './triggers/discord'
+import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
 import Election from './triggers/election.js'
+import Equipments from './triggers/equipments'
+import Essence from './triggers/essence'
 import Execute from './triggers/execute.js'
 import Explain from './triggers/explain.js'
+import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
+import Forge from './triggers/forge'
+import Garden from './triggers/garden'
+import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
 import Iq from './triggers/iq.js'
+import Jacob from './triggers/jacob'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import List from './triggers/list.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
+import Megawalls from './triggers/megawalls'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import PartyManager from './triggers/party.js'
@@ -53,6 +64,7 @@ import RockPaperScissors from './triggers/rock-paper-scissors.js'
 import Roulette from './triggers/roulette.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
+import Sacks from './triggers/sacks'
 import Secrets from './triggers/secrets.js'
 import Select from './triggers/select'
 import Skills from './triggers/skills.js'
@@ -65,10 +77,13 @@ import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
 import Toggled from './triggers/toggled.js'
+import TrophyFish from './triggers/trophy-fish'
+import Uhc from './triggers/uhc'
 import Unlink from './triggers/unlink.js'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
+import Woolwars from './triggers/woolwars'
 
 export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
   public readonly commands: ChatCommandHandler[]
@@ -78,6 +93,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
 
     this.commands = [
       new Api(),
+      new Armor(),
       new Asian(),
       new Bits(),
       new Bedwars(),
@@ -86,31 +102,41 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Boop(),
       new Buildbattle(),
       new Calculate(),
-      new Catacomb(),
+      new Catacombs(),
       new Chocolate(),
       new Collection(),
+      new Command67(),
       new CurrentDungeon(),
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
       new Discord(),
+      new Dojo(),
       new Eggs(),
       new Election(),
+      new Equipments(),
       new EightBallCommand(),
+      new Essence(),
       new Execute(),
       new Explain(),
+      new Fairysouls(),
       new Fetchur(),
+      new Forge(),
+      new Garden(),
       new Guild(),
+      new GuildCheck(),
       new Help(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
       new Insult(),
       new Iq(),
+      new Jacob(),
       new Kuudra(),
       new Level(),
       new List(),
       new MagicalPower(),
       new Mayor(),
+      new Megawalls(),
       new Mute(),
       new Networth(),
       ...new PartyManager().resolveCommands(),
@@ -125,6 +151,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Roulette(),
       new Runs(),
       new RunsToClassAverage(),
+      new Sacks(),
       new Secrets(),
       new Select(),
       new Skills(),
@@ -137,10 +164,13 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Timecharms(),
       new Toggle(),
       new Toggled(),
+      new TrophyFish(),
+      new Uhc(),
       new Unlink(),
       new Vengeance(),
       new Warp(),
-      new Weight()
+      new Weight(),
+      new Woolwars()
     ]
 
     this.checkCommandsIntegrity()
@@ -213,30 +243,36 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         args: commandsArguments,
 
         sendFeedback: async (feedbackResponse) => {
-          await this.feedback(event, command.triggers[0], feedbackResponse)
+          await this.feedback(event, command.triggers[0], this.formatContent(feedbackResponse))
         }
       })
 
-      await this.reply(event, command.triggers[0], commandResponse)
+      await this.reply(event, command.triggers[0], this.formatContent(commandResponse))
     } catch (error) {
       this.logger.error('Error while handling command', error)
       await this.reply(
         event,
         command.triggers[0],
-        `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
+        this.formatContent(
+          `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
+        )
       )
     }
   }
 
-  private async reply(event: ChatEvent, commandName: string, response: string): Promise<void> {
+  private formatContent(value: string | Content): Content {
+    return typeof value === 'string' ? { type: ContentType.TextBased, content: value, extra: undefined } : value
+  }
+
+  private async reply(event: ChatEvent, commandName: string, response: Content): Promise<void> {
     await this.application.emit('command', this.format(event, commandName, response))
   }
 
-  private async feedback(event: ChatEvent, commandName: string, response: string): Promise<void> {
+  private async feedback(event: ChatEvent, commandName: string, response: Content): Promise<void> {
     await this.application.emit('commandFeedback', this.format(event, commandName, response))
   }
 
-  private format(event: ChatEvent, commandName: string, response: string): CommandLike {
+  private format(event: ChatEvent, commandName: string, response: Content): CommandLike {
     switch (event.instanceType) {
       case InstanceType.Discord: {
         return {

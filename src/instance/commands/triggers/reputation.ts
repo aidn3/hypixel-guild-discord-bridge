@@ -11,7 +11,7 @@ import {
 export default class Reputation extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['rep', 'reputation', 'faction'],
+      triggers: ['rep', 'reputation', 'factions', 'faction', 'crimson', 'crimsonisle', 'isle', 'nether'],
       description: "Returns a player's crimson isle's faction reputation",
       example: `rep %s`
     })

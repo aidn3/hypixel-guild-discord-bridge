@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 
 import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
+import nbt from 'prismarine-nbt'
 
 import type { MojangApi } from '../../../core/users/mojang'
 
@@ -98,6 +99,12 @@ export function shortenNumber(value: number): string {
   const digitsCount = 3
 
   return value.toFixed(Math.max(0, digitsCount - digits)) + suffix
+}
+
+export async function parseEncodedNbt<T>(base64: string): Promise<T> {
+  const decoded = Buffer.from(base64, 'base64')
+  const parsed = await nbt.parse(decoded)
+  return nbt.simplify(parsed.parsed) as T
 }
 
 export function capitalize(name: string): string {

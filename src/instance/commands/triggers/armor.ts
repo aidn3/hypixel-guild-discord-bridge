@@ -1,0 +1,69 @@
+import type { Content } from '../../../common/application-event'
+import { ContentType } from '../../../common/application-event'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandHandler } from '../../../common/commands.js'
+import MinecraftRenderer from '../../../utility/minecraft-renderer'
+import {
+  getSelectedSkyblockProfileRaw,
+  getUuidIfExists,
+  parseEncodedNbt,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/utility'
+
+export default class Armor extends ChatCommandHandler {
+  constructor() {
+    super({
+      triggers: ['armor', 'armors', 'skyblockarmor', 'skyblockarmors'],
+      description: "Returns a player's Skyblock armor",
+      example: `armor %s`
+    })
+  }
+
+  async handler(context: ChatCommandContext): Promise<Content | string> {
+    const givenUsername = context.args[0] ?? context.username
+
+    if (!MinecraftRenderer.renderSupported()) {
+      return context.app.i18n.t(($) => $['commands.error.minecraft-render-not-supported-on-host'])
+    }
+
+    const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
+    if (uuid == undefined) return usernameNotExists(context, givenUsername)
+
+    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
+
+    const armorRaw = selectedProfile.inventory?.inv_armor?.data
+    if (armorRaw === undefined) {
+      return context.app.i18n.t(($) => $['commands.armor.none-maybe'], { username: givenUsername })
+    }
+
+    const armor = await parseEncodedNbt<{ i: InventoryItem[] }>(armorRaw)
+
+    const slots = armor.i
+      .filter((slot) => slot.Count > 0)
+      .map((slot) => slot.tag.display)
+      .toReversed()
+    if (slots.length === 0) {
+      return context.app.i18n.t(($) => $['commands.armor.none'], { username: givenUsername })
+    }
+
+    const images = slots.map((slot) => MinecraftRenderer.renderLore(slot.Name, slot.Lore))
+    return {
+      type: ContentType.ImageBased,
+      content: images,
+      unsupported: context.app.i18n.t(($) => $['commands.armor.render-not-supported'])
+    }
+  }
+}
+/* eslint-disable @typescript-eslint/naming-convention */
+interface InventoryItem {
+  id: number
+  Count: number
+  tag: ItemData
+}
+
+interface ItemData {
+  display: { Name: string; Lore: string[] }
+}
+/* eslint-enable @typescript-eslint/naming-convention */

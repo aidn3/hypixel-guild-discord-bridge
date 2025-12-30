@@ -11,6 +11,9 @@ declare module 'hypixel-api-reborn' {
 
     getSkyblockGovernment(options?: methodOptions & { raw: true }): Promise<MayorV2>
 
+    getSkyblockBazaar(options?: methodOptions & { raw: true }): Promise<Bazaar>
+    getSkyblockGarden(profileId: string, options?: methodOptions & { raw: true }): Promise<Garden>
+
     getSkyblockMuseum(
       query: string,
       profileId: string,
@@ -34,9 +37,18 @@ declare module 'hypixel-api-reborn' {
 
   export interface SkyblockV2Member {
     leveling?: { experience: number }
-    currencies?: { coin_purse?: number }
+    player_id: string
+    currencies?: {
+      coin_purse?: number
+      essence?: Record<
+        'WITHER' | 'DRAGON' | 'UNDEAD' | 'DIAMOND' | 'SPIDER' | 'GOLD' | 'ICE' | 'CRIMSON',
+        { current: number }
+      >
+    }
     dungeons: SkyblockV2Dungeons | undefined
     rift?: SkyblockV2Rift
+    fairy_soul?: { total_collected: number }
+    trophy_fish?: Record<string, number> & { last_caught?: string; rewards?: number[] }
     accessory_bag_storage?: {
       selected_power?: string
       highest_magical_power: number
@@ -47,13 +59,28 @@ declare module 'hypixel-api-reborn' {
       kills: Record<string, number> & { last_killed_mob: string }
       milestone?: { last_claimed_milestone?: number }
     }
-    inventory?: { bag_contents?: { talisman_bag: SkyblockV2Inventory } }
+    inventory?: {
+      bag_contents?: { talisman_bag: SkyblockV2Inventory }
+      inv_armor?: SkyblockV2Inventory
+      equipment_contents?: SkyblockV2Inventory
+      sacks_counts: Record<string, number>
+    }
     profile: { bank_account?: number }
     player_data: { experience?: Record<string, number> }
     nether_island_player_data?: {
       selected_faction?: string
       mages_reputation?: number
       barbarians_reputation?: number
+
+      dojo?: Partial<{
+        dojo_points_mob_kb: number
+        dojo_points_wall_jump: number
+        dojo_points_sword_swap: number
+        dojo_points_archer: number
+        dojo_points_snake: number
+        dojo_points_fireball: number
+        dojo_points_lock_head: number
+      }>
 
       kuudra_completed_tiers: {
         none?: number
@@ -64,10 +91,23 @@ declare module 'hypixel-api-reborn' {
       }
     }
     slayer: SlayerProfile | undefined
-    jacobs_contest?: Partial<{ perks: { farming_level_cap: number } }>
+    jacobs_contest?: {
+      perks?: {
+        farming_level_cap: number
+        double_drops: number
+      }
+      unique_brackets: {
+        platinum: string[]
+        diamond: string[]
+        gold: string[]
+        silver: string[]
+        bronze: string[]
+      }
+    }
     events?: SkyblockPlayerEvents
     pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
     essence?: SkyblockV2Essence
+    forge?: SkyblockForge
   }
 
   export interface SkyblockV2Inventory {
@@ -178,6 +218,15 @@ declare module 'hypixel-api-reborn' {
     rabbits: Record<string, number | object>
   }
 
+  export interface SkyblockForge {
+    forge_processes: { forge_1: Record<'1' | '2' | '3' | '4' | '5' | '6' | '7', SkyblockForgeEntry> }
+  }
+
+  export interface SkyblockForgeEntry {
+    id: string
+    startTime: number
+  }
+
   export interface MayorV2 {
     mayor: MayorCandidateV2 & { minister?: { name: string; perk: MayorPerkV2 }; election: MayorElectionV2 }
     current?: MayorElectionV2
@@ -197,6 +246,24 @@ declare module 'hypixel-api-reborn' {
   export interface MayorPerkV2 {
     name: string
     minister: boolean
+  }
+
+  export interface Bazaar {
+    products: Record<string, BazaarItem>
+  }
+
+  export interface BazaarItem {
+    sell_summary: { pricePerUnit: number }[]
+    quick_status: { sellPrice: number; buyPrice: number }
+  }
+
+  export interface Garden {
+    garden: {
+      garden_experience: number
+      commission_data: { completed: Record<string, number> }
+      resources_collected: Record<string, number>
+      crop_upgrade_levels: Record<string, number>
+    }
   }
 
   interface SkyblockMuseumRaw {

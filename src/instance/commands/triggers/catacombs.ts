@@ -11,10 +11,10 @@ import {
   usernameNotExists
 } from '../common/utility'
 
-export default class Catacomb extends ChatCommandHandler {
+export default class Catacombs extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['catacomb', 'catacombs', 'cata'],
+      triggers: ['catacombs', 'catacomb', 'cata', 'dungeons', 'dungeon'],
       description: "Returns a player's catacombs level",
       example: `cata %s`
     })
