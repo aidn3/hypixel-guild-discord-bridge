@@ -11,7 +11,7 @@ export default class Mayor extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const government = await context.app.hypixelApi.getSkyblockGovernment({ raw: true })
+    const government = await context.app.hypixelApi.getSkyblockElection()
 
     let message = `Elected Mayor: `
     message += `${government.mayor.name} (${government.mayor.perks.map((perk) => perk.name).join(', ')})`

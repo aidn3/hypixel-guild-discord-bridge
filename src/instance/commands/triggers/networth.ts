@@ -24,14 +24,14 @@ export default class Networth extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => response.profiles?.find((p) => p.selected))
+      .getSkyblockProfiles(uuid)
+      .then((profiles) => profiles?.find((p) => p.selected))
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     let museumData: object | undefined
     try {
       museumData = await context.app.hypixelApi
-        .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })
+        .getSkyblockMuseum(selectedProfile.profile_id)
         .then((museum) => museum.members[uuid] as object)
     } catch {
       return `${context.username}, error fetching museum data?`

@@ -18,11 +18,8 @@ export default class Api extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid, { raw: true })
-      .then((response) => {
-        return response.profiles?.find((profile) => profile.selected)
-      })
-      .catch(() => undefined)
+      .getSkyblockProfiles(uuid)
+      .then((profiles) => profiles?.find((profile) => profile.selected))
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
     const member = selectedProfile.members[uuid]
 
@@ -33,10 +30,8 @@ export default class Api extends ChatCommandHandler {
       `Inventory ${'inventory' in member ? 'ON' : 'OFF'}`
     )
 
-    const museum = await context.app.hypixelApi
-      .getSkyblockMuseum(uuid, selectedProfile.profile_id, { raw: true })
-      .catch(() => undefined)
-    if (museum === undefined) {
+    const museum = await context.app.hypixelApi.getSkyblockMuseum(selectedProfile.profile_id)
+    if (Object.entries(museum.members).length === 0) {
       parts.push(`Museum N/A`)
     } else {
       parts.push(`Museum ${uuid in museum.members ? 'ON' : 'OFF'}`)

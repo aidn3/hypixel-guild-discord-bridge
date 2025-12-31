@@ -42,16 +42,14 @@ export default class Buildbattle extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
-      /* return undefined */
-    })
+    const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    const stat = player.stats?.buildbattle
+    const stat = player.stats?.BuildBattle
     if (stat === undefined) return `${givenUsername} has never played Build Battle before?`
 
-    const score = stat.score
-    const wins = stat.wins.gtb + stat.wins.pro + stat.wins.solo + stat.wins.teams
+    const score = stat.score ?? 0
+    const wins = stat.wins ?? 0
     const title = await this.getTitle(context, uuid, score)
 
     return `${title} ${givenUsername}'s Build Battle score is ${score.toLocaleString('en-US')} with ${wins.toLocaleString('en-US')} wins.`
@@ -61,9 +59,7 @@ export default class Buildbattle extends ChatCommandHandler {
     // Check if they deserve the special leaderboard title
     const leaderboards = await context.app.hypixelApi.getLeaderboards()
 
-    const buildBattleLeaderboard = leaderboards.BUILD_BATTLE.find(
-      (leaderboard) => leaderboard.name === 'Lifetime' && leaderboard.title === 'Score'
-    )
+    const buildBattleLeaderboard = leaderboards.BUILD_BATTLE.find((leaderboard) => leaderboard.path === 'score')
     assert.ok(buildBattleLeaderboard !== undefined)
 
     // UUID without dashes

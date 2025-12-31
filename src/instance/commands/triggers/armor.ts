@@ -4,7 +4,7 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import MinecraftRenderer from '../../../utility/minecraft-renderer'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   parseEncodedNbt,
   playerNeverPlayedSkyblock,
@@ -30,7 +30,7 @@ export default class Armor extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const armorRaw = selectedProfile.inventory?.inv_armor?.data

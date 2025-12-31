@@ -66,7 +66,11 @@
   "commands.equipments.none": "{{username}} does not have any equipments.",
   "commands.equipments.none-maybe": "{{username}} does not have any equipments?",
   "commands.equipments.render-not-supported": "Equipments has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+
+  "commands.hotm.none": "{{username}} has never mined before.",
+  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} with powders ({{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite).",
   "commands.sacks.response": "{{username}} has {{value}} in sacks content.",
+  "commands.skills.response": "{{username}} Skills: AVG {{average, number(maximumFractionDigits: 1)}}, combat {{combat, number(maximumFractionDigits: 1)}}, farm {{farming, number(maximumFractionDigits: 1)}}, fish {{fishing, number(maximumFractionDigits: 1)}}, mine {{mining, number(maximumFractionDigits: 1)}}, forage {{foraging, number(maximumFractionDigits: 1)}}, enchant {{enchanting, number(maximumFractionDigits: 1)}}, alch {{alchemy, number(maximumFractionDigits: 1)}}, carp {{carpentry, number(maximumFractionDigits: 1)}}, rune {{runecrafting, number(maximumFractionDigits: 1)}}, tame {{taming, number(maximumFractionDigits: 1)}}, social {{social, number(maximumFractionDigits: 1)}}",
   "commands.uhc.response": "{{username}} is UHC level {{level}}✫ - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}",
   "commands.woolwars.none": "{{username}} has never played Woolwars before.",
   "commands.woolwars.response": "{{username}}'s Woolwars: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
@@ -80,6 +84,7 @@
   "commands.dojo.none": "{{username}} has never played Skyblock Dojo before?",
   "commands.dojo.response": "{{username}} Dojo: \nTotal {{total, number}}\n - Force {{force, number}}\n - Stamina {{stamina, number}}\n - Mastery {{mastery, number}}\n - Discipline {{discipline, number}}\n - Swiftness {{swiftness, number}}\n - Control {{control, number}}\n - Tenacity {{tenacity, number}}",
   "commands.garden.response": "{{username}} Garden: Total Pests {{totalKilledPests, number}} - Unique Visitors {{uniqueVisitors, number}}",
+  "commands.garden.no-garden": "{{username}} never went to garden?",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

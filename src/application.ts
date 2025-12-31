@@ -7,7 +7,6 @@ import path from 'node:path'
 import { setImmediate } from 'node:timers/promises'
 
 import Emittery from 'emittery'
-import { Client as HypixelClient } from 'hypixel-api-reborn'
 import type { i18n } from 'i18next'
 import type { Logger } from 'log4js'
 import Logger4js from 'log4js'
@@ -19,6 +18,7 @@ import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { Core } from './core/core'
+import type { Hypixel } from './core/hypixel/hypixel'
 import { ApplicationLanguages, LanguageConfigurations } from './core/language-configurations'
 import type { MojangApi } from './core/users/mojang'
 import ApplicationIntegrity from './instance/application-integrity.js'
@@ -55,7 +55,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
 
   public readonly applicationIntegrity: ApplicationIntegrity
 
-  public readonly hypixelApi: HypixelClient
+  public readonly hypixelApi: Hypixel
   public readonly mojangApi: MojangApi
 
   private readonly logger: Logger
@@ -101,13 +101,8 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.applicationIntegrity.addConfigPath(this.backupDirectory)
     fs.mkdirSync(this.backupDirectory, { recursive: true })
 
-    this.hypixelApi = new HypixelClient(this.config.general.hypixelApiKey, {
-      cache: true,
-      mojangCacheTime: 300,
-      hypixelCacheTime: 300
-    })
-
-    this.core = new Core(this)
+    this.core = new Core(this, config.general.hypixelApiKey)
+    this.hypixelApi = this.core.hypixelApi
     this.mojangApi = this.core.mojangApi
 
     let selectedLanguage = this.core.languageConfigurations.getLanguage()

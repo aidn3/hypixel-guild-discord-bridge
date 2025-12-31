@@ -1,10 +1,13 @@
-import type { DungeonFloors, DungeonFloorsWithEntrance, SkyblockV2DungeonsTypes } from 'hypixel-api-reborn'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type {
+  DungeonFloors,
+  DungeonFloorsWithEntrance,
+  SkyblockDungeonsTypes
+} from '../../../core/hypixel/hypixel-skyblock-types'
 import { formatTime } from '../../../utility/shared-utility'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -30,7 +33,7 @@ export default class PersonalBest extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const skyblockProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const skyblockProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!skyblockProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeon = skyblockProfile.dungeons?.dungeon_types
@@ -39,7 +42,7 @@ export default class PersonalBest extends ChatCommandHandler {
     return PersonalBest.formatMessage(givenUsername, resolvedFloor, dungeon)
   }
 
-  private static formatMessage(username: string, floor: DungeonFloorResolve, dungeon: SkyblockV2DungeonsTypes): string {
+  private static formatMessage(username: string, floor: DungeonFloorResolve, dungeon: SkyblockDungeonsTypes): string {
     if (!floor.highestFloor) {
       const selectedFloorWithEntrance = floor.floor
       const selectedFloorWithoutEntrance = floor.floor as DungeonFloors

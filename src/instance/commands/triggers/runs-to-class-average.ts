@@ -4,7 +4,7 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
   getDungeonLevelWithOverflow,
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -44,7 +44,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
     const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     if (selectedProfile.dungeons?.player_classes === undefined) {
@@ -149,7 +149,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
   private async getAdditionalBoost(context: ChatCommandContext): Promise<number> {
     let totalBoost = 0
 
-    const government = await context.app.hypixelApi.getSkyblockGovernment({ raw: true })
+    const government = await context.app.hypixelApi.getSkyblockElection()
     if (government.mayor.key === 'aura') {
       totalBoost += 0.55 // It is 55% instead of 50%. Why? I don't know. Maybe bugged
     } else if (government.mayor.key === 'derpy') {

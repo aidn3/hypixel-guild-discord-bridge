@@ -37,11 +37,9 @@ export default {
     const guildName = context.interaction.options.getString('guild-name') ?? undefined
     let guildId: string | undefined
     if (guildName !== undefined) {
-      try {
-        guildId = await context.application.hypixelApi.getGuild('name', guildName).then((guild) => guild.id)
-      } catch (error: unknown) {
-        context.errorHandler.error('fetching guild id from guild-name', error)
-        await context.interaction.editReply('Could not find the guild??')
+      guildId = await context.application.hypixelApi.getGuildByName(guildName).then((guild) => guild?._id)
+      if (guildId === undefined) {
+        await context.interaction.editReply('No such guild.')
         return
       }
     }

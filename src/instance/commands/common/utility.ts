@@ -1,8 +1,9 @@
 import assert from 'node:assert'
 
-import type { Client, SkyblockMember, SkyblockV2Member } from 'hypixel-api-reborn'
 import nbt from 'prismarine-nbt'
 
+import type { Hypixel } from '../../../core/hypixel/hypixel'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock-types'
 import type { MojangApi } from '../../../core/users/mojang'
 
 import type { ChatCommandContext } from 'src/common/commands'
@@ -17,26 +18,18 @@ export async function getUuidIfExists(mojangApi: MojangApi, username: string): P
     })
 }
 
-export async function getSelectedSkyblockProfileRaw(
-  hypixelApi: Client,
+export async function getSelectedSkyblockProfile(
+  hypixelApi: Hypixel,
   uuid: string
-): Promise<SkyblockV2Member | undefined> {
-  const response = await hypixelApi.getSkyblockProfiles(uuid, { raw: true })
+): Promise<SkyblockMember | undefined> {
+  const profiles = await hypixelApi.getSkyblockProfiles(uuid)
 
-  if (!response.profiles) return undefined
-  const profile = response.profiles.find((p) => p.selected)
+  if (!profiles) return undefined
+  const profile = profiles.find((p) => p.selected)
 
   const selected = profile?.members[uuid]
   assert.ok(selected)
   return selected
-}
-
-export async function getSelectedSkyblockProfile(hypixelApi: Client, uuid: string): Promise<SkyblockMember> {
-  return await hypixelApi.getSkyblockProfiles(uuid).then((profiles) => {
-    const profile = profiles.find((profile) => profile.selected)?.me
-    assert.ok(profile)
-    return profile
-  })
 }
 
 export function getDungeonLevelWithOverflow(experience: number): number {
@@ -105,10 +98,6 @@ export async function parseEncodedNbt<T>(base64: string): Promise<T> {
   const decoded = Buffer.from(base64, 'base64')
   const parsed = await nbt.parse(decoded)
   return nbt.simplify(parsed.parsed) as T
-}
-
-export function capitalize(name: string): string {
-  return name.slice(0, 1).toUpperCase() + name.slice(1).toLowerCase()
 }
 
 export function usernameNotExists(context: ChatCommandContext, givenUsername: string): string {

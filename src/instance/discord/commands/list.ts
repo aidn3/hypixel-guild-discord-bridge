@@ -2,7 +2,6 @@ import assert from 'node:assert'
 
 import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
-import type { Client, Status } from 'hypixel-api-reborn'
 
 import type Application from '../../../application.js'
 import type { UserLink } from '../../../common/application-event.js'
@@ -10,9 +9,12 @@ import { Color, InstanceType } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandScope } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel'
+import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
 import type { GuildFetch } from '../../../core/users/guild-manager'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
+import { capitalize } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -131,7 +133,7 @@ async function listMembers(
   app: Application,
   errorHandler: UnexpectedErrorHandler,
   mojangApi: MojangApi,
-  hypixelApi: Client,
+  hypixelApi: Hypixel,
   onlyOnline: boolean
 ): Promise<Map<string, string[]>> {
   const guildsLookup = await getGuilds(app, errorHandler)
@@ -207,16 +209,16 @@ async function listMembers(
  */
 async function look(
   mojangProfiles: Map<string, string>,
-  hypixelApi: Client,
+  hypixelApi: Hypixel,
   errorHandler: UnexpectedErrorHandler
-): Promise<Map<string, Status>> {
-  const result = new Map<string, Status>()
+): Promise<Map<string, HypixelPlayerStatus>> {
+  const result = new Map<string, HypixelPlayerStatus>()
 
   const tasks: Promise<unknown>[] = []
   for (const [username, uuid] of mojangProfiles) {
     tasks.push(
       hypixelApi
-        .getStatus(uuid)
+        .getPlayerStatus(uuid)
         .then((status) => result.set(username.toLowerCase(), status))
         .catch(errorHandler.promiseCatch(`fetching hypixel status of ${uuid} for command /list`))
     )
@@ -248,15 +250,19 @@ function formatUser(username: string, link: UserLink | undefined): string {
   return message
 }
 
-function formatLocation(username: string, link: UserLink | undefined, session: Status | undefined): string {
+function formatLocation(
+  username: string,
+  link: UserLink | undefined,
+  session: HypixelPlayerStatus | undefined
+): string {
   let message = `${formatUser(username, link)} `
 
   if (session === undefined) return message + ' is *__unknown?__*'
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  if (session.game != undefined) message += `playing __${escapeMarkdown(session.game.name)}__`
-  if (session.mode != undefined) message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
+  message += `playing __${escapeMarkdown(capitalize(session.gameType))}__`
+  message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
   message += '*' // END discord markdown. italic
 
   return message

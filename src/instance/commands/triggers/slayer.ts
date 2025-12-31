@@ -1,10 +1,9 @@
-import type { Slayer as SlayerType } from 'hypixel-api-reborn'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock-types'
+import { capitalize } from '../../../utility/shared-utility'
 import {
-  capitalize,
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   playerNeverPlayedSlayers,
@@ -56,7 +55,7 @@ const HighestTierTable = {
 export default class Slayer extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['slayer', 'sl', 'slyr'],
+      triggers: ['slayer', 'slayers', 'sl', 'slyr'],
       description: "Returns a player's slayer level",
       example: `slayer eman %s`
     })
@@ -69,7 +68,7 @@ export default class Slayer extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const slayerBosses = selectedProfile.slayer?.slayer_bosses

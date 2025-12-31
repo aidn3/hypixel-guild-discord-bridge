@@ -8,7 +8,7 @@ import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import { formatTime } from '../../../utility/shared-utility'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -34,7 +34,7 @@ export default class Forge extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const forge = selectedProfile.forge?.forge_processes.forge_1

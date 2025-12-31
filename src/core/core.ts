@@ -27,6 +27,7 @@ import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { InstanceHistoryButton } from './discord/instance-history-button'
+import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
 import { StatusHistory } from './instance/status-history'
 import { LanguageConfigurations } from './language-configurations'
@@ -81,12 +82,13 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly languageConfigurations: LanguageConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
+  public readonly hypixelApi: Hypixel
 
   // database
   private readonly sqliteManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
 
-  public constructor(application: Application) {
+  public constructor(application: Application, hypixelApiKey: string) {
     super(application, InternalInstancePrefix + 'core', InstanceType.Core)
 
     const sqliteName = 'users.sqlite'
@@ -117,6 +119,7 @@ export class Core extends Instance<InstanceType.Core> {
 
     this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
+    this.hypixelApi = new Hypixel(hypixelApiKey, this.sqliteManager, this.logger)
 
     this.profanity = new Profanity(this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)

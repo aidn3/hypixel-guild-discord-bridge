@@ -2,7 +2,6 @@ import assert from 'node:assert'
 
 import type { APIEmbed, ButtonInteraction, Client, MessageActionRowComponentData } from 'discord.js'
 import { ButtonStyle, ComponentType, DiscordAPIError, escapeMarkdown, MessageFlags, userMention } from 'discord.js'
-import type { Guild } from 'hypixel-api-reborn'
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
@@ -12,6 +11,7 @@ import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { User } from '../../../common/user'
 import type { LeaderboardEntry } from '../../../core/discord/discord-leaderboards'
+import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild'
 import Duration from '../../../utility/duration'
 import { setIntervalAsync } from '../../../utility/scheduling'
 import { formatTime } from '../../../utility/shared-utility'
@@ -24,6 +24,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   private static readonly CheckUpdateEvery = Duration.minutes(1)
   private static readonly UpdateEvery = Duration.minutes(30)
   private static readonly MyPositionId = 'my-position'
+  private static readonly GuildDisbandedError = new Error('Hypixel guild not found. Probably disbanded.')
 
   constructor(
     application: Application,
@@ -159,7 +160,12 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
           toUpdate.push({ messageId: entry.messageId, updatedAt: Date.now() })
         }
       } catch (error: unknown) {
-        this.logger.error(error)
+        if (error === Leaderboard.GuildDisbandedError) {
+          this.logger.error(`Guild has been disbanded? Removing the entry from leaderboard: ${entry.guildId}`)
+          toDelete.push(entry.messageId)
+        } else {
+          this.logger.error(error)
+        }
       }
     }
 
@@ -223,7 +229,8 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     let result = ''
 
     if (option.guildId !== undefined) {
-      const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      const guild = await this.application.hypixelApi.getGuildById(option.guildId)
+      if (guild === undefined) throw Leaderboard.GuildDisbandedError
 
       leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({ uuid: uuid, discordId: undefined, count: 0 }))
       result += `Guild: **${escapeMarkdown(guild.name)}**\n`
@@ -258,7 +265,8 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     let result = ''
 
     if (option.guildId !== undefined) {
-      const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      const guild = await this.application.hypixelApi.getGuildById(option.guildId)
+      if (guild === undefined) throw Leaderboard.GuildDisbandedError
       leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
         uuid: uuid,
         discordId: undefined,
@@ -297,7 +305,8 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     let result = ''
 
     if (option.guildId !== undefined) {
-      const guild = await this.application.hypixelApi.getGuild('id', option.guildId)
+      const guild = await this.application.hypixelApi.getGuildById(option.guildId)
+      if (guild === undefined) throw Leaderboard.GuildDisbandedError
       leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
         uuid: uuid,
         discordId: undefined,
@@ -333,7 +342,11 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
     }
   }
 
-  private limitToGuild<T extends { uuid: string }>(entries: T[], guild: Guild, createEntry: (uuid: string) => T): T[] {
+  private limitToGuild<T extends { uuid: string }>(
+    entries: T[],
+    guild: HypixelGuild,
+    createEntry: (uuid: string) => T
+  ): T[] {
     const guildMembers = new Set<string>()
     for (const member of guild.members) {
       guildMembers.add(member.uuid)
