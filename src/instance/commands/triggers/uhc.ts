@@ -38,8 +38,10 @@ export default class Uhc extends ChatCommandHandler {
     })
   }
 
-  // https://github.com/Hypixel-API-Reborn/hypixel-api-reborn/blob/82e39bc4937c89d8bfa132554f33015b63ad328e/src/Structures/MiniGames/UHC/UHC.ts#L5
-  // TODO: credit properly
+  /*
+   * @license MIT <https://github.com/Hypixel-API-Reborn/hypixel-api-reborn/blob/82e39bc4937c89d8bfa132554f33015b63ad328e/LICENSE>
+   * @see https://github.com/Hypixel-API-Reborn/hypixel-api-reborn/blob/82e39bc4937c89d8bfa132554f33015b63ad328e/src/Structures/MiniGames/UHC/UHC.ts#L5
+   */
   private getStarLevel(kills: number, wins: number): number {
     const sum = kills + wins * 10
     let starLevel = 1
