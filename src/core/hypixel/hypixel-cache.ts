@@ -20,13 +20,13 @@ export class HypixelCache {
   })
   private currentId = 0
 
-  public add(requests: ApiEntry[], timestamp: number, response: HypixelSuccessResponse): void {
+  public add(requests: ApiEntry[], createdAt: number, response: HypixelSuccessResponse): void {
     const id = ++this.currentId
     for (const request of requests) {
       this.cacheKey.set(this.serialize(request), id)
     }
 
-    this.cacheValue.set<CacheEntry<HypixelSuccessResponse>>(id, { createdAt: timestamp, content: response })
+    this.cacheValue.set<CacheEntry<HypixelSuccessResponse>>(id, { createdAt: createdAt, content: response })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters

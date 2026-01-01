@@ -153,9 +153,8 @@ export class Hypixel {
 
     const databaseCached = this.database.retrieve<T>(request, since ?? defaultSince)
     if (databaseCached !== undefined) {
-      const currentTime = Date.now()
       const requests = cacheRequests === undefined ? [request] : cacheRequests(databaseCached.content)
-      this.cache.add(requests, currentTime, databaseCached.content)
+      this.cache.add(requests, databaseCached.createdAt, databaseCached.content)
       return databaseCached.content
     }
 
