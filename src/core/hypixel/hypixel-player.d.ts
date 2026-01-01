@@ -15,7 +15,7 @@ export interface HypixelPlayer {
 }
 
 export interface HypixelPlayerStats {
-  Bedwars?: { Experience?: number; wins_bedwars?: number; final_deaths_bedwars?: number }
+  Bedwars?: { Experience?: number; wins_bedwars?: number; final_deaths_bedwars?: number; final_kills_bedwars?: number }
   BuildBattle?: { score?: number; wins?: number }
   Walls3?: {
     kills?: number
@@ -37,7 +37,7 @@ export interface HypixelPlayerStats {
   WoolGames?: {
     wool_wars?: { stats?: { games_played?: number; kills?: number; wins?: number; deaths?: number } }
   }
-  Skywars?: { wins?: number; games_played_skywars?: number; deaths?: number; kills?: number }
+  SkyWars?: { wins?: number; games_played_skywars?: number; deaths?: number; kills?: number }
 }
 
 export interface HypixelPlayerAchievements {
