@@ -66,7 +66,10 @@
   "commands.equipments.none": "{{username}} does not have any equipments.",
   "commands.equipments.none-maybe": "{{username}} does not have any equipments?",
   "commands.equipments.render-not-supported": "Equipments has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
-
+  "commands.bedwars.none": "{{username}} has never played Bedwars before.",
+  "commands.bedwars.response": "{{username}}'s Bedwars: level {{level, number(maximumFractionDigits: 0)}}✫ - FKDR {{fkdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}} - Final kills {{kills, number}}.",
+  "commands.skywars.none": "{{username}} has never played Skywars before.",
+  "commands.skywars.response": "{{username}}'s Skywars: Games played {{games, number(maximumFractionDigits: 0)}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
   "commands.hotm.none": "{{username}} has never mined before.",
   "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} with powders ({{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite).",
   "commands.sacks.response": "{{username}} has {{value}} in sacks content.",
