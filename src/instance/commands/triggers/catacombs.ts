@@ -1,10 +1,9 @@
-import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock-types'
 import {
   getDungeonLevelWithOverflow,
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -26,7 +25,7 @@ export default class Catacombs extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeons = selectedProfile.dungeons
@@ -39,7 +38,7 @@ export default class Catacombs extends ChatCommandHandler {
     return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)}.`
   }
 
-  private formatClass(dungeon: SkyblockV2Dungeons): string {
+  private formatClass(dungeon: SkyblockDungeons): string {
     const classes = dungeon.player_classes
 
     let xp = 0

@@ -1,10 +1,10 @@
-import type { SkyblockV2Member } from 'hypixel-api-reborn'
 import { parse } from 'prismarine-nbt'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock-types'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -25,7 +25,7 @@ export default class MagicalPower extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const magicalPower = selectedProfile.accessory_bag_storage?.highest_magical_power ?? 0
@@ -69,7 +69,7 @@ export default class MagicalPower extends ChatCommandHandler {
       .join('')
   }
 
-  private async getEnrichments(member: SkyblockV2Member): Promise<{ name: string; count: number }[]> {
+  private async getEnrichments(member: SkyblockMember): Promise<{ name: string; count: number }[]> {
     const bagRaw = member.inventory?.bag_contents?.talisman_bag
     if (bagRaw === undefined) return []
 

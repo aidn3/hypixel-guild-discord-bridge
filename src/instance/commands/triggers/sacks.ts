@@ -4,7 +4,7 @@ import type { Content } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   shortenNumber,
@@ -26,15 +26,15 @@ export default class Sacks extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const entries = selectedProfile.inventory?.sacks_counts ?? {}
 
     let totalValue = 0
     if (Object.entries(entries).length > 0) {
-      const bazaar = await context.app.hypixelApi.getSkyblockBazaar({ raw: true })
-      const skyhelperPrices = (await getPrices()) as Record<string, number>
+      const products = await context.app.hypixelApi.getSkyblockBazaar()
+      const skyhelperPrices = await getPrices()
 
       for (const [name, count] of Object.entries(entries)) {
         if (count === 0) continue
@@ -44,8 +44,8 @@ export default class Sacks extends ChatCommandHandler {
          * Prioritize official prices.
          * Skyhelper prices are fallback for items that can be not easily fetched.
          */
-        if (name in bazaar.products) {
-          const product = bazaar.products[name]
+        if (name in products) {
+          const product = products[name]
           price =
             product.sell_summary.length > 0 ? product.sell_summary[0].pricePerUnit : product.quick_status.sellPrice
         } else if (name in skyhelperPrices) {

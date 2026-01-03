@@ -17,11 +17,21 @@ export default class HypixelLevel extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const player = await context.app.hypixelApi.getPlayer(uuid).catch(() => {
-      /* return undefined */
-    })
+    const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    return `${givenUsername} is Hypixel level ${player.level}.`
+    // TODO: translatable
+    return `${givenUsername} is Hypixel level ${this.getLevel(player.networkExp ?? 0).toFixed(2)}.`
+  }
+
+  private getLevel(experience: number): number {
+    const Base = 10_000
+    const Growth = 2500
+    const ReversePqPrefix = -(Base - 0.5 * Growth) / Growth
+    const ReverseConst = ReversePqPrefix * ReversePqPrefix
+    const GrowthDivides2 = 2 / Growth
+
+    const result = 1 + ReversePqPrefix + Math.sqrt(ReverseConst + GrowthDivides2 * experience)
+    return Math.round(result * 100) / 100
   }
 }

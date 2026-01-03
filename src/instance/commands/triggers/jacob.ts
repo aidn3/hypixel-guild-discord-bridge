@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -22,15 +22,15 @@ export default class Jacob extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const jacob = selectedProfile.jacobs_contest
     const farmingLevelCap = jacob?.perks?.farming_level_cap ?? 0
     const doubleDrops = jacob?.perks?.double_drops ?? 0
-    const goldMedals = jacob?.unique_brackets.gold.length ?? 0
-    const diamondMedals = jacob?.unique_brackets.diamond.length ?? 0
-    const platinumMedals = jacob?.unique_brackets.diamond.length ?? 0
+    const goldMedals = jacob?.unique_brackets.gold?.length ?? 0
+    const diamondMedals = jacob?.unique_brackets.diamond?.length ?? 0
+    const platinumMedals = jacob?.unique_brackets.platinum?.length ?? 0
 
     return context.app.i18n.t(($) => $['commands.jacob.response'], {
       username: givenUsername,

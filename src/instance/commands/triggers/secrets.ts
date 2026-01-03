@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -23,7 +23,7 @@ export default class Secrets extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const hypixelProfile = await context.app.hypixelApi.getPlayer(uuid)
-    const skyblockProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const skyblockProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!skyblockProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeon = skyblockProfile.dungeons?.dungeon_types
@@ -34,7 +34,7 @@ export default class Secrets extends ChatCommandHandler {
 
     const totalRuns = this.getTotalRuns(catacombRuns) + this.getTotalRuns(mastermodeRuns)
 
-    const secrets = hypixelProfile.achievements.skyblockTreasureHunter as number
+    const secrets = hypixelProfile?.achievements?.skyblock_treasure_hunter ?? 0
     const averageSecrets = (secrets / totalRuns).toFixed(2)
 
     return `${givenUsername}'s secrets: ${secrets.toLocaleString() || 0} Total ${averageSecrets} Average`

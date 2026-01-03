@@ -1,8 +1,7 @@
-import type { Status as Session } from 'hypixel-api-reborn'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { formatTime } from '../../../utility/shared-utility'
+import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
+import { capitalize, formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Status extends ChatCommandHandler {
@@ -20,28 +19,25 @@ export default class Status extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const session = await context.app.hypixelApi.getStatus(uuid, { noCaching: true }).catch(() => {
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      return undefined
-    })
-    if (!session?.online) {
+    const session = await context.app.hypixelApi.getPlayerStatus(uuid, Date.now())
+    if (!session.online) {
       const player = await context.app.hypixelApi.getPlayer(uuid).catch(() => undefined)
       if (player !== undefined) {
-        return `${givenUsername} was last online ${formatTime(Date.now() - player.lastLogoutTimestamp)} ago.`
+        return `${givenUsername} was last online ${formatTime(Date.now() - player.lastLogout)} ago.`
       }
     }
 
     return this.formatStatus(givenUsername, session)
   }
 
-  private formatStatus(username: string, session: Session | undefined): string {
+  private formatStatus(username: string, session: HypixelPlayerStatus | undefined): string {
     let result = username
 
     if (session === undefined) return result + "'s status is unknown"
     if (!session.online) return result + "'s status is either hidden or offline"
 
-    if (session.game != undefined) result += ` is playing ${session.game.name}`
-    if (session.mode != undefined) result += ` in ${session.mode.toLowerCase()}`
+    result += ` is playing ${capitalize(session.gameType)}`
+    result += ` in ${session.mode.toLowerCase()}`
     if (session.map != undefined) result += ` map ${session.map}`
 
     return result

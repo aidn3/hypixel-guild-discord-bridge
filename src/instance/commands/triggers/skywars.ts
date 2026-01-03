@@ -17,14 +17,22 @@ export default class Skywars extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
-      /* return undefined */
-    })
+    const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    const stat = player.stats?.skywars
-    if (stat === undefined) return `${givenUsername} has never played Skywars before?`
+    const stat = player.stats?.SkyWars
+    if (stat === undefined) {
+      return context.app.i18n.t(($) => $['commands.skywars.none'], { username: givenUsername })
+    }
 
-    return `${givenUsername}'s skywars level is ${stat.level.toFixed(0)}✫ with K/D ratio of ${stat.KDRatio.toFixed(2)}.`
+    /*
+     * Calculating level is too hard for now. Maybe do it one day if there is demand.
+     */
+    return context.app.i18n.t(($) => $['commands.skywars.response'], {
+      username: givenUsername,
+      games: stat.games_played_skywars ?? 0,
+      kills: stat.kills ?? 0,
+      kdr: (stat.deaths ?? 0) > 0 ? (stat.kills ?? 0) / (stat.deaths ?? 0) : 0
+    })
   }
 }

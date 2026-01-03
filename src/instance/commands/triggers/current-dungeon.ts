@@ -1,14 +1,14 @@
 import assert from 'node:assert'
 
-import type { SkyblockV2Dungeons } from 'hypixel-api-reborn'
 import Moment from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock-types'
 import type { MojangApi } from '../../../core/users/mojang'
 import {
   getDungeonLevelWithOverflow,
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -32,7 +32,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeons = selectedProfile.dungeons
@@ -91,7 +91,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
   }
 
   private async parseDisplayMessage(
-    dungeonProfile: SkyblockV2Dungeons,
+    dungeonProfile: SkyblockDungeons,
     mojangApi: MojangApi,
     message: string,
     uuid: string

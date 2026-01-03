@@ -21,7 +21,7 @@ export default class GuildCheck extends ChatCommandHandler {
         continue
       }
 
-      const guild = await context.app.hypixelApi.getGuild('player', mojangProfile.id, {}).catch(() => undefined)
+      const guild = await context.app.hypixelApi.getGuildByPlayer(mojangProfile.id)
       if (guild == undefined) {
         result.push(`${mojangProfile.name} not in guild`)
         continue

@@ -121,6 +121,10 @@ export function durationToMinecraftDuration(duration: number): string {
   return `${Math.max(maxTime, MinDuration)}${Prefix}`
 }
 
+export function capitalize(name: string): string {
+  return name.slice(0, 1).toUpperCase() + name.slice(1).toLowerCase()
+}
+
 /**
  * Used to convert instanceName to a human-readable one.
  * Most instanceNames are either lowercased or contain metadata such as prefixes.

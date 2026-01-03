@@ -17,22 +17,21 @@ export default class Megawalls extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const player = await context.app.hypixelApi.getPlayer(uuid, {}).catch(() => {
-      /* return undefined */
-    })
+    const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    const stat = player.stats?.megawalls
-    if (stat === undefined || stat.playedGames === 0) {
+    const stat = player.stats?.Walls3
+    if (stat === undefined || stat.games_played === 0) {
       return context.app.i18n.t(($) => $['commands.megawalls.none'], { username: givenUsername })
     }
 
+    const deaths = stat.deaths ?? 0
     return context.app.i18n.t(($) => $['commands.megawalls.response'], {
       username: givenUsername,
-      games: stat.playedGames,
+      games: stat.games_played,
       wins: stat.wins,
       kills: stat.kills,
-      kdr: stat.KDRatio
+      kdr: deaths > 0 ? (stat.kills ?? 0) / deaths : 0
     })
   }
 }

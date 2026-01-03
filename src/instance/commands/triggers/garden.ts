@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
-  getSelectedSkyblockProfileRaw,
+  getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -22,7 +22,7 @@ export default class Garden extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfileRaw(context.app.hypixelApi, uuid)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const bestiary = selectedProfile.bestiary?.kills ?? {}
@@ -36,10 +36,12 @@ export default class Garden extends ChatCommandHandler {
     //  Till they are updated in the source, the feature will be left out.
     //  Source: https://wiki.hypixel.net/Garden
 
-    const gardenResponse = await context.app.hypixelApi.getSkyblockGarden(selectedProfile.player_id, { raw: true })
-    const uniqueVisitors = Object.values(gardenResponse.garden.commission_data.completed).filter(
-      (entry) => entry > 0
-    ).length
+    const garden = await context.app.hypixelApi.getSkyblockGarden(selectedProfile.player_id)
+    if (garden === undefined) {
+      return context.app.i18n.t(($) => $['commands.error.never-joined-skyblock'], { username: givenUsername })
+    }
+
+    const uniqueVisitors = Object.values(garden.commission_data.completed).filter((entry) => entry > 0).length
     return context.app.i18n.t(($) => $['commands.garden.response'], {
       username: givenUsername,
       totalKilledPests: totalKilledPests,

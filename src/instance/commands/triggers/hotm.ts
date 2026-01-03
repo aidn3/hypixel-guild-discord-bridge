@@ -18,19 +18,22 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
-    const hotm = selectedProfile.hotm
+    const stats = selectedProfile?.mining_core
+    if (stats === undefined) {
+      return context.app.i18n.t(($) => $['commands.hotm.none'], { username: givenUsername })
+    }
 
-    let response = `${givenUsername} is HOTM ${hotm.experience.level}`
+    const hotm = 0 // TODO: Properly reference the value when Hypixel API adds it back
+    const mithril = (stats.powder_mithril ?? 0) + (stats.powder_spent_mithril ?? 0)
+    const gemstone = (stats.powder_gemstone ?? 0) + (stats.powder_spent_gemstone ?? 0)
+    const glacite = (stats.powder_glacite ?? 0) + (stats.powder_spent_glacite ?? 0)
 
-    const powders: string[] = []
-    if (hotm.powder.mithril.total > 0)
-      powders.push(`${(hotm.powder.mithril.current + hotm.powder.mithril.spent).toLocaleString('en-US')} Mithril`)
-    if (hotm.powder.gemstone.total > 0)
-      powders.push(`${(hotm.powder.gemstone.current + hotm.powder.gemstone.spent).toLocaleString('en-US')} Gemstone`)
-    if (hotm.powder.glacite.total > 0)
-      powders.push(`${(hotm.powder.glacite.current + hotm.powder.glacite.spent).toLocaleString('en-US')} Glacite`)
-    if (powders.length > 0) response += ` with powders (${powders.join(' - ')})`
-
-    return response
+    return context.app.i18n.t(($) => $['commands.hotm.response'], {
+      username: givenUsername,
+      hotm: hotm,
+      mithril: mithril,
+      gemstone: gemstone,
+      glacite: glacite
+    })
   }
 }

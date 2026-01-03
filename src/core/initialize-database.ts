@@ -8,7 +8,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 5
+const CurrentVersion = 6
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -27,6 +27,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(4, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom4to5(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(5, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom5to6(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -403,6 +406,32 @@ function migrateFrom4to5(database: Database, logger: Logger4Js, newlyCreated: bo
   database.exec('ALTER TABLE "mojangProfileSettings" ADD COLUMN "selectedEnglish" INTEGER NOT NULL DEFAULT 0;')
 
   database.pragma('user_version = 5')
+}
+
+function migrateFrom5to6(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 5 to 6')
+
+  // reference: hypixel/hypixel-database.ts
+  database.exec(
+    'CREATE TABLE "hypixelApiRequest" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  responseId INTEGER NOT NULL REFERENCES hypixelApiResponse(id) ON DELETE CASCADE,' +
+      '  path TEXT NOT NULL,' +
+      '  key TEXT NOT NULL,' +
+      '  value TEXT NOT NULL,' +
+      '  UNIQUE(path, key, value)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "hypixelApiResponse" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  content TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL,' +
+      '  lastAccessAt INTEGER NOT NULL' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 6')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

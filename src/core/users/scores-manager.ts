@@ -176,13 +176,14 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
       if (botUuid === undefined) continue
       this.logger.trace(`Fetching guild members for bot uuid ${botUuid}`)
 
-      const guild = await this.application.hypixelApi.getGuild('player', botUuid)
+      const guild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
+      if (guild === undefined) continue
       const timeframes: Timeframe[] = []
       const currentTimestamp = Date.now()
       for (const member of guild.members) {
         timeframes.push({
           uuid: member.uuid,
-          fromTimestamp: member.joinedAtTimestamp,
+          fromTimestamp: member.joined,
           toTimestamp: currentTimestamp,
           leniencyMilliseconds: ScoresManager.LeniencyTime.toMilliseconds()
         })

@@ -164,7 +164,7 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
     const guildsResolver = this.application.minecraftManager
       .getMinecraftBots()
       .map((bots) => bots.uuid)
-      .map((uuid) => this.application.hypixelApi.getGuild('player', uuid).catch(() => undefined))
+      .map((uuid) => this.application.hypixelApi.getGuildByPlayer(uuid))
 
     const guilds = await Promise.all(guildsResolver)
     const ranks: string[] = []
