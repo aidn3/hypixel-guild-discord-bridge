@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock-types'
@@ -28,14 +30,18 @@ export default class Catacombs extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
+    const hypixelProfile = await context.app.hypixelApi.getPlayer(uuid)
+    assert.ok(hypixelProfile !== undefined)
+
     const dungeons = selectedProfile.dungeons
     if (!dungeons) {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
     const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
+    const secrets = hypixelProfile.achievements?.skyblock_treasure_hunter ?? 0
 
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)}.`
+    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)} - Secrets ${secrets.toLocaleString('en-US')}.`
   }
 
   private formatClass(dungeon: SkyblockDungeons): string {
