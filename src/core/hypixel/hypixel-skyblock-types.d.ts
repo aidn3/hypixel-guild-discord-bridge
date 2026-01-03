@@ -19,6 +19,7 @@ export interface SkyblockMember {
   player_id: string
   currencies?: {
     coin_purse?: number
+    motes_purse?: number
     essence?: Record<
       'WITHER' | 'DRAGON' | 'UNDEAD' | 'DIAMOND' | 'SPIDER' | 'GOLD' | 'ICE' | 'CRIMSON',
       { current: number }

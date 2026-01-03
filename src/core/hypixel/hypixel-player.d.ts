@@ -12,6 +12,15 @@ export interface HypixelPlayer {
   socialMedia?: { links: { DISCORD?: string } }
   stats?: HypixelPlayerStats
   achievements?: HypixelPlayerAchievements
+  newPackageRank?: string
+  monthlyPackageRank?: string
+  levelUp_VIP?: number
+  levelUp_VIP_PLUS?: number
+  levelUp_MVP?: number
+  levelUp_MVP_PLUS?: number
+  firstLogin?: number
+  karma?: number
+  giftingMeta?: { ranksGiven?: number }
 }
 
 export interface HypixelPlayerStats {

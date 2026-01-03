@@ -19,6 +19,7 @@ A shorter version can also be used: `!- rtca`
 | ---------------- | ---------------------------------------------------------------------------------- |
 | `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
+| `age`            | Returns the day someone first logged on to hypixel                                 |
 | `api`            | Returns a player's skyblock API status                                             |
 | `armor`          | Returns a player's Skyblock armor                                                  |
 | `asian`          | Challenge yourself with math!                                                      |
@@ -48,6 +49,7 @@ A shorter version can also be used: `!- rtca`
 | `fetchur`        | Show what Fetchur NPC is requesting                                                |
 | `forge`          | Returns a player's Skyblock forge slots                                            |
 | `garden`         | Returns a player's Garden stats                                                    |
+| `gifted`         | Returns how many times a player has gifted a rank                                  |
 | `mguild`         | Check multiple players guilds, if any in one                                       |
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |
@@ -56,12 +58,14 @@ A shorter version can also be used: `!- rtca`
 | `insult`         | insult a player                                                                    |
 | `iq`             | Returns a player's IQ (0-200)                                                      |
 | `jacob`          | Returns a player's skyblock Jacob contest stats                                    |
+| `karma`          | Returns a player's karma                                                           |
 | `kuudra`         | Returns a player's kuudra runs                                                     |
 | `level`          | Returns a player's skyblock level                                                  |
 | `list`           | List online members in a guild                                                     |
 | `magicalpower`   | Returns a player's highest recorded skyblock Magical Power                         |
 | `mayor`          | Show current Hypixel Skyblock Election                                             |
 | `megawalls`      | Returns a player's Megawalls stats                                                 |
+| `motes`          | Returns a player's skyblock rift motes                                             |
 | `mute`           | mute a random online person for 5 minutes for no good reason                       |
 | `networth`       | Returns a calculation of a player's networth                                       |
 | `parties`        | List all active parties in guild                                                   |
@@ -72,6 +76,7 @@ A shorter version can also be used: `!- rtca`
 | `points`         | Returns user's all time activity points                                            |
 | `praise`         | praise a player                                                                    |
 | `purse`          | Returns a player's skyblock coins                                                  |
+| `rank`           | shows the rank of a player                                                         |
 | `rep`            | Returns a player's crimson isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |
 | `rps`            | Play rock, paper, scissors against the bot                                         |
