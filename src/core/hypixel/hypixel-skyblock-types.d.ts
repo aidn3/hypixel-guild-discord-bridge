@@ -209,6 +209,14 @@ export interface Slayer {
   boss_kills_tier_4?: number
 }
 
+export interface NewsResponse extends HypixelSuccessResponse {
+  items: {
+    link: string
+    text: string
+    title: string
+  }[]
+}
+
 export interface SkyblockPlayerEvents {
   easter?: SkyblockPlayerEaster
 }

@@ -56,6 +56,7 @@ import Megawalls from './triggers/megawalls'
 import Motes from './triggers/motes.js'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
+import News from './triggers/news.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
 import Points30days from './triggers/points-30days'
@@ -102,6 +103,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Armor(),
       new Asian(),
       new Bits(),
+      new News(),
       new Bedwars(),
       new Bestiary(),
       new Boo(),

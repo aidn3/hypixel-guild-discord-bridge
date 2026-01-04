@@ -68,6 +68,7 @@ A shorter version can also be used: `!- rtca`
 | `motes`          | Returns a player's skyblock rift motes                                             |
 | `mute`           | mute a random online person for 5 minutes for no good reason                       |
 | `networth`       | Returns a calculation of a player's networth                                       |
+| `news`           | Returns the latest skyblock news                                                   |
 | `parties`        | List all active parties in guild                                                   |
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
 | `endparty`       | remove the party from the listing                                                  |

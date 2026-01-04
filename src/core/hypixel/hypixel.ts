@@ -18,6 +18,7 @@ import type {
   GardenResponse,
   HypixelSkyblockSkillsResponse,
   MayorResponse,
+  NewsResponse,
   SkyblockMuseumResponse,
   SkyblockProfile,
   SkyblockProfilesResponse
@@ -38,6 +39,7 @@ export class Hypixel {
   private static readonly LeaderboardsPath = '/v2/leaderboards'
 
   private static readonly SkyblockElectionPath = '/v2/resources/skyblock/election'
+  private static readonly SkyblockNewsPath = '/v2/skyblock/news'
   private static readonly SkyblockSkillsPath = '/v2/resources/skyblock/skills'
 
   /**
@@ -84,6 +86,12 @@ export class Hypixel {
   public async getSkyblockElection(since?: number): Promise<MayorResponse> {
     const request = { path: Hypixel.SkyblockElectionPath } satisfies ApiEntry
     const response = await this.resolveAndFetch<MayorResponse>(request, since)
+    return response
+  }
+
+  public async getSkyblockNews(since?: number): Promise<NewsResponse> {
+    const request = { path: Hypixel.SkyblockNewsPath } satisfies ApiEntry
+    const response = await this.resolveAndFetch<NewsResponse>(request, since)
     return response
   }
 
