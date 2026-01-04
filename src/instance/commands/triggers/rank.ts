@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Rank extends ChatCommandHandler {
@@ -53,32 +54,13 @@ export default class Rank extends ChatCommandHandler {
     monthlyPackageRank?: string | null
   }): string {
     // mvp++ doesnt have a timestamp as far as i can tell :/
-    if (player.monthlyPackageRank === 'SUPERSTAR') {
-      return ''
-    }
+    if (player.monthlyPackageRank === 'SUPERSTAR') return ''
 
     const timestamp =
       player.levelUpMvpPlus ?? player.levelUpMvp ?? player.levelUpVipPlus ?? player.levelUpVip ?? player.firstLogin // if they dont have a rank when they first joined is basically the same
 
     if (!timestamp) return ''
 
-    const now = Date.now()
-    const diffMs = now - timestamp
-    if (diffMs <= 0) return ' since just now'
-
-    const seconds = Math.floor(diffMs / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-    const days = Math.floor(hours / 24)
-    const weeks = Math.floor(days / 7)
-    const years = Math.floor(days / 365)
-
-    if (years > 0) return ` for the last ${years} year${years === 1 ? '' : 's'}`
-    if (weeks > 0) return ` for the last ${weeks} week${weeks === 1 ? '' : 's'}`
-    if (days > 0) return ` for the last ${days} day${days === 1 ? '' : 's'}`
-    if (hours > 0) return ` for the last ${hours} hour${hours === 1 ? '' : 's'}`
-    if (minutes > 0) return ` for the last ${minutes} minute${minutes === 1 ? '' : 's'}`
-
-    return ` for the last ${seconds} second${seconds === 1 ? '' : 's'}`
+    return ` for the last ${formatTime(Date.now() - timestamp)}`
   }
 }
