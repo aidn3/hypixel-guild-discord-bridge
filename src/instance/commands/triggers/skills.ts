@@ -55,14 +55,14 @@ export default class Skills extends ChatCommandHandler {
       alchemy +
       carpentry +
       runecrafting +
-      social +
       taming +
       hunting
 
     /*
      * Skills count may change in the future. This keeps it updated.
+     * "Social" skill is ignored since it is cosmetic only.
      */
-    const officialSkillsCount = Object.keys(skillsResponse.skills).length
+    const officialSkillsCount = Object.keys(skillsResponse.skills).length - 1
     const average = totalLevels / officialSkillsCount
 
     return context.app.i18n.t(($) => $['commands.skills.response'], {
