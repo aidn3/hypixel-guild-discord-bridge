@@ -20,6 +20,9 @@ export default class Karma extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    return `${givenUsername} has ${shortenNumber(player.karma ?? 0)} karma.`
+    return context.app.i18n.t(($) => $['commands.karma.response'], {
+      username: context.username,
+      karmaAmount: shortenNumber(player.karma ?? 0)
+    })
   }
 }

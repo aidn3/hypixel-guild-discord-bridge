@@ -28,9 +28,17 @@ export default class Rank extends ChatCommandHandler {
       levelUpMvp: rawPlayer.levelUp_MVP,
       levelUpMvpPlus: rawPlayer.levelUp_MVP_PLUS
     }
+    if (player.monthlyPackageRank === 'SUPERSTAR')
+      return context.app.i18n.t(($) => $['commands.rank.mvpplusplus'], {
+        username: context.username,
+        rank: this.getRank(player)
+      })
 
-    // TODO: translatable
-    return `${givenUsername} is a ${this.getRank(player)}${this.getTimeWithRank(player)}`
+    return context.app.i18n.t(($) => $['commands.rank.response'], {
+      username: context.username,
+      rank: this.getRank(player),
+      timeAsRank: this.getTimeWithRank(player)
+    })
   }
 
   private getRank(player: { newPackageRank?: string | null; monthlyPackageRank?: string | null }): string {
@@ -56,11 +64,12 @@ export default class Rank extends ChatCommandHandler {
     // mvp++ doesnt have a timestamp as far as i can tell :/
     if (player.monthlyPackageRank === 'SUPERSTAR') return ''
 
+    // if they dont have a rank when they first joined is basically the same
     const timestamp =
-      player.levelUpMvpPlus ?? player.levelUpMvp ?? player.levelUpVipPlus ?? player.levelUpVip ?? player.firstLogin // if they dont have a rank when they first joined is basically the same
+      player.levelUpMvpPlus ?? player.levelUpMvp ?? player.levelUpVipPlus ?? player.levelUpVip ?? player.firstLogin
 
     if (!timestamp) return ''
 
-    return ` for the last ${formatTime(Date.now() - timestamp)}`
+    return formatTime(Date.now() - timestamp)
   }
 }

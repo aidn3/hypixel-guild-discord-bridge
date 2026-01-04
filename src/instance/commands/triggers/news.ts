@@ -12,9 +12,9 @@ export default class News extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     const news = await context.app.hypixelApi.getSkyblockNews()
-    if (news.items.length === 0) return 'No news found right now :/'
+    if (news.items.length === 0) return context.app.i18n.t(($) => $['commands.news.none'])
 
     const first = news.items[0]
-    return `${first.title} (${first.text})- ${first.link}`
+    return `${first.title} (${first.text}) - ${first.link}`
   }
 }

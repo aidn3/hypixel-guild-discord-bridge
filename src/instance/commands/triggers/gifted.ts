@@ -20,6 +20,9 @@ export default class Gifted extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    return `${givenUsername} has gifted ${player.giftingMeta?.ranksGiven ?? 0} ranks.`
+    return context.app.i18n.t(($) => $['commands.gifted.response'], {
+      username: context.username,
+      amountGifted: player.giftingMeta?.ranksGiven ?? 0
+    })
   }
 }

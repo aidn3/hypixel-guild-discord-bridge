@@ -28,9 +28,12 @@ export default class Motes extends ChatCommandHandler {
     const motes = selectedProfile.members[uuid].currencies?.motes_purse
 
     if (motes === undefined) {
-      return `${givenUsername} either doesnt have any motes or has there api off.`
-    } // im not sure if this is possible but ill leave it
+      return context.app.i18n.t(($) => $['commands.motes.none'], { username: context.username })
+    }
 
-    return `${givenUsername} has ${shortenNumber(motes)} rift motes.`
+    return context.app.i18n.t(($) => $['commands.motes.response'], {
+      username: context.username,
+      motesAmount: shortenNumber(motes)
+    })
   }
 }

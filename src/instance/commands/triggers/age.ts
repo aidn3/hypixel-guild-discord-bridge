@@ -27,7 +27,12 @@ export default class Age extends ChatCommandHandler {
     const month: string = (timestamp.getMonth() + 1).toString().padStart(2, '0')
     const year: string = timestamp.getFullYear().toString().slice(-2)
 
-    // TODO: translatable
-    return `${givenUsername} first logged in to hypixel on ${day}/${month}/${year} or about ${formatTime(Date.now() - player.firstLogin)} ago`
+    return context.app.i18n.t(($) => $['commands.age.response'], {
+      username: context.username,
+      firstLoginDay: day,
+      firstLoginMonth: month,
+      firstLoginYear: year,
+      timeSinceFirstLogin: formatTime(Date.now() - player.firstLogin)
+    })
   }
 }
