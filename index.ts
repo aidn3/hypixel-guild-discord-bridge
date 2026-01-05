@@ -1,8 +1,10 @@
+import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
 import { satisfies } from 'compare-versions'
+import { DiscordjsError, DiscordjsErrorCodes } from 'discord.js'
 import type { Configuration } from 'log4js'
 import Logger4js from 'log4js'
 
@@ -86,6 +88,8 @@ if (!fs.existsSync(File)) {
   await gracefullyExitProcess(1)
 }
 
+let applicationLoaded = false
+let finalMessage: { messages: string[]; loggerLevel: (message: string) => void } | undefined
 try {
   app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory, I18n.cloneInstance())
 
@@ -98,11 +102,78 @@ try {
     }
     instanceLogger.log(`[${name}] ${JSON.stringify(event)}`)
   })
+  applicationLoaded = true
 
   await app.start()
   Logger.info('App is connected')
 } catch (error: unknown) {
-  Logger.fatal(error)
+  Logger.fatal('Encountered an error during the application initiation phase', error)
+  if (error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.TokenInvalid) {
+    finalMessage = {
+      messages: [
+        'Invalid Discord Token',
+        '- Go to https://discord.com/developers/applications',
+        '- Create new Discord bot by pressing "New Application" ',
+        '- On the left menu, choose "Bot"',
+        '- Go to "Privileged Gateway Intents" section',
+        '- Enable the following intents: "Server Members Intent", "Message Content Intent"',
+        '- After that, go to "Token" section on the page and press "Reset Token".',
+        '  A token will be generated, treat it like a password!',
+        '- Copy the token and put it inside "config.yaml" file here.',
+        '  The token goes in "discord" section "key" field. ',
+        '  Make sure the token is surrounded by double quotes "like this"!',
+        '- Then restart the application to try again'
+      ],
+      loggerLevel: (message) => {
+        Logger.error(message)
+      }
+    }
+  } else if (error instanceof Error && error.message.includes('Used disallowed intents')) {
+    finalMessage = {
+      messages: [
+        'Missing Discord Bot Intents',
+        '- Go to https://discord.com/developers/applications',
+        '- Select the discord bot name',
+        '- On the left menu, choose "Bot"',
+        '- Go to "Privileged Gateway Intents" section',
+        '- Enable the following intents: "Server Members Intent", "Message Content Intent"',
+        '- Then restart the application to try again'
+      ],
+      loggerLevel: (message) => {
+        Logger.error(message)
+      }
+    }
+  }
+
+  if (applicationLoaded) {
+    try {
+      assert.ok(app !== undefined)
+      Logger.warn('Since application has already began its starting sequence, a graceful shutdown will be attempted.')
+      await app.shutdown()
+    } catch (error) {
+      Logger.error('Failed the shutting down sequence as well.', error)
+    }
+  }
+
   Logger.fatal('stopping the process for the controller to restart this node...')
+  if (finalMessage !== undefined) {
+    showBig(finalMessage.messages, finalMessage.loggerLevel)
+  }
   process.exit(1)
+}
+
+function showBig(messages: string[], loggerLevel: (message: string) => void) {
+  const longestMessage = Math.max(...messages.map((part) => part.length))
+  const title = messages.shift()
+  assert.ok(title !== undefined)
+
+  loggerLevel('='.repeat(longestMessage + 4))
+  const freeSpace = longestMessage - title.length
+  loggerLevel('| ' + ' '.repeat(Math.ceil(freeSpace / 2)) + title + ' '.repeat(Math.floor(freeSpace / 2)) + ' |')
+  loggerLevel('| ' + ' '.repeat(longestMessage) + ' |')
+
+  for (const message of messages) {
+    loggerLevel('| ' + message + ' '.repeat(longestMessage - message.length) + ' |')
+  }
+  loggerLevel('='.repeat(longestMessage + 4))
 }

@@ -103,6 +103,8 @@ export default class Warp extends ChatCommandHandler {
     }
 
     await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
+    // Second needed to warp out of mini-games
+    await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
 
     await sleep(2000)
     await instance.send('/party disband', MinecraftSendChatPriority.High, undefined)

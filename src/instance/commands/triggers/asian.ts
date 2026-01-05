@@ -8,7 +8,7 @@ import { Timeout } from '../../../utility/timeout.js'
 export default class Asian extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['asian'],
+      triggers: ['asian', 'quickmath'],
       description: 'Challenge yourself with math!',
       example: `asian %s`
     })

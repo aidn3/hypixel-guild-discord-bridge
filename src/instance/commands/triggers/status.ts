@@ -1,8 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
 import { capitalize, formatTime } from '../../../utility/shared-utility'
-import { getUuidIfExists, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Status extends ChatCommandHandler {
   constructor() {
@@ -19,27 +18,35 @@ export default class Status extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const session = await context.app.hypixelApi.getPlayerStatus(uuid, Date.now())
+    const currentTime = Date.now()
+    const session = await context.app.hypixelApi.getPlayerStatus(uuid, currentTime)
     if (!session.online) {
-      const player = await context.app.hypixelApi.getPlayer(uuid).catch(() => undefined)
-      if (player !== undefined) {
-        return `${givenUsername} was last online ${formatTime(Date.now() - player.lastLogout)} ago.`
+      const player = await context.app.hypixelApi.getPlayer(uuid, currentTime)
+      if (player === undefined) return playerNeverPlayedHypixel(context, givenUsername)
+
+      if ('lastLogout' in player) {
+        return context.app.i18n.t(($) => $['commands.status.last-online'], {
+          username: givenUsername,
+          time: formatTime(Date.now() - player.lastLogout)
+        })
       }
+
+      return context.app.i18n.t(($) => $['commands.status.api-disabled'], { username: givenUsername })
     }
 
-    return this.formatStatus(givenUsername, session)
-  }
+    if (session.map !== undefined) {
+      return context.app.i18n.t(($) => $['commands.status.online-with-map'], {
+        username: givenUsername,
+        game: capitalize(session.gameType),
+        mode: session.mode.toLowerCase(),
+        map: session.map
+      })
+    }
 
-  private formatStatus(username: string, session: HypixelPlayerStatus | undefined): string {
-    let result = username
-
-    if (session === undefined) return result + "'s status is unknown"
-    if (!session.online) return result + "'s status is either hidden or offline"
-
-    result += ` is playing ${capitalize(session.gameType)}`
-    result += ` in ${session.mode.toLowerCase()}`
-    if (session.map != undefined) result += ` map ${session.map}`
-
-    return result
+    return context.app.i18n.t(($) => $['commands.status.online'], {
+      username: givenUsername,
+      game: capitalize(session.gameType),
+      mode: session.mode.toLowerCase()
+    })
   }
 }
