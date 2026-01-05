@@ -90,7 +90,7 @@
   "commands.garden.no-garden": "{{username}} never went to garden?",
   "commands.age.response": "{{username}} first logged into hypixel on {{firstLoginDay}}/{{firstLoginMonth}}/{{firstLoginYear}} or about {{timeSinceFirstLogin}} ago.",
   "commands.gifted.response": "{{username}} has gifted {{amountGifted, number}} ranks.",
-  "commands.motes.none": "{{username}} probably has thier api off.",
+  "commands.motes.none": "{{username}} probably has their API off.",
   "commands.karma.response": "{{username}} has {{karmaAmount, number}} karma.",
   "commands.motes.response": "{{username}} has {{motesAmount, number}} motes.",
   "commands.rank.mvpplusplus": "{{username}} is a {{rank}}",
