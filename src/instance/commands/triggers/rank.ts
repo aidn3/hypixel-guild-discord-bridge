@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
 import { formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
@@ -18,16 +19,9 @@ export default class Rank extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const rawPlayer = await context.app.hypixelApi.getPlayer(uuid)
-    if (rawPlayer == undefined) return playerNeverPlayedHypixel(context, givenUsername)
+    const player = await context.app.hypixelApi.getPlayer(uuid)
+    if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    const player = {
-      ...rawPlayer,
-      levelUpVip: rawPlayer.levelUp_VIP,
-      levelUpVipPlus: rawPlayer.levelUp_VIP_PLUS,
-      levelUpMvp: rawPlayer.levelUp_MVP,
-      levelUpMvpPlus: rawPlayer.levelUp_MVP_PLUS
-    }
     if (player.monthlyPackageRank === 'SUPERSTAR')
       return context.app.i18n.t(($) => $['commands.rank.mvpplusplus'], {
         username: context.username,
@@ -41,7 +35,7 @@ export default class Rank extends ChatCommandHandler {
     })
   }
 
-  private getRank(player: { newPackageRank?: string | null; monthlyPackageRank?: string | null }): string {
+  private getRank(player: HypixelPlayer): string {
     if (player.monthlyPackageRank === 'SUPERSTAR') {
       return 'MVP++'
     }
@@ -53,20 +47,17 @@ export default class Rank extends ChatCommandHandler {
     return 'Non (no rank)'
   }
 
-  private getTimeWithRank(player: {
-    levelUpVip?: number | null
-    levelUpVipPlus?: number | null
-    levelUpMvp?: number | null
-    levelUpMvpPlus?: number | null
-    firstLogin?: number | null
-    monthlyPackageRank?: string | null
-  }): string {
+  private getTimeWithRank(player: HypixelPlayer): string {
     // mvp++ doesnt have a timestamp as far as i can tell :/
     if (player.monthlyPackageRank === 'SUPERSTAR') return ''
 
     // if they dont have a rank when they first joined is basically the same
     const timestamp =
-      player.levelUpMvpPlus ?? player.levelUpMvp ?? player.levelUpVipPlus ?? player.levelUpVip ?? player.firstLogin
+      player.levelUp_MVP_PLUS ??
+      player.levelUp_MVP ??
+      player.levelUp_VIP_PLUS ??
+      player.levelUp_VIP ??
+      player.firstLogin
 
     if (!timestamp) return ''
 
