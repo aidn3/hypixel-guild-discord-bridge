@@ -7,6 +7,7 @@ import { InternalInstancePrefix } from '../../common/instance.js'
 
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
+import Age from './triggers/age.js'
 import Api from './triggers/api.js'
 import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
@@ -36,6 +37,7 @@ import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
 import Forge from './triggers/forge'
 import Garden from './triggers/garden'
+import Gifted from './triggers/gifted.js'
 import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
@@ -44,20 +46,24 @@ import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
 import Iq from './triggers/iq.js'
 import Jacob from './triggers/jacob'
+import Karma from './triggers/karma.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import List from './triggers/list.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
 import Megawalls from './triggers/megawalls'
+import Motes from './triggers/motes.js'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
+import News from './triggers/news.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
 import Points30days from './triggers/points-30days'
 import PointsAll from './triggers/points-all'
 import Praise from './triggers/praise'
 import Purse from './triggers/purse.js'
+import Rank from './triggers/rank.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
@@ -92,10 +98,12 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
 
     this.commands = [
+      new Age(),
       new Api(),
       new Armor(),
       new Asian(),
       new Bits(),
+      new News(),
       new Bedwars(),
       new Bestiary(),
       new Boo(),
@@ -123,6 +131,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Fetchur(),
       new Forge(),
       new Garden(),
+      new Gifted(),
       new Guild(),
       new GuildCheck(),
       new Help(),
@@ -131,12 +140,14 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Insult(),
       new Iq(),
       new Jacob(),
+      new Karma(),
       new Kuudra(),
       new Level(),
       new List(),
       new MagicalPower(),
       new Mayor(),
       new Megawalls(),
+      new Motes(),
       new Mute(),
       new Networth(),
       ...new PartyManager().resolveCommands(),
@@ -145,6 +156,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new PointsAll(),
       new Praise(),
       new Purse(),
+      new Rank(),
       new Reputation(),
       new Rng(),
       new RockPaperScissors(),

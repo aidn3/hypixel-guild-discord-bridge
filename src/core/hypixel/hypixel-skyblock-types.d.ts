@@ -19,6 +19,7 @@ export interface SkyblockMember {
   player_id: string
   currencies?: {
     coin_purse?: number
+    motes_purse?: number
     essence?: Record<
       'WITHER' | 'DRAGON' | 'UNDEAD' | 'DIAMOND' | 'SPIDER' | 'GOLD' | 'ICE' | 'CRIMSON',
       { current: number }
@@ -206,6 +207,14 @@ export interface Slayer {
   boss_kills_tier_2?: number
   boss_kills_tier_3?: number
   boss_kills_tier_4?: number
+}
+
+export interface NewsResponse extends HypixelSuccessResponse {
+  items: {
+    link: string
+    text: string
+    title: string
+  }[]
 }
 
 export interface SkyblockPlayerEvents {
