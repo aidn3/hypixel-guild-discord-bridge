@@ -24,12 +24,12 @@ export default class Rank extends ChatCommandHandler {
 
     if (player.monthlyPackageRank === 'SUPERSTAR')
       return context.app.i18n.t(($) => $['commands.rank.mvpplusplus'], {
-        username: context.username,
+        username: givenUsername,
         rank: this.getRank(player)
       })
 
     return context.app.i18n.t(($) => $['commands.rank.response'], {
-      username: context.username,
+      username: givenUsername,
       rank: this.getRank(player),
       timeAsRank: this.getTimeWithRank(player)
     })

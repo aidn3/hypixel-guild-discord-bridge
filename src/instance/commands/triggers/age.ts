@@ -23,7 +23,7 @@ export default class Age extends ChatCommandHandler {
     if (player.firstLogin === undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     return context.app.i18n.t(($) => $['commands.age.response'], {
-      username: context.username,
+      username: givenUsername,
       firstLogin: new Date(player.firstLogin),
       timeSinceFirstLogin: formatTime(Date.now() - player.firstLogin)
     })

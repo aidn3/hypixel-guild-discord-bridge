@@ -21,7 +21,7 @@ export default class Karma extends ChatCommandHandler {
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     return context.app.i18n.t(($) => $['commands.karma.response'], {
-      username: context.username,
+      username: givenUsername,
       karmaAmount: player.karma ?? 0
     })
   }
