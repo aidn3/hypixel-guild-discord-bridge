@@ -11,6 +11,7 @@ export async function loadI18(): Promise<i18n> {
   const instance = createInstance({
     load: 'all',
     saveMissing: true,
+    interpolation: { escapeValue: false },
     fallbackLng: ApplicationLanguages.English,
     resources: {
       [ApplicationLanguages.Arabic]: { translation: Arabic },
