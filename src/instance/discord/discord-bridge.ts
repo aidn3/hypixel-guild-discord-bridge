@@ -161,33 +161,41 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
 
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
-    const username = event.user.displayName()
 
-    let messages: Message[]
+    const username = event.user.displayName()
+    const clickableUsername = hyperlink(username, event.user.profileLink())
+    const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
+    const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(username), clickableUsername)}`
+    const embed = {
+      url: event.user.profileLink(),
+      description: newMessage,
+      color: event.color
+    } satisfies APIEmbed
+
+    const messages: Message[] = []
     if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
       const formattedMessage = this.removeGuildPrefix(event.rawMessage)
 
-      messages = await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [
+      const sentMessages = await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [
         MinecraftRenderer.generateMessageImage(formattedMessage)
       ])
+      messages.push(...sentMessages)
     } else {
-      const clickableUsername = hyperlink(username, event.user.profileLink())
-
-      const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
-
-      const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(username), clickableUsername)}`
-
-      const embed = {
-        url: event.user.profileLink(),
-        description: newMessage,
-        color: event.color
-      } satisfies APIEmbed
-
-      messages = await this.sendEmbedToChannels(
+      const sentMessages = await this.sendEmbedToChannels(
         { ...event, type: undefined },
         this.resolveChannels(event.channels),
         embed
       )
+      messages.push(...sentMessages)
+    }
+
+    if (!removeLater) {
+      const logMessages = await this.sendEmbedToChannels(
+        { ...event, type: undefined },
+        config.getLoggerChannelIds(),
+        embed
+      )
+      messages.push(...logMessages)
     }
 
     if (removeLater) {

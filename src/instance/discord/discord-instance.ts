@@ -14,7 +14,6 @@ import { CommandManager } from './command-manager.js'
 import MessageAssociation from './common/message-association.js'
 import DiscordBridge from './discord-bridge.js'
 import Leaderboard from './features/leaderboard.js'
-import LoggerManager from './features/logger-manager.js'
 import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
@@ -29,7 +28,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   private readonly statusHandler: StatusHandler
   private readonly emojiHandler: EmojiHandler
   private readonly chatManager: ChatManager
-  private readonly loggerManager: LoggerManager
 
   private readonly bridge: DiscordBridge
   private readonly messageAssociation: MessageAssociation = new MessageAssociation()
@@ -76,7 +74,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
       this.errorHandler
     )
     this.commandsManager = new CommandManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.loggerManager = new LoggerManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
     this.leaderboard = new Leaderboard(this.application, this, this.eventHelper, this.logger, this.errorHandler)
 
     this.bridge = new DiscordBridge(
@@ -179,7 +176,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     this.chatManager.registerEvents(this.client)
     this.commandsManager.registerEvents(this.client)
     this.leaderboard.registerEvents(this.client)
-    this.loggerManager.registerEvents(this.client)
 
     await this.client.login(this.staticConfig.key)
   }
