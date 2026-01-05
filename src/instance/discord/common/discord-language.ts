@@ -42,9 +42,5 @@ export function translateNoPermission(
     })
   }
 
-  return simpleEscape(result)
-}
-
-function simpleEscape(text: string): string {
-  return text.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&')
+  return result
 }
