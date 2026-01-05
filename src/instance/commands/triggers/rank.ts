@@ -48,10 +48,14 @@ export default class Rank extends ChatCommandHandler {
   }
 
   private getTimeWithRank(player: HypixelPlayer): string {
-    // mvp++ doesnt have a timestamp as far as i can tell :/
+    /*
+     * mvp++ does not have a timestamp as far as I can tell.
+     * This can be due to hypixel policy to not disclose any monetization information:
+     * @see https://github.com/HypixelDev/PublicAPI/discussions/542#discussioncomment-2797086
+     */
     if (player.monthlyPackageRank === 'SUPERSTAR') return ''
 
-    // if they dont have a rank when they first joined is basically the same
+    // if they do not have a rank when they first joined is basically the same
     const timestamp =
       player.levelUp_MVP_PLUS ??
       player.levelUp_MVP ??
