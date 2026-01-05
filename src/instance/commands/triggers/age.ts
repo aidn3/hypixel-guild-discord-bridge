@@ -22,16 +22,9 @@ export default class Age extends ChatCommandHandler {
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
     if (player.firstLogin === undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    const timestamp = new Date(player.firstLogin)
-    const day: string = timestamp.getDate().toString().padStart(2, '0')
-    const month: string = (timestamp.getMonth() + 1).toString().padStart(2, '0')
-    const year: string = timestamp.getFullYear().toString().slice(-2)
-
     return context.app.i18n.t(($) => $['commands.age.response'], {
       username: context.username,
-      firstLoginDay: day,
-      firstLoginMonth: month,
-      firstLoginYear: year,
+      firstLogin: new Date(player.firstLogin),
       timeSinceFirstLogin: formatTime(Date.now() - player.firstLogin)
     })
   }
