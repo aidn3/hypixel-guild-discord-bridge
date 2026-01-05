@@ -28,9 +28,9 @@ export default class Motes extends ChatCommandHandler {
     const motes = selectedProfile.currencies?.motes_purse
 
     if (motes === undefined) {
-      return context.app.i18n.t(($) => $['commands.motes.none'], { username: context.username })
+      return context.app.i18n.t(($) => $['commands.motes.none'], { username: givenUsername })
     }
 
-    return context.app.i18n.t(($) => $['commands.motes.response'], { username: context.username, motesAmount: motes })
+    return context.app.i18n.t(($) => $['commands.motes.response'], { username: givenUsername, motesAmount: motes })
   }
 }
