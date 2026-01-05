@@ -1,6 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import {
+  getSelectedSkyblockProfile,
+  getUuidIfExists,
+  playerNeverPlayedSkyblock,
+  usernameNotExists
+} from '../common/utility'
 
 export default class Motes extends ChatCommandHandler {
   constructor() {
@@ -17,15 +22,10 @@ export default class Motes extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await context.app.hypixelApi
-      .getSkyblockProfiles(uuid)
-      .then((profiles) => {
-        return profiles?.find((profile) => profile.selected)
-      })
-      .catch(() => undefined)
+    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const motes = selectedProfile.members[uuid].currencies?.motes_purse
+    const motes = selectedProfile.currencies?.motes_purse
 
     if (motes === undefined) {
       return context.app.i18n.t(($) => $['commands.motes.none'], { username: context.username })
