@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedHypixel, shortenNumber, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Karma extends ChatCommandHandler {
   constructor() {
@@ -22,7 +22,7 @@ export default class Karma extends ChatCommandHandler {
 
     return context.app.i18n.t(($) => $['commands.karma.response'], {
       username: context.username,
-      karmaAmount: shortenNumber(player.karma ?? 0)
+      karmaAmount: player.karma ?? 0
     })
   }
 }

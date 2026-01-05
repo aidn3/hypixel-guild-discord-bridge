@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, shortenNumber, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Motes extends ChatCommandHandler {
   constructor() {
@@ -31,9 +31,6 @@ export default class Motes extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.motes.none'], { username: context.username })
     }
 
-    return context.app.i18n.t(($) => $['commands.motes.response'], {
-      username: context.username,
-      motesAmount: shortenNumber(motes)
-    })
+    return context.app.i18n.t(($) => $['commands.motes.response'], { username: context.username, motesAmount: motes })
   }
 }
