@@ -368,7 +368,7 @@ class Trivia extends SpontaneousEventHandler {
   private static readonly TriviaEntries = [
     {
       question: 'Who painted the Mona Lisa?',
-      correctAnswer: 'Michelangelo',
+      correctAnswer: 'Leonardo',
       otherAnswers: ['Michelangelo', 'Raphael', 'Donatello']
     },
     {
