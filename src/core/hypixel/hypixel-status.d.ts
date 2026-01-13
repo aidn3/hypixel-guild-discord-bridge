@@ -12,6 +12,6 @@ export interface HypixelPlayerStatusOffline {
 export interface HypixelPlayerStatusOnline {
   online: true
   gameType: string
-  mode: string
+  mode?: string
   map?: string
 }

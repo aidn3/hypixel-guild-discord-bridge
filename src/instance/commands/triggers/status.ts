@@ -34,19 +34,24 @@ export default class Status extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.status.api-disabled'], { username: givenUsername })
     }
 
-    if (session.map !== undefined) {
+    if (session.map !== undefined && session.mode !== undefined) {
       return context.app.i18n.t(($) => $['commands.status.online-with-map'], {
         username: givenUsername,
         game: capitalize(session.gameType),
         mode: session.mode.toLowerCase(),
         map: session.map
       })
+    } else if (session.mode !== undefined) {
+      return context.app.i18n.t(($) => $['commands.status.online-with-mode'], {
+        username: givenUsername,
+        game: capitalize(session.gameType),
+        mode: session.mode.toLowerCase()
+      })
     }
 
     return context.app.i18n.t(($) => $['commands.status.online'], {
       username: givenUsername,
-      game: capitalize(session.gameType),
-      mode: session.mode.toLowerCase()
+      game: capitalize(session.gameType)
     })
   }
 }
