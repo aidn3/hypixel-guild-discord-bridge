@@ -27,6 +27,7 @@ import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { InstanceHistoryButton } from './discord/instance-history-button'
+import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
 import { StatusHistory } from './instance/status-history'
@@ -67,6 +68,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
   public readonly discordInstanceHistoryButton: InstanceHistoryButton
   public readonly discordEmojis: DiscordEmojis
+  public readonly discordUserConditions: UserConditions
 
   // minecraft
   public readonly minecraftConfigurations: MinecraftConfigurations
@@ -105,6 +107,7 @@ export class Core extends Instance<InstanceType.Core> {
     )
     this.discordInstanceHistoryButton = new InstanceHistoryButton(this.sqliteManager, this.logger)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
+    this.discordUserConditions = new UserConditions(this.sqliteManager)
 
     this.statusHistory = new StatusHistory(this.sqliteManager, this.logger)
 

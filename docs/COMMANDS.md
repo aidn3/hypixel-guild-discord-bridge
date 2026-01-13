@@ -130,8 +130,11 @@ A shorter version can also be used: `!- rtca`
 | `/punishments`        | Manage active punishments                                        |
 | `/reconnect`          | reconnect minecraft clients                                      |
 | `/restart`            | Send signal to restart the bridge                                |
+| `/roles`              | Give roles based on conditions                                   |
 | `/setrank`            | setrank guild member in-game                                     |
 | `/settings`           | Control application settings.                                    |
+| `/sync`               | synchronize roles and other user options                         |
+| `/syncall`            | synchronize roles and other options for all users                |
 | `/unlink`             | unlink your Discord account from your Minecraft account          |
 | `/verification`       | Manage users links                                               |
 

@@ -40,8 +40,11 @@ import PromoteCommand from './commands/promote.js'
 import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
+import RolesCommand from './commands/roles'
 import SetrankCommand from './commands/setrank.js'
 import SettingsCommand from './commands/settings.js'
+import SyncCommand from './commands/sync'
+import SyncallCommand from './commands/syncall'
 import UnlinkCommand from './commands/unlink.js'
 import VerificationCommand from './commands/verification.js'
 import { DefaultCommandFooter } from './common/discord-config.js'
@@ -123,7 +126,10 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       PromoteCommand,
       PunishmentsCommand,
       ReconnectCommand,
+      RolesCommand,
       SetrankCommand,
+      SyncCommand,
+      SyncallCommand,
       RestartCommand,
       UnlinkCommand,
       VerificationCommand
