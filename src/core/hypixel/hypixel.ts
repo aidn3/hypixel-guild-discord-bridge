@@ -118,7 +118,7 @@ export class Hypixel {
     const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
       this.createGuildCacheEntries(request, response)
     )
-    return response.guild
+    return response.guild ?? undefined
   }
 
   public async getGuildByName(guildName: string, since?: number): Promise<HypixelGuild | undefined> {
@@ -126,7 +126,7 @@ export class Hypixel {
     const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
       this.createGuildCacheEntries(request, response)
     )
-    return response.guild
+    return response.guild ?? undefined
   }
 
   public async getGuildById(guildId: HypixelGuild['_id'], since?: number): Promise<HypixelGuild | undefined> {
@@ -134,7 +134,7 @@ export class Hypixel {
     const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
       this.createGuildCacheEntries(request, response)
     )
-    return response.guild
+    return response.guild ?? undefined
   }
 
   public async getPlayer(playerUuid: string, since?: number): Promise<HypixelPlayer | undefined> {
@@ -199,7 +199,7 @@ export class Hypixel {
   }
 
   private createGuildCacheEntries(original: ApiEntryWithOption, response: HypixelGuildResponse): ApiEntryWithOption[] {
-    if (response.guild === undefined) return [original]
+    if (response.guild == undefined) return [original]
 
     const guild = response.guild
     const entries: ApiEntryWithOption[] = []

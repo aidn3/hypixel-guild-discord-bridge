@@ -3,7 +3,7 @@
 import type { HypixelSuccessResponse } from './hypixel-api'
 
 export interface HypixelGuildResponse extends HypixelSuccessResponse {
-  guild: HypixelGuild | undefined
+  guild: HypixelGuild | null
 }
 
 export interface HypixelGuild {
