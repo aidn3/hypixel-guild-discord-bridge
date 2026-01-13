@@ -129,15 +129,19 @@ export class SqliteManager {
   public backup(destination: string): void {
     fs.copyFileSync(this.configFilePath, destination)
   }
+  public clean(): void {
+    for (const cleanCallback of this.cleanCallbacks) {
+      cleanCallback()
+    }
+
+    this.lastClean = Date.now()
+  }
 
   private tryClean(): void {
     const currentTime = Date.now()
 
     if (this.lastClean + SqliteManager.CleanEvery > currentTime) return
-    this.lastClean = currentTime
-    for (const cleanCallback of this.cleanCallbacks) {
-      cleanCallback()
-    }
+    this.clean()
   }
 }
 
