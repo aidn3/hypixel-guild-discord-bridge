@@ -88,11 +88,6 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
       delay: ScoresManager.FetchMembersEvery,
       errorHandler: this.errorHandler.promiseCatch('fetching and adding members')
     })
-
-    setIntervalAsync(() => this.migrateUsernames(), {
-      delay: Duration.minutes(30),
-      errorHandler: this.errorHandler.promiseCatch('migrating Mojang usernames to UUID')
-    })
   }
 
   public getMessages30Days(): TotalMessagesLeaderboard[] {
@@ -245,34 +240,6 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
     }
 
     await Promise.all(tasks)
-  }
-
-  private async migrateUsernames(): Promise<void> {
-    /**
-     * Only migrate from the last 30 days since Mojang locks username for up to 30 days before releasing it to the public
-     * Within 30 days period, there won't be conflict between players UUID
-     */
-    const oldestTimestamp = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60
-
-    const usernames = this.database.getLegacyUsernames(oldestTimestamp)
-    if (usernames.size === 0) return
-    this.logger.debug(`Found ${usernames.size} legacy username that requires migration`)
-
-    const resolvedProfiles = await this.application.mojangApi.profilesByUsername(usernames)
-    const entries: { username: string; uuid: string }[] = []
-    for (const [username, uuid] of resolvedProfiles.entries()) {
-      if (uuid === undefined) continue
-      entries.push({ username, uuid })
-    }
-
-    if (entries.length < usernames.size) {
-      this.logger.debug(`No Mojang information found for ${usernames.size - entries.length} username. Skipping those.`)
-    }
-
-    const changedCount = this.database.migrateUsernameToUuid(oldestTimestamp, entries)
-    if (changedCount > 0) {
-      this.logger.debug(`Migrated ${changedCount} database entry from Mojang username to UUID`)
-    }
   }
 
   private timestamp(): number {
