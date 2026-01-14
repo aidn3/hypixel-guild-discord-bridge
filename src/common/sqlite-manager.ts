@@ -155,7 +155,7 @@ export class SqliteManager {
     const startTime = Date.now()
     this.logger.debug('re-organizing and optimizing database...')
 
-    this.database.pragma('VACUUM')
+    this.database.exec('VACUUM')
     this.logger.debug(`Finished optimizing the database. Time took: ${Date.now() - startTime}ms`)
   }
 }
