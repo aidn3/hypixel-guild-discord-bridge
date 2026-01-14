@@ -8,7 +8,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 6
+const CurrentVersion = 7
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -30,6 +30,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(5, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom5to6(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(6, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom6to7(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -432,6 +435,42 @@ function migrateFrom5to6(database: Database, logger: Logger4Js, newlyCreated: bo
   )
 
   database.pragma('user_version = 6')
+}
+
+function migrateFrom6to7(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 6 to 7')
+
+  // reference: discord/roles-configurations.ts
+  database.exec(
+    'CREATE TABLE "discordUserUpdate" (' +
+      '  guildId INTEGER NOT NULL,' +
+      '  userId INTEGER NOT NULL,' +
+      '  lastUpdateAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, userId)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordRolesConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL,' +
+      '  typeId TEXT NOT NULL,' +
+      '  roleId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordNicknameConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL,' +
+      '  typeId TEXT NOT NULL,' +
+      '  nickname TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 7')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
