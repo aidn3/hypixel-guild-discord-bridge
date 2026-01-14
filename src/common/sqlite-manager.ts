@@ -5,9 +5,11 @@ import Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
+// eslint-disable-next-line import/no-restricted-paths
+import Duration from '../utility/duration'
 
 export class SqliteManager {
-  private static readonly CleanEvery = 3 * 60 * 60 * 1000
+  private static readonly CleanEvery = Duration.hours(3)
 
   private readonly configFilePath: string
   private readonly database: Database.Database
@@ -15,8 +17,8 @@ export class SqliteManager {
 
   private closed = false
 
-  private lastClean = -1
   private cleanCallbacks: (() => void)[] = []
+  private cleanInterval: NodeJS.Timeout
 
   private readonly migrators = new Map<number, Migrator>()
   private targetVersion = 0
@@ -41,6 +43,10 @@ export class SqliteManager {
 
     this.database = new Database(filepath)
     this.database.pragma('journal_mode = WAL')
+
+    this.cleanInterval = setInterval(() => {
+      this.clean()
+    }, SqliteManager.CleanEvery.toMilliseconds())
   }
 
   public isNewlyCreated(): boolean {
@@ -113,6 +119,7 @@ export class SqliteManager {
 
   public close(): void {
     this.closed = true
+    clearInterval(this.cleanInterval)
     this.database.close()
   }
 
@@ -122,26 +129,34 @@ export class SqliteManager {
 
   public getDatabase(): Database.Database {
     assert.ok(!this.isClosed(), 'Database is closed')
-    this.tryClean()
     return this.database
   }
 
   public backup(destination: string): void {
     fs.copyFileSync(this.configFilePath, destination)
   }
+
   public clean(): void {
+    assert.ok(!this.isClosed(), 'Database is closed')
+
+    const startTime = Date.now()
+    this.logger.debug('Started cleaning up the database.')
+
     for (const cleanCallback of this.cleanCallbacks) {
       cleanCallback()
     }
 
-    this.lastClean = Date.now()
+    this.logger.debug(`Finished cleaning up the database. Time took: ${Date.now() - startTime}ms`)
   }
 
-  private tryClean(): void {
-    const currentTime = Date.now()
+  public optimize(): void {
+    assert.ok(!this.isClosed(), 'Database is closed')
 
-    if (this.lastClean + SqliteManager.CleanEvery > currentTime) return
-    this.clean()
+    const startTime = Date.now()
+    this.logger.debug('re-organizing and optimizing database...')
+
+    this.database.pragma('VACUUM')
+    this.logger.debug(`Finished optimizing the database. Time took: ${Date.now() - startTime}ms`)
   }
 }
 
