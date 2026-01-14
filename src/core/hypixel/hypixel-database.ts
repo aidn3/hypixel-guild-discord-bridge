@@ -21,20 +21,26 @@ export class HypixelDatabase {
       const transaction = database.transaction(() => {
         const currentTime = Math.floor(Date.now() / 1000)
 
-        //
-        const deleteEntries = database.prepare(
-          'DELETE FROM "hypixelApiResponse" WHERE createdAt < ? OR lastAccessAt < ?'
+        const deleteOld = database.prepare('DELETE FROM "hypixelApiResponse" WHERE createdAt < ? OR lastAccessAt < ?')
+        const deleteOrphan = database.prepare(
+          'DELETE FROM hypixelApiResponse WHERE NOT EXISTS (SELECT 1 FROM hypixelApiRequest WHERE hypixelApiRequest.responseId = hypixelApiResponse.id);'
         )
 
-        return deleteEntries.run(
+        const oldCount = deleteOld.run(
           currentTime - HypixelDatabase.MaxLife.toSeconds(),
           currentTime - HypixelDatabase.MaxLastAccess.toSeconds()
         ).changes
+
+        const orphanCount = deleteOrphan.run().changes
+        return { oldCount, orphanCount }
       })
 
-      const count = transaction()
-      if (count > 0) {
-        logger.debug(`Deleted ${count} old entries in hypixelApiResponse.`)
+      const counts = transaction()
+      if (counts.oldCount > 0) {
+        logger.debug(`Deleted ${counts.oldCount} old entries in hypixelApiResponse.`)
+      }
+      if (counts.orphanCount > 0) {
+        logger.debug(`Deleted ${counts.orphanCount} orphan entries in hypixelApiResponse.`)
       }
     })
   }
@@ -75,6 +81,8 @@ export class HypixelDatabase {
   }
 
   public add(requests: ApiEntry[], createdAt: number, data: object): void {
+    assert.ok(requests.length > 0, 'Can not insert orphaned Hypixel API data without defining an origin request.')
+
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const insertResponse = database.prepare(
