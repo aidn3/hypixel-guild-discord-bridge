@@ -32,4 +32,12 @@ export class CommandsConfigurations {
   public setDisabledCommands(disabledCommands: string[]): void {
     this.configuration.setStringArray('disabledCommands', disabledCommands)
   }
+
+  public getAllowHelperToggle(): boolean {
+    return this.configuration.getBoolean('allowHelperToggle', true)
+  }
+
+  public setAllowHelperToggle(enabled: boolean): void {
+    this.configuration.setBoolean('allowHelperToggle', enabled)
+  }
 }

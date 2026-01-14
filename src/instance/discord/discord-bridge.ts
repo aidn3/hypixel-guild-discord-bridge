@@ -63,7 +63,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.messageAssociation = messageAssociation
     this.staticConfig = staticDiscordConfig
 
-    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.getClient())
+    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance)
     this.instanceStatusManager = new InstanceStatusManager(
       this.application,
       this.clientInstance,
@@ -148,7 +148,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if (event.type === GuildPlayerEventType.Online && !config.getGuildOnline()) return
     if (event.type === GuildPlayerEventType.Offline && !config.getGuildOffline()) return
 
-    if (event.type === GuildPlayerEventType.Mute) {
+    if (event.type === GuildPlayerEventType.Mute && event.user !== undefined) {
       const game =
         event.user
           .punishments()
@@ -162,15 +162,33 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
 
-    const username = event.user.displayName()
-    const clickableUsername = hyperlink(username, event.user.profileLink())
-    const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
-    const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${escapeMarkdown(withoutPrefix).replaceAll(escapeMarkdown(username), clickableUsername)}`
-    const embed = {
-      url: event.user.profileLink(),
-      description: newMessage,
-      color: event.color
-    } satisfies APIEmbed
+    function formatEmbed() {
+      const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
+      let messageBody = escapeMarkdown(withoutPrefix)
+
+      const targetUser = event.user
+      if (targetUser !== undefined) {
+        const username = targetUser.displayName()
+        const clickableUsername = hyperlink(username, targetUser.profileLink())
+        messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
+      }
+
+      const responsibleUser = 'responsible' in event ? event.responsible : undefined
+      if (responsibleUser !== undefined) {
+        const username = responsibleUser.displayName()
+        const clickableUsername = hyperlink(username, responsibleUser.profileLink())
+        messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
+      }
+
+      const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${messageBody}`
+      return {
+        url: targetUser?.profileLink() ?? responsibleUser?.profileLink() ?? undefined,
+        description: newMessage,
+        color: event.color
+      } satisfies APIEmbed
+    }
+
+    const embed = formatEmbed()
 
     const messages: Message[] = []
     if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {

@@ -165,6 +165,8 @@ export class Core extends Instance<InstanceType.Core> {
 
   public async awaitReady(): Promise<void> {
     await this.punishments.ready
+    this.sqliteManager.clean()
+    this.sqliteManager.optimize()
   }
 
   /**

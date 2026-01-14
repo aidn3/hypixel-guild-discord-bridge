@@ -30,6 +30,7 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
       this.addUsernames([event.user.displayName()])
     })
     application.on('guildPlayer', (event) => {
+      if (event.user === undefined) return
       this.addUsernames([event.user.mojangProfile().name])
     })
     application.on('command', (event) => {

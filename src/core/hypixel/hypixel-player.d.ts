@@ -3,7 +3,7 @@
 import type { HypixelSuccessResponse } from './hypixel-api'
 
 export interface HypixelPlayerResponse extends HypixelSuccessResponse {
-  player: HypixelPlayer | undefined
+  player: HypixelPlayer | null
 }
 
 export interface HypixelPlayer {

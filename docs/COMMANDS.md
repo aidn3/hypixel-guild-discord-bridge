@@ -33,6 +33,7 @@ A shorter version can also be used: `!- rtca`
 | `catacombs`      | Returns a player's catacombs level                                                 |
 | `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
 | `collection`     | Returns a player's skyblock collection stats                                       |
+| `counting`       | Start a counting chain event                                                       |
 | `currentdungeon` | Returns a player's last dungeon run                                                |
 | `dadjoke`        | Show you a random dad joke                                                         |
 | `da`             | Show the remaining time till next Dark Auction                                     |
@@ -97,9 +98,11 @@ A shorter version can also be used: `!- rtca`
 | `timecharm`      | Returns a player's rift obtained time charms                                       |
 | `toggle`         | Enable/disable commands                                                            |
 | `toggled`        | Show disabled commands                                                             |
+| `trivia`         | Start a trivia event                                                               |
 | `trophyfish`     | Returns a player's Skyblock trophy fishing progress                                |
 | `uhc`            | Returns a player's UHC stats                                                       |
 | `unlink`         | Unlink Minecraft account from Discord                                              |
+| `unscramble`     | Start an unscrambling event                                                        |
 | `vengeance`      | Try your luck against another player for a 15 minute mute                          |
 | `warp`           | Warp a player out of a lobby                                                       |
 | `weight`         | Returns a player's senither weight                                                 |

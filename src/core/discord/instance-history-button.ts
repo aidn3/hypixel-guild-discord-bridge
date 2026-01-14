@@ -17,13 +17,13 @@ export class InstanceHistoryButton {
       const database = this.sqliteManager.getDatabase()
       const transaction = database.transaction(() => {
         const currentTime = Math.floor(Date.now() / 1000)
-        const statement = database.prepare('DELETE FROM "discordInstanceHistoryButton" WHERE createdAt < ?')
+        const statement = database.prepare('DELETE FROM "discordInstanceHistoryButton" WHERE endTime < ?')
         return statement.run(currentTime - InstanceHistoryButton.MaxLife.toSeconds()).changes
       })
 
       const count = transaction()
       if (count > 0) {
-        logger.debug(`Deleted ${count} old entries in DiscordPersistentButtons.`)
+        logger.debug(`Deleted ${count} old entries in discordInstanceHistoryButton.`)
       }
     })
   }

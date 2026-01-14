@@ -380,6 +380,15 @@ export enum GuildPlayerEventType {
   Kick = 'kick',
 
   /**
+   * When a player enables chat throttling in a guild
+   */
+  ThrottleEnabled = 'throttleEnabled',
+  /**
+   * When a player disables chat throttling in a guild
+   */
+  ThrottledDisabled = 'throttleDisabled',
+
+  /**
    * When a player is promoted in a guild
    */
   Promote = 'promote',
@@ -484,15 +493,35 @@ export type GuildPlayerResponsibleTypes =
   | GuildPlayerEventType.Unmute
   | GuildPlayerEventType.Gifted
 
+export type GuildPlayerResponsibleNoTargetTypes = GuildPlayerEventType.Mute | GuildPlayerEventType.Unmute
+
 export type GuildPlayerSoloTypes = Exclude<GuildPlayerEventType, GuildPlayerResponsibleTypes>
 
 export type GuildPlayerSolo = BaseGuildPlayerEvent & BaseInGameEvent<GuildPlayerSoloTypes>
 
-export interface GuildPlayerResponsible extends BaseGuildPlayerEvent, BaseInGameEvent<GuildPlayerResponsibleTypes> {
+export type GuildPlayerResponsible = GuildPlayerResponsibleOther | GuildPlayerResponsibleMute
+
+export interface GuildPlayerResponsibleOther
+  extends
+    BaseGuildPlayerEvent,
+    BaseInGameEvent<Exclude<GuildPlayerResponsibleTypes, GuildPlayerResponsibleNoTargetTypes>> {
   /**
    * The person who took action to result in this event
    */
   readonly responsible: MinecraftUser
+}
+
+export interface GuildPlayerResponsibleMute
+  extends MinecraftRawMessage, BaseInGameEvent<GuildPlayerResponsibleNoTargetTypes> {
+  /**
+   * The person who took action to result in this event
+   */
+  readonly responsible: MinecraftUser
+  /**
+   * The name of the target user that the event is fired against.
+   * <code>undefined</code> if the target is everyone
+   */
+  readonly user: MinecraftUser | undefined
 }
 
 export enum GuildGeneralEventType {

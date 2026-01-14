@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import type { Logger } from 'log4js'
 
 import type { SqliteManager } from '../../common/sqlite-manager'
@@ -70,7 +70,22 @@ export class Hypixel {
     since?: number
   ): Promise<Garden | undefined> {
     const request = { path: Hypixel.SkyblockGardenPath, key: 'profile', value: profileId } satisfies ApiEntry
-    const response = await this.resolveAndFetch<GardenResponse>(request, since)
+
+    /*
+     * Changed specification to match existing API standard like player and guild and skyblock/profiles API,
+     * which all return null/empty object if there is nothing to return.
+     */
+    let response: GardenResponse
+    try {
+      response = await this.resolveAndFetch<GardenResponse>(request, since)
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.status === 404) {
+        response = { success: true, garden: undefined }
+      } else {
+        throw error
+      }
+    }
+
     return response.garden
   }
 
@@ -118,7 +133,7 @@ export class Hypixel {
     const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
       this.createGuildCacheEntries(request, response)
     )
-    return response.guild
+    return response.guild ?? undefined
   }
 
   public async getGuildByName(guildName: string, since?: number): Promise<HypixelGuild | undefined> {
@@ -126,7 +141,7 @@ export class Hypixel {
     const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
       this.createGuildCacheEntries(request, response)
     )
-    return response.guild
+    return response.guild ?? undefined
   }
 
   public async getGuildById(guildId: HypixelGuild['_id'], since?: number): Promise<HypixelGuild | undefined> {
@@ -134,13 +149,13 @@ export class Hypixel {
     const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
       this.createGuildCacheEntries(request, response)
     )
-    return response.guild
+    return response.guild ?? undefined
   }
 
   public async getPlayer(playerUuid: string, since?: number): Promise<HypixelPlayer | undefined> {
     const request = { path: Hypixel.PlayerPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
     const response = await this.resolveAndFetch<HypixelPlayerResponse>(request, since)
-    return response.player
+    return response.player ?? undefined
   }
 
   public async getPlayerStatus(playerUuid: string, since?: number): Promise<HypixelPlayerStatus> {
@@ -199,7 +214,7 @@ export class Hypixel {
   }
 
   private createGuildCacheEntries(original: ApiEntryWithOption, response: HypixelGuildResponse): ApiEntryWithOption[] {
-    if (response.guild === undefined) return [original]
+    if (response.guild == undefined) return [original]
 
     const guild = response.guild
     const entries: ApiEntryWithOption[] = []

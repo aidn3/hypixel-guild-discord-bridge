@@ -31,7 +31,7 @@ import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import { SkyblockReminders } from './instance/skyblock-reminders'
-import { SpontaneousEvents } from './instance/spontaneous-events'
+import { SpontaneousEvents } from './instance/spontaneous-events/spontaneous-events'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility'
 
 export type AllInstances =
