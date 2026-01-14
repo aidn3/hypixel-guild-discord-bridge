@@ -2,6 +2,7 @@ import assert from 'node:assert'
 
 import type { APIEmbed, APIEmbedField, ButtonInteraction, InteractionResponse, Message } from 'discord.js'
 import {
+  bold,
   ButtonStyle,
   ComponentType,
   escapeMarkdown,
@@ -22,9 +23,11 @@ import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import Duration from '../../../utility/duration'
+import { beautifyInstanceName } from '../../../utility/shared-utility'
 import { Timeout } from '../../../utility/timeout.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
-import type { CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
+import { interactivePaging } from '../utility/discord-pager'
+import type { ActionOption, CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
 import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
 
 const Essential = ':shield:'
@@ -70,6 +73,7 @@ export default {
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
         fetchCommandsOptions(context.application),
+        fetchPluginsOptions(context.application),
         fetchLanguageOptions(context.application)
       ]
     }
@@ -632,6 +636,45 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         }
       }
     ]
+  }
+}
+
+function fetchPluginsOptions(application: Application): ActionOption {
+  return {
+    type: OptionType.Action,
+    name: 'Plugins',
+    label: 'Show',
+    style: ButtonStyle.Primary,
+    onInteraction: async (interaction, errorHandler) => {
+      await interaction.deferReply()
+
+      const plugins = application.pluginsManager.getAllInstances()
+      await interactivePaging(interaction, 0, Duration.minutes(5).toMilliseconds(), errorHandler, (page) => {
+        const EntriesPerPage = 5
+
+        const entries = plugins.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
+        const totalPages = Math.ceil(plugins.length / EntriesPerPage)
+
+        let result = ''
+        if (entries.length === 0) {
+          result = '__Empty List__'
+        } else {
+          for (const entry of entries) {
+            result += `- ${bold(escapeMarkdown(beautifyInstanceName(entry.instanceName)))}: ${escapeMarkdown(entry.pluginInfo().description)}\n`
+          }
+        }
+
+        return {
+          totalPages: totalPages,
+          embed: {
+            title: `Installed Plugins (page ${page + 1} out of ${Math.max(totalPages, 1)})`,
+            description: result.trim()
+          }
+        }
+      })
+
+      return true
+    }
   }
 }
 
