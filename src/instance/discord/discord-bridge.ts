@@ -63,7 +63,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.messageAssociation = messageAssociation
     this.staticConfig = staticDiscordConfig
 
-    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance.getClient())
+    this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance)
     this.instanceStatusManager = new InstanceStatusManager(
       this.application,
       this.clientInstance,

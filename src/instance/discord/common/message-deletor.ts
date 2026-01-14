@@ -1,12 +1,13 @@
-import type { Client } from 'discord.js'
 import { Routes } from 'discord.js'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application'
+import { Status } from '../../../common/connectable-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { DiscordMessage } from '../../../core/discord/discord-temporarily-interactions'
 import Duration from '../../../utility/duration'
 import { setIntervalAsync } from '../../../utility/scheduling'
+import type DiscordInstance from '../discord-instance'
 
 export default class MessageDeleter {
   private static readonly CheckEvery = Duration.seconds(5)
@@ -15,7 +16,7 @@ export default class MessageDeleter {
   constructor(
     private readonly application: Application,
     private readonly errorHandler: UnexpectedErrorHandler,
-    private readonly client: Client
+    private readonly clientInstance: DiscordInstance
   ) {
     setIntervalAsync(
       async () => {
@@ -36,6 +37,9 @@ export default class MessageDeleter {
   }
 
   public async clean(): Promise<void> {
+    const client = this.clientInstance.getClient()
+    if (this.clientInstance.currentStatus() !== Status.Connected || !client.isReady()) return
+
     const expiredInteractions = this.application.core.discordTemporarilyInteractions.findToDelete()
 
     const bulk = new Map<string, string[]>()
@@ -63,7 +67,7 @@ export default class MessageDeleter {
          * Right now, it doesn't make sense to create a complicated setup to ensure everything is working optimally.
          * So it is left for the future when it is needed.
          */
-        const task = this.client.rest
+        const task = client.rest
           .delete(Routes.channelMessage(channelId, message))
           .catch(this.errorHandler.promiseCatch(`deleting temporarily event channel=${channelId},message=${message}`))
         tasks.push(task)
