@@ -380,6 +380,15 @@ export enum GuildPlayerEventType {
   Kick = 'kick',
 
   /**
+   * When a player enables chat throttling in a guild
+   */
+  ThrottleEnabled = 'throttleEnabled',
+  /**
+   * When a player disables chat throttling in a guild
+   */
+  ThrottledDisabled = 'throttleDisabled',
+
+  /**
    * When a player is promoted in a guild
    */
   Promote = 'promote',
