@@ -11,6 +11,7 @@ import type { HypixelSuccessResponse } from './hypixel-api'
 export class HypixelDatabase {
   private static readonly MaxLife = Duration.years(1)
   private static readonly MaxLastAccess = Duration.months(1)
+  private static readonly MaxEntries = 2000
 
   constructor(
     private readonly sqliteManager: SqliteManager,
@@ -25,6 +26,9 @@ export class HypixelDatabase {
         const deleteOrphan = database.prepare(
           'DELETE FROM hypixelApiResponse WHERE NOT EXISTS (SELECT 1 FROM hypixelApiRequest WHERE hypixelApiRequest.responseId = hypixelApiResponse.id);'
         )
+        const deleteExcess = database.prepare(
+          'DELETE FROM hypixelApiResponse WHERE id IN (SELECT id FROM hypixelApiResponse ORDER BY lastAccessAt DESC LIMIT -1 OFFSET ?);'
+        )
 
         const oldCount = deleteOld.run(
           currentTime - HypixelDatabase.MaxLife.toSeconds(),
@@ -32,7 +36,8 @@ export class HypixelDatabase {
         ).changes
 
         const orphanCount = deleteOrphan.run().changes
-        return { oldCount, orphanCount }
+        const excessCount = deleteExcess.run(HypixelDatabase.MaxEntries).changes
+        return { oldCount, orphanCount, excessCount }
       })
 
       const counts = transaction()
@@ -41,6 +46,9 @@ export class HypixelDatabase {
       }
       if (counts.orphanCount > 0) {
         logger.debug(`Deleted ${counts.orphanCount} orphan entries in hypixelApiResponse.`)
+      }
+      if (counts.excessCount > 0) {
+        logger.debug(`Deleted ${counts.excessCount} excess entries in hypixelApiResponse.`)
       }
     })
   }
