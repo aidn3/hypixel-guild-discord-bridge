@@ -650,7 +650,7 @@ function fetchPluginsOptions(application: Application): ActionOption {
 
       const plugins = application.pluginsManager.getAllInstances()
       await interactivePaging(interaction, 0, Duration.minutes(5).toMilliseconds(), errorHandler, (page) => {
-        const EntriesPerPage = 5
+        const EntriesPerPage = 10
 
         const entries = plugins.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
         const totalPages = Math.ceil(plugins.length / EntriesPerPage)
