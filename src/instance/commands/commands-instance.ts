@@ -232,9 +232,14 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     if (command == undefined) return
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
+    const commandDisabled = this.application.core.commandsConfigurations
+      .getDisabledCommands()
+      .includes(command.triggers[0].toLowerCase())
+    const userPermission = event.user.permission()
     if (
-      this.application.core.commandsConfigurations.getDisabledCommands().includes(command.triggers[0].toLowerCase()) &&
-      event.user.permission() === Permission.Anyone
+      commandDisabled &&
+      (userPermission === Permission.Anyone ||
+        (userPermission === Permission.Helper && !this.application.core.commandsConfigurations.getAllowHelperToggle()))
     ) {
       return
     }

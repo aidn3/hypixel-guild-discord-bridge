@@ -7,6 +7,7 @@ import {
   escapeMarkdown,
   italic,
   MessageFlags,
+  roleMention,
   SlashCommandBuilder,
   TextInputStyle
 } from 'discord.js'
@@ -571,6 +572,7 @@ function fetchDiscordOptions(application: Application): CategoryOption {
 }
 
 function fetchCommandsOptions(application: Application): CategoryOption {
+  const discord = application.core.discordConfigurations
   const minecraft = application.core.minecraftConfigurations
   const commands = application.core.commandsConfigurations
 
@@ -598,6 +600,20 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         getOption: () => commands.getChatPrefix(),
         setOption: (newValue) => {
           commands.setChatPrefix(newValue)
+        }
+      },
+      {
+        type: OptionType.Boolean,
+        name: `Allow Helper Staff ${Recommended}`,
+        get description() {
+          const helperRoles = discord.getHelperRoleIds()
+          const helperRolesFormatted =
+            helperRoles.length > 0 ? helperRoles.map((element) => roleMention(element)).join(', ') : 'currently none'
+          return `Give permissions to **Helper** staff (${helperRolesFormatted}) to manage chat commands via \`!toggle\` commands.`
+        },
+        getOption: () => commands.getAllowHelperToggle(),
+        toggleOption: () => {
+          commands.setAllowHelperToggle(!commands.getAllowHelperToggle())
         }
       },
       {
