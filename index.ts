@@ -48,24 +48,40 @@ process.on('uncaughtException', function (error) {
   process.exitCode = 1
 })
 
-let shutdownStarted = false
-process.on('SIGINT', (signal) => {
-  if (shutdownStarted) {
-    Logger.info(`Process has caught ${signal} signal. Already shutting down. Wait!!`)
-    return
-  }
+const MaxShutdownSignals = 5
+let shutdownSignals = 0
 
-  shutdownStarted = true
-  Logger.info(`Process has caught ${signal} signal.`)
-  if (app !== undefined) {
-    Logger.debug('Shutting down application')
-    void app
-      .shutdown()
-      .then(() => gracefullyExitProcess(0))
-      .catch(() => {
+function startShutdown(signal: string) {
+  shutdownSignals++
+
+  if (shutdownSignals >= MaxShutdownSignals) {
+    process.exit(1)
+  } else if (shutdownSignals >= 2) {
+    Logger.warn(`Process has caught ${signal} signal. Already shutting down. Wait!!`)
+    return
+  } else {
+    Logger.info(`Process has caught ${signal} signal.`)
+    if (app === undefined) {
+      void gracefullyExitProcess(0).catch(() => {
         process.exit(1)
       })
+    } else {
+      Logger.debug('Shutting down application')
+      void app
+        .shutdown()
+        .then(() => gracefullyExitProcess(0))
+        .catch(() => {
+          process.exit(1)
+        })
+    }
   }
+}
+
+process.on('SIGTERM', (signal) => {
+  startShutdown(signal)
+})
+process.on('SIGINT', (signal) => {
+  startShutdown(signal)
 })
 
 process.title = PackageJson.name
