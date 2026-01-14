@@ -71,6 +71,8 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
   }
 
   private async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
+    if (event.user === undefined) return
+
     switch (event.type) {
       case GuildPlayerEventType.Unmute:
       case GuildPlayerEventType.Join: {

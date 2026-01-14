@@ -75,7 +75,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
 
-    if (event.type === GuildPlayerEventType.Mute) {
+    if (event.type === GuildPlayerEventType.Mute && event.user !== undefined) {
       const game =
         event.user
           .punishments()
