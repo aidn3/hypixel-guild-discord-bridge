@@ -21,6 +21,7 @@ import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import Collection from './triggers/collection'
+import CountingChain from './triggers/counting-chain'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
@@ -83,9 +84,11 @@ import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
 import Toggled from './triggers/toggled.js'
+import Trivia from './triggers/trivia'
 import TrophyFish from './triggers/trophy-fish'
 import Uhc from './triggers/uhc'
 import Unlink from './triggers/unlink.js'
+import Unscramble from './triggers/unscramble'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
@@ -114,6 +117,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Chocolate(),
       new Collection(),
       new Command67(),
+      new CountingChain(),
       new CurrentDungeon(),
       new DadJoke(),
       new DarkAuction(),
@@ -176,9 +180,11 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Timecharms(),
       new Toggle(),
       new Toggled(),
+      new Trivia(),
       new TrophyFish(),
       new Uhc(),
       new Unlink(),
+      new Unscramble(),
       new Vengeance(),
       new Warp(),
       new Weight(),

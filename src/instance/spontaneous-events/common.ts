@@ -1,5 +1,9 @@
+import type { Logger } from 'log4js'
+
+import type Application from '../../application'
 import type { Color, InstanceType } from '../../common/application-event'
 import { ChannelType } from '../../common/application-event'
+import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 
 import type { SpontaneousEvents } from './spontaneous-events'
@@ -24,6 +28,13 @@ export abstract class SpontaneousEventHandler extends SubInstance<SpontaneousEve
   }
 
   abstract startEvent(): Promise<void>
+}
+
+export interface EventContext {
+  logger: Logger
+  application: Application
+  eventHelper: EventHelper<InstanceType>
+  broadcastMessage: (message: string, color: Color) => Promise<void>
 }
 
 // https://stackoverflow.com/a/2450976
