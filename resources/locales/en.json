@@ -104,6 +104,8 @@
   "commands.rank.mvpplusplus": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.mcgo.none": "{{username}} has never played Cops and Crims",
+  "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays}}, Wins: {{gameWins}}, Kills: {{kills}}, Shots: {{shotsFired}} ({{headshotKills}} Headshots), Bombs: {{bombsPlanted}} planted / {{bombsDefused}} defused",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
