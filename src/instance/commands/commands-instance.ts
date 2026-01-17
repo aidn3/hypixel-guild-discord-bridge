@@ -21,6 +21,7 @@ import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import Collection from './triggers/collection'
+import CopsAndCrims from './triggers/cops-and-crims.js'
 import CountingChain from './triggers/counting-chain'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
@@ -116,6 +117,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Catacombs(),
       new Chocolate(),
       new Collection(),
+      new CopsAndCrims(),
       new Command67(),
       new CountingChain(),
       new CurrentDungeon(),

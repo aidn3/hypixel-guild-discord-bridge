@@ -43,6 +43,16 @@ export interface HypixelPlayerStats {
     kills_solo?: number
     deaths_solo?: number
   }
+  MCGO?: {
+    game_plays?: number
+    kills?: number
+    shots_fired?: number
+    bombs_planted?: number
+    game_plays?: number
+    headshot_kills?: number
+    bombs_defused?: number
+    game_wins?: number
+  }
   WoolGames?: {
     wool_wars?: { stats?: { games_played?: number; kills?: number; wins?: number; deaths?: number } }
   }
