@@ -105,7 +105,7 @@
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
-  "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays}}, Wins: {{gameWins}}, Kills: {{kills}}, Shots: {{shotsFired}} ({{headshotKills}} Headshots), Bombs: {{bombsPlanted}} planted / {{bombsDefused}} defused",
+  "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
