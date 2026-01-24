@@ -1,5 +1,5 @@
 import type { Client, Guild, GuildMemberEditOptions } from 'discord.js'
-import { DiscordAPIError, DiscordjsError, DiscordjsErrorCodes, userMention } from 'discord.js'
+import { DiscordAPIError, userMention } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application'
