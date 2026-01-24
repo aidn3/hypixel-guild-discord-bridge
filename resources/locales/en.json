@@ -122,8 +122,9 @@
   "commands.skywars.response": "{{username}}'s Skywars: Games played {{games, number(maximumFractionDigits: 0)}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
   "commands.status.last-online": "{{username}} was last online {{time}} ago.",
   "commands.status.api-disabled": "{{username}} has their online API disabled.",
-  "commands.status.online": "{{username}} is playing {{game}} in {{mode}}.",
+  "commands.status.online": "{{username}} is playing {{game}}.",
   "commands.status.online-with-map": "{{username}} is playing {{game}} in {{mode}} map {{map}}.",
+  "commands.status.online-with-mode": "{{username}} is playing {{game}} in {{mode}}.",
   "commands.hotm.none": "{{username}} has never mined before.",
   "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} with powders ({{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite).",
   "commands.math.invalid": "{{username}}, invalid math expression.",
@@ -153,6 +154,8 @@
   "commands.rank.mvpplusplus": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.mcgo.none": "{{username}} has never played Cops and Crims",
+  "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

@@ -13,6 +13,7 @@ import {
 } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
+import Duration from '../../utility/duration'
 import type { Timeout } from '../../utility/timeout.js'
 
 import ChatManager from './chat-manager.js'
@@ -31,6 +32,9 @@ import MinecraftBridge from './minecraft-bridge.js'
 
 export default class MinecraftInstance extends ConnectableInstance<InstanceType.Minecraft> {
   readonly defaultBotConfig = {
+    // increased from 30 seconds to 60 seconds to reduce connection dropouts
+    checkTimeoutInterval: Duration.seconds(60).toMilliseconds(),
+
     host: 'me.hypixel.net',
     port: 25_565,
     version: '1.8.9'

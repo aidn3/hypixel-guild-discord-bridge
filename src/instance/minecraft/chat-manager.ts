@@ -36,6 +36,8 @@ import RankGiftChat from './chat/rank-gift'
 import RepeatChat from './chat/repeat.js'
 import RequestChat from './chat/request.js'
 import RequireGuildChat from './chat/require-guild.js'
+import ThrottleDisabledChat from './chat/throttle-disabled'
+import ThrottleEnabledChat from './chat/throttle-enabled'
 import UnmuteChat from './chat/unmute.js'
 import type ClientSession from './client-session.js'
 import type { MinecraftChatMessage } from './common/chat-interface.js'
@@ -86,6 +88,8 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       RepeatChat,
       RequestChat,
       RequireGuildChat,
+      ThrottleDisabledChat,
+      ThrottleEnabledChat,
       UnmuteChat
     ]
   }

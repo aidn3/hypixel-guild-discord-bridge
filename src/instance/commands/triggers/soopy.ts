@@ -1,9 +1,10 @@
+import { TTLCache } from '@isaacs/ttlcache'
 import type { AxiosResponse } from 'axios'
 import DefaultAxios from 'axios'
-import NodeCache from 'node-cache'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
 
 export default class Soopy extends ChatCommandHandler {
   private static readonly SoopyApiUrl = 'https://soopy.dev/api/soopyv2/botcommand'
@@ -81,9 +82,9 @@ export default class Soopy extends ChatCommandHandler {
     'lowestbin',
     'calcskill'
   ]
-  private readonly cache = new NodeCache({
-    maxKeys: 10_000,
-    stdTTL: 5 * 60
+  private readonly cache = new TTLCache({
+    max: 10_000,
+    ttl: Duration.minutes(5).toMilliseconds()
   })
 
   constructor() {

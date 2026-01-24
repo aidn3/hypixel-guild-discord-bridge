@@ -1,5 +1,7 @@
+import StringComparison from 'string-comparison'
+
 import type Application from '../../application.js'
-import type { ChatEvent, CommandLike, Content } from '../../common/application-event.js'
+import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
 import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
@@ -21,6 +23,8 @@ import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import Collection from './triggers/collection'
+import CopsAndCrims from './triggers/cops-and-crims.js'
+import CountingChain from './triggers/counting-chain'
 import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
@@ -44,7 +48,9 @@ import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
+import Inventory from './triggers/inventory'
 import Iq from './triggers/iq.js'
+import Item from './triggers/item'
 import Jacob from './triggers/jacob'
 import Karma from './triggers/karma.js'
 import Kuudra from './triggers/kuudra.js'
@@ -84,9 +90,12 @@ import StatusCommand from './triggers/status.js'
 import Timecharms from './triggers/timecharms.js'
 import Toggle from './triggers/toggle.js'
 import Toggled from './triggers/toggled.js'
+import Trivia from './triggers/trivia'
 import TrophyFish from './triggers/trophy-fish'
 import Uhc from './triggers/uhc'
 import Unlink from './triggers/unlink.js'
+import Unscramble from './triggers/unscramble'
+import Uuid from './triggers/uuid'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
@@ -114,7 +123,9 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Catacombs(),
       new Chocolate(),
       new Collection(),
+      new CopsAndCrims(),
       new Command67(),
+      new CountingChain(),
       new CurrentDungeon(),
       new DadJoke(),
       new DarkAuction(),
@@ -139,7 +150,9 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new HeartOfTheMountain(),
       new HypixelLevel(),
       new Insult(),
+      new Inventory(),
       new Iq(),
+      new Item(),
       new Jacob(),
       new Karma(),
       new Kuudra(),
@@ -178,9 +191,12 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Timecharms(),
       new Toggle(),
       new Toggled(),
+      new Trivia(),
       new TrophyFish(),
       new Uhc(),
       new Unlink(),
+      new Unscramble(),
+      new Uuid(),
       new Vengeance(),
       new Warp(),
       new Weight(),
@@ -231,12 +247,20 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
-    if (command == undefined) return
+    if (command == undefined) {
+      await this.trySuggest(event, commandName)
+      return
+    }
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
+    const commandDisabled = this.application.core.commandsConfigurations
+      .getDisabledCommands()
+      .includes(command.triggers[0].toLowerCase())
+    const userPermission = event.user.permission()
     if (
-      this.application.core.commandsConfigurations.getDisabledCommands().includes(command.triggers[0].toLowerCase()) &&
-      event.user.permission() === Permission.Anyone
+      commandDisabled &&
+      (userPermission === Permission.Anyone ||
+        (userPermission === Permission.Helper && !this.application.core.commandsConfigurations.getAllowHelperToggle()))
     ) {
       return
     }
@@ -339,5 +363,39 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         }
       }
     }
+  }
+
+  private async trySuggest(event: ChatEvent, query: string): Promise<void> {
+    const config = this.application.core.commandsConfigurations
+    if (!config.getSuggestionsEnabled()) return
+
+    const prefix = config.getChatPrefix()
+    query = query.toLowerCase()
+    let result: { trigger: string; command: ChatCommandHandler; similarity: number } | undefined = undefined
+
+    for (const command of this.commands) {
+      for (const trigger of command.triggers) {
+        const similarity = StringComparison.levenshtein.similarity(query, trigger)
+        if (result !== undefined && result.similarity > similarity) continue
+
+        result = { trigger, command, similarity }
+      }
+    }
+
+    if (result === undefined) return
+
+    const username = event.user.displayName()
+    const suggestion: CommandSuggestion = {
+      ...this.eventHelper.fillBaseEvent(),
+      originEventId: event.eventId,
+
+      user: event.user,
+      channelType: event.channelType,
+
+      query: query,
+      response: `${username}, did you mean: ${prefix}${result.trigger} - ${result.command.getExample(prefix).replaceAll('%s', username)} - Help: ${result.command.description}`
+    }
+
+    await this.application.emit('commandSuggestion', suggestion)
   }
 }

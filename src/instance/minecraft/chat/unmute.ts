@@ -1,4 +1,5 @@
 import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
+import type { MinecraftUser, MojangProfile } from '../../../common/user'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -11,11 +12,18 @@ export default {
       const responsible = match[1]
       const target = match[2]
 
-      const targetProfile = await context.application.mojangApi.profileByUsername(target)
-      const targetUser = await context.application.core.initializeMinecraftUser(
-        { id: targetProfile.id, name: target },
-        {}
-      )
+      let targetProfile: MojangProfile | undefined
+      let targetUser: MinecraftUser | undefined
+      if (target !== 'the guild chat') {
+        targetProfile = await context.application.mojangApi.profileByUsername(target)
+        targetUser = await context.application.core.initializeMinecraftUser(
+          {
+            id: targetProfile.id,
+            name: target
+          },
+          {}
+        )
+      }
 
       const responsibleProfile = await context.application.mojangApi.profileByUsername(responsible)
       const responsibleUser = await context.application.core.initializeMinecraftUser(
@@ -23,7 +31,7 @@ export default {
         {}
       )
 
-      if (responsible !== context.clientInstance.username()) {
+      if (responsible !== context.clientInstance.username() && targetUser !== undefined) {
         await targetUser.forgive(context.eventHelper.fillBaseEvent())
       }
 

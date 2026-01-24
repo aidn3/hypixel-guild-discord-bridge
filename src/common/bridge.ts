@@ -8,6 +8,7 @@ import type {
   ChatEvent,
   CommandEvent,
   CommandFeedbackEvent,
+  CommandSuggestion,
   GuildGeneralEvent,
   GuildPlayerEvent,
   InstanceStatus,
@@ -50,6 +51,11 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
         .add(() => Promise.resolve(this.onCommandFeedback(event)))
         .catch(this.errorHandler.promiseCatch('handling command feedback'))
     })
+    this.application.on('commandSuggestion', async (event) => {
+      await this.queue
+        .add(() => Promise.resolve(this.onCommandSuggestion(event)))
+        .catch(this.errorHandler.promiseCatch('handling command suggestion'))
+    })
 
     this.application.on('chat', async (event) => {
       await this.queue
@@ -87,6 +93,8 @@ export default abstract class Bridge<K extends Instance<InstanceType>> {
   protected abstract onCommand(event: CommandEvent): void | Promise<void>
 
   protected abstract onCommandFeedback(event: CommandFeedbackEvent): void | Promise<void>
+
+  protected abstract onCommandSuggestion(event: CommandSuggestion): void | Promise<void>
 
   protected abstract onChat(event: ChatEvent): void | Promise<void>
 
