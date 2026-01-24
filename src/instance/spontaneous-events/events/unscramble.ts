@@ -28,7 +28,7 @@ export class Unscramble extends SpontaneousEventHandler {
 const ScrambleWords = [
   // generic
   ...'apple banana grape lemon cherry peach mango kiwi plum table chair couch desk shelf'.split(' '),
-  ...'blanket carpet curtain house garden porch fence roof window door floor stairs attic water coffee'.split(' '),
+  ...'blanket curtain house garden porch fence roof window door floor stairs attic water coffee'.split(' '),
   ...'juice soda milk bread cheese butter egg dog cat bird fish horse rabbit mouse snake frog sun'.split(' '),
   ...'star cloud rain snow wind storm thunder lightning red blue green yellow purple pink brown'.split(' '),
   ...'white happy sad scared brave tired sleepy hungry thirsty excited run walk jump swim'.split(' '),
@@ -49,7 +49,7 @@ const ScrambleWords = [
   ...''.split('smelting diamond banner netherrack packedice bone zombie'),
   ...'block pickaxe shovel axe hoe sword bow arrow helmet chestplate boots furnace crafting'.split(' '),
   ...'enchanting brewing redstone piston lever button pressureplate torch lantern glowstone obsidian'.split(' '),
-  ...'emerald gold iron coal charcoal lapis quartz netherite slimeball feather leather wool carpet'.split(' '),
+  ...'emerald gold iron coal charcoal lapis quartz netherite slimeball feather leather wool'.split(' '),
   ...'map compass bucket water lava sand gravel dirt grass stone cobblestone mossy basalt'.split(' '),
   ...'soulsoil endstone prismarine sea‑lantern kelp coral sponge ice snow cactus vines lilypad oak'.split(' '),
   ...'birch spruce jungle acacia darkoak mangrove bamboo chorus mushroom creeper skeleton spider'.split(' '),
