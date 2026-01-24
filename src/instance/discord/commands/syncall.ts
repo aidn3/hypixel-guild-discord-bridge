@@ -31,7 +31,6 @@ export default {
 
     const updateContext = {
       application: context.application,
-      guild: interaction.guild,
       updateReason: `Manual sync via /${context.interaction.commandName} by ${interaction.user.username}`,
       abortSignal: abortController.signal,
       startTime: Date.now(),

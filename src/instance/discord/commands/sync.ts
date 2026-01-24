@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { GuildMember } from 'discord.js'
-import { SlashCommandBuilder, userMention } from 'discord.js'
+import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 
 import { Color, Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
@@ -22,7 +22,7 @@ export default {
     assert.ok(interaction.inCachedGuild())
 
     const optionalUser = interaction.options.getUser('user') ?? undefined
-    let member: GuildMember
+    let guildMember: GuildMember
 
     if (optionalUser) {
       if (context.permission < Permission.Helper) {
@@ -31,20 +31,20 @@ export default {
       }
 
       await interaction.deferReply()
-      member = await interaction.guild.members.fetch(optionalUser.id)
+      guildMember = await interaction.guild.members.fetch(optionalUser.id)
     } else {
       await interaction.deferReply()
-      member = await interaction.member.fetch()
+      guildMember = await interaction.member.fetch()
     }
 
-    if (member.user.bot) {
+    if (guildMember.user.bot) {
       await interaction.editReply('Can not sync another bot roles')
       return
     }
 
     const user = await context.application.core.initializeDiscordUser(
-      context.application.discordInstance.profileByUser(member.user, member),
-      { guild: member.guild }
+      context.application.discordInstance.profileByUser(guildMember.user, guildMember),
+      { guild: guildMember.guild }
     )
 
     const guildCommands = await interaction.guild.commands.fetch()
@@ -62,18 +62,22 @@ export default {
     }
     const updateContext = {
       application: context.application,
-      guild: interaction.guild,
       updateReason: `Manual sync via /${context.interaction.commandName} by ${interaction.user.username}`,
       abortSignal: new AbortController().signal,
       startTime: Date.now(),
       progress: progress
     } satisfies UpdateContext
 
-    await context.application.discordInstance.conditionsManager.updateMember(updateContext, member)
+    await context.application.discordInstance.conditionsManager.updateMember(updateContext, { guildMember, user })
 
+    let result = `Synced ${userMention(guildMember.id)}`
+    if (progress.errors.length > 0) {
+      result += `\n\n**Failed syncing some conditions:**\n`
+      result += progress.errors.map((error) => `- ${escapeMarkdown(error)}`).join('\n')
+    }
     const embed = {
-      description: `Synced ${userMention(member.id)}`,
-      color: Color.Good,
+      description: result,
+      color: progress.errors.length > 0 ? Color.Info : Color.Good,
       footer: { text: DefaultCommandFooter }
     }
 

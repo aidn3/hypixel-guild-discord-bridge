@@ -21,6 +21,7 @@ import { setTimeoutAsync } from '../../utility/scheduling'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
+import RolesCommand from './commands/conditions'
 import ConnectivityCommand from './commands/connectivity.js'
 import CreateLeaderboardCommand from './commands/create-leaderboard.js'
 import DemoteCommand from './commands/demote.js'
@@ -35,12 +36,12 @@ import ListLeaderboardCommand from './commands/list-leaderboard'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
 import PingCommand from './commands/ping.js'
+import PlaceholderCommand from './commands/placeholder.js'
 import ProfanityCommand from './commands/profanity.js'
 import PromoteCommand from './commands/promote.js'
 import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
 import RestartCommand from './commands/restart.js'
-import RolesCommand from './commands/roles'
 import SetrankCommand from './commands/setrank.js'
 import SettingsCommand from './commands/settings.js'
 import SyncCommand from './commands/sync'
@@ -122,6 +123,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       LogCommand,
       ExecuteCommand,
       PingCommand,
+      PlaceholderCommand,
       ProfanityCommand,
       PromoteCommand,
       PunishmentsCommand,

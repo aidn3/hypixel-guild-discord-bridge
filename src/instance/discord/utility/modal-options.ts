@@ -85,6 +85,7 @@ function createComponents(options: ModalOption[]): ModalComponentData['component
             minLength: option.min,
             maxLength: option.max,
             required: true,
+            placeholder: option.placeholder,
             value: option.defaultValue?.toString()
           }
         })

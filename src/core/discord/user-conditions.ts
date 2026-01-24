@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 
 import type { SqliteManager } from '../../common/sqlite-manager'
+import type { ConditionId, ConditionOption, OnUnmet } from '../conditions/common'
 
 export class UserConditions {
   constructor(private readonly sqliteManager: SqliteManager) {}
@@ -65,6 +66,32 @@ export class UserConditions {
     return transaction()
   }
 
+  public addNicknameCondition(guildId: string, condition: NicknameCondition): NicknameConditionId {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "discordNicknameConditions" (guildId, typeId, nickname, options) VALUES (?, ?, ?, ?)'
+      )
+      const select = database.prepare<[number | bigint], NicknameConditionId>(
+        'SELECT * FROM "discordNicknameConditions" WHERE id = ?'
+      )
+
+      const insertResult = insert.run(guildId, condition.typeId, condition.nickname, JSON.stringify(condition.options))
+      assert.strictEqual(insertResult.changes, 1)
+      const id = insertResult.lastInsertRowid
+
+      const selectResult = select.get(id)
+      assert.ok(selectResult !== undefined)
+
+      // deserialize options
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      selectResult.options = JSON.parse(selectResult.options as unknown as string)
+      return selectResult
+    })
+
+    return transaction()
+  }
+
   public getAllConditions(guildId: string): { roles: RoleConditionId[]; nicknames: NicknameConditionId[] } {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
@@ -105,14 +132,6 @@ export class UserConditions {
   }
 }
 
-export type ConditionOption = Record<string, string | number | boolean | string[]>
-
-export interface ConditionId {
-  id: string
-  guildId: string
-  createdAt: string
-}
-
 export interface RoleCondition {
   typeId: string
   roleId: string
@@ -129,8 +148,3 @@ export interface NicknameCondition {
 }
 
 export type NicknameConditionId = NicknameCondition & ConditionId
-
-export enum OnUnmet {
-  Remove = 'remove',
-  Keep = 'keep'
-}

@@ -21,6 +21,7 @@ import { User } from '../common/user'
 
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
+import { ConditionsRegistry } from './conditions/conditions-registry'
 import { ConfigurationsManager } from './configurations'
 import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
@@ -41,6 +42,7 @@ import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
 import PunishmentsEnforcer from './moderation/punishments-enforcer'
+import { PlaceholderManager } from './placeholder/placeholder-manager'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import Autocomplete from './users/autocomplete'
 import { GuildManager } from './users/guild-manager'
@@ -85,6 +87,8 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly commandsConfigurations: CommandsConfigurations
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
   public readonly hypixelApi: Hypixel
+  public readonly conditonsRegistry: ConditionsRegistry
+  public readonly placeHolder: PlaceholderManager
 
   // database
   private readonly sqliteManager: SqliteManager
@@ -92,6 +96,8 @@ export class Core extends Instance<InstanceType.Core> {
 
   public constructor(application: Application, hypixelApiKey: string) {
     super(application, InternalInstancePrefix + 'core', InstanceType.Core)
+
+    this.conditonsRegistry = new ConditionsRegistry()
 
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
@@ -110,6 +116,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.discordUserConditions = new UserConditions(this.sqliteManager)
 
     this.statusHistory = new StatusHistory(this.sqliteManager, this.logger)
+    this.placeHolder = new PlaceholderManager()
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)

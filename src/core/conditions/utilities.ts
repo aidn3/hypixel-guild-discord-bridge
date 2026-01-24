@@ -1,13 +1,14 @@
-import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
-import type { SkyblockMember, SkyblockProfile } from '../../../core/hypixel/hypixel-skyblock-types'
+import type { HypixelPlayer } from '../hypixel/hypixel-player'
+import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock-types'
 
-import type { UpdateMemberContext } from './common'
+import type { HandlerOperationContext, HandlerUser } from './common'
 
 export async function checkSkyblockEntireProfiles(
-  context: UpdateMemberContext,
+  context: HandlerOperationContext,
+  handlerUser: HandlerUser,
   checker: (profile: SkyblockProfile) => boolean
 ): Promise<boolean> {
-  const mojangProfile = context.user.mojangProfile()
+  const mojangProfile = handlerUser.user.mojangProfile()
   if (mojangProfile === undefined) return false
   const uuid = mojangProfile.id
   let profiles: SkyblockProfile[] | undefined
@@ -27,10 +28,11 @@ export async function checkSkyblockEntireProfiles(
 }
 
 export async function checkSkyblockUserProfiles(
-  context: UpdateMemberContext,
+  context: HandlerOperationContext,
+  handlerUser: HandlerUser,
   checker: (profile: SkyblockMember) => boolean
 ): Promise<boolean> {
-  const mojangProfile = context.user.mojangProfile()
+  const mojangProfile = handlerUser.user.mojangProfile()
   if (mojangProfile === undefined) return false
   const uuid = mojangProfile.id
   let profiles: SkyblockProfile[] | undefined
@@ -50,10 +52,11 @@ export async function checkSkyblockUserProfiles(
 }
 
 export async function checkHypixelProfile(
-  context: UpdateMemberContext,
+  context: HandlerOperationContext,
+  handlerUser: HandlerUser,
   checker: (player: HypixelPlayer) => boolean
 ): Promise<boolean> {
-  const mojangProfile = context.user.mojangProfile()
+  const mojangProfile = handlerUser.user.mojangProfile()
   if (mojangProfile === undefined) return false
   const uuid = mojangProfile.id
   let player: HypixelPlayer | undefined
@@ -68,10 +71,11 @@ export async function checkHypixelProfile(
   return checker(player)
 }
 export async function checkHypixelGuild(
-  context: UpdateMemberContext,
+  context: HandlerOperationContext,
+  handlerUser: HandlerUser,
   checker: (profile: SkyblockMember) => boolean
 ): Promise<boolean> {
-  const mojangProfile = context.user.mojangProfile()
+  const mojangProfile = handlerUser.user.mojangProfile()
   if (mojangProfile === undefined) return false
   const uuid = mojangProfile.id
   let profiles: SkyblockProfile[] | undefined

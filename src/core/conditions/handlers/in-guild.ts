@@ -1,20 +1,28 @@
 import assert from 'node:assert'
 
-import type { ConditionOption } from '../../../../core/discord/user-conditions'
-import type { ModalOption } from '../../utility/modal-options'
-import { InputStyle, OptionType } from '../../utility/options-handler'
-import type { HandlerContext, UpdateMemberContext } from '../common'
+// eslint-disable-next-line import/no-restricted-paths
+import type { ModalOption } from '../../../instance/discord/utility/modal-options'
+// eslint-disable-next-line import/no-restricted-paths
+import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler'
+import type {
+  ConditionOption,
+  HandlerContext,
+  HandlerDisplayContext,
+  HandlerOperationContext,
+  HandlerUser
+} from '../common'
 import { ConditionHandler } from '../common'
 
 export class InGuild extends ConditionHandler<InGuildOptions> {
   override getId(): string {
     return 'in-hypixel-guild'
   }
+
   override getDisplayName(context: HandlerContext): string {
     return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.title'])
   }
 
-  override async displayCondition(context: UpdateMemberContext, options: InGuildOptions): Promise<string> {
+  override async displayCondition(context: HandlerDisplayContext, options: InGuildOptions): Promise<string> {
     const guild = await context.application.hypixelApi.getGuildById(options.guildId)
     if (guild === undefined) {
       return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.formatted-invalid'])
@@ -25,8 +33,12 @@ export class InGuild extends ConditionHandler<InGuildOptions> {
     })
   }
 
-  override async meetsCondition(context: UpdateMemberContext, options: InGuildOptions): Promise<boolean> {
-    const mojangProfile = context.user.mojangProfile()
+  override async meetsCondition(
+    context: HandlerOperationContext,
+    handlerUser: HandlerUser,
+    options: InGuildOptions
+  ): Promise<boolean> {
+    const mojangProfile = handlerUser.user.mojangProfile()
     if (mojangProfile === undefined) return false
     const uuid = mojangProfile.id
 

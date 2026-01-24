@@ -59,6 +59,7 @@ import Networth from './triggers/networth.js'
 import News from './triggers/news.js'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
+import Placeholder from './triggers/placeholder'
 import Points30days from './triggers/points-30days'
 import PointsAll from './triggers/points-all'
 import Praise from './triggers/praise'
@@ -152,6 +153,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Networth(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
+      new Placeholder(),
       new Points30days(),
       new PointsAll(),
       new Praise(),

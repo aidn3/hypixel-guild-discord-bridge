@@ -1,6 +1,8 @@
-import type { ModalOption } from '../../utility/modal-options'
-import { OptionType } from '../../utility/options-handler'
-import type { HandlerContext, UpdateMemberContext } from '../common'
+// eslint-disable-next-line import/no-restricted-paths
+import type { ModalOption } from '../../../instance/discord/utility/modal-options'
+// eslint-disable-next-line import/no-restricted-paths
+import { OptionType } from '../../../instance/discord/utility/options-handler'
+import type { HandlerContext, HandlerOperationContext, HandlerUser } from '../common'
 import { ConditionHandler } from '../common'
 import { checkSkyblockUserProfiles } from '../utilities'
 
@@ -12,14 +14,18 @@ export class SkyblockLevel extends ConditionHandler<SkyblockLevelOptions> {
     return context.application.i18n.t(($) => $['discord.conditions.handler.skyblock-level.title'])
   }
 
-  override displayCondition(context: UpdateMemberContext, options: SkyblockLevelOptions): string {
+  override displayCondition(context: HandlerContext, options: SkyblockLevelOptions): string {
     return context.application.i18n.t(($) => $['discord.conditions.handler.skyblock-level.formatted'], {
       level: options.level
     })
   }
 
-  override async meetsCondition(context: UpdateMemberContext, condition: SkyblockLevelOptions): Promise<boolean> {
-    return checkSkyblockUserProfiles(context, (profile) => {
+  override async meetsCondition(
+    context: HandlerOperationContext,
+    handlerUser: HandlerUser,
+    condition: SkyblockLevelOptions
+  ): Promise<boolean> {
+    return checkSkyblockUserProfiles(context, handlerUser, (profile) => {
       return (profile.leveling?.experience ?? 0) / 100 >= condition.level
     })
   }

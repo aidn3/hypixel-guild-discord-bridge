@@ -122,6 +122,7 @@ export enum InputStyle {
 export interface TextOption extends BaseOption {
   type: OptionType.Text
   style: InputStyle
+  placeholder?: string
   getOption: () => string
   setOption: (value: string) => void
   max: number
@@ -330,6 +331,7 @@ export class OptionsHandler {
               customId: interaction.customId,
               style: option.style === InputStyle.Long ? TextInputStyle.Paragraph : TextInputStyle.Short,
               label: option.name,
+              placeholder: option.placeholder,
 
               required: true,
               minLength: option.min,

@@ -51,31 +51,46 @@
   "discord.commands.settings.main.title": "Main",
   "discord.commands.settings.main.description": "Welcome to Application options!\nYou can choose one of the categories below to expand it.\n\n$t(discord.commands.settings.header)",
 
-  "discord.conditions.roles.list.title": "Roles Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
-  "discord.conditions.roles.list.empty": "__Empty list__",
-  "discord.conditions.roles.list.entry": "- `{{condition.id}}`: {{display}} <@&{{condition.roleId}}>\n",
-  "discord.conditions.roles.list.entry-invalid": "- `{{condition.id}}`: __{{condition.typeId}}__\n",
+  "discord.conditions.list.title": {
+    "roles": "Roles Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
+    "nicknames": "Nicknames Conditions (page {{currentPage, number}} out of {{totalPages, number}})"
+  },
+  "discord.conditions.list.empty": "__Empty list__",
+  "discord.conditions.list.entry": {
+    "roles": "- `{{condition.id}}`: {{display}} <@&{{condition.roleId}}>\n",
+    "nicknames": "- `{{condition.id}}`: {{display}} `{{condition.nickname}}`\n"
+  },
+  "discord.conditions.list.entry-invalid": "- `{{condition.id}}`: __{{condition.typeId}}__\n",
 
-  "discord.conditions.roles.remove.not-found": "No such a condition found.",
-  "discord.conditions.roles.remove.success": "Condition has been successfully deleted.",
-  "discord.conditions.roles.remove.fail": "Could not delete the condition somehow?? Maybe already deleted?",
+  "discord.conditions.remove.not-found": "No such a condition found.",
+  "discord.conditions.remove.success": "Condition has been successfully deleted.",
+  "discord.conditions.remove.fail": "Could not delete the condition somehow?? Maybe already deleted?",
 
-  "discord.conditions.roles.add.not-found": "No such condition type with this name: {{query}}",
+  "discord.conditions.add.not-found": "No such condition type with this name: {{query}}",
+  "discord.conditions.add.title": {
+    "roles": "Create role condition",
+    "nicknames": "Create nickname condition"
+  },
 
-  "discord.conditions.roles.add.wizard-title": "Create condition role",
+  "discord.conditions.add.role.name": "Role to give",
+  "discord.conditions.add.role.description": "Any user who meets the requirements for this condition will receive the selected role.",
+  "discord.conditions.add.unmet.label": "On condition unmet",
+  "discord.conditions.add.unmet.description": "What to do when a user used to meet the condition requirements, but does not anymore?",
+  "discord.conditions.add.unmet.keep-label": "Keep role",
+  "discord.conditions.add.unmet.keep-description": "Let the user keep the role.",
+  "discord.conditions.add.unmet.remove-label": "Remove role",
+  "discord.conditions.add.unmet.remove-description": "Remove the role from the user.",
 
-  "discord.conditions.roles.add.wizard-role-label": "Role to give",
-  "discord.conditions.roles.add.wizard-role-description": "Any user who meets the requirements for this condition will receive the selected role.",
-  "discord.conditions.roles.add.wizard-unmet-label": "On condition unmet",
-  "discord.conditions.roles.add.wizard-unmet-description": "What to do when a user used to meet the condition requirements, but does not anymore?",
-  "discord.conditions.roles.add.wizard-unmet-keep-label": "Keep role",
-  "discord.conditions.roles.add.wizard-unmet-keep-description": "Let the user keep the role.",
-  "discord.conditions.roles.add.wizard-unmet-remove-label": "Remove role",
-  "discord.conditions.roles.add.wizard-unmet-remove-description": "Remove the role from the user.",
+  "discord.conditions.add.nickname.name": "Nickname to set",
+  "discord.conditions.add.nickname.description": "Any user who meets the requirements for this condition will have their nickname set as this.",
+  "discord.conditions.add.nickname.placeholder": "{{USERNAME}} - Verified",
 
-  "discord.conditions.roles.add.modal-error": "Timed out.",
-  "discord.conditions.roles.add.condition-error": "Could not satisfy condition creation requirements: {{errorMessage}}",
-  "discord.conditions.roles.add.success": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the role <@&{{condition.roleId}}>.",
+  "discord.conditions.add.modal-error": "Timed out.",
+  "discord.conditions.add.condition-error": "Could not satisfy condition creation requirements: {{errorMessage}}",
+  "discord.conditions.add.success": {
+    "roles": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the role <@&{{condition.roleId}}>.",
+    "nicknames": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the have their nickname set as `{{condition.nickname}}`."
+  },
 
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",

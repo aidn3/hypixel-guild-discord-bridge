@@ -1,33 +1,28 @@
-import type { Guild, GuildMember } from 'discord.js'
+import type { GuildMember } from 'discord.js'
 
-import type Application from '../../../application'
-import type { DiscordUser } from '../../../common/user'
-import type { ConditionOption, NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
-import type { ModalOption } from '../utility/modal-options'
+import type { HandlerOperationContext, HandlerUser } from '../../../core/conditions/common'
+import type { ConditionsRegistry } from '../../../core/conditions/conditions-registry'
+import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
+import type { PlaceholderManager } from '../../../core/placeholder/placeholder-manager'
 
-export interface UpdateMemberContext extends UpdateGuildContext {
-  member: GuildMember
-  user: DiscordUser
+export interface UpdateMemberContext extends HandlerUser {
+  guildMember: GuildMember
 }
 
 export interface UpdateGuildContext extends UpdateContext {
+  placeholderManager: PlaceholderManager
+  conditionsRegistry: ConditionsRegistry
+
   rolesConditions: RoleCondition[]
   nicknameConditions: NicknameCondition[]
 }
 
-export interface UpdateContext extends HandlerContext {
+export interface UpdateContext extends HandlerOperationContext {
   updateReason: string
-  abortSignal: AbortSignal
   /**
    * Auto updated inside the code
    */
   progress: UpdateProgress
-}
-
-export interface HandlerContext {
-  application: Application
-  startTime: number
-  guild: Guild
 }
 
 export interface UpdateProgress {
@@ -41,32 +36,4 @@ export interface UpdateProgress {
   processedNicknames: number
 
   errors: string[]
-}
-
-export abstract class ConditionHandler<T extends ConditionOption> {
-  public abstract getId(): string
-
-  public abstract getDisplayName(context: HandlerContext): string
-
-  public abstract displayCondition(context: HandlerContext, options: T): Promise<string> | string
-
-  public abstract meetsCondition(context: UpdateMemberContext, condition: T): Promise<boolean> | boolean
-
-  public createOptions(): ModalOption[] {
-    return []
-  }
-
-  public createCondition(
-    context: HandlerContext,
-    rawOptions: ConditionOption,
-    prompt: ModalOption[]
-  ): Promise<T | string> | T | string {
-    const result: ConditionOption = {}
-
-    for (const entry of prompt) {
-      result[entry.key] = rawOptions[entry.key]
-    }
-
-    return result as T
-  }
 }
