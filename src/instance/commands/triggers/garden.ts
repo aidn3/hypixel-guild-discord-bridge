@@ -1,11 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import {
-  getSelectedSkyblockProfile,
-  getUuidIfExists,
-  playerNeverPlayedSkyblock,
-  usernameNotExists
-} from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Garden extends ChatCommandHandler {
   constructor() {
@@ -22,10 +17,11 @@ export default class Garden extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const profile = await context.app.hypixelApi.getSkyblockProfiles(uuid)
+    const selectedProfile = profile?.find((profile) => profile.selected)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const bestiary = selectedProfile.bestiary?.kills ?? {}
+    const bestiary = selectedProfile.members[uuid].bestiary?.kills ?? {}
     const totalKilledPests = Object.entries(bestiary)
       .filter(([key]) => key.startsWith('pest_'))
       .map(([, value]) => value as number)
@@ -36,7 +32,7 @@ export default class Garden extends ChatCommandHandler {
     //  Till they are updated in the source, the feature will be left out.
     //  Source: https://wiki.hypixel.net/Garden
 
-    const garden = await context.app.hypixelApi.getSkyblockGarden(selectedProfile.player_id)
+    const garden = await context.app.hypixelApi.getSkyblockGarden(selectedProfile.profile_id)
     if (garden === undefined) {
       return context.app.i18n.t(($) => $['commands.error.never-joined-skyblock'], { username: givenUsername })
     }
