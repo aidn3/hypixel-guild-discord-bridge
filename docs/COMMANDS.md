@@ -33,6 +33,7 @@ A shorter version can also be used: `!- rtca`
 | `catacombs`      | Returns a player's catacombs level                                                 |
 | `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
 | `collection`     | Returns a player's skyblock collection stats                                       |
+| `cac`            | Returns a player's Cops and Crims stats                                            |
 | `counting`       | Start a counting chain event                                                       |
 | `currentdungeon` | Returns a player's last dungeon run                                                |
 | `dadjoke`        | Show you a random dad joke                                                         |
