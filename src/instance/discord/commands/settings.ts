@@ -595,6 +595,15 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Boolean,
+        name: `Enable Commands Suggestions`,
+        description: 'Suggest possible commands when a user tries to execute a misspelled command.',
+        getOption: () => commands.getSuggestionsEnabled(),
+        toggleOption: () => {
+          commands.setSuggestionsEnabled(!commands.getSuggestionsEnabled())
+        }
+      },
+      {
         type: OptionType.Text,
         name: 'Chat Command Prefix',
         description: 'Prefix to indicate it is a chat command.',

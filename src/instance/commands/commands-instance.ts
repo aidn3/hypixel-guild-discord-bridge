@@ -1,5 +1,7 @@
+import StringComparison from 'string-comparison'
+
 import type Application from '../../application.js'
-import type { ChatEvent, CommandLike, Content } from '../../common/application-event.js'
+import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
 import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
@@ -235,7 +237,10 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     const commandsArguments = event.message.split(' ').slice(1)
 
     const command = this.commands.find((c) => c.triggers.includes(commandName))
-    if (command == undefined) return
+    if (command == undefined) {
+      await this.trySuggest(event, commandName)
+      return
+    }
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     const commandDisabled = this.application.core.commandsConfigurations
@@ -348,5 +353,39 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         }
       }
     }
+  }
+
+  private async trySuggest(event: ChatEvent, query: string): Promise<void> {
+    const config = this.application.core.commandsConfigurations
+    if (!config.getSuggestionsEnabled()) return
+
+    const prefix = config.getChatPrefix()
+    query = query.toLowerCase()
+    let result: { trigger: string; command: ChatCommandHandler; similarity: number } | undefined = undefined
+
+    for (const command of this.commands) {
+      for (const trigger of command.triggers) {
+        const similarity = StringComparison.levenshtein.similarity(query, trigger)
+        if (result !== undefined && result.similarity > similarity) continue
+
+        result = { trigger, command, similarity }
+      }
+    }
+
+    if (result === undefined) return
+
+    const username = event.user.displayName()
+    const suggestion: CommandSuggestion = {
+      ...this.eventHelper.fillBaseEvent(),
+      originEventId: event.eventId,
+
+      user: event.user,
+      channelType: event.channelType,
+
+      query: query,
+      response: `${username}, did you mean: ${prefix}${result.trigger} - ${result.command.getExample(prefix).replaceAll('%s', username)} - Help: ${result.command.description}`
+    }
+
+    await this.application.emit('commandSuggestion', suggestion)
   }
 }
