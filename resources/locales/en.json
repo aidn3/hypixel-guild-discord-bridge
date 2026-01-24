@@ -96,10 +96,18 @@
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
   "discord.conditions.handler.skyblock-level.formatted": "Skyblock level {{level, number}}",
+  "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",
+  "discord.conditions.handler.skyblock-catacombs-level.formatted": "Catacombs level {{level, number}}",
+
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
   "discord.conditions.handler.in-guild.formatted-invalid": "In guild (not possible to determine).",
   "discord.conditions.handler.in-guild.invalid-name": "No such a guild with name {{guildName}}.",
+  "discord.conditions.handler.in-guild-with-rank.title": "In Guild With A Specific Rank",
+  "discord.conditions.handler.in-guild-with-rank.formatted": "In guild {{guildName}} with rank {{guildRank}}",
+  "discord.conditions.handler.in-guild-with-rank.invalid-rank": "No such a guild rank {{guildRank}}. Available ranks: {{ranks, list}}.",
+  "discord.conditions.handler.in-guild-as-guildmaster.title": "In Guild As The Guild Master",
+  "discord.conditions.handler.in-guild-as-guildmaster.formatted": "In guild {{guildName}} as the guild master",
 
   "commands.essence.none": "{{username}} does not have any essence?",
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",

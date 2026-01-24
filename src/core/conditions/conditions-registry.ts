@@ -1,5 +1,8 @@
 import type { ConditionHandler, ConditionOption } from './common'
+import { CatacombsLevel } from './handlers/catacombs-level'
 import { InGuild } from './handlers/in-guild'
+import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master'
+import { InGuildWithRank } from './handlers/in-guild-with-rank'
 import { Linked } from './handlers/linked'
 import { SkyblockLevel } from './handlers/skyblock-level'
 
@@ -9,7 +12,10 @@ export class ConditionsRegistry {
   constructor() {
     this.registerHandler(new Linked())
     this.registerHandler(new SkyblockLevel())
+    this.registerHandler(new CatacombsLevel())
     this.registerHandler(new InGuild())
+    this.registerHandler(new InGuildWithRank())
+    this.registerHandler(new InGuildAsGuildmaster())
   }
 
   public allHandlers(): ConditionHandler<ConditionOption>[] {
