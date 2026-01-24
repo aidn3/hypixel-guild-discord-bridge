@@ -76,7 +76,7 @@
   "commands.status.online-with-map": "{{username}} is playing {{game}} in {{mode}} map {{map}}.",
   "commands.status.online-with-mode": "{{username}} is playing {{game}} in {{mode}}.",
   "commands.hotm.none": "{{username}} has never mined before.",
-  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} with powders ({{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite).",
+  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} - Nucleus {{runs, number}} - {{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite.",
   "commands.math.invalid": "{{username}}, invalid math expression.",
   "commands.math.response": "{{username}}, answer: {{result, number}}",
   "commands.math.response.easter": "{{username}} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{result, number}})",

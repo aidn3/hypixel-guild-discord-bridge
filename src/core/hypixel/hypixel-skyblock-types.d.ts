@@ -41,6 +41,13 @@ export interface SkyblockMember {
     powder_spent_gemstone?: number
     powder_glacite?: number
     powder_spent_glacite?: number
+    crystals?: {
+      jade_crystal: MiningCrystal
+      amber_crystal: MiningCrystal
+      topaz_crystal: MiningCrystal
+      sapphire_crystal: MiningCrystal
+      amethyst_crystal: MiningCrystal
+    }
   }
   collection?: Record<string, number>
   bestiary?: {
@@ -208,6 +215,10 @@ export interface Slayer {
   boss_kills_tier_2?: number
   boss_kills_tier_3?: number
   boss_kills_tier_4?: number
+}
+
+export interface MiningCrystal {
+  total_placed?: number
 }
 
 export interface NewsResponse extends HypixelSuccessResponse {
