@@ -146,6 +146,8 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
         value: reason
       })
     } else {
+      this.logger.error(new Error(reason))
+
       await this.clientInstance.setAndBroadcastNewStatusWithMessage(Status.Disconnected, {
         type: InstanceMessageType.MinecraftKicked,
         value: reason
@@ -195,6 +197,8 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
         value: error.toString() // TODO: give a proper proxy error instead of this
       })
       await this.tryRestarting()
+    } else {
+      this.logger.error(`Minecraft client has thrown an error.`, error)
     }
   }
 
