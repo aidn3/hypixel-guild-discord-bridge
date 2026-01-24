@@ -45,7 +45,9 @@ import Help from './triggers/help.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
+import Inventory from './triggers/inventory'
 import Iq from './triggers/iq.js'
+import Item from './triggers/item'
 import Jacob from './triggers/jacob'
 import Karma from './triggers/karma.js'
 import Kuudra from './triggers/kuudra.js'
@@ -89,6 +91,7 @@ import TrophyFish from './triggers/trophy-fish'
 import Uhc from './triggers/uhc'
 import Unlink from './triggers/unlink.js'
 import Unscramble from './triggers/unscramble'
+import Uuid from './triggers/uuid'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
@@ -142,7 +145,9 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new HeartOfTheMountain(),
       new HypixelLevel(),
       new Insult(),
+      new Inventory(),
       new Iq(),
+      new Item(),
       new Jacob(),
       new Karma(),
       new Kuudra(),
@@ -185,6 +190,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Uhc(),
       new Unlink(),
       new Unscramble(),
+      new Uuid(),
       new Vengeance(),
       new Warp(),
       new Weight(),
