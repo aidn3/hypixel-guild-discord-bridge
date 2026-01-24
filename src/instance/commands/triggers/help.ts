@@ -73,7 +73,7 @@ export default class Help extends ChatCommandHandler {
       .map((command) => command.triggers[0])
     const pages: string[][] = []
 
-    const MaxPageLength = 120 // must be below 256 (max character length for minecraft) + some leeway for extra metadata
+    const MaxPageLength = 200 // must be below 256 (max character length for minecraft) + some leeway for extra metadata
     let currentPage: string[] = []
     let pageLength = 0
     for (const command of allCommands) {
@@ -85,6 +85,7 @@ export default class Help extends ChatCommandHandler {
 
       currentPage.push(command)
       pageLength += command.length
+      pageLength += 2 // to account for ", " between commands
     }
     if (currentPage.length > 0) pages.push(currentPage)
 
