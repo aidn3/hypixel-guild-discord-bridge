@@ -46,6 +46,10 @@ export interface ApplicationEvents {
    */
   commandFeedback: Readonly<CommandFeedbackEvent>
   /**
+   * A command suggestion in response to a command execution that does not exist.
+   */
+  commandSuggestion: Readonly<CommandSuggestion>
+  /**
    * When a plugin or a component wishes to broadcast a message to all instances.
    */
   broadcast: Readonly<BroadcastEvent>
@@ -654,6 +658,31 @@ export interface BaseCommandEvent extends InformEvent, ReplyEvent {
    * The command response after the execution.
    */
   readonly commandResponse: Content
+}
+
+/**
+ * Used when a command has been executed
+ */
+export interface CommandSuggestion extends InformEvent, ReplyEvent {
+  /**
+   * The channel type the message is coming from
+   * @see ChannelType
+   */
+  readonly channelType: ChannelType
+  /**
+   * The user who executed the command
+   */
+  readonly user: User
+  /**
+   * The command name that has been tried to execute,
+   * but actually does not exist.
+   */
+  readonly query: string
+  /**
+   * A formatted response that can be used
+   * to display the suggestion in human format.
+   */
+  readonly response: string
 }
 
 /**

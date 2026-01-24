@@ -12,12 +12,14 @@ import type {
   ChatEvent,
   CommandEvent,
   CommandFeedbackEvent,
+  CommandSuggestion,
   GuildGeneralEvent,
   GuildPlayerEvent,
   InstanceReactive,
   InstanceReactiveType,
   InstanceStatus,
-  MinecraftReactiveEvent
+  MinecraftReactiveEvent,
+  ReplyEvent
 } from '../../common/application-event.js'
 import {
   ChannelType,
@@ -356,6 +358,16 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     await this.sendCommandResponse(event, true)
   }
 
+  protected override async onCommandSuggestion(event: CommandSuggestion): Promise<void> {
+    const commandResponse: CommandEvent['commandResponse'] = {
+      type: ContentType.TextBased,
+      content: event.response,
+      extra: undefined
+    }
+
+    await this.sendCommandResponse({ ...event, commandResponse: commandResponse }, false)
+  }
+
   private lastInstanceReactiveEvent = new Map<InstanceReactiveType, number>()
 
   async onInstanceReactiveEvent(event: InstanceReactive): Promise<void> {
@@ -514,7 +526,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private formatEmbedCommand(
-    event: CommandEvent,
+    event: { user: User; response: CommandEvent['commandResponse'] },
     feedback: boolean
   ): { embed: APIEmbed | undefined; attachments: AttachmentBuilder[] } {
     const attachments: AttachmentBuilder[] = []
@@ -528,7 +540,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    const { text, images } = this.extractCommandInfo(event.commandResponse)
+    const { text, images } = this.extractCommandInfo(event.response)
 
     if (text !== undefined) {
       embedNeeded = true
@@ -549,13 +561,13 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private formatImageCommand(
-    event: CommandEvent,
+    event: { user: User; response: CommandEvent['commandResponse'] },
     feedback: boolean
   ): { content: string | undefined; images: Buffer[] } | undefined {
     let content: string | undefined
     const resultImages: Buffer[] = []
 
-    const { text, images } = this.extractCommandInfo(event.commandResponse)
+    const { text, images } = this.extractCommandInfo(event.response)
 
     if (images.length === 0) {
       assert.ok(text !== undefined)
@@ -597,7 +609,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return { text, images }
   }
 
-  private async sendCommandResponse(event: CommandEvent, feedback: boolean): Promise<void> {
+  private async sendCommandResponse(
+    event: ReplyEvent & { user: User; commandResponse: CommandEvent['commandResponse'] },
+    feedback: boolean
+  ): Promise<void> {
     let cachedEmbed: { embed: APIEmbed | undefined; attachments: AttachmentBuilder[] } | undefined
     let cachedImage: { content: string | undefined; images: Buffer[] } | undefined
     const replyIds = this.messageAssociation.getMessageId(event.originEventId)
@@ -605,14 +620,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     for (const replyId of replyIds) {
       try {
         if (this.minecraftRenderImageEnabled()) {
-          cachedImage ??= this.formatImageCommand(event, feedback)
+          cachedImage ??= this.formatImageCommand({ user: event.user, response: event.commandResponse }, feedback)
           if (cachedImage !== undefined) {
             await this.sendImageToChannels(event.eventId, [replyId.channelId], cachedImage.images, cachedImage.content)
             return
           }
         }
 
-        cachedEmbed ??= this.formatEmbedCommand(event, feedback)
+        cachedEmbed ??= this.formatEmbedCommand({ user: event.user, response: event.commandResponse }, feedback)
         await this.reply(event.eventId, replyId, cachedEmbed.embed, cachedEmbed.attachments)
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message')
