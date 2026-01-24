@@ -50,6 +50,7 @@ export interface SkyblockMember {
   inventory?: {
     bag_contents?: { talisman_bag: SkyblockInventory }
     inv_armor?: SkyblockInventory
+    inv_contents?: SkyblockInventory
     equipment_contents?: SkyblockInventory
     sacks_counts: Record<string, number>
   }

@@ -58,7 +58,9 @@ A shorter version can also be used: `!- rtca`
 | `hotm`           | Returns a player's hotm and powder                                                 |
 | `hlevel`         | Returns a player's Hypixel common stats                                            |
 | `insult`         | insult a player                                                                    |
+| `inventory`      | Render a player's Skyblock inventory                                               |
 | `iq`             | Returns a player's IQ (0-200)                                                      |
+| `item`           | Render a slot in a player's Skyblock profile                                       |
 | `jacob`          | Returns a player's skyblock Jacob contest stats                                    |
 | `karma`          | Returns a player's karma                                                           |
 | `kuudra`         | Returns a player's kuudra runs                                                     |
@@ -104,6 +106,7 @@ A shorter version can also be used: `!- rtca`
 | `uhc`            | Returns a player's UHC stats                                                       |
 | `unlink`         | Unlink Minecraft account from Discord                                              |
 | `unscramble`     | Start an unscrambling event                                                        |
+| `username`       | Show the Mojang uuid of a player                                                   |
 | `vengeance`      | Try your luck against another player for a 15 minute mute                          |
 | `warp`           | Warp a player out of a lobby                                                       |
 | `weight`         | Returns a player's senither weight                                                 |
