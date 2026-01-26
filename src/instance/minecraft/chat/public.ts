@@ -16,6 +16,11 @@ export default {
       const playerMessage = match[4].trim()
       const uuid = getUuidFromGuildChat(context.jsonMessage)
 
+      if (context.application.minecraftManager.isMinecraftBot(username)) {
+        context.clientInstance.notifyChatEvent(ChannelType.Public, playerMessage)
+        return
+      }
+
       const user = await context.application.core.initializeMinecraftUser({ name: username, id: uuid }, {})
 
       const punishments = user.punishments()
@@ -30,10 +35,6 @@ export default {
 
       // if any other punishments active
       if (punishments.all().length > 0) return
-      if (context.application.minecraftManager.isMinecraftBot(username)) {
-        context.clientInstance.notifyChatEvent(ChannelType.Public, playerMessage)
-        return
-      }
 
       const { filteredMessage, changed } = context.application.core.filterProfanity(playerMessage)
       if (changed) {
