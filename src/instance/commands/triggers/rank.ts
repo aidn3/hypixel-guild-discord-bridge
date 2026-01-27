@@ -22,8 +22,8 @@ export default class Rank extends ChatCommandHandler {
     const player = await context.app.hypixelApi.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-    if (player.monthlyPackageRank === 'SUPERSTAR')
-      return context.app.i18n.t(($) => $['commands.rank.mvpplusplus'], {
+    if (player.rank === 'STAFF' || player.rank === 'YOUTUBER' || player.monthlyPackageRank === 'SUPERSTAR')
+      return context.app.i18n.t(($) => $['commands.rank.no-timestamp'], {
         username: givenUsername,
         rank: this.getRank(player)
       })
@@ -36,9 +36,9 @@ export default class Rank extends ChatCommandHandler {
   }
 
   private getRank(player: HypixelPlayer): string {
-    if (player.monthlyPackageRank === 'SUPERSTAR') {
-      return 'MVP++'
-    }
+    if (player.rank === 'STAFF') return 'Staff Member'
+    if (player.rank === 'YOUTUBER') return 'Youtuber'
+    if (player.monthlyPackageRank === 'SUPERSTAR') return 'MVP++'
     if (player.newPackageRank === 'NONE') return 'Non (no rank)'
     if (player.newPackageRank === 'VIP') return 'VIP'
     if (player.newPackageRank === 'VIP_PLUS') return 'VIP+'
@@ -53,7 +53,7 @@ export default class Rank extends ChatCommandHandler {
      * This can be due to hypixel policy to not disclose any monetization information:
      * @see https://github.com/HypixelDev/PublicAPI/discussions/542#discussioncomment-2797086
      */
-    if (player.monthlyPackageRank === 'SUPERSTAR') return ''
+    if (player.rank === 'STAFF' || player.rank === 'YOUTUBER' || player.monthlyPackageRank === 'SUPERSTAR') return ''
 
     // if they do not have a rank when they first joined is basically the same
     const timestamp =

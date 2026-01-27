@@ -14,6 +14,7 @@ export interface HypixelPlayer {
   achievements?: HypixelPlayerAchievements
   newPackageRank?: string
   monthlyPackageRank?: string
+  rank?: string
   levelUp_VIP?: number
   levelUp_VIP_PLUS?: number
   levelUp_MVP?: number
