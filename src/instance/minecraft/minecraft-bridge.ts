@@ -9,10 +9,12 @@ import type {
   ChatEvent,
   CommandEvent,
   CommandFeedbackEvent,
+  CommandSuggestion,
   GuildGeneralEvent,
   GuildPlayerEvent,
   InstanceStatus,
-  MinecraftReactiveEvent
+  MinecraftReactiveEvent,
+  ReplyEvent
 } from '../../common/application-event.js'
 import {
   ChannelType,
@@ -26,6 +28,7 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type { User } from '../../common/user'
 
 import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
@@ -188,7 +191,20 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     await this.handleCommand(event, true)
   }
 
-  private async handleCommand(event: CommandEvent, feedback: boolean) {
+  protected override async onCommandSuggestion(event: CommandSuggestion): Promise<void> {
+    const commandResponse: CommandEvent['commandResponse'] = {
+      type: ContentType.TextBased,
+      content: event.response,
+      extra: undefined
+    }
+
+    await this.handleCommand({ ...event, commandResponse: commandResponse }, false)
+  }
+
+  private async handleCommand(
+    event: ReplyEvent & { user: User; commandResponse: CommandEvent['commandResponse'] },
+    feedback: boolean
+  ) {
     const reply = this.messageAssociation.getMessageId(event.originEventId)
     if (reply === undefined) {
       this.logger.error(
@@ -227,8 +243,11 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         break
       }
       case ChannelType.Private: {
-        if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName)
+        if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName) {
           return
+        }
+        assert.ok(event.user.isMojangUser())
+
         prefix = `/msg ${event.user.mojangProfile().name}`
         break
       }

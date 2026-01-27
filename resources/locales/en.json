@@ -76,7 +76,7 @@
   "commands.status.online-with-map": "{{username}} is playing {{game}} in {{mode}} map {{map}}.",
   "commands.status.online-with-mode": "{{username}} is playing {{game}} in {{mode}}.",
   "commands.hotm.none": "{{username}} has never mined before.",
-  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} with powders ({{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite).",
+  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} - Nucleus {{runs, number}} - {{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite.",
   "commands.math.invalid": "{{username}}, invalid math expression.",
   "commands.math.response": "{{username}}, answer: {{result, number}}",
   "commands.math.response.easter": "{{username}} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{result, number}})",
@@ -106,6 +106,8 @@
   "commands.news.none": "No news found right now :/",
   "commands.duels.none": "{{username}} has never played any duels before.",
   "commands.bowspleef.response": "{{username}} has played {{gamesPlayed, number}} games of bowspleef, won {{wins, number}} games and lost {{losses, number}} (win/loss ratio of {{winLossRatio, number}}) and has fired {{shotsFired, number}} shots.",
+  "commands.mcgo.none": "{{username}} has never played Cops and Crims",
+  "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

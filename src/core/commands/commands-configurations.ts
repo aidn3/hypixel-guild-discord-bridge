@@ -40,4 +40,12 @@ export class CommandsConfigurations {
   public setAllowHelperToggle(enabled: boolean): void {
     this.configuration.setBoolean('allowHelperToggle', enabled)
   }
+
+  public getSuggestionsEnabled(): boolean {
+    return this.configuration.getBoolean('enableSuggestions', true)
+  }
+
+  public setSuggestionsEnabled(enabled: boolean): void {
+    this.configuration.setBoolean('enableSuggestions', enabled)
+  }
 }
