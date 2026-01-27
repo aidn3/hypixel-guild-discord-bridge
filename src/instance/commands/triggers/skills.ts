@@ -46,16 +46,7 @@ export default class Skills extends ChatCommandHandler {
     const hunting = 0 // TODO: wait till Hypixel API updates
 
     const totalLevels =
-      farming +
-      mining +
-      combat +
-      foraging +
-      fishing +
-      enchanting +
-      alchemy +
-      carpentry +
-      taming +
-      hunting
+      farming + mining + combat + foraging + fishing + enchanting + alchemy + carpentry + taming + hunting
 
     /*
      * Skills count may change in the future. This keeps it updated.
