@@ -104,6 +104,8 @@
   "commands.rank.mvpplusplus": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.duels.none": "{{username}} has never played any duels before.",
+  "commands.bowspleef.response": "{{username}} has played {{gamesPlayed, number}} games of bowspleef, won {{wins, number}} games and lost {{losses, number}} (win/loss ratio of {{winLossRatio, number}}) and has fired {{shotsFired, number}} shots.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

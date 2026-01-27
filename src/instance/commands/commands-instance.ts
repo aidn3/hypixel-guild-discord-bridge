@@ -16,6 +16,7 @@ import Bestiary from './triggers/bestiary'
 import Bits from './triggers/bits.js'
 import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
+import Bowspleef from './triggers/bowspleef.js'
 import Buildbattle from './triggers/buildbattle'
 import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
@@ -112,6 +113,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Boo(),
       new Boop(),
       new Buildbattle(),
+      new Bowspleef(),
       new Calculate(),
       new Catacombs(),
       new Chocolate(),
