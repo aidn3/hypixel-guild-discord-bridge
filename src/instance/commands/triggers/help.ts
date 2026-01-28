@@ -20,9 +20,9 @@ export default class Help extends ChatCommandHandler {
     if (/^\d+$/g.test(argument)) return this.showPage(allEnabledCommands, Number.parseInt(argument, 10))
 
     const query = argument.toLowerCase()
-    const command = context.allCommands.find((c) => c.triggers.includes(query))
+    const command = allEnabledCommands.find((c) => c.triggers.includes(query))
     if (command == undefined) {
-      const suggestions = this.suggestCommands(context, query)
+      const suggestions = this.suggestCommands(allEnabledCommands, query)
       if (suggestions.length > 0) {
         return `Possible commands: ${suggestions.map((command) => command.triggers[0]).join(', ')}`
       }
@@ -44,10 +44,10 @@ export default class Help extends ChatCommandHandler {
     return `Commands (page ${page} of ${pages.length}): ${pages[page - 1].join(', ')}`
   }
 
-  private suggestCommands(context: ChatCommandContext, query: string): ChatCommandHandler[] {
+  private suggestCommands(commands: ChatCommandHandler[], query: string): ChatCommandHandler[] {
     const similarityMap = new Map<ChatCommandHandler, number>()
 
-    for (const command of context.allCommands) {
+    for (const command of commands) {
       let highest = 0
 
       for (const trigger of command.triggers) {
