@@ -26,11 +26,16 @@ export default class Motes extends ChatCommandHandler {
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const motes = selectedProfile.currencies?.motes_purse
+    const lifetimeMotes = selectedProfile.player_stats?.rift?.lifetime_motes_earned ?? 0
 
     if (motes === undefined) {
       return context.app.i18n.t(($) => $['commands.motes.none'], { username: givenUsername })
     }
 
-    return context.app.i18n.t(($) => $['commands.motes.response'], { username: givenUsername, motesAmount: motes })
+    return context.app.i18n.t(($) => $['commands.motes.response'], {
+      username: givenUsername,
+      motesAmount: motes,
+      lifetimeMotes: lifetimeMotes
+    })
   }
 }

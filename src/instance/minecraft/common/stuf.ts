@@ -1,9 +1,13 @@
+import { HypixelLink } from './common'
+
 export function stufEncode(message: string): string {
   return message
     .split(' ')
     .map((part) => {
       try {
-        if (part.startsWith('https:') || part.startsWith('http')) return encode(part)
+        if ((part.startsWith('https:') || part.startsWith('http')) && !HypixelLink.test(part)) {
+          return encode(part)
+        }
       } catch {
         /* ignored */
       }

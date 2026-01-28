@@ -4,8 +4,7 @@ import type Application from '../../application.js'
 import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
 import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
 import type { ChatCommandHandler } from '../../common/commands.js'
-import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
-import { InternalInstancePrefix } from '../../common/instance.js'
+import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
@@ -101,13 +100,13 @@ import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 import Woolwars from './triggers/woolwars'
 
-export class CommandsInstance extends ConnectableInstance<InstanceType.Commands> {
-  public readonly commands: ChatCommandHandler[]
+export class CommandsInstance extends Instance<InstanceType.Commands> {
+  private readonly commands: ChatCommandHandler[] = []
 
   constructor(app: Application) {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
 
-    this.commands = [
+    const commandsToAdd = [
       new Age(),
       new Api(),
       new Armor(),
@@ -203,14 +202,16 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Woolwars()
     ]
 
-    this.checkCommandsIntegrity()
+    for (const commandToAdd of commandsToAdd) {
+      this.addCommand(commandToAdd)
+    }
 
     this.application.on('chat', async (event) => {
       await this.handle(event).catch(this.errorHandler.promiseCatch('handling chat event'))
     })
   }
 
-  private checkCommandsIntegrity(): void {
+  public addCommand(commandToAdd: ChatCommandHandler): void {
     const allTriggers = new Map<string, string>()
     for (const command of this.commands) {
       for (const trigger of command.triggers) {
@@ -224,23 +225,24 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
         }
       }
     }
-  }
 
-  async connect(): Promise<void> {
-    this.checkCommandsIntegrity()
-    await this.setAndBroadcastNewStatus(Status.Connected)
-    this.logger.debug('chat commands are ready to serve')
-  }
+    for (const trigger of commandToAdd.triggers) {
+      if (allTriggers.has(trigger)) {
+        const alreadyDefinedCommandName = allTriggers.get(trigger)
+        throw new Error(
+          `Trigger already defined in ${alreadyDefinedCommandName} when trying to add it to ${commandToAdd.triggers[0]}`
+        )
+      }
+    }
 
-  async disconnect(): Promise<void> {
-    await this.setAndBroadcastNewStatus(Status.Ended)
-    this.logger.debug('chat commands have been disabled')
+    this.commands.push(commandToAdd)
   }
 
   async handle(event: ChatEvent): Promise<void> {
-    if (this.currentStatus() !== Status.Connected) return
+    const config = this.application.core.commandsConfigurations
+    if (!config.getCommandsEnabled()) return
 
-    const chatPrefix = this.application.core.commandsConfigurations.getChatPrefix()
+    const chatPrefix = config.getChatPrefix()
     if (!event.message.startsWith(chatPrefix)) return
 
     const commandName = event.message.slice(chatPrefix.length).split(' ')[0].toLowerCase()
@@ -253,14 +255,11 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
     }
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
-    const commandDisabled = this.application.core.commandsConfigurations
-      .getDisabledCommands()
-      .includes(command.triggers[0].toLowerCase())
+    const commandDisabled = config.getDisabledCommands().includes(command.triggers[0].toLowerCase())
     const userPermission = event.user.permission()
     if (
       commandDisabled &&
-      (userPermission === Permission.Anyone ||
-        (userPermission === Permission.Helper && !this.application.core.commandsConfigurations.getAllowHelperToggle()))
+      (userPermission === Permission.Anyone || (userPermission === Permission.Helper && !config.getAllowHelperToggle()))
     ) {
       return
     }
