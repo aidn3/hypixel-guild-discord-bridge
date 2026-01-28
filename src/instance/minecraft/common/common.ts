@@ -1,5 +1,7 @@
 import assert from 'node:assert'
 
+export const HypixelLink = /^https:\/\/[\w.]*hypixel\.net/g
+
 export function getUuidFromGuildChat(message: unknown): string {
   // this is minecraft protocol for chat message
   // @ts-expect-error fields exist but hidden
