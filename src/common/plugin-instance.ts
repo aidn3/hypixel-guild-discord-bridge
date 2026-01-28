@@ -29,7 +29,7 @@ export default abstract class PluginInstance extends Instance<InstanceType.Plugi
   public abstract pluginInfo(): PluginInfo
 
   protected addChatCommand(command: ChatCommandHandler): void {
-    this.application.commandsInstance.commands.push(command)
+    this.application.commandsInstance.addCommand(command)
   }
 
   protected addDiscordCommand(command: DiscordCommandHandler): void {
