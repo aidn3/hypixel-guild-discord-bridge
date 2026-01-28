@@ -25,17 +25,22 @@ export default class Purse extends ChatCommandHandler {
       .catch(() => undefined)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const bank = selectedProfile.banking?.balance
+    const sharedBank = selectedProfile.banking?.balance
+    const personalBank = selectedProfile.members[uuid].profile.bank_account
     const purse = selectedProfile.members[uuid].currencies?.coin_purse
 
-    if (bank === undefined && purse === undefined) {
-      return `${givenUsername}'s API is disabled.`
+    if (sharedBank === undefined && personalBank === undefined && purse === undefined) {
+      return context.app.i18n.t(($) => $['commands.purse.api-disabled'], { username: givenUsername })
     }
 
-    const totalMessage = shortenNumber((bank ?? 0) + (purse ?? 0))
-    const bankMessage = 'Bank ' + (bank === undefined ? 'OFF' : shortenNumber(bank))
-    const purseMessage = 'Purse ' + (purse === undefined ? 'OFF' : shortenNumber(purse))
+    const off = context.app.i18n.t(($) => $['api-off'])
 
-    return `${givenUsername}'s coins ${totalMessage} - ${bankMessage} - ${purseMessage}`
+    return context.app.i18n.t(($) => $['commands.purse.response'], {
+      username: givenUsername,
+      total: shortenNumber((sharedBank ?? 0) + (personalBank ?? 0) + (purse ?? 0)),
+      sharedBank: sharedBank === undefined ? off : shortenNumber(sharedBank),
+      personalBank: personalBank === undefined ? off : shortenNumber(personalBank),
+      purse: purse === undefined ? off : shortenNumber(purse)
+    })
   }
 }
