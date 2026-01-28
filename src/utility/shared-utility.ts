@@ -85,6 +85,33 @@ export function formatTime(milliseconds: number, maxPrecision = 2): string {
   return result
 }
 
+export function shortenNumber(value: number): string {
+  if (value === 0) return value.toFixed(0)
+  let suffix = ''
+
+  if (value > 1000) {
+    value = value / 1000
+    suffix = 'k'
+  }
+  if (value > 1000) {
+    value = value / 1000
+    suffix = 'm'
+  }
+  if (value > 1000) {
+    value = value / 1000
+    suffix = 'b'
+  }
+  if (value > 1000) {
+    value = value / 1000
+    suffix = 't'
+  }
+
+  const digits = Math.floor(Math.log10(Math.abs(value))) + 1
+  const digitsCount = 3
+
+  return value.toFixed(Math.max(0, digitsCount - digits)) + suffix
+}
+
 export async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }

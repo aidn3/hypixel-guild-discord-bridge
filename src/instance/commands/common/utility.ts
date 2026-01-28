@@ -67,33 +67,6 @@ export function getDungeonLevelWithOverflow(experience: number): number {
   return totalLevel + fractionLevel
 }
 
-export function shortenNumber(value: number): string {
-  if (value === 0) return value.toFixed(0)
-  let suffix = ''
-
-  if (value > 1000) {
-    value = value / 1000
-    suffix = 'k'
-  }
-  if (value > 1000) {
-    value = value / 1000
-    suffix = 'm'
-  }
-  if (value > 1000) {
-    value = value / 1000
-    suffix = 'b'
-  }
-  if (value > 1000) {
-    value = value / 1000
-    suffix = 't'
-  }
-
-  const digits = Math.floor(Math.log10(Math.abs(value))) + 1
-  const digitsCount = 3
-
-  return value.toFixed(Math.max(0, digitsCount - digits)) + suffix
-}
-
 export async function parseEncodedNbt<T>(base64: string): Promise<T> {
   const decoded = Buffer.from(base64, 'base64')
   const parsed = await nbt.parse(decoded)
