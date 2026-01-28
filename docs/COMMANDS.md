@@ -107,7 +107,7 @@ A shorter version can also be used: `!- rtca`
 | `unlink`         | Unlink Minecraft account from Discord                                              |
 | `unscramble`     | Start an unscrambling event                                                        |
 | `username`       | Show the Mojang uuid of a player                                                   |
-| `vengeance`      | Try your luck against another player for a 15 minute mute                          |
+| `vengeance`      | Try your luck against another player for a 5 minute mute                           |
 | `warp`           | Warp a player out of a lobby                                                       |
 | `weight`         | Returns a player's senither weight                                                 |
 | `woolwars`       | Returns a player's Woolwars stats                                                  |
