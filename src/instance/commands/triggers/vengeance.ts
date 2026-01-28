@@ -31,7 +31,7 @@ export default class Vengeance extends ChatCommandHandler {
     '{target}? Dead? That was the only possible outcome.'
   ]
 
-  private static readonly MuteDuration = Duration.minutes(15)
+  private static readonly MuteDuration = Duration.minutes(5)
 
   private countSinceLastWin = 0
   private consecutiveLose = 0
