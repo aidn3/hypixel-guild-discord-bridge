@@ -163,6 +163,18 @@ export class Core extends Instance<InstanceType.Core> {
     return this.punishments.all()
   }
 
+  public getPunishmentById(id: SavedPunishment['id']): SavedPunishment | undefined {
+    return this.punishments.get(id)
+  }
+
+  public editPunishment(
+    id: SavedPunishment['id'],
+    reason: SavedPunishment['reason'] | undefined,
+    till: SavedPunishment['till'] | undefined
+  ): SavedPunishment | undefined {
+    return this.punishments.edit(id, reason, till)
+  }
+
   public async awaitReady(): Promise<void> {
     await this.punishments.ready
     this.sqliteManager.clean()

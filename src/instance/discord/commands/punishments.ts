@@ -14,6 +14,7 @@ import {
   userMention
 } from 'discord.js'
 
+import type { BasePunishment } from '../../../common/application-event.js'
 import {
   Color,
   InstanceType,
@@ -36,14 +37,15 @@ import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 export default {
   getCommandBuilder: function () {
-    const durationOption = new SlashCommandStringOption()
-      .setName('duration')
-      .setDescription('duration of the ban. Can use 1s, 1m, 1h, 1d')
-      .setRequired(true)
-    const reasonOption = new SlashCommandStringOption()
-      .setName('reason')
-      .setDescription('reason to ban the user')
-      .setRequired(true)
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    const durationOption = () =>
+      new SlashCommandStringOption()
+        .setName('duration')
+        .setDescription('duration of the ban. Can use 1s, 1m, 1h, 1d')
+        .setRequired(true)
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    const reasonOption = () =>
+      new SlashCommandStringOption().setName('reason').setDescription('reason to punish the user').setRequired(true)
 
     const minecraftOption = () =>
       new SlashCommandSubcommandBuilder()
@@ -70,22 +72,22 @@ export default {
         new SlashCommandSubcommandGroupBuilder()
           .setName('ban')
           .setDescription('Add a member to the ban list')
-          .addSubcommand(minecraftOption().addStringOption(durationOption).addStringOption(reasonOption))
-          .addSubcommand(discordOption().addStringOption(durationOption).addStringOption(reasonOption))
+          .addSubcommand(minecraftOption().addStringOption(durationOption()).addStringOption(reasonOption()))
+          .addSubcommand(discordOption().addStringOption(durationOption()).addStringOption(reasonOption()))
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
           .setName('mute')
           .setDescription('Add a member to the mute list')
-          .addSubcommand(minecraftOption().addStringOption(durationOption).addStringOption(reasonOption))
-          .addSubcommand(discordOption().addStringOption(durationOption).addStringOption(reasonOption))
+          .addSubcommand(minecraftOption().addStringOption(durationOption()).addStringOption(reasonOption()))
+          .addSubcommand(discordOption().addStringOption(durationOption()).addStringOption(reasonOption()))
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
           .setName('kick')
           .setDescription('kick a member from all Minecraft instances')
-          .addSubcommand(minecraftOption().addStringOption(reasonOption))
-          .addSubcommand(discordOption().addStringOption(reasonOption))
+          .addSubcommand(minecraftOption().addStringOption(reasonOption()))
+          .addSubcommand(discordOption().addStringOption(reasonOption()))
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
@@ -93,6 +95,14 @@ export default {
           .setDescription('forgive a member by removing all active punishments on them')
           .addSubcommand(minecraftOption())
           .addSubcommand(discordOption())
+      )
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('edit')
+          .setDescription('Edit an existing punishment')
+          .addNumberOption((o) => o.setName('id').setDescription('punishment id').setRequired(true))
+          .addStringOption(reasonOption().setRequired(false))
+          .addStringOption(durationOption().setRequired(false))
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
@@ -115,6 +125,23 @@ export default {
     if (!groupCommand && subCommand === 'list') {
       await handleAllListInteraction(context)
       return
+    } else if (!groupCommand && subCommand === 'edit') {
+      const guildMember = interaction.guild?.members.cache.get(context.interaction.user.id)
+      const responsibleProfile = context.application.discordInstance.profileByUser(
+        context.interaction.user,
+        guildMember
+      )
+      const responsible = await context.application.core.initializeDiscordUser(responsibleProfile, {
+        guild: interaction.guild ?? undefined
+      })
+
+      if (context.permission < Permission.Officer) {
+        await context.showPermissionDenied(Permission.Officer)
+        return
+      }
+
+      await handleEdit(context, responsible)
+      return
     }
 
     let target: User | undefined
@@ -126,7 +153,7 @@ export default {
           mojangProfile = await context.application.mojangApi.profileByUsername(username)
         } catch (error: unknown) {
           context.errorHandler.error('fetching minecraft profile', error)
-          await interaction.reply({ embeds: [formatInvalidUsername(username)] })
+          await interaction.editReply({ embeds: [formatInvalidUsername(username)] })
           return
         }
         target = await context.application.core.initializeMinecraftUser(mojangProfile, {
@@ -322,6 +349,143 @@ async function handleForgive(context: DiscordCommandContext, responsible: Discor
   }
 
   await takeAction(context, responsible, target, header, HeatType.Mute, command, UnmuteChat, post)
+}
+
+async function handleEdit(context: DiscordCommandContext, responsible: DiscordUser): Promise<void> {
+  const id = context.interaction.options.getNumber('id', true)
+  const reason = context.interaction.options.getString('reason') ?? undefined
+  const duration = context.interaction.options.getString('duration') ?? undefined
+
+  let parsedDuration: Duration | undefined = undefined
+  if (duration !== undefined) {
+    try {
+      parsedDuration = getDuration(duration)
+    } catch {
+      await context.interaction.editReply({
+        embeds: [
+          {
+            title: 'Edit Punishment',
+            description: `Can not parse this duration: ${quote(escapeMarkdown(duration))}.`,
+            color: Color.Bad,
+            footer: { text: DefaultCommandFooter }
+          }
+        ]
+      })
+      return
+    }
+  }
+
+  if (reason == undefined && duration === undefined) {
+    await context.interaction.editReply({
+      embeds: [
+        {
+          title: 'Edit Punishment',
+          description: `Need to specify a field to edit first!`,
+          color: Color.Info,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  const oldPunishment = context.application.core.getPunishmentById(id)
+  if (oldPunishment === undefined) {
+    await context.interaction.editReply({
+      embeds: [
+        {
+          title: 'Edit Punishment',
+          description: `No punishment found with the ID ${quote(escapeMarkdown(id.toString(10)))}.`,
+          color: Color.Info,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  } else if (oldPunishment.purpose === PunishmentPurpose.Game) {
+    await context.interaction.editReply({
+      embeds: [
+        {
+          title: 'Edit Punishment',
+          description: `Can not edit game punishments. They can only be forgiven.`,
+          color: Color.Info,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+  oldPunishment.purpose satisfies PunishmentPurpose.Manual
+
+  const targetUser = await context.application.core.initializeUser(oldPunishment, {
+    guild: context.interaction.guild ?? undefined
+  })
+
+  const heat = responsible.tryAddModerationAction(getHeatType(oldPunishment.type))
+  if (heat === HeatResult.Denied) {
+    await handleHeatDenied(context.interaction)
+    return
+  }
+
+  let newPunishment: SavedPunishment | undefined
+  if (oldPunishment.type === PunishmentType.Ban) {
+    newPunishment = context.application.core.editPunishment(
+      oldPunishment.id,
+      reason,
+      parsedDuration === undefined ? undefined : Date.now() + parsedDuration.toMilliseconds()
+    )
+  } else {
+    oldPunishment.type satisfies PunishmentType.Mute
+
+    if (context.application.minecraftManager.getAllInstances().length > 0 && parsedDuration !== undefined) {
+      await context.interaction.editReply({
+        embeds: [
+          {
+            title: 'Edit Punishment',
+            description: `Can not edit duration of a mute punishment due to Minecraft in-game limitations. Forgive and re-apply the punishment if needed!`,
+            color: Color.Info,
+            footer: { text: DefaultCommandFooter }
+          }
+        ]
+      })
+      return
+    }
+
+    newPunishment = context.application.core.editPunishment(
+      oldPunishment.id,
+      reason,
+      parsedDuration === undefined ? undefined : Date.now() + parsedDuration.toMilliseconds()
+    )
+  }
+  assert.ok(newPunishment !== undefined)
+
+  const formatted = formatPunishment(newPunishment, targetUser)
+  await context.interaction.editReply({
+    embeds: [
+      {
+        title: 'Edit Punishment',
+        description: formatted,
+        color: Color.Info,
+        footer: { text: DefaultCommandFooter }
+      }
+    ]
+  })
+}
+
+function getHeatType(punishmentType: BasePunishment['type']): HeatType {
+  switch (punishmentType) {
+    case PunishmentType.Ban: {
+      return HeatType.Kick
+    }
+    case PunishmentType.Mute: {
+      return HeatType.Mute
+    }
+    default: {
+      punishmentType satisfies never
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      assert.fail(`no such punishment type ${punishmentType}`)
+    }
+  }
 }
 
 async function takeAction(
@@ -521,6 +685,7 @@ function formatUser(user: User): string {
 function formatPunishment(punishment: SavedPunishment, userToFormat: User | undefined): string {
   let result = ''
 
+  result += `ID: \`${punishment.id.toString(10)}\`\n`
   result += `<t:${Math.floor(punishment.createdAt / 1000)}> `
 
   if (userToFormat !== undefined) {
