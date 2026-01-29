@@ -348,10 +348,7 @@ export class InstanceStatusManager {
         .getHistory(event.instanceName, lastMessage.startTime, lastMessage.endTime)
         .find((entry) => entry.entryType === StatusHistoryEntryType.Message)
 
-      if (
-        firstMessageEntry !== undefined &&
-        firstMessageEntry.type === InstanceMessageType.MinecraftAuthenticationCode
-      ) {
+      if (firstMessageEntry?.type === InstanceMessageType.MinecraftAuthenticationCode) {
         return {
           payload: this.generateAuthentication(event.instanceName),
           onlySend: false,
