@@ -245,12 +245,12 @@ export class User {
       reason: reason
     }
 
-    const savedPunishment = { ...punishment, ...this.getUserIdentifier() }
+    const toSave = { ...punishment, ...this.getUserIdentifier() }
 
-    this.context.punishments.add(savedPunishment)
+    const saved = this.context.punishments.add(toSave)
     await this.application.emit('punishmentAdd', { ...executor, user: this, ...punishment })
 
-    return savedPunishment
+    return saved
   }
 
   public addModerationAction(type: HeatType): HeatResult {
