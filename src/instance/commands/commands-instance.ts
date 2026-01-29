@@ -246,6 +246,10 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     const commandName = event.message.slice(chatPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
+    if (commandName.length === 0) {
+      return
+    }
+
     const command = this.commands.find((c) => c.triggers.includes(commandName))
     if (command == undefined) {
       await this.trySuggest(event, commandName)
