@@ -8,7 +8,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 7
+const CurrentVersion = 8
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -33,6 +33,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(6, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom6to7(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(7, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom7to8(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -471,6 +474,21 @@ function migrateFrom6to7(database: Database, logger: Logger4Js, newlyCreated: bo
   )
 
   database.pragma('user_version = 7')
+}
+
+function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 7 to 8')
+
+  // reference: moderation/profanity.ts
+  database.exec(
+    'CREATE TABLE "profanityReplace" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  search TEXT NOT NULL,' +
+      '  replace TEXT NOT NULL' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 8')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

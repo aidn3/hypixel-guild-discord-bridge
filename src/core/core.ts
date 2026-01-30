@@ -53,7 +53,7 @@ import { Verification } from './users/verification'
 export class Core extends Instance<InstanceType.Core> {
   // moderation
   private readonly commandsHeat: CommandsHeat
-  private readonly profanity: Profanity
+  public readonly profanity: Profanity
   private readonly punishments: Punishments
   private readonly enforcer: PunishmentsEnforcer
 
@@ -131,7 +131,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.mojangApi = new MojangApi(this.sqliteManager)
     this.hypixelApi = new Hypixel(hypixelApiKey, this.sqliteManager, this.logger)
 
-    this.profanity = new Profanity(this.moderationConfiguration)
+    this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
     this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
