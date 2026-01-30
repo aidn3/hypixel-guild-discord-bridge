@@ -13,9 +13,13 @@ import type {
   DiscordCommandContext,
   DiscordCommandHandler
 } from '../../../common/commands.js'
+import type { ProfanityReplace } from '../../../core/moderation/profanity'
+import Duration from '../../../utility/duration'
 import { search } from '../../../utility/shared-utility'
+import { DefaultCommandFooter } from '../common/discord-config'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
+const ReplaceCommand = 'replace'
 const IncludeCommand = 'include'
 const ExcludeCommand = 'exclude'
 
@@ -28,6 +32,25 @@ export default {
     new SlashCommandBuilder()
       .setName('profanity')
       .setDescription('Manage application profanity filter')
+      .addSubcommandGroup(
+        new SlashCommandSubcommandGroupBuilder()
+          .setName(ReplaceCommand)
+          .setDescription('Manage words replacements')
+          .addSubcommand(new SlashCommandSubcommandBuilder().setName(List).setDescription('list all replacers'))
+          .addSubcommand(
+            new SlashCommandSubcommandBuilder()
+              .setName(Add)
+              .setDescription('add a profanity replacer')
+              .addStringOption((o) => o.setName('search').setDescription('Regex/search to lookup').setRequired(true))
+              .addStringOption((o) => o.setName('replace').setDescription('What to replace with').setRequired(true))
+          )
+          .addSubcommand(
+            new SlashCommandSubcommandBuilder()
+              .setName(Remove)
+              .setDescription('remove a profanity replacer')
+              .addNumberOption((o) => o.setName('id').setDescription('ID of the replacer to remove').setRequired(true))
+          )
+      )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
           .setName(IncludeCommand)
@@ -88,6 +111,10 @@ export default {
     }
     const groupCommand = context.interaction.options.getSubcommandGroup(true)
     switch (groupCommand) {
+      case ReplaceCommand: {
+        await handleReplaceInteraction(context)
+        break
+      }
       case ExcludeCommand:
       case IncludeCommand: {
         await handleProfanityInteraction(context, groupCommand)
@@ -112,6 +139,127 @@ export default {
     }
   }
 } satisfies DiscordCommandHandler
+
+async function handleReplaceInteraction(context: Readonly<DiscordCommandContext>) {
+  switch (context.interaction.options.getSubcommand()) {
+    case List: {
+      await handleReplaceList(context)
+      break
+    }
+    case Add: {
+      await handleReplaceAdd(context)
+      break
+    }
+    case Remove: {
+      await handleReplaceRemove(context)
+      break
+    }
+  }
+}
+
+async function handleReplaceList(context: DiscordCommandContext): Promise<void> {
+  await context.interaction.deferReply()
+
+  await interactivePaging(
+    context.interaction,
+    0,
+    Duration.minutes(10).toMilliseconds(),
+    context.errorHandler,
+    (currentPage) => {
+      const EntriesPerPage = 5
+      const all = context.application.core.profanity.getAllReplacers()
+      const chunk = all.slice(currentPage * EntriesPerPage, (currentPage + 1) * EntriesPerPage)
+      const totalPages = Math.ceil(all.length / EntriesPerPage)
+
+      const embed = {
+        title: 'Profanity Replacers',
+        description: '',
+        color: Color.Default,
+        footer: { text: DefaultCommandFooter }
+      } satisfies APIEmbed
+
+      if (chunk.length === 0) {
+        embed.color = Color.Info
+        embed.description = '__Nothing to show.__'
+      } else {
+        embed.description = chunk.map((entry) => formatProfanityReplacer(entry)).join('\n\n')
+      }
+
+      return { embed: embed, totalPages: totalPages }
+    }
+  )
+}
+
+async function handleReplaceAdd(context: DiscordCommandContext): Promise<void> {
+  const search = context.interaction.options.getString('search', true)
+  const replace = context.interaction.options.getString('replace', true)
+
+  await context.interaction.deferReply()
+
+  try {
+    new RegExp(search, 'ig')
+  } catch {
+    await context.interaction.editReply({
+      embeds: [
+        {
+          description: `Bad search Regex: \`${search}\`.`,
+          color: Color.Info,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  const addedEntry = context.application.core.profanity.addReplace({ replace, search })
+  context.application.core.reloadProfanity()
+
+  await context.interaction.editReply({
+    embeds: [
+      {
+        description: `Added profanity replacer successfully!\n\n` + formatProfanityReplacer(addedEntry),
+        color: Color.Good,
+        footer: { text: DefaultCommandFooter }
+      }
+    ]
+  })
+}
+
+async function handleReplaceRemove(context: DiscordCommandContext): Promise<void> {
+  const id = context.interaction.options.getNumber('id', true)
+  await context.interaction.deferReply()
+
+  const deletedProfanity = context.application.core.profanity.removeReplace(id)
+  if (deletedProfanity === undefined) {
+    await context.interaction.editReply({
+      embeds: [
+        {
+          description: `No such a profanity replacer \`${id.toString(10)}\`.`,
+          color: Color.Info,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  context.application.core.reloadProfanity()
+  await context.interaction.editReply({
+    embeds: [
+      {
+        description: `Removed profanity replacer successfully!\n\n` + formatProfanityReplacer(deletedProfanity),
+        color: Color.Good,
+        footer: { text: DefaultCommandFooter }
+      }
+    ]
+  })
+}
+
+function formatProfanityReplacer(entry: ProfanityReplace): string {
+  return (
+    `**ID:** \`${entry.id.toString(10)}\`\n` + `**Search:** \`${entry.search}\`\n` + `**Replace:** \`${entry.replace}\``
+  )
+}
 
 export async function handleProfanityInteraction(
   context: DiscordCommandContext,
