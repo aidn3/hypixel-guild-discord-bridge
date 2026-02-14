@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
@@ -6,6 +8,7 @@ import { HypixelApiFail, HypixelFailType } from '../../../core/hypixel/hypixel'
 import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
 import { formatInvalidUsername } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
+import type { UpdateContext, UpdateProgress } from '../conditions/common'
 
 export default {
   getCommandBuilder: () =>
@@ -85,7 +88,39 @@ export default {
     }
 
     context.application.core.verification.addConfirmedLink(interaction.user.id, mojangProfile.id)
-    await interaction.editReply('Successfully linked!')
+
+    if (!context.interaction.inGuild()) {
+      await interaction.editReply('Successfully linked!')
+      return
+    }
+    assert.ok(interaction.inCachedGuild())
+
+    const progress: UpdateProgress = {
+      totalGuilds: 0,
+      processedGuilds: 0,
+      totalUsers: 0,
+      processedUsers: 0,
+      processedRoles: 0,
+      processedNicknames: 0,
+      errors: []
+    }
+    const updateContext = {
+      application: context.application,
+      updateReason: `Manual sync via /${context.interaction.commandName} by ${interaction.user.username}`,
+      abortSignal: new AbortController().signal,
+      startTime: startTime,
+      progress: progress
+    } satisfies UpdateContext
+
+    const guildMember = await interaction.member.fetch()
+
+    const user = await context.application.core.initializeDiscordUser(
+      context.application.discordInstance.profileByUser(guildMember.user, guildMember),
+      { guild: guildMember.guild }
+    )
+
+    await context.application.discordInstance.conditionsManager.updateMember(updateContext, { guildMember, user })
+    await interaction.editReply('Successfully linked and synced!')
   },
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)
