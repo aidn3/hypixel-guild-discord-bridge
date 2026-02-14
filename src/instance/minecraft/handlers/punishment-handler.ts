@@ -59,7 +59,7 @@ export default class PunishmentHandler extends SubInstance<MinecraftInstance, In
     )
       return
 
-    const heatResult = event.responsible.addModerationAction(heatType)
+    const heatResult = await event.responsible.addModerationAction(heatType)
 
     if (heatResult === HeatResult.Warn) {
       await this.application.emit('broadcast', {

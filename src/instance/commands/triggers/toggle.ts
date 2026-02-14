@@ -11,8 +11,8 @@ export default class Toggle extends ChatCommandHandler {
     })
   }
 
-  handler(context: ChatCommandContext): string {
-    const userPermission = context.message.user.permission()
+  async handler(context: ChatCommandContext): Promise<string> {
+    const userPermission = await context.message.user.permission()
     if (
       userPermission < Permission.Helper ||
       (userPermission === Permission.Helper && !context.app.core.commandsConfigurations.getAllowHelperToggle())

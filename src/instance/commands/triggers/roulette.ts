@@ -40,7 +40,7 @@ export default class Roulette extends ChatCommandHandler {
     if (context.message.channelType !== ChannelType.Public) {
       return `${context.username}, Command can only be executed in public chat!`
     }
-    if (context.message.user.permission() >= Permission.Helper || context.message.user.immune()) {
+    if ((await context.message.user.permission()) >= Permission.Helper || (await context.message.user.immune())) {
       return `${context.username}, Staff are immune. Why play this game? :P`
     }
 

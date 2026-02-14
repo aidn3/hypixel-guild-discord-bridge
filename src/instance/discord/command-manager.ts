@@ -156,7 +156,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
     const user = await this.application.core.initializeDiscordUser(identifier, {
       guild: interaction.guild ?? undefined
     })
-    const permission = user.permission()
+    const permission = await user.permission()
     if (command.autoComplete) {
       const context: DiscordAutoCompleteContext = {
         application: this.application,
@@ -197,7 +197,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       const user = await this.application.core.initializeDiscordUser(identifier, {
         guild: interaction.guild ?? undefined
       })
-      const permission = user.permission()
+      const permission = await user.permission()
 
       if (command == undefined) {
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)

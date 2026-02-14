@@ -67,7 +67,7 @@ export class InstanceStatusManager {
       guild: interaction.guild ?? undefined
     })
 
-    const permission = user.permission()
+    const permission = await user.permission()
     if (permission < InstanceStatusManager.PermissionToView) {
       await interaction.editReply({
         content: translateNoPermission(this.application, InstanceStatusManager.PermissionToView),

@@ -260,7 +260,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     const commandDisabled = config.getDisabledCommands().includes(command.triggers[0].toLowerCase())
-    const userPermission = event.user.permission()
+    const userPermission = await event.user.permission()
     if (
       commandDisabled &&
       (userPermission === Permission.Anyone || (userPermission === Permission.Helper && !config.getAllowHelperToggle()))

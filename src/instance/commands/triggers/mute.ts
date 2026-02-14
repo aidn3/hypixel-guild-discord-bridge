@@ -48,7 +48,7 @@ export default class Mute extends ChatCommandHandler {
     const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
     const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
     const user = await context.app.core.initializeMinecraftUser(userProfile, {})
-    if (user.permission() >= Permission.Helper || user.immune()) {
+    if ((await user.permission()) >= Permission.Helper || (await user.immune())) {
       return `I tried to mute ${selectedUsername}, but then I remembered I'll die if I were to touch this person XD`
     }
 

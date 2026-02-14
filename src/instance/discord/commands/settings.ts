@@ -115,6 +115,8 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 
 function fetchModerationOptions(application: Application): CategoryOption {
   const moderation = application.core.moderationConfiguration
+  const discord = application.core.discordConfigurations
+  const minecraft = application.core.minecraftConfigurations
 
   return {
     type: OptionType.Category,
@@ -122,7 +124,97 @@ function fetchModerationOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
-        type: OptionType.EmbedCategory,
+        type: OptionType.Category,
+        name: 'Staff Options',
+        description: 'Assign staff channels and roles, so the application can integrate with them.',
+        header: 'These are dangerous permissions. Make sure you know what you are doing!',
+        options: [
+          {
+            type: OptionType.Text,
+
+            name: 'Admin Username',
+            description: 'In-game username of the person who has full permission over the application.',
+
+            style: InputStyle.Tiny,
+            max: 16,
+            min: 2,
+
+            getOption: () => minecraft.getAdminUsername(),
+            setOption: (username) => {
+              minecraft.setAdminUsername(username)
+            }
+          },
+          {
+            type: OptionType.Boolean,
+            name: `Recognize Guild Masters as Officers`,
+            description:
+              'Detect Guild Masters in the same guild as the bot in-game and give them the same permissions as an Officer.',
+            getOption: () => minecraft.getGuildMasterOfficer(),
+            toggleOption: () => {
+              minecraft.setGuildMasterOfficer(!minecraft.getGuildMasterOfficer())
+            }
+          },
+          {
+            type: OptionType.Role,
+
+            name: 'Helper Roles',
+            description: 'Staff roles that have permissions to execute commands such as `!toggle` and `/invite`',
+
+            min: 0,
+            max: 5,
+
+            getOption: () => discord.getHelperRoleIds(),
+            setOption: (values) => {
+              discord.setHelperRoleIds(values)
+            }
+          },
+          {
+            type: OptionType.List,
+
+            name: 'Helper Guild Roles',
+            description: 'In-game guild Staff roles that have the same permissions as Discord helper roles',
+            style: InputStyle.Short,
+
+            min: 0,
+            max: 5,
+
+            getOption: () => minecraft.getHelperRoles(),
+            setOption: (values) => {
+              minecraft.setHelperRoles(values)
+            }
+          },
+          {
+            type: OptionType.Role,
+
+            name: 'Officer Roles',
+            description: 'Staff roles that have permissions to execute destructive commands such as `/kick`.',
+
+            min: 0,
+            max: 5,
+
+            getOption: () => discord.getOfficerRoleIds(),
+            setOption: (values) => {
+              discord.setOfficerRoleIds(values)
+            }
+          },
+          {
+            type: OptionType.Channel,
+
+            name: 'Logs Channels',
+            description: 'Channels where application logs are sent. This is for staff only!',
+
+            min: 0,
+            max: 5,
+
+            getOption: () => discord.getLoggerChannelIds(),
+            setOption: (values) => {
+              discord.setLoggerChannelIds(values)
+            }
+          }
+        ]
+      },
+      {
+        type: OptionType.Category,
         name: `Heat Punishments`,
         options: [
           {
@@ -421,6 +513,20 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Channel,
+
+        name: 'Officer Channels',
+        description: 'Manage officer channels',
+
+        min: 0,
+        max: 5,
+
+        getOption: () => discord.getOfficerChannelIds(),
+        setOption: (values) => {
+          discord.setOfficerChannelIds(values)
+        }
+      },
+      {
         type: OptionType.Boolean,
         name: 'Always Reply',
         description:
@@ -498,70 +604,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             getOption: () => deleterConfig.getMaxTemporarilyInteractions(),
             setOption: (value) => {
               deleterConfig.setMaxTemporarilyInteractions(value)
-            }
-          }
-        ]
-      },
-      {
-        type: OptionType.Category,
-        name: 'Staff Options',
-        description: 'Assign staff channels and roles, so the application can integrate with them.',
-        header: 'These are dangerous permissions. Make sure you know what you are doing!',
-        options: [
-          {
-            type: OptionType.Channel,
-
-            name: 'Officer Channels',
-            description: 'Manage officer channels',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getOfficerChannelIds(),
-            setOption: (values) => {
-              discord.setOfficerChannelIds(values)
-            }
-          },
-          {
-            type: OptionType.Channel,
-
-            name: 'Logs Channels',
-            description: 'Channels where application logs are sent. This is for staff only!',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getLoggerChannelIds(),
-            setOption: (values) => {
-              discord.setLoggerChannelIds(values)
-            }
-          },
-          {
-            type: OptionType.Role,
-
-            name: 'Helper Roles',
-            description: 'Staff roles that have permissions to execute commands such as `!toggle` and `/invite`',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getHelperRoleIds(),
-            setOption: (values) => {
-              discord.setHelperRoleIds(values)
-            }
-          },
-          {
-            type: OptionType.Role,
-
-            name: 'Officer Roles',
-            description: 'Staff roles that have permissions to execute destructive commands such as `/kick`.',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getOfficerRoleIds(),
-            setOption: (values) => {
-              discord.setOfficerRoleIds(values)
             }
           }
         ]
@@ -643,7 +685,7 @@ function fetchCommandsOptions(application: Application): CategoryOption {
       {
         type: OptionType.Label,
         name: 'Admin Username',
-        description: 'You can change admin username from **Minecraft** category.',
+        description: 'You can change admin username from **Moderation** category.',
         getOption: () => minecraft.getAdminUsername()
       },
       {
@@ -923,28 +965,6 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
     name: 'Minecraft',
     header: CategoryLabel,
     options: [
-      {
-        type: OptionType.EmbedCategory,
-        name: 'Staff Options',
-        description: 'These are dangerous permissions. Make sure you know what you are doing!',
-        options: [
-          {
-            type: OptionType.Text,
-
-            name: 'Admin Username',
-            description: 'In-game username of the person who has full permission over the application.',
-
-            style: InputStyle.Tiny,
-            max: 16,
-            min: 2,
-
-            getOption: () => minecraft.getAdminUsername(),
-            setOption: (username) => {
-              minecraft.setAdminUsername(username)
-            }
-          }
-        ]
-      },
       {
         type: OptionType.Category,
         name: 'Chat Processing',

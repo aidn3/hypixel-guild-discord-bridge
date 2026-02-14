@@ -7,6 +7,21 @@ export class MinecraftConfigurations {
     this.configuration = manager.create('minecraft')
   }
 
+  public getHelperRoles(): string[] {
+    return this.configuration.getStringArray('helperRoles', ['staff', 'manager', 'helper'])
+  }
+  public setHelperRoles(roles: string[]): void {
+    this.configuration.setStringArray('helperRoles', roles)
+  }
+
+  public getGuildMasterOfficer(): boolean {
+    return this.configuration.getBoolean('guildMasterOfficer', true)
+  }
+
+  public setGuildMasterOfficer(enabled: boolean): void {
+    this.configuration.setBoolean('guildMasterOfficer', enabled)
+  }
+
   public getAdminUsername(): string {
     return this.configuration.getString('adminUsername', 'Steve')
   }

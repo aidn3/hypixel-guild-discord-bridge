@@ -66,7 +66,7 @@ export default class Vengeance extends ChatCommandHandler {
     const mojangProfile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (mojangProfile == undefined) return usernameNotExists(context, givenUsername)
     const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, {})
-    if (targetUser.permission() >= Permission.Helper || targetUser.immune()) {
+    if ((await targetUser.permission()) >= Permission.Helper || (await targetUser.immune())) {
       return `No way I'm helping with taking vengeance against ${mojangProfile.name}!`
     }
 
@@ -83,7 +83,7 @@ export default class Vengeance extends ChatCommandHandler {
       )
       messages = context.app.core.languageConfigurations.getCommandVengeanceWin()
     } else if (this.lose()) {
-      if (context.message.user.permission() < Permission.Helper && !context.message.user.immune()) {
+      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
         await context.message.user.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,

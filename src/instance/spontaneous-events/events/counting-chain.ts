@@ -74,7 +74,7 @@ export async function startCountingChain(
   if (beforeLast === undefined) {
     return { message: `Never mind the counting chain :(`, color: Color.Info }
   } else {
-    if (beforeLast.permission() < Permission.Helper && !beforeLast.immune()) {
+    if ((await beforeLast.permission()) < Permission.Helper && !(await beforeLast.immune())) {
       await beforeLast.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,

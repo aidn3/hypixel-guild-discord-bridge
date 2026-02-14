@@ -13,7 +13,7 @@ export default class Command67 extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    if (context.message.user.permission() < Permission.Helper && !context.message.user.immune()) {
+    if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
       await context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,

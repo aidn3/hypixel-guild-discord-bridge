@@ -38,7 +38,7 @@ export default class Asian extends ChatCommandHandler {
     if (result === math.answer) {
       return 'Big brain!'
     } else {
-      if (context.message.user.permission() < Permission.Helper && !context.message.user.immune()) {
+      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
         await context.message.user.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,
