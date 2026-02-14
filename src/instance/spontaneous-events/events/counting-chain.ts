@@ -1,5 +1,5 @@
 import type { ChatEvent } from '../../../common/application-event'
-import { ChannelType, Color, PunishmentPurpose } from '../../../common/application-event'
+import { ChannelType, Color, Permission, PunishmentPurpose } from '../../../common/application-event'
 import type { User } from '../../../common/user'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import Duration from '../../../utility/duration'
@@ -74,12 +74,15 @@ export async function startCountingChain(
   if (beforeLast === undefined) {
     return { message: `Never mind the counting chain :(`, color: Color.Info }
   } else {
-    await beforeLast.mute(
-      context.eventHelper.fillBaseEvent(),
-      PunishmentPurpose.Game,
-      Duration.minutes(5),
-      'Did not continue chain counting'
-    )
+    if (beforeLast.permission() < Permission.Helper && !beforeLast.immune()) {
+      await beforeLast.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Duration.minutes(5),
+        'Did not continue chain counting'
+      )
+    }
+
     return {
       message: `${beforeLast.displayName()} was the 2nd to last to stop counting. How dare you!`,
       color: Color.Good

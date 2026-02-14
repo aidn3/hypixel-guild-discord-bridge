@@ -1,4 +1,4 @@
-import { PunishmentPurpose } from '../../../common/application-event'
+import { Permission, PunishmentPurpose } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -13,12 +13,14 @@ export default class Command67 extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    await context.message.user.mute(
-      context.eventHelper.fillBaseEvent(),
-      PunishmentPurpose.Game,
-      Duration.minutes(3),
-      `Used command ${context.commandPrefix}${this.triggers[0]}`
-    )
+    if (context.message.user.permission() < Permission.Helper && !context.message.user.immune()) {
+      await context.message.user.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Duration.minutes(3),
+        `Used command ${context.commandPrefix}${this.triggers[0]}`
+      )
+    }
 
     return context.app.i18n.t(($) => $['commands.67'], {
       username: context.message.user.displayName(),

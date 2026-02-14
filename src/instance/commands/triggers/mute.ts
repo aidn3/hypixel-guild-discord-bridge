@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -48,6 +48,10 @@ export default class Mute extends ChatCommandHandler {
     const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
     const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
     const user = await context.app.core.initializeMinecraftUser(userProfile, {})
+    if (user.permission() >= Permission.Helper || user.immune()) {
+      return `I tried to mute ${selectedUsername}, but then I remembered I'll die if I were to touch this person XD`
+    }
+
     await user.mute(
       context.eventHelper.fillBaseEvent(),
       PunishmentPurpose.Game,
