@@ -1040,17 +1040,17 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   }
   assert.ok(embed.fields)
 
-  const registeredInstances = instances.filter((instance) =>
-    savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
-  )
+  const registeredText: string[] = []
+  for (const instance of instances) {
+    const instanceConfig = savedInstances.find((configInstance) => instance.instanceName === configInstance.name)
+    if (instanceConfig === undefined) continue
+    let text = `- **${instance.instanceName}:** ${instance.currentStatus()}`
+    if (instanceConfig.proxy !== undefined || instance.hasProxy()) text += ' (proxied)'
+    registeredText.push(text)
+  }
   embed.fields.push({
     name: 'Registered Instances',
-    value:
-      registeredInstances.length > 0
-        ? registeredInstances
-            .map((instance) => `- **${instance.instanceName}:** ${instance.currentStatus()}`)
-            .join('\n')
-        : '(none registered)'
+    value: registeredText.length > 0 ? registeredText.join('\n') : '(none registered)'
   } satisfies APIEmbedField)
 
   const dynamicInstances = instances.filter(
@@ -1060,14 +1060,17 @@ async function minecraftInstancesStatus(application: Application, interaction: B
     embed.fields.push({
       name: 'Dynamic Instances',
       value: dynamicInstances
-        .map((instance) => `- **${instance.instanceName}:** ${instance.currentStatus()}`)
+        .map(
+          (instance) =>
+            `- **${instance.instanceName}:** ${instance.currentStatus()}${instance.hasProxy() ? ' (proxied)' : ''}`
+        )
         .join('\n')
     } satisfies APIEmbedField)
   }
 
-  const unavailableInstances = savedInstances
-    .map((instance) => instance.name)
-    .filter((configName) => !instances.some((instance) => instance.instanceName === configName))
+  const unavailableInstances = savedInstances.filter(
+    (instanceConfig) => !instances.some((instance) => instance.instanceName === instanceConfig.name)
+  )
   if (unavailableInstances.length > 0) {
     embed.color = Color.Bad
     embed.description =
@@ -1077,7 +1080,9 @@ async function minecraftInstancesStatus(application: Application, interaction: B
 
     embed.fields.push({
       name: 'Unavailable Instances',
-      value: unavailableInstances.map((name) => `- ${name}`).join('\n')
+      value: unavailableInstances
+        .map((instanceConfig) => `- ${instanceConfig.name}${instanceConfig.proxy === undefined ? '' : ' (proxied)'}`)
+        .join('\n')
     } satisfies APIEmbedField)
   }
 
