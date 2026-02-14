@@ -157,17 +157,11 @@ function fetchModerationOptions(application: Application): CategoryOption {
             setOption: (value) => {
               moderation.setMutesPerDay(value)
             }
-          }
-        ]
-      },
-      {
-        type: OptionType.EmbedCategory,
-        name: 'Immunity List',
-        description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
-        options: [
+          },
           {
             type: OptionType.User,
             name: 'Immune Discord Users',
+            description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
             min: 0,
             max: 10,
             getOption: () => moderation.getImmuneDiscordUsers(),
@@ -178,6 +172,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.List,
             name: 'Immune Mojang Players',
+            description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
             style: InputStyle.Short,
             min: 0,
             max: 10,
