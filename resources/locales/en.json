@@ -118,6 +118,18 @@
   "commands.megawalls.response": "{{username}}'s Megawalls: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
   "commands.jacob.response": "{{username}}'s Jacob: Platinum {{platinum, number}} - Diamond {{diamond, number}} - Gold {{gold, number}} - Farming Cap {{farmingCap, number}}/10 - Double Drops {{doubleDrops, number}}/15",
   "commands.uhc.none": "{{username}} has never played UHC before.",
+  "commands.item.invalid-slot": "{{username}}, Can only select between 1 and 36.",
+  "commands.item.no-api": "{{username}} maybe has their API disabled?",
+  "commands.item.nothing-to-render": "{{username}} does not have anything on slot {{slot, number}} to render.",
+  "commands.item.render-not-supported": "Item has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.item.render-extra": "Rendering {{username}} inventory slot {{slot, number}}",
+
+  "commands.inventory.invalid-slot": "{{username}}, Can only select between 1 and 4.",
+  "commands.inventory.no-api": "{{username}} maybe has their API disabled?",
+  "commands.inventory.nothing-to-render": "{{username}} does not have anything on hotbar {{bar, number}} to render.",
+  "commands.inventory.render-not-supported": "Item has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.inventory.render-extra": "Rendering {{username}} inventory hotbar {{bar, number}}",
+
   "commands.armor.none": "{{username}} does not have any armor.",
   "commands.armor.none-maybe": "{{username}} does not have any armor?",
   "commands.armor.render-not-supported": "Armor has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
