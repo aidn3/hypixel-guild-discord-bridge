@@ -2,6 +2,8 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { HypixelApiFail, HypixelFailType } from '../../../core/hypixel/hypixel'
+import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
 import { formatInvalidUsername } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
@@ -19,6 +21,7 @@ export default {
     await interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
+    const startTime = Date.now()
 
     const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
     if (mojangProfile === undefined) {
@@ -26,7 +29,29 @@ export default {
       return
     }
 
-    const player = await context.application.hypixelApi.getPlayer(mojangProfile.id, Date.now())
+    let player: HypixelPlayer | undefined
+    try {
+      player = await context.application.hypixelApi.getPlayer(mojangProfile.id, startTime)
+    } catch (error: unknown) {
+      if (error instanceof HypixelApiFail && error.type === HypixelFailType.Throttle) {
+        context.errorHandler.error('fetching Hypixel player data for /link', error)
+        await interaction.editReply({
+          embeds: [
+            {
+              title: 'Please try again in a moment',
+              color: Color.Bad,
+              description:
+                'Too many requests are being made right now, so your information can’t be loaded at the moment.' +
+                ' Please wait about 5 minutes and try again.',
+              footer: { text: DefaultCommandFooter }
+            }
+          ]
+        })
+        return
+      }
+
+      throw error
+    }
     if (player === undefined) {
       await interaction.editReply({
         embeds: [
