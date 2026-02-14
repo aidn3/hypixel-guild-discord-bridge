@@ -8,7 +8,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 8
+const CurrentVersion = 9
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -36,6 +36,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(7, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom7to8(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(8, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom8to9(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -489,6 +492,20 @@ function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: bo
   )
 
   database.pragma('user_version = 8')
+}
+
+function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 8 to 9')
+
+  // reference: discord/link-button.ts
+  database.exec(
+    'CREATE TABLE "discordLinkButton" (' +
+      '  messageId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 9')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

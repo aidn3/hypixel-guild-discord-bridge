@@ -129,6 +129,7 @@ A shorter version can also be used: `!- rtca`
 | `/invite`             | invite player to the guild in-game                               |
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | display a leaderboard message in this channel                    |
+| `/link-panel`         | Create a panel with buttons to help users link                   |
 | `/link`               | Link your Discord account with your Minecraft account            |
 | `/list-leaderboard`   | List all existing leaderboards                                   |
 | `/list`               | List players in your guild(s)                                    |

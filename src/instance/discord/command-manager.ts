@@ -31,6 +31,7 @@ import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import LeaderboardCommand from './commands/leaderboard.js'
+import LinkButton from './commands/link-button'
 import LinkCommand from './commands/link.js'
 import ListLeaderboardCommand from './commands/list-leaderboard'
 import ListCommand from './commands/list.js'
@@ -118,6 +119,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       JoinCommand,
       LeaderboardCommand,
       LinkCommand,
+      LinkButton,
       ListCommand,
       ListLeaderboardCommand,
       LogCommand,
