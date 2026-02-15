@@ -1056,6 +1056,16 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           {
             type: OptionType.Action,
 
+            name: 'Instance Reset',
+            description: 'Remove Minecraft sessions from an instance.',
+            label: 'clear',
+            style: ButtonStyle.Danger,
+
+            onInteraction: (interaction, errorHandler) => minecraftInstanceClear(application, interaction, errorHandler)
+          },
+          {
+            type: OptionType.Action,
+
             name: 'Instance Remove',
             description: 'Remove a Minecraft instance.',
             label: 'remove',
@@ -1456,4 +1466,76 @@ function errorMessage(error: unknown): string {
   }
 
   return JSON.stringify(error)
+}
+
+async function minecraftInstanceClear(
+  application: Application,
+  interaction: ButtonInteraction,
+  errorHandler: UnexpectedErrorHandler
+): Promise<boolean> {
+  const allInstances = application.core.minecraftSessions.getAllInstances()
+  await interaction.showModal({
+    customId: 'minecraft-instance-clear',
+    title: `Clear Minecraft Instance`,
+    components: [
+      {
+        type: ComponentType.Label,
+        label: 'Instance',
+        description: 'Minecraft instance to clear its sessions.',
+        component: {
+          type: ComponentType.StringSelect,
+          customId: 'instance-name',
+          minValues: 1,
+          maxValues: 1,
+          required: true,
+          options: allInstances.map((instance) => ({ label: instance.name, value: instance.name }))
+        }
+      }
+    ]
+  })
+
+  const modalInteraction = await interaction.awaitModalSubmit({
+    time: 300_000,
+    filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+  })
+
+  const instanceName = modalInteraction.fields.getStringSelectValues('instance-name')[0]
+  const deferredReply = await modalInteraction.deferReply()
+
+  const embed = {
+    title: 'Clear Minecraft Sessions',
+    description: `Attempting to clear \`${escapeMarkdown(instanceName)}\`:\n\n`,
+    color: Color.Default,
+    footer: { text: DefaultCommandFooter }
+  } satisfies APIEmbed
+
+  try {
+    const instanceConfig = application.core.minecraftSessions.getInstance(instanceName)
+    const deleteResults = application.core.minecraftSessions.clearCachedSessions(instanceName)
+    embed.color = Color.Good
+
+    if (instanceConfig === undefined) {
+      embed.description += 'No such an instance to be found.'
+      embed.color = Color.Info
+    } else if (deleteResults === 0) {
+      embed.description += 'Instance found but already cleared!'
+      embed.color = Color.Info
+    } else {
+      embed.description += `Deleted ${deleteResults} session file associated with this instance.`
+      embed.color = Color.Good
+    }
+  } catch (error: unknown) {
+    errorHandler.error('clearing minecraft instance sessions', error)
+    embed.color = Color.Error
+    embed.description += italic(
+      'An error occurred while trying to clear Minecraft instance sessions\n' +
+        'The results are inconclusive.\n' +
+        'Check the console logs for further details\n' +
+        'Tread carefully when trying anything else.'
+    )
+  }
+
+  await deferredReply.edit({ embeds: [embed] })
+
+  return true
 }
