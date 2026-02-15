@@ -22,6 +22,17 @@ export class MinecraftConfigurations {
     this.configuration.setBoolean('guildMasterOfficer', enabled)
   }
 
+  public getChatPlaceholder(): string {
+    return this.configuration.getString(
+      'chatPlaceholder',
+      '{{ORIGIN_TAG_IF_ENABLED}}{{USERNAME_WITH_REPLY}}: {{MESSAGE}}'
+    )
+  }
+
+  public setChatPlaceholder(placeholder: string): void {
+    this.configuration.setString('chatPlaceholder', placeholder)
+  }
+
   public getAdminUsername(): string {
     return this.configuration.getString('adminUsername', 'Steve')
   }

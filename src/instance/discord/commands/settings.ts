@@ -972,6 +972,19 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
         header: 'Fine tune how chat messages are sent to the game.\n\n' + CategoryLabel,
         options: [
           {
+            type: OptionType.Text,
+            name: 'Chat Message Format',
+            description:
+              'Change how messages are formatted in-game. Custom options: `USERNAME`, `REPLY_USERNAME`, `USERNAME_WITH_REPLY`, `ORIGIN`, `ORIGIN_TAG`, `ORIGIN_TAG_IF_ENABLED`, `MESSAGE`',
+            style: InputStyle.Long,
+            min: 2,
+            max: 150,
+            getOption: () => minecraft.getChatPlaceholder(),
+            setOption: (value) => {
+              minecraft.setChatPlaceholder(value)
+            }
+          },
+          {
             type: OptionType.EmbedCategory,
             name: 'Links Processor',
             description: 'How to handle links sent to Minecraft.',
