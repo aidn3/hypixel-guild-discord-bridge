@@ -532,7 +532,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   ): { content: APIEmbed | string | undefined; attachments: AttachmentBuilder[] } {
     const { text, images } = this.extractCommandInfo(event.response)
     if (images.length > 0) {
-      return { content: text, attachments: images.map((image) => new AttachmentBuilder(image)) }
+      return {
+        content: text === undefined ? undefined : escapeMarkdown(text),
+        attachments: images.map((image) => new AttachmentBuilder(image))
+      }
     }
 
     const embed: APIEmbed = {
@@ -544,7 +547,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
     }
 
-    embed.description = text
+    embed.description = text === undefined ? undefined : escapeMarkdown(text)
     this.assignAvatar(embed, event.user)
     return { content: embed, attachments: [] }
   }
