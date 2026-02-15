@@ -164,7 +164,7 @@
   "commands.error.never-joined-skyblock": "{{username}} has never played skyblock before?",
   "commands.dojo.none": "{{username}} has never played Skyblock Dojo before?",
   "commands.dojo.response": "{{username}} Dojo: \nTotal {{total, number}}\n - Force {{force, number}}\n - Stamina {{stamina, number}}\n - Mastery {{mastery, number}}\n - Discipline {{discipline, number}}\n - Swiftness {{swiftness, number}}\n - Control {{control, number}}\n - Tenacity {{tenacity, number}}",
-  "commands.garden.response": "{{username}} Garden: Total Pests {{totalKilledPests, number}} - Unique Visitors {{uniqueVisitors, number}}",
+  "commands.garden.response": "{{username}} Garden: Total Pests {{totalKilledPests, number}} - Accepted Visitors {{totalVisitors, number}} (Unique {{uniqueVisitors, number}})",
   "commands.garden.no-garden": "{{username}} never went to garden?",
   "commands.age.response": "{{username}} first logged into hypixel on {{firstLogin, datetime}} or about {{timeSinceFirstLogin}} ago.",
   "commands.gifted.response": "{{username}} has gifted {{amountGifted, number}} ranks.",
