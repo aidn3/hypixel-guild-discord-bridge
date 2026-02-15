@@ -9,6 +9,7 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Age from './triggers/age.js'
+import Airstrike from './triggers/airstrike'
 import Api from './triggers/api.js'
 import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
@@ -108,6 +109,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
     const commandsToAdd = [
       new Age(),
+      new Airstrike(),
       new Api(),
       new Armor(),
       new Asian(),
