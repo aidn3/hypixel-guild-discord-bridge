@@ -1339,24 +1339,28 @@ async function minecraftInstanceRemove(
   interaction: ButtonInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<boolean> {
+  const allInstances = application.core.minecraftSessions.getAllInstances()
+  if (allInstances.length === 0) {
+    await interaction.reply({ content: 'Nothing to remove.', flags: MessageFlags.Ephemeral })
+    return true
+  }
+
   await interaction.showModal({
     customId: 'minecraft-instance-remove',
     title: `Remove Minecraft Instance`,
     components: [
       {
-        type: ComponentType.ActionRow,
-        components: [
-          {
-            type: ComponentType.TextInput,
-            customId: 'instance-name',
-            style: TextInputStyle.Short,
-            label: 'Name',
-
-            minLength: 1,
-            maxLength: 128,
-            required: true
-          }
-        ]
+        type: ComponentType.Label,
+        label: 'Instance',
+        description: 'Minecraft instance to clear its sessions.',
+        component: {
+          type: ComponentType.StringSelect,
+          customId: 'instance-name',
+          minValues: 1,
+          maxValues: 1,
+          required: true,
+          options: allInstances.map((instance) => ({ label: instance.name, value: instance.name }))
+        }
       }
     ]
   })
@@ -1366,7 +1370,7 @@ async function minecraftInstanceRemove(
     filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
   })
 
-  const instanceName = modalInteraction.fields.getTextInputValue('instance-name')
+  const instanceName = modalInteraction.fields.getStringSelectValues('instance-name')[0]
   const deferredReply = await modalInteraction.deferReply()
 
   const embed = {
@@ -1474,6 +1478,10 @@ async function minecraftInstanceClear(
   errorHandler: UnexpectedErrorHandler
 ): Promise<boolean> {
   const allInstances = application.core.minecraftSessions.getAllInstances()
+  if (allInstances.length === 0) {
+    await interaction.reply({ content: 'Nothing to remove.', flags: MessageFlags.Ephemeral })
+    return true
+  }
   await interaction.showModal({
     customId: 'minecraft-instance-clear',
     title: `Clear Minecraft Instance`,
