@@ -95,9 +95,9 @@
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
-  "discord.conditions.handler.skyblock-level.formatted": "Skyblock level {{level, number}}",
+  "discord.conditions.handler.skyblock-level.formatted": "Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",
-  "discord.conditions.handler.skyblock-catacombs-level.formatted": "Catacombs level {{level, number}}",
+  "discord.conditions.handler.skyblock-catacombs-level.formatted": "Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",

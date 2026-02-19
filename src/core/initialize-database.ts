@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 9
+const CurrentVersion = 10
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -39,6 +40,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(8, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom8to9(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(9, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom9to10(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -506,6 +510,65 @@ function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: bo
   )
 
   database.pragma('user_version = 9')
+}
+
+function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) {
+    logger.debug('Migrating database from version 8 to 9')
+    const tables = ['discordRolesConditions', 'discordNicknameConditions']
+
+    /* eslint-disable @typescript-eslint/consistent-type-definitions */
+    type Row = { id: number | bigint; options: string }
+    type OldSkyblockLevelOptions = { level: number }
+    type NewSkyblockLevelOptions = { fromLevel: number; toLevel: number }
+    type OldSkyblockCatacombsOptions = { level: number }
+    type NewSkyblockCatacombsOptions = { fromLevel: number; toLevel: number }
+    /* eslint-enable @typescript-eslint/consistent-type-definitions */
+
+    let totalLevelUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId = 'reached-hypixel-skyblock-level'`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as OldSkyblockLevelOptions
+        const updateResult = update.run(
+          JSON.stringify({ fromLevel: parsedOptions.level, toLevel: 10_000 } satisfies NewSkyblockLevelOptions),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalLevelUpdates++
+      }
+    }
+    if (totalLevelUpdates > 0) {
+      logger.debug(`Updated ${totalLevelUpdates} discord conditions entry regarding skyblock level`)
+    }
+
+    let totalCatacombsUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId = 'reached-hypixel-skyblock-catacombs-level'`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as OldSkyblockCatacombsOptions
+        const updateResult = update.run(
+          JSON.stringify({ fromLevel: parsedOptions.level, toLevel: 10_000 } satisfies NewSkyblockCatacombsOptions),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalCatacombsUpdates++
+      }
+    }
+    if (totalCatacombsUpdates > 0) {
+      logger.debug(`Updated ${totalCatacombsUpdates} discord conditions entry regarding skyblock catacombs level`)
+    }
+  }
+
+  database.pragma('user_version = 10')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
