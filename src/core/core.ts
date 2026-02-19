@@ -188,8 +188,7 @@ export class Core extends Instance<InstanceType.Core> {
     return this.punishments.edit(id, reason, till)
   }
 
-  public async awaitReady(): Promise<void> {
-    await this.punishments.ready
+  public awaitReady(): void {
     this.sqliteManager.clean()
     this.sqliteManager.optimize()
   }

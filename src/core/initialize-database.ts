@@ -178,6 +178,9 @@ function migrateFrom1to2(
       ' )'
   )
   database.exec('CREATE INDEX punishmentsIndex ON "punishments" (originInstance, userId);')
+  if (!newlyCreated) {
+    migratePunishments(application, logger, postCleanupActions, database)
+  }
 
   // reference: moderation/commands-heat.ts
   database.exec(
@@ -734,6 +737,81 @@ function migrateModeration(
 
   logger.info(`Successfully parsed old moderation file. Scheduling the old file for deletion...`)
   postCleanupActions.push(() => {
+    fs.rmSync(path)
+  })
+}
+
+function migratePunishments(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface OldEntry {
+    userName: string
+    userUuid?: string
+    till: number
+    reason: string
+  }
+
+  interface OldType {
+    mute: OldEntry[]
+    ban: OldEntry[]
+  }
+
+  const path = application.getConfigFilePath('punishments.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old punishments file. Migrating this file into the new system...')
+
+  const insert = database.prepare(
+    'INSERT INTO "punishments" (originInstance, userId, type, purpose, reason, createdAt, till) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  )
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
+  const currentTime = Date.now()
+  let total = 0
+  let inserted = 0
+
+  for (const entry of oldObject.mute) {
+    if (entry.till < currentTime) continue
+    total++
+
+    if (entry.userUuid === undefined) continue
+    const identifier = findIdentifier([entry.userUuid])
+    if (identifier == undefined) continue
+    inserted++
+    insert.run(
+      identifier.originInstance,
+      identifier.userId,
+      'mute',
+      'manual',
+      entry.reason,
+      Math.floor(currentTime / 1000),
+      Math.floor(entry.till / 1000)
+    )
+  }
+
+  for (const entry of oldObject.ban) {
+    if (entry.till < currentTime) continue
+    total++
+
+    if (entry.userUuid === undefined) continue
+    const identifier = findIdentifier([entry.userUuid])
+    if (identifier == undefined) continue
+    inserted++
+    insert.run(
+      identifier.originInstance,
+      identifier.userId,
+      'ban',
+      'manual',
+      entry.reason,
+      Math.floor(currentTime / 1000),
+      Math.floor(entry.till / 1000)
+    )
+  }
+
+  logger.info(`Successfully parsed ${inserted} legacy punishments out of ${total}`)
+  postCleanupActions.push(() => {
+    logger.debug('Deleting punishments legacy file...')
     fs.rmSync(path)
   })
 }
