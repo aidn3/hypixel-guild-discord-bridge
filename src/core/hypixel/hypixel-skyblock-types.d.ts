@@ -116,6 +116,20 @@ export interface SkyblockMember {
       bronze?: string[]
     }
   }
+  skill_tree?: {
+    experience?: {
+      foraging?: number
+    }
+    nodes: {
+      foraging?: {
+        center_of_the_forest?: number
+      }
+    }
+  }
+  foraging_core?: {
+    forests_whispers?: number
+    forests_whispers_spent?: number
+  }
   events?: SkyblockPlayerEvents
   pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
   essence?: SkyblockEssence

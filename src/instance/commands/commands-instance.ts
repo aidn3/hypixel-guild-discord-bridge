@@ -45,6 +45,7 @@ import Gifted from './triggers/gifted.js'
 import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
+import HeartOfTheForest from './triggers/hotf.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
@@ -146,6 +147,7 @@ export class CommandsInstance extends ConnectableInstance<InstanceType.Commands>
       new Guild(),
       new GuildCheck(),
       new Help(),
+      new HeartOfTheForest(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
       new Insult(),

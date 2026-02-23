@@ -106,6 +106,8 @@
   "commands.news.none": "No news found right now :/",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
+  "commands.hotf.none": "{{username}} has not unlocked there hotf tree yet.",
+  "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
