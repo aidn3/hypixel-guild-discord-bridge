@@ -67,6 +67,7 @@ export interface SkyblockMember {
       | 'SKILL_FISHING'
       | 'SKILL_ALCHEMY'
       | 'SKILL_RUNECRAFTING'
+      | 'SKILL_HUNTING'
       | 'SKILL_MINING'
       | 'SKILL_FARMING'
       | 'SKILL_ENCHANTING'
