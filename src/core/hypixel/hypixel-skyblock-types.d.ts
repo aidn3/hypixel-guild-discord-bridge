@@ -119,10 +119,14 @@ export interface SkyblockMember {
   skill_tree?: {
     experience?: {
       foraging?: number
+      mining?: number
     }
     nodes: {
       foraging?: {
         center_of_the_forest?: number
+      }
+      mining?: {
+        core_of_the_mountain?: number
       }
     }
   }
