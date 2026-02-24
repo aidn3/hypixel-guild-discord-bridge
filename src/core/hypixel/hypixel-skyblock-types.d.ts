@@ -62,6 +62,7 @@ export interface SkyblockMember {
     sacks_counts: Record<string, number>
   }
   profile: { bank_account?: number }
+  player_stats?: { rift?: { lifetime_motes_earned?: number } }
   player_data: {
     experience?: Record<
       | 'SKILL_FISHING'

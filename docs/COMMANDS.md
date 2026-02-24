@@ -78,6 +78,7 @@ A shorter version can also be used: `!- rtca`
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
 | `endparty`       | remove the party from the listing                                                  |
 | `pb`             | Returns a players best dungeon run time                                            |
+| `placeholder`    | Resolve a placeholder                                                              |
 | `points30`       | Returns user's 30 days activity points                                             |
 | `points`         | Returns user's all time activity points                                            |
 | `praise`         | praise a player                                                                    |
@@ -108,7 +109,7 @@ A shorter version can also be used: `!- rtca`
 | `unlink`         | Unlink Minecraft account from Discord                                              |
 | `unscramble`     | Start an unscrambling event                                                        |
 | `username`       | Show the Mojang uuid of a player                                                   |
-| `vengeance`      | Try your luck against another player for a 15 minute mute                          |
+| `vengeance`      | Try your luck against another player for a 5 minute mute                           |
 | `warp`           | Warp a player out of a lobby                                                       |
 | `weight`         | Returns a player's senither weight                                                 |
 | `woolwars`       | Returns a player's Woolwars stats                                                  |
@@ -119,6 +120,7 @@ A shorter version can also be used: `!- rtca`
 | --------------------- | ---------------------------------------------------------------- |
 | `/about`              | Display basic info about the client.                             |
 | `/accept`             | accept a player to the guild if they have a join request in-game |
+| `/conditions`         | manage conditions                                                |
 | `/connectivity`       | Check connectivity to Minecraft instances                        |
 | `/create-leaderboard` | Create a leaderboard message in this channel                     |
 | `/demote`             | demote guild member in-game                                      |
@@ -133,6 +135,7 @@ A shorter version can also be used: `!- rtca`
 | `/list`               | List players in your guild(s)                                    |
 | `/log`                | View guild activity logs                                         |
 | `/ping`               | Discord Ping                                                     |
+| `/placeholder`        | Manage and help with placeholders                                |
 | `/profanity`          | Manage application profanity filter                              |
 | `/promote`            | promote guild member in-game                                     |
 | `/punishments`        | Manage active punishments                                        |
@@ -140,6 +143,8 @@ A shorter version can also be used: `!- rtca`
 | `/restart`            | Send signal to restart the bridge                                |
 | `/setrank`            | setrank guild member in-game                                     |
 | `/settings`           | Control application settings.                                    |
+| `/sync`               | synchronize roles and other user options                         |
+| `/syncall`            | synchronize roles and other options for all users                |
 | `/unlink`             | unlink your Discord account from your Minecraft account          |
 | `/verification`       | Manage users links                                               |
 

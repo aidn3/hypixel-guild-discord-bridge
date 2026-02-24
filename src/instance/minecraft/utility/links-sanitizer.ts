@@ -1,6 +1,7 @@
 import DefaultAxios from 'axios'
 
 import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
+import { HypixelLink } from '../common/common'
 import { stufEncode } from '../common/stuf.js'
 
 export class LinksSanitizer {
@@ -23,7 +24,9 @@ export class LinksSanitizer {
       .split(' ')
       .map((part) => {
         try {
-          if (part.startsWith('https:') || part.startsWith('http')) return '(link)'
+          if ((part.startsWith('https:') || part.startsWith('http')) && !HypixelLink.test(part)) {
+            return '(link)'
+          }
         } catch {
           /* ignored */
         }
@@ -37,6 +40,10 @@ export class LinksSanitizer {
 
     for (const part of message.split(' ')) {
       if (!part.startsWith('https:') && !part.startsWith('http')) {
+        newMessage.push(part)
+        continue
+      }
+      if (HypixelLink.test(part)) {
         newMessage.push(part)
         continue
       }

@@ -7,7 +7,8 @@ import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, shortenNumber, usernameNotExists } from '../common/utility'
+import { shortenNumber } from '../../../utility/shared-utility'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Networth extends ChatCommandHandler {
   constructor() {

@@ -31,7 +31,7 @@ export default class Vengeance extends ChatCommandHandler {
     '{target}? Dead? That was the only possible outcome.'
   ]
 
-  private static readonly MuteDuration = Duration.minutes(15)
+  private static readonly MuteDuration = Duration.minutes(5)
 
   private countSinceLastWin = 0
   private consecutiveLose = 0
@@ -39,7 +39,7 @@ export default class Vengeance extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['vengeance', 'v'],
-      description: 'Try your luck against another player for a 15 minute mute',
+      description: 'Try your luck against another player for a 5 minute mute',
       example: `v %s`
     })
   }

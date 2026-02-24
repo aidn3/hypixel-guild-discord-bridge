@@ -136,6 +136,18 @@ You can manage any additional words you wish to add on top of the list by using 
 
 You can also delete words from the base filter using `/profanity exclude`
 
+You can also replace words with different ones instead of just censoring them
+by creating custom Regex search via the Discord slash command `/profanity replace`.
+To test before using, you can visit [this online playground](https://www.jsplayground.dev/) and use this code as a base for experimentation:
+
+```js
+const search = 'Hello'
+const replace = 'Replaced'
+const testSentence = 'Hello there'
+
+console.log(testSentence.replaceAll(new RegExp(search, 'gi'), replace))
+```
+
 ## How to utilize verification system
 
 Users can execute the Discord slash command `/link` to link their Discord account to a Minecraft account.  

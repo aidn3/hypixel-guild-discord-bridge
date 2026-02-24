@@ -3,11 +3,11 @@ import { getPrices } from 'skyhelper-networth'
 import type { Content } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { shortenNumber } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
-  shortenNumber,
   usernameNotExists
 } from '../common/utility'
 

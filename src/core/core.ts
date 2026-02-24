@@ -21,12 +21,14 @@ import { User } from '../common/user'
 
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
+import { ConditionsRegistry } from './conditions/conditions-registry'
 import { ConfigurationsManager } from './configurations'
 import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { InstanceHistoryButton } from './discord/instance-history-button'
+import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
 import { StatusHistory } from './instance/status-history'
@@ -40,6 +42,7 @@ import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
 import PunishmentsEnforcer from './moderation/punishments-enforcer'
+import { PlaceholderManager } from './placeholder/placeholder-manager'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import Autocomplete from './users/autocomplete'
 import { GuildManager } from './users/guild-manager'
@@ -50,7 +53,7 @@ import { Verification } from './users/verification'
 export class Core extends Instance<InstanceType.Core> {
   // moderation
   private readonly commandsHeat: CommandsHeat
-  private readonly profanity: Profanity
+  public readonly profanity: Profanity
   private readonly punishments: Punishments
   private readonly enforcer: PunishmentsEnforcer
 
@@ -67,6 +70,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
   public readonly discordInstanceHistoryButton: InstanceHistoryButton
   public readonly discordEmojis: DiscordEmojis
+  public readonly discordUserConditions: UserConditions
 
   // minecraft
   public readonly minecraftConfigurations: MinecraftConfigurations
@@ -83,6 +87,8 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly commandsConfigurations: CommandsConfigurations
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
   public readonly hypixelApi: Hypixel
+  public readonly conditonsRegistry: ConditionsRegistry
+  public readonly placeHolder: PlaceholderManager
 
   // database
   private readonly sqliteManager: SqliteManager
@@ -90,6 +96,8 @@ export class Core extends Instance<InstanceType.Core> {
 
   public constructor(application: Application, hypixelApiKey: string) {
     super(application, InternalInstancePrefix + 'core', InstanceType.Core)
+
+    this.conditonsRegistry = new ConditionsRegistry()
 
     const sqliteName = 'users.sqlite'
     this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
@@ -105,8 +113,10 @@ export class Core extends Instance<InstanceType.Core> {
     )
     this.discordInstanceHistoryButton = new InstanceHistoryButton(this.sqliteManager, this.logger)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
+    this.discordUserConditions = new UserConditions(this.sqliteManager)
 
     this.statusHistory = new StatusHistory(this.sqliteManager, this.logger)
+    this.placeHolder = new PlaceholderManager()
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
@@ -121,7 +131,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.mojangApi = new MojangApi(this.sqliteManager)
     this.hypixelApi = new Hypixel(hypixelApiKey, this.sqliteManager, this.logger)
 
-    this.profanity = new Profanity(this.moderationConfiguration)
+    this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
     this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
     this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
@@ -161,6 +171,18 @@ export class Core extends Instance<InstanceType.Core> {
 
   public allPunishments(): SavedPunishment[] {
     return this.punishments.all()
+  }
+
+  public getPunishmentById(id: SavedPunishment['id']): SavedPunishment | undefined {
+    return this.punishments.get(id)
+  }
+
+  public editPunishment(
+    id: SavedPunishment['id'],
+    reason: SavedPunishment['reason'] | undefined,
+    till: SavedPunishment['till'] | undefined
+  ): SavedPunishment | undefined {
+    return this.punishments.edit(id, reason, till)
   }
 
   public async awaitReady(): Promise<void> {
