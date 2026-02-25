@@ -220,38 +220,38 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     const timeout = new Timeout<GuildManagerError | undefined>(10_000)
     const motd: GuildMOTD = { fetchedAt: Date.now(), lines: [] }
 
-    /*
-     * There is no detectable ending to the data, but it has a detectable starting point.
-     * So the command is sent twice and the second "start" is used as an end-detection.
-     */
     const startDetection = /^-{10} {2}Guild: Message Of The Day \(Preview\) {2}-{10}/g
+    const linePrefixRaw = '§b| '
+    const linePrefix = '| '
+    const endDetection = /^§b§m-{53}$/g
     const noMotd = /^There is no Guild MOTD!$/g
     let started = false
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
       if (event.instanceName !== instanceName) return
 
+      if (noMotd.test(event.message)) {
+        timeout.resolve(undefined)
+        return
+      }
+
       const isStarting = startDetection.test(event.message)
-      if (started && isStarting) {
-        timeout.resolve(undefined) // went full cycle and now it is done
+      const isEnding = endDetection.test(event.message)
+      if (started && isEnding) {
+        timeout.resolve(undefined)
         return
       } else if (isStarting) {
         started = isStarting
         return
-      } else if (started) {
-        motd.lines.push({ content: event.message, raw: event.rawMessage })
-      } else if (noMotd.test(event.message)) {
-        timeout.resolve(undefined)
+      } else if (started && event.rawMessage.startsWith(linePrefixRaw)) {
+        motd.lines.push({
+          content: event.message.slice(linePrefix.length),
+          raw: event.rawMessage.slice(linePrefixRaw.length)
+        })
       }
     }
 
     this.application.on('minecraftChat', chatListener)
-    await this.application.sendMinecraft(
-      [instanceName],
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/guild motd preview`
-    )
     await this.application.sendMinecraft(
       [instanceName],
       MinecraftSendChatPriority.High,
