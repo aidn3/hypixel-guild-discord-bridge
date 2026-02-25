@@ -36,6 +36,7 @@ import LinkCommand from './commands/link.js'
 import ListLeaderboardCommand from './commands/list-leaderboard'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
+import MotdCommand from './commands/motd'
 import PingCommand from './commands/ping.js'
 import PlaceholderCommand from './commands/placeholder.js'
 import ProfanityCommand from './commands/profanity.js'
@@ -123,6 +124,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       ListCommand,
       ListLeaderboardCommand,
       LogCommand,
+      MotdCommand,
       ExecuteCommand,
       PingCommand,
       PlaceholderCommand,

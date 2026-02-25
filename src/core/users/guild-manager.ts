@@ -9,6 +9,11 @@ import Duration from '../../utility/duration'
 import { Timeout } from '../../utility/timeout'
 import type { Core } from '../core'
 
+/*
+ * All operations on guild object must be atomic.
+ * That means data within must be done within a cycle and not separated by an "async/await".
+ * So all data must be "whole" across cycles at all times.
+ */
 export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
   public static readonly DefaultDataExpire = Duration.seconds(30)
   private readonly guildInfo = new Map<string, GuildInformation>()
@@ -49,10 +54,46 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     })
   }
 
+  /**
+   * Fetch a guild MOTD
+   *
+   * @param instanceName the minecraft instance name to fetch the stats from
+   * @param newerThan duration in milliseconds of how old the data can be at most
+   *
+   * @return an object containing the requested data
+   */
+  public async motd(
+    instanceName: string,
+    newerThan: Duration = GuildManager.DefaultDataExpire
+  ): Promise<Readonly<GuildMOTD>> {
+    const guildInfo = this.getGuildInfo(instanceName)
+    const getCached = () => {
+      if (guildInfo.motd === undefined || guildInfo.motd.fetchedAt + newerThan.toMilliseconds() < Date.now()) {
+        return
+      }
+
+      return guildInfo.motd
+    }
+
+    let motd = getCached()
+    if (motd !== undefined) return motd
+
+    return await this.queueTask(guildInfo, async () => {
+      // check again in an atomic operation before fetching again
+      // since there is a chance previous task has already fetched the data while awaiting in queue
+      motd = getCached()
+      if (motd !== undefined) return motd
+
+      motd = await this.motdNow(instanceName)
+      guildInfo.motd = motd
+      return motd
+    })
+  }
+
   private getGuildInfo(instanceName: string): GuildInformation {
     let guild = this.guildInfo.get(instanceName)
     if (guild === undefined) {
-      guild = { commandQueue: new PromiseQueue(1), guild: undefined }
+      guild = { commandQueue: new PromiseQueue(1), guild: undefined, motd: undefined }
       this.guildInfo.set(instanceName, guild)
     }
 
@@ -71,13 +112,8 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     return guild.commandQueue.add(task)
   }
 
-  /*
-   * All operations on guild object must be atomic.
-   * That means data within must be done within a cycle and not separated by an "async/await".
-   * So all data must be "whole" across cycles at all times.
-   */
   private async listNow(instanceName: string): Promise<Readonly<GuildFetch>> {
-    const timeout = new Timeout<Error | undefined>(10_000)
+    const timeout = new Timeout<GuildManagerError | undefined>(10_000)
     const guild: GuildFetch = { fetchedAt: Date.now(), name: '', members: [] }
 
     let currentRank: string | undefined = undefined
@@ -108,7 +144,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
       let usernameMatch: RegExpExecArray | null
       while ((usernameMatch = memberRegex.exec(event.rawMessage)) != undefined) {
         if (currentRank === undefined) {
-          timeout.resolve(new Error('Detected members before detecting rank somehow!'))
+          timeout.resolve(new GuildManagerError('Detected members before detecting rank somehow!'))
           return
         }
 
@@ -126,7 +162,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
             break
           }
           default: {
-            throw new Error(`invalid online indicator character: ${usernameMatch[0]}`)
+            throw new GuildManagerError(`invalid online indicator character: ${usernameMatch[0]}`)
           }
         }
       }
@@ -138,7 +174,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
         if (detected !== displayed) {
           timeout.resolve(
-            new Error(
+            new GuildManagerError(
               `Detected guild total members count does not match the displayed amount. ` +
                 `detected=${detected}, displayed=${displayed}`
             )
@@ -154,7 +190,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
         if (detected !== displayed) {
           timeout.resolve(
-            new Error(
+            new GuildManagerError(
               `Detected guild online members count does not match the displayed amount. ` +
                 `detected=${detected}, displayed=${displayed}`
             )
@@ -169,14 +205,63 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
     this.application.on('minecraftChat', chatListener)
     await this.application.sendMinecraft([instanceName], MinecraftSendChatPriority.High, undefined, `/guild list`)
+    timeout.refresh()
     const error = await timeout.wait()
     this.application.off('minecraftChat', chatListener)
     if (error) throw error
-    if (timeout.timedOut()) throw new Error('Timed out before fully fetching guild listing data')
+    if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild listing data')
 
     assert.ok(guild.name.length > 0, 'Could not detect any guild name somehow')
     assert.ok(guild.members.length > 0, 'Could not detect any members at all??')
     return Object.freeze(guild)
+  }
+
+  private async motdNow(instanceName: string): Promise<Readonly<GuildMOTD>> {
+    const timeout = new Timeout<GuildManagerError | undefined>(10_000)
+    const motd: GuildMOTD = { fetchedAt: Date.now(), lines: [] }
+
+    /*
+     * There is no detectable ending to the data, but it has a detectable starting point.
+     * So the command is sent twice and the second "start" is used as an end-detection.
+     */
+    const startDetection = /^-{10} {2}Guild: Message Of The Day \(Preview\) {2}-{10}/g
+    let started = false
+
+    const chatListener = function (event: MinecraftRawChatEvent): void {
+      if (event.instanceName !== instanceName) return
+
+      const isStarting = startDetection.test(event.message)
+      if (started && isStarting) {
+        timeout.resolve(undefined) // went full cycle and now it is done
+        return
+      } else if (isStarting) {
+        started = isStarting
+        return
+      } else if (started) {
+        motd.lines.push({ content: event.message, raw: event.rawMessage })
+      }
+    }
+
+    this.application.on('minecraftChat', chatListener)
+    await this.application.sendMinecraft(
+      [instanceName],
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild motd preview`
+    )
+    await this.application.sendMinecraft(
+      [instanceName],
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild motd preview`
+    )
+    timeout.refresh()
+    const error = await timeout.wait()
+    this.application.off('minecraftChat', chatListener)
+    if (error) throw error
+    if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild motd data')
+
+    return Object.freeze(motd)
   }
 }
 
@@ -184,6 +269,7 @@ interface GuildInformation {
   commandQueue: PromiseQueue
 
   guild: GuildFetch | undefined
+  motd: GuildMOTD | undefined
 }
 
 export interface GuildFetch {
@@ -197,4 +283,21 @@ export interface GuildMember {
   username: string
   rank: string
   online: boolean
+}
+
+export interface GuildMOTD {
+  fetchedAt: number
+
+  lines: GuildMOTDLine[]
+}
+
+export interface GuildMOTDLine {
+  content: string
+  raw: string
+}
+
+export class GuildManagerError extends Error {
+  public constructor(message: string) {
+    super(message)
+  }
 }

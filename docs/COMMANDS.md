@@ -135,6 +135,7 @@ A shorter version can also be used: `!- rtca`
 | `/list-leaderboard`   | List all existing leaderboards                                   |
 | `/list`               | List players in your guild(s)                                    |
 | `/log`                | View guild activity logs                                         |
+| `/motd`               | Show a guild MOTD                                                |
 | `/ping`               | Discord Ping                                                     |
 | `/placeholder`        | Manage and help with placeholders                                |
 | `/profanity`          | Manage application profanity filter                              |
