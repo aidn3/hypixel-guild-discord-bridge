@@ -225,6 +225,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
      * So the command is sent twice and the second "start" is used as an end-detection.
      */
     const startDetection = /^-{10} {2}Guild: Message Of The Day \(Preview\) {2}-{10}/g
+    const noMotd = /^There is no Guild MOTD!$/g
     let started = false
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
@@ -239,6 +240,8 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
         return
       } else if (started) {
         motd.lines.push({ content: event.message, raw: event.rawMessage })
+      } else if (noMotd.test(event.message)) {
+        timeout.resolve(undefined)
       }
     }
 
