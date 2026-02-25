@@ -1,4 +1,4 @@
-import { AttachmentBuilder, blockQuote, SlashCommandBuilder } from 'discord.js'
+import { AttachmentBuilder, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
@@ -17,17 +17,25 @@ export default {
     const instance: string = context.interaction.options.getString('instance', true)
     try {
       const motd = await context.application.core.guildManager.motd(instance)
-      if (motd.lines.length === 0) {
+      if (motd.lines.type === 'empty') {
         await context.interaction.editReply('Nothing to display. Guild does not have MOTD.')
         return
       }
-      const lines = motd.lines.map((line) => line.content)
-      const raw = motd.lines.map((line) => line.raw)
+      const lines = [
+        motd.lines.header.content,
+        ...motd.lines.content.map((line) => line.clean.content),
+        motd.lines.footer.content
+      ]
+      const raw = [
+        motd.lines.header.raw,
+        ...motd.lines.content.map((line) => line.withPrefix.raw),
+        motd.lines.footer.raw
+      ]
 
       const image = MinecraftRenderer.renderSupported() ? MinecraftRenderer.renderLore(undefined, raw) : undefined
       await context.interaction.editReply({
-        content: lines.map((line) => blockQuote(line)).join('\n'),
-        files: image === undefined ? undefined : [new AttachmentBuilder(image)]
+        content: lines.map((line) => `> ${line}`).join('\n'),
+        files: image === undefined ? undefined : [new AttachmentBuilder(image).setName('motd.png')]
       })
     } catch (error: unknown) {
       if (error instanceof GuildManagerError) {

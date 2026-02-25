@@ -218,7 +218,11 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
   private async motdNow(instanceName: string): Promise<Readonly<GuildMOTD>> {
     const timeout = new Timeout<GuildManagerError | undefined>(10_000)
-    const motd: GuildMOTD = { fetchedAt: Date.now(), lines: [] }
+    const motd: GuildMOTD = { fetchedAt: Date.now(), lines: { type: 'empty' } }
+
+    let header: GuildMOTDLine | undefined = undefined
+    let footer: GuildMOTDLine | undefined = undefined
+    const lines: GuildMOTDLines['content'] = []
 
     const startDetection = /^-{10} {2}Guild: Message Of The Day \(Preview\) {2}-{10}/g
     const linePrefixRaw = '§b| '
@@ -236,17 +240,19 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
       }
 
       const isStarting = startDetection.test(event.message)
-      const isEnding = endDetection.test(event.message)
+      const isEnding = endDetection.test(event.rawMessage)
       if (started && isEnding) {
+        footer = { content: event.message, raw: event.rawMessage } satisfies GuildMOTDLine
         timeout.resolve(undefined)
         return
       } else if (isStarting) {
+        header = { content: event.message, raw: event.rawMessage } satisfies GuildMOTDLine
         started = isStarting
         return
       } else if (started && event.rawMessage.startsWith(linePrefixRaw)) {
-        motd.lines.push({
-          content: event.message.slice(linePrefix.length),
-          raw: event.rawMessage.slice(linePrefixRaw.length)
+        lines.push({
+          clean: { content: event.message.slice(linePrefix.length), raw: event.rawMessage.slice(linePrefixRaw.length) },
+          withPrefix: { content: event.message, raw: event.rawMessage }
         })
       }
     }
@@ -263,6 +269,14 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     this.application.off('minecraftChat', chatListener)
     if (error) throw error
     if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild motd data')
+
+    if (lines.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      assert.ok(header !== undefined)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      assert.ok(footer !== undefined)
+      motd.lines = { type: 'exists', header: header, footer: footer, content: lines }
+    }
 
     return Object.freeze(motd)
   }
@@ -291,7 +305,14 @@ export interface GuildMember {
 export interface GuildMOTD {
   fetchedAt: number
 
-  lines: GuildMOTDLine[]
+  lines: { type: 'empty' } | GuildMOTDLines
+}
+
+export interface GuildMOTDLines {
+  type: 'exists'
+  header: GuildMOTDLine
+  footer: GuildMOTDLine
+  content: { clean: GuildMOTDLine; withPrefix: GuildMOTDLine }[]
 }
 
 export interface GuildMOTDLine {
