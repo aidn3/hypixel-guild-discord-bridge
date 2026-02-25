@@ -55,6 +55,7 @@ A shorter version can also be used: `!- rtca`
 | `mguild`         | Check multiple players guilds, if any in one                                       |
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |
+| `hotf`           | Returns a player's hotf and whispers                                               |
 | `hotm`           | Returns a player's hotm and powder                                                 |
 | `hlevel`         | Returns a player's Hypixel common stats                                            |
 | `insult`         | insult a player                                                                    |

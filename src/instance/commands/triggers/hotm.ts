@@ -24,7 +24,8 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.hotm.none'], { username: givenUsername })
     }
 
-    const hotm = 0 // TODO: Properly reference the value when Hypixel API adds it back
+    const hotm = this.getHotmLevel(selectedProfile?.skill_tree?.experience?.mining ?? 0)
+    const core = selectedProfile?.skill_tree?.nodes.mining?.core_of_the_mountain ?? 0
     const runs = this.getTotalNucleusRuns(stats)
     const mithril = (stats.powder_mithril ?? 0) + (stats.powder_spent_mithril ?? 0)
     const gemstone = (stats.powder_gemstone ?? 0) + (stats.powder_spent_gemstone ?? 0)
@@ -33,6 +34,7 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     return context.app.i18n.t(($) => $['commands.hotm.response'], {
       username: givenUsername,
       hotm: hotm,
+      core: core,
       runs: runs,
       mithril: mithril,
       gemstone: gemstone,
@@ -50,5 +52,49 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     ]
 
     return Math.min(...crystalsPlaced)
+  }
+
+  private getHotmLevel(xp: number): number {
+    const perLevelXP = [
+      0, // lvl 1
+      3000, // lvl 2
+      9000, // lvl 3
+      25_000, // lvl 4
+      60_000, // lvl 5
+      100_000, // lvl 6
+      150_000, // lvl 7
+      210_000, // lvl 8
+      290_000, // lvl 9
+      400_000 // lvl 10
+    ]
+
+    const cumulative: number[] = []
+    let total = 0
+
+    for (const value of perLevelXP) {
+      total += value
+      cumulative.push(total)
+    }
+
+    let level = 1
+
+    for (const [index, element] of cumulative.entries()) {
+      if (xp >= element) {
+        level = index + 1
+      } else {
+        break
+      }
+    }
+
+    if (level >= cumulative.length) {
+      return cumulative.length
+    }
+
+    const currentXP = cumulative[level - 1]
+    const nextXP = cumulative[level]
+
+    const progress = (xp - currentXP) / (nextXP - currentXP)
+
+    return Number((level + progress).toFixed(2))
   }
 }

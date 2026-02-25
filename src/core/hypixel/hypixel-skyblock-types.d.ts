@@ -68,6 +68,7 @@ export interface SkyblockMember {
       | 'SKILL_FISHING'
       | 'SKILL_ALCHEMY'
       | 'SKILL_RUNECRAFTING'
+      | 'SKILL_HUNTING'
       | 'SKILL_MINING'
       | 'SKILL_FARMING'
       | 'SKILL_ENCHANTING'
@@ -115,6 +116,24 @@ export interface SkyblockMember {
       silver?: string[]
       bronze?: string[]
     }
+  }
+  skill_tree?: {
+    experience?: {
+      foraging?: number
+      mining?: number
+    }
+    nodes: {
+      foraging?: {
+        center_of_the_forest?: number
+      }
+      mining?: {
+        core_of_the_mountain?: number
+      }
+    }
+  }
+  foraging_core?: {
+    forests_whispers?: number
+    forests_whispers_spent?: number
   }
   events?: SkyblockPlayerEvents
   pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>

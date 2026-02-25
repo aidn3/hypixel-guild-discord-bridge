@@ -134,12 +134,12 @@
   "commands.status.online-with-map": "{{username}} is playing {{game}} in {{mode}} map {{map}}.",
   "commands.status.online-with-mode": "{{username}} is playing {{game}} in {{mode}}.",
   "commands.hotm.none": "{{username}} has never mined before.",
-  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} - Nucleus {{runs, number}} - {{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite.",
+  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} - Core {{core, number}} - Nucleus {{runs, number}} - {{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite.",
   "commands.math.invalid": "{{username}}, invalid math expression.",
   "commands.math.response": "{{username}}, answer: {{result, number}}",
   "commands.math.response.easter": "{{username}} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{result, number}})",
   "commands.sacks.response": "{{username}} has {{value}} in sacks content.",
-  "commands.skills.response": "{{username}} Skills: AVG {{average, number(maximumFractionDigits: 1)}}, combat {{combat, number(maximumFractionDigits: 1)}}, farm {{farming, number(maximumFractionDigits: 1)}}, fish {{fishing, number(maximumFractionDigits: 1)}}, mine {{mining, number(maximumFractionDigits: 1)}}, forage {{foraging, number(maximumFractionDigits: 1)}}, enchant {{enchanting, number(maximumFractionDigits: 1)}}, alch {{alchemy, number(maximumFractionDigits: 1)}}, carp {{carpentry, number(maximumFractionDigits: 1)}}, rune {{runecrafting, number(maximumFractionDigits: 1)}}, tame {{taming, number(maximumFractionDigits: 1)}}, social {{social, number(maximumFractionDigits: 1)}}",
+  "commands.skills.response": "{{username}} Skills: AVG {{average, number(maximumFractionDigits: 1)}}, combat {{combat, number(maximumFractionDigits: 1)}}, farm {{farming, number(maximumFractionDigits: 1)}}, fish {{fishing, number(maximumFractionDigits: 1)}}, mine {{mining, number(maximumFractionDigits: 1)}}, forage {{foraging, number(maximumFractionDigits: 1)}}, hunt {{hunting, number(maximumFractionDigits: 1)}}, enchant {{enchanting, number(maximumFractionDigits: 1)}}, alch {{alchemy, number(maximumFractionDigits: 1)}}, carp {{carpentry, number(maximumFractionDigits: 1)}}, rune {{runecrafting, number(maximumFractionDigits: 1)}}, tame {{taming, number(maximumFractionDigits: 1)}}, social {{social, number(maximumFractionDigits: 1)}}",
   "commands.uhc.response": "{{username}} is UHC level {{level}}✫ - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}",
   "commands.woolwars.none": "{{username}} has never played Woolwars before.",
   "commands.woolwars.response": "{{username}}'s Woolwars: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
@@ -167,6 +167,8 @@
   "commands.news.none": "No news found right now :/",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
+  "commands.hotf.none": "{{username}} has not unlocked their hotf tree yet.",
+  "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
