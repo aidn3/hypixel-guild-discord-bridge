@@ -108,6 +108,8 @@
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
   "commands.hotf.none": "{{username}} has not unlocked their hotf tree yet.",
   "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
+  "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted {{lapis, number}} lapis, {{umber, number}} umber, {{tungsten, number}}, and {{vanguard, number}} vanguard corpses",
+  "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
