@@ -11,7 +11,7 @@ export default class Mineshafts extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['shafts', 'shaft', 'mineshaft', 'mineshafts', 'corpse', 'corpses'],
-      description: 'Returns the amount of times a player has entered a mineshaft and there corpses opened',
+      description: 'Returns shaft enter count and corpses looted amount',
       example: `shafts %s`
     })
   }
