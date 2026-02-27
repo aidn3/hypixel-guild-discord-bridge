@@ -59,6 +59,7 @@ import List from './triggers/list.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
 import Megawalls from './triggers/megawalls'
+import Mineshafts from './triggers/mineshafts.js'
 import Motes from './triggers/motes.js'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
@@ -162,6 +163,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new MagicalPower(),
       new Mayor(),
       new Megawalls(),
+      new Mineshafts(),
       new Motes(),
       new Mute(),
       new Networth(),

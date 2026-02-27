@@ -135,6 +135,15 @@ export interface SkyblockMember {
     forests_whispers?: number
     forests_whispers_spent?: number
   }
+  glacite_player_data?: {
+    corpses_looted?: {
+      lapis?: number
+      umber?: number
+      tungsten?: number
+      vanguard?: number
+    }
+    mineshafts_entered?: number
+  }
   events?: SkyblockPlayerEvents
   pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
   essence?: SkyblockEssence

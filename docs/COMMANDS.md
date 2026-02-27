@@ -70,6 +70,7 @@ A shorter version can also be used: `!- rtca`
 | `magicalpower`   | Returns a player's highest recorded skyblock Magical Power                         |
 | `mayor`          | Show current Hypixel Skyblock Election                                             |
 | `megawalls`      | Returns a player's Megawalls stats                                                 |
+| `shafts`         | Returns shaft enter count and corpses looted amount                                |
 | `motes`          | Returns a player's skyblock rift motes                                             |
 | `mute`           | mute a random online person for 5 minutes for no good reason                       |
 | `networth`       | Returns a calculation of a player's networth                                       |
