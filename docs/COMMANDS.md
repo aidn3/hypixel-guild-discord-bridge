@@ -20,6 +20,7 @@ A shorter version can also be used: `!- rtca`
 | `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
 | `age`            | Returns the day someone first logged on to hypixel                                 |
+| `airstrike`      | Mute a specific person to annoy them                                               |
 | `api`            | Returns a player's skyblock API status                                             |
 | `armor`          | Returns a player's Skyblock armor                                                  |
 | `asian`          | Challenge yourself with math!                                                      |
@@ -131,10 +132,12 @@ A shorter version can also be used: `!- rtca`
 | `/invite`             | invite player to the guild in-game                               |
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | display a leaderboard message in this channel                    |
+| `/link-panel`         | Create a panel with buttons to help users link                   |
 | `/link`               | Link your Discord account with your Minecraft account            |
 | `/list-leaderboard`   | List all existing leaderboards                                   |
 | `/list`               | List players in your guild(s)                                    |
 | `/log`                | View guild activity logs                                         |
+| `/motd`               | Show a guild MOTD                                                |
 | `/ping`               | Discord Ping                                                     |
 | `/placeholder`        | Manage and help with placeholders                                |
 | `/profanity`          | Manage application profanity filter                              |

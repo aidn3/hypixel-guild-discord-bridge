@@ -17,7 +17,7 @@ export default class Execute extends ChatCommandHandler {
     if (originalMessage.instanceType !== InstanceType.Minecraft) {
       return canOnlyUseIngame(context)
     }
-    if (originalMessage.user.permission() !== Permission.Admin) {
+    if ((await originalMessage.user.permission()) !== Permission.Admin) {
       return context.app.i18n.t(($) => $['commands.error.must-be-admin'], { username: context.username })
     }
     if (context.args.length <= 0) {

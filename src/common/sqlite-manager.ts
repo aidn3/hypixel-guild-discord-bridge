@@ -43,6 +43,7 @@ export class SqliteManager {
 
     this.database = new Database(filepath)
     this.database.pragma('journal_mode = WAL')
+    this.database.pragma('foreign_keys = ON')
 
     this.cleanInterval = setInterval(() => {
       this.clean()

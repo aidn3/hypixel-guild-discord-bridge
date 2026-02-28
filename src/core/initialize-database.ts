@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 8
+const CurrentVersion = 10
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -36,6 +37,12 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(7, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom7to8(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(8, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom8to9(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(9, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom9to10(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -171,6 +178,9 @@ function migrateFrom1to2(
       ' )'
   )
   database.exec('CREATE INDEX punishmentsIndex ON "punishments" (originInstance, userId);')
+  if (!newlyCreated) {
+    migratePunishments(application, logger, postCleanupActions, database)
+  }
 
   // reference: moderation/commands-heat.ts
   database.exec(
@@ -491,6 +501,79 @@ function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: bo
   database.pragma('user_version = 8')
 }
 
+function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 8 to 9')
+
+  // reference: discord/link-button.ts
+  database.exec(
+    'CREATE TABLE "discordLinkButton" (' +
+      '  messageId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 9')
+}
+
+function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) {
+    logger.debug('Migrating database from version 8 to 9')
+    const tables = ['discordRolesConditions', 'discordNicknameConditions']
+
+    /* eslint-disable @typescript-eslint/consistent-type-definitions */
+    type Row = { id: number | bigint; options: string }
+    type OldSkyblockLevelOptions = { level: number }
+    type NewSkyblockLevelOptions = { fromLevel: number; toLevel: number }
+    type OldSkyblockCatacombsOptions = { level: number }
+    type NewSkyblockCatacombsOptions = { fromLevel: number; toLevel: number }
+    /* eslint-enable @typescript-eslint/consistent-type-definitions */
+
+    let totalLevelUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId = 'reached-hypixel-skyblock-level'`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as OldSkyblockLevelOptions
+        const updateResult = update.run(
+          JSON.stringify({ fromLevel: parsedOptions.level, toLevel: 10_000 } satisfies NewSkyblockLevelOptions),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalLevelUpdates++
+      }
+    }
+    if (totalLevelUpdates > 0) {
+      logger.debug(`Updated ${totalLevelUpdates} discord conditions entry regarding skyblock level`)
+    }
+
+    let totalCatacombsUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId = 'reached-hypixel-skyblock-catacombs-level'`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as OldSkyblockCatacombsOptions
+        const updateResult = update.run(
+          JSON.stringify({ fromLevel: parsedOptions.level, toLevel: 10_000 } satisfies NewSkyblockCatacombsOptions),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalCatacombsUpdates++
+      }
+    }
+    if (totalCatacombsUpdates > 0) {
+      logger.debug(`Updated ${totalCatacombsUpdates} discord conditions entry regarding skyblock catacombs level`)
+    }
+  }
+
+  database.pragma('user_version = 10')
+}
+
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
   const uuid = identifiers.find((entry) => entry.length === 32)
   if (uuid !== undefined) {
@@ -654,6 +737,81 @@ function migrateModeration(
 
   logger.info(`Successfully parsed old moderation file. Scheduling the old file for deletion...`)
   postCleanupActions.push(() => {
+    fs.rmSync(path)
+  })
+}
+
+function migratePunishments(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface OldEntry {
+    userName: string
+    userUuid?: string
+    till: number
+    reason: string
+  }
+
+  interface OldType {
+    mute: OldEntry[]
+    ban: OldEntry[]
+  }
+
+  const path = application.getConfigFilePath('punishments.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old punishments file. Migrating this file into the new system...')
+
+  const insert = database.prepare(
+    'INSERT INTO "punishments" (originInstance, userId, type, purpose, reason, createdAt, till) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  )
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
+  const currentTime = Date.now()
+  let total = 0
+  let inserted = 0
+
+  for (const entry of oldObject.mute) {
+    if (entry.till < currentTime) continue
+    total++
+
+    if (entry.userUuid === undefined) continue
+    const identifier = findIdentifier([entry.userUuid])
+    if (identifier == undefined) continue
+    inserted++
+    insert.run(
+      identifier.originInstance,
+      identifier.userId,
+      'mute',
+      'manual',
+      entry.reason,
+      Math.floor(currentTime / 1000),
+      Math.floor(entry.till / 1000)
+    )
+  }
+
+  for (const entry of oldObject.ban) {
+    if (entry.till < currentTime) continue
+    total++
+
+    if (entry.userUuid === undefined) continue
+    const identifier = findIdentifier([entry.userUuid])
+    if (identifier == undefined) continue
+    inserted++
+    insert.run(
+      identifier.originInstance,
+      identifier.userId,
+      'ban',
+      'manual',
+      entry.reason,
+      Math.floor(currentTime / 1000),
+      Math.floor(entry.till / 1000)
+    )
+  }
+
+  logger.info(`Successfully parsed ${inserted} legacy punishments out of ${total}`)
+  postCleanupActions.push(() => {
+    logger.debug('Deleting punishments legacy file...')
     fs.rmSync(path)
   })
 }

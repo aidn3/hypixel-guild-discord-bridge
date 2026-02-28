@@ -29,6 +29,8 @@ import {
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { User } from '../../common/user'
+import type { PlaceholderContext } from '../../core/placeholder/common'
+import Duration from '../../utility/duration'
 
 import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'
@@ -67,7 +69,8 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         replyUsername,
         event.message,
         event.instanceName,
-        event.instanceType
+        event.instanceType,
+        event.user
       ),
       MinecraftSendChatPriority.Default,
       event.eventId
@@ -271,23 +274,41 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     replyUsername: string | undefined,
     message: string,
     instanceName: string,
-    instanceType: InstanceType
+    instanceType: InstanceType,
+    user: User
   ): Promise<string> {
-    let full = `/${prefix} `
+    const chatFormat = this.application.core.minecraftConfigurations.getChatPlaceholder()
+    const origin = instanceType === InstanceType.Discord ? 'DC' : instanceName
+    const originTag = `[${origin}] `
+    const usernameWithReply = `${username}${replyUsername ? `⇾${replyUsername}` : ''}`
 
-    if (this.application.core.applicationConfigurations.getOriginTag()) {
-      full += instanceType === InstanceType.Discord ? `[DC] ` : `[${instanceName}] `
+    const context: PlaceholderContext = {
+      application: this.application,
+      startTime: Date.now() - Duration.minutes(5).toMilliseconds(),
+      cachedPlaceholders: new Map(),
+      customPlaceholders: {
+        /* eslint-disable @typescript-eslint/naming-convention */
+        username: username,
+        username_with_reply: usernameWithReply,
+        reply_username: replyUsername ?? '',
+
+        origin: origin,
+        origin_tag_if_enabled: this.application.core.applicationConfigurations.getOriginTag() ? originTag : '',
+        origin_tag: originTag,
+
+        message: message
+        /* eslint-enable @typescript-eslint/naming-convention */
+      },
+      throwOnAnyFail: true,
+      user: user
     }
 
-    full += username
-    if (replyUsername != undefined) full += `⇾${replyUsername}`
-    full += ': '
-
-    full += await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
+    const placeholderResult = await this.application.core.placeHolder.resolvePlaceholder(context, chatFormat)
+    const sanitizedMessage = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
       this.clientInstance.instanceName,
-      message
+      placeholderResult.trim()
     )
 
-    return full
+    return `/${prefix} ${sanitizedMessage}`
   }
 }

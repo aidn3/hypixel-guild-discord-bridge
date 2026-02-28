@@ -1,9 +1,6 @@
-import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
+import { SlashCommandBuilder } from 'discord.js'
 
-import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { formatInvalidUsername } from '../common/commands-format.js'
-import { DefaultCommandFooter } from '../common/discord-config.js'
 
 export default {
   getCommandBuilder: () =>
@@ -18,49 +15,15 @@ export default {
     const interaction = context.interaction
     await interaction.deferReply()
 
+    const manager = context.application.discordInstance.linkButtons
     const username: string = context.interaction.options.getString('username', true)
+    const startTime = Date.now()
 
-    const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
-    if (mojangProfile === undefined) {
-      await interaction.editReply({ embeds: [formatInvalidUsername(username)] })
-      return
-    }
+    const linkResult = await manager.tryLinking(interaction, startTime, username)
+    if (!linkResult) return
 
-    const player = await context.application.hypixelApi.getPlayer(mojangProfile.id, Date.now())
-    if (player === undefined) {
-      await interaction.editReply({
-        embeds: [
-          {
-            title: 'Player never played on Hypixel before',
-            color: Color.Bad,
-            description: `Username \`${escapeMarkdown(username)}\` never played on Hypixel before?`,
-            footer: { text: DefaultCommandFooter }
-          }
-        ]
-      })
-      return
-    }
-
-    const discord = player.socialMedia?.links.DISCORD
-    if (discord === undefined || discord !== interaction.user.username) {
-      await interaction.editReply({
-        embeds: [
-          {
-            title: 'Failed To Link',
-            description:
-              `Please update your in-game Hypixel socials for Discord from ` +
-              (discord === undefined ? 'None' : `\`${escapeMarkdown(discord)}\``) +
-              ` to \`${interaction.user.username}\``,
-            color: Color.Bad,
-            footer: { text: DefaultCommandFooter }
-          }
-        ]
-      })
-      return
-    }
-
-    context.application.core.verification.addConfirmedLink(interaction.user.id, mojangProfile.id)
-    await interaction.editReply('Successfully linked!')
+    const syncResult = await manager.forceSync(interaction, startTime)
+    if (!syncResult) return
   },
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)

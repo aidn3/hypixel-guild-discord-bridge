@@ -9,6 +9,7 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Age from './triggers/age.js'
+import Airstrike from './triggers/airstrike'
 import Api from './triggers/api.js'
 import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
@@ -110,6 +111,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
     const commandsToAdd = [
       new Age(),
+      new Airstrike(),
       new Api(),
       new Armor(),
       new Asian(),
@@ -252,7 +254,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     const commandName = event.message.slice(chatPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
-    if (commandName.length === 0) {
+    if (commandName.length === 0 || commandName.startsWith(chatPrefix)) {
       return
     }
 
@@ -264,7 +266,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     const commandDisabled = config.getDisabledCommands().includes(command.triggers[0].toLowerCase())
-    const userPermission = event.user.permission()
+    const userPermission = await event.user.permission()
     if (
       commandDisabled &&
       (userPermission === Permission.Anyone || (userPermission === Permission.Helper && !config.getAllowHelperToggle()))

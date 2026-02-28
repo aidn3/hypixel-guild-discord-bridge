@@ -74,7 +74,7 @@ export class User {
     return this.userDiscord
   }
 
-  public permission(): Permission {
+  public async permission(): Promise<Permission> {
     let permission = Permission.Anyone
 
     const discordProfile = this.discordProfile()
@@ -92,6 +92,47 @@ export class User {
       if (mojangProfile.name.toLowerCase() === configurations.getAdminUsername().toLowerCase()) {
         return Permission.Admin
       }
+
+      const guildPermission = await this.getMinecraftPermission(mojangProfile)
+      if (guildPermission > permission) permission = guildPermission
+    }
+
+    return permission
+  }
+
+  private async getMinecraftPermission(mojangProfile: MojangProfile): Promise<Permission> {
+    const configurations = this.application.core.minecraftConfigurations
+    let permission = Permission.Anyone
+
+    const helperRoles = configurations.getHelperRoles()
+    const botsUuid = this.application.minecraftManager.getMinecraftBots().map((bot) => bot.uuid)
+    const giveGuildMasterOfficer = configurations.getGuildMasterOfficer()
+    if (botsUuid.length === 0) return permission
+    if (!giveGuildMasterOfficer && helperRoles.length === 0) return permission
+
+    const guild = await this.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+    if (guild === undefined) return permission
+    if (!guild.members.some((guildMember) => botsUuid.includes(guildMember.uuid))) return permission
+
+    const guildMember = guild.members.find((member) => member.uuid === mojangProfile.id)
+
+    // can be undefined if data cached and the user leaves the guild
+    if (guildMember?.rank !== undefined) {
+      if (
+        helperRoles.map((role) => role.toLowerCase().trim()).includes(guildMember.rank.toLowerCase().trim()) &&
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        Permission.Helper > permission
+      ) {
+        permission = Permission.Helper
+      }
+
+      if (
+        giveGuildMasterOfficer &&
+        ['guild_master', 'guild master'].includes(guildMember.rank.toLowerCase()) &&
+        Permission.Officer > permission
+      ) {
+        permission = Permission.Officer
+      }
     }
 
     return permission
@@ -101,8 +142,8 @@ export class User {
     return this.userLink !== undefined
   }
 
-  public immune(): boolean {
-    if (this.permission() === Permission.Admin) return true
+  public async immune(): Promise<boolean> {
+    if ((await this.permission()) === Permission.Admin) return true
 
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
@@ -253,12 +294,12 @@ export class User {
     return saved
   }
 
-  public addModerationAction(type: HeatType): HeatResult {
-    return this.context.commandsHeat.add(this, type)
+  public async addModerationAction(type: HeatType): Promise<HeatResult> {
+    return await this.context.commandsHeat.add(this, type)
   }
 
-  public tryAddModerationAction(type: HeatType): HeatResult {
-    return this.context.commandsHeat.tryAdd(this, type)
+  public async tryAddModerationAction(type: HeatType): Promise<HeatResult> {
+    return await this.context.commandsHeat.tryAdd(this, type)
   }
 
   public isMojangUser(): this is MinecraftUser {

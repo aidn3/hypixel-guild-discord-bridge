@@ -123,6 +123,10 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     return this.limboHandler.acquire()
   }
 
+  public hasProxy(): boolean {
+    return this.config.proxy !== undefined
+  }
+
   async connect(): Promise<void> {
     if (this.clientSession !== undefined) {
       this.clientSession.silentQuit = true

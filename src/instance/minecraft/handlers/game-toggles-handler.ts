@@ -160,11 +160,14 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       return
     }
 
-    const lock = await this.clientInstance.acquireLimbo()
+    const needLock = !config.selectedEnglish || !config.playerOnlineStatusEnabled
+    const lock = needLock ? await this.clientInstance.acquireLimbo() : undefined
     try {
-      // exit limbo and go to main lobby, since some settings are only available there
-      await this.clientInstance.send('/lobby', MinecraftSendChatPriority.High, undefined)
-      await sleep(4000)
+      if (lock !== undefined) {
+        // exit limbo and go to main lobby, since some settings are only available there
+        await this.clientInstance.send('/lobby', MinecraftSendChatPriority.High, undefined)
+        await sleep(4000)
+      }
 
       if (!config.playerOnlineStatusEnabled) await this.queueSend('/status online')
       if (!config.selectedEnglish) await this.queueSend('/language english')
@@ -173,10 +176,12 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       if (!config.guildChatEnabled) await this.queueSend('/guild toggle')
       if (!config.guildNotificationsEnabled) await this.queueSend('/guild notifications')
     } finally {
-      // Wait for the server to receive and process commands before releasing lock
-      await sleep(5000)
-      // free lock
-      lock.resolve()
+      if (lock !== undefined) {
+        // Wait for the server to receive and process commands before releasing lock
+        await sleep(5000)
+        // free lock
+        lock.resolve()
+      }
     }
   }
 

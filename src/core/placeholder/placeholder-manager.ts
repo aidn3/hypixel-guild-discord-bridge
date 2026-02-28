@@ -32,10 +32,17 @@ export class PlaceholderManager {
     const ExpressionDetector = /{{(.*?)(?<!\\)}}/g
 
     let match: RegExpMatchArray | null
+    const changes = new Map<string, string>()
     while ((match = ExpressionDetector.exec(query)) != undefined) {
+      if (changes.has(match[0])) continue
+
       const expression = match[1]
       const resolvedExpression = await this.resolveExpression(context, expression)
-      query = query.replace(match[0], resolvedExpression)
+      changes.set(match[0], resolvedExpression)
+    }
+
+    for (const [original, replaceWith] of changes.entries()) {
+      query = query.replace(original, replaceWith)
     }
 
     return query
