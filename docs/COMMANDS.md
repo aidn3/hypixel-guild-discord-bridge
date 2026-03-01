@@ -32,6 +32,7 @@ A shorter version can also be used: `!- rtca`
 | `calculate`      | A basic calculator                                                                 |
 | `catacombs`      | Returns a player's catacombs level                                                 |
 | `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
+| `coinflip`       | flip a coin                                                                        |
 | `collection`     | Returns a player's skyblock collection stats                                       |
 | `cac`            | Returns a player's Cops and Crims stats                                            |
 | `counting`       | Start a counting chain event                                                       |
