@@ -171,6 +171,8 @@
   "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
   "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted {{lapis, number}} lapis, {{umber, number}} umber, {{tungsten, number}}, and {{vanguard, number}} vanguard corpses",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
+  "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
+  "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

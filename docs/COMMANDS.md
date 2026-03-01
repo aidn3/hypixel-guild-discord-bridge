@@ -19,6 +19,7 @@ A shorter version can also be used: `!- rtca`
 | ---------------- | ---------------------------------------------------------------------------------- |
 | `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
+| `agatha`         | Returns a player's Agatha and foraging personal bests                              |
 | `age`            | Returns the day someone first logged on to hypixel                                 |
 | `api`            | Returns a player's skyblock API status                                             |
 | `armor`          | Returns a player's Skyblock armor                                                  |
