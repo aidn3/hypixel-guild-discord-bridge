@@ -108,7 +108,7 @@
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
   "commands.duels.none": "{{username}} has never played any duels before.",
-  "commands.bowspleef.response": "{{username}} has played {{gamesPlayed, number}} games of bowspleef, won {{wins, number}} games and lost {{losses, number}} (win/loss ratio of {{winLossRatio, number}}) and has fired {{shotsFired, number}} shots with a best winstreak of {{bestWinstreak, number}}.",
+  "commands.bowspleef.response": "{{username}}'s bowspleef duels stats - {{gamesPlayed, number}} games played - {{wins, number}} wins - {{losses, number}} losses - {{winLossRatio, number}} W/L - {{shotsFired, number}} shots fired - {{bestWinstreak, number}} best winstreak.",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
 
