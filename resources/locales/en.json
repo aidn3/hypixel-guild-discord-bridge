@@ -259,27 +259,27 @@
     "{{name}}, You have something special... it’s just well hidden. Like, really well."
   ],
   "commands.coinflip.heads": [
-    "{{name}} flips a coin high into the air — it spins once, twice — and lands on heads.",
+    "{{name}} flips a coin high into the air - it spins once, twice - and lands on heads.",
     "{{name}} snaps a coin upward; it glints in the light and settles as heads.",
     "The coin {{name}} flips dances across the air before dropping to heads.",
     "{{name}} lets a coin soar dramatically… it lands on heads.",
-    "The coin {{name}} tosses arcs gracefully above and falls — heads.",
+    "The coin {{name}} tosses arcs gracefully above and falls - heads.",
     "{{name}} gives a coin a sharp flick; it wobbles on the table and tips to heads.",
-    "The coin {{name}} flips slows its spin — it lands on heads.",
+    "The coin {{name}} flips slows its spin - it lands on heads.",
     "{{name}} watches closely as the coin hits the ground and shows heads.",
-    "The coin {{name}} tossed clinks against the floor — heads.",
+    "The coin {{name}} tossed clinks against the floor - heads.",
     "With a confident flip of a coin, {{name}} reveals heads."
   ],
   "commands.coinflip.tails": [
-    "{{name}} flips a coin skyward — it spins wildly — and lands on tails.",
+    "{{name}} flips a coin skyward - it spins wildly - and lands on tails.",
     "{{name}} flicks a coin; it flashes silver and drops to tails.",
     "The coin {{name}} flips bounces once before resting on tails.",
     "{{name}} launches a coin high… it lands on tails.",
     "The coin {{name}} tosses whirls above and settles as tails.",
     "{{name}} gives a coin a dramatic toss; it rolls in a circle and falls to tails.",
-    "The coin {{name}} flips slows to a stop — it shows tails.",
+    "The coin {{name}} flips slows to a stop - it shows tails.",
     "{{name}} leans in as the coin lands firmly on tails.",
-    "The coin {{name}} tossed rattles across the surface — tails.",
+    "The coin {{name}} tossed rattles across the surface - tails.",
     "With a clean flip of a coin, {{name}} gets tails."
   ]
 }
