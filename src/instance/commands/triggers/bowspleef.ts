@@ -29,6 +29,7 @@ export default class BowSpleef extends ChatCommandHandler {
     // Technically theres a games played stat but it seems higher than it should be
     const gamesPlayed = wins + losses
     const winLossRatio = losses === 0 ? wins : Number((wins / losses).toFixed(2))
+    const bestWinstreak = duels.best_winstreak_mode_bowspleef_duel ?? 0
 
     return context.app.i18n.t(($) => $['commands.bowspleef.response'], {
       username: givenUsername,
@@ -36,7 +37,8 @@ export default class BowSpleef extends ChatCommandHandler {
       wins,
       losses,
       winLossRatio,
-      shotsFired
+      shotsFired,
+      bestWinstreak
     })
   }
 }

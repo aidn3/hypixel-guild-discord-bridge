@@ -58,7 +58,12 @@ export interface HypixelPlayerStats {
     wool_wars?: { stats?: { games_played?: number; kills?: number; wins?: number; deaths?: number } }
   }
   SkyWars?: { wins?: number; games_played_skywars?: number; deaths?: number; kills?: number }
-  Duels?: { bowspleef_duel_losses?: number; bowspleef_duel_wins?: number; bowspleef_duel_bow_shots?: number }
+  Duels?: {
+    bowspleef_duel_losses?: number
+    bowspleef_duel_wins?: number
+    bowspleef_duel_bow_shots?: number
+    best_winstreak_mode_bowspleef_duel?: number
+  }
 }
 
 export interface HypixelPlayerAchievements {
