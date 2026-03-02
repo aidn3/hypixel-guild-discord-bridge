@@ -165,6 +165,8 @@
   "commands.rank.no-timestamp": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.duels.none": "{{username}} has never played any duels before.",
+  "commands.bowspleef.response": "{{username}}'s bowspleef duels stats - {{gamesPlayed, number}} games played - {{wins, number}} wins - {{losses, number}} losses - {{winLossRatio, number}} W/L - {{shotsFired, number}} shots fired - {{bestWinstreak, number}} best winstreak.",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
   "commands.hotf.none": "{{username}} has not unlocked their hotf tree yet.",
