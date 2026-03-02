@@ -165,6 +165,8 @@
   "commands.rank.no-timestamp": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.duels.none": "{{username}} has never played any duels before.",
+  "commands.bowspleef.response": "{{username}}'s bowspleef duels stats - {{gamesPlayed, number}} games played - {{wins, number}} wins - {{losses, number}} losses - {{winLossRatio, number}} W/L - {{shotsFired, number}} shots fired - {{bestWinstreak, number}} best winstreak.",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
   "commands.hotf.none": "{{username}} has not unlocked their hotf tree yet.",
@@ -172,6 +174,8 @@
   "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted {{lapis, number}} lapis, {{umber, number}} umber, {{tungsten, number}}, and {{vanguard, number}} vanguard corpses",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
   "commands.coinflip.special": "{{username}} flips a coin into the air. It spins, drops beside {{username}}, and somehow the coin settles upright on its side.",
+  "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
+  "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
