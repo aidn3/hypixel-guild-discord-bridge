@@ -173,6 +173,7 @@
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
   "commands.classavg.overflow": "{{username}}'s class average {{average, number}} - Overflow {{overflow, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
   "commands.classavg.response": "{{username}}'s class average {{average, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
+  "commands.catacombs.response": "{{username}} is Catacombs {{cata, number}} - {{class}} - Secrets {{secrets, number}}.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

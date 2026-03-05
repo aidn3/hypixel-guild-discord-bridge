@@ -41,7 +41,12 @@ export default class Catacombs extends ChatCommandHandler {
     const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
     const secrets = hypixelProfile.achievements?.skyblock_treasure_hunter ?? 0
 
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)} - Secrets ${secrets.toLocaleString('en-US')}.`
+    return context.app.i18n.t(($) => $['commands.catacombs.response'], {
+      username: givenUsername,
+      cata: skillLevel,
+      class: this.formatClass(dungeons),
+      secrets: secrets
+    })
   }
 
   private formatClass(dungeon: SkyblockDungeons): string {
