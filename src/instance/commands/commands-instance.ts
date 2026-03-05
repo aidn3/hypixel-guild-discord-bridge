@@ -23,6 +23,7 @@ import Buildbattle from './triggers/buildbattle'
 import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
+import ClassAverage from './triggers/classaverage.js'
 import Coinflip from './triggers/coinflip.js'
 import Collection from './triggers/collection'
 import CopsAndCrims from './triggers/cops-and-crims.js'
@@ -128,6 +129,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Calculate(),
       new Catacombs(),
       new Chocolate(),
+      new ClassAverage(),
       new Coinflip(),
       new Collection(),
       new CopsAndCrims(),
