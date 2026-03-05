@@ -171,6 +171,8 @@
   "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
   "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted {{lapis, number}} lapis, {{umber, number}} umber, {{tungsten, number}}, and {{vanguard, number}} vanguard corpses",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
+  "commands.classavg.overflow": "{{username}}'s class average {{average, number}} - Overflow {{overflow, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
+  "commands.classavg.response": "{{username}}'s class average {{average, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
