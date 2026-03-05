@@ -34,7 +34,7 @@ A shorter version can also be used: `!- rtca`
 | `calculate`      | A basic calculator                                                                 |
 | `catacombs`      | Returns a player's catacombs level                                                 |
 | `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
-| `classavg`       | Returns a player's class average (capped and uncapped)                             |
+| `classavg`       | Returns a player's class average                                                   |
 | `coinflip`       | flip a coin                                                                        |
 | `collection`     | Returns a player's skyblock collection stats                                       |
 | `cac`            | Returns a player's Cops and Crims stats                                            |

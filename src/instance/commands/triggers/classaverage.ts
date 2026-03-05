@@ -13,7 +13,7 @@ export default class ClassAverage extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['classavg', 'ca', 'classaverage'],
-      description: "Returns a player's class average (capped and uncapped)",
+      description: "Returns a player's class average",
       example: `classavg %s`
     })
   }
