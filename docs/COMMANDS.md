@@ -19,6 +19,7 @@ A shorter version can also be used: `!- rtca`
 | ---------------- | ---------------------------------------------------------------------------------- |
 | `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
+| `agatha`         | Returns a player's Agatha and foraging personal bests                              |
 | `age`            | Returns the day someone first logged on to hypixel                                 |
 | `api`            | Returns a player's skyblock API status                                             |
 | `armor`          | Returns a player's Skyblock armor                                                  |
@@ -28,11 +29,13 @@ A shorter version can also be used: `!- rtca`
 | `bits`           | Returns the best bit items to purchase for the most profit.                        |
 | `boo`            | /boo a player in-game                                                              |
 | `boop`           | /boop a player in-game                                                             |
+| `bowspleef`      | Returns a player's Bow Spleef Duels stats                                          |
 | `buildbattle`    | Returns a player's Build Battle common stats                                       |
 | `calculate`      | A basic calculator                                                                 |
 | `catacombs`      | Returns a player's catacombs level                                                 |
 | `chocolate`      | Returns a player's skyblock easter eggs chocolate stats                            |
 | `classavg`       | Returns a player's class average (capped and uncapped)                             |
+| `coinflip`       | flip a coin                                                                        |
 | `collection`     | Returns a player's skyblock collection stats                                       |
 | `cac`            | Returns a player's Cops and Crims stats                                            |
 | `counting`       | Start a counting chain event                                                       |

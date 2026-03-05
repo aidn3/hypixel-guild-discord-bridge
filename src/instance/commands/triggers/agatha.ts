@@ -7,12 +7,12 @@ import {
   usernameNotExists
 } from '../common/utility.js'
 
-export default class Mineshafts extends ChatCommandHandler {
+export default class Agatha extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['shafts', 'shaft', 'mineshaft', 'mineshafts', 'corpse', 'corpses'],
-      description: 'Returns shaft enter count and corpses looted amount',
-      example: `shafts %s`
+      triggers: ['agatha', 'agathabests', 'agathapbs', 'foragingpbs'],
+      description: "Returns a player's Agatha and foraging personal bests",
+      example: `agatha %s`
     })
   }
 
@@ -25,19 +25,21 @@ export default class Mineshafts extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const looted = selectedProfile.glacite_player_data?.corpses_looted
-    const stats = selectedProfile.glacite_player_data
-    if (stats === undefined) {
-      return context.app.i18n.t(($) => $['commands.mineshafts.none'], { username: givenUsername })
+    const personalBests = selectedProfile.foraging?.starlyn?.personal_bests
+
+    if (personalBests === undefined) {
+      return context.app.i18n.t(($) => $['commands.agatha.none'], { username: givenUsername })
     }
 
-    return context.app.i18n.t(($) => $['commands.mineshafts.response'], {
+    const agatha = personalBests.agatha ?? 0
+    const fig = personalBests.FIG_LOG ?? 0
+    const mangrove = personalBests.MANGROVE_LOG ?? 0
+
+    return context.app.i18n.t(($) => $['commands.agatha.response'], {
       username: givenUsername,
-      entered: stats.mineshafts_entered,
-      lapis: looted?.lapis ?? 0,
-      umber: looted?.umber ?? 0,
-      tungsten: looted?.tungsten ?? 0,
-      vanguard: looted?.vanguard ?? 0
+      agatha,
+      fig,
+      mangrove
     })
   }
 }
