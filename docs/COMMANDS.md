@@ -126,6 +126,7 @@ A shorter version can also be used: `!- rtca`
 | `/demote`             | demote guild member in-game                                      |
 | `/disconnect`         | disconnect minecraft clients                                     |
 | `/execute`            | execute command in-game via Minecraft client                     |
+| `/guild`              | Manage in-game guilds                                            |
 | `/help`               | Show available commands.                                         |
 | `/invite`             | invite player to the guild in-game                               |
 | `/join`               | Instruct the Minecraft account to join a guild.                  |

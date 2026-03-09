@@ -34,6 +34,7 @@ import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
 import { StatusHistory } from './instance/status-history'
 import { LanguageConfigurations } from './language-configurations'
+import { GuildsManager } from './minecraft/guilds-manager'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
 import { SessionsManager } from './minecraft/sessions-manager'
@@ -79,6 +80,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly minecraftSessions: SessionsManager
   public readonly moderationConfiguration: ModerationConfigurations
   public readonly minecraftAccounts: MinecraftAccounts
+  public readonly minecraftGuildsManager: GuildsManager
 
   // instance
   public readonly statusHistory: StatusHistory
@@ -129,6 +131,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
     this.minecraftSessions = new SessionsManager(this.sqliteManager, this.logger)
     this.minecraftAccounts = new MinecraftAccounts(this.sqliteManager)
+    this.minecraftGuildsManager = new GuildsManager(this.sqliteManager)
 
     this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
@@ -273,6 +276,8 @@ export class Core extends Instance<InstanceType.Core> {
       this.discordTemporarilyInteractions.remove(messagesIds)
       this.discordInstanceHistoryButton.remove(messagesIds)
       this.discordLinkButton.remove(messagesIds)
+
+      this.minecraftGuildsManager.deleteMessage(messagesIds)
     })
 
     transaction()

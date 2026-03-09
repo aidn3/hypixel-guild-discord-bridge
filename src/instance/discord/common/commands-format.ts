@@ -1,7 +1,8 @@
 import type { APIEmbed } from 'discord.js'
-import { escapeMarkdown } from 'discord.js'
+import { escapeMarkdown, userMention } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
+import type { User } from '../../../common/user'
 
 import { DefaultCommandFooter } from './discord-config.js'
 
@@ -27,5 +28,20 @@ export function formatInvalidUsername(givenUsername: string): APIEmbed {
       }
     ],
     footer: { text: DefaultCommandFooter }
+  }
+}
+
+export function formatUser(user: User): string {
+  const mojangProfile = user.mojangProfile()
+  const discordProfile = user.discordProfile()
+
+  if (mojangProfile !== undefined && discordProfile !== undefined) {
+    return `${escapeMarkdown(mojangProfile.name)} (${userMention(discordProfile.id)})`
+  } else if (mojangProfile !== undefined) {
+    return escapeMarkdown(mojangProfile.name)
+  } else if (discordProfile === undefined) {
+    return `~${escapeMarkdown(user.displayName())}`
+  } else {
+    return `~${escapeMarkdown(user.displayName())} (${userMention(discordProfile.id)})`
   }
 }

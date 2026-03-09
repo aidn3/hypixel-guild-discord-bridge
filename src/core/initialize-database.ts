@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 10
+const CurrentVersion = 11
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -43,6 +43,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(9, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom9to10(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(10, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom10to11(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -517,7 +520,7 @@ function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: bo
 
 function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
   if (!newlyCreated) {
-    logger.debug('Migrating database from version 8 to 9')
+    logger.debug('Migrating database from version 9 to 10')
     const tables = ['discordRolesConditions', 'discordNicknameConditions']
 
     /* eslint-disable @typescript-eslint/consistent-type-definitions */
@@ -572,6 +575,79 @@ function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: b
   }
 
   database.pragma('user_version = 10')
+}
+
+function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 10 to 11')
+
+  database.exec(
+    'CREATE TABLE "minecraftGuild" (' +
+      '  id TEXT PRIMARY KEY NOT NULL,' +
+      '  name TEXT COLLATE NOCASE NOT NULL,' +
+      '  inviteWishlist INTEGER NOT NULL DEFAULT 0,' +
+      '  selfWishlist INTEGER NOT NULL DEFAULT 0,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildMember" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  userId TEXT NOT NULL,' +
+      '  joinedAt INTEGER NOT NULL,' +
+      '  lastUpdateAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, userId)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildJoinConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildRoleConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  role TEXT NOT NULL,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildWaitlist" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  mojangId TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(guildId, mojangId)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordGuildWaitlistPanel" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordGuildWaitlistRequest" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  mojangId TEXT NOT NULL,' +
+      '  userId TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 11')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

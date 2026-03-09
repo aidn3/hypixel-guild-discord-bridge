@@ -1,0 +1,258 @@
+import assert from 'node:assert'
+
+import type { SqliteManager } from '../../common/sqlite-manager'
+import type { ConditionId } from '../conditions/common'
+
+export class GuildsManager {
+  constructor(private readonly sqliteManager: SqliteManager) {}
+
+  public initGuild(id: string, name: string): MinecraftGuild {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      // definitely possible with UPSERT. but I'd rather not since it can get real messy
+      const select = database.prepare<[typeof id], MinecraftGuild>('SELECT * FROM minecraftGuild WHERE id = ?')
+      const exists = database.prepare('SELECT id FROM minecraftGuild WHERE id = ?')
+      const insert = database.prepare('INSERT INTO minecraftGuild (id, name) VALUES (?, ?)')
+      const update = database.prepare('UPDATE minecraftGuild SET name = ? WHERE id = ?')
+
+      if (exists.all(id).length === 0) {
+        insert.run(id, name)
+      } else {
+        assert.strictEqual(update.run(name, id).changes, 1)
+      }
+
+      const entry = select.get(id)
+      assert.ok(entry !== undefined)
+      entry.createdAt = entry.createdAt * 1000
+      // database driver returns integer 0 or 1
+      /* eslint-disable @typescript-eslint/no-unnecessary-type-conversion */
+      // noinspection PointlessBooleanExpressionJS
+      entry.inviteWishlist = !!entry.inviteWishlist
+      // noinspection PointlessBooleanExpressionJS
+      entry.selfWishlist = !!entry.selfWishlist
+      /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
+
+      return entry
+    })
+
+    return transaction()
+  }
+
+  public allGuilds(): MinecraftGuild[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[], MinecraftGuild>('SELECT id, name FROM minecraftGuild')
+
+      return select.all()
+    })
+
+    return transaction()
+  }
+
+  public deleteGuild(id: string): number {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const guildExists = database.prepare<[typeof id], number>('SELECT COUNT(*) FROM "minecraftGuild" WHERE id = ?')
+      if (guildExists.pluck(true).get(id) === 0) return 0
+
+      const tables = [
+        'minecraftGuildMember',
+        'minecraftGuildJoinConditions',
+        'minecraftGuildRoleConditions',
+        'minecraftGuildWaitlist',
+        'discordGuildWaitlistPanel',
+        'discordGuildWaitlistRequest'
+      ]
+
+      let count = 0
+      for (const table of tables) {
+        count += database.prepare(`DELETE FROM "${table}" WHERE guildId = ?`).run(id).changes
+      }
+
+      // only delete after counting everything
+      count += database.prepare('DELETE FROM "minecraftGuild" WHERE id = ?').run(id).changes
+
+      return count
+    })
+
+    return transaction()
+  }
+
+  public addWaitlist(guildId: string, mojangId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "minecraftGuildWaitlist" (guildId, mojangId) VALUES (?, ?) ON CONFLICT DO NOTHING'
+      )
+
+      return insert.run(guildId, mojangId).changes > 0
+    })
+
+    return transaction()
+  }
+
+  public removeWaitlist(guildId: string, mojangId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const statement = database.prepare('DELETE FROM "minecraftGuildWaitlist" WHERE guildId = ? AND mojangId = ?')
+
+      return statement.run(guildId, mojangId).changes > 0
+    })
+
+    return transaction()
+  }
+
+  public getWaitlist(guildId: string): WaitlistEntry[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[typeof guildId], WaitlistEntry>(
+        'SELECT * FROM minecraftGuildWaitlist WHERE guildId = ?'
+      )
+
+      return select.all(guildId)
+    })
+
+    return transaction()
+  }
+
+  public getWaitlistPanels(): WaitlistPanel[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[], WaitlistPanel>('SELECT * FROM discordGuildWaitlistPanel')
+
+      const all = select.all()
+      for (const entry of all) {
+        entry.createdAt = entry.createdAt * 1000
+        entry.lastUpdatedAt = entry.lastUpdatedAt * 1000
+      }
+      return all
+    })
+
+    return transaction()
+  }
+
+  public addWaitlistPanel(entry: Omit<WaitlistPanel, 'createdAt' | 'lastUpdatedAt'>): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "discordGuildWaitlistPanel" (messageId, channelId, guildId) VALUES (?, ?, ?)'
+      )
+
+      insert.run(entry.messageId, entry.channelId, entry.guildId)
+    })
+
+    transaction()
+  }
+
+  public getSentWaitlist(): WaitlistRequestEntry[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[], WaitlistRequestEntry>('SELECT * FROM discordGuildWaitlistRequest')
+
+      const all = select.all()
+      for (const entry of all) {
+        entry.createdAt = entry.createdAt * 1000
+      }
+      return all
+    })
+
+    return transaction()
+  }
+
+  public addSentWaitlist(entry: Omit<WaitlistRequestEntry, 'createdAt'>): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "minecraftGuildWaitlist" (messageId, channelId, guildId, mojangId, userId) VALUES (?, ?, ?, ?, ?)'
+      )
+
+      insert.run(entry.messageId, entry.channelId, entry.guildId, entry.mojangId, entry.userId)
+    })
+
+    transaction()
+  }
+
+  public deleteMessage(messagesIds: string[]): number {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const deletePanel = database.prepare('DELETE FROM "discordGuildWaitlistPanel" WHERE messageId = ?')
+      const deleteRequest = database.prepare('DELETE FROM "discordGuildWaitlistRequest" WHERE messageId = ?')
+
+      let count = 0
+      for (const messageId of messagesIds) {
+        count += deletePanel.run(messageId).changes
+        count += deleteRequest.run(messageId).changes
+      }
+
+      return count
+    })
+
+    return transaction()
+  }
+
+  public getSelfWaitlistEnabled(guildId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare('SELECT selfWishlist FROM "minecraftGuild" WHERE id = ?')
+
+      const raw = select.pluck(true).get(guildId) as number | undefined
+      return typeof raw === 'number' ? !!raw : false
+    })
+
+    return transaction()
+  }
+
+  public setSelfWaitlistEnabled(guildId: string, enabled: boolean): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const update = database.prepare('UPDATE "minecraftGuild" SET selfWishlist = ? WHERE id = ?')
+
+      update.run(enabled ? 1 : 0, guildId)
+    })
+
+    transaction()
+  }
+}
+
+export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
+
+export type GuildJoinCondition = GuildCondition
+export type SavedGuildJoinCondition = GuildJoinCondition & Pick<ConditionId, 'id' | 'createdAt'>
+
+export type GuildRoleCondition = GuildCondition & { role: string }
+export type SavedGuildRoleCondition = GuildRoleCondition & Pick<ConditionId, 'id' | 'createdAt'>
+
+export interface MinecraftGuild {
+  id: string
+  name: string
+  inviteWishlist: boolean
+  selfWishlist: boolean
+  createdAt: number
+}
+
+export interface WaitlistEntry {
+  guildId: string
+  mojangId: string
+  createdAt: number
+}
+
+export interface WaitlistRequestEntry {
+  messageId: string
+  channelId: string
+
+  guildId: string
+  mojangId: string
+  userId: string
+
+  createdAt: number
+}
+
+export interface WaitlistPanel {
+  messageId: string
+  channelId: string
+
+  guildId: string
+
+  lastUpdatedAt: number
+  createdAt: number
+}

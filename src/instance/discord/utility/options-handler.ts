@@ -9,6 +9,7 @@ import type {
   ComponentInContainerData,
   ContainerComponentData,
   InteractionResponse,
+  Message,
   MessageComponentInteraction,
   ModalMessageModalSubmitInteraction,
   SectionComponentData
@@ -152,7 +153,7 @@ interface OptionId {
 export class OptionsHandler {
   public static readonly BackButton = 'back-button'
   private static readonly InactivityTime = 600_000
-  private originalReply: InteractionResponse | undefined
+  private originalReply: InteractionResponse | Message | undefined
   private enabled = true
   private path: string[] = []
   private ids = new Map<string, OptionId>()
@@ -171,11 +172,14 @@ export class OptionsHandler {
   }
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
-    const originalReply = await interaction.reply({
+    const alreadySent = interaction.replied || interaction.deferred
+    const payload = {
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
-      flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
-    })
+    }
+    const originalReply = alreadySent
+      ? await interaction.editReply({ ...payload, flags: MessageFlags.IsComponentsV2 })
+      : await interaction.reply({ ...payload, flags: MessageFlags.IsComponentsV2 })
 
     this.originalReply = originalReply
     const replyId = await originalReply.fetch().then((message) => message.id)
