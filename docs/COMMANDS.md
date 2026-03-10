@@ -72,7 +72,7 @@ A shorter version can also be used: `!- rtca`
 | `level`          | Returns a player's skyblock level                                                  |
 | `list`           | List online members in a guild                                                     |
 | `magicalpower`   | Returns a player's highest recorded skyblock Magical Power                         |
-| `mayor`          | Show current Hypixel Skyblock Election                                             |
+| `mayor`          | Show current Hypixel SkyBlock mayor and minister                                   |
 | `megawalls`      | Returns a player's Megawalls stats                                                 |
 | `shafts`         | Returns shaft enter count and corpses looted amount                                |
 | `motes`          | Returns a player's skyblock rift motes                                             |
