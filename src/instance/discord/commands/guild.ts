@@ -415,6 +415,16 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
             }
           }
         ]
+      },
+      {
+        type: OptionType.Boolean,
+        name: 'Auto accept join requests',
+        description:
+          'Auto accept users who send a guild join request as long as they meet the requirements and do not have any active punishments',
+        getOption: () => manager.getAcceptJoinRequestsEnabled(savedGuild.id),
+        toggleOption: () => {
+          manager.setAcceptJoinRequestsEnabled(savedGuild.id, !manager.getAcceptJoinRequestsEnabled(savedGuild.id))
+        }
       }
     ]
   }

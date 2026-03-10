@@ -26,6 +26,7 @@ import AutoRestart from './instance/auto-restart'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
 import { PluginsManager } from './instance/features/plugins-manager.js'
+import HypixelGuildHelper from './instance/hypixel-guild-helper'
 import MetricsInstance from './instance/metrics/metrics-instance.js'
 import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
@@ -46,6 +47,7 @@ export type AllInstances =
   | SkyblockReminders
   | SpontaneousEvents
   | AutoRestart
+  | HypixelGuildHelper
   | MinecraftManager
   | PluginsManager
 
@@ -75,6 +77,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
+  private readonly hypixelGuildHelper: HypixelGuildHelper
   private readonly skyblockReminders: SkyblockReminders
   private readonly spontaneousEvents: SpontaneousEvents
   private readonly autoRestart: AutoRestart
@@ -127,6 +130,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
 
+    this.hypixelGuildHelper = new HypixelGuildHelper(this)
     this.skyblockReminders = new SkyblockReminders(this)
     this.spontaneousEvents = new SpontaneousEvents(this)
     this.autoRestart = new AutoRestart(this)
@@ -337,6 +341,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
 
       this.discordInstance, // discord second to send any notification about connecting
 
+      this.hypixelGuildHelper,
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,

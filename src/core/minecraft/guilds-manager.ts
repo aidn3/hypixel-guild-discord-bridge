@@ -80,6 +80,8 @@ export class GuildsManager {
     guild.selfWishlist = !!guild.selfWishlist
     // noinspection PointlessBooleanExpressionJS
     guild.inviteWishlist = !!guild.inviteWishlist
+    // noinspection PointlessBooleanExpressionJS
+    guild.acceptJoinRequests = !!guild.acceptJoinRequests
     guild.createdAt = guild.createdAt * 1000
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
@@ -315,6 +317,29 @@ export class GuildsManager {
     condition.options = JSON.parse(condition.options as unknown as string)
     condition.createdAt = condition.createdAt * 1000
   }
+
+  public getAcceptJoinRequestsEnabled(guildId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare('SELECT acceptJoinRequests FROM "minecraftGuild" WHERE id = ?')
+
+      const raw = select.pluck(true).get(guildId) as number | undefined
+      return typeof raw === 'number' ? !!raw : false
+    })
+
+    return transaction()
+  }
+
+  public setAcceptJoinRequestsEnabled(guildId: string, enabled: boolean): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const update = database.prepare('UPDATE "minecraftGuild" SET acceptJoinRequests = ? WHERE id = ?')
+
+      update.run(enabled ? 1 : 0, guildId)
+    })
+
+    transaction()
+  }
 }
 
 export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
@@ -331,6 +356,7 @@ export interface MinecraftGuild {
   inviteWishlist: boolean
   selfWishlist: boolean
   neededJoinConditions: number
+  acceptJoinRequests: boolean
   createdAt: number
 }
 

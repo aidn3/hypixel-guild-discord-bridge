@@ -1,7 +1,7 @@
 import type { Guild } from 'discord.js'
 
 import type Application from '../../application'
-import type { DiscordUser } from '../../common/user'
+import type { User } from '../../common/user'
 // eslint-disable-next-line import/no-restricted-paths
 import type { ModalOption } from '../../instance/discord/utility/modal-options'
 
@@ -51,7 +51,7 @@ export interface HandlerOperationContext extends HandlerContext {
 }
 
 export interface HandlerUser {
-  user: DiscordUser
+  user: User
 }
 
 export type ConditionOption = Record<string, string | number | boolean | string[]>

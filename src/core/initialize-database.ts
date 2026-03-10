@@ -587,6 +587,7 @@ function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: 
       '  inviteWishlist INTEGER NOT NULL DEFAULT 0,' +
       '  selfWishlist INTEGER NOT NULL DEFAULT 0,' +
       '  neededJoinConditions INTEGER NOT NULL DEFAULT 1,' +
+      '  acceptJoinRequests INTEGER NOT NULL DEFAULT 0,' +
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ' ) STRICT'
   )
