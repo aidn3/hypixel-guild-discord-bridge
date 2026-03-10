@@ -5,7 +5,7 @@ export default class Coinflip extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['coinflip', 'coinf'],
-      description: 'flip a coin',
+      description: 'Flip a coin',
       example: `coinflip %s`
     })
   }

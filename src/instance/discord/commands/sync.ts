@@ -12,7 +12,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('sync')
-      .setDescription('synchronize roles and other user options')
+      .setDescription('Synchronize roles and other user options')
       .addUserOption((o) => o.setName('user').setDescription('User to synchronize')),
 
   handler: async function (context) {

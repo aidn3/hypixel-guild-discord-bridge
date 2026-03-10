@@ -7,7 +7,7 @@ export default class Age extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['age', 'joined'],
-      description: 'Returns the day someone first logged on to hypixel',
+      description: 'Returns the day someone first logged on to Hypixel',
       example: `age %s`
     })
   }

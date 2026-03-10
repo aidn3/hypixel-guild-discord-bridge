@@ -6,7 +6,7 @@ import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
-    new SlashCommandBuilder().setName('disconnect').setDescription('disconnect minecraft clients'),
+    new SlashCommandBuilder().setName('disconnect').setDescription('Disconnect minecraft clients'),
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
   permission: Permission.Helper,
 

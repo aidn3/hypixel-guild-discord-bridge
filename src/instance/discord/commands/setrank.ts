@@ -9,7 +9,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('setrank')
-      .setDescription('setrank guild member in-game')
+      .setDescription('Setrank guild member in-game')
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       )

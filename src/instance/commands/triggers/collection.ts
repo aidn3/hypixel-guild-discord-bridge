@@ -37,7 +37,7 @@ export default class Collection extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['collection', 'collections'],
-      description: "Returns a player's skyblock collection stats",
+      description: "Returns a player's SkyBlock collection stats",
       example: `collection %s birch`
     })
   }

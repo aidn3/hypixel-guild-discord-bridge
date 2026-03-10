@@ -7,7 +7,7 @@ export default class Election extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['election'],
-      description: 'Show current Hypixel Skyblock Election',
+      description: 'Show current Hypixel SkyBlock election',
       example: `election`
     })
   }
