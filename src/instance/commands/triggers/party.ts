@@ -151,7 +151,7 @@ class PartyEnd extends ChatCommandHandler {
   constructor(partyManager: PartyManager) {
     super({
       triggers: ['endparty', 'delparty'],
-      description: 'remove the party from the listing',
+      description: 'Remove the party from the listing',
       example: `endparty`
     })
 

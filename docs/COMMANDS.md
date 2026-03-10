@@ -53,7 +53,7 @@ A shorter version can also be used: `!- rtca`
 | `explain`        | Returns an explanation of the bot                                                  |
 | `fairysouls`     | Returns a player's SkyBlock fairy souls progress                                   |
 | `fetchur`        | Show what Fetchur NPC is requesting                                                |
-| `forge`          | Returns a player's Skyblock forge slots                                            |
+| `forge`          | Returns a player's SkyBlock forge slots                                            |
 | `garden`         | Returns a player's Garden stats                                                    |
 | `gifted`         | Returns how many times a player has gifted a rank                                  |
 | `mguild`         | Check multiple players' guilds, if any in one                                      |
@@ -81,7 +81,7 @@ A shorter version can also be used: `!- rtca`
 | `news`           | Returns the latest SkyBlock news                                                   |
 | `parties`        | List all active parties in guild                                                   |
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
-| `endparty`       | remove the party from the listing                                                  |
+| `endparty`       | Remove the party from the listing                                                  |
 | `pb`             | Returns a players best dungeon run time                                            |
 | `placeholder`    | Resolve a placeholder                                                              |
 | `points30`       | Returns user's 30 days activity points                                             |
