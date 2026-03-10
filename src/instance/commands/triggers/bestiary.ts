@@ -27,7 +27,7 @@ export default class Bestiary extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['be', 'bestiary'],
-      description: "Returns a player's bestiary stats",
+      description: "Returns a player's Bestiary stats",
       example: `be %s dreadlord`
     })
   }

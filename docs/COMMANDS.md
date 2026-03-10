@@ -25,7 +25,7 @@ A shorter version can also be used: `!- rtca`
 | `armor`          | Returns a player's SkyBlock armor                                                  |
 | `asian`          | Challenge yourself with math!                                                      |
 | `bedwars`        | Returns a player's Bed Wars common stats                                           |
-| `be`             | Returns a player's bestiary stats                                                  |
+| `be`             | Returns a player's Bestiary stats                                                  |
 | `bits`           | Returns the best bit items to purchase for the most profit.                        |
 | `boo`            | /boo a player in-game                                                              |
 | `boop`           | /boop a player in-game                                                             |
