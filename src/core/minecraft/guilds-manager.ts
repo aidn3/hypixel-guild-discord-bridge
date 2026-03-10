@@ -23,15 +23,7 @@ export class GuildsManager {
 
       const entry = select.get(id)
       assert.ok(entry !== undefined)
-      entry.createdAt = entry.createdAt * 1000
-      // database driver returns integer 0 or 1
-      /* eslint-disable @typescript-eslint/no-unnecessary-type-conversion */
-      // noinspection PointlessBooleanExpressionJS
-      entry.inviteWishlist = !!entry.inviteWishlist
-      // noinspection PointlessBooleanExpressionJS
-      entry.selfWishlist = !!entry.selfWishlist
-      /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
-
+      this.deserializeGuild(entry)
       return entry
     })
 
@@ -41,9 +33,13 @@ export class GuildsManager {
   public allGuilds(): MinecraftGuild[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const select = database.prepare<[], MinecraftGuild>('SELECT id, name FROM minecraftGuild')
+      const select = database.prepare<[], MinecraftGuild>('SELECT * FROM minecraftGuild')
 
-      return select.all()
+      const guilds = select.all()
+      for (const guild of guilds) {
+        this.deserializeGuild(guild)
+      }
+      return guilds
     })
 
     return transaction()
@@ -76,6 +72,16 @@ export class GuildsManager {
     })
 
     return transaction()
+  }
+
+  private deserializeGuild(guild: MinecraftGuild): void {
+    /* eslint-disable @typescript-eslint/no-unnecessary-type-conversion */
+    // noinspection PointlessBooleanExpressionJS
+    guild.selfWishlist = !!guild.selfWishlist
+    // noinspection PointlessBooleanExpressionJS
+    guild.inviteWishlist = !!guild.inviteWishlist
+    guild.createdAt = guild.createdAt * 1000
+    /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
 
   public addWaitlist(guildId: string, mojangId: string): boolean {
