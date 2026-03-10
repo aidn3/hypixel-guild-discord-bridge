@@ -57,11 +57,11 @@ export interface HandlerUser {
 export type ConditionOption = Record<string, string | number | boolean | string[]>
 
 export interface ConditionId {
-  id: string
+  id: number | bigint
+  createdAt: number
   typeId: string
   options: ConditionOption
   guildId: string
-  createdAt: string
 }
 
 export enum OnUnmet {
