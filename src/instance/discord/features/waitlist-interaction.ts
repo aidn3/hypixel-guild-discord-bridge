@@ -1,12 +1,20 @@
 import assert from 'node:assert'
 
 import type { BaseMessageOptions, ButtonInteraction, ChatInputCommandInteraction, Client } from 'discord.js'
-import { ButtonStyle, ComponentType, escapeMarkdown, inlineCode, MessageFlags, Routes } from 'discord.js'
+import {
+  ButtonStyle,
+  ComponentType,
+  escapeCodeBlock,
+  escapeMarkdown,
+  inlineCode,
+  MessageFlags,
+  Routes
+} from 'discord.js'
 import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application'
-import { Color, type InstanceType } from '../../../common/application-event'
+import { Color, type InstanceType, PunishmentType } from '../../../common/application-event'
 import type EventHelper from '../../../common/event-helper'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
@@ -105,6 +113,16 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
       return
     } else if (!savedGuild.selfWishlist) {
       await interaction.editReply({ content: 'Self-signup is disabled. Ask a staff member for help.' })
+      return
+    }
+
+    const banned = user.punishments().longestPunishment(PunishmentType.Ban)
+    if (banned !== undefined) {
+      await interaction.editReply({
+        content:
+          `You are banned. Your ban expires <t:${Math.floor(banned.till / 1000)}:R>.` +
+          `\n**Reason:** \`\`\`${escapeCodeBlock(banned.reason)}\`\`\``
+      })
       return
     }
 
