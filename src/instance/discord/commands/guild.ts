@@ -9,24 +9,42 @@ import {
   escapeMarkdown,
   inlineCode,
   SlashCommandBuilder,
+  SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
   TextChannel
 } from 'discord.js'
 
+import type Application from '../../../application'
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import type { MojangProfile } from '../../../common/user'
-import type { MinecraftGuild } from '../../../core/minecraft/guilds-manager'
+import type { GuildJoinCondition, MinecraftGuild } from '../../../core/minecraft/guilds-manager'
 import Duration from '../../../utility/duration'
 import { search, searchObjects } from '../../../utility/shared-utility'
+import {
+  addConditionCommand,
+  type CommandConditionHandler,
+  handleConditionAdd,
+  handleConditionList,
+  handleConditionRemove,
+  handleSuggestConditionsAdd,
+  handleSuggestConditionsRemove,
+  listConditionCommand,
+  removeConditionCommand
+} from '../common/commands-conditions'
 import { formatInvalidUsername } from '../common/commands-format'
 import { DefaultCommandFooter } from '../common/discord-config.js'
+import type { ModalResult } from '../utility/modal-options'
 import type { CategoryOption } from '../utility/options-handler'
 import { OptionsHandler, OptionType } from '../utility/options-handler'
 
 export default {
   getCommandBuilder: function () {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    const GuildNameOption = () =>
+      new SlashCommandStringOption().setName('name').setDescription('in-game guild name').setRequired(true)
+
     return new SlashCommandBuilder()
       .setName('guild')
       .setDescription('Manage in-game guilds')
@@ -34,23 +52,27 @@ export default {
         new SlashCommandSubcommandBuilder()
           .setName('register')
           .setDescription('register an in-game guild')
-          .addStringOption((o) => o.setName('name').setDescription('in-game guild name').setRequired(true))
+          .addStringOption(GuildNameOption().setAutocomplete(true))
       )
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
           .setName('unregister')
           .setDescription('unregister an in-game guild and delete all related data')
-          .addStringOption((o) =>
-            o.setName('name').setDescription('in-game guild name').setRequired(true).setAutocomplete(true)
-          )
+          .addStringOption(GuildNameOption().setAutocomplete(true))
       )
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
           .setName('settings')
           .setDescription('Manage settings of a registered guild')
-          .addStringOption((o) =>
-            o.setName('name').setDescription('in-game guild name').setRequired(true).setAutocomplete(true)
-          )
+          .addStringOption(GuildNameOption().setAutocomplete(true))
+      )
+      .addSubcommandGroup(
+        new SlashCommandSubcommandGroupBuilder()
+          .setName('join-conditions')
+          .setDescription('manage conditions to join a specific guild')
+          .addSubcommand(listConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+          .addSubcommand(addConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+          .addSubcommand(removeConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
@@ -60,17 +82,13 @@ export default {
             new SlashCommandSubcommandBuilder()
               .setName('list')
               .setDescription('list all currently waiting players')
-              .addStringOption((o) =>
-                o.setName('name').setDescription('in-game guild name').setAutocomplete(true).setRequired(true)
-              )
+              .addStringOption(GuildNameOption().setAutocomplete(true))
           )
           .addSubcommand(
             new SlashCommandSubcommandBuilder()
               .setName('add')
               .setDescription('add a player to the waiting list')
-              .addStringOption((o) =>
-                o.setName('name').setDescription('in-game guild name').setAutocomplete(true).setRequired(true)
-              )
+              .addStringOption(GuildNameOption().setAutocomplete(true))
               .addStringOption((o) =>
                 o.setName('username').setDescription('Username of the player').setAutocomplete(true).setRequired(true)
               )
@@ -79,9 +97,7 @@ export default {
             new SlashCommandSubcommandBuilder()
               .setName('remove')
               .setDescription('remove a player from the waiting list')
-              .addStringOption((o) =>
-                o.setName('name').setDescription('in-game guild name').setAutocomplete(true).setRequired(true)
-              )
+              .addStringOption(GuildNameOption().setAutocomplete(true))
               .addStringOption((o) =>
                 o.setName('username').setDescription('Username of the player').setAutocomplete(true).setRequired(true)
               )
@@ -90,9 +106,7 @@ export default {
             new SlashCommandSubcommandBuilder()
               .setName('create-panel')
               .setDescription('Create a sticky panel that auto updates')
-              .addStringOption((o) =>
-                o.setName('name').setDescription('in-game guild name').setAutocomplete(true).setRequired(true)
-              )
+              .addStringOption(GuildNameOption().setAutocomplete(true))
           )
       )
   },
@@ -109,6 +123,12 @@ export default {
       await handleUnregister(context)
     } else if (groupCommand === undefined && subCommand === 'settings') {
       await handleSettings(context)
+    } else if (groupCommand === 'join-conditions' && subCommand === 'list') {
+      await handleJoinConditionList(context)
+    } else if (groupCommand === 'join-conditions' && subCommand === 'add') {
+      await handleJoinConditionAdd(context)
+    } else if (groupCommand === 'join-conditions' && subCommand === 'remove') {
+      await handleJoinConditionRemove(context)
     } else if (groupCommand === 'waitlist' && subCommand === 'list') {
       await handleWaitlistList(context)
     } else if (groupCommand === 'waitlist' && subCommand === 'add') {
@@ -131,6 +151,9 @@ export default {
     const suggestRegisteredGuilds =
       (groupCommand === undefined && subCommand === 'unregister' && option.name === 'name') ||
       (groupCommand === undefined && subCommand === 'settings' && option.name === 'name') ||
+      (groupCommand === 'join-conditions' && subCommand === 'list' && option.name === 'name') ||
+      (groupCommand === 'join-conditions' && subCommand === 'add' && option.name === 'name') ||
+      (groupCommand === 'join-conditions' && subCommand === 'remove' && option.name === 'name') ||
       (groupCommand === 'waitlist' && subCommand === 'list' && option.name === 'name') ||
       (groupCommand === 'waitlist' && subCommand === 'add' && option.name === 'name') ||
       (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'name') ||
@@ -157,6 +180,30 @@ export default {
         .slice(0, 25)
         .map((username) => ({ name: username, value: username }))
       await context.interaction.respond(response)
+      return
+    }
+
+    if (groupCommand === 'join-conditions' && subCommand === 'add' && option.name === 'type') {
+      assert.ok(interaction.inCachedGuild())
+      const allHandlers = context.application.core.conditonsRegistry.allHandlers()
+      await handleSuggestConditionsAdd(interaction, context, allHandlers)
+      return
+    }
+
+    if (groupCommand === 'join-conditions' && subCommand === 'remove' && option.name === 'condition') {
+      assert.ok(interaction.inCachedGuild())
+
+      const guildId = context.interaction.options.getString('name') ?? undefined
+      if (!guildId) return
+
+      const savedGuild = manager
+        .allGuilds()
+        .find((guild) => guild.id === guildId || guild.name.toLowerCase().trim() === guildId.toLowerCase().trim())
+      if (savedGuild === undefined) return
+
+      const allHandlers = context.application.core.conditonsRegistry.allHandlers()
+      const conditionManager = getJoinConditionManager(savedGuild, context.application)
+      await handleSuggestConditionsRemove(interaction, context, allHandlers, conditionManager)
       return
     }
   }
@@ -349,10 +396,22 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
             type: OptionType.Boolean,
             name: 'Allow users to self-signup',
             description:
-              'Allow users to use buttons on waitlist panels to auto signup to the join waitlist as long as they meet the requirements and do not have any active punishments',
+              'Allow users to use buttons on waitlist panels to signup to the join-waitlist as long as they meet the requirements and do not have any active punishments',
             getOption: () => manager.getSelfWaitlistEnabled(savedGuild.id),
             toggleOption: () => {
               manager.setSelfWaitlistEnabled(savedGuild.id, !manager.getSelfWaitlistEnabled(savedGuild.id))
+            }
+          },
+          {
+            type: OptionType.Number,
+            name: 'Required join conditions count',
+            description:
+              'How many conditions must a player meet before they are allowed to join the guild. This will also affect self-signup in waitlist',
+            getOption: () => manager.getNeededJoinConditions(savedGuild.id),
+            min: 1,
+            max: 99,
+            setOption: (value) => {
+              manager.setNeededJoinConditions(savedGuild.id, value)
             }
           }
         ]
@@ -362,6 +421,71 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
 
   const handler = new OptionsHandler(options)
   await handler.forwardInteraction(context.interaction, context.errorHandler)
+}
+
+function getJoinConditionManager(savedGuild: MinecraftGuild, application: Application): CommandConditionHandler {
+  return {
+    conditions: () => application.core.minecraftGuildsManager.getJoinConditions(savedGuild.id),
+    remove: (id) => application.core.minecraftGuildsManager.removeJoinCondition(savedGuild.id, id) !== undefined,
+    createOptions: {
+      top: [],
+      bottom: []
+    },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    add: (handlerId, _: ModalResult, conditionData) => {
+      const condition: GuildJoinCondition = {
+        guildId: savedGuild.id,
+        typeId: handlerId,
+        options: conditionData
+      }
+
+      return application.core.minecraftGuildsManager.addJoinCondition(condition)
+    },
+    translationKey: 'guild-join'
+  }
+}
+
+async function handleJoinConditionList(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getJoinConditionManager(savedGuild, context.application)
+  await handleConditionList(interaction, context, manager)
+}
+
+async function handleJoinConditionAdd(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getJoinConditionManager(savedGuild, context.application)
+  await handleConditionAdd(interaction, context, manager)
+}
+
+async function handleJoinConditionRemove(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+  await interaction.deferReply()
+
+  const savedGuild = getGuild(context)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getJoinConditionManager(savedGuild, context.application)
+  await handleConditionRemove(interaction, context, manager)
 }
 
 async function handleWaitlistList(context: DiscordCommandContext): Promise<void> {
@@ -509,14 +633,14 @@ async function handleWaitlistPanel(context: DiscordCommandContext): Promise<void
   )
 }
 
-async function getGuild(context: DiscordCommandContext): Promise<MinecraftGuild | undefined> {
+function getGuild(context: DiscordCommandContext): MinecraftGuild | Promise<undefined> {
   const query = context.interaction.options.getString('name', true).trim()
 
   const savedGuild = context.application.core.minecraftGuildsManager
     .allGuilds()
     .find((savedEntry) => savedEntry.id === query || savedEntry.name.toLowerCase() === query.toLowerCase())
   if (savedGuild === undefined) {
-    await context.interaction.editReply({
+    const payload = {
       embeds: [
         {
           title: 'Waitlist',
@@ -525,8 +649,10 @@ async function getGuild(context: DiscordCommandContext): Promise<MinecraftGuild 
           footer: { text: DefaultCommandFooter }
         }
       ]
-    })
-    return undefined
+    }
+    return context.interaction.deferred || context.interaction.replied
+      ? context.interaction.editReply(payload).then(() => undefined)
+      : context.interaction.reply(payload).then(() => undefined)
   }
 
   return savedGuild

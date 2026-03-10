@@ -5,6 +5,7 @@ import {
   ButtonStyle,
   ComponentType,
   escapeCodeBlock,
+  escapeInlineCode,
   escapeMarkdown,
   inlineCode,
   MessageFlags,
@@ -123,6 +124,54 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
           `You are banned. Your ban expires <t:${Math.floor(banned.till / 1000)}:R>.` +
           `\n**Reason:** \`\`\`${escapeCodeBlock(banned.reason)}\`\`\``
       })
+      return
+    }
+
+    const joinConditions = this.application.core.minecraftGuildsManager.getJoinConditions(savedGuild.id)
+    const conditionsManager = this.application.core.conditonsRegistry
+    const conditionContext = {
+      application: this.application,
+      startTime: Date.now(),
+      abortSignal: new AbortController().signal
+    }
+    const conditionUser = { user: user }
+    let conditionsMet = 0
+    const conditionsMetList: boolean[] = []
+    for (const condition of joinConditions) {
+      const handler = conditionsManager.get(condition.typeId)
+      if (handler === undefined) {
+        conditionsMetList.push(false)
+        continue
+      }
+      const meetsCondition = await handler.meetsCondition(conditionContext, conditionUser, condition.options)
+
+      if (meetsCondition) {
+        conditionsMetList.push(true)
+        conditionsMet++
+      }
+      if (conditionsMet >= savedGuild.neededJoinConditions) break
+    }
+    if (joinConditions.length > 0 && conditionsMet < savedGuild.neededJoinConditions) {
+      assert.strictEqual(joinConditions.length, joinConditions.length)
+      const displayContext = { ...conditionContext, discordGuild: interaction.guild }
+      let message = 'You do not meet the join requirement(s) to self-signup.'
+      message += `\nYou need to meet at least ${inlineCode(savedGuild.neededJoinConditions.toString(10))} condition(s) of the following:`
+      for (const [index, condition] of joinConditions.entries()) {
+        const meetsCondition = conditionsMetList[index]
+        const handler = conditionsManager.get(condition.typeId)
+
+        message += '\n- '
+        message += meetsCondition ? '✅' : '❌'
+        message += ` `
+
+        if (handler === undefined) {
+          message += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
+        } else {
+          const display = await handler.displayCondition(displayContext, condition.options)
+          message += escapeMarkdown(display)
+        }
+      }
+      await interaction.editReply(message)
       return
     }
 
