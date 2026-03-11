@@ -12,7 +12,7 @@ export default class Dojo extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['dojo'],
-      description: "Returns a player's crimson isle's Dojo stats",
+      description: "Returns a player's Crimson Isle's Dojo stats",
       example: `rep %s`
     })
   }

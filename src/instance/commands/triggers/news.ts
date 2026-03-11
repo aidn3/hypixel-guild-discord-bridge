@@ -5,7 +5,7 @@ export default class News extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['news', 'sbnews'],
-      description: 'Returns the latest skyblock news',
+      description: 'Returns the latest SkyBlock news',
       example: `news`
     })
   }

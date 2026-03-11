@@ -18,7 +18,7 @@ function createPing(latency: number, websocket: number, lag: number): APIEmbed {
 }
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord Ping'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord ping'),
 
   handler: async function (context) {
     const timestamp = Date.now()

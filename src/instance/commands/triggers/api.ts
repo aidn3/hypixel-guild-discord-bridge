@@ -6,7 +6,7 @@ export default class Api extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['api'],
-      description: "Returns a player's skyblock API status",
+      description: "Returns a player's SkyBlock API status",
       example: `api %s`
     })
   }

@@ -7,7 +7,7 @@ export default class Purse extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['purse', 'bank', 'coins', 'coin'],
-      description: "Returns a player's skyblock coins",
+      description: "Returns a player's SkyBlock coins",
       example: `purse %s`
     })
   }

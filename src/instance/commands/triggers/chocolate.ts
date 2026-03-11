@@ -12,7 +12,7 @@ export default class Chocolate extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['chocolate', 'chocolates', 'cf'],
-      description: "Returns a player's skyblock easter eggs chocolate stats",
+      description: "Returns a player's SkyBlock easter eggs chocolate stats",
       example: `chocolate %s`
     })
   }

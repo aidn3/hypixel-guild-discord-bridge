@@ -36,7 +36,7 @@ export default class Mineshafts extends ChatCommandHandler {
       entered: stats.mineshafts_entered,
       lapis: looted?.lapis ?? 0,
       umber: looted?.umber ?? 0,
-      tungsten: looted?.umber ?? 0,
+      tungsten: looted?.tungsten ?? 0,
       vanguard: looted?.vanguard ?? 0
     })
   }

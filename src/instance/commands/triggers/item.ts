@@ -15,7 +15,7 @@ export default class Item extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['item', 'render', 'slot', 'renderslot', 'renderitem'],
-      description: "Render a slot in a player's Skyblock profile",
+      description: "Render a slot in a player's SkyBlock profile",
       example: `item 1 %s`
     })
   }

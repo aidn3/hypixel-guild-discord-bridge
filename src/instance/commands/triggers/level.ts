@@ -8,7 +8,7 @@ export default class Level extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['level', 'lvl', 'l'],
-      description: "Returns a player's skyblock level",
+      description: "Returns a player's SkyBlock level",
       example: `lvl %s`
     })
   }

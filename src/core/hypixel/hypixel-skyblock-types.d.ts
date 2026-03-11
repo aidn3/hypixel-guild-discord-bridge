@@ -144,6 +144,15 @@ export interface SkyblockMember {
     }
     mineshafts_entered?: number
   }
+  foraging?: {
+    starlyn?: {
+      personal_bests?: {
+        agatha?: number
+        FIG_LOG?: number
+        MANGROVE_LOG?: number
+      }
+    }
+  }
   events?: SkyblockPlayerEvents
   pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
   essence?: SkyblockEssence

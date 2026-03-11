@@ -46,7 +46,7 @@ export class User {
   public avatar(): string | undefined {
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
-      return `https://cravatar.eu/helmavatar/${mojangProfile.id}.png`
+      return `https://mc-heads.net/avatar/${mojangProfile.id}.png`
     }
 
     const discordProfile = this.discordProfile()
