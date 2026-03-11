@@ -367,4 +367,12 @@ export interface HypixelSkyblockSkillLevel {
   unlocks: string[]
 }
 
+export interface SkyblockBingoResponse extends HypixelSuccessResponse {
+  events?: {
+    key: number
+    points: number
+    completed_goals: string[]
+  }[]
+}
+
 /* eslint-enable @typescript-eslint/naming-convention */
