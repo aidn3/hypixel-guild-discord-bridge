@@ -32,23 +32,32 @@ export async function checkSkyblockUserProfiles(
   handlerUser: HandlerUser,
   checker: (profile: SkyblockMember) => boolean
 ): Promise<boolean> {
+  const profiles = await getSkyblockUserProfiles(context, handlerUser)
+
+  for (const skyblockProfile of profiles) {
+    if (checker(skyblockProfile)) return true
+  }
+
+  return false
+}
+
+export async function getSkyblockUserProfiles(
+  context: HandlerOperationContext,
+  handlerUser: HandlerUser
+): Promise<SkyblockMember[]> {
   const mojangProfile = handlerUser.user.mojangProfile()
-  if (mojangProfile === undefined) return false
+  if (mojangProfile === undefined) return []
   const uuid = mojangProfile.id
   let profiles: SkyblockProfile[] | undefined
 
   try {
     profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
-    if (profiles === undefined) return false
+    if (profiles === undefined) return []
   } catch {
-    return false
+    return []
   }
 
-  for (const skyblockProfile of profiles) {
-    if (checker(skyblockProfile.members[mojangProfile.id])) return true
-  }
-
-  return false
+  return profiles.map((profile) => profile.members[mojangProfile.id])
 }
 
 export async function checkHypixelProfile(

@@ -6,7 +6,7 @@ import type { Logger } from 'log4js'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import Duration from '../../utility/duration'
 
-import type { HypixelSuccessResponse } from './hypixel-api'
+import type { HypixelFailResponse, HypixelSuccessResponse } from './hypixel-api'
 import { HypixelCache } from './hypixel-cache'
 import { HypixelDatabase } from './hypixel-database'
 import type { HypixelGuild, HypixelGuildResponse } from './hypixel-guild'
@@ -201,16 +201,33 @@ export class Hypixel {
       parameters[request.key] = request.value
     }
 
-    const result = await axios.get<T>(request.path, {
-      baseURL: Hypixel.ApiPath,
-      params: parameters,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      headers: { 'API-Key': this.key }
-    })
+    try {
+      const result = await axios.get<T>(request.path, {
+        baseURL: Hypixel.ApiPath,
+        params: parameters,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        headers: { 'API-Key': this.key }
+      })
 
-    assert.ok(result.status === 200)
-    assert.strictEqual(result.data.success, true)
-    return result.data
+      assert.ok(result.status === 200)
+      assert.strictEqual(result.data.success, true)
+      return result.data
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        const hypixelError = (error as AxiosError<HypixelFailResponse>).response?.data
+        switch (error.status) {
+          case 429: {
+            throw new HypixelApiFail(
+              request,
+              hypixelError ?? { success: false, message: 'API is throttled.' },
+              HypixelFailType.Throttle
+            )
+          }
+        }
+      }
+
+      throw error
+    }
   }
 
   private createGuildCacheEntries(original: ApiEntryWithOption, response: HypixelGuildResponse): ApiEntryWithOption[] {
@@ -239,4 +256,19 @@ export interface ApiEntryWithOption {
   path: string
   key: string
   value: string
+}
+
+export class HypixelApiFail extends Error {
+  constructor(
+    public readonly request: ApiEntry,
+    public readonly response: HypixelFailResponse,
+    public readonly type: HypixelFailType
+  ) {
+    super()
+  }
+}
+
+export enum HypixelFailType {
+  Throttle = 'throttle',
+  Other = 'other'
 }

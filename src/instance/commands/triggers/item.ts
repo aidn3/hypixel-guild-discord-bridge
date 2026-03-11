@@ -34,7 +34,7 @@ export default class Item extends ChatCommandHandler {
 
     const parsedBar = Number.parseInt(givenBar, 10)
     if (parsedBar < 1 || parsedBar > 36) {
-      return `${context.username}, Can only select between 1 and 4.`
+      return context.app.i18n.t(($) => $['commands.item.invalid-slot'], { username: givenUsername })
     }
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
@@ -45,13 +45,16 @@ export default class Item extends ChatCommandHandler {
 
     const inventoryRaw = selectedProfile.inventory?.inv_contents?.data
     if (inventoryRaw === undefined) {
-      return context.app.i18n.t(($) => $['commands.armor.none-maybe'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.item.no-api'], { username: givenUsername })
     }
 
     const inventory = await parseEncodedNbt<{ i: InventoryItem[] }>(inventoryRaw)
     const slot = inventory.i[parsedBar - 1]
     if (!('tag' in slot) || slot.Count === 0) {
-      return `Nothing to render for ${givenUsername}.`
+      return context.app.i18n.t(($) => $['commands.item.nothing-to-render'], {
+        username: givenUsername,
+        slot: parsedBar
+      })
     }
 
     const image = MinecraftRenderer.renderLore(slot.tag.display.Name, slot.tag.display.Lore)
@@ -59,8 +62,11 @@ export default class Item extends ChatCommandHandler {
     return {
       type: ContentType.ImageBased,
       content: [image],
-      unsupported: context.app.i18n.t(($) => $['commands.armor.render-not-supported']),
-      extra: `Rendering ${givenUsername} inventory slot ${parsedBar}`
+      unsupported: context.app.i18n.t(($) => $['commands.item.render-not-supported']),
+      extra: context.app.i18n.t(($) => $['commands.item.render-extra'], {
+        username: givenUsername,
+        slot: parsedBar
+      })
     }
   }
 }

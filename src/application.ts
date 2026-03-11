@@ -176,7 +176,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
   }
 
   public async start(): Promise<void> {
-    await this.core.awaitReady()
+    this.core.awaitReady()
     await this.pluginsManager.loadPlugins(this.rootDirectory)
 
     for (const instance of this.getAllInstances()) {

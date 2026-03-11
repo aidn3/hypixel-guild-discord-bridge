@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -39,6 +39,9 @@ export default class Roulette extends ChatCommandHandler {
     }
     if (context.message.channelType !== ChannelType.Public) {
       return `${context.username}, Command can only be executed in public chat!`
+    }
+    if ((await context.message.user.permission()) >= Permission.Helper || (await context.message.user.immune())) {
+      return `${context.username}, Staff are immune. Why play this game? :P`
     }
 
     // Default behaviour which is just "1/6 chance" is too unreliable
