@@ -19,7 +19,7 @@ import type Application from '../../../application'
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import type { MojangProfile } from '../../../common/user'
-import type { GuildJoinCondition, MinecraftGuild } from '../../../core/minecraft/guilds-manager'
+import type { GuildJoinCondition, GuildRoleCondition, MinecraftGuild } from '../../../core/minecraft/guilds-manager'
 import Duration from '../../../utility/duration'
 import { search, searchObjects } from '../../../utility/shared-utility'
 import {
@@ -70,6 +70,14 @@ export default {
         new SlashCommandSubcommandGroupBuilder()
           .setName('join-conditions')
           .setDescription('manage conditions to join a specific guild')
+          .addSubcommand(listConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+          .addSubcommand(addConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+          .addSubcommand(removeConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+      )
+      .addSubcommandGroup(
+        new SlashCommandSubcommandGroupBuilder()
+          .setName('role-conditions')
+          .setDescription('manage conditions to set a role in a specific guild')
           .addSubcommand(listConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
           .addSubcommand(addConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
           .addSubcommand(removeConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
@@ -129,6 +137,12 @@ export default {
       await handleJoinConditionAdd(context)
     } else if (groupCommand === 'join-conditions' && subCommand === 'remove') {
       await handleJoinConditionRemove(context)
+    } else if (groupCommand === 'role-conditions' && subCommand === 'list') {
+      await handleRoleConditionList(context)
+    } else if (groupCommand === 'role-conditions' && subCommand === 'add') {
+      await handleRoleConditionAdd(context)
+    } else if (groupCommand === 'role-conditions' && subCommand === 'remove') {
+      await handleRoleConditionRemove(context)
     } else if (groupCommand === 'waitlist' && subCommand === 'list') {
       await handleWaitlistList(context)
     } else if (groupCommand === 'waitlist' && subCommand === 'add') {
@@ -154,6 +168,9 @@ export default {
       (groupCommand === 'join-conditions' && subCommand === 'list' && option.name === 'name') ||
       (groupCommand === 'join-conditions' && subCommand === 'add' && option.name === 'name') ||
       (groupCommand === 'join-conditions' && subCommand === 'remove' && option.name === 'name') ||
+      (groupCommand === 'role-conditions' && subCommand === 'list' && option.name === 'name') ||
+      (groupCommand === 'role-conditions' && subCommand === 'add' && option.name === 'name') ||
+      (groupCommand === 'role-conditions' && subCommand === 'remove' && option.name === 'name') ||
       (groupCommand === 'waitlist' && subCommand === 'list' && option.name === 'name') ||
       (groupCommand === 'waitlist' && subCommand === 'add' && option.name === 'name') ||
       (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'name') ||
@@ -183,7 +200,10 @@ export default {
       return
     }
 
-    if (groupCommand === 'join-conditions' && subCommand === 'add' && option.name === 'type') {
+    if (
+      (groupCommand === 'join-conditions' && subCommand === 'add' && option.name === 'type') ||
+      (groupCommand === 'role-conditions' && subCommand === 'add' && option.name === 'type')
+    ) {
       assert.ok(interaction.inCachedGuild())
       const allHandlers = context.application.core.conditonsRegistry.allHandlers()
       await handleSuggestConditionsAdd(interaction, context, allHandlers)
@@ -203,6 +223,23 @@ export default {
 
       const allHandlers = context.application.core.conditonsRegistry.allHandlers()
       const conditionManager = getJoinConditionManager(savedGuild, context.application)
+      await handleSuggestConditionsRemove(interaction, context, allHandlers, conditionManager)
+      return
+    }
+
+    if (groupCommand === 'role-conditions' && subCommand === 'remove' && option.name === 'condition') {
+      assert.ok(interaction.inCachedGuild())
+
+      const guildId = context.interaction.options.getString('name') ?? undefined
+      if (!guildId) return
+
+      const savedGuild = manager
+        .allGuilds()
+        .find((guild) => guild.id === guildId || guild.name.toLowerCase().trim() === guildId.toLowerCase().trim())
+      if (savedGuild === undefined) return
+
+      const allHandlers = context.application.core.conditonsRegistry.allHandlers()
+      const conditionManager = getRoleConditionManager(savedGuild, context.application)
       await handleSuggestConditionsRemove(interaction, context, allHandlers, conditionManager)
       return
     }
@@ -247,7 +284,11 @@ async function handleRegister(context: DiscordCommandContext): Promise<void> {
     return
   }
 
-  savedGuild = context.application.core.minecraftGuildsManager.initGuild(guild._id, guild.name)
+  savedGuild = context.application.core.minecraftGuildsManager.initGuild(
+    guild._id,
+    guild.name,
+    guild.ranks.filter((rank) => !rank.default).map((rank) => ({ name: rank.name, priority: rank.priority }))
+  )
   await interaction.editReply({
     embeds: [
       {
@@ -486,7 +527,6 @@ async function handleJoinConditionAdd(context: Readonly<DiscordCommandContext>) 
 async function handleJoinConditionRemove(context: Readonly<DiscordCommandContext>) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
-  await interaction.deferReply()
 
   const savedGuild = getGuild(context)
   if (savedGuild instanceof Promise) {
@@ -495,6 +535,82 @@ async function handleJoinConditionRemove(context: Readonly<DiscordCommandContext
   }
 
   const manager = getJoinConditionManager(savedGuild, context.application)
+  await handleConditionRemove(interaction, context, manager)
+}
+
+function getRoleConditionManager(savedGuild: MinecraftGuild, application: Application): CommandConditionHandler {
+  return {
+    conditions: () => application.core.minecraftGuildsManager.getRoleConditions(savedGuild.id),
+    remove: (id) => application.core.minecraftGuildsManager.removeRoleCondition(savedGuild.id, id) !== undefined,
+    createOptions: {
+      top: [
+        {
+          type: OptionType.PresetList,
+          key: 'role',
+          name: application.i18n.t(($) => $['discord.conditions.add.guild-role.name']),
+          description: application.i18n.t(($) => $['discord.conditions.add.guild-role.description']),
+          max: 1,
+          min: 1,
+          options: savedGuild.roles
+            .toSorted((a, b) => a.priority - b.priority)
+            .map((role) => ({ label: role.name, value: role.name }))
+        }
+      ],
+      bottom: []
+    },
+    add: (handlerId, data: ModalResult, conditionData) => {
+      const condition: GuildRoleCondition = {
+        guildId: savedGuild.id,
+        role: (data.role as string[])[0],
+        typeId: handlerId,
+        options: conditionData
+      }
+
+      return application.core.minecraftGuildsManager.addRoleCondition(condition)
+    },
+    translationKey: 'guild-role'
+  }
+}
+
+async function handleRoleConditionList(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getRoleConditionManager(savedGuild, context.application)
+  await handleConditionList(interaction, context, manager)
+}
+
+async function handleRoleConditionAdd(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getRoleConditionManager(savedGuild, context.application)
+  await handleConditionAdd(interaction, context, manager)
+}
+
+async function handleRoleConditionRemove(context: Readonly<DiscordCommandContext>) {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getRoleConditionManager(savedGuild, context.application)
   await handleConditionRemove(interaction, context, manager)
 }
 

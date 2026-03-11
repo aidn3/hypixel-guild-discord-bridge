@@ -592,6 +592,14 @@ function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: 
       ' ) STRICT'
   )
   database.exec(
+    'CREATE TABLE "minecraftGuildRoles" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  name TEXT NOT NULL,' +
+      '  priority INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, name)' +
+      ' ) STRICT'
+  )
+  database.exec(
     'CREATE TABLE "minecraftGuildMember" (' +
       '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
       '  userId TEXT NOT NULL,' +

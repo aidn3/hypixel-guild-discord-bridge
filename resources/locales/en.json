@@ -54,13 +54,15 @@
   "discord.conditions.list.title": {
     "roles": "Roles Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
     "nicknames": "Nicknames Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
-    "guild-join": "Guild Join Condition (page {{currentPage, number}} out of {{totalPages, number}}"
+    "guild-join": "Guild Join Condition (page {{currentPage, number}} out of {{totalPages, number}}",
+    "guild-role": "Guild Role Condition (page {{currentPage, number}} out of {{totalPages, number}}"
   },
   "discord.conditions.list.empty": "__Empty list__",
   "discord.conditions.list.entry": {
     "roles": "- `{{condition.id}}`: {{display}} <@&{{condition.roleId}}>\n",
     "nicknames": "- `{{condition.id}}`: {{display}} `{{condition.nickname}}`\n",
-    "guild-join": "- `${{condition.id}}`: {{display}}\n"
+    "guild-join": "- `{{condition.id}}`: {{display}}\n",
+    "guild-role": "- `{{condition.id}}`: {{display}} `{{condition.role}}`\n"
   },
   "discord.conditions.list.entry-invalid": "- `{{condition.id}}`: __{{condition.typeId}}__\n",
 
@@ -72,7 +74,8 @@
   "discord.conditions.add.title": {
     "roles": "Create role condition",
     "nicknames": "Create nickname condition",
-    "guild-join": "Create Guild Join Condition"
+    "guild-join": "Create Guild Join Condition",
+    "guild-role": "Create Guild Role Condition"
   },
 
   "discord.conditions.add.role.name": "Role to give",
@@ -88,12 +91,16 @@
   "discord.conditions.add.nickname.description": "Any user who meets the requirements for this condition will have their nickname set as this.",
   "discord.conditions.add.nickname.placeholder": "{{USERNAME}} - Verified",
 
+  "discord.conditions.add.guild-role.name": "Guild role to give",
+  "discord.conditions.add.guild-role.description": "Any user who meets the requirements will receive the selected role (Default guild role excluded).",
+
   "discord.conditions.add.modal-error": "Timed out.",
   "discord.conditions.add.condition-error": "Could not satisfy condition creation requirements: {{errorMessage}}",
   "discord.conditions.add.success": {
     "roles": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the role <@&{{condition.roleId}}>.",
     "nicknames": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the have their nickname set as `{{condition.nickname}}`.",
-    "guild-join": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be able to join the guild as long as there is no active punishment and joining is allowed."
+    "guild-join": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be able to join the guild as long as there is no active punishment and joining is allowed.",
+    "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role."
   },
 
   "discord.conditions.handler.link.title": "Linked",

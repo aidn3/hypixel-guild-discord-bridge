@@ -6,7 +6,7 @@ import type { ConditionId } from '../conditions/common'
 export class GuildsManager {
   constructor(private readonly sqliteManager: SqliteManager) {}
 
-  public initGuild(id: string, name: string): MinecraftGuild {
+  public initGuild(id: string, name: string, roles: MinecraftGuildRole[]): MinecraftGuild {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       // definitely possible with UPSERT. but I'd rather not since it can get real messy
@@ -15,14 +15,33 @@ export class GuildsManager {
       const insert = database.prepare('INSERT INTO minecraftGuild (id, name) VALUES (?, ?)')
       const update = database.prepare('UPDATE minecraftGuild SET name = ? WHERE id = ?')
 
+      const insertRole = database.prepare(
+        'INSERT INTO minecraftGuildRoles (guildId, name, priority) VALUES (?, ?, ?) ON CONFLICT(guildId, name) DO NOTHING'
+      )
+      const deleteRoles = database.prepare(
+        `DELETE FROM minecraftGuildRoles WHERE guildId = ? AND name NOT IN (${roles.map(() => '?').join(',')})`
+      )
+      const selectRoles = database.prepare<[typeof id], MinecraftGuildRole>(
+        'SELECT name, priority FROM minecraftGuildRoles WHERE guildId = ?'
+      )
+
       if (exists.all(id).length === 0) {
         insert.run(id, name)
       } else {
         assert.strictEqual(update.run(name, id).changes, 1)
       }
 
+      for (const role of roles) {
+        insertRole.run(id, role.name, role.priority)
+      }
+      deleteRoles.run(
+        id,
+        roles.map((role) => role.name)
+      )
+
       const entry = select.get(id)
       assert.ok(entry !== undefined)
+      entry.roles = selectRoles.all(id)
       this.deserializeGuild(entry)
       return entry
     })
@@ -34,9 +53,13 @@ export class GuildsManager {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const select = database.prepare<[], MinecraftGuild>('SELECT * FROM minecraftGuild')
+      const selectRoles = database.prepare<[string], MinecraftGuildRole>(
+        'SELECT name, priority FROM minecraftGuildRoles WHERE guildId = ?'
+      )
 
       const guilds = select.all()
       for (const guild of guilds) {
+        guild.roles = selectRoles.all(guild.id)
         this.deserializeGuild(guild)
       }
       return guilds
@@ -57,7 +80,8 @@ export class GuildsManager {
         'minecraftGuildRoleConditions',
         'minecraftGuildWaitlist',
         'discordGuildWaitlistPanel',
-        'discordGuildWaitlistRequest'
+        'discordGuildWaitlistRequest',
+        'minecraftGuildRoles'
       ]
 
       let count = 0
@@ -261,7 +285,7 @@ export class GuildsManager {
 
       this.deserializeJoinCondition(condition)
 
-      assert.strictEqual(deleteEntry.run(conditionId, conditionId).changes, 1)
+      assert.strictEqual(deleteEntry.run(conditionId, guildId).changes, 1)
       return condition
     })
 
@@ -312,7 +336,7 @@ export class GuildsManager {
     transaction()
   }
 
-  private deserializeJoinCondition(condition: SavedGuildJoinCondition): void {
+  private deserializeJoinCondition(condition: SavedGuildJoinCondition | SavedGuildRoleCondition): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     condition.options = JSON.parse(condition.options as unknown as string)
     condition.createdAt = condition.createdAt * 1000
@@ -340,6 +364,76 @@ export class GuildsManager {
 
     transaction()
   }
+
+  public addRoleCondition(condition: GuildRoleCondition): SavedGuildRoleCondition {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "minecraftGuildRoleConditions" (guildId, role, typeId, options) VALUES (?, ?, ?, ?)'
+      )
+      const select = database.prepare<[number | bigint], SavedGuildRoleCondition>(
+        'SELECT * FROM "minecraftGuildRoleConditions" WHERE id = ?'
+      )
+
+      const insertResult = insert.run(
+        condition.guildId,
+        condition.role,
+        condition.typeId,
+        JSON.stringify(condition.options)
+      )
+      assert.strictEqual(insertResult.changes, 1)
+      const id = insertResult.lastInsertRowid
+
+      const selectResult = select.get(id)
+      assert.ok(selectResult !== undefined)
+
+      this.deserializeJoinCondition(selectResult)
+      return selectResult
+    })
+
+    return transaction()
+  }
+
+  public removeRoleCondition(
+    guildId: GuildRoleCondition['guildId'],
+    conditionId: SavedGuildRoleCondition['id']
+  ): SavedGuildRoleCondition | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const deleteEntry = database.prepare('DELETE FROM "minecraftGuildRoleConditions" WHERE id = ? AND guildId = ?')
+      const select = database.prepare<[number | bigint, string], SavedGuildRoleCondition>(
+        'SELECT * FROM "minecraftGuildRoleConditions" WHERE id = ? AND guildId = ?'
+      )
+
+      const condition = select.get(conditionId, guildId)
+      if (condition === undefined) return
+
+      this.deserializeJoinCondition(condition)
+
+      assert.strictEqual(deleteEntry.run(conditionId, guildId).changes, 1)
+      return condition
+    })
+
+    return transaction()
+  }
+
+  public getRoleConditions(guildId: GuildRoleCondition['guildId']): SavedGuildRoleCondition[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[typeof guildId], SavedGuildRoleCondition>(
+        'SELECT * FROM "minecraftGuildRoleConditions" WHERE guildId = ?'
+      )
+
+      const conditions = select.all(guildId)
+      for (const condition of conditions) {
+        this.deserializeJoinCondition(condition)
+      }
+
+      return conditions
+    })
+
+    return transaction()
+  }
 }
 
 export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
@@ -353,11 +447,20 @@ export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
 export interface MinecraftGuild {
   id: string
   name: string
+  /**
+   * Non-default additional roles
+   */
+  roles: MinecraftGuildRole[]
   inviteWishlist: boolean
   selfWishlist: boolean
   neededJoinConditions: number
   acceptJoinRequests: boolean
   createdAt: number
+}
+
+export interface MinecraftGuildRole {
+  name: string
+  priority: number
 }
 
 export interface WaitlistEntry {
