@@ -15,6 +15,7 @@ import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
 import Bedwars from './triggers/bedwars.js'
 import Bestiary from './triggers/bestiary'
+import Bingo from './triggers/bingo.js'
 import Bits from './triggers/bits.js'
 import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
@@ -122,6 +123,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new News(),
       new Bedwars(),
       new Bestiary(),
+      new Bingo(),
       new Boo(),
       new Boop(),
       new Buildbattle(),

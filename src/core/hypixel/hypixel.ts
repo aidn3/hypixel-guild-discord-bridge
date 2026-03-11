@@ -19,6 +19,7 @@ import type {
   HypixelSkyblockSkillsResponse,
   MayorResponse,
   NewsResponse,
+  SkyblockBingoResponse,
   SkyblockMuseumResponse,
   SkyblockProfile,
   SkyblockProfilesResponse
@@ -32,6 +33,7 @@ export class Hypixel {
   private static readonly SkyblockMuseumPath = '/v2/skyblock/museum'
   private static readonly SkyblockGardenPath = '/v2/skyblock/garden'
   private static readonly SkyblockBazaarPath = '/v2/skyblock/bazaar'
+  private static readonly SkyblockBingoPath = '/v2/skyblock/bingo'
 
   private static readonly GuildPath = '/v2/guild'
   private static readonly PlayerPath = '/v2/player'
@@ -162,6 +164,12 @@ export class Hypixel {
     const request = { path: Hypixel.PlayerStatusPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
     const response = await this.resolveAndFetch<HypixelPlayerStatusResponse>(request, since)
     return response.session
+  }
+
+  public async getPlayerBingo(playerUuid: string, since?: number): Promise<SkyblockBingoResponse> {
+    const request = { path: Hypixel.SkyblockBingoPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
+    const response = await this.resolveAndFetch<SkyblockBingoResponse>(request, since)
+    return response
   }
 
   private async resolveAndFetch<T extends HypixelSuccessResponse>(
