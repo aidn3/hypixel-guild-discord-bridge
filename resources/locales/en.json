@@ -171,6 +171,8 @@
   "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
   "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted {{lapis, number}} lapis, {{umber, number}} umber, {{tungsten, number}}, and {{vanguard, number}} vanguard corpses",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
+  "commands.bingo.response": "{{username}}'s bingo stats for last event: {{completedGoals, number}} Goals Completed - {{points, number}} Points Earned",
+  "commands.bingo.none": "{{username}} has never participated in a bingo event.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",

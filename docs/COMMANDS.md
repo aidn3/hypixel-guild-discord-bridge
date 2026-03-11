@@ -25,6 +25,7 @@ A shorter version can also be used: `!- rtca`
 | `asian`          | Challenge yourself with math!                                                      |
 | `bedwars`        | Returns a player's bedwars common stats                                            |
 | `be`             | Returns a player's Bestiary stats                                                  |
+| `bingo`          | Returns a player's current bingo progress                                          |
 | `bits`           | Returns the best bit items to purchase for the most profit.                        |
 | `boo`            | /boo a player in-game                                                              |
 | `boop`           | /boop a player in-game                                                             |
