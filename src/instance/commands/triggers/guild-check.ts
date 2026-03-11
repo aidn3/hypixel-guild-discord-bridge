@@ -5,7 +5,7 @@ export default class GuildCheck extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['mguild', 'mguilds', 'massguilds', 'massguild', 'mg', 'guilds', 'guildscheck', 'guildcheck'],
-      description: 'Check multiple players guilds, if any in one',
+      description: "Check multiple players' guilds, if any in one",
       example: `mg %s ...`
     })
   }

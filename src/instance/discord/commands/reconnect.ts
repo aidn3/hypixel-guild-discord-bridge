@@ -7,7 +7,7 @@ import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
 
 export default {
-  getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('reconnect minecraft clients'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('Reconnect minecraft clients'),
   addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
   permission: Permission.Helper,
 

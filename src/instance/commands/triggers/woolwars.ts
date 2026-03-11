@@ -6,7 +6,7 @@ export default class Woolwars extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['woolwars', 'woolwar', 'ww'],
-      description: "Returns a player's Woolwars stats",
+      description: "Returns a player's Wool Wars stats",
       example: `woolwars %s`
     })
   }

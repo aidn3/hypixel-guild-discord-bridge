@@ -26,7 +26,7 @@ export default class Fairysouls extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['fairysouls', 'fairysoul', 'fairy', 'fs'],
-      description: "Returns a player's Skyblock fairysouls progress",
+      description: "Returns a player's SkyBlock fairy souls progress",
       example: `fairy %s`
     })
   }

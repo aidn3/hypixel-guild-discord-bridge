@@ -6,7 +6,7 @@ export default class Bedwars extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['bedwars', 'bw'],
-      description: "Returns a player's bedwars common stats",
+      description: "Returns a player's Bed Wars common stats",
       example: `bw %s`
     })
   }

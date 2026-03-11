@@ -11,7 +11,7 @@ export default class Motes extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['motes', 'mote'], // did mote too bc purse has coins and coin :3
-      description: "Returns a player's skyblock rift motes",
+      description: "Returns a player's SkyBlock rift motes",
       example: `purse %s`
     })
   }

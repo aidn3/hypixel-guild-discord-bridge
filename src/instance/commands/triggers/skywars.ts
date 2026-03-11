@@ -6,7 +6,7 @@ export default class Skywars extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['skywars', 'skywar', 'sw'],
-      description: "Returns a player's skywars common stats",
+      description: "Returns a player's Skywars common stats",
       example: `sw %s`
     })
   }
