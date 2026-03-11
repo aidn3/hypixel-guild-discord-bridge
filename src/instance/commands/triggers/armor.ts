@@ -15,7 +15,7 @@ export default class Armor extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['armor', 'armors', 'skyblockarmor', 'skyblockarmors'],
-      description: "Returns a player's Skyblock armor",
+      description: "Returns a player's SkyBlock armor",
       example: `armor %s`
     })
   }

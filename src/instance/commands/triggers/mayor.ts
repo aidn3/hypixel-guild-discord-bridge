@@ -5,7 +5,7 @@ export default class Mayor extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['mayor', 'm'],
-      description: 'Show current Hypixel Skyblock Election',
+      description: 'Show current Hypixel SkyBlock mayor and minister',
       example: `mayor`
     })
   }

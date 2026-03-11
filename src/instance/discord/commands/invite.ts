@@ -10,7 +10,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('invite')
-      .setDescription('invite player to the guild in-game')
+      .setDescription('Invite player to the guild in-game')
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ),

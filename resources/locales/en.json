@@ -165,13 +165,22 @@
   "commands.rank.no-timestamp": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.duels.none": "{{username}} has never played any duels before.",
+  "commands.bowspleef.response": "{{username}}'s bowspleef duels stats - {{gamesPlayed, number}} games played - {{wins, number}} wins - {{losses, number}} losses - {{winLossRatio, number}} W/L - {{shotsFired, number}} shots fired - {{bestWinstreak, number}} best winstreak.",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
   "commands.hotf.none": "{{username}} has not unlocked their hotf tree yet.",
   "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
-  "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted {{lapis, number}} lapis, {{umber, number}} umber, {{tungsten, number}}, and {{vanguard, number}} vanguard corpses",
+  "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted: {{lapis, number}} Lapis - {{umber, number}} Umber - {{tungsten, number}} Tungsten - {{vanguard, number}} Vanguards",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
   "commands.news.response": "{{updatesTitle}} {{updatesDate}} Release: {{updatesLink}} - {{patchnotesTitle}}: https://hypixel.net/threads/.{{patchnotesGuid}}/",
+  "commands.classavg.overflow": "{{username}}'s class average {{average, number}} - Overflow {{overflow, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
+  "commands.classavg.response": "{{username}}'s class average {{average, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
+  "commands.catacombs.response": "{{username}} is Catacombs {{cata, number}} - Secrets {{secrets, number}} - {{class}} - Class Avg {{classAvg, number}}.",
+  "commands.catacombs.overflow-class-avg": "{{username}} is Catacombs {{cata, number}} - Secrets {{secrets, number}} - {{class}} - Class Avg {{classAvg, number}} - Overflow Class Avg {{uncappedClassAvg, number}}.",
+  "commands.coinflip.special": "{{username}} flips a coin into the air. It spins, drops beside {{username}}, and somehow the coin settles upright on its side.",
+  "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
+  "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
@@ -257,5 +266,29 @@
     "{{name}}, You’d lose a battle of wits with a salad.",
     "{{name}}, You're about as edgy as a marshmallow.",
     "{{name}}, You have something special... it’s just well hidden. Like, really well."
+  ],
+  "commands.coinflip.heads": [
+    "{{name}} flips a coin high into the air - it spins once, twice - and lands on heads.",
+    "{{name}} snaps a coin upward; it glints in the light and settles as heads.",
+    "The coin {{name}} flips dances across the air before dropping to heads.",
+    "{{name}} lets a coin soar dramatically... it lands on heads.",
+    "The coin {{name}} tosses arcs gracefully above and falls - heads.",
+    "{{name}} gives a coin a sharp flick; it wobbles on the table and tips to heads.",
+    "The coin {{name}} flips slows its spin - it lands on heads.",
+    "{{name}} watches closely as the coin hits the ground and shows heads.",
+    "The coin {{name}} tossed clinks against the floor - heads.",
+    "With a confident flip of a coin, {{name}} reveals heads."
+  ],
+  "commands.coinflip.tails": [
+    "{{name}} flips a coin skyward - it spins wildly - and lands on tails.",
+    "{{name}} flicks a coin; it flashes silver and drops to tails.",
+    "The coin {{name}} flips bounces once before resting on tails.",
+    "{{name}} launches a coin high... it lands on tails.",
+    "The coin {{name}} tosses whirls above and settles as tails.",
+    "{{name}} gives a coin a dramatic toss; it rolls in a circle and falls to tails.",
+    "The coin {{name}} flips slows to a stop - it shows tails.",
+    "{{name}} leans in as the coin lands firmly on tails.",
+    "The coin {{name}} tossed rattles across the surface - tails.",
+    "With a clean flip of a coin, {{name}} gets tails."
   ]
 }

@@ -5,7 +5,7 @@ export default class Insult extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['insult'],
-      description: 'insult a player',
+      description: 'Insult a player',
       example: `insult %s`
     })
   }

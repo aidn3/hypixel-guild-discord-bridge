@@ -6,7 +6,7 @@ export default class Megawalls extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['megawalls', 'megawall', 'mw'],
-      description: "Returns a player's Megawalls stats",
+      description: "Returns a player's Mega Walls stats",
       example: `megawalls %s`
     })
   }

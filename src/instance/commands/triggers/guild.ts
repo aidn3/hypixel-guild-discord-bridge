@@ -34,7 +34,7 @@ export default class Guild extends ChatCommandHandler {
     assert.ok(member !== undefined)
 
     let result = givenUsername
-    result += ` in ${guild.name} (${guild.members.length}/125)`
+    result += ` is in ${guild.name} (${guild.members.length}/125)`
     result += ` as ${member.rank ?? 'unknown'}`
 
     const duration = Date.now() - member.joined

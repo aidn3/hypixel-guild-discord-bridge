@@ -12,7 +12,7 @@ export default class Essence extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['essence', 'essences', 'ess'],
-      description: "Returns a player's Skyblock essence",
+      description: "Returns a player's SkyBlock essence",
       example: `essence %s`
     })
   }

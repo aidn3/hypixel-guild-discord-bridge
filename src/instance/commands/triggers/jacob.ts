@@ -11,7 +11,7 @@ export default class Jacob extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['jacob', 'jacobs', 'jacobcontents', 'jacobcontest'],
-      description: "Returns a player's skyblock Jacob contest stats",
+      description: "Returns a player's SkyBlock Jacob contest stats",
       example: `jacob %s`
     })
   }

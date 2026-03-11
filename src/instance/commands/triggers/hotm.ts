@@ -7,7 +7,7 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['hotm', 'powder'],
-      description: "Returns a player's hotm and powder",
+      description: "Returns a player's HOTM and powder",
       example: `hotm %s`
     })
   }

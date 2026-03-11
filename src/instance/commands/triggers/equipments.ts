@@ -15,7 +15,7 @@ export default class Equipments extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['eq', 'equipments', 'equipment', 'equip'],
-      description: "Returns a player's Skyblock equipments",
+      description: "Returns a player's SkyBlock equipments",
       example: `eq %s`
     })
   }

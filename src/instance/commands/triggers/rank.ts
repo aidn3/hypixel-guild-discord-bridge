@@ -8,7 +8,7 @@ export default class Rank extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['rank'],
-      description: 'shows the rank of a player',
+      description: 'Shows the rank of a player',
       example: `rank %s`
     })
   }

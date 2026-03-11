@@ -6,7 +6,7 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['hotf', 'forest', 'whispers'],
-      description: "Returns a player's hotf and whispers",
+      description: "Returns a player's HOTF and whispers",
       example: `hotf %s`
     })
   }
