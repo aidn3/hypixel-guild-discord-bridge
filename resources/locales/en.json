@@ -173,6 +173,7 @@
   "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
   "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted: {{lapis, number}} Lapis - {{umber, number}} Umber - {{tungsten, number}} Tungsten - {{vanguard, number}} Vanguards",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
+  "commands.news.response": "{{updatesTitle}} {{updatesDate}} Release: {{updatesLink}} - {{patchnotesTitle}}: https://hypixel.net/threads/.{{patchnotesGuid}}/",
   "commands.bingo.response": "{{username}}'s bingo stats for last event: {{completedGoals, number}} Goals Completed - {{points, number}} Points Earned",
   "commands.bingo.none": "{{username}} has never participated in a bingo event.",
   "commands.classavg.overflow": "{{username}}'s class average {{average, number}} - Overflow {{overflow, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
