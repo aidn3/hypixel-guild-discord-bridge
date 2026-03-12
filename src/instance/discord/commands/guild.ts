@@ -287,7 +287,9 @@ async function handleRegister(context: DiscordCommandContext): Promise<void> {
   savedGuild = context.application.core.minecraftGuildsManager.initGuild(
     guild._id,
     guild.name,
-    guild.ranks.filter((rank) => !rank.default).map((rank) => ({ name: rank.name, priority: rank.priority }))
+    guild.ranks
+      .filter((rank) => !rank.default)
+      .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
   )
   await interaction.editReply({
     embeds: [
@@ -418,7 +420,7 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
   assert.ok(interaction.inCachedGuild())
   await interaction.deferReply()
 
-  const savedGuild = await getGuild(context)
+  let savedGuild = await getGuild(context)
   if (savedGuild === undefined) return
   const manager = context.application.core.minecraftGuildsManager
 
@@ -430,6 +432,35 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
     options: [
       {
         type: OptionType.EmbedCategory,
+        name: 'Guild Ranks',
+        description: 'Manage how guild ranks are set and managed.',
+        options: [
+          {
+            type: OptionType.PresetList,
+            name: 'Whitelisted guild ranks',
+            description: 'Which guild ranks are allowed to change from.',
+            min: 0,
+            max: 5,
+            get options() {
+              assert.ok(savedGuild !== undefined)
+              return savedGuild.roles.map((role) => ({ label: role.name, value: role.name }))
+            },
+            getOption: () => {
+              assert.ok(savedGuild !== undefined)
+              return savedGuild.roles.filter((role) => role.whitelisted).map((role) => role.name)
+            },
+            setOption: (values) => {
+              assert.ok(savedGuild !== undefined)
+              manager.setWhitelistedGuildRoles(savedGuild.id, values)
+              const refreshed = manager.allGuilds().find((entry) => entry.id === savedGuild?.id)
+              assert.ok(refreshed !== undefined)
+              savedGuild = refreshed
+            }
+          }
+        ]
+      },
+      {
+        type: OptionType.EmbedCategory,
         name: 'Waitlist',
         description: 'Manage how guild waitlist is operating.',
         options: [
@@ -438,8 +469,12 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
             name: 'Allow users to self-signup',
             description:
               'Allow users to use buttons on waitlist panels to signup to the join-waitlist as long as they meet the requirements and do not have any active punishments',
-            getOption: () => manager.getSelfWaitlistEnabled(savedGuild.id),
+            getOption: () => {
+              assert.ok(savedGuild !== undefined)
+              return manager.getSelfWaitlistEnabled(savedGuild.id)
+            },
             toggleOption: () => {
+              assert.ok(savedGuild !== undefined)
               manager.setSelfWaitlistEnabled(savedGuild.id, !manager.getSelfWaitlistEnabled(savedGuild.id))
             }
           },
@@ -448,10 +483,14 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
             name: 'Required join conditions count',
             description:
               'How many conditions must a player meet before they are allowed to join the guild. This will also affect self-signup in waitlist',
-            getOption: () => manager.getNeededJoinConditions(savedGuild.id),
+            getOption: () => {
+              assert.ok(savedGuild !== undefined)
+              return manager.getNeededJoinConditions(savedGuild.id)
+            },
             min: 1,
             max: 99,
             setOption: (value) => {
+              assert.ok(savedGuild !== undefined)
               manager.setNeededJoinConditions(savedGuild.id, value)
             }
           }
@@ -462,8 +501,12 @@ async function handleSettings(context: DiscordCommandContext): Promise<void> {
         name: 'Auto accept join requests',
         description:
           'Auto accept users who send a guild join request as long as they meet the requirements and do not have any active punishments',
-        getOption: () => manager.getAcceptJoinRequestsEnabled(savedGuild.id),
+        getOption: () => {
+          assert.ok(savedGuild !== undefined)
+          return manager.getAcceptJoinRequestsEnabled(savedGuild.id)
+        },
         toggleOption: () => {
+          assert.ok(savedGuild !== undefined)
           manager.setAcceptJoinRequestsEnabled(savedGuild.id, !manager.getAcceptJoinRequestsEnabled(savedGuild.id))
         }
       }

@@ -84,6 +84,8 @@ A shorter version can also be used: `!- rtca`
 | `praise`         | praise a player                                                                    |
 | `purse`          | Returns a player's skyblock coins                                                  |
 | `rank`           | shows the rank of a player                                                         |
+| `ranks`          | List guild ranks requirements                                                      |
+| `rankup`         | Update a user in-game guild rank                                                   |
 | `rep`            | Returns a player's crimson isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |
 | `rps`            | Play rock, paper, scissors against the bot                                         |

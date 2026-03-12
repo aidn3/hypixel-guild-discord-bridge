@@ -71,6 +71,8 @@ import PointsAll from './triggers/points-all'
 import Praise from './triggers/praise'
 import Purse from './triggers/purse.js'
 import Rank from './triggers/rank.js'
+import Ranks from './triggers/ranks'
+import Rankup from './triggers/rankup'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
 import RockPaperScissors from './triggers/rock-paper-scissors.js'
@@ -173,6 +175,8 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Praise(),
       new Purse(),
       new Rank(),
+      new Ranks(),
+      new Rankup(),
       new Reputation(),
       new Rng(),
       new RockPaperScissors(),

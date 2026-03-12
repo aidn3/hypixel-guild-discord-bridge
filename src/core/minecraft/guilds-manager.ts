@@ -22,7 +22,7 @@ export class GuildsManager {
         `DELETE FROM minecraftGuildRoles WHERE guildId = ? AND name NOT IN (${roles.map(() => '?').join(',')})`
       )
       const selectRoles = database.prepare<[typeof id], MinecraftGuildRole>(
-        'SELECT name, priority FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       if (exists.all(id).length === 0) {
@@ -54,7 +54,7 @@ export class GuildsManager {
     const transaction = database.transaction(() => {
       const select = database.prepare<[], MinecraftGuild>('SELECT * FROM minecraftGuild')
       const selectRoles = database.prepare<[string], MinecraftGuildRole>(
-        'SELECT name, priority FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       const guilds = select.all()
@@ -108,6 +108,24 @@ export class GuildsManager {
     guild.acceptJoinRequests = !!guild.acceptJoinRequests
     guild.createdAt = guild.createdAt * 1000
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
+  }
+
+  public setWhitelistedGuildRoles(guildId: string, whitelistedRoles: string[]): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const unWhitelist = database.prepare(
+        `UPDATE minecraftGuildRoles SET whitelisted = 0 WHERE guildId = ? AND name NOT IN (${whitelistedRoles.map(() => '?').join(',')})`
+      )
+
+      const whitelist = database.prepare(
+        `UPDATE minecraftGuildRoles SET whitelisted = 1 WHERE guildId = ? AND name IN (${whitelistedRoles.map(() => '?').join(',')})`
+      )
+
+      unWhitelist.run(guildId, ...whitelistedRoles)
+      whitelist.run(guildId, ...whitelistedRoles)
+    })
+
+    transaction()
   }
 
   public addWaitlist(guildId: string, mojangId: string): boolean {
@@ -461,6 +479,7 @@ export interface MinecraftGuild {
 export interface MinecraftGuildRole {
   name: string
   priority: number
+  whitelisted: boolean
 }
 
 export interface WaitlistEntry {

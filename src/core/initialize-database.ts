@@ -596,6 +596,7 @@ function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: 
       '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
       '  name TEXT NOT NULL,' +
       '  priority INTEGER NOT NULL,' +
+      '  whitelisted INTEGER NOT NULL DEFAULT 0,' +
       '  PRIMARY KEY(guildId, name)' +
       ' ) STRICT'
   )
