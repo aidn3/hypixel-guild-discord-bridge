@@ -168,7 +168,16 @@ export class Hypixel {
 
   public async getPlayerBingo(playerUuid: string, since?: number): Promise<SkyblockBingoResponse> {
     const request = { path: Hypixel.SkyblockBingoPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
-    const response = await this.resolveAndFetch<SkyblockBingoResponse>(request, since)
+    let response: SkyblockBingoResponse
+    try {
+      response = await this.resolveAndFetch<SkyblockBingoResponse>(request, since)
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.status === 404) {
+        response = { success: true, events: [] }
+      } else {
+        throw error
+      }
+    }
     return response
   }
 
