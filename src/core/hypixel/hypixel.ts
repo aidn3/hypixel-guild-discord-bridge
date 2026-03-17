@@ -19,6 +19,7 @@ import type {
   HypixelSkyblockSkillsResponse,
   MayorResponse,
   NewsResponse,
+  SkyblockBingoResourcesResponse,
   SkyblockBingoResponse,
   SkyblockMuseumResponse,
   SkyblockProfile,
@@ -41,6 +42,7 @@ export class Hypixel {
   private static readonly LeaderboardsPath = '/v2/leaderboards'
 
   private static readonly SkyblockElectionPath = '/v2/resources/skyblock/election'
+  private static readonly SkyblockBingoResourcesPath = '/v2/resources/skyblock/bingo'
   private static readonly SkyblockNewsPath = '/v2/skyblock/news'
   private static readonly SkyblockSkillsPath = '/v2/resources/skyblock/skills'
 
@@ -112,6 +114,12 @@ export class Hypixel {
     return response
   }
 
+  public async getSkyblockBingoResources(since?: number): Promise<SkyblockBingoResourcesResponse> {
+    const request = { path: Hypixel.SkyblockBingoResourcesPath } satisfies ApiEntry
+    const response = await this.resolveAndFetch<SkyblockBingoResourcesResponse>(request, since)
+    return response
+  }
+
   public async getLeaderboards(since?: number): Promise<HypixelLeaderboards> {
     const request = { path: Hypixel.LeaderboardsPath } satisfies ApiEntry
     const response = await this.resolveAndFetch<HypixelLeaderboardsResponse>(request, since)
@@ -168,7 +176,16 @@ export class Hypixel {
 
   public async getPlayerBingo(playerUuid: string, since?: number): Promise<SkyblockBingoResponse> {
     const request = { path: Hypixel.SkyblockBingoPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
-    const response = await this.resolveAndFetch<SkyblockBingoResponse>(request, since)
+    let response: SkyblockBingoResponse
+    try {
+      response = await this.resolveAndFetch<SkyblockBingoResponse>(request, since)
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.status === 404) {
+        response = { success: true, events: [] }
+      } else {
+        throw error
+      }
+    }
     return response
   }
 

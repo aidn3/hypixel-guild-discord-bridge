@@ -375,4 +375,8 @@ export interface SkyblockBingoResponse extends HypixelSuccessResponse {
   }[]
 }
 
+export interface SkyblockBingoResourcesResponse extends HypixelSuccessResponse {
+  id: number
+}
+
 /* eslint-enable @typescript-eslint/naming-convention */

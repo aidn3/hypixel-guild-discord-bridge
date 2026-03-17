@@ -23,13 +23,18 @@ export default class Bingo extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid === undefined) return usernameNotExists(context, givenUsername)
 
+    const bingoResources = await context.app.hypixelApi.getSkyblockBingoResources()
     const bingo = await context.app.hypixelApi.getPlayerBingo(uuid)
 
     const events = bingo.events ?? []
 
-    const currentEvent = events.at(-1)
-    if (currentEvent === undefined) {
+    const lastEvent = events.at(-1)
+    if (lastEvent === undefined) {
       return context.app.i18n.t(($) => $['commands.bingo.none'], { username: givenUsername })
+    }
+    const currentEvent = events.find((event) => event.key === bingoResources.id)
+    if (currentEvent === undefined) {
+      return context.app.i18n.t(($) => $['commands.bingo.did-not-participate'], { username: givenUsername })
     }
 
     const points = currentEvent.points
