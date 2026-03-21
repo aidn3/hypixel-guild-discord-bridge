@@ -20,7 +20,7 @@ export class Sanitizer {
     this.link = new LinksSanitizer(application.core.minecraftConfigurations)
     this.emoji = new EmojiSanitizer()
     this.ez = new EzSanitizer()
-    this.arabicFixer = new ArabicFixer()
+    this.arabicFixer = new ArabicFixer(application.core.minecraftConfigurations)
     this.antispam = new Antispam(application.core.minecraftConfigurations)
   }
 
