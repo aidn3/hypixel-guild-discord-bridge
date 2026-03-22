@@ -70,4 +70,12 @@ export class MinecraftConfigurations {
   public setResolveHideLinks(value: boolean): void {
     this.configuration.setBoolean('resolveHideLinks', value)
   }
+
+  public getArabicFixerEnabled(): boolean {
+    return this.configuration.getBoolean('arabicFixerEnabled', false)
+  }
+
+  public setArabicFixerEnabled(value: boolean): void {
+    this.configuration.setBoolean('arabicFixerEnabled', value)
+  }
 }
