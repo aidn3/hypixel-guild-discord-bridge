@@ -28,7 +28,7 @@ export default class Item extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.error.minecraft-render-not-supported-on-host'])
     }
 
-    if (!/^\d$/g.test(givenBar)) {
+    if (!/^\d{1,2}$/g.test(givenBar)) {
       return this.getExample(context.commandPrefix)
     }
 
