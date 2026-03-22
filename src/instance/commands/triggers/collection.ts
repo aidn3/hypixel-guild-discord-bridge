@@ -31,7 +31,9 @@ export default class Collection extends ChatCommandHandler {
     'RAW_FISH:3': 'PUFFERFISH',
 
     SAND: 'SAND',
-    'SAND:1': 'RED_SAND'
+    'SAND:1': 'RED_SAND',
+
+    DOUBLE_PLANT: 'SUNFLOWER'
     /* eslint-enable @typescript-eslint/naming-convention */
   }
   constructor() {
