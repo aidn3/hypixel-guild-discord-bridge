@@ -36,7 +36,7 @@ export default class Inventory extends ChatCommandHandler {
 
     const parsedBar = Number.parseInt(givenBar, 10)
     if (parsedBar < 1 || parsedBar > 4) {
-      return `${context.username}, Can only select between 1 and 4.`
+      return `${context.username}, can only select between 1 and 4.`
     }
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
@@ -47,16 +47,13 @@ export default class Inventory extends ChatCommandHandler {
 
     const inventoryRaw = selectedProfile.inventory?.inv_contents?.data
     if (inventoryRaw === undefined) {
-      return context.app.i18n.t(($) => $['commands.inventory.none-maybe'], {
-        username: givenUsername,
-        parsedBar: parsedBar
-      })
+      return context.app.i18n.t(($) => $['commands.inventory.api-disabled'], { username: givenUsername })
     }
 
     const inventory = await parseEncodedNbt<{ i: InventoryItem[] }>(inventoryRaw)
     const images = await this.renderBar(inventory.i, parsedBar)
     if (images.length === 0) {
-      return `Nothing to render for ${givenUsername}.`
+      return context.app.i18n.t(($) => $['commands.inventory.none'], { username: givenUsername, parsedBar: parsedBar })
     }
 
     return {

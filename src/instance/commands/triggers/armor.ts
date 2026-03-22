@@ -35,7 +35,7 @@ export default class Armor extends ChatCommandHandler {
 
     const armorRaw = selectedProfile.inventory?.inv_armor?.data
     if (armorRaw === undefined) {
-      return context.app.i18n.t(($) => $['commands.armor.none-maybe'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.inventory.api-disabled'], { username: givenUsername })
     }
 
     const armor = await parseEncodedNbt<{ i: InventoryItem[] }>(armorRaw)
