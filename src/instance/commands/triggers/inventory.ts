@@ -47,7 +47,10 @@ export default class Inventory extends ChatCommandHandler {
 
     const inventoryRaw = selectedProfile.inventory?.inv_contents?.data
     if (inventoryRaw === undefined) {
-      return context.app.i18n.t(($) => $['commands.armor.none-maybe'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.inventory.none-maybe'], {
+        username: givenUsername,
+        parsedBar: parsedBar
+      })
     }
 
     const inventory = await parseEncodedNbt<{ i: InventoryItem[] }>(inventoryRaw)
@@ -59,7 +62,7 @@ export default class Inventory extends ChatCommandHandler {
     return {
       type: ContentType.ImageBased,
       content: images,
-      unsupported: context.app.i18n.t(($) => $['commands.armor.render-not-supported']),
+      unsupported: context.app.i18n.t(($) => $['commands.inventory.render-not-supported'], { parsedBar: parsedBar }),
       extra: `Rendering ${givenUsername} inventory bar line ${parsedBar}`
     }
   }
