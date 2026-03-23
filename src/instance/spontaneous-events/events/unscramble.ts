@@ -664,8 +664,8 @@ export async function startUnscramble(
   }
 
   context.application.on('chat', listener)
-  await context.broadcastMessage(`Unscramble: ${chosenWord.scrambled}`, Color.Good)
   timeout.refresh()
+  await context.broadcastMessage(`Unscramble: ${chosenWord.scrambled}`, Color.Good)
 
   const result = await timeout.wait()
   context.application.off('chat', listener)
