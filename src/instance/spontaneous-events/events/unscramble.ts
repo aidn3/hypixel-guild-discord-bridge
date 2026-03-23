@@ -27,36 +27,88 @@ export class Unscramble extends SpontaneousEventHandler {
 
 const ScrambleWords = [
   // generic
-  ...'apple banana grape lemon cherry peach mango kiwi plum table chair couch desk shelf'.split(' '),
-  ...'blanket curtain house garden porch fence roof window door floor stairs attic water coffee'.split(' '),
-  ...'juice soda milk bread cheese butter egg dog cat bird fish horse rabbit mouse snake frog sun'.split(' '),
-  ...'star cloud rain snow wind storm thunder lightning red blue green yellow purple pink brown'.split(' '),
-  ...'white happy sad scared brave tired sleepy hungry thirsty excited run walk jump swim'.split(' '),
-  ...'sing read write draw car bike bus train plane boat ship truck scooter school teacher student'.split(' '),
-  ...'pencil paper eraser ruler map pillow tea moon black dance book lamp turtle climb taxi'.split(' '),
+  'Apple', 'Banana', 'Grape', 'Lemon', 'Cherry', 'Peach', 'Mango', 'Kiwi', 'Plum', 'Table', 'Chair',
+  'Couch', 'Desk', 'Shelf', 'Blanket', 'Curtain', 'House', 'Garden', 'Porch', 'Fence', 'Roof', 'Window',
+  'Door', 'Floor', 'Stairs', 'Attic', 'Water', 'Coffee', 'Juice', 'Soda', 'Milk', 'Bread', 'Cheese',
+  'Butter', 'Egg', 'Dog', 'Cat', 'Bird', 'Fish', 'Horse', 'Rabbit', 'Mouse', 'Snake', 'Frog', 'Sun',
+  'Star', 'Cloud', 'Rain', 'Snow', 'Wind', 'Storm', 'Thunder', 'Lightning', 'Red', 'Blue', 'Green',
+  'Yellow', 'Purple', 'Pink', 'Brown', 'White', 'Happy', 'Sad', 'Scared', 'Brave', 'Tired', 'Sleepy',
+  'Hungry', 'Thirsty', 'Excited', 'Run', 'Walk', 'Jump', 'Swim', 'Sing', 'Read', 'Write', 'Draw',
+  'Car', 'Bike', 'Bus', 'Train', 'Plane', 'Boat', 'Ship', 'Truck', 'Scooter', 'School', 'Teacher',
+  'Student', 'Pencil', 'Paper', 'Eraser', 'Ruler', 'Map', 'Pillow', 'Tea', 'Moon', 'Black', 'Dance',
+  'Book', 'Lamp', 'Turtle', 'Climb', 'Taxi', 'Honey', 'Goblin Shark', 'Bull Shark', 'Blue Marlin',
+  'Fox', 'Wolf', 'Deer', 'Otter', 'Seal', 'Whale', 'Falcon', 'Eagle', 'Hawk', 'Burger', 'Pizza',
+  'Pasta', 'Cookie', 'Donut', 'Muffin', 'Sandwich', 'Bottle', 'Basket', 'Mirror', 'Kitchen', 'Bedroom',
+  'Hallway', 'Garage', 'Balcony', 'Basement', 'Closet', 'Bathroom', 'Village', 'Castle', 'Fog', 'Mist',
+  'Rainbow', 'Tornado', 'Meteor', 'Comet', 'Planet', 'Galaxy', 'Rocket', 'Satellite',
 
   // hypixel generic
-  ...'skyblock bedwars duels skywars murdermystery blitzsg paintball tntgames arcade megawalls'.split(' '),
-  ...'buildbattle pit classic arena lobby hub quest daily reward token crown relic dragon phoenix'.split(' '),
-  ...'wither ender slime zombie skeleton creeper minion pet armor sword bow axe pickaxe shovel hoe'.split(' '),
-  ...'shield potion brew enchant grindstone anvil forge talisman rune scroll gem island farm'.split(' '),
-  ...'mine quarry nether overworld end portal warp spawn lobby queue match round team solo duo'.split(' '),
-  ...'trio squad clan rank level xp prestige boost upgrade shop market auction trade vote'.split(' '),
-  ...'votecrate crate loot chest key mysterybox surprise event festival holiday halloween christmas'.split(' '),
-  ...'easter summer winter spring autumn fireworksa'.split(' '),
+  'SkyBlock', 'Bed Wars', 'Duels', 'SkyWars', 'Murder Mystery', 'Blitz SG', 'Paintball', 'TNT Games',
+  'Arcade', 'Mega Walls', 'Build Battle', 'Pit', 'Classic', 'Arena', 'Lobby', 'Hub', 'Quest', 'Daily',
+  'Reward', 'Token', 'Crown', 'Relic', 'Dragon', 'Phoenix', 'Wither', 'Ender', 'Slime', 'Zombie',
+  'Skeleton', 'Creeper', 'Minion', 'Pet', 'Armor', 'Sword', 'Bow', 'Axe', 'Pickaxe', 'Shovel',
+  'Hoe', 'Shield', 'Potion', 'Brew', 'Enchant', 'Grindstone', 'Anvil', 'Forge', 'Talisman', 'Rune',
+  'Scroll', 'Gem', 'Island', 'Farm', 'Mine', 'Quarry', 'Nether', 'Overworld', 'End', 'Portal',
+  'Warp', 'Spawn', 'Queue', 'Match', 'Round', 'Team', 'Solo', 'Duo', 'Trio', 'Squad',
+  'Clan', 'Rank', 'Level', 'XP', 'Prestige', 'Boost', 'Upgrade', 'Shop', 'Market', 'Auction',
+  'Trade', 'Vote', 'Vote Crate', 'Crate', 'Loot', 'Chest', 'Key', 'Mystery Box', 'Surprise', 'Event',
+  'Festival', 'Holiday', 'Halloween', 'Christmas', 'Easter', 'Summer', 'Winter', 'Spring', 'Autumn', 'Fireworks',
 
   // minecraft
-  ...''.split('smelting diamond banner netherrack packedice bone zombie'),
-  ...'block pickaxe shovel axe hoe sword bow arrow helmet chestplate boots furnace crafting'.split(' '),
-  ...'enchanting brewing redstone piston lever button pressureplate torch lantern glowstone obsidian'.split(' '),
-  ...'emerald gold iron coal charcoal lapis quartz netherite slimeball feather leather wool'.split(' '),
-  ...'map compass bucket water lava sand gravel dirt grass stone cobblestone mossy basalt'.split(' '),
-  ...'soulsoil endstone prismarine sea‑lantern kelp coral sponge ice snow cactus vines lilypad oak'.split(' '),
-  ...'birch spruce jungle acacia darkoak mangrove bamboo chorus mushroom creeper skeleton spider'.split(' '),
-  ...'enderman witch slime ghast blaze shulker villager horse pig cow sheep chicken rabbit dolphin'.split(' '),
+  'Block', 'Arrow', 'Helmet', 'Chestplate', 'Boots', 'Furnace', 'Crafting Table', 'Enchanting Table',
+  'Brewing Stand', 'Redstone', 'Piston', 'Lever', 'Button', 'Pressure Plate', 'Torch', 'Lantern',
+  'Glowstone', 'Obsidian', 'Emerald', 'Gold', 'Iron', 'Coal', 'Charcoal', 'Lapis', 'Quartz', 'Netherite',
+  'Slimeball', 'Feather', 'Leather', 'Wool', 'Compass', 'Bucket', 'Lava', 'Sand', 'Gravel', 'Dirt',
+  'Grass', 'Stone', 'Cobblestone', 'Mossy', 'Basalt', 'Soulsoil', 'End Stone', 'Prismarine', 'Sea Lantern',
+  'Kelp', 'Coral', 'Sponge', 'Ice', 'Cactus', 'Vines', 'Lilypad', 'Oak', 'Birch', 'Spruce',
+  'Jungle', 'Acacia', 'Dark Oak', 'Mangrove', 'Bamboo', 'Chorus', 'Mushroom', 'Spider', 'Enderman', 'Witch',
+  'Ghast', 'Blaze', 'Shulker', 'Villager', 'Pig', 'Cow', 'Sheep', 'Chicken', 'Dolphin', 'Crafter',
+  'Mace', 'Heavy Core', 'Wind Charge', 'Breeze Rod', 'Trial Key', 'Ominous Trial Key', 'Ominous Bottle',
+  'Trial Spawner', 'Ominous Trial Spawner', 'Vault', 'Ominous Vault', 'Breeze', 'Bogged', 'Golden Apple',
+  'Enchanted Golden Apple', 'Ender Pearl', 'Eye of Ender', 'Totem of Undying', 'Elytra', 'Trident', 'Crossbow',
+  'Spyglass', 'Brush', 'Turtle Helmet', 'Recovery Compass', 'Goat Horn', 'Name Tag', 'Saddle', 'Lead',
+  'Book and Quill', 'Dragon Egg', 'Echo Shard', 'Chorus Fruit', 'Chorus Flower', 'Chorus Plant',
+  'Moss Block', 'Moss Carpet', 'Packed Ice', 'Blue Ice', 'Netherrack', 'Soul Sand', 'Bone Block',
+  'Hay Bale', 'Target', 'Campfire', 'Soul Campfire', 'Respawn Anchor', 'Nether Star', 'Beacon', 'Conduit',
+  'Heart of the Sea', 'Prismarine Shard', 'Prismarine Crystals', 'Amethyst Shard', 'Calcite', 'Tuff',
+  'Dripstone Block', 'Pointed Dripstone', 'Deepslate', 'Reinforced Deepslate', 'Frogspawn', 'Tadpole Bucket',
+  'Sniffer Egg', 'Pitcher Plant', 'Torchflower', 'Decorated Pot', 'Armadillo Scute',
 
-  ...'skyblock combat garden jerry farming foraging galatea kills slayer sven hub player skill'.split(' '),
-  ...'dungeon healer berserk mage archer tank floor'.split(' ')
+  // skyblock
+  'Combat', 'Jerry', 'Farming', 'Foraging', 'Galatea', 'Kills', 'Slayer', 'Sven', 'Player', 'Skill',
+  'Dungeon', 'Healer', 'Berserk', 'Mage', 'Archer', 'Tank', 'French Bread', 'Pioneer Pickaxe',
+  'Campaign Poster', 'Moldy Muffin', 'Creative Mind', 'Quality Map', 'Dead Bush Of Love', 'Wiki Journal',
+  "Editor's Pencil", 'Game Breaker', 'Game Annihilator', 'Ancient Elevator', 'Kloonboat', 'Space Helmet',
+  'Shiny Relic', 'Piece Of Wizard Portal', 'Expensive Toy', 'Golden Collar', 'Locked Ballot Box',
+  'There And Back Again', 'Dreamspire Torch', 'Spooky Pie', 'New Year Cake', 'Golden Gift', 'Bingo Card',
+  'Kuudra Follower Helmet', 'Kuudra Follower Chestplate', 'Kuudra Follower Leggings', 'Kuudra Follower Boots',
+  'Kuudra Relic', 'Wet Napkin', 'Kuudra Teeth Plaque', 'Supreme Timecharm', 'Chicken N Egg Timecharm',
+  'mrahcemiT esrevrorriM', 'SkyBlock Citizen Timecharm', 'Living Timecharm', 'Globulate Timecharm',
+  'Vampiric Timecharm', 'Celestial Timecharm', 'Colossal Experience Bottle Upgrade', 'Heat Core', 'God Potion',
+  'Kat Flower', 'Ultimate Carrot Candy', 'Superb Carrot Candy', 'Great Carrot Candy', 'Private Island',
+  'The Barn', 'Mushroom Desert', 'The Park', 'The End', 'Crimson Isle', 'Gold Mine', 'Deep Caverns',
+  'Dwarven Mines', 'Crystal Hollows', 'Dungeon Hub', 'Rift Dimension', 'Backwater Bayou', 'Aatrox', 'Adventurer',
+  'Alchemist', 'Alixer', 'Amelia', 'Anita', 'Andrew', 'Apprentice', 'Arthur', 'Auction Master',
+  'Auction Agents', 'Baker', 'Banker', 'Bartender', 'Bazaar', 'Bazaar Agent', 'Bea', 'Biblio',
+  'Billy Joe', 'Blacksmith', 'Bobby Joe', 'Builder', 'Carnival Cowboy', 'Carnival Fisherman', 'Carnival Leader',
+  'Carnival Pirateman', 'Carpenter', 'Chantelle', 'Christopher', 'Clerk Seraphine', 'Coach Jackrabbit', 'Cole',
+  'Curator', 'Damia', 'Derpy', 'Diana', 'Diaz', 'Doug', 'Duke', 'Dusk', 'Elizabeth',
+  'Erihann', 'Fann', 'Farm Merchant', 'Farmer', 'Fear Mongerer', 'Felix', 'Finnegan', 'Fishing Merchant',
+  'Fisherman Gerald', 'Foxy', 'George', 'Gladiator', 'Guy', 'Hootie', 'Hoppity', 'Jack', 'Jacob',
+  'Jacobus', 'Jamie', 'Jax', 'Jerry', 'Jim Bob', 'Liam', 'Librarian', 'Lonely Philosopher',
+  'Lucius', 'Lumber Jack', 'Lumber Merchant', 'Mad Redstone Engineer', 'Maddox the Slayer', 'Marina',
+  'Maths Enjoyer', 'Mine Merchant', 'Oringo', 'Ozanne', 'Ophelia', 'Security Sloth', 'Salesman', 'Seymour',
+  'Tyashoi Alchemist', 'Wool Weaver', 'Udium', 'Romero', 'Old Shaman Nyko', 'Sea Walker', 'Squid',
+  'Night Squid', 'Sea Guardian', 'Sea Witch', 'Sea Archer', 'Rider of the Deep', 'Catfish', 'Carrot King',
+  'Agarimoo', 'Sea Leech', 'Guardian Defender', 'Deep Sea Protector', 'Water Hydra', 'The Loch Emperor',
+  'Frog Man', 'Snapping Turtle', 'Wiki Tiki', 'Oasis Rabbit', 'Oasis Sheep', 'Water Worm',
+  'Poisoned Water Worm', 'Abyssal Miner', 'Large Mithril Grubber', 'Medium Mithril Grubber', 'Mithril Grubber',
+  'Dumpster Diver', 'Trash Gobbler', 'Banshee', 'Bayou Sludge', 'Alligator', 'Titanoboa', 'Scarecrow',
+  'Nightmare', 'Werewolf', 'Phantom Fisher', 'Grim Reaper', 'Frozen Steve', 'Frosty', 'Grinch', 'Yeti',
+  'Nutcracker', 'Reindrake', 'Nurse Shark', 'Blue Shark', 'Tiger Shark', 'Great White Shark', 'Magma Slug',
+  'Moogma', 'Lava Leech', 'Pyroclastic', 'Lava Flame', 'Fire Eel', 'Taurus', 'Plhlegblast', 'Thunder',
+  'Lord Jawbus', 'Fried Chicken', 'Fireproof Witch', 'Fiery Scuttler', 'Ragnarok', 'Flaming Worm',
+  'Lava Blaze', 'Lava Pigman'
 ]
 
 export async function startUnscramble(
@@ -70,8 +122,8 @@ export async function startUnscramble(
   const listener = (event: ChatEvent) => {
     if (event.channelType !== ChannelType.Public) return
 
-    const match = event.message.trim().split(' ')[0].toLowerCase().trim()
-    if (match === chosenWord.original) timeout.resolve(event)
+    const match = event.message.trim()
+    if (match.toLowerCase() === chosenWord.original.toLowerCase()) timeout.resolve(event)
   }
 
   context.application.on('chat', listener)
@@ -90,23 +142,28 @@ export async function startUnscramble(
 }
 
 function pickWord(): { original: string; scrambled: string } {
-  const wordsToPickFrom = ScrambleWords.map((entry) => entry.toLowerCase().trim())
+  const wordsToPickFrom = ScrambleWords.map((entry) => entry.trim())
     .filter((entry) => entry.length >= 3)
-    .filter((entry) => /^\w+$/.test(entry))
+    .filter((entry) => /^[\w\s]+$/.test(entry))
 
   const pickedWord = wordsToPickFrom[Math.floor(Math.random() * wordsToPickFrom.length)]
-  // eslint-disable-next-line unicorn/prefer-spread
-  const pickedWordReversed = pickedWord.split('').toReversed().join('')
+  const characters = pickedWord.split('')
+  const letters = characters.filter((character) => character !== ' ')
+  const pickedWordReversed = letters.toReversed().join('')
 
   for (let tryCount = 0; tryCount < 50; tryCount++) {
-    // eslint-disable-next-line unicorn/prefer-spread
-    const scrambled = shuffleArrayInPlace(pickedWord.split('')).join('')
+    const scrambledLetters = shuffleArrayInPlace([...letters])
+    const scrambled = applyLettersToPattern(characters, scrambledLetters)
 
-    if (scrambled !== pickedWord && scrambled !== pickedWordReversed) {
+    if (scrambled !== pickedWord && scrambled.replaceAll(' ', '') !== pickedWordReversed) {
       return { original: pickedWord, scrambled: scrambled }
     }
   }
 
-  // eslint-disable-next-line unicorn/prefer-spread
-  return { original: pickedWord, scrambled: pickedWord.split('').toReversed().join('') }
+  return { original: pickedWord, scrambled: applyLettersToPattern(characters, pickedWordReversed.split('')) }
+}
+
+function applyLettersToPattern(pattern: string[], letters: string[]): string {
+  let letterIndex = 0
+  return pattern.map((character) => (character === ' ' ? ' ' : letters[letterIndex++])).join('')
 }
