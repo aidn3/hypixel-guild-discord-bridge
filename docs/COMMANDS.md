@@ -44,6 +44,7 @@ A shorter version can also be used: `!- rtca`
 | `dadjoke`        | Show you a random dad joke                                                         |
 | `da`             | Show the remaining time till next Dark Auction                                     |
 | `devexcuse`      | Show you a random excuse for why this bot isn't working                            |
+| `dice`           | Roll an Archfiend Dice                                                             |
 | `discord`        | Returns a player's Discord social                                                  |
 | `dojo`           | Returns a player's Crimson Isle's Dojo stats                                       |
 | `eggs`           | Returns a player's SkyBlock easter eggs stats                                      |
