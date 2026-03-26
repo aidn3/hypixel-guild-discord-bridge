@@ -39,8 +39,8 @@ export default class Election extends ChatCommandHandler {
       if (candidate.votes > minister.votes) minister = candidate
     }
 
-    const blockedNames = ['Derpy', 'Jerry', 'Scorpius', 'Aura']
-    const hideMinister = blockedNames.includes(winner.name) || blockedNames.includes(minister.name)
+    const blockedNames = new Set(['Derpy', 'Jerry', 'Scorpius', 'Aura'])
+    const hideMinister = blockedNames.has(winner.name) || blockedNames.has(minister.name)
 
     let message = `Upcoming election: `
     message += `${winner.name} (${winner.perks.map((perk) => perk.name).join(', ')})`
