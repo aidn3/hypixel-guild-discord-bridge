@@ -33,6 +33,7 @@ import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
+import Dice from './triggers/dice.js'
 import Discord from './triggers/discord'
 import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
@@ -141,6 +142,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
+      new Dice(),
       new Discord(),
       new Dojo(),
       new Eggs(),
