@@ -191,6 +191,28 @@
   "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
   "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
 
+  "commands.8ball": [
+    "{{username}}, as I see it, yes.",
+    "{{username}}, ask again later.",
+    "{{username}}, better not tell you now.",
+    "{{username}}, cannot predict now.",
+    "{{username}}, concentrate and ask again.",
+    "{{username}}, don't count on it.",
+    "{{username}}, it is certain.",
+    "{{username}}, it is decidedly so.",
+    "{{username}}, most likely.",
+    "{{username}}, my reply is no.",
+    "{{username}}, my sources say no.",
+    "{{username}}, outlook not so good.",
+    "{{username}}, outlook good.",
+    "{{username}}, reply hazy, try again.",
+    "{{username}}, signs point to yes.",
+    "{{username}}, very doubtful.",
+    "{{username}}, without a doubt.",
+    "{{username}}, yes.",
+    "{{username}}, yes – definitely.",
+    "{{username}}, you may rely on it."
+  ],
   "commands.praise": [
     "{{name}} is a very good boy/girl",
     "*Pats {{name}}'s head*",
