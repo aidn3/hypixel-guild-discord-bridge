@@ -111,7 +111,8 @@
 
   "commands.essence.none": "{{username}} does not have any essence.",
   "commands.explain": "{{username}}, I am a robot that connects this chat to Discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
-  "commands.forge.none": "{{username}} does not have anything in forge.",
+  "commands.forge.none": "{{username}} does not have anything in the forge.",
+  "commands.forge.response": "{{username}} forge: {{items}}",
   "commands.67": "Something happened to {{username}}. Want to know? Do {{command}}",
   "commands.trophyfish.none": "{{username}} has never trophy fished before.",
   "commands.megawalls.none": "{{username}} has never played Mega Walls before.",

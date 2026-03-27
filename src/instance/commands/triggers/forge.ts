@@ -81,7 +81,10 @@ export default class Forge extends ChatCommandHandler {
       .toSorted(([, count1], [, count2]) => count2 - count1)
       .map(([key, count]) => (count === 1 ? key : `${count}x${key}`))
 
-    return `${givenUsername} forge: ${formatted.join(' - ')}`
+    return context.app.i18n.t(($) => $['commands.forge.response'], {
+      username: givenUsername,
+      items: formatted.join(' - ')
+    })
   }
 }
 
