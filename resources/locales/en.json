@@ -190,6 +190,12 @@
   "commands.coinflip.special": "{{username}} flips a coin into the air. It spins, drops beside {{username}}, and somehow the coin settles upright on its side.",
   "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
   "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
+  "commands.boo.success": "{{username}} has been spooked!",
+  "commands.boo.failed": "Can not scare {{username}}: {{result}}",
+  "commands.boo.error": "Could not scare {{username}} for some unknown reason.",
+  "commands.boo.cooldown": "Can use command again in {{cooldown}} seconds.",
+  "commands.boo.no-account": "No active connected Minecraft account exists to use.",
+  "commands.boo.wrong-month": "You can only scare people in October!",
 
   "commands.8ball": [
     "{{username}}, as I see it, yes.",
