@@ -36,7 +36,7 @@ export default class Asian extends ChatCommandHandler {
     context.app.off('chat', listener)
 
     if (result === math.answer) {
-      return 'Big brain!'
+      return context.app.i18n.t(($) => $['commands.asian.correct'])
     } else {
       await context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
@@ -44,7 +44,7 @@ export default class Asian extends ChatCommandHandler {
         Duration.minutes(1),
         `failed ${context.commandPrefix}${this.triggers[0]}`
       )
-      return `haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: ${math.answer})`
+      return context.app.i18n.t(($) => $['commands.asian.incorrect'], { answer: math.answer })
     }
   }
 
