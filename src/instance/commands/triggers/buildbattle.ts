@@ -46,7 +46,8 @@ export default class Buildbattle extends ChatCommandHandler {
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     const stat = player.stats?.BuildBattle
-    if (stat === undefined) return context.app.i18n.t(($) => $['commands.buildbattle.none'], { username: givenUsername })
+    if (stat === undefined)
+      return context.app.i18n.t(($) => $['commands.buildbattle.none'], { username: givenUsername })
 
     const score = stat.score ?? 0
     const wins = stat.wins ?? 0
