@@ -54,7 +54,8 @@ export default class Collection extends ChatCommandHandler {
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const collections = selectedProfile.collection
-    if (collections === undefined) return `${givenUsername} has their Collections API disabled.`
+    if (collections === undefined)
+      return context.app.i18n.t(($) => $['commands.collection.api-disabled'], { username: givenUsername })
 
     const query = context.args.slice(1).join(' ')
     const translated = new Map<string, string>()
@@ -63,14 +64,22 @@ export default class Collection extends ChatCommandHandler {
     }
 
     const translatedWord = search(query, translated.keys().toArray()).at(0)
-    if (translatedWord === undefined) return `${givenUsername} not such a collection: ${query}`
+    if (translatedWord === undefined)
+      return context.app.i18n.t(($) => $['commands.collection.none'], {
+        username: givenUsername,
+        query: query
+      })
 
     const collectionKey = translated.get(translatedWord)
     assert.ok(collectionKey !== undefined)
 
     const collection = collections[collectionKey]
     const displayCollectionName = this.beautify(collectionKey)
-    return `${givenUsername}'s ${displayCollectionName} collection: ${collection.toLocaleString('en-US')}.`
+    return context.app.i18n.t(($) => $['commands.collection.response'], {
+      username: givenUsername,
+      collectionName: displayCollectionName,
+      amount: collection.toLocaleString('en-US')
+    })
   }
 
   private normalize(word: string): string {
