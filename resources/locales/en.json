@@ -126,6 +126,8 @@
   "commands.woolwars.response": "{{username}}'s Woolwars: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
   "commands.buildbattle.none": "{{username}} has never played Build Battle before.",
   "commands.buildbattle.response": "{{title}} {{username}}'s Build Battle score is {{score}} with {{wins}} wins.",
+  "commands.chocolate.none": "{{username}} does not have a chocolate factory.",
+  "commands.chocolate.response": "{{username}} has produced {{totalChocolate}} chocolate and spent {{chocolateSpent}}.",
   "commands.armor.none": "{{username}} does not have any armor.",
   "commands.armor.render-not-supported": "Armor has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
   "commands.equipments.none": "{{username}} does not have any equipment.",
