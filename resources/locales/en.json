@@ -113,6 +113,7 @@
   "commands.asian.incorrect": "haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{answer}})",
   "commands.collection.api-disabled": "{{username}} has their collections API disabled.",
   "commands.collection.none": "{{username}} not such a collection: {{query}}",
+  "commands.countingchain.wrong-chat": "{{username}}, can only start this event in public chat!",
   "commands.collection.response": "{{username}}'s {{collectionName}} collection: {{amount}}.",
   "commands.essence.none": "{{username}} does not have any essence.",
   "commands.explain": "{{username}}, I am a robot that connects this chat to Discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
