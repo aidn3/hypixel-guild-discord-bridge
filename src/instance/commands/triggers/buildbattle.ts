@@ -55,7 +55,7 @@ export default class Buildbattle extends ChatCommandHandler {
 
     return context.app.i18n.t(($) => $['commands.buildbattle.response'], {
       username: givenUsername,
-      title: title,
+      title,
       score: score.toLocaleString('en-US'),
       wins: wins.toLocaleString('en-US')
     })

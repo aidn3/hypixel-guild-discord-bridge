@@ -67,7 +67,7 @@ export default class Collection extends ChatCommandHandler {
     if (translatedWord === undefined)
       return context.app.i18n.t(($) => $['commands.collection.none'], {
         username: givenUsername,
-        query: query
+        query
       })
 
     const collectionKey = translated.get(translatedWord)
