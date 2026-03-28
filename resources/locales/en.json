@@ -111,6 +111,7 @@
 
   "commands.asian.correct": "Big brain!",
   "commands.asian.incorrect": "haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{answer}})",
+  "commands.darkauction.response": "{{username}}, Dark Auction in {{result}} minutes!",
   "commands.collection.api-disabled": "{{username}} has their collections API disabled.",
   "commands.collection.none": "{{username}} not such a collection: {{query}}",
   "commands.countingchain.wrong-chat": "{{username}}, can only start this event in public chat!",
