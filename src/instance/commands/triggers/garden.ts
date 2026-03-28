@@ -34,7 +34,7 @@ export default class Garden extends ChatCommandHandler {
 
     const garden = await context.app.hypixelApi.getSkyblockGarden(selectedProfile.profile_id)
     if (garden === undefined) {
-      return context.app.i18n.t(($) => $['commands.error.never-joined-skyblock'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.garden.no-garden'], { username: givenUsername })
     }
 
     const uniqueVisitors = Object.values(garden.commission_data.completed).filter((entry) => entry > 0).length

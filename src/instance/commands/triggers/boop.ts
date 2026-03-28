@@ -23,14 +23,16 @@ export default class Boop extends ChatCommandHandler {
     const givenUsername = context.args[0] ?? context.username
     const currentTime = Date.now()
     if (this.lastCommandExecutionAt + Boop.CommandCoolDown > currentTime) {
-      return `Can use command again in ${Math.floor((this.lastCommandExecutionAt + Boop.CommandCoolDown - currentTime) / 1000)} seconds.`
+      return context.app.i18n.t(($) => $['commands.boop.cooldown'], {
+        cooldown: Math.floor((this.lastCommandExecutionAt + Boop.CommandCoolDown - currentTime) / 1000)
+      })
     }
     const minecraftInstanceName =
       context.message.instanceType === InstanceType.Minecraft
         ? context.message.instanceName
         : this.getActiveMinecraftInstanceName(context.app.minecraftManager)
     if (minecraftInstanceName === undefined) {
-      return `No active connected Minecraft account exists to use`
+      return context.app.i18n.t(($) => $['commands.boop.no-account'])
     }
     this.lastCommandExecutionAt = currentTime
 
@@ -44,13 +46,16 @@ export default class Boop extends ChatCommandHandler {
     )
     switch (result.status) {
       case 'success': {
-        return `${givenUsername} has been booped!`
+        return context.app.i18n.t(($) => $['commands.boop.success'], { username: givenUsername })
       }
       case 'failed': {
-        return `Can not boop ${givenUsername}: ${result.message.length > 0 ? result.message[0].content : 'No idea why :D'}`
+        return context.app.i18n.t(($) => $['commands.boop.failed'], {
+          username: givenUsername,
+          reason: result.message.length > 0 ? result.message[0].content : 'No idea why :D'
+        })
       }
       case 'error': {
-        return `Could not boop ${givenUsername} for some unknown reason`
+        return context.app.i18n.t(($) => $['commands.boop.error'], { username: givenUsername })
       }
     }
   }
