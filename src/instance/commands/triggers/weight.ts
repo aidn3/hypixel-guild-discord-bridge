@@ -187,7 +187,9 @@ export default class Weight extends ChatCommandHandler {
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
-    const weight = calculateSenitherWeight(this.createWeightProfile(selectedProfile, skillsResponse)).overall.toLocaleString(undefined, {
+    const weight = calculateSenitherWeight(
+      this.createWeightProfile(selectedProfile, skillsResponse)
+    ).overall.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 1
     })
@@ -444,18 +446,4 @@ function calculateSenitherWeight(profile: WeightProfile): SenitherWeight {
     .reduce((total, value) => total + value, 0)
 
   return output
-}
-
-function formatWeight(weight: number): string {
-  return weight.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 1
-  })
-}
-
-function formatWeightWithOverflow(weight: WeightResult): string {
-  const total = weight.weight + weight.weightOverflow
-  if (weight.weightOverflow === 0) return formatWeight(total)
-
-  return `${formatWeight(total)} (${formatWeight(weight.weightOverflow)})`
 }
