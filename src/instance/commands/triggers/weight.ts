@@ -2,6 +2,7 @@
  * @author SkyCryptWebsite <https://github.com/SkyCryptWebsite>
  * @license MIT <https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/LICENSE>
  * @see https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/senither-weight.js
+ * @see https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/lily-weight.js
  */
 
 /*
@@ -9,6 +10,8 @@
  Discord: Aura#5051
  Minecraft username: _aura
 */
+import LilyWeight from 'lilyweight'
+
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import type {
@@ -53,6 +56,48 @@ type SkillExperienceKey =
 type DungeonClassName = 'healer' | 'mage' | 'berserk' | 'archer' | 'tank'
 type DungeonWeightName = 'catacombs' | DungeonClassName
 type SlayerName = 'zombie' | 'spider' | 'wolf' | 'enderman'
+type LilySkillName = 'enchanting' | 'taming' | 'alchemy' | 'mining' | 'farming' | 'foraging' | 'combat' | 'fishing'
+type LilySlayerName = 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze'
+/* eslint-disable @typescript-eslint/naming-convention */
+interface LilyCatacombsCompletions {
+  '0': number
+  '1': number
+  '2': number
+  '3': number
+  '4': number
+  '5': number
+  '6': number
+  '7': number
+}
+interface LilyMasterCatacombsCompletions {
+  '1': number
+  '2': number
+  '3': number
+  '4': number
+  '5': number
+  '6': number
+  '7': number
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
+const LilySkillOrder = [
+  'enchanting',
+  'taming',
+  'alchemy',
+  'mining',
+  'farming',
+  'foraging',
+  'combat',
+  'fishing'
+] as const
+const LilySlayerOrder = ['zombie', 'spider', 'wolf', 'enderman', 'blaze'] as const
+const LilySkillXpPerLevel = [
+  0, 50, 125, 200, 300, 500, 750, 1000, 1500, 2000, 3500, 5000, 7500, 10_000, 15_000, 20_000, 30_000, 50_000, 75_000,
+  100_000, 200_000, 300_000, 400_000, 500_000, 600_000, 700_000, 800_000, 900_000, 1_000_000, 1_100_000, 1_200_000,
+  1_300_000, 1_400_000, 1_500_000, 1_600_000, 1_700_000, 1_800_000, 1_900_000, 2_000_000, 2_100_000, 2_200_000,
+  2_300_000, 2_400_000, 2_500_000, 2_600_000, 2_750_000, 2_900_000, 3_100_000, 3_400_000, 3_700_000, 4_000_000,
+  4_300_000, 4_600_000, 4_900_000, 5_200_000, 5_500_000, 5_800_000, 6_100_000, 6_400_000, 6_700_000, 7_000_000
+] as const
 
 interface SkillGroup {
   exponent?: number
@@ -204,11 +249,16 @@ export default class Weight extends ChatCommandHandler {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     })
+    const lilyWeight = calculateLilyWeight(selectedProfile).total.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1
+    })
 
     return context.app.i18n.t(($) => $['commands.weight.response'], {
       username: possessiveUsername,
       senitherWeight,
-      farmingWeight
+      farmingWeight,
+      lilyWeight
     })
   }
 
@@ -325,6 +375,114 @@ export default class Weight extends ChatCommandHandler {
 
     return cap === undefined ? levelWithProgress : Math.min(uncappedLevel + progress, maxLevel)
   }
+}
+
+function calculateLilyWeight(profile: SkyblockMember) {
+  const experience = (profile.player_data.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
+  const skillLevels = LilySkillOrder.map((skillName) => sanitizeFiniteNumber(getLilySkillLevel(skillName, experience)))
+  const skillXp = LilySkillOrder.map((skillName) => sanitizeFiniteNumber(getLilySkillXp(skillName, experience)))
+
+  const catacombs = profile.dungeons?.dungeon_types.catacombs
+  const masterCatacombs = profile.dungeons?.dungeon_types.master_catacombs
+  const cataCompletions = mapCatacombsCompletions(catacombs?.tier_completions)
+  const masterCataCompletions = mapMasterCatacombsCompletions(masterCatacombs?.tier_completions)
+  const cataXp = sanitizeFiniteNumber(catacombs === undefined ? 0 : catacombs.experience)
+
+  const slayerBosses = (profile.slayer?.slayer_bosses ?? {}) as Partial<Record<LilySlayerName, { xp?: number }>>
+  const slayerXp = LilySlayerOrder.map((slayerName) => sanitizeFiniteNumber(slayerBosses[slayerName]?.xp ?? 0))
+
+  const lilyWeight = LilyWeight.getWeightRaw(
+    skillLevels,
+    skillXp,
+    cataCompletions,
+    masterCataCompletions,
+    cataXp,
+    slayerXp
+  )
+  return Number.isFinite(lilyWeight.total)
+    ? lilyWeight
+    : {
+        total: 0,
+        skill: { base: 0, overflow: 0 },
+        catacombs: { completion: { base: 0, master: 0 }, experience: 0 },
+        slayer: 0
+      }
+}
+
+function getLilySkillLevel(skillName: LilySkillName, experience: Partial<Record<SkillExperienceKey, number>>): number {
+  const skillMap = {
+    enchanting: experience.SKILL_ENCHANTING ?? 0,
+    taming: experience.SKILL_TAMING ?? 0,
+    alchemy: experience.SKILL_ALCHEMY ?? 0,
+    mining: experience.SKILL_MINING ?? 0,
+    farming: experience.SKILL_FARMING ?? 0,
+    foraging: experience.SKILL_FORAGING ?? 0,
+    combat: experience.SKILL_COMBAT ?? 0,
+    fishing: experience.SKILL_FISHING ?? 0
+  } satisfies Record<LilySkillName, number>
+
+  return getLilyLevelFromXp(skillMap[skillName])
+}
+
+function getLilySkillXp(skillName: LilySkillName, experience: Partial<Record<SkillExperienceKey, number>>): number {
+  const skillXpMap = {
+    enchanting: experience.SKILL_ENCHANTING ?? 0,
+    taming: experience.SKILL_TAMING ?? 0,
+    alchemy: experience.SKILL_ALCHEMY ?? 0,
+    mining: experience.SKILL_MINING ?? 0,
+    farming: experience.SKILL_FARMING ?? 0,
+    foraging: experience.SKILL_FORAGING ?? 0,
+    combat: experience.SKILL_COMBAT ?? 0,
+    fishing: experience.SKILL_FISHING ?? 0
+  } satisfies Record<LilySkillName, number>
+
+  return skillXpMap[skillName]
+}
+
+function mapCatacombsCompletions(
+  tierCompletions: Record<string, number | undefined> | undefined
+): LilyCatacombsCompletions {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  const completions: LilyCatacombsCompletions = { '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 }
+  /* eslint-enable @typescript-eslint/naming-convention */
+  if (tierCompletions === undefined) return completions
+
+  for (const key of Object.keys(completions) as (keyof LilyCatacombsCompletions)[]) {
+    completions[key] = sanitizeFiniteNumber(tierCompletions[key] ?? 0)
+  }
+
+  return completions
+}
+
+function mapMasterCatacombsCompletions(
+  tierCompletions: Record<string, number | undefined> | undefined
+): LilyMasterCatacombsCompletions {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  const completions: LilyMasterCatacombsCompletions = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 }
+  /* eslint-enable @typescript-eslint/naming-convention */
+  if (tierCompletions === undefined) return completions
+
+  for (const key of Object.keys(completions) as (keyof LilyMasterCatacombsCompletions)[]) {
+    completions[key] = sanitizeFiniteNumber(tierCompletions[key] ?? 0)
+  }
+
+  return completions
+}
+
+function getLilyLevelFromXp(xp: number): number {
+  let xpAdded = 0
+  for (const [index, element] of LilySkillXpPerLevel.entries()) {
+    xpAdded += element
+    if (xp < xpAdded) {
+      return Math.floor(index - 1 + (xp - (xpAdded - element)) / element)
+    }
+  }
+
+  return 60
+}
+
+function sanitizeFiniteNumber(value: number): number {
+  return Number.isFinite(value) ? value : 0
 }
 
 function calcSkillWeight(skillGroup: SkillGroup, level: number | undefined, experience: number): WeightResult {
