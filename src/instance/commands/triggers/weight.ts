@@ -1,5 +1,11 @@
 /*
- CREDIT: Idea by Aura
+ * @author SkyCryptWebsite <https://github.com/SkyCryptWebsite>
+ * @license MIT <https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/LICENSE>
+ * @see https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/senither-weight.js
+ */
+
+/*
+ CREDIT: Command idea by Aura
  Discord: Aura#5051
  Minecraft username: _aura
 */
