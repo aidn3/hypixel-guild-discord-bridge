@@ -322,6 +322,10 @@ export interface GardenResponse extends HypixelSuccessResponse {
   garden: Garden | undefined
 }
 
+export interface FarmingWeightResponse {
+  totalWeight: number
+}
+
 export interface Garden {
   garden_experience: number
   commission_data: { completed: Record<string, number> }

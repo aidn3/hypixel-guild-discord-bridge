@@ -14,6 +14,7 @@ import type { HypixelLeaderboards, HypixelLeaderboardsResponse } from './hypixel
 import type { HypixelPlayer, HypixelPlayerResponse } from './hypixel-player'
 import type {
   Bazaar,
+  FarmingWeightResponse,
   Garden,
   GardenResponse,
   HypixelSkyblockSkillsResponse,
@@ -29,6 +30,7 @@ import type { HypixelPlayerStatus, HypixelPlayerStatusResponse } from './hypixel
 
 export class Hypixel {
   private static readonly ApiPath = 'https://api.hypixel.net'
+  private static readonly EliteSkyblockApiPath = 'https://api.eliteskyblock.com'
 
   private static readonly SkyblockProfilePath = '/v2/skyblock/profiles'
   private static readonly SkyblockMuseumPath = '/v2/skyblock/museum'
@@ -45,6 +47,7 @@ export class Hypixel {
   private static readonly SkyblockBingoResourcesPath = '/v2/resources/skyblock/bingo'
   private static readonly SkyblockNewsPath = '/v2/skyblock/news'
   private static readonly SkyblockSkillsPath = '/v2/resources/skyblock/skills'
+  private static readonly FarmingWeightPath = '/weight'
 
   /**
    * How old data can be and still be considered fresh by default.
@@ -130,6 +133,22 @@ export class Hypixel {
     const request = { path: Hypixel.SkyblockSkillsPath } satisfies ApiEntry
     const response = await this.resolveAndFetch<HypixelSkyblockSkillsResponse>(request, since)
     return response
+  }
+
+  public async getFarmingWeight(playerUuid: string): Promise<number> {
+    const result = await axios
+      .get<FarmingWeightResponse>(`${Hypixel.FarmingWeightPath}/${playerUuid}/selected`, {
+        baseURL: Hypixel.EliteSkyblockApiPath
+      })
+      .catch((error: unknown) => {
+        if (error instanceof AxiosError) return
+        throw error
+      })
+
+    if (result === undefined) return 0
+
+    assert.ok(result.status === 200)
+    return typeof result.data.totalWeight === 'number' ? result.data.totalWeight : 0
   }
 
   public async getSkyblockBazaar(since?: number): Promise<Bazaar['products']> {

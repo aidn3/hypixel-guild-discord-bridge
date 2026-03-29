@@ -187,7 +187,7 @@
   "commands.coinflip.special": "{{username}} flips a coin into the air. It spins, drops beside {{username}}, and somehow the coin settles upright on its side.",
   "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
   "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
-  "commands.weight.response": "{{username}} Senither weight: {{weight}}",
+  "commands.weight.response": "{{username}} Senither weight: {{senitherWeight}} - Farming weight: {{farmingWeight}}",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
