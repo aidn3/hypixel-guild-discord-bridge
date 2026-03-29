@@ -118,7 +118,7 @@ A shorter version can also be used: `!- rtca`
 | `username`       | Show the Mojang UUID of a player                                                   |
 | `vengeance`      | Try your luck against another player for a 5 minute mute                           |
 | `warp`           | Warp a player out of a lobby                                                       |
-| `weight`         | Returns a player's senither weight                                                 |
+| `weight`         | Returns a player's Senither, Lily, and farming weight                              |
 | `woolwars`       | Returns a player's Wool Wars stats                                                 |
 
 ## Discord Commands

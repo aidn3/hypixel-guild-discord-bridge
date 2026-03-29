@@ -223,7 +223,7 @@ export default class Weight extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['weight', 'w'],
-      description: "Returns a player's senither weight",
+      description: "Returns a player's Senither, Lily, and farming weight",
       example: `w %s`
     })
   }
