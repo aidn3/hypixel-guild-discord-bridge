@@ -28,9 +28,9 @@ export default class Megawalls extends ChatCommandHandler {
     const deaths = stat.deaths ?? 0
     return context.app.i18n.t(($) => $['commands.megawalls.response'], {
       username: givenUsername,
-      games: stat.games_played,
-      wins: stat.wins,
-      kills: stat.kills,
+      games: stat.games_played ?? 0,
+      wins: stat.wins ?? 0,
+      kills: stat.kills ?? 0,
       kdr: deaths > 0 ? (stat.kills ?? 0) / deaths : 0
     })
   }
