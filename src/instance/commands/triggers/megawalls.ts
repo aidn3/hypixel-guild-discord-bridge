@@ -26,12 +26,15 @@ export default class Megawalls extends ChatCommandHandler {
     }
 
     const deaths = stat.deaths ?? 0
+    const kills = stat.kills ?? 0
+    const wins = stat.wins ?? 0
+    const games = stat.games_played ?? 0
     return context.app.i18n.t(($) => $['commands.megawalls.response'], {
       username: givenUsername,
-      games: stat.games_played ?? 0,
-      wins: stat.wins ?? 0,
-      kills: stat.kills ?? 0,
-      kdr: deaths > 0 ? (stat.kills ?? 0) / deaths : 0
+      games,
+      wins,
+      kills,
+      kdr: deaths > 0 ? kills / deaths : 0
     })
   }
 }
