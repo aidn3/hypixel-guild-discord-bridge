@@ -21,6 +21,7 @@ A shorter version can also be used: `!- rtca`
 | `8ball`          | Returns a basic 8 ball response                                                    |
 | `agatha`         | Returns a player's Agatha and foraging personal bests                              |
 | `age`            | Returns the day someone first logged on to Hypixel                                 |
+| `airstrike`      | Mute a specific person to annoy them                                               |
 | `api`            | Returns a player's SkyBlock API status                                             |
 | `armor`          | Returns a player's SkyBlock armor                                                  |
 | `asian`          | Challenge yourself with math!                                                      |
@@ -91,6 +92,8 @@ A shorter version can also be used: `!- rtca`
 | `praise`         | Praise a player                                                                    |
 | `purse`          | Returns a player's SkyBlock coins                                                  |
 | `rank`           | Shows the rank of a player                                                         |
+| `ranks`          | List guild ranks requirements                                                      |
+| `rankup`         | Update a user in-game guild rank                                                   |
 | `rep`            | Returns a player's Crimson Isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |
 | `rps`            | Play rock, paper, scissors against the bot                                         |
@@ -133,14 +136,17 @@ A shorter version can also be used: `!- rtca`
 | `/demote`             | Demote guild member in-game                                      |
 | `/disconnect`         | Disconnect minecraft clients                                     |
 | `/execute`            | Execute command in-game via Minecraft client                     |
+| `/guild`              | Manage in-game guilds                                            |
 | `/help`               | Show available commands.                                         |
 | `/invite`             | Invite player to the guild in-game                               |
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | Display a leaderboard message in this channel                    |
+| `/link-panel`         | Create a panel with buttons to help users link                   |
 | `/link`               | Link your Discord account with your Minecraft account            |
 | `/list-leaderboard`   | List all existing leaderboards                                   |
 | `/list`               | List players in your guild(s)                                    |
 | `/log`                | View guild activity logs                                         |
+| `/motd`               | Show a guild MOTD                                                |
 | `/ping`               | Discord ping                                                     |
 | `/placeholder`        | Manage and help with placeholders                                |
 | `/profanity`          | Manage application profanity filter                              |
