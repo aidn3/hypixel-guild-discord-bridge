@@ -7,7 +7,7 @@ export default class Election extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['election'],
-      description: 'Show current Hypixel Skyblock Election',
+      description: 'Show current Hypixel SkyBlock election',
       example: `election`
     })
   }
@@ -39,13 +39,18 @@ export default class Election extends ChatCommandHandler {
       if (candidate.votes > minister.votes) minister = candidate
     }
 
+    const blockedNames = new Set(['Derpy', 'Jerry', 'Scorpius', 'Aura'])
+    const hideMinister = blockedNames.has(winner.name) || blockedNames.has(minister.name)
+
     let message = `Upcoming election: `
     message += `${winner.name} (${winner.perks.map((perk) => perk.name).join(', ')})`
-    message += ' | '
-    message += `${minister.name} (${minister.perks
-      .filter((perk) => perk.minister)
-      .map((perk) => perk.name)
-      .join(', ')})`
+    if (!hideMinister) {
+      message += ' | '
+      message += `${minister.name} (${minister.perks
+        .filter((perk) => perk.minister)
+        .map((perk) => perk.name)
+        .join(', ')})`
+    }
     return message
   }
 }

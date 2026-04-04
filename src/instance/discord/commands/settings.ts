@@ -986,6 +986,23 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           },
           {
             type: OptionType.EmbedCategory,
+            name: 'Arabic Fixer',
+            description: 'Fixes how Arabic text appears in chat so it displays correctly instead of looking broken.',
+            options: [
+              {
+                type: OptionType.Boolean,
+                name: `Enable Arabic Fixer`,
+                description:
+                  'Fixes Arabic text in in-game chat by making it display in the correct direction and with properly connected letters',
+                getOption: () => minecraft.getArabicFixerEnabled(),
+                toggleOption: () => {
+                  minecraft.setArabicFixerEnabled(!minecraft.getArabicFixerEnabled())
+                }
+              }
+            ]
+          },
+          {
+            type: OptionType.EmbedCategory,
             name: 'Links Processor',
             description: 'How to handle links sent to Minecraft.',
             options: [

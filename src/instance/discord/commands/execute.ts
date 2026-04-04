@@ -8,7 +8,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('execute')
-      .setDescription('execute command in-game via Minecraft client')
+      .setDescription('Execute command in-game via Minecraft client')
       .addStringOption((option) =>
         option.setName('command').setDescription('command to execute. e.g. "/guild party"').setRequired(true)
       ),

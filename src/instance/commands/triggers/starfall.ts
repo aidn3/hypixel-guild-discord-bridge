@@ -6,7 +6,7 @@ export default class Starfall extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['starfall', 'star', 'sf'],
-      description: 'When is the next Skyblock Starfall event',
+      description: 'When is the next SkyBlock Cult of the Fallen Star event',
       example: `starfall`
     })
   }

@@ -5,14 +5,14 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
-export default class Motes extends ChatCommandHandler {
+export default class Mineshafts extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['motes', 'mote'], // did mote too bc purse has coins and coin :3
-      description: "Returns a player's SkyBlock rift motes",
-      example: `purse %s`
+      triggers: ['shafts', 'shaft', 'mineshaft', 'mineshafts', 'corpse', 'corpses'],
+      description: 'Returns shaft enter count and corpses looted amount',
+      example: `shafts %s`
     })
   }
 
@@ -25,17 +25,19 @@ export default class Motes extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const motes = selectedProfile.currencies?.motes_purse
-    const lifetimeMotes = selectedProfile.player_stats?.rift?.lifetime_motes_earned ?? 0
-
-    if (motes === undefined) {
-      return context.app.i18n.t(($) => $['commands.motes.none'], { username: givenUsername })
+    const looted = selectedProfile.glacite_player_data?.corpses_looted
+    const stats = selectedProfile.glacite_player_data
+    if (stats === undefined) {
+      return context.app.i18n.t(($) => $['commands.mineshafts.none'], { username: givenUsername })
     }
 
-    return context.app.i18n.t(($) => $['commands.motes.response'], {
+    return context.app.i18n.t(($) => $['commands.mineshafts.response'], {
       username: givenUsername,
-      motesAmount: motes,
-      lifetimeMotes: lifetimeMotes
+      entered: stats.mineshafts_entered,
+      lapis: looted?.lapis ?? 0,
+      umber: looted?.umber ?? 0,
+      tungsten: looted?.tungsten ?? 0,
+      vanguard: looted?.vanguard ?? 0
     })
   }
 }

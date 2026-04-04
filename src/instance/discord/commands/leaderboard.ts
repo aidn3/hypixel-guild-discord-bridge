@@ -11,7 +11,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('leaderboard')
-      .setDescription('display a leaderboard message in this channel')
+      .setDescription('Display a leaderboard message in this channel')
       .addStringOption((o) =>
         o
           .setName('type')

@@ -23,7 +23,7 @@ export default class Forge extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['forge', 'dwarven'],
-      description: "Returns a player's Skyblock forge slots",
+      description: "Returns a player's SkyBlock forge slots",
       example: `forge %s`
     })
   }

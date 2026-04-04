@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 11
+const CurrentVersion = 12
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -46,6 +46,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(10, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom10to11(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(11, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom11to12(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -504,8 +507,16 @@ function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: bo
   database.pragma('user_version = 8')
 }
 
-function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean) {
   if (!newlyCreated) logger.debug('Migrating database from version 8 to 9')
+
+  database.exec('ALTER TABLE "discordRolesConditions" ADD COLUMN "onUnmet" TEXT NOT NULL DEFAULT "keep";')
+
+  database.pragma('user_version = 9')
+}
+
+function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 9 to 10')
 
   // reference: discord/link-button.ts
   database.exec(
@@ -515,12 +526,12 @@ function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: bo
       ' ) STRICT'
   )
 
-  database.pragma('user_version = 9')
+  database.pragma('user_version = 10')
 }
 
-function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
   if (!newlyCreated) {
-    logger.debug('Migrating database from version 9 to 10')
+    logger.debug('Migrating database from version 10 to 11')
     const tables = ['discordRolesConditions', 'discordNicknameConditions']
 
     /* eslint-disable @typescript-eslint/consistent-type-definitions */
@@ -574,11 +585,11 @@ function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: b
     }
   }
 
-  database.pragma('user_version = 10')
+  database.pragma('user_version = 11')
 }
 
-function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 10 to 11')
+function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 11 to 12')
 
   database.exec(
     'CREATE TABLE "minecraftGuild" (' +
@@ -658,7 +669,7 @@ function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: 
       ' ) STRICT'
   )
 
-  database.pragma('user_version = 11')
+  database.pragma('user_version = 12')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

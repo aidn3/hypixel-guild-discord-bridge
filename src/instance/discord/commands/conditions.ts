@@ -30,11 +30,11 @@ export default {
   getCommandBuilder: () => {
     return new SlashCommandBuilder()
       .setName('conditions')
-      .setDescription('manage conditions')
+      .setDescription('Manage conditions')
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
           .setName('roles')
-          .setDescription('manage conditions that give and remove Discord roles')
+          .setDescription('Manage conditions that give and remove Discord roles')
           .addSubcommand(listConditionCommand())
           .addSubcommand(addConditionCommand())
           .addSubcommand(removeConditionCommand())
@@ -42,7 +42,7 @@ export default {
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
           .setName('nicknames')
-          .setDescription('manage conditions that change users nicknames in a Discord server')
+          .setDescription('Manage conditions that change users nicknames in a Discord server')
           .addSubcommand(listConditionCommand())
           .addSubcommand(addConditionCommand())
           .addSubcommand(removeConditionCommand())

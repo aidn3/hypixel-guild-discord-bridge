@@ -5,7 +5,7 @@ export default class Praise extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['praise'],
-      description: 'praise a player',
+      description: 'Praise a player',
       example: `praise %s`
     })
   }

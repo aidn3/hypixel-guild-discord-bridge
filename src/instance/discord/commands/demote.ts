@@ -9,7 +9,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('demote')
-      .setDescription('demote guild member in-game')
+      .setDescription('Demote guild member in-game')
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ),

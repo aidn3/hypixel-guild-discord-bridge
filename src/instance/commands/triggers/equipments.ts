@@ -15,7 +15,7 @@ export default class Equipments extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['eq', 'equipments', 'equipment', 'equip'],
-      description: "Returns a player's Skyblock equipments",
+      description: "Returns a player's SkyBlock equipments",
       example: `eq %s`
     })
   }
@@ -35,7 +35,7 @@ export default class Equipments extends ChatCommandHandler {
 
     const armorRaw = selectedProfile.inventory?.equipment_contents?.data
     if (armorRaw === undefined) {
-      return context.app.i18n.t(($) => $['commands.equipments.none-maybe'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.inventory.api-disabled'], { username: givenUsername })
     }
 
     const rawSlots = await parseEncodedNbt<{ i: InventoryItem[] }>(armorRaw)

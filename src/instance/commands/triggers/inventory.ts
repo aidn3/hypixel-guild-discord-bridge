@@ -17,7 +17,7 @@ export default class Inventory extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['inventory', 'inv', 'hotbar', 'renderinv', 'renderinventory'],
-      description: "Render a player's Skyblock inventory",
+      description: "Render a player's SkyBlock inventory",
       example: `inventory %s 1`
     })
   }

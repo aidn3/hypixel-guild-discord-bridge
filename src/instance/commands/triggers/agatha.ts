@@ -5,14 +5,14 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
-export default class Motes extends ChatCommandHandler {
+export default class Agatha extends ChatCommandHandler {
   constructor() {
     super({
-      triggers: ['motes', 'mote'], // did mote too bc purse has coins and coin :3
-      description: "Returns a player's SkyBlock rift motes",
-      example: `purse %s`
+      triggers: ['agatha', 'agathabests', 'agathapbs', 'foragingpbs'],
+      description: "Returns a player's Agatha and foraging personal bests",
+      example: `agatha %s`
     })
   }
 
@@ -25,17 +25,21 @@ export default class Motes extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const motes = selectedProfile.currencies?.motes_purse
-    const lifetimeMotes = selectedProfile.player_stats?.rift?.lifetime_motes_earned ?? 0
+    const personalBests = selectedProfile.foraging?.starlyn?.personal_bests
 
-    if (motes === undefined) {
-      return context.app.i18n.t(($) => $['commands.motes.none'], { username: givenUsername })
+    if (personalBests === undefined) {
+      return context.app.i18n.t(($) => $['commands.agatha.none'], { username: givenUsername })
     }
 
-    return context.app.i18n.t(($) => $['commands.motes.response'], {
+    const agatha = personalBests.agatha ?? 0
+    const fig = personalBests.FIG_LOG ?? 0
+    const mangrove = personalBests.MANGROVE_LOG ?? 0
+
+    return context.app.i18n.t(($) => $['commands.agatha.response'], {
       username: givenUsername,
-      motesAmount: motes,
-      lifetimeMotes: lifetimeMotes
+      agatha,
+      fig,
+      mangrove
     })
   }
 }

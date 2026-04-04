@@ -12,7 +12,7 @@ export default class Uuid extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['username', 'name', 'ign', 'uuid'],
-      description: 'Show the Mojang uuid of a player',
+      description: 'Show the Mojang UUID of a player',
       example: 'uuid %s'
     })
   }

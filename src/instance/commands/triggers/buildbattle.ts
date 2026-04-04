@@ -46,7 +46,7 @@ export default class Buildbattle extends ChatCommandHandler {
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     const stat = player.stats?.BuildBattle
-    if (stat === undefined) return `${givenUsername} has never played Build Battle before?`
+    if (stat === undefined) return `${givenUsername} has never played Build Battle before.`
 
     const score = stat.score ?? 0
     const wins = stat.wins ?? 0

@@ -14,7 +14,7 @@ export default class MagicalPower extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['magicalpower', 'mp', 'power', 'accessories', 'acc', 'talisman', 'talismans', 'talismen'],
-      description: "Returns a player's highest recorded skyblock Magical Power",
+      description: "Returns a player's highest recorded SkyBlock Magical Power",
       example: `mp %s`
     })
   }

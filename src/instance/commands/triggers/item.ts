@@ -15,7 +15,7 @@ export default class Item extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['item', 'render', 'slot', 'renderslot', 'renderitem'],
-      description: "Render a slot in a player's Skyblock profile",
+      description: "Render a slot in a player's SkyBlock profile",
       example: `item 1 %s`
     })
   }
@@ -28,7 +28,7 @@ export default class Item extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.error.minecraft-render-not-supported-on-host'])
     }
 
-    if (!/^\d$/g.test(givenBar)) {
+    if (!/^\d{1,2}$/g.test(givenBar)) {
       return this.getExample(context.commandPrefix)
     }
 
@@ -45,6 +45,7 @@ export default class Item extends ChatCommandHandler {
 
     const inventoryRaw = selectedProfile.inventory?.inv_contents?.data
     if (inventoryRaw === undefined) {
+      return context.app.i18n.t(($) => $['commands.inventory.api-disabled'], { username: givenUsername })
       return context.app.i18n.t(($) => $['commands.item.no-api'], { username: givenUsername })
     }
 
