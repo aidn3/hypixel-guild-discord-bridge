@@ -11,6 +11,8 @@ import { Status } from '../common/connectable-instance'
 import { Instance, InternalInstancePrefix } from '../common/instance'
 import type { User } from '../common/user'
 import type { MinecraftGuild } from '../core/minecraft/guilds-manager'
+import Duration from '../utility/duration'
+import { setIntervalAsync } from '../utility/scheduling'
 
 import type MinecraftInstance from './minecraft/minecraft-instance'
 
@@ -21,6 +23,58 @@ export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
     this.application.on('guildPlayer', async (event) => {
       await this.handleJoinRequest(event)
     })
+
+    setIntervalAsync(() => this.autoRegisterGuilds(), {
+      delay: Duration.minutes(1),
+      errorHandler: this.errorHandler.promiseCatch('handling autoRegisterGuilds()')
+    })
+  }
+
+  private async autoRegisterGuilds(): Promise<void> {
+    const instances = this.application.minecraftManager.getAllInstances()
+    const allSavedGuilds = this.application.core.minecraftGuildsManager.allGuilds()
+
+    const tasks: Promise<void>[] = []
+    for (const instance of instances) {
+      const task = this.autoRegisterGuild(allSavedGuilds, instance).catch(
+        this.errorHandler.promiseCatch('auto registering an in-game guild')
+      )
+
+      tasks.push(task)
+    }
+
+    await Promise.all(tasks)
+  }
+
+  private async autoRegisterGuild(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {
+    if (instance.currentStatus() !== Status.Connected) return
+
+    const guildListResult = await this.application.core.guildManager
+      .list(instance.instanceName, Duration.minutes(5))
+      .catch(() => undefined)
+    if (guildListResult === undefined) return
+
+    const savedGuild = allSavedGuilds.find(
+      (guild) => guild.name.toLowerCase().trim() === guildListResult.name.toLowerCase().trim()
+    )
+    if (savedGuild !== undefined) return
+    this.logger.info(`Auto registering an in-game guild for the instance ${instance.instanceName}`)
+
+    const botUuid = instance.uuid()
+    if (botUuid === undefined) {
+      this.logger.error('Tried to auto register an in-game guild but can not find the bot UUID')
+      return
+    }
+    const hypixelGuild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
+    if (hypixelGuild === undefined) return // probably the account left and guildListResult cache is outdated
+
+    this.application.core.minecraftGuildsManager.initGuild(
+      hypixelGuild._id,
+      hypixelGuild.name,
+      hypixelGuild.ranks
+        .filter((rank) => !rank.default)
+        .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
+    )
   }
 
   private async handleJoinRequest(event: GuildPlayerEvent): Promise<void> {
