@@ -14,7 +14,7 @@
   "scripts": {
     "start": "node --import tsx/esm index.ts",
     "generate-code": "npx ts-interface-builder src/application-config.ts",
-    "generate-docs": "node --import tsx/esm scripts/generate-documentation.ts",
+    "generate-docs": "node --import tsx/esm scripts/generate-documentation.ts && node --import tsx/esm scripts/generate-faq.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
     "lint:coverage": "npx type-coverage --detail true --update true",
     "test:compile": "npx tsc --noEmit",

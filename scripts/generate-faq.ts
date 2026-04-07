@@ -28,5 +28,5 @@ function generateFrequentlyAskedQuestions(): void {
     result.push({ title, body })
   }
 
-  fs.writeFileSync('resources/faq.json', JSON.stringify(result, undefined, 2))
+  fs.writeFileSync('resources/faq.json', JSON.stringify(result, undefined, 2) + '\n')
 }
