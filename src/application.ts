@@ -87,7 +87,8 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     config: ApplicationConfig,
     rootDirectory: string,
     configsDirectory: string,
-    public readonly i18n: i18n
+    public readonly i18n: i18n,
+    public readonly memoryOnly: boolean
   ) {
     super()
 

@@ -102,7 +102,11 @@ export class Core extends Instance<InstanceType.Core> {
     this.conditonsRegistry = new ConditionsRegistry()
 
     const sqliteName = 'users.sqlite'
-    this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
+    this.sqliteManager = new SqliteManager(
+      application,
+      this.logger,
+      application.memoryOnly ? undefined : application.getConfigFilePath(sqliteName)
+    )
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
