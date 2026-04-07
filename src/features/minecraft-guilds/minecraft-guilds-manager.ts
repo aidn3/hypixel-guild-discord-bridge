@@ -1,4 +1,5 @@
 import type { Client } from 'discord.js'
+import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
 import type { GuildPlayerEvent } from '../../common/application-event'
@@ -20,11 +21,12 @@ import { setIntervalAsync } from '../../utility/scheduling'
 import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandler } from './commands/discord-guild'
 import Ranks from './commands/ranks'
 import Rankup from './commands/rankup'
-import type { MinecraftGuild } from './database'
+import type { MinecraftGuild, WaitlistEntry, WaitlistRequestEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 
 export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
+  private readonly detectionQueue = new PromiseQueue(1)
   private readonly database: Database
   private readonly waitlistInteraction: DiscordWaitlistInteraction
 
@@ -37,7 +39,8 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       this.eventHelper,
       this.logger,
       this.errorHandler,
-      this.database
+      this.database,
+      this.detectionQueue
     )
 
     this.application.registerChatCommand(new Ranks(this.database))
@@ -52,9 +55,13 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       await this.handleJoinRequest(event)
     })
 
-    setIntervalAsync(() => this.autoRegisterGuilds(), {
+    setIntervalAsync(() => this.detectionQueue.add(() => this.autoRegisterGuilds()), {
       delay: Duration.minutes(1),
       errorHandler: this.errorHandler.promiseCatch('handling autoRegisterGuilds()')
+    })
+    setIntervalAsync(() => this.detectionQueue.add(() => this.detectAllPlayers()), {
+      delay: Duration.minutes(5),
+      errorHandler: this.errorHandler.promiseCatch('handling detectPlayers()')
     })
 
     const discordClient = this.discordClient()
@@ -84,6 +91,91 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     }
 
     await Promise.all(tasks)
+  }
+
+  private async detectAllPlayers(): Promise<void> {
+    const instances = this.application.minecraftManager.getAllInstances()
+    const allSavedGuilds = this.database.allGuilds()
+
+    const tasks: Promise<void>[] = []
+    for (const instance of instances) {
+      const task = this.detectPlayers(allSavedGuilds, instance).catch(
+        this.errorHandler.promiseCatch('auto detecting in-game players')
+      )
+
+      tasks.push(task)
+    }
+
+    await Promise.all(tasks)
+  }
+
+  private async detectPlayers(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {
+    if (instance.currentStatus() !== Status.Connected) return
+
+    const guildListResult = await this.application.core.guildManager
+      .list(instance.instanceName, Duration.minutes(5))
+      .catch(() => undefined)
+    if (guildListResult === undefined) return
+
+    const savedGuild = allSavedGuilds.find(
+      (guild) => guild.name.toLowerCase().trim() === guildListResult.name.toLowerCase().trim()
+    )
+    if (savedGuild === undefined) return
+
+    const waitlist = this.database.getWaitlist(savedGuild.id)
+    const sentWaitlist = this.database.getSentWaitlist().filter((entry) => entry.guildId === savedGuild.id)
+    if (waitlist.length === 0 && sentWaitlist.length === 0) return
+
+    const uuids = await this.application.mojangApi
+      .profilesByUsername(new Set(guildListResult.members.map((member) => member.username)))
+      .then((response) =>
+        response
+          .values()
+          .filter((uuid) => uuid !== undefined)
+          .toArray()
+      )
+
+    let changed = false
+    for (const uuid of uuids) {
+      const databaseChange = await this.playerJoined(uuid, waitlist, sentWaitlist)
+      if (databaseChange) changed = true
+    }
+
+    if (changed) {
+      await this.waitlistInteraction.waitlistUpdated(savedGuild)
+    }
+  }
+
+  private async playerJoined(
+    uuid: string,
+    waitlist: WaitlistEntry[],
+    sentWaitlist: WaitlistRequestEntry[]
+  ): Promise<boolean> {
+    let changed = false
+    const sentWaitlistEntry = sentWaitlist.find((entry) => entry.mojangId === uuid)
+    if (sentWaitlistEntry !== undefined) {
+      const client = this.discordClient()
+      const channel = await client.channels.fetch(sentWaitlistEntry.channelId)
+      if (channel?.isSendable()) {
+        await channel
+          .send({
+            content: 'Congratulations. You have joined the guild. Have fun!',
+            reply: { messageReference: sentWaitlistEntry.messageId, failIfNotExists: false }
+          })
+          .catch(this.errorHandler.promiseCatch('sending you joined the guild message in DM'))
+      }
+
+      this.database.removeSentWaitlist(sentWaitlistEntry.guildId, sentWaitlistEntry.mojangId)
+      changed = true
+    }
+
+    const waitlistEntry = waitlist.find((entry) => entry.mojangId === uuid)
+    if (waitlistEntry !== undefined) {
+      this.database.removeWaitlist(waitlistEntry.guildId, waitlistEntry.mojangId)
+      changed = true
+    }
+
+    return changed
   }
 
   private async autoRegisterGuild(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {

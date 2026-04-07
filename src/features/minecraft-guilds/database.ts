@@ -213,13 +213,24 @@ export class Database {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const insert = database.prepare(
-        'INSERT INTO "minecraftGuildWaitlist" (messageId, channelId, guildId, mojangId, userId) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO "discordGuildWaitlistRequest" (messageId, channelId, guildId, mojangId, userId) VALUES (?, ?, ?, ?, ?)'
       )
 
       insert.run(entry.messageId, entry.channelId, entry.guildId, entry.mojangId, entry.userId)
     })
 
     transaction()
+  }
+
+  public removeSentWaitlist(guildId: string, mojangId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const statement = database.prepare('DELETE FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?')
+
+      return statement.run(guildId, mojangId).changes > 0
+    })
+
+    return transaction()
   }
 
   public deleteMessage(messagesIds: string[]): number {

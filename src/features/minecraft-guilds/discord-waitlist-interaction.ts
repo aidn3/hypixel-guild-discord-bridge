@@ -12,7 +12,7 @@ import {
   Routes
 } from 'discord.js'
 import type { Logger } from 'log4js'
-import PromiseQueue from 'promise-queue'
+import type PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
 import { Color, type InstanceType, PunishmentType } from '../../common/application-event'
@@ -32,15 +32,14 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   public static readonly SignupId = 'signup'
   public static readonly ListId = 'list'
 
-  private readonly queue = new PromiseQueue(1)
-
   constructor(
     application: Application,
     clientInstance: MinecraftGuildsManager,
     eventHelper: EventHelper<InstanceType.Utility>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
-    private readonly database: Database
+    private readonly database: Database,
+    private readonly queue: PromiseQueue
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
