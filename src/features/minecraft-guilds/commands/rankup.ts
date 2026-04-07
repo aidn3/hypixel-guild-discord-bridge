@@ -1,15 +1,15 @@
 import assert from 'node:assert'
 
 import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import type { ChatCommandContext } from '../../../common/commands'
+import { ChatCommandHandler } from '../../../common/commands'
 import type { MojangProfile, User } from '../../../common/user'
 import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hypixel-guild'
-import type { MinecraftGuild, MinecraftGuildRole } from '../../../core/minecraft/guilds-manager'
-import { usernameNotExists } from '../common/utility'
+import { usernameNotExists } from '../../../instance/commands/common/utility'
+import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
 
 export default class Rankup extends ChatCommandHandler {
-  constructor() {
+  constructor(private readonly database: Database) {
     super({
       triggers: ['rankup', 'guildrankup', 'grankup'],
       description: 'Update a user in-game guild rank',
@@ -32,7 +32,7 @@ export default class Rankup extends ChatCommandHandler {
     const guildMember = guild.members.find((member) => member.uuid === targetProfile.id)
     assert.ok(guildMember !== undefined)
 
-    const savedGuild = context.app.core.minecraftGuildsManager.allGuilds().find((guild) => guild.id === guild.id)
+    const savedGuild = this.database.allGuilds().find((guild) => guild.id === guild.id)
     if (savedGuild === undefined) return `${targetProfile.name} is in an outside guild: ${guild.name}.`
 
     const resolvedRank = await this.resolveRank(context, savedGuild, guild, guildMember, targetUser, targetProfile)
@@ -122,7 +122,7 @@ export default class Rankup extends ChatCommandHandler {
     }
 
     const registry = context.app.core.conditonsRegistry
-    const roleConditions = context.app.core.minecraftGuildsManager.getRoleConditions(savedGuild.id)
+    const roleConditions = this.database.getRoleConditions(savedGuild.id)
     const conditionContext = {
       application: context.app,
       startTime: Date.now(),

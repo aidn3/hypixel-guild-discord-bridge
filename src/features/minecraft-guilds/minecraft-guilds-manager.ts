@@ -1,24 +1,52 @@
-import type Application from '../application'
-import type { GuildPlayerEvent } from '../common/application-event'
+import type { Client } from 'discord.js'
+
+import type Application from '../../application'
+import type { GuildPlayerEvent } from '../../common/application-event'
 import {
   ChannelType,
   Color,
   GuildPlayerEventType,
   InstanceType,
   MinecraftSendChatPriority
-} from '../common/application-event'
-import { Status } from '../common/connectable-instance'
-import { Instance, InternalInstancePrefix } from '../common/instance'
-import type { User } from '../common/user'
-import type { MinecraftGuild } from '../core/minecraft/guilds-manager'
-import Duration from '../utility/duration'
-import { setIntervalAsync } from '../utility/scheduling'
+} from '../../common/application-event'
+import { Status } from '../../common/connectable-instance'
+import { Instance, InternalInstancePrefix } from '../../common/instance'
+import type { SqliteManager } from '../../common/sqlite-manager'
+import type { User } from '../../common/user'
+import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
+import Duration from '../../utility/duration'
+import { setIntervalAsync } from '../../utility/scheduling'
 
-import type MinecraftInstance from './minecraft/minecraft-instance'
+import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandler } from './commands/discord-guild'
+import Ranks from './commands/ranks'
+import Rankup from './commands/rankup'
+import type { MinecraftGuild } from './database'
+import { Database } from './database'
+import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 
-export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
-  constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'hypixel-guild-helper', InstanceType.Utility)
+export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
+  private readonly database: Database
+  private readonly waitlistInteraction: DiscordWaitlistInteraction
+
+  public constructor(application: Application, sqliteManager: SqliteManager) {
+    super(application, InternalInstancePrefix + 'minecraft-guilds-manager', InstanceType.Utility)
+    this.database = new Database(sqliteManager)
+    this.waitlistInteraction = new DiscordWaitlistInteraction(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.database
+    )
+
+    this.application.registerChatCommand(new Ranks(this.database))
+    this.application.registerChatCommand(new Rankup(this.database))
+    this.application.registerDiscordCommand({
+      ...DiscordGuildCommand,
+      handler: (context) => discordGuildCommandHandler(context, this.database, this.waitlistInteraction),
+      autoComplete: (context) => discordGuildAutocomplete(context, this.database)
+    })
 
     this.application.on('guildPlayer', async (event) => {
       await this.handleJoinRequest(event)
@@ -28,11 +56,23 @@ export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
       delay: Duration.minutes(1),
       errorHandler: this.errorHandler.promiseCatch('handling autoRegisterGuilds()')
     })
+
+    const discordClient = this.discordClient()
+    discordClient.on('messageDelete', (message) => {
+      this.database.deleteMessage([message.id])
+    })
+    discordClient.on('messageDeleteBulk', (messages) => {
+      this.database.deleteMessage(messages.map((message) => message.id))
+    })
+  }
+
+  public discordClient(): Client {
+    return this.application.discordInstance.getClient()
   }
 
   private async autoRegisterGuilds(): Promise<void> {
     const instances = this.application.minecraftManager.getAllInstances()
-    const allSavedGuilds = this.application.core.minecraftGuildsManager.allGuilds()
+    const allSavedGuilds = this.database.allGuilds()
 
     const tasks: Promise<void>[] = []
     for (const instance of instances) {
@@ -68,7 +108,7 @@ export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
     const hypixelGuild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
     if (hypixelGuild === undefined) return // probably the account left and guildListResult cache is outdated
 
-    this.application.core.minecraftGuildsManager.initGuild(
+    this.database.initGuild(
       hypixelGuild._id,
       hypixelGuild.name,
       hypixelGuild.ranks
@@ -113,7 +153,7 @@ export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
     if (instance.currentStatus() !== Status.Connected) return
     const guildListResult = await this.application.core.guildManager.list(instance.instanceName)
 
-    const allSavedGuilds = this.application.core.minecraftGuildsManager.allGuilds()
+    const allSavedGuilds = this.database.allGuilds()
     if (allSavedGuilds.length === 0) return
 
     let savedGuild = allSavedGuilds.find(
@@ -133,8 +173,7 @@ export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
   }
 
   private async checkJoinRequirement(savedGuild: MinecraftGuild, user: User): Promise<boolean> {
-    const core = this.application.core
-    const joinConditions = core.minecraftGuildsManager.getJoinConditions(savedGuild.id)
+    const joinConditions = this.database.getJoinConditions(savedGuild.id)
     const conditionContext = {
       application: this.application,
       startTime: Date.now(),
@@ -143,7 +182,7 @@ export default class HypixelGuildHelper extends Instance<InstanceType.Utility> {
     const conditionUser = { user: user }
     let conditionsMet = 0
     for (const condition of joinConditions) {
-      const handler = core.conditonsRegistry.get(condition.typeId)
+      const handler = this.application.core.conditonsRegistry.get(condition.typeId)
       if (handler === undefined) continue
 
       const meetsCondition = await handler.meetsCondition(conditionContext, conditionUser, condition.options)

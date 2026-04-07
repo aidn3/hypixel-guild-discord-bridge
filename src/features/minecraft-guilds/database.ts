@@ -1,9 +1,9 @@
 import assert from 'node:assert'
 
 import type { SqliteManager } from '../../common/sqlite-manager'
-import type { ConditionId } from '../conditions/common'
+import type { ConditionId } from '../../core/conditions/common'
 
-export class GuildsManager {
+export class Database {
   constructor(private readonly sqliteManager: SqliteManager) {}
 
   public initGuild(id: string, name: string, roles: MinecraftGuildRole[]): MinecraftGuild {

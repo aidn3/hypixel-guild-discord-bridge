@@ -14,20 +14,21 @@ import {
 import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
-import type Application from '../../../application'
-import { Color, type InstanceType, PunishmentType } from '../../../common/application-event'
-import type EventHelper from '../../../common/event-helper'
-import SubInstance from '../../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
-import type { MojangProfile } from '../../../common/user'
-import type { MinecraftGuild } from '../../../core/minecraft/guilds-manager'
-import Duration from '../../../utility/duration'
-import { formatUser } from '../common/commands-format'
-import { DefaultCommandFooter } from '../common/discord-config'
-import type DiscordInstance from '../discord-instance'
-import { interactivePaging } from '../utility/discord-pager'
+import type Application from '../../application'
+import { Color, type InstanceType, PunishmentType } from '../../common/application-event'
+import type EventHelper from '../../common/event-helper'
+import SubInstance from '../../common/sub-instance'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
+import type { MojangProfile } from '../../common/user'
+import { formatUser } from '../../instance/discord/common/commands-format'
+import { DefaultCommandFooter } from '../../instance/discord/common/discord-config'
+import { interactivePaging } from '../../instance/discord/utility/discord-pager'
+import Duration from '../../utility/duration'
 
-export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+import type { Database, MinecraftGuild } from './database'
+import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
+
+export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManager, InstanceType.Utility, Client> {
   public static readonly SignupId = 'signup'
   public static readonly ListId = 'list'
 
@@ -35,26 +36,27 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
 
   constructor(
     application: Application,
-    clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    clientInstance: MinecraftGuildsManager,
+    eventHelper: EventHelper<InstanceType.Utility>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    private readonly database: Database
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
-    const client = this.clientInstance.getClient()
+    const client = this.clientInstance.discordClient()
     client.on('interactionCreate', (interaction) => {
       if (!interaction.isButton()) return
 
       switch (interaction.customId) {
-        case WaitlistInteraction.SignupId: {
+        case DiscordWaitlistInteraction.SignupId: {
           void this.handleSignup(interaction).catch(
             this.errorHandler.promiseCatch(`handling waitlist signup button: ${interaction.message.id}`)
           )
           break
         }
 
-        case WaitlistInteraction.ListId: {
+        case DiscordWaitlistInteraction.ListId: {
           void this.handleList(interaction).catch(
             this.errorHandler.promiseCatch(`handling waitlist listing button: ${interaction.message.id}`)
           )
@@ -65,14 +67,12 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async handleList(interaction: ButtonInteraction): Promise<void> {
-    const panelConfiguration = this.application.core.minecraftGuildsManager
+    const panelConfiguration = this.database
       .getWaitlistPanels()
       .find((panel) => panel.messageId === interaction.message.id)
     if (panelConfiguration === undefined) return
 
-    const savedGuild = this.application.core.minecraftGuildsManager
-      .allGuilds()
-      .find((savedEntry) => savedEntry.id === panelConfiguration.guildId)
+    const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === panelConfiguration.guildId)
     assert.ok(savedGuild !== undefined)
 
     assert.ok(interaction.inCachedGuild())
@@ -81,14 +81,12 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async handleSignup(interaction: ButtonInteraction): Promise<void> {
-    const panelConfiguration = this.application.core.minecraftGuildsManager
+    const panelConfiguration = this.database
       .getWaitlistPanels()
       .find((panel) => panel.messageId === interaction.message.id)
     if (panelConfiguration === undefined) return
 
-    const savedGuild = this.application.core.minecraftGuildsManager
-      .allGuilds()
-      .find((savedEntry) => savedEntry.id === panelConfiguration.guildId)
+    const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === panelConfiguration.guildId)
     assert.ok(savedGuild !== undefined)
 
     assert.ok(interaction.inCachedGuild())
@@ -106,7 +104,7 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
       return
     }
 
-    const alreadyRegistered = this.application.core.minecraftGuildsManager
+    const alreadyRegistered = this.database
       .getWaitlist(savedGuild.id)
       .find((entry) => entry.mojangId === mojangProfile.id)
     if (alreadyRegistered) {
@@ -127,7 +125,7 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
       return
     }
 
-    const joinConditions = this.application.core.minecraftGuildsManager.getJoinConditions(savedGuild.id)
+    const joinConditions = this.database.getJoinConditions(savedGuild.id)
     const conditionsManager = this.application.core.conditonsRegistry
     const conditionContext = {
       application: this.application,
@@ -175,7 +173,7 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
       return
     }
 
-    const newlyRegistered = this.application.core.minecraftGuildsManager.addWaitlist(savedGuild.id, mojangProfile.id)
+    const newlyRegistered = this.database.addWaitlist(savedGuild.id, mojangProfile.id)
     if (newlyRegistered) {
       await this.waitlistUpdated(savedGuild)
 
@@ -229,7 +227,7 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
 
     await response.deferReply({ flags: MessageFlags.Ephemeral })
 
-    this.application.core.minecraftGuildsManager.removeWaitlist(savedGuild.id, mojangProfile.id)
+    this.database.removeWaitlist(savedGuild.id, mojangProfile.id)
     await this.waitlistUpdated(savedGuild)
 
     await response.editReply({
@@ -243,8 +241,8 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async startWaitlistUpdate(savedGuild: MinecraftGuild): Promise<void> {
-    const client = this.clientInstance.getClient()
-    const manager = this.application.core.minecraftGuildsManager
+    const client = this.clientInstance.discordClient()
+    const manager = this.database
     const panels = manager.getWaitlistPanels().filter((panel) => panel.guildId === savedGuild.id)
     if (panels.length === 0) return
 
@@ -285,8 +283,8 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async startNotifyGuildUnregister(savedGuild: MinecraftGuild): Promise<void> {
-    const client = this.clientInstance.getClient()
-    const manager = this.application.core.minecraftGuildsManager
+    const client = this.clientInstance.discordClient()
+    const manager = this.database
     const panels = manager.getWaitlistPanels().filter((panel) => panel.guildId === savedGuild.id)
     if (panels.length === 0) return
 
@@ -310,7 +308,7 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
   ): Promise<void> {
     await interactivePaging(interaction, 0, Duration.minutes(15).toMilliseconds(), this.errorHandler, async (page) => {
       const EntriesPerPage = 10
-      const all = this.application.core.minecraftGuildsManager.getWaitlist(savedGuild.id)
+      const all = this.database.getWaitlist(savedGuild.id)
       const entries = all.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
       const totalPages = Math.ceil(all.length / EntriesPerPage)
 
@@ -342,7 +340,7 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
   public async createView(
     savedGuild: MinecraftGuild
   ): Promise<BaseMessageOptions & { flags: MessageFlags.IsComponentsV2 }> {
-    const waitlist = this.application.core.minecraftGuildsManager.getWaitlist(savedGuild.id)
+    const waitlist = this.database.getWaitlist(savedGuild.id)
     const chunk = waitlist.slice(0, 10)
 
     let message = `## Waitlist ${escapeMarkdown(savedGuild.name)}`
@@ -377,14 +375,14 @@ export class WaitlistInteraction extends SubInstance<DiscordInstance, InstanceTy
             {
               type: ComponentType.Button,
               style: ButtonStyle.Success,
-              customId: WaitlistInteraction.SignupId,
+              customId: DiscordWaitlistInteraction.SignupId,
               emoji: '✍️',
               label: 'Signup'
             },
             {
               type: ComponentType.Button,
               style: ButtonStyle.Primary,
-              customId: WaitlistInteraction.ListId,
+              customId: DiscordWaitlistInteraction.ListId,
               emoji: '📄',
               label: 'List'
             }

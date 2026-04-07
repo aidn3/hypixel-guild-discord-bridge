@@ -16,7 +16,6 @@ import ConditionsManager from './conditions/conditions-manager'
 import DiscordBridge from './discord-bridge.js'
 import Leaderboard from './features/leaderboard.js'
 import LinkButtonsManager from './features/link-buttons-manager'
-import { WaitlistInteraction } from './features/waitlist-interaction'
 import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
@@ -26,7 +25,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   readonly leaderboard: Leaderboard
   readonly conditionsManager: ConditionsManager
   readonly linkButtons: LinkButtonsManager
-  readonly waitlistInteraction: WaitlistInteraction
 
   private readonly client: Client
 
@@ -89,13 +87,6 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
       this.errorHandler
     )
     this.linkButtons = new LinkButtonsManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.waitlistInteraction = new WaitlistInteraction(
-      this.application,
-      this,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler
-    )
 
     this.bridge = new DiscordBridge(
       this.application,

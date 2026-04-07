@@ -1,11 +1,11 @@
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
-import type { MinecraftGuild } from '../../../core/minecraft/guilds-manager'
+import type { ChatCommandContext } from '../../../common/commands'
+import { ChatCommandHandler } from '../../../common/commands'
 import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
+import type { Database, MinecraftGuild } from '../database'
 
 export default class Ranks extends ChatCommandHandler {
-  constructor() {
+  constructor(private readonly database: Database) {
     super({
       triggers: ['ranks', 'guildranks', 'granks', 'gr'],
       description: 'List guild ranks requirements',
@@ -14,7 +14,7 @@ export default class Ranks extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const savedGuilds = context.app.core.minecraftGuildsManager.allGuilds()
+    const savedGuilds = this.database.allGuilds()
     if (savedGuilds.length === 0) return `${context.username}, no guild not registered.`
 
     if (savedGuilds.length === 1) {
@@ -41,8 +41,8 @@ export default class Ranks extends ChatCommandHandler {
 
   private async formatRanks(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
     const registry = context.app.core.conditonsRegistry
-    const joinConditions = context.app.core.minecraftGuildsManager.getJoinConditions(savedGuild.id)
-    const roleConditions = context.app.core.minecraftGuildsManager.getRoleConditions(savedGuild.id)
+    const joinConditions = this.database.getJoinConditions(savedGuild.id)
+    const roleConditions = this.database.getRoleConditions(savedGuild.id)
     const conditionContext = {
       startTime: Date.now() - Duration.minutes(15).toMinutes(),
       application: context.app,
