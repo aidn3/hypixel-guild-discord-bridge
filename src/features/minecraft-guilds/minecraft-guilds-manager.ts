@@ -55,6 +55,10 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       await this.handleJoinRequest(event)
     })
 
+    this.application.on('guildPlayer', async (event) => {
+      await this.detectionQueue.add(() => this.handleJoin(event))
+    })
+
     setIntervalAsync(() => this.detectionQueue.add(() => this.autoRegisterGuilds()), {
       delay: Duration.minutes(1),
       errorHandler: this.errorHandler.promiseCatch('handling autoRegisterGuilds()')
@@ -176,6 +180,26 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     }
 
     return changed
+  }
+
+  private async handleJoin(event: GuildPlayerEvent): Promise<void> {
+    if (event.type !== GuildPlayerEventType.Join) return
+
+    const instance = this.application.minecraftManager
+      .getAllInstances()
+      .find((instance) => instance.instanceName === event.instanceName)
+    if (instance === undefined) return
+
+    const savedGuild = await this.findSavedGuildFromInstance(instance)
+    if (savedGuild === undefined) return
+
+    const waitlist = this.database.getWaitlist(savedGuild.id)
+    const sentWaitlist = this.database.getSentWaitlist().filter((entry) => entry.guildId === savedGuild.id)
+    const changed = await this.playerJoined(event.user.mojangProfile().id, waitlist, sentWaitlist)
+
+    if (changed) {
+      await this.waitlistInteraction.waitlistUpdated(savedGuild)
+    }
   }
 
   private async autoRegisterGuild(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {
