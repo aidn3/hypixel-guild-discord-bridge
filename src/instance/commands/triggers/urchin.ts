@@ -26,7 +26,7 @@ export default class UrchinCommand extends ChatCommandHandler {
       return `${givenUsername} has no Urchin tags.`
     }
 
-    const formatted = response.tags.map((tag) => `${tag.type}: ${tag.reason}`).join(', ')
-    return `${givenUsername}'s Urchin tags: ${formatted}`
+    const lines = response.tags.map((tag) => `${tag.type}: ${tag.reason}`)
+    return `${givenUsername} has the following Urchin tags:\n${lines.join('\n')}`
   }
 }
