@@ -194,16 +194,61 @@ export class Database {
     transaction()
   }
 
-  public getSentWaitlist(): WaitlistRequestEntry[] {
+  public getSentWaitlist(guildId: string): WaitlistRequestEntry[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const select = database.prepare<[], WaitlistRequestEntry>('SELECT * FROM discordGuildWaitlistRequest')
+      const select = database.prepare<[typeof guildId], WaitlistRequestEntry>(
+        'SELECT * FROM discordGuildWaitlistRequest WHERE guildId = ?'
+      )
 
-      const all = select.all()
+      const all = select.all(guildId)
       for (const entry of all) {
         entry.createdAt = entry.createdAt * 1000
       }
       return all
+    })
+
+    return transaction()
+  }
+
+  public getSentWaitlistByMessageId(messageId: string): WaitlistRequestEntry | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[typeof messageId], WaitlistRequestEntry>(
+        'SELECT * FROM discordGuildWaitlistRequest WHERE messageId = ?'
+      )
+
+      const result = select.get(messageId)
+      if (result === undefined) return
+
+      result.createdAt = result.createdAt * 1000
+      return result
+    })
+
+    return transaction()
+  }
+
+  public rescheduleWaitlist(guildId: string, mojangId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const findSent = database.prepare(
+        'SELECT * FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?'
+      )
+      if (findSent.all(guildId, mojangId).length === 0) return false
+
+      const findEntry = database.prepare('SELECT * FROM "minecraftGuildWaitlist" WHERE guildId = ? AND mojangId = ?')
+      if (findEntry.all(guildId, mojangId).length === 0) return false
+
+      const deleteSent = database.prepare(
+        'DELETE FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?'
+      )
+      assert.strictEqual(deleteSent.run(guildId, mojangId).changes, 1)
+
+      const changeDate = database.prepare(
+        'UPDATE "minecraftGuildWaitlist" SET createdAt = ? WHERE guildId = ? AND mojangId = ?'
+      )
+      assert.strictEqual(changeDate.run(guildId, mojangId).changes, 1)
+      return true
     })
 
     return transaction()

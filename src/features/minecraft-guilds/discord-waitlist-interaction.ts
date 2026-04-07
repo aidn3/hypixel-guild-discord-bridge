@@ -16,14 +16,19 @@ import type PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
 import { Color, type InstanceType, PunishmentType } from '../../common/application-event'
+import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import type { MojangProfile } from '../../common/user'
+import { formatChatTriggerResponse } from '../../instance/discord/common/chattrigger-format'
 import { formatUser } from '../../instance/discord/common/commands-format'
 import { DefaultCommandFooter } from '../../instance/discord/common/discord-config'
 import { interactivePaging } from '../../instance/discord/utility/discord-pager'
+import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
+import { checkChatTriggers, InviteAcceptChat } from '../../utility/chat-triggers'
 import Duration from '../../utility/duration'
+import { sleep } from '../../utility/shared-utility'
 
 import type { Database, MinecraftGuild } from './database'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
@@ -31,6 +36,10 @@ import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
 export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManager, InstanceType.Utility, Client> {
   public static readonly SignupId = 'signup'
   public static readonly ListId = 'list'
+
+  public static readonly InviteId = 'invite'
+  public static readonly RescheduleId = 'reschedule'
+  public static readonly DeclineId = 'decline'
 
   constructor(
     application: Application,
@@ -58,6 +67,25 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
         case DiscordWaitlistInteraction.ListId: {
           void this.handleList(interaction).catch(
             this.errorHandler.promiseCatch(`handling waitlist listing button: ${interaction.message.id}`)
+          )
+          break
+        }
+
+        case DiscordWaitlistInteraction.InviteId: {
+          void this.handleInvite(interaction).catch(
+            this.errorHandler.promiseCatch(`handling waitlist invite button: ${interaction.message.id}`)
+          )
+          break
+        }
+        case DiscordWaitlistInteraction.DeclineId: {
+          void this.handleDecline(interaction).catch(
+            this.errorHandler.promiseCatch(`handling waitlist decline button: ${interaction.message.id}`)
+          )
+          break
+        }
+        case DiscordWaitlistInteraction.RescheduleId: {
+          void this.handleReschedule(interaction).catch(
+            this.errorHandler.promiseCatch(`handling waitlist decline button: ${interaction.message.id}`)
           )
           break
         }
@@ -183,6 +211,92 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     } else {
       await this.handleUnregisteringWaitlist(interaction, savedGuild, mojangProfile)
     }
+  }
+
+  private async handleInvite(interaction: ButtonInteraction): Promise<void> {
+    const sentWaitlist = this.database.getSentWaitlistByMessageId(interaction.message.id)
+    if (sentWaitlist === undefined) return
+
+    const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === sentWaitlist.guildId)
+    assert.ok(savedGuild !== undefined)
+
+    assert.ok(interaction.inCachedGuild())
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+    const profile = await this.application.mojangApi.profileByUuid(sentWaitlist.mojangId)
+
+    let instance: MinecraftInstance | undefined = undefined
+    for (const potentialInstance of this.application.minecraftManager.getAllInstances()) {
+      if (potentialInstance.currentStatus() !== Status.Connected) continue
+
+      const guildListResult = await this.application.core.guildManager
+        .list(potentialInstance.instanceName, Duration.minutes(5))
+        .catch(() => undefined)
+      if (guildListResult === undefined) continue
+
+      if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {
+        instance = potentialInstance
+        break
+      }
+    }
+
+    if (instance === undefined) {
+      await interaction.editReply('Can not process this request right now due to inability to connect to Hypixel')
+      return
+    }
+
+    const command = `/g invite ${profile.name}`
+
+    const result = await checkChatTriggers(
+      this.application,
+      this.eventHelper,
+      InviteAcceptChat,
+      [instance.instanceName],
+      command,
+      profile.name
+    )
+    const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(profile.name)}`)
+
+    await interaction.editReply({ embeds: [formatted] })
+  }
+
+  private async handleDecline(interaction: ButtonInteraction): Promise<void> {
+    const sentWaitlist = this.database.getSentWaitlistByMessageId(interaction.message.id)
+    if (sentWaitlist === undefined) return
+
+    assert.ok(interaction.inCachedGuild())
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+    await this.queue.add(async () => {
+      await sleep(0)
+
+      this.database.removeSentWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
+      this.database.removeWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
+    })
+
+    await interaction.editReply('You have successfully declined the offer. Thank you for your speedy response!')
+  }
+
+  private async handleReschedule(interaction: ButtonInteraction): Promise<void> {
+    const sentWaitlist = this.database.getSentWaitlistByMessageId(interaction.message.id)
+    if (sentWaitlist === undefined) return
+
+    assert.ok(interaction.inCachedGuild())
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+    const rescheduled = await this.queue.add(async () => {
+      await sleep(0)
+      return this.database.rescheduleWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
+    })
+
+    if (rescheduled) {
+      await interaction.editReply(
+        'You have successfully rescheduled yourself back into the waiting list. Hope you will accept the offer next time!'
+      )
+      return
+    }
+
+    await interaction.editReply('Could not find the offer. Maybe the offer already expired?')
   }
 
   private async handleUnregisteringWaitlist(
