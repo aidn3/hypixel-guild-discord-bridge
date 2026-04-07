@@ -27,6 +27,7 @@ import CreateLeaderboardCommand from './commands/create-leaderboard.js'
 import DemoteCommand from './commands/demote.js'
 import DisconnectCommand from './commands/disconnect.js'
 import ExecuteCommand from './commands/execute.js'
+import FaqCommand from './commands/faq'
 import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
@@ -115,6 +116,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       CreateLeaderboardCommand,
       DemoteCommand,
       DisconnectCommand,
+      FaqCommand,
       HelpCommand,
       InviteCommand,
       JoinCommand,
