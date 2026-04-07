@@ -44,6 +44,7 @@ import Punishments from './moderation/punishments'
 import PunishmentsEnforcer from './moderation/punishments-enforcer'
 import { PlaceholderManager } from './placeholder/placeholder-manager'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
+import { Urchin } from './urchin/urchin'
 import Autocomplete from './users/autocomplete'
 import { GuildManager } from './users/guild-manager'
 import { MojangApi } from './users/mojang'
@@ -87,6 +88,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly commandsConfigurations: CommandsConfigurations
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
   public readonly hypixelApi: Hypixel
+  public readonly urchinApi: Urchin | undefined
   public readonly conditonsRegistry: ConditionsRegistry
   public readonly placeHolder: PlaceholderManager
 
@@ -94,7 +96,7 @@ export class Core extends Instance<InstanceType.Core> {
   private readonly sqliteManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
 
-  public constructor(application: Application, hypixelApiKey: string) {
+  public constructor(application: Application, hypixelApiKey: string, urchinApiKey: string | undefined) {
     super(application, InternalInstancePrefix + 'core', InstanceType.Core)
 
     this.conditonsRegistry = new ConditionsRegistry()
@@ -130,6 +132,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
     this.hypixelApi = new Hypixel(hypixelApiKey, this.sqliteManager, this.logger)
+    this.urchinApi = urchinApiKey === undefined ? undefined : new Urchin(urchinApiKey, this.logger)
 
     this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)

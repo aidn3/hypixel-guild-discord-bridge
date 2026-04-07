@@ -20,6 +20,7 @@ import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
 import { Core } from './core/core'
 import type { Hypixel } from './core/hypixel/hypixel'
 import { ApplicationLanguages, LanguageConfigurations } from './core/language-configurations'
+import type { Urchin } from './core/urchin/urchin'
 import type { MojangApi } from './core/users/mojang'
 import ApplicationIntegrity from './instance/application-integrity.js'
 import AutoRestart from './instance/auto-restart'
@@ -57,6 +58,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
 
   public readonly hypixelApi: Hypixel
   public readonly mojangApi: MojangApi
+  public readonly urchinApi: Urchin | undefined
 
   private readonly logger: Logger
   private readonly errorHandler: UnexpectedErrorHandler
@@ -101,9 +103,10 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.applicationIntegrity.addConfigPath(this.backupDirectory)
     fs.mkdirSync(this.backupDirectory, { recursive: true })
 
-    this.core = new Core(this, config.general.hypixelApiKey)
+    this.core = new Core(this, config.general.hypixelApiKey, config.general.urchinApiKey)
     this.hypixelApi = this.core.hypixelApi
     this.mojangApi = this.core.mojangApi
+    this.urchinApi = this.core.urchinApi
 
     let selectedLanguage = this.core.languageConfigurations.getLanguage()
     if (!Object.values(ApplicationLanguages).includes(selectedLanguage)) {

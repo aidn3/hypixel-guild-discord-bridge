@@ -2,6 +2,7 @@ export const ApplicationConfigVersion = 2
 
 export interface GeneralConfig {
   hypixelApiKey: string
+  urchinApiKey?: string
   shareMetrics: boolean
 }
 
