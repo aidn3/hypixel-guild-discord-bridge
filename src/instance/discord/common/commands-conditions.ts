@@ -180,10 +180,14 @@ export async function handleConditionAdd(
   modalOptions.unshift(...manager.createOptions.top)
   modalOptions.push(...manager.createOptions.bottom)
 
-  let rawFetchedOptions: { result: ModalResult; modalResponse: ModalSubmitInteraction }
+  let rawFetchedOptions: { result: ModalResult; modalResponse: ModalSubmitInteraction | ChatInputCommandInteraction }
   try {
-    const title = context.application.i18n.t(($) => $['discord.conditions.add.title'][manager.translationKey])
-    rawFetchedOptions = await showModal(interaction, title, modalOptions, Duration.minutes(15))
+    if (modalOptions.length > 0) {
+      const title = context.application.i18n.t(($) => $['discord.conditions.add.title'][manager.translationKey])
+      rawFetchedOptions = await showModal(interaction, title, modalOptions, Duration.minutes(15))
+    } else {
+      rawFetchedOptions = { result: {}, modalResponse: interaction }
+    }
   } catch (error: unknown) {
     context.logger.error(error)
     const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.modal-error'])
