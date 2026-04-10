@@ -120,6 +120,9 @@
   "discord.conditions.handler.in-guild-as-guildmaster.title": "In Guild As The Guild Master",
   "discord.conditions.handler.in-guild-as-guildmaster.formatted": "In guild {{guildName}} as the guild master",
 
+  "discord.conditions.handler.has-discord-role.title": "Has Discord Role",
+  "discord.conditions.handler.has-discord-role.formatted": "Has Discord role <@&{{roleId}}>",
+
   "commands.essence.none": "{{username}} does not have any essence?",
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
   "commands.forge.none": "{{username}} does not have anything in forge.",
