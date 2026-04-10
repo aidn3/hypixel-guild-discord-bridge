@@ -41,6 +41,8 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   public static readonly RescheduleId = 'reschedule'
   public static readonly DeclineId = 'decline'
 
+  private static readonly WaitlistRescheduleGracePeriod = Duration.days(1)
+
   constructor(
     application: Application,
     clientInstance: MinecraftGuildsManager,
@@ -132,7 +134,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     }
 
     const alreadyRegistered = this.database
-      .getWaitlist(savedGuild.id)
+      .getWaitlistStatus(savedGuild.id)
       .find((entry) => entry.mojangId === mojangProfile.id)
     if (alreadyRegistered) {
       await this.handleUnregisteringWaitlist(interaction, savedGuild, mojangProfile)
@@ -214,7 +216,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   }
 
   private async handleInvite(interaction: ButtonInteraction): Promise<void> {
-    const sentWaitlist = this.database.getSentWaitlistByMessageId(interaction.message.id)
+    const sentWaitlist = this.database.getWaitlistByMessageId(interaction.message.id)
     if (sentWaitlist === undefined) return
 
     const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === sentWaitlist.guildId)
@@ -261,7 +263,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   }
 
   private async handleDecline(interaction: ButtonInteraction): Promise<void> {
-    const sentWaitlist = this.database.getSentWaitlistByMessageId(interaction.message.id)
+    const sentWaitlist = this.database.getWaitlistByMessageId(interaction.message.id)
     if (sentWaitlist === undefined) return
 
     assert.ok(interaction.inCachedGuild())
@@ -270,7 +272,6 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     await this.queue.add(async () => {
       await sleep(0)
 
-      this.database.removeSentWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
       this.database.removeWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
     })
 
@@ -278,20 +279,23 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   }
 
   private async handleReschedule(interaction: ButtonInteraction): Promise<void> {
-    const sentWaitlist = this.database.getSentWaitlistByMessageId(interaction.message.id)
-    if (sentWaitlist === undefined) return
+    const waitlistEntry = this.database.getWaitlistByMessageId(interaction.message.id)
+    if (waitlistEntry === undefined) return
 
     assert.ok(interaction.inCachedGuild())
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
+    const newTime = Date.now() + DiscordWaitlistInteraction.WaitlistRescheduleGracePeriod.toMilliseconds()
     const rescheduled = await this.queue.add(async () => {
       await sleep(0)
-      return this.database.rescheduleWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
+      return this.database.rescheduleWaitlist(waitlistEntry.id, newTime)
     })
 
     if (rescheduled) {
       await interaction.editReply(
-        'You have successfully rescheduled yourself back into the waiting list. Hope you will accept the offer next time!'
+        'You have successfully rescheduled yourself back into the waiting list.' +
+          `You will not receive any further offers till <t:${Math.floor(newTime / 1000)}>.` +
+          '\nHope you will accept the offer next time!'
       )
       return
     }
@@ -350,10 +354,10 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   }
 
   public async waitlistUpdated(savedGuild: MinecraftGuild): Promise<void> {
-    await this.queue.add(async () => this.startWaitlistUpdate(savedGuild))
+    await this.queue.add(async () => this.unsafeWaitlistUpdated(savedGuild))
   }
 
-  private async startWaitlistUpdate(savedGuild: MinecraftGuild): Promise<void> {
+  public async unsafeWaitlistUpdated(savedGuild: MinecraftGuild): Promise<void> {
     const client = this.clientInstance.discordClient()
     const manager = this.database
     const panels = manager.getWaitlistPanels().filter((panel) => panel.guildId === savedGuild.id)
@@ -421,22 +425,28 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   ): Promise<void> {
     await interactivePaging(interaction, 0, Duration.minutes(15).toMilliseconds(), this.errorHandler, async (page) => {
       const EntriesPerPage = 10
-      const all = this.database.getWaitlist(savedGuild.id)
+      const all = this.database.getWaitlistStatus(savedGuild.id)
       const entries = all.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
       const totalPages = Math.ceil(all.length / EntriesPerPage)
 
       const result: string[] = []
 
       for (const entry of entries) {
+        let formattedEntry = '- '
         try {
           const mojangProfile = await this.application.mojangApi.profileByUuid(entry.mojangId)
           const user = await this.application.core.initializeMinecraftUser(mojangProfile, {
             guild: interaction.guild
           })
-          result.push(`- ${formatUser(user)}: <t:${Math.floor(entry.createdAt)}>`)
+          formattedEntry += formatUser(user)
         } catch {
-          result.push(`- ${inlineCode(entry.mojangId)}: <t:${Math.floor(entry.createdAt)}>`)
+          formattedEntry += inlineCode(entry.mojangId)
         }
+
+        formattedEntry += `: <t:${Math.floor(entry.createdAt)}>`
+        if (entry.invitedTill > 0) formattedEntry += ` [invited]`
+        else if (entry.noInviteTill > 0) formattedEntry += ` [rescheduled]`
+        result.push(formattedEntry)
       }
 
       return {
@@ -453,20 +463,25 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   public async createView(
     savedGuild: MinecraftGuild
   ): Promise<BaseMessageOptions & { flags: MessageFlags.IsComponentsV2 }> {
-    const waitlist = this.database.getWaitlist(savedGuild.id)
+    const waitlist = this.database.getWaitlistStatus(savedGuild.id)
     const chunk = waitlist.slice(0, 10)
 
     let message = `## Waitlist ${escapeMarkdown(savedGuild.name)}`
     message += `\n-# Last update: <t:${Math.floor(Date.now() / 1000)}:R>`
 
     for (const entry of chunk) {
+      message += '\n - '
       try {
         const mojangProfile = await this.application.mojangApi.profileByUuid(entry.mojangId)
         const user = await this.application.core.initializeMinecraftUser(mojangProfile, {})
-        message += `\n- ${formatUser(user)}: <t:${Math.floor(entry.createdAt)}:d>`
+        message += formatUser(user)
       } catch {
-        message += `\n- ${inlineCode(entry.mojangId)}: <t:${Math.floor(entry.createdAt)}:d>`
+        message += inlineCode(entry.mojangId)
       }
+
+      message += `: <t:${Math.floor(entry.createdAt)}:d>`
+      if (entry.invitedTill > 0) message += ` [invited]`
+      else if (entry.noInviteTill > 0) message += ` [rescheduled]`
     }
 
     const description = '-# You can **Signup** up in the waiting list to join the guild.'

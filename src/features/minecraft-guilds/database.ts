@@ -144,22 +144,58 @@ export class Database {
   public removeWaitlist(guildId: string, mojangId: string): boolean {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const statement = database.prepare('DELETE FROM "minecraftGuildWaitlist" WHERE guildId = ? AND mojangId = ?')
+      const statementWaitlist = database.prepare(
+        'DELETE FROM "minecraftGuildWaitlist" WHERE guildId = ? AND mojangId = ?'
+      )
+      const statementDiscord = database.prepare(
+        'DELETE FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?'
+      )
 
-      return statement.run(guildId, mojangId).changes > 0
+      let changes = 0
+      changes += statementWaitlist.run(guildId, mojangId).changes
+      changes += statementDiscord.run(guildId, mojangId).changes
+      return changes > 0
     })
 
     return transaction()
   }
 
-  public getWaitlist(guildId: string): WaitlistEntry[] {
+  public getWaitlistStatus(guildId: string): WaitlistEntry[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const select = database.prepare<[typeof guildId], WaitlistEntry>(
+      const selectWaitlist = database.prepare<[typeof guildId], WaitlistEntry>(
         'SELECT * FROM minecraftGuildWaitlist WHERE guildId = ?'
       )
+      const selectDiscord = database.prepare<[typeof guildId], WaitlistRequestEntry>(
+        'SELECT * FROM discordGuildWaitlistRequest WHERE guildId = ?'
+      )
 
-      return select.all(guildId)
+      const mappedDiscord = new Map<WaitlistRequestEntry['reference'], WaitlistRequestEntry>()
+      for (const discordEntry of selectDiscord.all(guildId)) {
+        mappedDiscord.set(discordEntry.reference, discordEntry)
+      }
+
+      const result = selectWaitlist.all(guildId)
+      for (const waitlistEntry of result) {
+        waitlistEntry.createdAt = waitlistEntry.createdAt * 1000
+        waitlistEntry.invitedTill = waitlistEntry.invitedTill * 1000
+        waitlistEntry.noInviteTill = waitlistEntry.noInviteTill * 1000
+        waitlistEntry.discord = mappedDiscord.get(waitlistEntry.id)
+      }
+
+      return result
+    })
+
+    return transaction()
+  }
+
+  public waitlistSetInvited(id: WaitlistEntry['id']): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const changeDate = database.prepare(
+        'UPDATE "minecraftGuildWaitlist" SET invitedTill = (unixepoch()) WHERE id = ?'
+      )
+      return changeDate.run(id).changes > 0
     })
 
     return transaction()
@@ -194,88 +230,66 @@ export class Database {
     transaction()
   }
 
-  public getSentWaitlist(guildId: string): WaitlistRequestEntry[] {
+  public getWaitlistByMessageId(messageId: string): WaitlistEntry | undefined {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const select = database.prepare<[typeof guildId], WaitlistRequestEntry>(
-        'SELECT * FROM discordGuildWaitlistRequest WHERE guildId = ?'
-      )
-
-      const all = select.all(guildId)
-      for (const entry of all) {
-        entry.createdAt = entry.createdAt * 1000
-      }
-      return all
-    })
-
-    return transaction()
-  }
-
-  public getSentWaitlistByMessageId(messageId: string): WaitlistRequestEntry | undefined {
-    const database = this.sqliteManager.getDatabase()
-    const transaction = database.transaction(() => {
-      const select = database.prepare<[typeof messageId], WaitlistRequestEntry>(
+      const selectDiscord = database.prepare<[typeof messageId], WaitlistRequestEntry>(
         'SELECT * FROM discordGuildWaitlistRequest WHERE messageId = ?'
       )
+      const selectWaitlist = database.prepare<[WaitlistEntry['id']], WaitlistEntry>(
+        'SELECT * FROM minecraftGuildWaitlist WHERE id = ?'
+      )
 
-      const result = select.get(messageId)
-      if (result === undefined) return
+      const discordEntry = selectDiscord.get(messageId)
+      if (discordEntry === undefined) return
 
-      result.createdAt = result.createdAt * 1000
-      return result
+      const waitlist = selectWaitlist.get(discordEntry.reference)
+      assert.ok(waitlist !== undefined)
+      assert.strictEqual(discordEntry.reference, waitlist.id)
+
+      waitlist.createdAt = waitlist.createdAt * 1000
+      waitlist.invitedTill = waitlist.invitedTill * 1000
+      waitlist.noInviteTill = waitlist.noInviteTill * 1000
+      waitlist.discord = discordEntry
+
+      return waitlist
     })
 
     return transaction()
   }
 
-  public rescheduleWaitlist(guildId: string, mojangId: string): boolean {
+  public rescheduleWaitlist(id: WaitlistEntry['id'], noInviteTill: number): boolean {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const findSent = database.prepare(
-        'SELECT * FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?'
+      const update = database.prepare<[typeof noInviteTill, typeof id]>(
+        'UPDATE "minecraftGuildWaitlist" SET invitedTill = 0, noInviteTill = ? WHERE id = ?'
       )
-      if (findSent.all(guildId, mojangId).length === 0) return false
-
-      const findEntry = database.prepare('SELECT * FROM "minecraftGuildWaitlist" WHERE guildId = ? AND mojangId = ?')
-      if (findEntry.all(guildId, mojangId).length === 0) return false
-
-      const deleteSent = database.prepare(
-        'DELETE FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?'
+      const deleteDiscord = database.prepare<[typeof id]>(
+        'DELETE FROM "discordGuildWaitlistRequest" WHERE reference = ?'
       )
-      assert.strictEqual(deleteSent.run(guildId, mojangId).changes, 1)
 
-      const changeDate = database.prepare(
-        'UPDATE "minecraftGuildWaitlist" SET createdAt = ? WHERE guildId = ? AND mojangId = ?'
-      )
-      assert.strictEqual(changeDate.run(guildId, mojangId).changes, 1)
+      const updateResult = update.run(Math.floor(noInviteTill / 1000), id).changes
+      if (updateResult === 0) return false
+      assert.strictEqual(updateResult, 1)
+
+      deleteDiscord.run(id)
       return true
     })
 
     return transaction()
   }
 
-  public addSentWaitlist(entry: Omit<WaitlistRequestEntry, 'createdAt'>): void {
+  public addSentWaitlist(entry: WaitlistRequestEntry): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const insert = database.prepare(
-        'INSERT INTO "discordGuildWaitlistRequest" (messageId, channelId, guildId, mojangId, userId) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO "discordGuildWaitlistRequest" (messageId, channelId, reference) VALUES (?, ?, ?)'
       )
 
-      insert.run(entry.messageId, entry.channelId, entry.guildId, entry.mojangId, entry.userId)
+      insert.run(entry.messageId, entry.channelId, entry.reference)
     })
 
     transaction()
-  }
-
-  public removeSentWaitlist(guildId: string, mojangId: string): boolean {
-    const database = this.sqliteManager.getDatabase()
-    const transaction = database.transaction(() => {
-      const statement = database.prepare('DELETE FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?')
-
-      return statement.run(guildId, mojangId).changes > 0
-    })
-
-    return transaction()
   }
 
   public deleteMessage(messagesIds: string[]): number {
@@ -539,20 +553,22 @@ export interface MinecraftGuildRole {
 }
 
 export interface WaitlistEntry {
+  id: number | bigint
   guildId: string
   mojangId: string
+
   createdAt: number
+  invitedTill: number
+  noInviteTill: number
+
+  discord: WaitlistRequestEntry | undefined
 }
 
 export interface WaitlistRequestEntry {
   messageId: string
   channelId: string
 
-  guildId: string
-  mojangId: string
-  userId: string
-
-  createdAt: number
+  reference: WaitlistEntry['id']
 }
 
 export interface WaitlistPanel {

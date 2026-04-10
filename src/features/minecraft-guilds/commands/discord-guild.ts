@@ -194,7 +194,7 @@ export async function discordGuildAutocomplete(context: Readonly<DiscordAutoComp
   if (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'username') {
     const allGuilds = database.allGuilds()
     const profiles = allGuilds
-      .flatMap((guild) => database.getWaitlist(guild.id))
+      .flatMap((guild) => database.getWaitlistStatus(guild.id))
       .map((entry) => context.application.mojangApi.profileByUuid(entry.mojangId).catch(() => undefined))
     const usernames = await Promise.all(profiles)
       .then((list) => list.filter((entry) => entry !== undefined))

@@ -643,10 +643,13 @@ function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: 
 
   database.exec(
     'CREATE TABLE "minecraftGuildWaitlist" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
       '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
       '  mojangId TEXT NOT NULL,' +
+      '  invitedTill INTEGER NOT NULL DEFAULT 0,' +
+      '  noInviteTill INTEGER NOT NULL DEFAULT 0,' +
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
-      '  PRIMARY KEY(guildId, mojangId)' +
+      '  UNIQUE(guildId, mojangId)' +
       ' ) STRICT'
   )
   database.exec(
@@ -662,10 +665,7 @@ function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: 
     'CREATE TABLE "discordGuildWaitlistRequest" (' +
       '  messageId TEXT PRIMARY KEY NOT NULL,' +
       '  channelId TEXT NOT NULL,' +
-      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
-      '  mojangId TEXT NOT NULL,' +
-      '  userId TEXT NOT NULL,' +
-      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      '  reference INTEGER NOT NULL UNIQUE REFERENCES minecraftGuildWaitlist(id) ON DELETE CASCADE' +
       ' ) STRICT'
   )
 
