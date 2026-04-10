@@ -451,9 +451,9 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
           content:
             `# ${savedGuild.name} join request approved` +
             `\nHey ${escapeMarkdown(profile.name)},` +
-            `\nYou are invited to join Hypixel guild ${escapeMarkdown(savedGuild.name)}.` +
+            `\nYou are invited to join the Hypixel guild ${escapeMarkdown(savedGuild.name)}.` +
             `\nAn invite has been sent to you in-game on the account **${escapeMarkdown(profile.name)}** (${inlineCode(profile.id)}).` +
-            `\nThe invite typically expires after 5 minutes. You can request another one by pressing the buttons down below any time as long as the offer stands.` +
+            `\nThe invite typically expires after 5 minutes. You can request another one by pressing the buttons down below at any time as long as the offer stands.` +
             `\nThe offer expires <t:${Math.floor(lastTimestamp / 1000)}:R>.` +
             `\n\nPress **Invite** to re-send the guild join invite in case you missed it.` +
             `\nPress **Reschedule** to be put back at the end of the waiting list if you can't decide yet.` +
