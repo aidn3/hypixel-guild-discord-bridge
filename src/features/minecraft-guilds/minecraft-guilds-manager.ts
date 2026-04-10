@@ -16,12 +16,13 @@ import {
 import { Status } from '../../common/connectable-instance'
 import { Instance, InternalInstancePrefix } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
-import type { User } from '../../common/user'
+import type { MojangProfile, User } from '../../common/user'
 import type { GuildFetch } from '../../core/users/guild-manager'
+import { GuildInviteStatus } from '../../core/users/guild-manager'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
-import { checkChatTriggers, InviteAcceptChat } from '../../utility/chat-triggers'
 import Duration from '../../utility/duration'
 import { setIntervalAsync } from '../../utility/scheduling'
+import { formatTime } from '../../utility/shared-utility'
 
 import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandler } from './commands/discord-guild'
 import Ranks from './commands/ranks'
@@ -33,6 +34,7 @@ import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   private static readonly MaxGuildMembers = 125
   private static readonly WaitlistRequestDuration = Duration.days(1)
+  private static readonly ForceReschedule = Duration.days(7)
 
   private readonly detectionQueue = new PromiseQueue(1)
   private readonly database: Database
@@ -274,6 +276,8 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   }
 
   private async processAllWaitlist(): Promise<void> {
+    this.logger.debug('Processing any existing waitlist')
+
     const instances = this.application.minecraftManager.getAllInstances()
     const allSavedGuilds = this.database.allGuilds()
 
@@ -324,22 +328,44 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     openSlots -= invites.length
     openSlots += expiredInvites.length
 
-    const usedSlots = 0
+    let usedSlots = 0
     for (const waitEntry of waitlist) {
       if (usedSlots >= openSlots) break
-      if (waitEntry.noInviteTill < currentTime) continue
+      if (waitEntry.noInviteTill !== 0 && waitEntry.noInviteTill < currentTime) continue
       if (waitEntry.invitedTill !== 0) continue
 
       const result = await this.sendJoinRequest(instance, savedGuild, waitEntry)
-      if (result !== undefined) {
-        await this.application.emit('broadcast', {
-          ...this.eventHelper.fillBaseEvent(),
-          user: undefined,
-          color: Color.Info,
-          channels: [ChannelType.Officer],
-          message: result
-        })
+      if (result === 'rescheduledAndInformed') {
+        changed = true
+        continue
       }
+      if (result === 'alreadyIn') {
+        changed = true
+        continue
+      }
+
+      let message: string
+      let color = Color.Info
+      if (result.ingameInvited && result.discordMessage) {
+        message = `Waitlist accepted ${waitEntry.mojangId}: Invited and direct-messaged`
+        color = Color.Good
+      } else if (result.ingameInvited && !result.discordMessage) {
+        message = `Waitlist accepted ${waitEntry.mojangId}: Invited but could not direct-message`
+      } else if (!result.ingameInvited && result.discordMessage) {
+        message = `Waitlist accepted ${waitEntry.mojangId}: Can not invite but managed to direct-message`
+      } else {
+        color = Color.Info
+        message = `Waitlist accepted ${waitEntry.mojangId}: Can not invite nor direct-message the person sadly :(`
+      }
+      await this.application.emit('broadcast', {
+        ...this.eventHelper.fillBaseEvent(),
+        user: undefined,
+        color: color,
+        channels: [ChannelType.Officer],
+        message: message
+      })
+
+      usedSlots++
     }
 
     if (changed) {
@@ -347,90 +373,131 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     }
   }
 
-  public async sendJoinRequest(
+  private async sendJoinRequest(
     instance: MinecraftInstance,
     savedGuild: MinecraftGuild,
     waitlistEntry: WaitlistEntry
-  ): Promise<string | undefined> {
-    const profile = await this.application.mojangApi.profileByUuid(waitlistEntry.mojangId)
-    const minecraftSendResult = await checkChatTriggers(
-      this.application,
-      this.eventHelper,
-      InviteAcceptChat,
-      [instance.instanceName],
-      `/guild invite ${profile.id}`,
-      profile.name
-    )
-    if (minecraftSendResult.status !== 'success') {
-      return (
-        `Failed to invite ${profile.name} in-game: ` +
-        minecraftSendResult.message.map((entry) => entry.content).join(' - ')
-      )
-    }
+  ): Promise<
+    'alreadyIn' | 'rescheduledAndInformed' | { profile: MojangProfile; ingameInvited: boolean; discordMessage: boolean }
+  > {
+    let ingameInvited = false
+    let discordMessage = false
 
-    const setAsInvited = this.database.waitlistSetInvited(waitlistEntry.id)
-    if (!setAsInvited) {
-      this.logger.warn(
-        `Trying to set invited flag on a waitlist but it does not exist in the database? ${JSON.stringify(waitlistEntry)}`
-      )
+    const setAsInvited = this.database.waitlistSetInvited(
+      waitlistEntry.id,
+      Date.now() + MinecraftGuildsManager.WaitlistRequestDuration.toMilliseconds()
+    )
+    assert.strictEqual(
+      setAsInvited,
+      true,
+      `Trying to set invited flag on a waitlist but it does not exist in the database? ${JSON.stringify(waitlistEntry)}`
+    )
+
+    const profile = await this.application.mojangApi.profileByUuid(waitlistEntry.mojangId)
+    const result = await this.application.core.guildManager
+      .invite(instance.instanceName, profile.name)
+      .catch(() => undefined)
+
+    switch (result) {
+      case GuildInviteStatus.AlreadyJoined:
+      case GuildInviteStatus.Joined: {
+        return 'alreadyIn'
+      }
+
+      case GuildInviteStatus.AlreadyInvited:
+      case GuildInviteStatus.OnlineInvite:
+      case GuildInviteStatus.OfflineInvite: {
+        ingameInvited = true
+        break
+      }
+
+      case undefined:
+      case GuildInviteStatus.AlreadyInGuild:
+      case GuildInviteStatus.GuildFull:
+      case GuildInviteStatus.NoPermission:
+      case GuildInviteStatus.PlayerPrivate: {
+        ingameInvited = false
+        break
+      }
+
+      case GuildInviteStatus.InvalidUsername: {
+        this.database.rescheduleWaitlist(
+          waitlistEntry.id,
+          Date.now() + MinecraftGuildsManager.ForceReschedule.toMilliseconds()
+        )
+        await this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
+          user: undefined,
+          color: Color.Info,
+          channels: [ChannelType.Officer],
+          message:
+            `Tried to invite ${profile.name} from the waitlist but could not find the player somehow.` +
+            ` Rescheduling in the waitlist for ${formatTime(MinecraftGuildsManager.ForceReschedule.toMilliseconds())}.`
+        })
+        return 'rescheduledAndInformed'
+      }
+
+      default: {
+        result satisfies never
+      }
     }
 
     const link = await this.application.core.verification.findByIngame(profile.id)
-    if (link === undefined) {
-      return `Invited ${profile.name} in-game but could not notify on Discord due to ${profile.name} DM disabled.`
+    if (link !== undefined) {
+      try {
+        const lastTimestamp = Date.now() + MinecraftGuildsManager.WaitlistRequestDuration.toMilliseconds()
+        const discordClient = this.discordClient()
+        const message = await discordClient.users.send(link.discordId, {
+          content:
+            `# ${savedGuild.name} join request approved` +
+            `\nHey ${escapeMarkdown(profile.name)},` +
+            `\nYou are invited to join Hypixel guild ${escapeMarkdown(savedGuild.name)}.` +
+            `\nAn invite has been sent to you in-game on the account **${escapeMarkdown(profile.name)}** (${inlineCode(profile.id)}).` +
+            `\nThe invite typically expires after 5 minutes. You can request another one by pressing the buttons down below any time as long as the offer stands.` +
+            `\nThe offer expires <t:${Math.floor(lastTimestamp / 1000)}:R>.` +
+            `\n\nPress **Invite** to re-send the guild join invite in case you missed it.` +
+            `\nPress **Reschedule** to be put back at the end of the waiting list if you can't decide yet.` +
+            `\nPress **Decline** to decline the offer, so the next player on the waitlist receives it sooner.`,
+          components: [
+            {
+              type: ComponentType.ActionRow,
+              components: [
+                {
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Success,
+                  customId: DiscordWaitlistInteraction.InviteId,
+                  label: 'Invite'
+                },
+                {
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Secondary,
+                  customId: DiscordWaitlistInteraction.RescheduleId,
+                  label: 'Reschedule'
+                },
+                {
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Danger,
+                  customId: DiscordWaitlistInteraction.DeclineId,
+                  label: 'Decline'
+                }
+              ]
+            }
+          ]
+        })
+
+        this.database.addSentWaitlist({
+          reference: waitlistEntry.id,
+
+          messageId: message.id,
+          channelId: message.channelId
+        })
+        discordMessage = true
+      } catch (error: unknown) {
+        this.errorHandler.error('sending DM to invite player on waitlist', error)
+      }
     }
 
-    try {
-      const lastTimestamp = Date.now() + MinecraftGuildsManager.WaitlistRequestDuration.toMilliseconds()
-      const discordClient = this.discordClient()
-      const message = await discordClient.users.send(link.discordId, {
-        content:
-          `# ${savedGuild.name} join request approved` +
-          `\nHey ${escapeMarkdown(profile.name)},` +
-          `\nYou are invited to join Hypixel guild ${escapeMarkdown(savedGuild.name)}.` +
-          `\nAn invite has been sent to you in-game on the account **${escapeMarkdown(profile.name)}** (${inlineCode(profile.id)}).` +
-          `\nThe invite typically expires after 5 minutes. You can request another one by pressing the buttons down below any time as long as the offer stands.` +
-          `\nYou have till <t:${Math.floor(lastTimestamp / 1000)}> to decide regarding this offer.` +
-          `\n\nPress **Invite** to re-send the guild join invite in case you missed it.` +
-          `\nPress **Reschedule** to be put back at the end of the waiting list if you can't decide yet.` +
-          `\nPress **Decline** to decline the offer, so the next player on the waitlist receives it sooner.`,
-        components: [
-          {
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.Button,
-                style: ButtonStyle.Success,
-                customId: DiscordWaitlistInteraction.InviteId,
-                label: 'Invite'
-              },
-              {
-                type: ComponentType.Button,
-                style: ButtonStyle.Danger,
-                customId: DiscordWaitlistInteraction.RescheduleId,
-                label: 'Reschedule'
-              },
-              {
-                type: ComponentType.Button,
-                style: ButtonStyle.Danger,
-                customId: DiscordWaitlistInteraction.DeclineId,
-                label: 'Decline'
-              }
-            ]
-          }
-        ]
-      })
-
-      this.database.addSentWaitlist({
-        reference: waitlistEntry.id,
-
-        messageId: message.id,
-        channelId: message.channelId
-      })
-    } catch (error: unknown) {
-      this.errorHandler.error('sending DM to invite player on waitlist', error)
-      return `Invited ${profile.name} in-game but failed to notify ${profile.name} via Discord DM.`
-    }
+    return { profile, ingameInvited, discordMessage }
   }
 
   private async processExpiredInvites(expiredInvites: WaitlistEntry[]): Promise<void> {

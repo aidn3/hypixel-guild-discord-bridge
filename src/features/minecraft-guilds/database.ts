@@ -147,13 +147,9 @@ export class Database {
       const statementWaitlist = database.prepare(
         'DELETE FROM "minecraftGuildWaitlist" WHERE guildId = ? AND mojangId = ?'
       )
-      const statementDiscord = database.prepare(
-        'DELETE FROM "discordGuildWaitlistRequest" WHERE guildId = ? AND mojangId = ?'
-      )
 
       let changes = 0
       changes += statementWaitlist.run(guildId, mojangId).changes
-      changes += statementDiscord.run(guildId, mojangId).changes
       return changes > 0
     })
 
@@ -166,21 +162,20 @@ export class Database {
       const selectWaitlist = database.prepare<[typeof guildId], WaitlistEntry>(
         'SELECT * FROM minecraftGuildWaitlist WHERE guildId = ?'
       )
-      const selectDiscord = database.prepare<[typeof guildId], WaitlistRequestEntry>(
-        'SELECT * FROM discordGuildWaitlistRequest WHERE guildId = ?'
+      const selectDiscord = database.prepare<[WaitlistRequestEntry['reference']], WaitlistRequestEntry>(
+        'SELECT * FROM discordGuildWaitlistRequest WHERE reference = ?'
       )
-
-      const mappedDiscord = new Map<WaitlistRequestEntry['reference'], WaitlistRequestEntry>()
-      for (const discordEntry of selectDiscord.all(guildId)) {
-        mappedDiscord.set(discordEntry.reference, discordEntry)
-      }
 
       const result = selectWaitlist.all(guildId)
       for (const waitlistEntry of result) {
         waitlistEntry.createdAt = waitlistEntry.createdAt * 1000
         waitlistEntry.invitedTill = waitlistEntry.invitedTill * 1000
         waitlistEntry.noInviteTill = waitlistEntry.noInviteTill * 1000
-        waitlistEntry.discord = mappedDiscord.get(waitlistEntry.id)
+
+        waitlistEntry.discord = selectDiscord.get(waitlistEntry.id)
+        if (waitlistEntry.discord !== undefined) {
+          assert.strictEqual(waitlistEntry.id, waitlistEntry.discord.reference)
+        }
       }
 
       return result
@@ -189,13 +184,11 @@ export class Database {
     return transaction()
   }
 
-  public waitlistSetInvited(id: WaitlistEntry['id']): boolean {
+  public waitlistSetInvited(id: WaitlistEntry['id'], invitedTill: number): boolean {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const changeDate = database.prepare(
-        'UPDATE "minecraftGuildWaitlist" SET invitedTill = (unixepoch()) WHERE id = ?'
-      )
-      return changeDate.run(id).changes > 0
+      const changeDate = database.prepare('UPDATE "minecraftGuildWaitlist" SET invitedTill = ? WHERE id = ?')
+      return changeDate.run(invitedTill, id).changes > 0
     })
 
     return transaction()
