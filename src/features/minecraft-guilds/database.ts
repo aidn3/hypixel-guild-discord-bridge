@@ -178,6 +178,8 @@ export class Database {
         }
       }
 
+      result.sort((a, b) => a.createdAt - b.createdAt) // ensure priority
+
       return result
     })
 
@@ -283,7 +285,7 @@ export class Database {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const update = database.prepare<[typeof noInviteTill, typeof id]>(
-        'UPDATE "minecraftGuildWaitlist" SET invitedTill = 0, noInviteTill = ? WHERE id = ?'
+        'UPDATE "minecraftGuildWaitlist" SET createdAt = (unixepoch()), invitedTill = 0, noInviteTill = ? WHERE id = ?'
       )
       const deleteDiscord = database.prepare<[typeof id]>(
         'DELETE FROM "discordGuildWaitlistRequest" WHERE reference = ?'
