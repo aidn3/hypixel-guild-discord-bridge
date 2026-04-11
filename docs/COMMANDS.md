@@ -92,7 +92,6 @@ A shorter version can also be used: `!- rtca`
 | `purse`          | Returns a player's SkyBlock coins                                                  |
 | `rank`           | Shows the rank of a player                                                         |
 | `ranks`          | List guild ranks requirements                                                      |
-| `rankup`         | Update a user in-game guild rank                                                   |
 | `rep`            | Returns a player's Crimson Isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |
 | `roulette`       | Try your luck for a 15 minute mute                                                 |
@@ -111,6 +110,7 @@ A shorter version can also be used: `!- rtca`
 | `starfall`       | When is the next SkyBlock Cult of the Fallen Star event                            |
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
 | `status`         | Show a player's Hypixel status and current location                                |
+| `sync`           | Update a user in-game guild rank                                                   |
 | `timecharm`      | Returns a player's rift obtained time charms                                       |
 | `toggle`         | Enable/disable commands                                                            |
 | `toggled`        | Show disabled commands                                                             |

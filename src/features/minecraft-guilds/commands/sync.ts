@@ -8,12 +8,12 @@ import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hyp
 import { usernameNotExists } from '../../../instance/commands/common/utility'
 import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
 
-export default class Rankup extends ChatCommandHandler {
+export default class Sync extends ChatCommandHandler {
   constructor(private readonly database: Database) {
     super({
-      triggers: ['rankup', 'guildrankup', 'grankup'],
+      triggers: ['sync', 'rankup', 'guildrankup', 'grankup'],
       description: 'Update a user in-game guild rank',
-      example: `rankup [username]`
+      example: `sync [username]`
     })
   }
 

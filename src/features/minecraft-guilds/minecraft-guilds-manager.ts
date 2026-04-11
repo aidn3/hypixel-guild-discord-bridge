@@ -28,7 +28,7 @@ import { formatTime } from '../../utility/shared-utility'
 import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandler } from './commands/discord-guild'
 import Invite from './commands/invite'
 import Ranks from './commands/ranks'
-import Rankup from './commands/rankup'
+import Sync from './commands/sync'
 import type { MinecraftGuild, WaitlistEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
@@ -56,7 +56,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     )
 
     this.application.registerChatCommand(new Ranks(this.database))
-    this.application.registerChatCommand(new Rankup(this.database))
+    this.application.registerChatCommand(new Sync(this.database))
     this.application.registerChatCommand(new Invite(this.database))
     this.application.registerDiscordCommand({
       ...DiscordGuildCommand,

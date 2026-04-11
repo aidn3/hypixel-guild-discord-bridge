@@ -224,8 +224,8 @@ After that, execute the command `/guild role-conditions add` to add new guild ra
 During the creation of each condition, a guild rank must be selected to associate with the condition.
 When a guild member meets the condition requirement, the guild rank will be automatically given to that guild member.
 
-The chat command `!rankup` can be used by any guild member to automatically update their guild rank in case it is needed.
-The same chat command can also be used by staff to update guild members rank. For example, `!rankup Steve`.
+The chat command `!sync` can be used by any guild member to automatically update their guild rank in case it is needed.
+The same chat command can also be used by staff to update guild members rank. For example, `!sync Steve`.
 
 Anyone can view all guild ranks requirements by using the chat command `!ranks`.
 
