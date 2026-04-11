@@ -251,6 +251,34 @@ export class Database {
     return transaction()
   }
 
+  public getWaitlistByMojangId(mojangId: string): WaitlistEntry | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const selectDiscord = database.prepare<[typeof mojangId], WaitlistRequestEntry>(
+        'SELECT * FROM discordGuildWaitlistRequest WHERE mojangId = ?'
+      )
+      const selectWaitlist = database.prepare<[WaitlistEntry['id']], WaitlistEntry>(
+        'SELECT * FROM minecraftGuildWaitlist WHERE id = ?'
+      )
+
+      const discordEntry = selectDiscord.get(mojangId)
+      if (discordEntry === undefined) return
+
+      const waitlist = selectWaitlist.get(discordEntry.reference)
+      assert.ok(waitlist !== undefined)
+      assert.strictEqual(discordEntry.reference, waitlist.id)
+
+      waitlist.createdAt = waitlist.createdAt * 1000
+      waitlist.invitedTill = waitlist.invitedTill * 1000
+      waitlist.noInviteTill = waitlist.noInviteTill * 1000
+      waitlist.discord = discordEntry
+
+      return waitlist
+    })
+
+    return transaction()
+  }
+
   public rescheduleWaitlist(id: WaitlistEntry['id'], noInviteTill: number): boolean {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {

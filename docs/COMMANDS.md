@@ -67,6 +67,7 @@ A shorter version can also be used: `!- rtca`
 | `hotm`           | Returns a player's HOTM and powder                                                 |
 | `insult`         | Insult a player                                                                    |
 | `inventory`      | Render a player's SkyBlock inventory                                               |
+| `invite`         | Send yourself a guild invite if you are officially invited                         |
 | `iq`             | Returns a player's IQ (0-200)                                                      |
 | `item`           | Render a slot in a player's SkyBlock profile                                       |
 | `jacob`          | Returns a player's SkyBlock Jacob contest stats                                    |
