@@ -28,7 +28,6 @@ import { interactivePaging } from '../../instance/discord/utility/discord-pager'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
 import { checkChatTriggers, InviteAcceptChat } from '../../utility/chat-triggers'
 import Duration from '../../utility/duration'
-import { sleep } from '../../utility/shared-utility'
 
 import type { Database, MinecraftGuild } from './database'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
@@ -222,7 +221,6 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === sentWaitlist.guildId)
     assert.ok(savedGuild !== undefined)
 
-    assert.ok(interaction.inCachedGuild())
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const profile = await this.application.mojangApi.profileByUuid(sentWaitlist.mojangId)
@@ -266,13 +264,14 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     const sentWaitlist = this.database.getWaitlistByMessageId(interaction.message.id)
     if (sentWaitlist === undefined) return
 
-    assert.ok(interaction.inCachedGuild())
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+    const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === sentWaitlist.guildId)
+    assert.ok(savedGuild !== undefined)
+
+    await interaction.deferReply()
 
     await this.queue.add(async () => {
-      await sleep(0)
-
-      this.database.removeWaitlist(sentWaitlist.mojangId, sentWaitlist.mojangId)
+      this.database.removeWaitlist(sentWaitlist.guildId, sentWaitlist.mojangId)
+      await this.unsafeWaitlistUpdated(savedGuild)
     })
 
     await interaction.editReply('You have successfully declined the offer. Thank you for your speedy response!')
@@ -282,13 +281,16 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     const waitlistEntry = this.database.getWaitlistByMessageId(interaction.message.id)
     if (waitlistEntry === undefined) return
 
-    assert.ok(interaction.inCachedGuild())
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+    const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === waitlistEntry.guildId)
+    assert.ok(savedGuild !== undefined)
+
+    await interaction.deferReply()
 
     const newTime = Date.now() + DiscordWaitlistInteraction.WaitlistRescheduleGracePeriod.toMilliseconds()
     const rescheduled = await this.queue.add(async () => {
-      await sleep(0)
-      return this.database.rescheduleWaitlist(waitlistEntry.id, newTime)
+      const result = this.database.rescheduleWaitlist(waitlistEntry.id, newTime)
+      if (result) await this.unsafeWaitlistUpdated(savedGuild)
+      return result
     })
 
     if (rescheduled) {
