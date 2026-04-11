@@ -205,7 +205,7 @@ The pity is counted globally across all users.
 ## How to enable and manage in-game guild system
 
 To manage a guild, it must be registered first using the Discord slash command `/guild register`.
-By default, all in-game guilds that are connect via any Minecraft instance will be automatically registered.
+By default, all in-game guilds that are connected via any Minecraft instance will be automatically registered.
 
 A registered guild can be managed via the command `/guild settings`.
 By default, all settings and features are toggled off unless they are explicitly changed.
@@ -235,11 +235,10 @@ Before starting, the in-game guild must be registered via `/guild register`.
 Check [this FAQ section](#how-to-enable-and-manage-in-game-guild-system) for further information regarding the registration.
 
 After that, execute the command `/guild join-conditions add` to add new guild join conditions.
-Via the Discord slash command `/guild settings`, it is possible to change how many conditions must be met
-before the allowing the player to join the guild.
+Via the Discord slash command `/guild settings`, it is possible to change how many conditions must be met before allowing the player to join the guild.
 By default, it is set to `1`. That means the player must meet just `1` join requirement before allowing the player to join the guild.
 
-> Banned players will not be able to join the guild regardless of the join requirements.
+> Guild banned players will not be able to join the guild regardless of the join requirements.
 
 ## Auto accept guild join requests
 
@@ -264,15 +263,15 @@ After enabling this feature, players can now press the special button in the spe
 
 The waitlist will be automatically checked every couple minutes.
 When the guild has enough space to accept more members, the application will start inviting the people from the waitlist in order from the first to last.
-Every player has 24 hour to accept the offer.
-If the player does not accept within the allocated time, player will be completely removed from the waitlist and the next player will be invited from the waitlist.
+Every player has 24 hours to accept the offer.
+If the player does not accept within the allocated time, they will be completely removed from the waitlist and the next player will be invited from the waitlist.
 
 When a player is invited via this system, the player will receive a guild join invite as well as a Discord private message explaining the situation.
 In the Discord private message, there will be options to allow the user to accept/decline/reschedule the offer. These Discord buttons:
 
-- When accepting the offer, the player will receive a guild join invite in-game and the status of the invite will be displayed in the Discord private message. Player may press this button as many times as needed as long as the invite is still valid.
+- When accepting the offer, the player will receive a guild join invite in-game and the status of the invite will be displayed in the Discord private message. They may press this button as many times as needed as long as the invite is still valid.
 - When declining the offer, the player will be instantly removed from the waitlist and the next player in the waitlist will be invited instead.
-- When rescheduling the offer, the player will be put last in the waitlist and a 24-hour grace period will put, during which the player will not be invited even if they are the first in line in the waitlist.
+- When rescheduling the offer, the player will be put last in the waitlist and a 24-hours grace period will put in place, during which the player will not be invited even if they are the first in line in the waitlist.
 
 After the player has been officially invited, the user may accept the offer by:
 
