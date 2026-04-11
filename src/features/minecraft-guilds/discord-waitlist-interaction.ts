@@ -445,7 +445,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
           formattedEntry += inlineCode(entry.mojangId)
         }
 
-        formattedEntry += `: <t:${Math.floor(entry.createdAt)}>`
+        formattedEntry += `: <t:${Math.floor(entry.createdAt / 1000)}>`
         if (entry.invitedTill > 0) formattedEntry += ` [invited]`
         else if (entry.noInviteTill > 0) formattedEntry += ` [rescheduled]`
         result.push(formattedEntry)
@@ -481,7 +481,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
         message += inlineCode(entry.mojangId)
       }
 
-      message += `: <t:${Math.floor(entry.createdAt)}:d>`
+      message += `: <t:${Math.floor(entry.createdAt / 1000)}:d>`
       if (entry.invitedTill > 0) message += ` [invited]`
       else if (entry.noInviteTill > 0) message += ` [rescheduled]`
     }
