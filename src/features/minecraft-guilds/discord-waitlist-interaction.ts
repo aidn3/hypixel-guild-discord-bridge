@@ -132,6 +132,12 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       return
     }
 
+    const guild = await this.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+    if (guild?._id === savedGuild.id) {
+      await interaction.editReply({ content: 'You are already in this guild!' })
+      return
+    }
+
     const alreadyRegistered = this.database
       .getWaitlistStatus(savedGuild.id)
       .find((entry) => entry.mojangId === mojangProfile.id)
