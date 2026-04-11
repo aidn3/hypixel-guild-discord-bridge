@@ -705,6 +705,12 @@ async function handleWaitlistAdd(
     return
   }
 
+  const guild = await context.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+  if (guild?._id === savedGuild.id) {
+    await interaction.editReply({ content: `${escapeMarkdown(mojangProfile.name)} already in this guild!` })
+    return
+  }
+
   const newlyAdded = database.addWaitlist(savedGuild.id, mojangProfile.id)
   await waitlistInteraction.waitlistUpdated(savedGuild)
   if (newlyAdded) {
