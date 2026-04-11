@@ -331,7 +331,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     let usedSlots = 0
     for (const waitEntry of waitlist) {
       if (usedSlots >= openSlots) break
-      if (waitEntry.noInviteTill !== 0 && waitEntry.noInviteTill < currentTime) continue
+      if (waitEntry.noInviteTill !== 0 && waitEntry.noInviteTill > currentTime) continue
       if (waitEntry.invitedTill !== 0) continue
 
       const result = await this.sendJoinRequest(instance, savedGuild, waitEntry)
