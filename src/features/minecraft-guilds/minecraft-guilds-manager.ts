@@ -11,7 +11,8 @@ import {
   Color,
   GuildPlayerEventType,
   InstanceType,
-  MinecraftSendChatPriority
+  MinecraftSendChatPriority,
+  PunishmentType
 } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import { Instance, InternalInstancePrefix } from '../../common/instance'
@@ -203,6 +204,9 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
 
   private async handleJoinRequest(event: GuildPlayerEvent): Promise<void> {
     if (event.type !== GuildPlayerEventType.Request) return
+
+    const banned = event.user.punishments().longestPunishment(PunishmentType.Ban)
+    if (banned !== undefined) return
 
     const instance = this.application.minecraftManager
       .getAllInstances()
