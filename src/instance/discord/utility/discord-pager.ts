@@ -117,6 +117,7 @@ export async function interactivePaging(
 
       void getNumber(index, optionParameters, undefined, 'Select Page')
         .then(async (selectedPage) => {
+          selectedPage = Math.floor(selectedPage)
           currentPage = selectedPage - 1 // to account for 0-index
           await index.editReply({
             components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)]
