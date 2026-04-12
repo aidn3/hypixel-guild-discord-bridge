@@ -9,6 +9,11 @@ import Duration from '../../utility/duration'
 import { Timeout } from '../../utility/timeout'
 import type { Core } from '../core'
 
+/*
+ * All operations on guild object must be atomic.
+ * That means data within must be done within a cycle and not separated by an "async/await".
+ * So all data must be "whole" across cycles at all times.
+ */
 export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
   public static readonly DefaultDataExpire = Duration.seconds(30)
   private readonly guildInfo = new Map<string, GuildInformation>()
@@ -49,10 +54,51 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     })
   }
 
+  /**
+   * Fetch a guild MOTD
+   *
+   * @param instanceName the minecraft instance name to fetch the stats from
+   * @param newerThan duration in milliseconds of how old the data can be at most
+   *
+   * @return an object containing the requested data
+   */
+  public async motd(
+    instanceName: string,
+    newerThan: Duration = GuildManager.DefaultDataExpire
+  ): Promise<Readonly<GuildMOTD>> {
+    const guildInfo = this.getGuildInfo(instanceName)
+    const getCached = () => {
+      if (guildInfo.motd === undefined || guildInfo.motd.fetchedAt + newerThan.toMilliseconds() < Date.now()) {
+        return
+      }
+
+      return guildInfo.motd
+    }
+
+    let motd = getCached()
+    if (motd !== undefined) return motd
+
+    return await this.queueTask(guildInfo, async () => {
+      // check again in an atomic operation before fetching again
+      // since there is a chance previous task has already fetched the data while awaiting in queue
+      motd = getCached()
+      if (motd !== undefined) return motd
+
+      motd = await this.motdNow(instanceName)
+      guildInfo.motd = motd
+      return motd
+    })
+  }
+
+  public async invite(instanceName: string, username: string): Promise<GuildInviteStatus> {
+    const guildInfo = this.getGuildInfo(instanceName)
+    return await this.queueTask(guildInfo, () => this.inviteNow(instanceName, username))
+  }
+
   private getGuildInfo(instanceName: string): GuildInformation {
     let guild = this.guildInfo.get(instanceName)
     if (guild === undefined) {
-      guild = { commandQueue: new PromiseQueue(1), guild: undefined }
+      guild = { commandQueue: new PromiseQueue(1), guild: undefined, motd: undefined }
       this.guildInfo.set(instanceName, guild)
     }
 
@@ -71,13 +117,8 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     return guild.commandQueue.add(task)
   }
 
-  /*
-   * All operations on guild object must be atomic.
-   * That means data within must be done within a cycle and not separated by an "async/await".
-   * So all data must be "whole" across cycles at all times.
-   */
   private async listNow(instanceName: string): Promise<Readonly<GuildFetch>> {
-    const timeout = new Timeout<Error | undefined>(10_000)
+    const timeout = new Timeout<GuildManagerError | undefined>(10_000)
     const guild: GuildFetch = { fetchedAt: Date.now(), name: '', members: [] }
 
     let currentRank: string | undefined = undefined
@@ -108,7 +149,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
       let usernameMatch: RegExpExecArray | null
       while ((usernameMatch = memberRegex.exec(event.rawMessage)) != undefined) {
         if (currentRank === undefined) {
-          timeout.resolve(new Error('Detected members before detecting rank somehow!'))
+          timeout.resolve(new GuildManagerError('Detected members before detecting rank somehow!'))
           return
         }
 
@@ -126,7 +167,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
             break
           }
           default: {
-            throw new Error(`invalid online indicator character: ${usernameMatch[0]}`)
+            throw new GuildManagerError(`invalid online indicator character: ${usernameMatch[0]}`)
           }
         }
       }
@@ -138,7 +179,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
         if (detected !== displayed) {
           timeout.resolve(
-            new Error(
+            new GuildManagerError(
               `Detected guild total members count does not match the displayed amount. ` +
                 `detected=${detected}, displayed=${displayed}`
             )
@@ -154,7 +195,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
         if (detected !== displayed) {
           timeout.resolve(
-            new Error(
+            new GuildManagerError(
               `Detected guild online members count does not match the displayed amount. ` +
                 `detected=${detected}, displayed=${displayed}`
             )
@@ -169,14 +210,138 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
     this.application.on('minecraftChat', chatListener)
     await this.application.sendMinecraft([instanceName], MinecraftSendChatPriority.High, undefined, `/guild list`)
+    timeout.refresh()
     const error = await timeout.wait()
     this.application.off('minecraftChat', chatListener)
     if (error) throw error
-    if (timeout.timedOut()) throw new Error('Timed out before fully fetching guild listing data')
+    if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild listing data')
 
     assert.ok(guild.name.length > 0, 'Could not detect any guild name somehow')
     assert.ok(guild.members.length > 0, 'Could not detect any members at all??')
     return Object.freeze(guild)
+  }
+
+  private async motdNow(instanceName: string): Promise<Readonly<GuildMOTD>> {
+    const timeout = new Timeout<GuildManagerError | undefined>(10_000)
+    const motd: GuildMOTD = { fetchedAt: Date.now(), lines: { type: 'empty' } }
+
+    let header: GuildMOTDLine | undefined = undefined
+    let footer: GuildMOTDLine | undefined = undefined
+    const lines: GuildMOTDLines['content'] = []
+
+    const startDetection = /^-{10} {2}Guild: Message Of The Day \(Preview\) {2}-{10}/g
+    const linePrefixRaw = '§b| '
+    const linePrefix = '| '
+    const endDetection = /^§b§m-{53}$/g
+    const noMotd = /^There is no Guild MOTD!$/g
+    let started = false
+
+    const chatListener = function (event: MinecraftRawChatEvent): void {
+      if (event.instanceName !== instanceName) return
+
+      if (noMotd.test(event.message)) {
+        timeout.resolve(undefined)
+        return
+      }
+
+      const isStarting = startDetection.test(event.message)
+      const isEnding = endDetection.test(event.rawMessage)
+      if (started && isEnding) {
+        footer = { content: event.message, raw: event.rawMessage } satisfies GuildMOTDLine
+        timeout.resolve(undefined)
+        return
+      } else if (isStarting) {
+        header = { content: event.message, raw: event.rawMessage } satisfies GuildMOTDLine
+        started = isStarting
+        return
+      } else if (started && event.rawMessage.startsWith(linePrefixRaw)) {
+        lines.push({
+          clean: { content: event.message.slice(linePrefix.length), raw: event.rawMessage.slice(linePrefixRaw.length) },
+          withPrefix: { content: event.message, raw: event.rawMessage }
+        })
+      }
+    }
+
+    this.application.on('minecraftChat', chatListener)
+    await this.application.sendMinecraft(
+      [instanceName],
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild motd preview`
+    )
+    timeout.refresh()
+    const error = await timeout.wait()
+    this.application.off('minecraftChat', chatListener)
+    if (error) throw error
+    if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild motd data')
+
+    if (lines.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      assert.ok(header !== undefined)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      assert.ok(footer !== undefined)
+      motd.lines = { type: 'exists', header: header, footer: footer, content: lines }
+    }
+
+    return Object.freeze(motd)
+  }
+
+  private async inviteNow(instanceName: string, username: string): Promise<GuildInviteStatus> {
+    const InviteAcceptChat: { regex: RegExp; type: GuildInviteStatus }[] = [
+      { regex: /^Your guild is full!/, type: GuildInviteStatus.GuildFull },
+      {
+        regex: /^You invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild. They have 5 minutes to accept/,
+        type: GuildInviteStatus.OnlineInvite
+      },
+      {
+        regex:
+          /^You sent an offline invite to (?:\[[+A-Z]{1,10}] )*(\w{3,32})! They will have 5 minutes to accept once they come online!/,
+        type: GuildInviteStatus.OfflineInvite
+      },
+      {
+        regex: /^You've already invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild! Wait for them to accept!/,
+        type: GuildInviteStatus.AlreadyInvited
+      },
+      { regex: /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) joined the guild!/, type: GuildInviteStatus.Joined },
+      { regex: /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in your guild!/, type: GuildInviteStatus.AlreadyJoined },
+      { regex: /^You cannot invite this player to your guild!/, type: GuildInviteStatus.PlayerPrivate },
+      { regex: /^You do not have permission to invite players!/, type: GuildInviteStatus.NoPermission },
+      { regex: /^You do not have permission to use this command!/, type: GuildInviteStatus.NoPermission },
+      { regex: /^Your guild rank does not have permission to use this!/, type: GuildInviteStatus.NoPermission },
+      {
+        regex: /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in another guild!/,
+        type: GuildInviteStatus.AlreadyInGuild
+      },
+      { regex: /^Can't find a player by the name of '(\w{3,32})'*/, type: GuildInviteStatus.InvalidUsername }
+    ]
+
+    const timeout = new Timeout<GuildInviteStatus>(10_000)
+
+    const chatListener = function (event: MinecraftRawChatEvent): void {
+      if (event.instanceName !== instanceName) return
+
+      for (const entry of InviteAcceptChat) {
+        const match = entry.regex.exec(event.message)
+        if (match === null) continue
+        if (match.length > 1 && match[1].toLowerCase() !== username.toLowerCase()) continue
+        timeout.resolve(entry.type)
+      }
+    }
+
+    this.application.on('minecraftChat', chatListener)
+    await this.application.sendMinecraft(
+      [instanceName],
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild invite ${username}`
+    )
+    timeout.refresh()
+    const result = await timeout.wait()
+    this.application.off('minecraftChat', chatListener)
+    if (timeout.timedOut()) throw new GuildManagerError(`Timed out before while trying to invite ${username}`)
+    assert.ok(result !== undefined)
+
+    return result
   }
 }
 
@@ -184,6 +349,7 @@ interface GuildInformation {
   commandQueue: PromiseQueue
 
   guild: GuildFetch | undefined
+  motd: GuildMOTD | undefined
 }
 
 export interface GuildFetch {
@@ -197,4 +363,41 @@ export interface GuildMember {
   username: string
   rank: string
   online: boolean
+}
+
+export interface GuildMOTD {
+  fetchedAt: number
+
+  lines: { type: 'empty' } | GuildMOTDLines
+}
+
+export interface GuildMOTDLines {
+  type: 'exists'
+  header: GuildMOTDLine
+  footer: GuildMOTDLine
+  content: { clean: GuildMOTDLine; withPrefix: GuildMOTDLine }[]
+}
+
+export interface GuildMOTDLine {
+  content: string
+  raw: string
+}
+
+export class GuildManagerError extends Error {
+  public constructor(message: string) {
+    super(message)
+  }
+}
+
+export enum GuildInviteStatus {
+  GuildFull = 'guildFull',
+  Joined = 'joined',
+  AlreadyInvited = 'alreadyInvited',
+  OnlineInvite = 'onlineInvite',
+  PlayerPrivate = 'playerPrivate',
+  AlreadyJoined = 'alreadyJoined',
+  OfflineInvite = 'offlineInvite',
+  AlreadyInGuild = 'alreadyInGuild',
+  NoPermission = 'noPermission',
+  InvalidUsername = 'invalidUsername'
 }

@@ -48,4 +48,12 @@ export class CommandsConfigurations {
   public setSuggestionsEnabled(enabled: boolean): void {
     this.configuration.setBoolean('enableSuggestions', enabled)
   }
+
+  public getUsernameHistoryEnabled(): boolean {
+    return this.configuration.getBoolean('usernameHistory', true)
+  }
+
+  public setUsernameHistoryEnabled(enabled: boolean): void {
+    this.configuration.setBoolean('usernameHistory', enabled)
+  }
 }

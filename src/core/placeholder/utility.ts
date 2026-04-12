@@ -15,8 +15,13 @@ export function formatNumberOptions(): { key: string; apply: (value: number) => 
     },
     {
       key: 'round',
-      apply: (value) => Math.floor(value).toString(10),
+      apply: (value) => Math.round(value).toString(10),
       description: 'round decimal numbers to whole value'
+    },
+    {
+      key: 'floor',
+      apply: (value) => Math.floor(value).toString(10),
+      description: 'floor decimal numbers to whole value'
     }
   ]
 }

@@ -4,9 +4,9 @@ import { getDungeonLevelWithOverflow } from '../../../instance/commands/common/u
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import type { HandlerContext, HandlerOperationContext, HandlerUser } from '../common'
-import { ConditionHandler } from '../common'
-import { checkSkyblockUserProfiles } from '../utilities'
+import type { HandlerContext, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from '../common'
+import { ConditionHandler, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
+import { getSkyblockUserProfiles } from '../utilities'
 
 export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
   override getId(): string {
@@ -18,7 +18,9 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
 
   override displayCondition(context: HandlerContext, options: SkyblockCatacombsOptions): string {
     return context.application.i18n.t(($) => $['discord.conditions.handler.skyblock-catacombs-level.formatted'], {
-      level: options.level
+      fromLevel: options.fromLevel,
+      toLevel: options.toLevel,
+      profileTypes: translateSkyblockProfileTypes(options.profileTypes)
     })
   }
 
@@ -27,25 +29,38 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
     handlerUser: HandlerUser,
     condition: SkyblockCatacombsOptions
   ): Promise<boolean> {
-    return checkSkyblockUserProfiles(context, handlerUser, (profile) => {
-      const experience = profile.dungeons?.dungeon_types.catacombs.experience ?? 0
-      const level = getDungeonLevelWithOverflow(experience)
-      return level >= condition.level
-    })
+    const profiles = await getSkyblockUserProfiles(context, handlerUser, condition.profileTypes)
+    if (profiles.length === 0) return false
+
+    const highestExperience = profiles
+      .map((profile) => profile.dungeons?.dungeon_types.catacombs.experience ?? 0)
+      // eslint-disable-next-line unicorn/no-array-reduce
+      .reduce((a, b) => Math.max(a, b))
+
+    const level = getDungeonLevelWithOverflow(highestExperience)
+    return level >= condition.fromLevel && level <= condition.toLevel
   }
 
   public override createOptions(): ModalOption[] {
     return [
+      SkyblockProfileOption,
       {
         type: OptionType.Number,
-        name: 'Catacombs Level',
-        key: 'level',
-        max: 1000,
+        name: 'From Catacombs Level',
+        key: 'fromLevel',
+        max: 10_000,
+        min: 0,
+        defaultValue: 0
+      },
+      {
+        type: OptionType.Number,
+        name: 'To Catacombs Level',
+        key: 'toLevel',
+        max: 10_000,
         min: 1
       }
     ]
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type SkyblockCatacombsOptions = { level: number }
+export type SkyblockCatacombsOptions = SkyblockProfileOptionType & { fromLevel: number; toLevel: number }

@@ -22,20 +22,22 @@ export default class Boo extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     const now = new Date()
     if (now.getMonth() !== 9) {
-      return `You can only scare people in October!`
+      return context.app.i18n.t(($) => $['commands.boo.wrong-month'])
     }
 
     const givenUsername = context.args[0] ?? context.username
     const currentTime = Date.now()
     if (this.lastCommandExecutionAt + Boo.CommandCoolDown > currentTime) {
-      return `Can use command again in ${Math.floor((this.lastCommandExecutionAt + Boo.CommandCoolDown - currentTime) / 1000)} seconds.`
+      return context.app.i18n.t(($) => $['commands.boo.cooldown'], {
+        cooldown: Math.floor((this.lastCommandExecutionAt + Boo.CommandCoolDown - currentTime) / 1000)
+      })
     }
     const minecraftInstanceName =
       context.message.instanceType === InstanceType.Minecraft
         ? context.message.instanceName
         : this.getActiveMinecraftInstanceName(context.app.minecraftManager)
     if (minecraftInstanceName === undefined) {
-      return `No active connected Minecraft account exists to use`
+      return context.app.i18n.t(($) => $['commands.boo.no-account'])
     }
     this.lastCommandExecutionAt = currentTime
 
@@ -49,13 +51,16 @@ export default class Boo extends ChatCommandHandler {
     )
     switch (result.status) {
       case 'success': {
-        return `${givenUsername} has been spooked!`
+        return context.app.i18n.t(($) => $['commands.boo.success'], { username: givenUsername })
       }
       case 'failed': {
-        return `Can not scare ${givenUsername}: ${result.message.length > 0 ? result.message[0].content : 'No idea why :D'}`
+        return context.app.i18n.t(($) => $['commands.boo.failed'], {
+          username: givenUsername,
+          reason: result.message.length > 0 ? result.message[0].content : 'No idea why :D'
+        })
       }
       case 'error': {
-        return `Could not scare ${givenUsername} for some unknown reason`
+        return context.app.i18n.t(($) => $['commands.boo.error'], { username: givenUsername })
       }
     }
   }

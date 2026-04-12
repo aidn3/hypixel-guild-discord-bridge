@@ -3,6 +3,7 @@ import type {
   ButtonInteraction,
   CommandInteraction,
   Message,
+  ModalSubmitInteraction,
   TextBasedChannel,
   TextChannel
 } from 'discord.js'
@@ -38,7 +39,7 @@ const NoEmbed: APIEmbed = {
 }
 
 export async function interactivePaging(
-  interaction: CommandInteraction | ButtonInteraction,
+  interaction: CommandInteraction | ButtonInteraction | ModalSubmitInteraction,
   currentPage = 0,
   duration = DefaultTimeout,
   errorHandler: UnexpectedErrorHandler,
@@ -117,6 +118,7 @@ export async function interactivePaging(
 
       void getNumber(index, optionParameters, undefined, 'Select Page')
         .then(async (selectedPage) => {
+          selectedPage = Math.floor(selectedPage)
           currentPage = selectedPage - 1 // to account for 0-index
           await index.editReply({
             components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)]

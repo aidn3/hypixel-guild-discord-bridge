@@ -9,6 +9,7 @@ import type {
   ComponentInContainerData,
   ContainerComponentData,
   InteractionResponse,
+  Message,
   MessageComponentInteraction,
   ModalMessageModalSubmitInteraction,
   SectionComponentData
@@ -124,6 +125,9 @@ export interface TextOption extends BaseOption {
   style: InputStyle
   placeholder?: string
   getOption: () => string
+  /**
+   * @throws ValueRejected with the message being the reason why the value was rejected
+   */
   setOption: (value: string) => void
   max: number
   min: number
@@ -132,6 +136,9 @@ export interface TextOption extends BaseOption {
 export interface NumberOption extends BaseOption {
   type: OptionType.Number
   getOption: () => number
+  /**
+   * @throws ValueRejected with the message being the reason why the value was rejected
+   */
   setOption: (value: number) => void
   max: number
   min: number
@@ -149,10 +156,16 @@ interface OptionId {
   item: OptionItem
 }
 
+export class ValueRejected extends Error {
+  constructor(public readonly reason: string) {
+    super()
+  }
+}
+
 export class OptionsHandler {
   public static readonly BackButton = 'back-button'
   private static readonly InactivityTime = 600_000
-  private originalReply: InteractionResponse | undefined
+  private originalReply: InteractionResponse | Message | undefined
   private enabled = true
   private path: string[] = []
   private ids = new Map<string, OptionId>()
@@ -171,11 +184,14 @@ export class OptionsHandler {
   }
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
-    const originalReply = await interaction.reply({
+    const alreadySent = interaction.replied || interaction.deferred
+    const payload = {
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
-      flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
-    })
+    }
+    const originalReply = alreadySent
+      ? await interaction.editReply({ ...payload, flags: MessageFlags.IsComponentsV2 })
+      : await interaction.reply({ ...payload, flags: MessageFlags.IsComponentsV2 })
 
     this.originalReply = originalReply
     const replyId = await originalReply.fetch().then((message) => message.id)
@@ -352,8 +368,16 @@ export class OptionsHandler {
         assert.ok(modalInteraction.isFromMessage())
 
         const value = modalInteraction.fields.getTextInputValue(interaction.customId)
-        option.setOption(value)
-        await this.updateView(modalInteraction)
+        try {
+          option.setOption(value)
+          await this.updateView(modalInteraction)
+        } catch (error: unknown) {
+          if (error instanceof ValueRejected) {
+            await modalInteraction.reply({ content: error.reason, flags: MessageFlags.Ephemeral })
+          } else {
+            throw error
+          }
+        }
       })
       .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
 
@@ -404,8 +428,16 @@ export class OptionsHandler {
             flags: MessageFlags.Ephemeral
           })
         } else {
-          option.setOption(intValue)
-          await this.updateView(modalInteraction)
+          try {
+            option.setOption(intValue)
+            await this.updateView(modalInteraction)
+          } catch (error: unknown) {
+            if (error instanceof ValueRejected) {
+              await modalInteraction.reply({ content: error.reason, flags: MessageFlags.Ephemeral })
+            } else {
+              throw error
+            }
+          }
         }
       })
       .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
