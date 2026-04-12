@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 12
+const CurrentVersion = 13
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -49,6 +49,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(11, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom11to12(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(12, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom12to13(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -670,6 +673,45 @@ function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: 
   )
 
   database.pragma('user_version = 12')
+}
+
+function migrateFrom12to13(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) {
+    logger.debug('Migrating database from version 12 to 13')
+    const tables = [
+      'discordRolesConditions',
+      'discordNicknameConditions',
+      'minecraftGuildRoleConditions',
+      'minecraftGuildJoinConditions'
+    ]
+
+    /* eslint-disable @typescript-eslint/consistent-type-definitions */
+    type Row = { id: number | bigint; options: string }
+    /* eslint-enable @typescript-eslint/consistent-type-definitions */
+
+    let totalUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId IN ('reached-hypixel-skyblock-level', 'reached-hypixel-skyblock-catacombs-level')`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as Record<string, unknown>
+        const updateResult = update.run(
+          JSON.stringify({ ...parsedOptions, profileTypes: ['classic', 'ironman', 'bingo', 'island'] }),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalUpdates++
+      }
+    }
+    if (totalUpdates > 0) {
+      logger.debug(`Updated ${totalUpdates} conditions entry regarding skyblock profile types`)
+    }
+  }
+
+  database.pragma('user_version = 13')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
