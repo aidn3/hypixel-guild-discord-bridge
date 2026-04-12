@@ -4,11 +4,9 @@
  * @see https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/senither-weight.js
  */
 
-/*
- CREDIT: Command idea by Aura
- Discord: Aura#5051
- Minecraft username: _aura
-*/
+import assert from 'node:assert'
+
+import axios from 'axios'
 import LilyWeight from 'lilyweight'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
@@ -238,7 +236,7 @@ export default class Weight extends ChatCommandHandler {
 
     const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
     const senitherWeight = calculateSenitherWeight(this.createWeightProfile(selectedProfile, skillsResponse))
-    const farmingWeight = await context.app.hypixelApi.getFarmingWeight(uuid)
+    const farmingWeight = await this.getFarmingWeight(uuid)
     const lilyWeight = calculateLilyWeight(selectedProfile).total
 
     return context.app.i18n.t(($) => $['commands.weight.response'], {
@@ -361,6 +359,20 @@ export default class Weight extends ChatCommandHandler {
     const levelWithProgress = level + progress
 
     return cap === undefined ? levelWithProgress : Math.min(uncappedLevel + progress, maxLevel)
+  }
+
+  private async getFarmingWeight(playerUuid: string): Promise<number> {
+    const EliteSkyblockApiPath = 'https://api.eliteskyblock.com'
+    const FarmingWeightPath = '/weight'
+
+    const result = await axios
+      .get<FarmingWeightResponse>(`${FarmingWeightPath}/${playerUuid}/selected`, { baseURL: EliteSkyblockApiPath })
+      .catch(() => undefined)
+
+    if (result === undefined) return 0
+
+    assert.ok(result.status === 200)
+    return typeof result.data.totalWeight === 'number' ? result.data.totalWeight : 0
   }
 }
 
@@ -606,4 +618,8 @@ function calculateSenitherWeight(profile: WeightProfile): SenitherWeight {
     .reduce((total, value) => total + value, 0)
 
   return output
+}
+
+export interface FarmingWeightResponse {
+  totalWeight: number
 }
