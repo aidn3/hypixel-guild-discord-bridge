@@ -32,6 +32,7 @@ import type { MojangProfile } from '../../common/user'
 import { formatChatTriggerResponse } from '../../instance/discord/common/chattrigger-format'
 import { formatUser } from '../../instance/discord/common/commands-format'
 import { DefaultCommandFooter } from '../../instance/discord/common/discord-config'
+import LinkButtonsManager from '../../instance/discord/features/link-buttons-manager'
 import { interactivePaging } from '../../instance/discord/utility/discord-pager'
 import { showModal } from '../../instance/discord/utility/modal-options'
 import type { PresetListOption } from '../../instance/discord/utility/options-handler'
@@ -163,19 +164,70 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       await interaction.reply(guildResult)
       return
     }
-    const responseInteraction = guildResult.response
+    const responseInteraction: ButtonInteraction | ModalSubmitInteraction = guildResult.response
     const selectedGuild = guildResult.guild
-    assert.ok(responseInteraction.inCachedGuild())
+
     await responseInteraction.deferReply({ flags: MessageFlags.Ephemeral })
+    const linkedAlready = await this.application.core.verification.findByDiscord(interaction.user.id)
+    if (linkedAlready !== undefined) {
+      await this.continueSigningUp(guildResult.response, selectedGuild)
+      return
+    }
+
+    const message = await responseInteraction.editReply({
+      content: 'You need to link before proceeding here.',
+      components: [
+        {
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.Button,
+              style: ButtonStyle.Primary,
+              customId: LinkButtonsManager.AutoLinkId,
+              label: 'Link'
+            }
+          ]
+        }
+      ]
+    })
+    const collector = message.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: Duration.minutes(15).toMilliseconds()
+    })
+
+    let stopLinking = false
+    collector.on('collect', (newInteraction) => {
+      if (stopLinking) return
+
+      stopLinking = true
+      void this.application.discordInstance.linkButtons
+        .showLinkingWizard(newInteraction, Date.now(), true)
+        .then(async (result) => {
+          if (result === undefined) {
+            stopLinking = false
+          } else {
+            collector.stop()
+            await this.continueSigningUp(result.modal, selectedGuild)
+          }
+        })
+        .catch((error: unknown) => {
+          stopLinking = false
+          this.errorHandler.error('trying to link before signing up', error)
+        })
+    })
+  }
+
+  private async continueSigningUp(
+    responseInteraction: ButtonInteraction | ModalSubmitInteraction,
+    selectedGuild: MinecraftGuild
+  ): Promise<void> {
+    assert.ok(responseInteraction.inCachedGuild())
 
     const profile = this.application.discordInstance.profileByUser(responseInteraction.user, responseInteraction.member)
     const user = await this.application.core.initializeDiscordUser(profile, { guild: responseInteraction.guild })
     const mojangProfile = user.mojangProfile()
 
     if (!mojangProfile) {
-      // TODO: show a message explaining that the user isn't linked.
-      //   add a button to start linking processing directly on the same flow.
-      //   link-buttons-manager.ts might have some good functions to copy or to re-purpose.
       await responseInteraction.editReply('You need to link first!')
       return
     }

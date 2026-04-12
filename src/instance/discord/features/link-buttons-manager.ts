@@ -10,6 +10,7 @@ import { Color } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import type { MojangProfile } from '../../../common/user'
 import { HypixelApiFail, HypixelFailType } from '../../../core/hypixel/hypixel'
 import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
 import Duration from '../../../utility/duration'
@@ -51,38 +52,10 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Ins
     const startTime = Date.now()
     const linkedAlready = await this.application.core.verification.findByDiscord(interaction.user.id)
     if (linkedAlready === undefined) {
-      await interaction.showModal({
-        customId: interaction.id,
-        title: 'Link Minecraft',
-        components: [
-          {
-            type: ComponentType.Label,
-            label: 'Username',
-            description: 'In-game username to check.',
-            // @ts-expect-error Discord API does not allow "label" repeated. "label" inside the component{} is removed
-            component: {
-              type: ComponentType.TextInput,
-              style: TextInputStyle.Short,
-              customId: 'username',
-              minLength: 2,
-              maxLength: 16,
-              required: true,
-              placeholder: 'Steve'
-            }
-          }
-        ]
-      })
-      const modalData = await interaction.awaitModalSubmit({ time: Duration.minutes(15).toMilliseconds() })
-      await modalData.deferReply({ flags: MessageFlags.Ephemeral })
+      const result = await this.showLinkingWizard(interaction, startTime, true)
+      if (result === undefined) return
 
-      const username = modalData.fields.getTextInputValue('username')
-      const linkResult = await this.tryLinking(modalData, startTime, username)
-      if (!linkResult) return
-
-      const syncResult = await this.forceSync(modalData, startTime)
-      if (!syncResult) return
-
-      await modalData.editReply('linked and synced!')
+      await result.modal.editReply('linked and synced!')
     } else {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral })
       const syncResult = await this.forceSync(interaction, startTime)
@@ -92,15 +65,56 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Ins
     }
   }
 
+  public async showLinkingWizard(
+    interaction: ButtonInteraction,
+    startTime: number,
+    sync: boolean
+  ): Promise<{ modal: ModalSubmitInteraction; profile: MojangProfile } | undefined> {
+    await interaction.showModal({
+      customId: interaction.id,
+      title: 'Link Minecraft',
+      components: [
+        {
+          type: ComponentType.Label,
+          label: 'Username',
+          description: 'In-game username to check.',
+          // @ts-expect-error Discord API does not allow "label" repeated. "label" inside the component{} is removed
+          component: {
+            type: ComponentType.TextInput,
+            style: TextInputStyle.Short,
+            customId: 'username',
+            minLength: 2,
+            maxLength: 16,
+            required: true,
+            placeholder: 'Steve'
+          }
+        }
+      ]
+    })
+    const modalData = await interaction.awaitModalSubmit({ time: Duration.minutes(15).toMilliseconds() })
+    await modalData.deferReply({ flags: MessageFlags.Ephemeral })
+
+    const username = modalData.fields.getTextInputValue('username')
+    const linkResult = await this.tryLinking(modalData, startTime, username)
+    if (linkResult === undefined) return
+
+    if (sync) {
+      const syncResult = await this.forceSync(modalData, startTime)
+      if (!syncResult) return
+    }
+
+    return { modal: modalData, profile: linkResult }
+  }
+
   public async tryLinking(
     interaction: ButtonInteraction | CommandInteraction | ModalSubmitInteraction,
     startTime: number,
     username: string
-  ): Promise<boolean> {
+  ): Promise<MojangProfile | undefined> {
     const mojangProfile = await this.application.mojangApi.profileByUsername(username).catch(() => undefined)
     if (mojangProfile === undefined) {
       await interaction.editReply({ embeds: [formatInvalidUsername(username)] })
-      return false
+      return undefined
     }
 
     let player: HypixelPlayer | undefined
@@ -121,7 +135,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Ins
             }
           ]
         })
-        return false
+        return undefined
       }
 
       throw error
@@ -137,7 +151,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Ins
           }
         ]
       })
-      return false
+      return undefined
     }
 
     const discord = player.socialMedia?.links.DISCORD
@@ -155,11 +169,11 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Ins
           }
         ]
       })
-      return false
+      return undefined
     }
 
     this.application.core.verification.addConfirmedLink(interaction.user.id, mojangProfile.id)
-    return true
+    return mojangProfile
   }
 
   public async forceSync(
