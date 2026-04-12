@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
-import type { ButtonInteraction } from 'discord.js'
+import type { ButtonInteraction, ChatInputCommandInteraction, ModalSubmitInteraction } from 'discord.js'
 import {
   bold,
   ButtonStyle,
@@ -33,7 +33,8 @@ import {
 import { formatInvalidUsername } from '../../../instance/discord/common/commands-format'
 import { DefaultCommandFooter } from '../../../instance/discord/common/discord-config'
 import type { ModalResult } from '../../../instance/discord/utility/modal-options'
-import type { CategoryOption } from '../../../instance/discord/utility/options-handler'
+import { showModal } from '../../../instance/discord/utility/modal-options'
+import type { CategoryOption, PresetListOption } from '../../../instance/discord/utility/options-handler'
 import { OptionsHandler, OptionType } from '../../../instance/discord/utility/options-handler'
 import Duration from '../../../utility/duration'
 import { search, searchObjects } from '../../../utility/shared-utility'
@@ -115,7 +116,6 @@ export const DiscordGuildCommand = {
             new SlashCommandSubcommandBuilder()
               .setName('create-panel')
               .setDescription('Create a sticky panel that auto updates')
-              .addStringOption(GuildNameOption().setAutocomplete(true))
           )
       )
   },
@@ -179,8 +179,7 @@ export async function discordGuildAutocomplete(context: Readonly<DiscordAutoComp
     (groupCommand === 'role-conditions' && subCommand === 'remove' && option.name === 'name') ||
     (groupCommand === 'waitlist' && subCommand === 'list' && option.name === 'name') ||
     (groupCommand === 'waitlist' && subCommand === 'add' && option.name === 'name') ||
-    (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'name') ||
-    (groupCommand === 'waitlist' && subCommand === 'create-panel' && option.name === 'name')
+    (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'name')
 
   if (suggestRegisteredGuilds) {
     const allGuilds = database.allGuilds()
@@ -194,7 +193,7 @@ export async function discordGuildAutocomplete(context: Readonly<DiscordAutoComp
   if (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'username') {
     const allGuilds = database.allGuilds()
     const profiles = allGuilds
-      .flatMap((guild) => database.getWaitlist(guild.id))
+      .flatMap((guild) => database.getWaitlistStatus(guild.id))
       .map((entry) => context.application.mojangApi.profileByUuid(entry.mojangId).catch(() => undefined))
     const usernames = await Promise.all(profiles)
       .then((list) => list.filter((entry) => entry !== undefined))
@@ -705,6 +704,12 @@ async function handleWaitlistAdd(
     return
   }
 
+  const guild = await context.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+  if (guild?._id === savedGuild.id) {
+    await interaction.editReply({ content: `${escapeMarkdown(mojangProfile.name)} already in this guild!` })
+    return
+  }
+
   const newlyAdded = database.addWaitlist(savedGuild.id, mojangProfile.id)
   await waitlistInteraction.waitlistUpdated(savedGuild)
   if (newlyAdded) {
@@ -800,8 +805,6 @@ async function handleWaitlistPanel(
     return
   }
 
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral })
-
   const permissions = channel.permissionsFor(interaction.client.user)
   assert.ok(permissions != undefined)
   if (!permissions.has(PermissionFlagsBits.SendMessages)) {
@@ -813,18 +816,43 @@ async function handleWaitlistPanel(
     })
   }
 
-  const savedGuild = await getGuild(context, database)
-  if (savedGuild === undefined) return
+  const savedGuilds = database.allGuilds()
+  let selectedGuilds: MinecraftGuild[]
+  let responseInteraction: ChatInputCommandInteraction | ModalSubmitInteraction = interaction
+  if (savedGuilds.length === 0) {
+    await interaction.reply({
+      content: `You must first </guild register:${interaction.commandId}> before creating any panel.`
+    })
+    return
+  } else if (savedGuilds.length === 1) {
+    selectedGuilds = savedGuilds
+  } else {
+    const option: Omit<PresetListOption, 'getOption' | 'setOption'> & { key: string } = {
+      type: OptionType.PresetList,
+      key: 'guildIds',
+      name: 'Selected Guilds',
+      description: 'Which guild to show in the panel',
+      max: 6,
+      min: 1,
+      options: savedGuilds.map((guild) => ({ label: guild.name, value: guild.id }))
+    }
+    const result = await showModal(interaction, 'Guild Join Waitlist', [option], Duration.minutes(10))
+    responseInteraction = result.modalResponse
+    const guilds = result.result.guildIds as string[]
+    selectedGuilds = savedGuilds.filter((savedGuild) => guilds.includes(savedGuild.id))
+  }
 
-  const view = await waitlistInteraction.createView(savedGuild)
+  await responseInteraction.deferReply({ flags: MessageFlags.Ephemeral })
+
+  const view = await waitlistInteraction.createView(selectedGuilds)
   const reply = await channel.send(view)
   database.addWaitlistPanel({
-    guildId: savedGuild.id,
+    guildIds: selectedGuilds.map((selectedGuild) => selectedGuild.id),
     channelId: channel.id,
     messageId: reply.id
   })
 
-  await interaction.editReply(
+  await responseInteraction.editReply(
     `Message sent: https://discord.com/channels/${reply.guildId}/${reply.channelId}/${reply.id}`
   )
 }

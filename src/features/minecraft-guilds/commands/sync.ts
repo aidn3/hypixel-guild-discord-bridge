@@ -8,12 +8,12 @@ import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hyp
 import { usernameNotExists } from '../../../instance/commands/common/utility'
 import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
 
-export default class Rankup extends ChatCommandHandler {
+export default class Sync extends ChatCommandHandler {
   constructor(private readonly database: Database) {
     super({
-      triggers: ['rankup', 'guildrankup', 'grankup'],
+      triggers: ['sync', 'rankup', 'guildrankup', 'grankup'],
       description: 'Update a user in-game guild rank',
-      example: `rankup [username]`
+      example: `sync [username]`
     })
   }
 
@@ -107,11 +107,17 @@ export default class Rankup extends ChatCommandHandler {
     assert.strictEqual(guildMember.uuid, mojangProfile.id)
     assert.strictEqual(guildMember.uuid, targetUser.mojangProfile()?.id)
 
-    const currentSavedRank = savedGuild.roles.find((role) =>
-      guild.ranks.some((guildRank) => guildRank.name === role.name)
-    )
-    if (!currentSavedRank?.whitelisted) {
-      return 'not-whitelisted'
+    // check if the current rank is default OR explicitly whitelisted to be changed
+    // default rank is a special rank that is made as a fallback for other ranks
+    const defaultRank = guild.ranks.find((rank) => rank.default)?.name
+    assert.ok(defaultRank !== undefined)
+    if (guildMember.rank !== undefined && guildMember.rank !== defaultRank) {
+      const currentSavedRank = savedGuild.roles.find((role) =>
+        guild.ranks.some((guildRank) => guildRank.name === role.name)
+      )
+      if (!currentSavedRank?.whitelisted) {
+        return 'not-whitelisted'
+      }
     }
 
     const sortedRanks = guild.ranks.toSorted((a, b) => a.priority - b.priority)

@@ -67,6 +67,7 @@ A shorter version can also be used: `!- rtca`
 | `hotm`           | Returns a player's HOTM and powder                                                 |
 | `insult`         | Insult a player                                                                    |
 | `inventory`      | Render a player's SkyBlock inventory                                               |
+| `invite`         | Send yourself a guild invite if you are officially invited                         |
 | `iq`             | Returns a player's IQ (0-200)                                                      |
 | `item`           | Render a slot in a player's SkyBlock profile                                       |
 | `jacob`          | Returns a player's SkyBlock Jacob contest stats                                    |
@@ -91,7 +92,6 @@ A shorter version can also be used: `!- rtca`
 | `purse`          | Returns a player's SkyBlock coins                                                  |
 | `rank`           | Shows the rank of a player                                                         |
 | `ranks`          | List guild ranks requirements                                                      |
-| `rankup`         | Update a user in-game guild rank                                                   |
 | `rep`            | Returns a player's Crimson Isle's faction reputation                               |
 | `rng`            | Returns a random number between a range                                            |
 | `roulette`       | Try your luck for a 15 minute mute                                                 |
@@ -110,6 +110,7 @@ A shorter version can also be used: `!- rtca`
 | `starfall`       | When is the next SkyBlock Cult of the Fallen Star event                            |
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
 | `status`         | Show a player's Hypixel status and current location                                |
+| `sync`           | Update a user in-game guild rank                                                   |
 | `timecharm`      | Returns a player's rift obtained time charms                                       |
 | `toggle`         | Enable/disable commands                                                            |
 | `toggled`        | Show disabled commands                                                             |

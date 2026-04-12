@@ -125,6 +125,9 @@ export interface TextOption extends BaseOption {
   style: InputStyle
   placeholder?: string
   getOption: () => string
+  /**
+   * @throws ValueRejected with the message being the reason why the value was rejected
+   */
   setOption: (value: string) => void
   max: number
   min: number
@@ -133,6 +136,9 @@ export interface TextOption extends BaseOption {
 export interface NumberOption extends BaseOption {
   type: OptionType.Number
   getOption: () => number
+  /**
+   * @throws ValueRejected with the message being the reason why the value was rejected
+   */
   setOption: (value: number) => void
   max: number
   min: number
@@ -148,6 +154,12 @@ export interface ActionOption extends BaseOption {
 interface OptionId {
   action: 'default' | 'add' | 'delete'
   item: OptionItem
+}
+
+export class ValueRejected extends Error {
+  constructor(public readonly reason: string) {
+    super()
+  }
 }
 
 export class OptionsHandler {
@@ -356,8 +368,16 @@ export class OptionsHandler {
         assert.ok(modalInteraction.isFromMessage())
 
         const value = modalInteraction.fields.getTextInputValue(interaction.customId)
-        option.setOption(value)
-        await this.updateView(modalInteraction)
+        try {
+          option.setOption(value)
+          await this.updateView(modalInteraction)
+        } catch (error: unknown) {
+          if (error instanceof ValueRejected) {
+            await modalInteraction.reply({ content: error.reason, flags: MessageFlags.Ephemeral })
+          } else {
+            throw error
+          }
+        }
       })
       .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))
 
@@ -408,8 +428,16 @@ export class OptionsHandler {
             flags: MessageFlags.Ephemeral
           })
         } else {
-          option.setOption(intValue)
-          await this.updateView(modalInteraction)
+          try {
+            option.setOption(intValue)
+            await this.updateView(modalInteraction)
+          } catch (error: unknown) {
+            if (error instanceof ValueRejected) {
+              await modalInteraction.reply({ content: error.reason, flags: MessageFlags.Ephemeral })
+            } else {
+              throw error
+            }
+          }
         }
       })
       .catch(errorHandler.promiseCatch(`handling modal submit for ${interaction.customId}`))

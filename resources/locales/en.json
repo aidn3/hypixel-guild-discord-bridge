@@ -106,9 +106,11 @@
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
-  "discord.conditions.handler.skyblock-level.formatted": "Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-level.formatted": "{{profileTypes}} Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",
-  "discord.conditions.handler.skyblock-catacombs-level.formatted": "Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-catacombs-level.formatted": "{{profileTypes}} Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-networth.title": "Skyblock Networth",
+  "discord.conditions.handler.skyblock-networth.formatted": "{{profileTypes}} Skyblock Networth {{fromValue, number}} to {{toValue, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
@@ -119,6 +121,9 @@
   "discord.conditions.handler.in-guild-with-rank.invalid-rank": "No such a guild rank {{guildRank}}. Available ranks: {{ranks, list}}.",
   "discord.conditions.handler.in-guild-as-guildmaster.title": "In Guild As The Guild Master",
   "discord.conditions.handler.in-guild-as-guildmaster.formatted": "In guild {{guildName}} as the guild master",
+
+  "discord.conditions.handler.has-discord-role.title": "Has Discord Role",
+  "discord.conditions.handler.has-discord-role.formatted": "Has Discord role <@&{{roleId}}>",
 
   "commands.essence.none": "{{username}} does not have any essence?",
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",

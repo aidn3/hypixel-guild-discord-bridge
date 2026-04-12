@@ -90,6 +90,11 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     })
   }
 
+  public async invite(instanceName: string, username: string): Promise<GuildInviteStatus> {
+    const guildInfo = this.getGuildInfo(instanceName)
+    return await this.queueTask(guildInfo, () => this.inviteNow(instanceName, username))
+  }
+
   private getGuildInfo(instanceName: string): GuildInformation {
     let guild = this.guildInfo.get(instanceName)
     if (guild === undefined) {
@@ -280,6 +285,64 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
     return Object.freeze(motd)
   }
+
+  private async inviteNow(instanceName: string, username: string): Promise<GuildInviteStatus> {
+    const InviteAcceptChat: { regex: RegExp; type: GuildInviteStatus }[] = [
+      { regex: /^Your guild is full!/, type: GuildInviteStatus.GuildFull },
+      {
+        regex: /^You invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild. They have 5 minutes to accept/,
+        type: GuildInviteStatus.OnlineInvite
+      },
+      {
+        regex:
+          /^You sent an offline invite to (?:\[[+A-Z]{1,10}] )*(\w{3,32})! They will have 5 minutes to accept once they come online!/,
+        type: GuildInviteStatus.OfflineInvite
+      },
+      {
+        regex: /^You've already invited (?:\[[+A-Z]{1,10}] )*(\w{3,32}) to your guild! Wait for them to accept!/,
+        type: GuildInviteStatus.AlreadyInvited
+      },
+      { regex: /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) joined the guild!/, type: GuildInviteStatus.Joined },
+      { regex: /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in your guild!/, type: GuildInviteStatus.AlreadyJoined },
+      { regex: /^You cannot invite this player to your guild!/, type: GuildInviteStatus.PlayerPrivate },
+      { regex: /^You do not have permission to invite players!/, type: GuildInviteStatus.NoPermission },
+      { regex: /^You do not have permission to use this command!/, type: GuildInviteStatus.NoPermission },
+      { regex: /^Your guild rank does not have permission to use this!/, type: GuildInviteStatus.NoPermission },
+      {
+        regex: /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) is already in another guild!/,
+        type: GuildInviteStatus.AlreadyInGuild
+      },
+      { regex: /^Can't find a player by the name of '(\w{3,32})'*/, type: GuildInviteStatus.InvalidUsername }
+    ]
+
+    const timeout = new Timeout<GuildInviteStatus>(10_000)
+
+    const chatListener = function (event: MinecraftRawChatEvent): void {
+      if (event.instanceName !== instanceName) return
+
+      for (const entry of InviteAcceptChat) {
+        const match = entry.regex.exec(event.message)
+        if (match === null) continue
+        if (match.length > 1 && match[1].toLowerCase() !== username.toLowerCase()) continue
+        timeout.resolve(entry.type)
+      }
+    }
+
+    this.application.on('minecraftChat', chatListener)
+    await this.application.sendMinecraft(
+      [instanceName],
+      MinecraftSendChatPriority.High,
+      undefined,
+      `/guild invite ${username}`
+    )
+    timeout.refresh()
+    const result = await timeout.wait()
+    this.application.off('minecraftChat', chatListener)
+    if (timeout.timedOut()) throw new GuildManagerError(`Timed out before while trying to invite ${username}`)
+    assert.ok(result !== undefined)
+
+    return result
+  }
 }
 
 interface GuildInformation {
@@ -324,4 +387,17 @@ export class GuildManagerError extends Error {
   public constructor(message: string) {
     super(message)
   }
+}
+
+export enum GuildInviteStatus {
+  GuildFull = 'guildFull',
+  Joined = 'joined',
+  AlreadyInvited = 'alreadyInvited',
+  OnlineInvite = 'onlineInvite',
+  PlayerPrivate = 'playerPrivate',
+  AlreadyJoined = 'alreadyJoined',
+  OfflineInvite = 'offlineInvite',
+  AlreadyInGuild = 'alreadyInGuild',
+  NoPermission = 'noPermission',
+  InvalidUsername = 'invalidUsername'
 }
