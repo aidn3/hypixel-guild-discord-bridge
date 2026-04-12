@@ -16,7 +16,7 @@ export default class CountingChain extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     if (context.message.channelType !== ChannelType.Public) {
-      return `${context.username}, can only start this event in public chat!`
+      return context.app.i18n.t(($) => $['commands.countingchain.wrong-chat'], { username: context.username })
     }
 
     const eventContext: EventContext = {

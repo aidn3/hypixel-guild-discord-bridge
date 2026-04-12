@@ -29,8 +29,13 @@ export default class Chocolate extends ChatCommandHandler {
     const easter = selectedProfile.events?.easter
     const totalChocolate = easter?.total_chocolate ?? 0
     const chocolateSpent = easter?.shop?.chocolate_spent ?? 0
-    if (totalChocolate === 0) return `${givenUsername} does not have a chocolate factory.`
+    if (totalChocolate === 0)
+      return context.app.i18n.t(($) => $['commands.chocolate.none'], { username: givenUsername })
 
-    return `${givenUsername} has produced ${shortenNumber(totalChocolate)} chocolate and spent ${shortenNumber(chocolateSpent)}.`
+    return context.app.i18n.t(($) => $['commands.chocolate.response'], {
+      username: givenUsername,
+      totalChocolate: shortenNumber(totalChocolate),
+      chocolateSpent: shortenNumber(chocolateSpent)
+    })
   }
 }

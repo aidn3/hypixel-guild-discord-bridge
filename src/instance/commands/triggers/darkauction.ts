@@ -15,6 +15,9 @@ export default class DarkAuction extends ChatCommandHandler {
     const currentMinute = date.getUTCMinutes()
 
     const result = currentMinute >= 55 ? 115 - currentMinute : 55 - currentMinute
-    return `${context.username}, Dark Auction in ${result} minutes!`
+    return context.app.i18n.t(($) => $['commands.darkauction.response'], {
+      username: context.username,
+      result
+    })
   }
 }
