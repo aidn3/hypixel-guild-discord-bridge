@@ -487,7 +487,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       const EntriesPerPage = 10
       const all = this.database.getWaitlistStatus(savedGuild.id)
       const entries = all.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
-      const totalPages = Math.ceil(all.length / EntriesPerPage)
+      const totalPages = Math.max(Math.ceil(all.length / EntriesPerPage), 1)
 
       const result: string[] = []
 
