@@ -256,19 +256,18 @@ export class Database {
   public getWaitlistByMojangId(mojangId: string): WaitlistEntry | undefined {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const selectDiscord = database.prepare<[typeof mojangId], WaitlistRequestEntry>(
-        'SELECT * FROM discordGuildWaitlistRequest WHERE mojangId = ?'
+      const selectWaitlist = database.prepare<[WaitlistEntry['mojangId']], WaitlistEntry>(
+        'SELECT * FROM minecraftGuildWaitlist WHERE mojangId = ?'
       )
-      const selectWaitlist = database.prepare<[WaitlistEntry['id']], WaitlistEntry>(
-        'SELECT * FROM minecraftGuildWaitlist WHERE id = ?'
+      const selectDiscord = database.prepare<[WaitlistRequestEntry['reference']], WaitlistRequestEntry>(
+        'SELECT * FROM discordGuildWaitlistRequest WHERE reference = ?'
       )
 
-      const discordEntry = selectDiscord.get(mojangId)
-      if (discordEntry === undefined) return
+      const waitlist = selectWaitlist.get(mojangId)
+      if (waitlist === undefined) return
 
-      const waitlist = selectWaitlist.get(discordEntry.reference)
-      assert.ok(waitlist !== undefined)
-      assert.strictEqual(discordEntry.reference, waitlist.id)
+      const discordEntry = selectDiscord.get(waitlist.id)
+      if (discordEntry !== undefined) assert.strictEqual(discordEntry.reference, waitlist.id)
 
       waitlist.createdAt = waitlist.createdAt * 1000
       waitlist.invitedTill = waitlist.invitedTill * 1000
