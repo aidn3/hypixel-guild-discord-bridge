@@ -109,6 +109,8 @@
   "discord.conditions.handler.skyblock-level.formatted": "{{profileTypes}} Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",
   "discord.conditions.handler.skyblock-catacombs-level.formatted": "{{profileTypes}} Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-networth.title": "Skyblock Networth",
+  "discord.conditions.handler.skyblock-networth.formatted": "{{profileTypes}} Skyblock Networth {{fromValue, number}} to {{toValue, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
