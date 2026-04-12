@@ -1,5 +1,7 @@
 /*
- * @author SkyCryptWebsite <https://github.com/SkyCryptWebsite>
+ * This file contains some part of code made by SkyCryptWebsite <https://github.com/SkyCryptWebsite>.
+ * This file is not directly written by the original author.
+ *
  * @license MIT <https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/LICENSE>
  * @see https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/senither-weight.js
  */
