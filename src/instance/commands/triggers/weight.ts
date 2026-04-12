@@ -235,9 +235,9 @@ export default class Weight extends ChatCommandHandler {
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
-    const senitherWeight = calculateSenitherWeight(this.createWeightProfile(selectedProfile, skillsResponse))
+    const senitherWeight = this.calculateSenitherWeight(this.createWeightProfile(selectedProfile, skillsResponse))
     const farmingWeight = await this.getFarmingWeight(uuid)
-    const lilyWeight = calculateLilyWeight(selectedProfile).total
+    const lilyWeight = this.calculateLilyWeight(selectedProfile).total
 
     return context.app.i18n.t(($) => $['commands.weight.response'], {
       username: possessiveUsername,
@@ -374,250 +374,262 @@ export default class Weight extends ChatCommandHandler {
     assert.ok(result.status === 200)
     return typeof result.data.totalWeight === 'number' ? result.data.totalWeight : 0
   }
-}
 
-function calculateLilyWeight(profile: SkyblockMember) {
-  const experience = (profile.player_data.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
-  const skillLevels = LilySkillOrder.map((skillName) => sanitizeFiniteNumber(getLilySkillLevel(skillName, experience)))
-  const skillXp = LilySkillOrder.map((skillName) => sanitizeFiniteNumber(getLilySkillXp(skillName, experience)))
+  private calculateLilyWeight(profile: SkyblockMember) {
+    const experience = (profile.player_data.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
+    const skillLevels = LilySkillOrder.map((skillName) =>
+      this.sanitizeFiniteNumber(this.getLilySkillLevel(skillName, experience))
+    )
+    const skillXp = LilySkillOrder.map((skillName) =>
+      this.sanitizeFiniteNumber(this.getLilySkillXp(skillName, experience))
+    )
 
-  const catacombs = profile.dungeons?.dungeon_types.catacombs
-  const masterCatacombs = profile.dungeons?.dungeon_types.master_catacombs
-  const cataCompletions = mapCatacombsCompletions(catacombs?.tier_completions)
-  const masterCataCompletions = mapMasterCatacombsCompletions(masterCatacombs?.tier_completions)
-  const cataXp = sanitizeFiniteNumber(catacombs === undefined ? 0 : catacombs.experience)
+    const catacombs = profile.dungeons?.dungeon_types.catacombs
+    const masterCatacombs = profile.dungeons?.dungeon_types.master_catacombs
+    const cataCompletions = this.mapCatacombsCompletions(catacombs?.tier_completions)
+    const masterCataCompletions = this.mapMasterCatacombsCompletions(masterCatacombs?.tier_completions)
+    const cataXp = this.sanitizeFiniteNumber(catacombs === undefined ? 0 : catacombs.experience)
 
-  const slayerBosses = (profile.slayer?.slayer_bosses ?? {}) as Partial<Record<LilySlayerName, { xp?: number }>>
-  const slayerXp = LilySlayerOrder.map((slayerName) => sanitizeFiniteNumber(slayerBosses[slayerName]?.xp ?? 0))
+    const slayerBosses = (profile.slayer?.slayer_bosses ?? {}) as Partial<Record<LilySlayerName, { xp?: number }>>
+    const slayerXp = LilySlayerOrder.map((slayerName) => this.sanitizeFiniteNumber(slayerBosses[slayerName]?.xp ?? 0))
 
-  const lilyWeight = LilyWeight.getWeightRaw(
-    skillLevels,
-    skillXp,
-    cataCompletions,
-    masterCataCompletions,
-    cataXp,
-    slayerXp
-  )
-  return Number.isFinite(lilyWeight.total)
-    ? lilyWeight
-    : {
-        total: 0,
-        skill: { base: 0, overflow: 0 },
-        catacombs: { completion: { base: 0, master: 0 }, experience: 0 },
-        slayer: 0
+    const lilyWeight = LilyWeight.getWeightRaw(
+      skillLevels,
+      skillXp,
+      cataCompletions,
+      masterCataCompletions,
+      cataXp,
+      slayerXp
+    )
+    return Number.isFinite(lilyWeight.total)
+      ? lilyWeight
+      : {
+          total: 0,
+          skill: { base: 0, overflow: 0 },
+          catacombs: { completion: { base: 0, master: 0 }, experience: 0 },
+          slayer: 0
+        }
+  }
+
+  private getLilySkillLevel(skillName: LilySkillName, experience: Partial<Record<SkillExperienceKey, number>>): number {
+    const skillMap = {
+      enchanting: experience.SKILL_ENCHANTING ?? 0,
+      taming: experience.SKILL_TAMING ?? 0,
+      alchemy: experience.SKILL_ALCHEMY ?? 0,
+      mining: experience.SKILL_MINING ?? 0,
+      farming: experience.SKILL_FARMING ?? 0,
+      foraging: experience.SKILL_FORAGING ?? 0,
+      combat: experience.SKILL_COMBAT ?? 0,
+      fishing: experience.SKILL_FISHING ?? 0
+    } satisfies Record<LilySkillName, number>
+
+    return this.getLilyLevelFromXp(skillMap[skillName])
+  }
+
+  private getLilySkillXp(skillName: LilySkillName, experience: Partial<Record<SkillExperienceKey, number>>): number {
+    const skillXpMap = {
+      enchanting: experience.SKILL_ENCHANTING ?? 0,
+      taming: experience.SKILL_TAMING ?? 0,
+      alchemy: experience.SKILL_ALCHEMY ?? 0,
+      mining: experience.SKILL_MINING ?? 0,
+      farming: experience.SKILL_FARMING ?? 0,
+      foraging: experience.SKILL_FORAGING ?? 0,
+      combat: experience.SKILL_COMBAT ?? 0,
+      fishing: experience.SKILL_FISHING ?? 0
+    } satisfies Record<LilySkillName, number>
+
+    return skillXpMap[skillName]
+  }
+
+  private mapCatacombsCompletions(
+    tierCompletions: Record<string, number | undefined> | undefined
+  ): LilyCatacombsCompletions {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    const completions: LilyCatacombsCompletions = { '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 }
+    /* eslint-enable @typescript-eslint/naming-convention */
+    if (tierCompletions === undefined) return completions
+
+    for (const key of Object.keys(completions) as (keyof LilyCatacombsCompletions)[]) {
+      completions[key] = this.sanitizeFiniteNumber(tierCompletions[key] ?? 0)
+    }
+
+    return completions
+  }
+
+  private mapMasterCatacombsCompletions(
+    tierCompletions: Record<string, number | undefined> | undefined
+  ): LilyMasterCatacombsCompletions {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    const completions: LilyMasterCatacombsCompletions = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 }
+    /* eslint-enable @typescript-eslint/naming-convention */
+    if (tierCompletions === undefined) return completions
+
+    for (const key of Object.keys(completions) as (keyof LilyMasterCatacombsCompletions)[]) {
+      completions[key] = this.sanitizeFiniteNumber(tierCompletions[key] ?? 0)
+    }
+
+    return completions
+  }
+
+  private getLilyLevelFromXp(xp: number): number {
+    let xpAdded = 0
+    for (const [index, element] of LilySkillXpPerLevel.entries()) {
+      xpAdded += element
+      if (xp < xpAdded) {
+        return Math.floor(index - 1 + (xp - (xpAdded - element)) / element)
       }
-}
-
-function getLilySkillLevel(skillName: LilySkillName, experience: Partial<Record<SkillExperienceKey, number>>): number {
-  const skillMap = {
-    enchanting: experience.SKILL_ENCHANTING ?? 0,
-    taming: experience.SKILL_TAMING ?? 0,
-    alchemy: experience.SKILL_ALCHEMY ?? 0,
-    mining: experience.SKILL_MINING ?? 0,
-    farming: experience.SKILL_FARMING ?? 0,
-    foraging: experience.SKILL_FORAGING ?? 0,
-    combat: experience.SKILL_COMBAT ?? 0,
-    fishing: experience.SKILL_FISHING ?? 0
-  } satisfies Record<LilySkillName, number>
-
-  return getLilyLevelFromXp(skillMap[skillName])
-}
-
-function getLilySkillXp(skillName: LilySkillName, experience: Partial<Record<SkillExperienceKey, number>>): number {
-  const skillXpMap = {
-    enchanting: experience.SKILL_ENCHANTING ?? 0,
-    taming: experience.SKILL_TAMING ?? 0,
-    alchemy: experience.SKILL_ALCHEMY ?? 0,
-    mining: experience.SKILL_MINING ?? 0,
-    farming: experience.SKILL_FARMING ?? 0,
-    foraging: experience.SKILL_FORAGING ?? 0,
-    combat: experience.SKILL_COMBAT ?? 0,
-    fishing: experience.SKILL_FISHING ?? 0
-  } satisfies Record<LilySkillName, number>
-
-  return skillXpMap[skillName]
-}
-
-function mapCatacombsCompletions(
-  tierCompletions: Record<string, number | undefined> | undefined
-): LilyCatacombsCompletions {
-  /* eslint-disable @typescript-eslint/naming-convention */
-  const completions: LilyCatacombsCompletions = { '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 }
-  /* eslint-enable @typescript-eslint/naming-convention */
-  if (tierCompletions === undefined) return completions
-
-  for (const key of Object.keys(completions) as (keyof LilyCatacombsCompletions)[]) {
-    completions[key] = sanitizeFiniteNumber(tierCompletions[key] ?? 0)
-  }
-
-  return completions
-}
-
-function mapMasterCatacombsCompletions(
-  tierCompletions: Record<string, number | undefined> | undefined
-): LilyMasterCatacombsCompletions {
-  /* eslint-disable @typescript-eslint/naming-convention */
-  const completions: LilyMasterCatacombsCompletions = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 }
-  /* eslint-enable @typescript-eslint/naming-convention */
-  if (tierCompletions === undefined) return completions
-
-  for (const key of Object.keys(completions) as (keyof LilyMasterCatacombsCompletions)[]) {
-    completions[key] = sanitizeFiniteNumber(tierCompletions[key] ?? 0)
-  }
-
-  return completions
-}
-
-function getLilyLevelFromXp(xp: number): number {
-  let xpAdded = 0
-  for (const [index, element] of LilySkillXpPerLevel.entries()) {
-    xpAdded += element
-    if (xp < xpAdded) {
-      return Math.floor(index - 1 + (xp - (xpAdded - element)) / element)
     }
+
+    return 60
   }
 
-  return 60
-}
+  private sanitizeFiniteNumber(value: number): number {
+    return Number.isFinite(value) ? value : 0
+  }
 
-function sanitizeFiniteNumber(value: number): number {
-  return Number.isFinite(value) ? value : 0
-}
-
-function calcSkillWeight(skillGroup: SkillGroup, level: number | undefined, experience: number): WeightResult {
-  if (skillGroup.exponent === undefined || skillGroup.divider === undefined || level === undefined) {
-    return {
-      weight: 0,
-      weightOverflow: 0
+  private calcSkillWeight(skillGroup: SkillGroup, level: number | undefined, experience: number): WeightResult {
+    if (skillGroup.exponent === undefined || skillGroup.divider === undefined || level === undefined) {
+      return {
+        weight: 0,
+        weightOverflow: 0
+      }
     }
-  }
 
-  const cappedLevel = Math.min(level, skillGroup.maxLevel)
-  const maxSkillLevelXp = skillGroup.maxLevel === 60 ? Level60Xp : Level50Xp
+    const cappedLevel = Math.min(level, skillGroup.maxLevel)
+    const maxSkillLevelXp = skillGroup.maxLevel === 60 ? Level60Xp : Level50Xp
 
-  let base = Math.pow(cappedLevel * 10, 0.5 + skillGroup.exponent + cappedLevel / 100) / 1250
-  if (experience > maxSkillLevelXp) {
-    base = Math.round(base)
-  }
+    let base = Math.pow(cappedLevel * 10, 0.5 + skillGroup.exponent + cappedLevel / 100) / 1250
+    if (experience > maxSkillLevelXp) {
+      base = Math.round(base)
+    }
 
-  if (experience <= maxSkillLevelXp) {
+    if (experience <= maxSkillLevelXp) {
+      return {
+        weight: base,
+        weightOverflow: 0
+      }
+    }
+
     return {
       weight: base,
-      weightOverflow: 0
+      weightOverflow: Math.pow((experience - maxSkillLevelXp) / skillGroup.divider, 0.968)
     }
   }
 
-  return {
-    weight: base,
-    weightOverflow: Math.pow((experience - maxSkillLevelXp) / skillGroup.divider, 0.968)
+  private calcDungeonsWeight(type: DungeonWeightName, level: number, experience: number): WeightResult {
+    const percentageModifier = DungeonWeightMap[type]
+    const level50Experience = 569_809_640
+    const base = Math.pow(level, 4.5) * percentageModifier
+
+    if (experience <= level50Experience) {
+      return {
+        weight: base,
+        weightOverflow: 0
+      }
+    }
+
+    const remaining = experience - level50Experience
+    const splitter = (4 * level50Experience) / base
+
+    return {
+      weight: Math.floor(base),
+      weightOverflow: Math.pow(remaining / splitter, 0.968)
+    }
   }
-}
 
-function calcDungeonsWeight(type: DungeonWeightName, level: number, experience: number): WeightResult {
-  const percentageModifier = DungeonWeightMap[type]
-  const level50Experience = 569_809_640
-  const base = Math.pow(level, 4.5) * percentageModifier
+  private calcSlayerWeight(type: SlayerName, experience: number): WeightResult {
+    const slayer = SlayerWeightMap[type]
 
-  if (experience <= level50Experience) {
+    if (experience <= 1_000_000) {
+      return {
+        weight: experience / slayer.divider,
+        weightOverflow: 0
+      }
+    }
+
+    const base = 1_000_000 / slayer.divider
+    let remaining = experience - 1_000_000
+    let modifier = slayer.modifier
+    let overflow = 0
+
+    while (remaining > 0) {
+      const left = Math.min(remaining, 1_000_000)
+      overflow += Math.pow(left / (slayer.divider * (1.5 + modifier)), 0.942)
+      modifier += slayer.modifier
+      remaining -= left
+    }
+
     return {
       weight: base,
-      weightOverflow: 0
+      weightOverflow: overflow
     }
   }
 
-  const remaining = experience - level50Experience
-  const splitter = (4 * level50Experience) / base
-
-  return {
-    weight: Math.floor(base),
-    weightOverflow: Math.pow(remaining / splitter, 0.968)
-  }
-}
-
-function calcSlayerWeight(type: SlayerName, experience: number): WeightResult {
-  const slayer = SlayerWeightMap[type]
-
-  if (experience <= 1_000_000) {
-    return {
-      weight: experience / slayer.divider,
-      weightOverflow: 0
+  private calculateSenitherWeight(profile: WeightProfile): SenitherWeight {
+    const output: SenitherWeight = {
+      overall: 0,
+      dungeon: {
+        total: 0,
+        dungeons: {},
+        classes: {}
+      },
+      skill: {
+        total: 0,
+        skills: {}
+      },
+      slayer: {
+        total: 0,
+        slayers: {}
+      }
     }
-  }
 
-  const base = 1_000_000 / slayer.divider
-  let remaining = experience - 1_000_000
-  let modifier = slayer.modifier
-  let overflow = 0
+    for (const skillName of Object.keys(profile.levels) as SkillName[]) {
+      const data = profile.levels[skillName]
+      const weight = this.calcSkillWeight(SkillWeightMap[skillName], data.unlockableLevelWithProgress, data.xp)
 
-  while (remaining > 0) {
-    const left = Math.min(remaining, 1_000_000)
-    overflow += Math.pow(left / (slayer.divider * (1.5 + modifier)), 0.942)
-    modifier += slayer.modifier
-    remaining -= left
-  }
-
-  return {
-    weight: base,
-    weightOverflow: overflow
-  }
-}
-
-function calculateSenitherWeight(profile: WeightProfile): SenitherWeight {
-  const output: SenitherWeight = {
-    overall: 0,
-    dungeon: {
-      total: 0,
-      dungeons: {},
-      classes: {}
-    },
-    skill: {
-      total: 0,
-      skills: {}
-    },
-    slayer: {
-      total: 0,
-      slayers: {}
+      output.skill.skills[skillName] = weight.weight + weight.weightOverflow
+      output.skill.total += output.skill.skills[skillName]
     }
+
+    if (profile.dungeons.catacombs?.visited) {
+      const catacombs = profile.dungeons.catacombs.level
+      const catacombsWeight = this.calcDungeonsWeight(
+        'catacombs',
+        Math.min(catacombs.levelWithProgress, 50),
+        catacombs.xp
+      )
+
+      output.dungeon.total += catacombsWeight.weight + catacombsWeight.weightOverflow
+      output.dungeon.dungeons.catacombs = catacombsWeight
+    }
+
+    for (const className of Object.keys(profile.dungeons.classes) as DungeonClassName[]) {
+      const dungeonClass = profile.dungeons.classes[className]
+      if (dungeonClass === undefined) continue
+
+      const weight = this.calcDungeonsWeight(
+        className,
+        dungeonClass.experience.levelWithProgress,
+        dungeonClass.experience.xp
+      )
+      output.dungeon.total += weight.weight + weight.weightOverflow
+      output.dungeon.classes[className] = weight
+    }
+
+    for (const slayerName of Object.keys(profile.slayers) as SlayerName[]) {
+      const slayer = profile.slayers[slayerName]
+      const weight = this.calcSlayerWeight(slayerName, slayer.level.xp)
+
+      output.slayer.slayers[slayerName] = weight
+      output.slayer.total += weight.weight + weight.weightOverflow
+    }
+
+    output.overall = [output.dungeon.total, output.skill.total, output.slayer.total]
+      .filter((value) => value >= 0)
+      .reduce((total, value) => total + value, 0)
+
+    return output
   }
-
-  for (const skillName of Object.keys(profile.levels) as SkillName[]) {
-    const data = profile.levels[skillName]
-    const weight = calcSkillWeight(SkillWeightMap[skillName], data.unlockableLevelWithProgress, data.xp)
-
-    output.skill.skills[skillName] = weight.weight + weight.weightOverflow
-    output.skill.total += output.skill.skills[skillName]
-  }
-
-  if (profile.dungeons.catacombs?.visited) {
-    const catacombs = profile.dungeons.catacombs.level
-    const catacombsWeight = calcDungeonsWeight('catacombs', Math.min(catacombs.levelWithProgress, 50), catacombs.xp)
-
-    output.dungeon.total += catacombsWeight.weight + catacombsWeight.weightOverflow
-    output.dungeon.dungeons.catacombs = catacombsWeight
-  }
-
-  for (const className of Object.keys(profile.dungeons.classes) as DungeonClassName[]) {
-    const dungeonClass = profile.dungeons.classes[className]
-    if (dungeonClass === undefined) continue
-
-    const weight = calcDungeonsWeight(className, dungeonClass.experience.levelWithProgress, dungeonClass.experience.xp)
-    output.dungeon.total += weight.weight + weight.weightOverflow
-    output.dungeon.classes[className] = weight
-  }
-
-  for (const slayerName of Object.keys(profile.slayers) as SlayerName[]) {
-    const slayer = profile.slayers[slayerName]
-    const weight = calcSlayerWeight(slayerName, slayer.level.xp)
-
-    output.slayer.slayers[slayerName] = weight
-    output.slayer.total += weight.weight + weight.weightOverflow
-  }
-
-  output.overall = [output.dungeon.total, output.skill.total, output.slayer.total]
-    .filter((value) => value >= 0)
-    .reduce((total, value) => total + value, 0)
-
-  return output
 }
 
 export interface FarmingWeightResponse {
