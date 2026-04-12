@@ -115,4 +115,6 @@ Use Discord slash command `/settings` to configure the application:
 - [Soopyboo32](https://github.com/Soopyboo32) for providing [an awesome command API](https://soopy.dev/commands)
 - Aura#5051 for in-game commands: Calculate, 8ball, IQ, Networth, Weight, Bitches
 - [WildWolfsblut](https://github.com/WildWolfsblut) for helping with various designs and structures
+- [SkyCryptWebsite](https://github.com/SkyCryptWebsite) for providing [Senither weight](https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/senither-weight.js)
+- [Elite Skyblock](https://api.eliteskyblock.com) for providing the farming weight API
 - All contributors whether by code, ideas/suggestions or testing
