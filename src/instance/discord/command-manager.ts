@@ -27,14 +27,17 @@ import CreateLeaderboardCommand from './commands/create-leaderboard.js'
 import DemoteCommand from './commands/demote.js'
 import DisconnectCommand from './commands/disconnect.js'
 import ExecuteCommand from './commands/execute.js'
+import FaqCommand from './commands/faq'
 import HelpCommand from './commands/help.js'
 import InviteCommand from './commands/invite.js'
 import JoinCommand from './commands/join.js'
 import LeaderboardCommand from './commands/leaderboard.js'
+import LinkButton from './commands/link-button'
 import LinkCommand from './commands/link.js'
 import ListLeaderboardCommand from './commands/list-leaderboard'
 import ListCommand from './commands/list.js'
 import LogCommand from './commands/log.js'
+import MotdCommand from './commands/motd'
 import PingCommand from './commands/ping.js'
 import PlaceholderCommand from './commands/placeholder.js'
 import ProfanityCommand from './commands/profanity.js'
@@ -113,14 +116,17 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       CreateLeaderboardCommand,
       DemoteCommand,
       DisconnectCommand,
+      FaqCommand,
       HelpCommand,
       InviteCommand,
       JoinCommand,
       LeaderboardCommand,
       LinkCommand,
+      LinkButton,
       ListCommand,
       ListLeaderboardCommand,
       LogCommand,
+      MotdCommand,
       ExecuteCommand,
       PingCommand,
       PlaceholderCommand,
@@ -156,7 +162,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
     const user = await this.application.core.initializeDiscordUser(identifier, {
       guild: interaction.guild ?? undefined
     })
-    const permission = user.permission()
+    const permission = await user.permission()
     if (command.autoComplete) {
       const context: DiscordAutoCompleteContext = {
         application: this.application,
@@ -197,7 +203,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       const user = await this.application.core.initializeDiscordUser(identifier, {
         guild: interaction.guild ?? undefined
       })
-      const permission = user.permission()
+      const permission = await user.permission()
 
       if (command == undefined) {
         this.logger.debug(`command but it doesn't exist: ${interaction.commandName}`)

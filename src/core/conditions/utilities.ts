@@ -1,7 +1,7 @@
 import type { HypixelPlayer } from '../hypixel/hypixel-player'
 import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock-types'
 
-import type { HandlerOperationContext, HandlerUser } from './common'
+import type { HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common'
 
 export async function checkSkyblockEntireProfiles(
   context: HandlerOperationContext,
@@ -27,28 +27,32 @@ export async function checkSkyblockEntireProfiles(
   return false
 }
 
-export async function checkSkyblockUserProfiles(
+export async function getSkyblockUserProfiles(
   context: HandlerOperationContext,
   handlerUser: HandlerUser,
-  checker: (profile: SkyblockMember) => boolean
-): Promise<boolean> {
+  allowedProfiles: SkyblockProfileOptionType['profileTypes']
+): Promise<SkyblockMember[]> {
   const mojangProfile = handlerUser.user.mojangProfile()
-  if (mojangProfile === undefined) return false
+  if (mojangProfile === undefined) return []
   const uuid = mojangProfile.id
   let profiles: SkyblockProfile[] | undefined
 
   try {
     profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
-    if (profiles === undefined) return false
+    if (profiles === undefined) return []
   } catch {
-    return false
+    return []
   }
 
-  for (const skyblockProfile of profiles) {
-    if (checker(skyblockProfile.members[mojangProfile.id])) return true
+  const result = []
+  for (const profile of profiles) {
+    const profileType = profile.game_mode ?? 'classic'
+    if (allowedProfiles.includes(profileType)) {
+      result.push(profile.members[mojangProfile.id])
+    }
   }
 
-  return false
+  return result
 }
 
 export async function checkHypixelProfile(

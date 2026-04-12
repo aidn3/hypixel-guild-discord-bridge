@@ -28,6 +28,7 @@ import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
 import { InstanceHistoryButton } from './discord/instance-history-button'
+import { DiscordLinkButton } from './discord/link-button'
 import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
@@ -69,6 +70,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
   public readonly discordInstanceHistoryButton: InstanceHistoryButton
+  public readonly discordLinkButton: DiscordLinkButton
   public readonly discordEmojis: DiscordEmojis
   public readonly discordUserConditions: UserConditions
 
@@ -100,7 +102,11 @@ export class Core extends Instance<InstanceType.Core> {
     this.conditonsRegistry = new ConditionsRegistry()
 
     const sqliteName = 'users.sqlite'
-    this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
+    this.sqliteManager = new SqliteManager(
+      application,
+      this.logger,
+      application.memoryOnly ? undefined : application.getConfigFilePath(sqliteName)
+    )
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
@@ -112,6 +118,7 @@ export class Core extends Instance<InstanceType.Core> {
       this.discordConfigurations
     )
     this.discordInstanceHistoryButton = new InstanceHistoryButton(this.sqliteManager, this.logger)
+    this.discordLinkButton = new DiscordLinkButton(this.sqliteManager)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
     this.discordUserConditions = new UserConditions(this.sqliteManager)
 
@@ -177,6 +184,13 @@ export class Core extends Instance<InstanceType.Core> {
     return this.punishments.get(id)
   }
 
+  /*
+   * @internal Use only for creation of instances or other code that manages its own data
+   */
+  public getSqliteManager(): SqliteManager {
+    return this.sqliteManager
+  }
+
   public editPunishment(
     id: SavedPunishment['id'],
     reason: SavedPunishment['reason'] | undefined,
@@ -185,8 +199,7 @@ export class Core extends Instance<InstanceType.Core> {
     return this.punishments.edit(id, reason, till)
   }
 
-  public async awaitReady(): Promise<void> {
-    await this.punishments.ready
+  public awaitReady(): void {
     this.sqliteManager.clean()
     this.sqliteManager.optimize()
   }
@@ -270,6 +283,7 @@ export class Core extends Instance<InstanceType.Core> {
       this.discordLeaderboards.remove(messagesIds)
       this.discordTemporarilyInteractions.remove(messagesIds)
       this.discordInstanceHistoryButton.remove(messagesIds)
+      this.discordLinkButton.remove(messagesIds)
     })
 
     transaction()

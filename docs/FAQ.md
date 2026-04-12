@@ -16,6 +16,11 @@
   - [How to utilize verification system](#how-to-utilize-verification-system)
   - [Why the Warp command takes too long](#why-the-warp-command-takes-too-long)
   - [What are the chances for chat command !vengeance?](#what-are-the-chances-for-chat-command-vengeance)
+  - [How to enable and manage in-game guild system](#how-to-enable-and-manage-in-game-guild-system)
+  - [How to auto manage in-game guild ranks](#how-to-auto-manage-in-game-guild-ranks)
+  - [How to manage guild join requirements](#how-to-manage-guild-join-requirements)
+  - [Auto accept guild join requests](#auto-accept-guild-join-requests)
+  - [Use guild join waitlist](#use-guild-join-waitlist)
   <!-- TOC -->
 
 ## How to get Discord And Hypixel Keys
@@ -196,3 +201,80 @@ If `lose` fails, it will give a `neutral` response not muting anyone.
 After `12` consecutive failures to `win`, be it by reaching `lose` or `neutral` outcome,
 the pity will start kicking in gradually upping the chances till `24th` try which is guaranteed to succeed.
 The pity is counted globally across all users.
+
+## How to enable and manage in-game guild system
+
+To manage a guild, it must be registered first using the Discord slash command `/guild register`.
+By default, all in-game guilds that are connected via any Minecraft instance will be automatically registered.
+
+A registered guild can be managed via the command `/guild settings`.
+By default, all settings and features are toggled off unless they are explicitly changed.
+
+To delete all information regarding a guild, execute the Discord slash command `/guild unregister`.
+
+## How to auto manage in-game guild ranks
+
+Before starting, the in-game guild must be registered via `/guild register`.
+Check [this FAQ section](#how-to-enable-and-manage-in-game-guild-system) for further information regarding the registration.
+
+To manage in-game guild ranks, select all the roles that can be changed from in `/guild settings`.
+This is done to avoid demoting/promoting staff members as well as special guild ranks such as honorary ranks.
+
+After that, execute the command `/guild role-conditions add` to add new guild ranks conditions.
+During the creation of each condition, a guild rank must be selected to associate with the condition.
+When a guild member meets the condition requirement, the guild rank will be automatically given to that guild member.
+
+The chat command `!sync` can be used by any guild member to automatically update their guild rank in case it is needed.
+The same chat command can also be used by staff to update guild members rank. For example, `!sync Steve`.
+
+Anyone can view all guild ranks requirements by using the chat command `!ranks`.
+
+## How to manage guild join requirements
+
+Before starting, the in-game guild must be registered via `/guild register`.
+Check [this FAQ section](#how-to-enable-and-manage-in-game-guild-system) for further information regarding the registration.
+
+After that, execute the command `/guild join-conditions add` to add new guild join conditions.
+Via the Discord slash command `/guild settings`, it is possible to change how many conditions must be met before allowing the player to join the guild.
+By default, it is set to `1`. That means the player must meet just `1` join requirement before allowing the player to join the guild.
+
+> Guild banned players will not be able to join the guild regardless of the join requirements.
+
+## Auto accept guild join requests
+
+Before enabling this feature, Check [How to manage guild join requirements](#how-to-manage-guild-join-requirements).
+
+In Discord slash command `/guild settings`, it is now safe to enable `Auto accept join requests`.
+From now on, any player who requests to join the guild and meets the requirements will be automatically accepted in the guild.
+
+> At least one join condition must be set to allow automatic checking.
+
+## Use guild join waitlist
+
+Before enabling this feature, Check [How to manage guild join requirements](#how-to-manage-guild-join-requirements).
+
+Staff may add players to the guild join waitlist by using the Discord slash command `/guild waitlist add`.  
+Staff may create a Discord panel that auto updates and show the current waitlist status for everyone using the Discord slash command `/guild waitlist create-panel`
+
+To allow players to self-signup into the guild join waitlist, enable the option `Allow users to self-signup` in the Discord slash command `/guild settings`.
+After enabling this feature, players can now press the special button in the specially created message from `/guild waitlist create-panel` at any time to add/remove themselves.
+
+> At least one join condition must be set to allow self-signup.
+
+The waitlist will be automatically checked every couple minutes.
+When the guild has enough space to accept more members, the application will start inviting the people from the waitlist in order from the first to last.
+Every player has 24 hours to accept the offer.
+If the player does not accept within the allocated time, they will be completely removed from the waitlist and the next player will be invited from the waitlist.
+
+When a player is invited via this system, the player will receive a guild join invite as well as a Discord private message explaining the situation.
+In the Discord private message, there will be options to allow the user to accept/decline/reschedule the offer. These Discord buttons:
+
+- When accepting the offer, the player will receive a guild join invite in-game and the status of the invite will be displayed in the Discord private message. They may press this button as many times as needed as long as the invite is still valid.
+- When declining the offer, the player will be instantly removed from the waitlist and the next player in the waitlist will be invited instead.
+- When rescheduling the offer, the player will be put last in the waitlist and a 24-hours grace period will put in place, during which the player will not be invited even if they are the first in line in the waitlist.
+
+After the player has been officially invited, the user may accept the offer by:
+
+- sending a join request to the guild at any time, and it will be automatically accepted by the application.
+- pressing the "Invite" button in the Discord private message from the application to receive a join request from the guild.
+- using the chat command `!invite` to receive a join request from the guild.

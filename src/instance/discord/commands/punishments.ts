@@ -421,7 +421,7 @@ async function handleEdit(context: DiscordCommandContext, responsible: DiscordUs
     guild: context.interaction.guild ?? undefined
   })
 
-  const heat = responsible.tryAddModerationAction(getHeatType(oldPunishment.type))
+  const heat = await responsible.tryAddModerationAction(getHeatType(oldPunishment.type))
   if (heat === HeatResult.Denied) {
     await handleHeatDenied(context.interaction)
     return
@@ -498,7 +498,7 @@ async function takeAction(
   chatTrigger: RegexChat,
   post: () => Promise<string> | string | undefined
 ): Promise<void> {
-  const heat = responsible.tryAddModerationAction(heatType)
+  const heat = await responsible.tryAddModerationAction(heatType)
   if (heat === HeatResult.Denied) {
     await handleHeatDenied(context.interaction)
     return

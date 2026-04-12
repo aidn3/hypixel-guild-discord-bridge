@@ -10,6 +10,7 @@ import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Agatha from './triggers/agatha.js'
 import Age from './triggers/age.js'
+import Airstrike from './triggers/airstrike'
 import Api from './triggers/api.js'
 import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
@@ -33,6 +34,7 @@ import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
+import Dice from './triggers/dice.js'
 import Discord from './triggers/discord'
 import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
@@ -116,6 +118,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     const commandsToAdd = [
       new Agatha(),
       new Age(),
+      new Airstrike(),
       new Api(),
       new Armor(),
       new Asian(),
@@ -141,6 +144,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
+      new Dice(),
       new Discord(),
       new Dojo(),
       new Eggs(),
@@ -262,7 +266,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     const commandName = event.message.slice(chatPrefix.length).split(' ')[0].toLowerCase()
     const commandsArguments = event.message.split(' ').slice(1)
 
-    if (commandName.length === 0) {
+    if (commandName.length === 0 || commandName.startsWith(chatPrefix)) {
       return
     }
 
@@ -274,7 +278,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     const commandDisabled = config.getDisabledCommands().includes(command.triggers[0].toLowerCase())
-    const userPermission = event.user.permission()
+    const userPermission = await event.user.permission()
     if (
       commandDisabled &&
       (userPermission === Permission.Anyone || (userPermission === Permission.Helper && !config.getAllowHelperToggle()))
