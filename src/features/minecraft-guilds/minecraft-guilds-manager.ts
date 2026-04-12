@@ -44,7 +44,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
 
   public constructor(application: Application, sqliteManager: SqliteManager) {
     super(application, InternalInstancePrefix + 'minecraft-guilds-manager', InstanceType.Utility)
-    this.database = new Database(sqliteManager)
+    this.database = new Database(sqliteManager, this.logger)
     this.waitlistInteraction = new DiscordWaitlistInteraction(
       this.application,
       this,

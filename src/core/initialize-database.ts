@@ -656,7 +656,7 @@ function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: 
     'CREATE TABLE "discordGuildWaitlistPanel" (' +
       '  messageId TEXT PRIMARY KEY NOT NULL,' +
       '  channelId TEXT NOT NULL,' +
-      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  guildIds TEXT NOT NULL,' +
       '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ' ) STRICT'

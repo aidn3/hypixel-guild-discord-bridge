@@ -1,10 +1,48 @@
 import assert from 'node:assert'
 
+import type { Logger } from 'log4js'
+
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { ConditionId } from '../../core/conditions/common'
 
 export class Database {
-  constructor(private readonly sqliteManager: SqliteManager) {}
+  constructor(
+    private readonly sqliteManager: SqliteManager,
+    logger: Logger
+  ) {
+    this.sqliteManager.registerCleaner(() => {
+      const database = this.sqliteManager.getDatabase()
+      const transaction = database.transaction(() => {
+        const existingGuilds = new Set(this.allGuilds().map((guild) => guild.id))
+        const panels = this.getWaitlistPanels()
+        const deletePanel = database.prepare('DELETE FROM "discordGuildWaitlistPanel" WHERE messageId = ?')
+        const updatePanel = database.prepare('UPDATE "discordGuildWaitlistPanel" SET guildIds = ? WHERE messageId = ?')
+        let deletedGuildEntries = 0
+        let deletedPanels = 0
+        for (const panel of panels) {
+          const filteredGuilds = panel.guildIds.filter((guildId) => existingGuilds.has(guildId))
+          if (filteredGuilds.length === 0) {
+            const deleteResult = deletePanel.run(panel.messageId).changes
+            assert.strictEqual(deleteResult, 1)
+            deletedGuildEntries += panel.guildIds.length
+            deletedPanels++
+          } else if (filteredGuilds.length !== panel.guildIds.length) {
+            const updateResult = updatePanel.run(JSON.stringify(filteredGuilds), panel.messageId).changes
+            assert.strictEqual(updateResult, 1)
+            deletedGuildEntries += panel.guildIds.length - filteredGuilds.length
+          }
+        }
+
+        return { deletedGuildEntries, deletedPanels }
+      })
+      const result = transaction()
+      if (result.deletedGuildEntries !== 0 || result.deletedPanels !== 0) {
+        logger.debug(
+          `Delete ${result.deletedGuildEntries} guild entry in discordGuildWaitlistPanel and delete ${result.deletedPanels} total empty panel.`
+        )
+      }
+    })
+  }
 
   public initGuild(id: string, name: string, roles: MinecraftGuildRole[]): MinecraftGuild {
     const database = this.sqliteManager.getDatabase()
@@ -79,14 +117,28 @@ export class Database {
         'minecraftGuildJoinConditions',
         'minecraftGuildRoleConditions',
         'minecraftGuildWaitlist',
-        'discordGuildWaitlistPanel',
-        'discordGuildWaitlistRequest',
         'minecraftGuildRoles'
       ]
 
       let count = 0
       for (const table of tables) {
         count += database.prepare(`DELETE FROM "${table}" WHERE guildId = ?`).run(id).changes
+      }
+
+      const panels = this.getWaitlistPanels()
+      const deletePanel = database.prepare('DELETE FROM "discordGuildWaitlistPanel" WHERE messageId = ?')
+      const updatePanel = database.prepare('UPDATE "discordGuildWaitlistPanel" SET guildIds = ? WHERE messageId = ?')
+      for (const panel of panels) {
+        const guildIds = panel.guildIds.filter((guildId) => guildId === id)
+        if (guildIds.length === 0) {
+          const deleteResult = deletePanel.run(panel.messageId).changes
+          assert.strictEqual(deleteResult, 1)
+          count += deleteResult
+        } else if (guildIds.length !== panel.guildIds.length) {
+          const updateResult = updatePanel.run(JSON.stringify(guildIds), panel.messageId).changes
+          assert.strictEqual(updateResult, 1)
+          count += updateResult
+        }
       }
 
       // only delete after counting everything
@@ -205,6 +257,7 @@ export class Database {
       for (const entry of all) {
         entry.createdAt = entry.createdAt * 1000
         entry.lastUpdatedAt = entry.lastUpdatedAt * 1000
+        entry.guildIds = JSON.parse(entry.guildIds as unknown as string) as string[]
       }
       return all
     })
@@ -213,13 +266,15 @@ export class Database {
   }
 
   public addWaitlistPanel(entry: Omit<WaitlistPanel, 'createdAt' | 'lastUpdatedAt'>): void {
+    assert.notStrictEqual(entry.guildIds.length, 0)
+
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const insert = database.prepare(
-        'INSERT INTO "discordGuildWaitlistPanel" (messageId, channelId, guildId) VALUES (?, ?, ?)'
+        'INSERT INTO "discordGuildWaitlistPanel" (messageId, channelId, guildIds) VALUES (?, ?, ?)'
       )
 
-      insert.run(entry.messageId, entry.channelId, entry.guildId)
+      insert.run(entry.messageId, entry.channelId, JSON.stringify(entry.guildIds))
     })
 
     transaction()
@@ -597,7 +652,7 @@ export interface WaitlistPanel {
   messageId: string
   channelId: string
 
-  guildId: string
+  guildIds: string[]
 
   lastUpdatedAt: number
   createdAt: number

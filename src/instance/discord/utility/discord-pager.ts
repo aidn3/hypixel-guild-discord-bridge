@@ -3,6 +3,7 @@ import type {
   ButtonInteraction,
   CommandInteraction,
   Message,
+  ModalSubmitInteraction,
   TextBasedChannel,
   TextChannel
 } from 'discord.js'
@@ -38,7 +39,7 @@ const NoEmbed: APIEmbed = {
 }
 
 export async function interactivePaging(
-  interaction: CommandInteraction | ButtonInteraction,
+  interaction: CommandInteraction | ButtonInteraction | ModalSubmitInteraction,
   currentPage = 0,
   duration = DefaultTimeout,
   errorHandler: UnexpectedErrorHandler,
