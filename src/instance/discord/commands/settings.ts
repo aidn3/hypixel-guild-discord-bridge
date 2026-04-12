@@ -1,6 +1,13 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, APIEmbedField, ButtonInteraction, InteractionResponse, Message } from 'discord.js'
+import type {
+  APIEmbed,
+  APIEmbedField,
+  ButtonInteraction,
+  ChatInputCommandInteraction,
+  InteractionResponse,
+  Message
+} from 'discord.js'
 import {
   bold,
   ButtonStyle,
@@ -27,7 +34,7 @@ import { beautifyInstanceName } from '../../../utility/shared-utility'
 import { Timeout } from '../../../utility/timeout.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { interactivePaging } from '../utility/discord-pager'
-import type { ActionOption, CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
+import type { ActionOption, CategoryOption, EmbedCategoryOption, LabelOption } from '../utility/options-handler.js'
 import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
 
 const Essential = ':shield:'
@@ -46,6 +53,9 @@ export default {
   permission: Permission.Admin,
 
   handler: async function (context) {
+    assert.ok(context.interaction.inCachedGuild())
+    await context.interaction.deferReply()
+
     const options: EmbedCategoryOption = {
       type: OptionType.EmbedCategory,
       get name() {
@@ -74,7 +84,8 @@ export default {
         fetchQualityOptions(context.application),
         fetchCommandsOptions(context.application),
         fetchPluginsOptions(context.application),
-        fetchLanguageOptions(context.application)
+        fetchLanguageOptions(context.application),
+        await fetchOtherOptions(context.interaction)
       ]
     }
 
@@ -957,6 +968,29 @@ function fetchLanguageOptions(application: Application): CategoryOption {
   }
 }
 
+async function fetchOtherOptions(interaction: ChatInputCommandInteraction<'cached'>): Promise<LabelOption> {
+  const commands = await interaction.guild.commands.fetch()
+  const faqCommand = commands.find((command) => command.name === 'faq')
+  const guildCommand = commands.find((command) => command.name === 'guild')
+  const profanityCommand = commands.find((command) => command.name === 'profanity')
+  const conditionsCommand = commands.find((command) => command.name === 'conditions')
+  const punishmentsCommand = commands.find((command) => command.name === 'punishments')
+  const verificationCommand = commands.find((command) => command.name === 'verification')
+
+  return {
+    type: OptionType.Label,
+    getOption: undefined,
+    name: 'Other Settings',
+    description:
+      `For frequently asked questions check </faq:${faqCommand?.id}>.\n` +
+      `-# Manage in-game guilds settings via </guild register:${guildCommand?.id}> and </guild settings:${guildCommand?.id}>\n` +
+      `-# Manage profanity via </profanity include list:${profanityCommand?.id}>.\n` +
+      `-# Manage Discord role conditions via </conditions roles list:${conditionsCommand?.id}>.\n` +
+      `-# Manage punishments via </punishments list:${punishmentsCommand?.id}>.\n` +
+      `-# Manage verification via </verification query-discord:${verificationCommand?.id}>.`
+  }
+}
+
 function fetchMinecraftOptions(application: Application): CategoryOption {
   const minecraft = application.core.minecraftConfigurations
 
@@ -983,6 +1017,23 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
             setOption: (value) => {
               minecraft.setChatPlaceholder(value)
             }
+          },
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Arabic Fixer',
+            description: 'Fixes how Arabic text appears in chat so it displays correctly instead of looking broken.',
+            options: [
+              {
+                type: OptionType.Boolean,
+                name: `Enable Arabic Fixer`,
+                description:
+                  'Fixes Arabic text in in-game chat by making it display in the correct direction and with properly connected letters',
+                getOption: () => minecraft.getArabicFixerEnabled(),
+                toggleOption: () => {
+                  minecraft.setArabicFixerEnabled(!minecraft.getArabicFixerEnabled())
+                }
+              }
+            ]
           },
           {
             type: OptionType.EmbedCategory,

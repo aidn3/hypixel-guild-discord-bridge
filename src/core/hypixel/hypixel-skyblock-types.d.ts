@@ -68,6 +68,7 @@ export interface SkyblockMember {
       | 'SKILL_FISHING'
       | 'SKILL_ALCHEMY'
       | 'SKILL_RUNECRAFTING'
+      | 'SKILL_HUNTING'
       | 'SKILL_MINING'
       | 'SKILL_FARMING'
       | 'SKILL_ENCHANTING'
@@ -114,6 +115,42 @@ export interface SkyblockMember {
       gold?: string[]
       silver?: string[]
       bronze?: string[]
+    }
+  }
+  skill_tree?: {
+    experience?: {
+      foraging?: number
+      mining?: number
+    }
+    nodes: {
+      foraging?: {
+        center_of_the_forest?: number
+      }
+      mining?: {
+        core_of_the_mountain?: number
+      }
+    }
+  }
+  foraging_core?: {
+    forests_whispers?: number
+    forests_whispers_spent?: number
+  }
+  glacite_player_data?: {
+    corpses_looted?: {
+      lapis?: number
+      umber?: number
+      tungsten?: number
+      vanguard?: number
+    }
+    mineshafts_entered?: number
+  }
+  foraging?: {
+    starlyn?: {
+      personal_bests?: {
+        agatha?: number
+        FIG_LOG?: number
+        MANGROVE_LOG?: number
+      }
     }
   }
   events?: SkyblockPlayerEvents
@@ -328,6 +365,18 @@ export interface HypixelSkyblockSkillLevel {
   level: number
   totalExpRequired: number
   unlocks: string[]
+}
+
+export interface SkyblockBingoResponse extends HypixelSuccessResponse {
+  events?: {
+    key: number
+    points: number
+    completed_goals: string[]
+  }[]
+}
+
+export interface SkyblockBingoResourcesResponse extends HypixelSuccessResponse {
+  id: number
 }
 
 /* eslint-enable @typescript-eslint/naming-convention */

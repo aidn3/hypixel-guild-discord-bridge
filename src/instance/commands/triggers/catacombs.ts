@@ -41,7 +41,37 @@ export default class Catacombs extends ChatCommandHandler {
     const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
     const secrets = hypixelProfile.achievements?.skyblock_treasure_hunter ?? 0
 
-    return `${givenUsername} is Catacombs ${skillLevel.toFixed(2)} - ${this.formatClass(dungeons)} - Secrets ${secrets.toLocaleString('en-US')}.`
+    const healer = getDungeonLevelWithOverflow(dungeons.player_classes?.healer?.experience ?? 0)
+    const mage = getDungeonLevelWithOverflow(dungeons.player_classes?.mage?.experience ?? 0)
+    const berserk = getDungeonLevelWithOverflow(dungeons.player_classes?.berserk?.experience ?? 0)
+    const archer = getDungeonLevelWithOverflow(dungeons.player_classes?.archer?.experience ?? 0)
+    const tank = getDungeonLevelWithOverflow(dungeons.player_classes?.tank?.experience ?? 0)
+
+    const classAvg = (
+      (Math.min(healer, 50) + Math.min(mage, 50) + Math.min(berserk, 50) + Math.min(archer, 50) + Math.min(tank, 50)) /
+      5
+    ).toFixed(2)
+
+    const uncappedClassAvg = ((healer + mage + berserk + archer + tank) / 5).toFixed(2)
+
+    const anyOverflow = healer > 50 || mage > 50 || berserk > 50 || archer > 50 || tank > 50
+
+    return anyOverflow
+      ? context.app.i18n.t(($) => $['commands.catacombs.overflow-class-avg'], {
+          username: givenUsername,
+          cata: skillLevel,
+          class: this.formatClass(dungeons),
+          secrets,
+          classAvg,
+          uncappedClassAvg
+        })
+      : context.app.i18n.t(($) => $['commands.catacombs.response'], {
+          username: givenUsername,
+          cata: skillLevel,
+          class: this.formatClass(dungeons),
+          secrets,
+          classAvg
+        })
   }
 
   private formatClass(dungeon: SkyblockDungeons): string {

@@ -58,7 +58,11 @@ export class SendQueue {
     const commandTypes = SendQueue.resolveTypes(command, priority)
 
     if (priority === MinecraftSendChatPriority.Instant) {
-      if (eventId !== undefined) {
+      if (eventId === undefined) {
+        for (const type of commandTypes.types) {
+          this.lastId.delete(type)
+        }
+      } else {
         for (const type of commandTypes.types) {
           this.lastId.set(type, eventId)
         }
@@ -89,7 +93,11 @@ export class SendQueue {
 
       const entryToExecute = this.priorityQueue.pop()
 
-      if (entryToExecute.eventId !== undefined) {
+      if (entryToExecute.eventId === undefined) {
+        for (const type of entryToExecute.types) {
+          this.lastId.delete(type)
+        }
+      } else {
         for (const type of entryToExecute.types) {
           this.lastId.set(type, entryToExecute.eventId)
         }

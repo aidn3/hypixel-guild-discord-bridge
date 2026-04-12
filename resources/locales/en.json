@@ -53,12 +53,16 @@
 
   "discord.conditions.list.title": {
     "roles": "Roles Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
-    "nicknames": "Nicknames Conditions (page {{currentPage, number}} out of {{totalPages, number}})"
+    "nicknames": "Nicknames Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
+    "guild-join": "Guild Join Condition (page {{currentPage, number}} out of {{totalPages, number}}",
+    "guild-role": "Guild Role Condition (page {{currentPage, number}} out of {{totalPages, number}}"
   },
   "discord.conditions.list.empty": "__Empty list__",
   "discord.conditions.list.entry": {
     "roles": "- `{{condition.id}}`: {{display}} <@&{{condition.roleId}}>\n",
-    "nicknames": "- `{{condition.id}}`: {{display}} `{{condition.nickname}}`\n"
+    "nicknames": "- `{{condition.id}}`: {{display}} `{{condition.nickname}}`\n",
+    "guild-join": "- `{{condition.id}}`: {{display}}\n",
+    "guild-role": "- `{{condition.id}}`: {{display}} `{{condition.role}}`\n"
   },
   "discord.conditions.list.entry-invalid": "- `{{condition.id}}`: __{{condition.typeId}}__\n",
 
@@ -69,7 +73,9 @@
   "discord.conditions.add.not-found": "No such condition type with this name: {{query}}",
   "discord.conditions.add.title": {
     "roles": "Create role condition",
-    "nicknames": "Create nickname condition"
+    "nicknames": "Create nickname condition",
+    "guild-join": "Create Guild Join Condition",
+    "guild-role": "Create Guild Role Condition"
   },
 
   "discord.conditions.add.role.name": "Role to give",
@@ -85,19 +91,26 @@
   "discord.conditions.add.nickname.description": "Any user who meets the requirements for this condition will have their nickname set as this.",
   "discord.conditions.add.nickname.placeholder": "{{USERNAME}} - Verified",
 
+  "discord.conditions.add.guild-role.name": "Guild role to give",
+  "discord.conditions.add.guild-role.description": "Any user who meets the requirements will receive the selected role (Default guild role excluded).",
+
   "discord.conditions.add.modal-error": "Timed out.",
   "discord.conditions.add.condition-error": "Could not satisfy condition creation requirements: {{errorMessage}}",
   "discord.conditions.add.success": {
     "roles": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the role <@&{{condition.roleId}}>.",
-    "nicknames": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the have their nickname set as `{{condition.nickname}}`."
+    "nicknames": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the have their nickname set as `{{condition.nickname}}`.",
+    "guild-join": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be able to join the guild as long as there is no active punishment and joining is allowed.",
+    "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role."
   },
 
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
-  "discord.conditions.handler.skyblock-level.formatted": "Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-level.formatted": "{{profileTypes}} Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",
-  "discord.conditions.handler.skyblock-catacombs-level.formatted": "Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-catacombs-level.formatted": "{{profileTypes}} Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.skyblock-networth.title": "Skyblock Networth",
+  "discord.conditions.handler.skyblock-networth.formatted": "{{profileTypes}} Skyblock Networth {{fromValue, number}} to {{toValue, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
@@ -108,6 +121,9 @@
   "discord.conditions.handler.in-guild-with-rank.invalid-rank": "No such a guild rank {{guildRank}}. Available ranks: {{ranks, list}}.",
   "discord.conditions.handler.in-guild-as-guildmaster.title": "In Guild As The Guild Master",
   "discord.conditions.handler.in-guild-as-guildmaster.formatted": "In guild {{guildName}} as the guild master",
+
+  "discord.conditions.handler.has-discord-role.title": "Has Discord Role",
+  "discord.conditions.handler.has-discord-role.formatted": "Has Discord role <@&{{roleId}}>",
 
   "commands.essence.none": "{{username}} does not have any essence?",
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
@@ -131,11 +147,14 @@
   "commands.inventory.render-extra": "Rendering {{username}} inventory hotbar {{bar, number}}",
 
   "commands.armor.none": "{{username}} does not have any armor.",
-  "commands.armor.none-maybe": "{{username}} does not have any armor?",
   "commands.armor.render-not-supported": "Armor has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
-  "commands.equipments.none": "{{username}} does not have any equipments.",
-  "commands.equipments.none-maybe": "{{username}} does not have any equipments?",
-  "commands.equipments.render-not-supported": "Equipments has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.equipments.none": "{{username}} does not have any equipment.",
+  "commands.equipments.render-not-supported": "Equipment has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.inventory.none": "{{username}} does not have any items in inventory row {{parsedBar}}.",
+  "commands.inventory.render-not-supported": "Inventory row {{parsedBar}} has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.item.none": "{{username}} does not have an item in inventory slot {{parsedBar}}.",
+  "commands.item.render-not-supported": "Item in inventory slot {{parsedBar}} has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.inventory.api-disabled": "{{username}}'s inventory API is disabled.",
   "commands.bedwars.none": "{{username}} has never played Bedwars before.",
   "commands.bedwars.response": "{{username}}'s Bedwars: level {{level, number(maximumFractionDigits: 0)}}✫ - FKDR {{fkdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}} - Final kills {{kills, number}}.",
   "commands.skywars.none": "{{username}} has never played Skywars before.",
@@ -146,12 +165,12 @@
   "commands.status.online-with-map": "{{username}} is playing {{game}} in {{mode}} map {{map}}.",
   "commands.status.online-with-mode": "{{username}} is playing {{game}} in {{mode}}.",
   "commands.hotm.none": "{{username}} has never mined before.",
-  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} - Nucleus {{runs, number}} - {{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite.",
+  "commands.hotm.response": "{{username}} is HOTM {{hotm, number}} - Core {{core, number}} - Nucleus {{runs, number}} - {{mithril, number}} Mithril - {{gemstone, number}} Gemstone - {{glacite, number}} Glacite.",
   "commands.math.invalid": "{{username}}, invalid math expression.",
   "commands.math.response": "{{username}}, answer: {{result, number}}",
   "commands.math.response.easter": "{{username}} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{result, number}})",
   "commands.sacks.response": "{{username}} has {{value}} in sacks content.",
-  "commands.skills.response": "{{username}} Skills: AVG {{average, number(maximumFractionDigits: 1)}}, combat {{combat, number(maximumFractionDigits: 1)}}, farm {{farming, number(maximumFractionDigits: 1)}}, fish {{fishing, number(maximumFractionDigits: 1)}}, mine {{mining, number(maximumFractionDigits: 1)}}, forage {{foraging, number(maximumFractionDigits: 1)}}, enchant {{enchanting, number(maximumFractionDigits: 1)}}, alch {{alchemy, number(maximumFractionDigits: 1)}}, carp {{carpentry, number(maximumFractionDigits: 1)}}, rune {{runecrafting, number(maximumFractionDigits: 1)}}, tame {{taming, number(maximumFractionDigits: 1)}}, social {{social, number(maximumFractionDigits: 1)}}",
+  "commands.skills.response": "{{username}} Skills: AVG {{average, number(maximumFractionDigits: 1)}}, combat {{combat, number(maximumFractionDigits: 1)}}, farm {{farming, number(maximumFractionDigits: 1)}}, fish {{fishing, number(maximumFractionDigits: 1)}}, mine {{mining, number(maximumFractionDigits: 1)}}, forage {{foraging, number(maximumFractionDigits: 1)}}, hunt {{hunting, number(maximumFractionDigits: 1)}}, enchant {{enchanting, number(maximumFractionDigits: 1)}}, alch {{alchemy, number(maximumFractionDigits: 1)}}, carp {{carpentry, number(maximumFractionDigits: 1)}}, rune {{runecrafting, number(maximumFractionDigits: 1)}}, tame {{taming, number(maximumFractionDigits: 1)}}, social {{social, number(maximumFractionDigits: 1)}}",
   "commands.uhc.response": "{{username}} is UHC level {{level}}✫ - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}",
   "commands.woolwars.none": "{{username}} has never played Woolwars before.",
   "commands.woolwars.response": "{{username}}'s Woolwars: Games {{games, number}} - Wins {{wins, number}} - Kills {{kills, number}} - KDR {{kdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}}.",
@@ -177,8 +196,25 @@
   "commands.rank.no-timestamp": "{{username}} is a {{rank}}",
   "commands.rank.response": "{{username}} has been a {{rank}} for the last {{timeAsRank}}",
   "commands.news.none": "No news found right now :/",
+  "commands.duels.none": "{{username}} has never played any duels before.",
+  "commands.bowspleef.response": "{{username}}'s bowspleef duels stats - {{gamesPlayed, number}} games played - {{wins, number}} wins - {{losses, number}} losses - {{winLossRatio, number}} W/L - {{shotsFired, number}} shots fired - {{bestWinstreak, number}} best winstreak.",
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
+  "commands.hotf.none": "{{username}} has not unlocked their hotf tree yet.",
+  "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
+  "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted: {{lapis, number}} Lapis - {{umber, number}} Umber - {{tungsten, number}} Tungsten - {{vanguard, number}} Vanguards",
+  "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
+  "commands.news.response": "{{updatesTitle}} {{updatesDate}} Release: {{updatesLink}} - {{patchnotesTitle}}: https://hypixel.net/threads/.{{patchnotesGuid}}/",
+  "commands.bingo.response": "{{username}}'s bingo stats for last event: {{completedGoals, number}} Goals Completed - {{points, number}} Points Earned",
+  "commands.bingo.none": "{{username}} has never participated in a bingo event.",
+  "commands.bingo.did-not-participate": "{{username}} did not participate in the last bingo event.",
+  "commands.classavg.overflow": "{{username}}'s class average {{average, number}} - Overflow {{overflow, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
+  "commands.classavg.response": "{{username}}'s class average {{average, number}} - H {{healer, number}} - M {{mage, number}} - B {{berserk, number}} - A {{archer, number}} - T {{tank, number}}",
+  "commands.catacombs.response": "{{username}} is Catacombs {{cata, number}} - Secrets {{secrets, number}} - {{class}} - Class Avg {{classAvg, number}}.",
+  "commands.catacombs.overflow-class-avg": "{{username}} is Catacombs {{cata, number}} - Secrets {{secrets, number}} - {{class}} - Class Avg {{classAvg, number}} - Overflow Class Avg {{uncappedClassAvg, number}}.",
+  "commands.coinflip.special": "{{username}} flips a coin into the air. It spins, drops beside {{username}}, and somehow the coin settles upright on its side.",
+  "commands.agatha.response": "{{username}}'s highest Agatha contest score is {{agatha, number}}. Fig PB: {{fig, number}}. Mangrove PB: {{mangrove, number}}.",
+  "commands.agatha.none": "{{username}} hasn't entered a Agatha contest before.",
 
   "commands.praise": [
     "{{name}} is a very good boy/girl",
@@ -264,5 +300,29 @@
     "{{name}}, You’d lose a battle of wits with a salad.",
     "{{name}}, You're about as edgy as a marshmallow.",
     "{{name}}, You have something special... it’s just well hidden. Like, really well."
+  ],
+  "commands.coinflip.heads": [
+    "{{name}} flips a coin high into the air - it spins once, twice - and lands on heads.",
+    "{{name}} snaps a coin upward; it glints in the light and settles as heads.",
+    "The coin {{name}} flips dances across the air before dropping to heads.",
+    "{{name}} lets a coin soar dramatically... it lands on heads.",
+    "The coin {{name}} tosses arcs gracefully above and falls - heads.",
+    "{{name}} gives a coin a sharp flick; it wobbles on the table and tips to heads.",
+    "The coin {{name}} flips slows its spin - it lands on heads.",
+    "{{name}} watches closely as the coin hits the ground and shows heads.",
+    "The coin {{name}} tossed clinks against the floor - heads.",
+    "With a confident flip of a coin, {{name}} reveals heads."
+  ],
+  "commands.coinflip.tails": [
+    "{{name}} flips a coin skyward - it spins wildly - and lands on tails.",
+    "{{name}} flicks a coin; it flashes silver and drops to tails.",
+    "The coin {{name}} flips bounces once before resting on tails.",
+    "{{name}} launches a coin high... it lands on tails.",
+    "The coin {{name}} tosses whirls above and settles as tails.",
+    "{{name}} gives a coin a dramatic toss; it rolls in a circle and falls to tails.",
+    "The coin {{name}} flips slows to a stop - it shows tails.",
+    "{{name}} leans in as the coin lands firmly on tails.",
+    "The coin {{name}} tossed rattles across the surface - tails.",
+    "With a clean flip of a coin, {{name}} gets tails."
   ]
 }

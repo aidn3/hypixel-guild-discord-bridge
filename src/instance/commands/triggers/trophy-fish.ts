@@ -20,7 +20,7 @@ export default class TrophyFish extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['trophyfish', 'trophyfishing', 'trophy', 'tf'],
-      description: "Returns a player's Skyblock trophy fishing progress",
+      description: "Returns a player's SkyBlock trophy fishing progress",
       example: `trophy %s`
     })
   }

@@ -8,6 +8,7 @@ import { Instance, InternalInstancePrefix } from '../../common/instance.js'
 
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
+import Agatha from './triggers/agatha.js'
 import Age from './triggers/age.js'
 import Airstrike from './triggers/airstrike'
 import Api from './triggers/api.js'
@@ -15,13 +16,17 @@ import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
 import Bedwars from './triggers/bedwars.js'
 import Bestiary from './triggers/bestiary'
+import Bingo from './triggers/bingo.js'
 import Bits from './triggers/bits.js'
 import Boo from './triggers/boo.js'
 import Boop from './triggers/boop.js'
+import Bowspleef from './triggers/bowspleef.js'
 import Buildbattle from './triggers/buildbattle'
 import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
+import ClassAverage from './triggers/classaverage.js'
+import Coinflip from './triggers/coinflip.js'
 import Collection from './triggers/collection'
 import CopsAndCrims from './triggers/cops-and-crims.js'
 import CountingChain from './triggers/counting-chain'
@@ -29,6 +34,7 @@ import CurrentDungeon from './triggers/current-dungeon.js'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
+import Dice from './triggers/dice.js'
 import Discord from './triggers/discord'
 import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
@@ -45,6 +51,7 @@ import Gifted from './triggers/gifted.js'
 import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
 import Help from './triggers/help.js'
+import HeartOfTheForest from './triggers/hotf.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
 import Insult from './triggers/insult.js'
@@ -59,6 +66,7 @@ import List from './triggers/list.js'
 import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
 import Megawalls from './triggers/megawalls'
+import Mineshafts from './triggers/mineshafts.js'
 import Motes from './triggers/motes.js'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
@@ -108,6 +116,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
 
     const commandsToAdd = [
+      new Agatha(),
       new Age(),
       new Airstrike(),
       new Api(),
@@ -117,12 +126,16 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new News(),
       new Bedwars(),
       new Bestiary(),
+      new Bingo(),
       new Boo(),
       new Boop(),
       new Buildbattle(),
+      new Bowspleef(),
       new Calculate(),
       new Catacombs(),
       new Chocolate(),
+      new ClassAverage(),
+      new Coinflip(),
       new Collection(),
       new CopsAndCrims(),
       new Command67(),
@@ -131,6 +144,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
+      new Dice(),
       new Discord(),
       new Dojo(),
       new Eggs(),
@@ -148,6 +162,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Guild(),
       new GuildCheck(),
       new Help(),
+      new HeartOfTheForest(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
       new Insult(),
@@ -162,6 +177,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new MagicalPower(),
       new Mayor(),
       new Megawalls(),
+      new Mineshafts(),
       new Motes(),
       new Mute(),
       new Networth(),

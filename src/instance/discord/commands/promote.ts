@@ -9,7 +9,7 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('promote')
-      .setDescription('promote guild member in-game')
+      .setDescription('Promote guild member in-game')
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ),

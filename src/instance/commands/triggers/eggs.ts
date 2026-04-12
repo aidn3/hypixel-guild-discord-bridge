@@ -25,7 +25,7 @@ export default class Eggs extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['eggs', 'egg'],
-      description: "Returns a player's skyblock easter eggs stats",
+      description: "Returns a player's SkyBlock easter eggs stats",
       example: `eggs %s`
     })
   }

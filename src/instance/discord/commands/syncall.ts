@@ -10,7 +10,7 @@ import type { UpdateContext, UpdateProgress } from '../conditions/common'
 
 export default {
   getCommandBuilder: () =>
-    new SlashCommandBuilder().setName('syncall').setDescription('synchronize roles and other options for all users'),
+    new SlashCommandBuilder().setName('syncall').setDescription('Synchronize roles and other options for all users'),
   handler: async function (context) {
     const interaction = context.interaction
 

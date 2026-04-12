@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 10
+const CurrentVersion = 13
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -43,6 +43,15 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(9, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom9to10(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(10, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom10to11(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(11, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom11to12(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(12, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom12to13(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -501,8 +510,16 @@ function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: bo
   database.pragma('user_version = 8')
 }
 
-function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean) {
   if (!newlyCreated) logger.debug('Migrating database from version 8 to 9')
+
+  database.exec('ALTER TABLE "discordRolesConditions" ADD COLUMN "onUnmet" TEXT NOT NULL DEFAULT "keep";')
+
+  database.pragma('user_version = 9')
+}
+
+function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 9 to 10')
 
   // reference: discord/link-button.ts
   database.exec(
@@ -512,12 +529,12 @@ function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: bo
       ' ) STRICT'
   )
 
-  database.pragma('user_version = 9')
+  database.pragma('user_version = 10')
 }
 
-function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
   if (!newlyCreated) {
-    logger.debug('Migrating database from version 8 to 9')
+    logger.debug('Migrating database from version 10 to 11')
     const tables = ['discordRolesConditions', 'discordNicknameConditions']
 
     /* eslint-disable @typescript-eslint/consistent-type-definitions */
@@ -571,7 +588,130 @@ function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: b
     }
   }
 
-  database.pragma('user_version = 10')
+  database.pragma('user_version = 11')
+}
+
+function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 11 to 12')
+
+  database.exec(
+    'CREATE TABLE "minecraftGuild" (' +
+      '  id TEXT PRIMARY KEY NOT NULL,' +
+      '  name TEXT COLLATE NOCASE NOT NULL,' +
+      '  inviteWishlist INTEGER NOT NULL DEFAULT 0,' +
+      '  selfWishlist INTEGER NOT NULL DEFAULT 0,' +
+      '  neededJoinConditions INTEGER NOT NULL DEFAULT 1,' +
+      '  acceptJoinRequests INTEGER NOT NULL DEFAULT 0,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildRoles" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  name TEXT NOT NULL,' +
+      '  priority INTEGER NOT NULL,' +
+      '  whitelisted INTEGER NOT NULL DEFAULT 0,' +
+      '  PRIMARY KEY(guildId, name)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildMember" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  userId TEXT NOT NULL,' +
+      '  joinedAt INTEGER NOT NULL,' +
+      '  lastUpdateAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, userId)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildJoinConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildRoleConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  role TEXT NOT NULL,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildWaitlist" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  mojangId TEXT NOT NULL,' +
+      '  invitedTill INTEGER NOT NULL DEFAULT 0,' +
+      '  noInviteTill INTEGER NOT NULL DEFAULT 0,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  UNIQUE(guildId, mojangId)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordGuildWaitlistPanel" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  guildIds TEXT NOT NULL,' +
+      '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordGuildWaitlistRequest" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  reference INTEGER NOT NULL UNIQUE REFERENCES minecraftGuildWaitlist(id) ON DELETE CASCADE' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 12')
+}
+
+function migrateFrom12to13(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) {
+    logger.debug('Migrating database from version 12 to 13')
+    const tables = [
+      'discordRolesConditions',
+      'discordNicknameConditions',
+      'minecraftGuildRoleConditions',
+      'minecraftGuildJoinConditions'
+    ]
+
+    /* eslint-disable @typescript-eslint/consistent-type-definitions */
+    type Row = { id: number | bigint; options: string }
+    /* eslint-enable @typescript-eslint/consistent-type-definitions */
+
+    let totalUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId IN ('reached-hypixel-skyblock-level', 'reached-hypixel-skyblock-catacombs-level')`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as Record<string, unknown>
+        const updateResult = update.run(
+          JSON.stringify({ ...parsedOptions, profileTypes: ['classic', 'ironman', 'bingo', 'island'] }),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalUpdates++
+      }
+    }
+    if (totalUpdates > 0) {
+      logger.debug(`Updated ${totalUpdates} conditions entry regarding skyblock profile types`)
+    }
+  }
+
+  database.pragma('user_version = 13')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

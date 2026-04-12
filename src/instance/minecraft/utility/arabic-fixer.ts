@@ -2,8 +2,14 @@ import assert from 'node:assert'
 
 import esrever from 'esrever'
 
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
+
 export default class ArabicFixer {
+  constructor(private readonly config: MinecraftConfigurations) {}
   public encode(message: string): string {
+    const enabled = this.config.getArabicFixerEnabled()
+    if (!enabled) return message
+
     const ArabicLanguage = /[\u0600-\u06FF\u200C\u200F\uFB8A]+/g
     if (!ArabicLanguage.test(message)) return message
 

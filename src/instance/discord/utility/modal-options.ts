@@ -12,8 +12,14 @@ import type { BooleanOption, DiscordSelectOption, NumberOption, PresetListOption
 import { InputStyle, OptionType } from './options-handler'
 
 export type BaseModalOption =
-  | (Omit<TextOption, 'getOption' | 'setOption'> & { defaultValue?: ReturnType<TextOption['getOption']> })
-  | (Omit<NumberOption, 'getOption' | 'setOption'> & { defaultValue?: ReturnType<NumberOption['getOption']> })
+  | (Omit<TextOption, 'getOption' | 'setOption'> & {
+      defaultValue?: ReturnType<TextOption['getOption']>
+      validate?: (value: string) => string | undefined
+    })
+  | (Omit<NumberOption, 'getOption' | 'setOption'> & {
+      defaultValue?: ReturnType<NumberOption['getOption']>
+      validate?: (value: number) => string | undefined
+    })
   | (Omit<BooleanOption, 'getOption' | 'toggleOption'> & { defaultValue?: ReturnType<BooleanOption['getOption']> })
   | (Omit<PresetListOption, 'getOption' | 'setOption'> & { defaultValue?: ReturnType<PresetListOption['getOption']> })
   | (Omit<DiscordSelectOption, 'getOption' | 'setOption'> & {
@@ -208,6 +214,10 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
       }
       case OptionType.Text: {
         value = modalResponse.fields.getTextInputValue(option.key)
+        if (option.validate != undefined) {
+          const response = option.validate(value)
+          if (response !== undefined) throw new Error(response)
+        }
         break
       }
       case OptionType.PresetList: {
@@ -221,6 +231,10 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
           throw new Error(
             `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(rawValue)}`
           )
+        }
+        if (option.validate != undefined) {
+          const response = option.validate(intValue)
+          if (response !== undefined) throw new Error(response)
         }
         value = intValue
         break

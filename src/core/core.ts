@@ -102,7 +102,11 @@ export class Core extends Instance<InstanceType.Core> {
     this.conditonsRegistry = new ConditionsRegistry()
 
     const sqliteName = 'users.sqlite'
-    this.sqliteManager = new SqliteManager(application, this.logger, application.getConfigFilePath(sqliteName))
+    this.sqliteManager = new SqliteManager(
+      application,
+      this.logger,
+      application.memoryOnly ? undefined : application.getConfigFilePath(sqliteName)
+    )
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
@@ -178,6 +182,13 @@ export class Core extends Instance<InstanceType.Core> {
 
   public getPunishmentById(id: SavedPunishment['id']): SavedPunishment | undefined {
     return this.punishments.get(id)
+  }
+
+  /*
+   * @internal Use only for creation of instances or other code that manages its own data
+   */
+  public getSqliteManager(): SqliteManager {
+    return this.sqliteManager
   }
 
   public editPunishment(

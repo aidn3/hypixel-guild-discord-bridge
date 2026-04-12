@@ -15,7 +15,7 @@ export default class Sacks extends ChatCommandHandler {
   constructor() {
     super({
       triggers: ['sacks', 'sack', 'sax'],
-      description: "Returns a player's Skyblock sacks content value",
+      description: "Returns a player's SkyBlock sacks content value",
       example: `sacks %s`
     })
   }

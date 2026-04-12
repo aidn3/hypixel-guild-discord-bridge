@@ -44,13 +44,19 @@ export class UserConditions {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const insert = database.prepare(
-        'INSERT INTO "discordRolesConditions" (guildId, typeId, roleId, options) VALUES (?, ?, ?, ?)'
+        'INSERT INTO "discordRolesConditions" (guildId, typeId, roleId, onUnmet, options) VALUES (?, ?, ?, ?, ?)'
       )
       const select = database.prepare<[number | bigint], RoleConditionId>(
         'SELECT * FROM "discordRolesConditions" WHERE id = ?'
       )
 
-      const insertResult = insert.run(guildId, condition.typeId, condition.roleId, JSON.stringify(condition.options))
+      const insertResult = insert.run(
+        guildId,
+        condition.typeId,
+        condition.roleId,
+        condition.onUnmet,
+        JSON.stringify(condition.options)
+      )
       assert.strictEqual(insertResult.changes, 1)
       const id = insertResult.lastInsertRowid
 

@@ -4,8 +4,8 @@ import { getDungeonLevelWithOverflow } from '../../../instance/commands/common/u
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import type { HandlerContext, HandlerOperationContext, HandlerUser } from '../common'
-import { ConditionHandler } from '../common'
+import type { HandlerContext, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from '../common'
+import { ConditionHandler, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
 import { getSkyblockUserProfiles } from '../utilities'
 
 export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
@@ -19,7 +19,8 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
   override displayCondition(context: HandlerContext, options: SkyblockCatacombsOptions): string {
     return context.application.i18n.t(($) => $['discord.conditions.handler.skyblock-catacombs-level.formatted'], {
       fromLevel: options.fromLevel,
-      toLevel: options.toLevel
+      toLevel: options.toLevel,
+      profileTypes: translateSkyblockProfileTypes(options.profileTypes)
     })
   }
 
@@ -28,7 +29,7 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
     handlerUser: HandlerUser,
     condition: SkyblockCatacombsOptions
   ): Promise<boolean> {
-    const profiles = await getSkyblockUserProfiles(context, handlerUser)
+    const profiles = await getSkyblockUserProfiles(context, handlerUser, condition.profileTypes)
     if (profiles.length === 0) return false
 
     const highestExperience = profiles
@@ -42,6 +43,7 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
 
   public override createOptions(): ModalOption[] {
     return [
+      SkyblockProfileOption,
       {
         type: OptionType.Number,
         name: 'From Catacombs Level',
@@ -61,5 +63,4 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type SkyblockCatacombsOptions = { fromLevel: number; toLevel: number }
+export type SkyblockCatacombsOptions = SkyblockProfileOptionType & { fromLevel: number; toLevel: number }

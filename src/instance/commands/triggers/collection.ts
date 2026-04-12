@@ -31,13 +31,15 @@ export default class Collection extends ChatCommandHandler {
     'RAW_FISH:3': 'PUFFERFISH',
 
     SAND: 'SAND',
-    'SAND:1': 'RED_SAND'
+    'SAND:1': 'RED_SAND',
+
+    DOUBLE_PLANT: 'SUNFLOWER'
     /* eslint-enable @typescript-eslint/naming-convention */
   }
   constructor() {
     super({
       triggers: ['collection', 'collections'],
-      description: "Returns a player's skyblock collection stats",
+      description: "Returns a player's SkyBlock collection stats",
       example: `collection %s birch`
     })
   }

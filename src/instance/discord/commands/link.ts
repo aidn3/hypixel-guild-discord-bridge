@@ -24,6 +24,7 @@ export default {
 
     const syncResult = await manager.forceSync(interaction, startTime)
     if (!syncResult) return
+    await interaction.editReply('linked and synced!')
   },
   autoComplete: async function (context) {
     const option = context.interaction.options.getFocused(true)

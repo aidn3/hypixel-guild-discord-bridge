@@ -130,9 +130,9 @@ export interface InstantOptions {
 export class SkyblockEvents {
   private static readonly ElectionEnds = { month: 1, day: 27, minute: 0, hour: 0, second: 0 }
 
-  private static readonly DerpyMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 440 })
-  private static readonly JerryMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 448 })
-  private static readonly ScorpiusMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 456 })
+  private static readonly DerpyMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 441 })
+  private static readonly JerryMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 449 })
+  private static readonly ScorpiusMayorBaseTime = SkyblockInstant.toTimestamp({ ...this.ElectionEnds, year: 457 })
 
   public static getSpecialMayors(currentTime: number): {
     derpy: EventAppointment

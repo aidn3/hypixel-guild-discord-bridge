@@ -14,6 +14,7 @@ import Logger4js from 'log4js'
 import type { ApplicationConfig } from './application-config.js'
 import type { ApplicationEvents, InstanceIdentifier, MinecraftSendChatPriority } from './common/application-event.js'
 import { InstanceSignalType, InstanceType } from './common/application-event.js'
+import type { ChatCommandHandler, DiscordCommandHandler } from './common/commands'
 import { ConnectableInstance, Status } from './common/connectable-instance.js'
 import PluginInstance from './common/plugin-instance.js'
 import UnexpectedErrorHandler from './common/unexpected-error-handler.js'
@@ -21,6 +22,7 @@ import { Core } from './core/core'
 import type { Hypixel } from './core/hypixel/hypixel'
 import { ApplicationLanguages, LanguageConfigurations } from './core/language-configurations'
 import type { MojangApi } from './core/users/mojang'
+import { MinecraftGuildsManager } from './features/minecraft-guilds/minecraft-guilds-manager'
 import ApplicationIntegrity from './instance/application-integrity.js'
 import AutoRestart from './instance/auto-restart'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
@@ -46,6 +48,7 @@ export type AllInstances =
   | SkyblockReminders
   | SpontaneousEvents
   | AutoRestart
+  | MinecraftGuildsManager
   | MinecraftManager
   | PluginsManager
 
@@ -75,6 +78,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
+  private readonly minecraftGuildsManager: MinecraftGuildsManager
   private readonly skyblockReminders: SkyblockReminders
   private readonly spontaneousEvents: SpontaneousEvents
   private readonly autoRestart: AutoRestart
@@ -83,7 +87,8 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     config: ApplicationConfig,
     rootDirectory: string,
     configsDirectory: string,
-    public readonly i18n: i18n
+    public readonly i18n: i18n,
+    public readonly memoryOnly: boolean
   ) {
     super()
 
@@ -127,6 +132,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
 
+    this.minecraftGuildsManager = new MinecraftGuildsManager(this, this.core.getSqliteManager())
     this.skyblockReminders = new SkyblockReminders(this)
     this.spontaneousEvents = new SpontaneousEvents(this)
     this.autoRestart = new AutoRestart(this)
@@ -154,6 +160,14 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     }
 
     throw new Error(`could not find viable backup path for '${name}'.`)
+  }
+
+  public registerChatCommand(command: ChatCommandHandler): void {
+    this.commandsInstance.addCommand(command)
+  }
+
+  public registerDiscordCommand(command: DiscordCommandHandler): void {
+    this.discordInstance.commandsManager.commands.set(command.getCommandBuilder().name, command)
   }
 
   public addShutdownListener(listener: () => void): void {
@@ -337,6 +351,7 @@ export default class Application extends Emittery<ApplicationEvents> implements 
 
       this.discordInstance, // discord second to send any notification about connecting
 
+      this.minecraftGuildsManager,
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,

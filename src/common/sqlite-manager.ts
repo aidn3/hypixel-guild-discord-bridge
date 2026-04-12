@@ -11,7 +11,7 @@ import Duration from '../utility/duration'
 export class SqliteManager {
   private static readonly CleanEvery = Duration.hours(3)
 
-  private readonly configFilePath: string
+  private readonly configFilePath: string | undefined
   private readonly database: Database.Database
   private readonly newlyCreated: boolean
 
@@ -26,24 +26,29 @@ export class SqliteManager {
   public constructor(
     private readonly application: Application,
     private readonly logger: Logger,
-    filepath: string
+    filepath: string | undefined
   ) {
     this.configFilePath = filepath
 
-    application.applicationIntegrity.addConfigPath(this.configFilePath)
-    // temp files
-    application.applicationIntegrity.addConfigPath(this.configFilePath + '-shm')
-    application.applicationIntegrity.addConfigPath(this.configFilePath + '-wal')
+    if (this.configFilePath === undefined) {
+      this.newlyCreated = true
+      this.database = new Database()
+    } else {
+      application.applicationIntegrity.addConfigPath(this.configFilePath)
+      // temp files
+      application.applicationIntegrity.addConfigPath(this.configFilePath + '-shm')
+      application.applicationIntegrity.addConfigPath(this.configFilePath + '-wal')
 
-    application.addShutdownListener(() => {
-      this.close()
-    })
+      application.addShutdownListener(() => {
+        this.close()
+      })
 
-    this.newlyCreated = !fs.existsSync(filepath)
+      this.newlyCreated = !fs.existsSync(this.configFilePath)
 
-    this.database = new Database(filepath)
-    this.database.pragma('journal_mode = WAL')
-    this.database.pragma('foreign_keys = ON')
+      this.database = new Database(this.configFilePath)
+      this.database.pragma('journal_mode = WAL')
+      this.database.pragma('foreign_keys = ON')
+    }
 
     this.cleanInterval = setInterval(() => {
       this.clean()
@@ -134,6 +139,7 @@ export class SqliteManager {
   }
 
   public backup(destination: string): void {
+    assert.ok(this.configFilePath !== undefined, 'Can not backup since the database in memory only')
     fs.copyFileSync(this.configFilePath, destination)
   }
 

@@ -43,7 +43,7 @@ export default class Skills extends ChatCommandHandler {
     const runecrafting = this.getLevel(skills.RUNECRAFTING, profile.player_data.experience?.SKILL_RUNECRAFTING ?? 0)
     const social = this.getLevel(skills.SOCIAL, profile.player_data.experience?.SKILL_SOCIAL ?? 0)
     const taming = this.getLevel(skills.TAMING, profile.player_data.experience?.SKILL_TAMING ?? 0)
-    const hunting = 0 // TODO: wait till Hypixel API updates
+    const hunting = this.getLevel(skills.HUNTING, profile.player_data.experience?.SKILL_HUNTING ?? 0)
 
     const totalLevels =
       farming + mining + combat + foraging + fishing + enchanting + alchemy + carpentry + taming + hunting
