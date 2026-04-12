@@ -237,25 +237,13 @@ export default class Weight extends ChatCommandHandler {
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
-    const senitherWeight = calculateSenitherWeight(
-      this.createWeightProfile(selectedProfile, skillsResponse)
-    ).overall.toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1
-    })
-    const farmingWeightValue = await context.app.hypixelApi.getFarmingWeight(uuid)
-    const farmingWeight = farmingWeightValue.toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    })
-    const lilyWeight = calculateLilyWeight(selectedProfile).total.toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1
-    })
+    const senitherWeight = calculateSenitherWeight(this.createWeightProfile(selectedProfile, skillsResponse))
+    const farmingWeight = await context.app.hypixelApi.getFarmingWeight(uuid)
+    const lilyWeight = calculateLilyWeight(selectedProfile).total
 
     return context.app.i18n.t(($) => $['commands.weight.response'], {
       username: possessiveUsername,
-      senitherWeight,
+      senitherWeight: senitherWeight.overall,
       farmingWeight,
       lilyWeight
     })
