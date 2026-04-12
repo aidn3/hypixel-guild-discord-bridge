@@ -36,7 +36,7 @@ export default class Inventory extends ChatCommandHandler {
 
     const parsedBar = Number.parseInt(givenBar, 10)
     if (parsedBar < 1 || parsedBar > 4) {
-      return `${context.username}, can only select between 1 and 4.`
+      return context.app.i18n.t(($) => $['commands.inventory.invalid-slot'], { username: givenUsername })
     }
 
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
@@ -47,20 +47,26 @@ export default class Inventory extends ChatCommandHandler {
 
     const inventoryRaw = selectedProfile.inventory?.inv_contents?.data
     if (inventoryRaw === undefined) {
-      return context.app.i18n.t(($) => $['commands.inventory.api-disabled'], { username: givenUsername })
+      return context.app.i18n.t(($) => $['commands.inventory.no-api'], { username: givenUsername })
     }
 
     const inventory = await parseEncodedNbt<{ i: InventoryItem[] }>(inventoryRaw)
     const images = await this.renderBar(inventory.i, parsedBar)
     if (images.length === 0) {
-      return context.app.i18n.t(($) => $['commands.inventory.none'], { username: givenUsername, parsedBar: parsedBar })
+      return context.app.i18n.t(($) => $['commands.inventory.nothing-to-render'], {
+        username: givenUsername,
+        bar: parsedBar
+      })
     }
 
     return {
       type: ContentType.ImageBased,
       content: images,
-      unsupported: context.app.i18n.t(($) => $['commands.inventory.render-not-supported'], { parsedBar: parsedBar }),
-      extra: `Rendering ${givenUsername} inventory bar line ${parsedBar}`
+      unsupported: context.app.i18n.t(($) => $['commands.inventory.render-not-supported']),
+      extra: context.app.i18n.t(($) => $['commands.inventory.render-extra'], {
+        username: givenUsername,
+        bar: parsedBar
+      })
     }
   }
 

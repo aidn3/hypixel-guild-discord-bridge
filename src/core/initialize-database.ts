@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 9
+const CurrentVersion = 13
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -37,9 +38,20 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator(7, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom7to8(database, logger, newlyCreated)
   })
-
   sqliteManager.registerMigrator(8, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom8to9(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(9, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom9to10(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(10, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom10to11(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(11, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom11to12(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(12, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom12to13(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -175,6 +187,9 @@ function migrateFrom1to2(
       ' )'
   )
   database.exec('CREATE INDEX punishmentsIndex ON "punishments" (originInstance, userId);')
+  if (!newlyCreated) {
+    migratePunishments(application, logger, postCleanupActions, database)
+  }
 
   // reference: moderation/commands-heat.ts
   database.exec(
@@ -503,6 +518,202 @@ function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: bo
   database.pragma('user_version = 9')
 }
 
+function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 9 to 10')
+
+  // reference: discord/link-button.ts
+  database.exec(
+    'CREATE TABLE "discordLinkButton" (' +
+      '  messageId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 10')
+}
+
+function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) {
+    logger.debug('Migrating database from version 10 to 11')
+    const tables = ['discordRolesConditions', 'discordNicknameConditions']
+
+    /* eslint-disable @typescript-eslint/consistent-type-definitions */
+    type Row = { id: number | bigint; options: string }
+    type OldSkyblockLevelOptions = { level: number }
+    type NewSkyblockLevelOptions = { fromLevel: number; toLevel: number }
+    type OldSkyblockCatacombsOptions = { level: number }
+    type NewSkyblockCatacombsOptions = { fromLevel: number; toLevel: number }
+    /* eslint-enable @typescript-eslint/consistent-type-definitions */
+
+    let totalLevelUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId = 'reached-hypixel-skyblock-level'`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as OldSkyblockLevelOptions
+        const updateResult = update.run(
+          JSON.stringify({ fromLevel: parsedOptions.level, toLevel: 10_000 } satisfies NewSkyblockLevelOptions),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalLevelUpdates++
+      }
+    }
+    if (totalLevelUpdates > 0) {
+      logger.debug(`Updated ${totalLevelUpdates} discord conditions entry regarding skyblock level`)
+    }
+
+    let totalCatacombsUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId = 'reached-hypixel-skyblock-catacombs-level'`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as OldSkyblockCatacombsOptions
+        const updateResult = update.run(
+          JSON.stringify({ fromLevel: parsedOptions.level, toLevel: 10_000 } satisfies NewSkyblockCatacombsOptions),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalCatacombsUpdates++
+      }
+    }
+    if (totalCatacombsUpdates > 0) {
+      logger.debug(`Updated ${totalCatacombsUpdates} discord conditions entry regarding skyblock catacombs level`)
+    }
+  }
+
+  database.pragma('user_version = 11')
+}
+
+function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 11 to 12')
+
+  database.exec(
+    'CREATE TABLE "minecraftGuild" (' +
+      '  id TEXT PRIMARY KEY NOT NULL,' +
+      '  name TEXT COLLATE NOCASE NOT NULL,' +
+      '  inviteWishlist INTEGER NOT NULL DEFAULT 0,' +
+      '  selfWishlist INTEGER NOT NULL DEFAULT 0,' +
+      '  neededJoinConditions INTEGER NOT NULL DEFAULT 1,' +
+      '  acceptJoinRequests INTEGER NOT NULL DEFAULT 0,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildRoles" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  name TEXT NOT NULL,' +
+      '  priority INTEGER NOT NULL,' +
+      '  whitelisted INTEGER NOT NULL DEFAULT 0,' +
+      '  PRIMARY KEY(guildId, name)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildMember" (' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  userId TEXT NOT NULL,' +
+      '  joinedAt INTEGER NOT NULL,' +
+      '  lastUpdateAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, userId)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildJoinConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "minecraftGuildRoleConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  role TEXT NOT NULL,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildWaitlist" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  mojangId TEXT NOT NULL,' +
+      '  invitedTill INTEGER NOT NULL DEFAULT 0,' +
+      '  noInviteTill INTEGER NOT NULL DEFAULT 0,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  UNIQUE(guildId, mojangId)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordGuildWaitlistPanel" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  guildIds TEXT NOT NULL,' +
+      '  lastUpdatedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "discordGuildWaitlistRequest" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  reference INTEGER NOT NULL UNIQUE REFERENCES minecraftGuildWaitlist(id) ON DELETE CASCADE' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 12')
+}
+
+function migrateFrom12to13(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) {
+    logger.debug('Migrating database from version 12 to 13')
+    const tables = [
+      'discordRolesConditions',
+      'discordNicknameConditions',
+      'minecraftGuildRoleConditions',
+      'minecraftGuildJoinConditions'
+    ]
+
+    /* eslint-disable @typescript-eslint/consistent-type-definitions */
+    type Row = { id: number | bigint; options: string }
+    /* eslint-enable @typescript-eslint/consistent-type-definitions */
+
+    let totalUpdates = 0
+    for (const table of tables) {
+      const select = database.prepare<[], Row>(
+        `SELECT id, options FROM ${table} WHERE typeId IN ('reached-hypixel-skyblock-level', 'reached-hypixel-skyblock-catacombs-level')`
+      )
+      const update = database.prepare(`UPDATE ${table} SET options = ? WHERE id = ?`)
+
+      for (const row of select.all()) {
+        const parsedOptions = JSON.parse(row.options) as Record<string, unknown>
+        const updateResult = update.run(
+          JSON.stringify({ ...parsedOptions, profileTypes: ['classic', 'ironman', 'bingo', 'island'] }),
+          row.id
+        )
+        assert.strictEqual(updateResult.changes, 1)
+        totalUpdates++
+      }
+    }
+    if (totalUpdates > 0) {
+      logger.debug(`Updated ${totalUpdates} conditions entry regarding skyblock profile types`)
+    }
+  }
+
+  database.pragma('user_version = 13')
+}
+
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
   const uuid = identifiers.find((entry) => entry.length === 32)
   if (uuid !== undefined) {
@@ -666,6 +877,81 @@ function migrateModeration(
 
   logger.info(`Successfully parsed old moderation file. Scheduling the old file for deletion...`)
   postCleanupActions.push(() => {
+    fs.rmSync(path)
+  })
+}
+
+function migratePunishments(
+  application: Application,
+  logger: Logger,
+  postCleanupActions: (() => void)[],
+  database: Database
+): void {
+  interface OldEntry {
+    userName: string
+    userUuid?: string
+    till: number
+    reason: string
+  }
+
+  interface OldType {
+    mute: OldEntry[]
+    ban: OldEntry[]
+  }
+
+  const path = application.getConfigFilePath('punishments.json')
+  if (!fs.existsSync(path)) return
+  logger.info('Found old punishments file. Migrating this file into the new system...')
+
+  const insert = database.prepare(
+    'INSERT INTO "punishments" (originInstance, userId, type, purpose, reason, createdAt, till) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  )
+  const oldObject = JSON.parse(fs.readFileSync(path, 'utf8')) as OldType
+  const currentTime = Date.now()
+  let total = 0
+  let inserted = 0
+
+  for (const entry of oldObject.mute) {
+    if (entry.till < currentTime) continue
+    total++
+
+    if (entry.userUuid === undefined) continue
+    const identifier = findIdentifier([entry.userUuid])
+    if (identifier == undefined) continue
+    inserted++
+    insert.run(
+      identifier.originInstance,
+      identifier.userId,
+      'mute',
+      'manual',
+      entry.reason,
+      Math.floor(currentTime / 1000),
+      Math.floor(entry.till / 1000)
+    )
+  }
+
+  for (const entry of oldObject.ban) {
+    if (entry.till < currentTime) continue
+    total++
+
+    if (entry.userUuid === undefined) continue
+    const identifier = findIdentifier([entry.userUuid])
+    if (identifier == undefined) continue
+    inserted++
+    insert.run(
+      identifier.originInstance,
+      identifier.userId,
+      'ban',
+      'manual',
+      entry.reason,
+      Math.floor(currentTime / 1000),
+      Math.floor(entry.till / 1000)
+    )
+  }
+
+  logger.info(`Successfully parsed ${inserted} legacy punishments out of ${total}`)
+  postCleanupActions.push(() => {
+    logger.debug('Deleting punishments legacy file...')
     fs.rmSync(path)
   })
 }

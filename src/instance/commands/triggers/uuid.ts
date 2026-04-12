@@ -23,8 +23,8 @@ export default class Uuid extends ChatCommandHandler {
     const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (profile == undefined) return usernameNotExists(context, givenUsername)
 
-    const history = await this.getHistory(profile.id).catch(() => undefined)
-    if (history === undefined || history.length === 1) {
+    const history = await this.getHistory(context, profile.id).catch(() => undefined)
+    if (history === undefined || history.length <= 1) {
       return `${profile.id}: ${profile.name}`
     }
 
@@ -47,7 +47,9 @@ export default class Uuid extends ChatCommandHandler {
     return `${profile.id}: ${historyResult.join(' - ')}`
   }
 
-  private async getHistory(uuid: string): Promise<HistorySuccess['history']> {
+  private async getHistory(context: ChatCommandContext, uuid: string): Promise<HistorySuccess['history']> {
+    if (!context.app.core.commandsConfigurations.getUsernameHistoryEnabled()) return []
+
     const cachedResult = this.cache.get<HistorySuccess['history']>(uuid)
     if (cachedResult !== undefined) return cachedResult
 

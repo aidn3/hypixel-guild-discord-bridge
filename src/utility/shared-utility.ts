@@ -206,3 +206,20 @@ export function search(query: string, collection: string[]): string[] {
 
   return results
 }
+
+export function searchObjects<T>(query: string, collection: T[], callback: (entry: T) => string): T[] {
+  const mapped = new Map<string, T>()
+  for (const entry of collection) {
+    mapped.set(callback(entry), entry)
+  }
+
+  const searchResults = search(query, mapped.keys().toArray())
+  const sortedResults: T[] = []
+  for (const searchEntry of searchResults) {
+    const entry = mapped.get(searchEntry)
+    assert.ok(entry !== undefined)
+    sortedResults.push(entry)
+  }
+
+  return sortedResults
+}

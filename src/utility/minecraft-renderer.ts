@@ -49,7 +49,7 @@ class MinecraftRenderer {
     return true
   }
 
-  public renderLore(itemName: string, lore: string[]): Buffer {
+  public renderLore(itemName: string | undefined, lore: string[]): Buffer {
     assert.strictEqual(this.renderSupported(), true, 'can not render minecraft images right now')
 
     if (itemName) lore.unshift(itemName)

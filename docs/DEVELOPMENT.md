@@ -38,9 +38,14 @@ Functionalities such as parsing configuration, connecting different instances ar
 This defines the Public API of the application that is used in plugin creation as well as the shared ground that all Instances use to communication with each other.  
 `instance`: Contains directories of instances where each instance is a component of the application that runs independently to some degree of each other.  
 `types`: Additional types definitions used for typescript when importing external libraries that miss the required types or have misdefined types.  
-`utility`: Commonly used functions/classes that **MUST NOT** link to any instance.
+`utility`: Commonly used functions/classes that **MUST NOT** link to any instance.  
+`features`: A new file structure for features where each direct sub-dir is a whole feature including its database, commands, and anything else that it requires.
 
 ## Source Code Design
 
 Code infrastructure design is all in `src/common`.
 Check files such as `src/common/application-event.ts` and `src/common/commands.ts` and `src/common/plugin-instance.ts` for more up-to-date info.
+
+New features are meant to go into `src/features`. Old legacy features will stay in their place till they need refactoring for one reason or another. And even then,
+it is up to the contributor to decide whether it is worth refactoring it into the new system.
+The new system is meant to encapsulate entire features into their own scope preventing future misunderstandings.

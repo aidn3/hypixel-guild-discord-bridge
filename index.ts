@@ -107,7 +107,11 @@ if (!fs.existsSync(File)) {
 let applicationLoaded = false
 let finalMessage: { messages: string[]; loggerLevel: (message: string) => void } | undefined
 try {
-  app = new Application(loadApplicationConfig(File), RootDirectory, ConfigsDirectory, I18n.cloneInstance())
+  Logger.debug('Loading configurations')
+  const configurations = loadApplicationConfig(File)
+  const memoryOnly = process.argv.includes('--memory-only')
+
+  app = new Application(configurations, RootDirectory, ConfigsDirectory, I18n.cloneInstance(), memoryOnly)
 
   const loggers = new Map<string, Logger4js.Logger>()
   app.onAny((name, event) => {

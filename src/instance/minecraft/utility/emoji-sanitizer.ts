@@ -29,8 +29,8 @@ export default class EmojiSanitizer {
       '❇ © ® ™ Ⓜ ㊗ ㊙ ▪ ▫ ☷ ☵ ☶ ☋ ☌ ♜ ♕ ♡ ♬ ☚ ♮ ♝ ♯ ☴ ♭ ☓ ☛ ☭ ♢ ✐ ♖ ☈ ☒ ★ ♚ ♛ ✎ ♪ ☰ ☽ ☡ ☼ ♅ ☐ ☟ ❦ ☊ ' +
       '☍ ☬ 7 ♧ ☫ ☱ ☾ ☤ ❧ ♄ ♁ ♔ ❥ ☥ ☻ ♤ ♞ ♆ # ♃ ♩ ☇ ☞ ♫ ☏ ♘ ☧ ☉ ♇ ☩ ♙ ☜ ☲ ☨ ♗ ☳ ⚔ ☕ ⚠'
 
-    const AllowedEmojis = AllowedString.split(' ')
-    const emojis = Object.entries(EmojisMap.emoji).filter(([, unicode]) => !AllowedEmojis.includes(unicode))
+    const AllowedEmojis = new Set(AllowedString.split(' '))
+    const emojis = Object.entries(EmojisMap.emoji).filter(([, unicode]) => !AllowedEmojis.has(unicode))
     for (const [emojiReadable, emojiUnicode] of emojis) {
       message = message.replaceAll(emojiUnicode, `:${emojiReadable}:`)
     }

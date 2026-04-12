@@ -1,6 +1,13 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, APIEmbedField, ButtonInteraction, InteractionResponse, Message } from 'discord.js'
+import type {
+  APIEmbed,
+  APIEmbedField,
+  ButtonInteraction,
+  ChatInputCommandInteraction,
+  InteractionResponse,
+  Message
+} from 'discord.js'
 import {
   bold,
   ButtonStyle,
@@ -27,7 +34,7 @@ import { beautifyInstanceName } from '../../../utility/shared-utility'
 import { Timeout } from '../../../utility/timeout.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { interactivePaging } from '../utility/discord-pager'
-import type { ActionOption, CategoryOption, EmbedCategoryOption } from '../utility/options-handler.js'
+import type { ActionOption, CategoryOption, EmbedCategoryOption, LabelOption } from '../utility/options-handler.js'
 import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
 
 const Essential = ':shield:'
@@ -46,6 +53,9 @@ export default {
   permission: Permission.Admin,
 
   handler: async function (context) {
+    assert.ok(context.interaction.inCachedGuild())
+    await context.interaction.deferReply()
+
     const options: EmbedCategoryOption = {
       type: OptionType.EmbedCategory,
       get name() {
@@ -74,7 +84,8 @@ export default {
         fetchQualityOptions(context.application),
         fetchCommandsOptions(context.application),
         fetchPluginsOptions(context.application),
-        fetchLanguageOptions(context.application)
+        fetchLanguageOptions(context.application),
+        await fetchOtherOptions(context.interaction)
       ]
     }
 
@@ -115,6 +126,8 @@ function fetchGeneralOptions(application: Application): CategoryOption {
 
 function fetchModerationOptions(application: Application): CategoryOption {
   const moderation = application.core.moderationConfiguration
+  const discord = application.core.discordConfigurations
+  const minecraft = application.core.minecraftConfigurations
 
   return {
     type: OptionType.Category,
@@ -122,7 +135,97 @@ function fetchModerationOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
-        type: OptionType.EmbedCategory,
+        type: OptionType.Category,
+        name: 'Staff Options',
+        description: 'Assign staff channels and roles, so the application can integrate with them.',
+        header: 'These are dangerous permissions. Make sure you know what you are doing!',
+        options: [
+          {
+            type: OptionType.Text,
+
+            name: 'Admin Username',
+            description: 'In-game username of the person who has full permission over the application.',
+
+            style: InputStyle.Tiny,
+            max: 16,
+            min: 2,
+
+            getOption: () => minecraft.getAdminUsername(),
+            setOption: (username) => {
+              minecraft.setAdminUsername(username)
+            }
+          },
+          {
+            type: OptionType.Boolean,
+            name: `Recognize Guild Masters as Officers`,
+            description:
+              'Detect Guild Masters in the same guild as the bot in-game and give them the same permissions as an Officer.',
+            getOption: () => minecraft.getGuildMasterOfficer(),
+            toggleOption: () => {
+              minecraft.setGuildMasterOfficer(!minecraft.getGuildMasterOfficer())
+            }
+          },
+          {
+            type: OptionType.Role,
+
+            name: 'Helper Roles',
+            description: 'Staff roles that have permissions to execute commands such as `!toggle` and `/invite`',
+
+            min: 0,
+            max: 5,
+
+            getOption: () => discord.getHelperRoleIds(),
+            setOption: (values) => {
+              discord.setHelperRoleIds(values)
+            }
+          },
+          {
+            type: OptionType.List,
+
+            name: 'Helper Guild Roles',
+            description: 'In-game guild Staff roles that have the same permissions as Discord helper roles',
+            style: InputStyle.Short,
+
+            min: 0,
+            max: 5,
+
+            getOption: () => minecraft.getHelperRoles(),
+            setOption: (values) => {
+              minecraft.setHelperRoles(values)
+            }
+          },
+          {
+            type: OptionType.Role,
+
+            name: 'Officer Roles',
+            description: 'Staff roles that have permissions to execute destructive commands such as `/kick`.',
+
+            min: 0,
+            max: 5,
+
+            getOption: () => discord.getOfficerRoleIds(),
+            setOption: (values) => {
+              discord.setOfficerRoleIds(values)
+            }
+          },
+          {
+            type: OptionType.Channel,
+
+            name: 'Logs Channels',
+            description: 'Channels where application logs are sent. This is for staff only!',
+
+            min: 0,
+            max: 5,
+
+            getOption: () => discord.getLoggerChannelIds(),
+            setOption: (values) => {
+              discord.setLoggerChannelIds(values)
+            }
+          }
+        ]
+      },
+      {
+        type: OptionType.Category,
         name: `Heat Punishments`,
         options: [
           {
@@ -157,17 +260,11 @@ function fetchModerationOptions(application: Application): CategoryOption {
             setOption: (value) => {
               moderation.setMutesPerDay(value)
             }
-          }
-        ]
-      },
-      {
-        type: OptionType.EmbedCategory,
-        name: 'Immunity List',
-        description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
-        options: [
+          },
           {
             type: OptionType.User,
             name: 'Immune Discord Users',
+            description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
             min: 0,
             max: 10,
             getOption: () => moderation.getImmuneDiscordUsers(),
@@ -178,6 +275,7 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.List,
             name: 'Immune Mojang Players',
+            description: 'Users who are completely immune to heat punishments (Use at your own risk!)',
             style: InputStyle.Short,
             min: 0,
             max: 10,
@@ -426,6 +524,20 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Channel,
+
+        name: 'Officer Channels',
+        description: 'Manage officer channels',
+
+        min: 0,
+        max: 5,
+
+        getOption: () => discord.getOfficerChannelIds(),
+        setOption: (values) => {
+          discord.setOfficerChannelIds(values)
+        }
+      },
+      {
         type: OptionType.Boolean,
         name: 'Always Reply',
         description:
@@ -506,70 +618,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
             }
           }
         ]
-      },
-      {
-        type: OptionType.Category,
-        name: 'Staff Options',
-        description: 'Assign staff channels and roles, so the application can integrate with them.',
-        header: 'These are dangerous permissions. Make sure you know what you are doing!',
-        options: [
-          {
-            type: OptionType.Channel,
-
-            name: 'Officer Channels',
-            description: 'Manage officer channels',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getOfficerChannelIds(),
-            setOption: (values) => {
-              discord.setOfficerChannelIds(values)
-            }
-          },
-          {
-            type: OptionType.Channel,
-
-            name: 'Logs Channels',
-            description: 'Channels where application logs are sent. This is for staff only!',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getLoggerChannelIds(),
-            setOption: (values) => {
-              discord.setLoggerChannelIds(values)
-            }
-          },
-          {
-            type: OptionType.Role,
-
-            name: 'Helper Roles',
-            description: 'Staff roles that have permissions to execute commands such as `!toggle` and `/invite`',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getHelperRoleIds(),
-            setOption: (values) => {
-              discord.setHelperRoleIds(values)
-            }
-          },
-          {
-            type: OptionType.Role,
-
-            name: 'Officer Roles',
-            description: 'Staff roles that have permissions to execute destructive commands such as `/kick`.',
-
-            min: 0,
-            max: 5,
-
-            getOption: () => discord.getOfficerRoleIds(),
-            setOption: (values) => {
-              discord.setOfficerRoleIds(values)
-            }
-          }
-        ]
       }
     ]
   }
@@ -630,9 +678,25 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.Category,
+        name: 'Specific Commands Options',
+        description: 'Finetune specific chat commands',
+        options: [
+          {
+            type: OptionType.Boolean,
+            name: `Enable Usernames History`,
+            description: 'Show usernames history in `!uuid`',
+            getOption: () => commands.getUsernameHistoryEnabled(),
+            toggleOption: () => {
+              commands.setUsernameHistoryEnabled(!commands.getUsernameHistoryEnabled())
+            }
+          }
+        ]
+      },
+      {
         type: OptionType.Label,
         name: 'Admin Username',
-        description: 'You can change admin username from **Minecraft** category.',
+        description: 'You can change admin username from **Moderation** category.',
         getOption: () => minecraft.getAdminUsername()
       },
       {
@@ -904,6 +968,29 @@ function fetchLanguageOptions(application: Application): CategoryOption {
   }
 }
 
+async function fetchOtherOptions(interaction: ChatInputCommandInteraction<'cached'>): Promise<LabelOption> {
+  const commands = await interaction.guild.commands.fetch()
+  const faqCommand = commands.find((command) => command.name === 'faq')
+  const guildCommand = commands.find((command) => command.name === 'guild')
+  const profanityCommand = commands.find((command) => command.name === 'profanity')
+  const conditionsCommand = commands.find((command) => command.name === 'conditions')
+  const punishmentsCommand = commands.find((command) => command.name === 'punishments')
+  const verificationCommand = commands.find((command) => command.name === 'verification')
+
+  return {
+    type: OptionType.Label,
+    getOption: undefined,
+    name: 'Other Settings',
+    description:
+      `For frequently asked questions check </faq:${faqCommand?.id}>.\n` +
+      `-# Manage in-game guilds settings via </guild register:${guildCommand?.id}> and </guild settings:${guildCommand?.id}>\n` +
+      `-# Manage profanity via </profanity include list:${profanityCommand?.id}>.\n` +
+      `-# Manage Discord role conditions via </conditions roles list:${conditionsCommand?.id}>.\n` +
+      `-# Manage punishments via </punishments list:${punishmentsCommand?.id}>.\n` +
+      `-# Manage verification via </verification query-discord:${verificationCommand?.id}>.`
+  }
+}
+
 function fetchMinecraftOptions(application: Application): CategoryOption {
   const minecraft = application.core.minecraftConfigurations
 
@@ -913,50 +1000,41 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
     header: CategoryLabel,
     options: [
       {
-        type: OptionType.EmbedCategory,
-        name: 'Staff Options',
-        description: 'These are dangerous permissions. Make sure you know what you are doing!',
-        options: [
-          {
-            type: OptionType.Text,
-
-            name: 'Admin Username',
-            description: 'In-game username of the person who has full permission over the application.',
-
-            style: InputStyle.Tiny,
-            max: 16,
-            min: 2,
-
-            getOption: () => minecraft.getAdminUsername(),
-            setOption: (username) => {
-              minecraft.setAdminUsername(username)
-            }
-          }
-        ]
-      },
-      {
-        type: OptionType.EmbedCategory,
-        name: 'Arabic Fixer',
-        description: 'Fixes how Arabic text appears in chat so it displays correctly instead of looking broken.',
-        options: [
-          {
-            type: OptionType.Boolean,
-            name: `Enable Arabic Fixer`,
-            description:
-              'Fixes Arabic text in in-game chat by making it display in the correct direction and with properly connected letters',
-            getOption: () => minecraft.getArabicFixerEnabled(),
-            toggleOption: () => {
-              minecraft.setArabicFixerEnabled(!minecraft.getArabicFixerEnabled())
-            }
-          }
-        ]
-      },
-      {
         type: OptionType.Category,
         name: 'Chat Processing',
         description: 'Fine tune how chat messages are sent to the game.',
         header: 'Fine tune how chat messages are sent to the game.\n\n' + CategoryLabel,
         options: [
+          {
+            type: OptionType.Text,
+            name: 'Chat Message Format',
+            description:
+              'Change how messages are formatted in-game. Custom options: `USERNAME`, `REPLY_USERNAME`, `USERNAME_WITH_REPLY`, `ORIGIN`, `ORIGIN_TAG`, `ORIGIN_TAG_IF_ENABLED`, `MESSAGE`',
+            style: InputStyle.Long,
+            min: 2,
+            max: 150,
+            getOption: () => minecraft.getChatPlaceholder(),
+            setOption: (value) => {
+              minecraft.setChatPlaceholder(value)
+            }
+          },
+          {
+            type: OptionType.EmbedCategory,
+            name: 'Arabic Fixer',
+            description: 'Fixes how Arabic text appears in chat so it displays correctly instead of looking broken.',
+            options: [
+              {
+                type: OptionType.Boolean,
+                name: `Enable Arabic Fixer`,
+                description:
+                  'Fixes Arabic text in in-game chat by making it display in the correct direction and with properly connected letters',
+                getOption: () => minecraft.getArabicFixerEnabled(),
+                toggleOption: () => {
+                  minecraft.setArabicFixerEnabled(!minecraft.getArabicFixerEnabled())
+                }
+              }
+            ]
+          },
           {
             type: OptionType.EmbedCategory,
             name: 'Links Processor',
@@ -1029,6 +1107,16 @@ function fetchMinecraftOptions(application: Application): CategoryOption {
           {
             type: OptionType.Action,
 
+            name: 'Instance Reset',
+            description: 'Remove Minecraft sessions from an instance.',
+            label: 'clear',
+            style: ButtonStyle.Danger,
+
+            onInteraction: (interaction, errorHandler) => minecraftInstanceClear(application, interaction, errorHandler)
+          },
+          {
+            type: OptionType.Action,
+
             name: 'Instance Remove',
             description: 'Remove a Minecraft instance.',
             label: 'remove',
@@ -1057,17 +1145,17 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   }
   assert.ok(embed.fields)
 
-  const registeredInstances = instances.filter((instance) =>
-    savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
-  )
+  const registeredText: string[] = []
+  for (const instance of instances) {
+    const instanceConfig = savedInstances.find((configInstance) => instance.instanceName === configInstance.name)
+    if (instanceConfig === undefined) continue
+    let text = `- **${instance.instanceName}:** ${instance.currentStatus()}`
+    if (instanceConfig.proxy !== undefined || instance.hasProxy()) text += ' (proxied)'
+    registeredText.push(text)
+  }
   embed.fields.push({
     name: 'Registered Instances',
-    value:
-      registeredInstances.length > 0
-        ? registeredInstances
-            .map((instance) => `- **${instance.instanceName}:** ${instance.currentStatus()}`)
-            .join('\n')
-        : '(none registered)'
+    value: registeredText.length > 0 ? registeredText.join('\n') : '(none registered)'
   } satisfies APIEmbedField)
 
   const dynamicInstances = instances.filter(
@@ -1077,14 +1165,17 @@ async function minecraftInstancesStatus(application: Application, interaction: B
     embed.fields.push({
       name: 'Dynamic Instances',
       value: dynamicInstances
-        .map((instance) => `- **${instance.instanceName}:** ${instance.currentStatus()}`)
+        .map(
+          (instance) =>
+            `- **${instance.instanceName}:** ${instance.currentStatus()}${instance.hasProxy() ? ' (proxied)' : ''}`
+        )
         .join('\n')
     } satisfies APIEmbedField)
   }
 
-  const unavailableInstances = savedInstances
-    .map((instance) => instance.name)
-    .filter((configName) => !instances.some((instance) => instance.instanceName === configName))
+  const unavailableInstances = savedInstances.filter(
+    (instanceConfig) => !instances.some((instance) => instance.instanceName === instanceConfig.name)
+  )
   if (unavailableInstances.length > 0) {
     embed.color = Color.Bad
     embed.description =
@@ -1094,7 +1185,9 @@ async function minecraftInstancesStatus(application: Application, interaction: B
 
     embed.fields.push({
       name: 'Unavailable Instances',
-      value: unavailableInstances.map((name) => `- ${name}`).join('\n')
+      value: unavailableInstances
+        .map((instanceConfig) => `- ${instanceConfig.name}${instanceConfig.proxy === undefined ? '' : ' (proxied)'}`)
+        .join('\n')
     } satisfies APIEmbedField)
   }
 
@@ -1297,24 +1390,28 @@ async function minecraftInstanceRemove(
   interaction: ButtonInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<boolean> {
+  const allInstances = application.core.minecraftSessions.getAllInstances()
+  if (allInstances.length === 0) {
+    await interaction.reply({ content: 'Nothing to remove.', flags: MessageFlags.Ephemeral })
+    return true
+  }
+
   await interaction.showModal({
     customId: 'minecraft-instance-remove',
     title: `Remove Minecraft Instance`,
     components: [
       {
-        type: ComponentType.ActionRow,
-        components: [
-          {
-            type: ComponentType.TextInput,
-            customId: 'instance-name',
-            style: TextInputStyle.Short,
-            label: 'Name',
-
-            minLength: 1,
-            maxLength: 128,
-            required: true
-          }
-        ]
+        type: ComponentType.Label,
+        label: 'Instance',
+        description: 'Minecraft instance to clear its sessions.',
+        component: {
+          type: ComponentType.StringSelect,
+          customId: 'instance-name',
+          minValues: 1,
+          maxValues: 1,
+          required: true,
+          options: allInstances.map((instance) => ({ label: instance.name, value: instance.name }))
+        }
       }
     ]
   })
@@ -1324,7 +1421,7 @@ async function minecraftInstanceRemove(
     filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
   })
 
-  const instanceName = modalInteraction.fields.getTextInputValue('instance-name')
+  const instanceName = modalInteraction.fields.getStringSelectValues('instance-name')[0]
   const deferredReply = await modalInteraction.deferReply()
 
   const embed = {
@@ -1424,4 +1521,80 @@ function errorMessage(error: unknown): string {
   }
 
   return JSON.stringify(error)
+}
+
+async function minecraftInstanceClear(
+  application: Application,
+  interaction: ButtonInteraction,
+  errorHandler: UnexpectedErrorHandler
+): Promise<boolean> {
+  const allInstances = application.core.minecraftSessions.getAllInstances()
+  if (allInstances.length === 0) {
+    await interaction.reply({ content: 'Nothing to remove.', flags: MessageFlags.Ephemeral })
+    return true
+  }
+  await interaction.showModal({
+    customId: 'minecraft-instance-clear',
+    title: `Clear Minecraft Instance`,
+    components: [
+      {
+        type: ComponentType.Label,
+        label: 'Instance',
+        description: 'Minecraft instance to clear its sessions.',
+        component: {
+          type: ComponentType.StringSelect,
+          customId: 'instance-name',
+          minValues: 1,
+          maxValues: 1,
+          required: true,
+          options: allInstances.map((instance) => ({ label: instance.name, value: instance.name }))
+        }
+      }
+    ]
+  })
+
+  const modalInteraction = await interaction.awaitModalSubmit({
+    time: 300_000,
+    filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+  })
+
+  const instanceName = modalInteraction.fields.getStringSelectValues('instance-name')[0]
+  const deferredReply = await modalInteraction.deferReply()
+
+  const embed = {
+    title: 'Clear Minecraft Sessions',
+    description: `Attempting to clear \`${escapeMarkdown(instanceName)}\`:\n\n`,
+    color: Color.Default,
+    footer: { text: DefaultCommandFooter }
+  } satisfies APIEmbed
+
+  try {
+    const instanceConfig = application.core.minecraftSessions.getInstance(instanceName)
+    const deleteResults = application.core.minecraftSessions.clearCachedSessions(instanceName)
+    embed.color = Color.Good
+
+    if (instanceConfig === undefined) {
+      embed.description += 'No such an instance to be found.'
+      embed.color = Color.Info
+    } else if (deleteResults === 0) {
+      embed.description += 'Instance found but already cleared!'
+      embed.color = Color.Info
+    } else {
+      embed.description += `Deleted ${deleteResults} session file associated with this instance.`
+      embed.color = Color.Good
+    }
+  } catch (error: unknown) {
+    errorHandler.error('clearing minecraft instance sessions', error)
+    embed.color = Color.Error
+    embed.description += italic(
+      'An error occurred while trying to clear Minecraft instance sessions\n' +
+        'The results are inconclusive.\n' +
+        'Check the console logs for further details\n' +
+        'Tread carefully when trying anything else.'
+    )
+  }
+
+  await deferredReply.edit({ embeds: [embed] })
+
+  return true
 }

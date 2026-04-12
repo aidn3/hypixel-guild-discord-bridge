@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -66,6 +66,9 @@ export default class Vengeance extends ChatCommandHandler {
     const mojangProfile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (mojangProfile == undefined) return usernameNotExists(context, givenUsername)
     const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, {})
+    if ((await targetUser.permission()) >= Permission.Helper || (await targetUser.immune())) {
+      return `No way I'm helping with taking vengeance against ${mojangProfile.name}!`
+    }
 
     let messages: string[]
     // 3% to win.
@@ -80,12 +83,14 @@ export default class Vengeance extends ChatCommandHandler {
       )
       messages = context.app.core.languageConfigurations.getCommandVengeanceWin()
     } else if (this.lose()) {
-      await context.message.user.mute(
-        context.eventHelper.fillBaseEvent(),
-        PunishmentPurpose.Game,
-        Vengeance.MuteDuration,
-        'Lost in Vengeance game'
-      )
+      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+        await context.message.user.mute(
+          context.eventHelper.fillBaseEvent(),
+          PunishmentPurpose.Game,
+          Vengeance.MuteDuration,
+          'Lost in Vengeance game'
+        )
+      }
 
       this.countSinceLastWin++
       messages = context.app.core.languageConfigurations.getCommandVengeanceLose()

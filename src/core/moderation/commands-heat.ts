@@ -32,16 +32,17 @@ export class CommandsHeat {
     })
   }
 
-  public add(user: User, type: HeatType): HeatResult {
+  public async add(user: User, type: HeatType): Promise<HeatResult> {
     const currentTime = Date.now()
 
     const database = this.sqliteManager.getDatabase()
     const userIdentifier = user.getUserIdentifier()
     const allIdentifiers = user.allIdentifiers()
+    const immune = await user.immune()
     const action: HeatAction = { identifier: user.getUserIdentifier(), timestamp: currentTime, type: type }
 
     const transaction = database.transaction(() => {
-      if (user.immune()) {
+      if (immune) {
         this.addEntries(database, [action])
         return HeatResult.Allowed
       }
@@ -65,15 +66,16 @@ export class CommandsHeat {
     return transaction()
   }
 
-  public tryAdd(user: User, type: HeatType): HeatResult {
+  public async tryAdd(user: User, type: HeatType): Promise<HeatResult> {
     const currentTime = Date.now()
 
     const database = this.sqliteManager.getDatabase()
     const userIdentifier = user.getUserIdentifier()
     const allIdentifiers = user.allIdentifiers()
+    const immune = await user.immune()
     const action: HeatAction = { identifier: user.getUserIdentifier(), timestamp: currentTime, type: type }
     const transaction = database.transaction(() => {
-      if (user.immune()) {
+      if (immune) {
         this.addEntries(database, [action])
         return HeatResult.Allowed
       }
