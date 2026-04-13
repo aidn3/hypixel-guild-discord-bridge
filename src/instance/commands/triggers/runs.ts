@@ -46,7 +46,14 @@ export default class Runs extends ChatCommandHandler {
       : this.getTotalRuns(dungeon.catacombs.tier_completions)
     if (runs.length === 0) return `${givenUsername}: ${givenType} - never done runs in this type before?`
 
-    return `${givenUsername}: ${givenType} - ${runs.join('/')}`
+    const entries: string[] = []
+    for (const [floor, run] of runs.entries()) {
+      entries.push(`${masterMode ? 'm' : 'f'}${floor + 1} ${run.toLocaleString('en-US')}`)
+    }
+
+    if (entries.length === 0) return `${givenUsername} has never done Kuudra before?`
+
+    return `${givenUsername}: ${masterMode ? 'Mastermode' : 'Catacombs'} - ${entries.join(' - ')}`
   }
 
   private getTotalRuns(runs: Record<string, number | undefined> | undefined): number[] {
