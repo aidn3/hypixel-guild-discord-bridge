@@ -18,8 +18,8 @@ export default class Runs extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const givenType = context.args[0]?.toLowerCase() ?? 'cata'
-    const givenUsername = context.args[1] ?? context.username
+    const givenUsername = context.args[0] ?? context.username
+    const givenType = context.args[1]?.toLowerCase() ?? 'cata'
 
     let masterMode = false
     if (givenType == 'cata' || givenType === 'catacombs') {
