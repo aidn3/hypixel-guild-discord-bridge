@@ -238,13 +238,17 @@ export class User {
     return result
   }
 
-  public punishments(): PunishmentInstant {
-    const punishments = this.context.punishments.findByUser(this)
+  public activePunishments(): PunishmentInstant {
+    const punishments = this.context.punishments.findByUser(this, true, -1, -1).page
     return new PunishmentInstant(this, punishments)
   }
 
+  public allPunishments(offset: number, limit: number): { page: SavedPunishment[]; total: number } {
+    return this.context.punishments.findByUser(this, false, offset, limit)
+  }
+
   public async forgive(executor: InformEvent): Promise<SavedPunishment[]> {
-    const savedPunishments = this.context.punishments.remove(this)
+    const savedPunishments = this.context.punishments.forgive(this)
 
     await this.application.emit('punishmentForgive', { ...executor, user: this })
 

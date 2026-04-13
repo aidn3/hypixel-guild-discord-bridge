@@ -35,6 +35,8 @@ import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { FetchPageResult } from '../utility/discord-pager.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
+const EntriesPerPage = 5
+
 export default {
   getCommandBuilder: function () {
     // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -108,10 +110,23 @@ export default {
         new SlashCommandSubcommandGroupBuilder()
           .setName('check')
           .setDescription('Check a member punishment status')
-          .addSubcommand(minecraftOption())
-          .addSubcommand(discordOption())
+          .addSubcommand(
+            minecraftOption().addBooleanOption((o) =>
+              o.setName('show-all').setDescription('Show only active punishments')
+            )
+          )
+          .addSubcommand(
+            discordOption().addBooleanOption((o) =>
+              o.setName('show-all').setDescription('Show only active punishments')
+            )
+          )
       )
-      .addSubcommand(new SlashCommandSubcommandBuilder().setName('list').setDescription('List all active punishments'))
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('list')
+          .setDescription('List all active punishments')
+          .addBooleanOption((o) => o.setName('show-all').setDescription('Show only active punishments'))
+      )
   },
   permission: Permission.Helper,
 
@@ -561,21 +576,21 @@ async function takeAction(
 }
 
 async function handleAllListInteraction(context: DiscordCommandContext): Promise<void> {
+  const showAll = context.interaction.options.getBoolean('show-all') ?? false
   await interactivePaging(
     context.interaction,
     0,
     DefaultTimeout,
     context.errorHandler,
     async (page: number): Promise<FetchPageResult> => {
-      const punishments = context.application.core.allPunishments()
-
-      const list = await formatList(context, punishments, page)
+      const punishments = context.application.core.allPunishments(!showAll, (page - 1) * EntriesPerPage, EntriesPerPage)
+      const list = await formatList(context, punishments.page)
 
       return {
-        totalPages: list.total,
+        totalPages: Math.ceil(punishments.total / EntriesPerPage),
         embed: {
-          title: 'All Active Punishments',
-          description: list.content.trim(),
+          title: showAll ? 'All Punishments' : 'Active Punishments',
+          description: list.trim(),
           footer: { text: DefaultCommandFooter }
         }
       }
@@ -584,6 +599,8 @@ async function handleAllListInteraction(context: DiscordCommandContext): Promise
 }
 
 async function handleCheckInteraction(context: DiscordCommandContext, target: User): Promise<void> {
+  const showAll = context.interaction.options.getBoolean('show-all') ?? false
+
   await interactivePaging(
     context.interaction,
     0,
@@ -591,15 +608,27 @@ async function handleCheckInteraction(context: DiscordCommandContext, target: Us
     context.errorHandler,
     async (page: number): Promise<FetchPageResult> => {
       const thumbnail = target.avatar()
-      const punishments = target.punishments().all()
+      let punishments: SavedPunishment[]
+      let count: number
+      if (showAll) {
+        const result = target.allPunishments(page * EntriesPerPage, EntriesPerPage)
+        punishments = result.page
+        count = result.total
+      } else {
+        const result = target.activePunishments().all()
+        punishments = result.slice(page * EntriesPerPage, (page + 1) * EntriesPerPage)
+        count = result.length
+      }
 
-      const result = `**${formatUser(target)} Active Punishments**\n`
-      const list = await formatList(undefined, punishments, page)
+      const title = showAll
+        ? `**${formatUser(target)} All Punishments**`
+        : `**${formatUser(target)} Active Punishments**`
+      const content = await formatList(undefined, punishments)
 
       return {
-        totalPages: list.total,
+        totalPages: Math.ceil(count / EntriesPerPage),
         embed: {
-          description: result + list.content.trim(),
+          description: title + '\n\n' + content.trim(),
           thumbnail: thumbnail ? { url: thumbnail } : undefined,
           footer: { text: DefaultCommandFooter }
         }
@@ -608,20 +637,11 @@ async function handleCheckInteraction(context: DiscordCommandContext, target: Us
   )
 }
 
-async function formatList(
-  context: DiscordCommandContext | undefined,
-  list: SavedPunishment[],
-  page: number
-): Promise<{ total: number; content: string }> {
-  const EntriesPerPage = 5
-  const totalPages = Math.ceil(list.length / EntriesPerPage)
-  const chunk = list.slice(EntriesPerPage * page, EntriesPerPage * (page + 1))
-  if (chunk.length === 0) {
-    return { total: totalPages, content: 'no punishment to view.' }
-  }
+async function formatList(context: DiscordCommandContext | undefined, list: SavedPunishment[]): Promise<string> {
+  if (list.length === 0) return 'no punishment to view.'
 
   let result = ''
-  for (const punishment of chunk) {
+  for (const punishment of list) {
     let user: User | undefined
     if (context !== undefined) {
       user = await context.application.core.initializeUser(
@@ -634,10 +654,8 @@ async function formatList(
 
     result += formatPunishment(punishment, user) + '\n\n'
   }
-  return {
-    total: totalPages,
-    content: result.trimEnd()
-  }
+
+  return result.trimEnd()
 }
 
 function generateHeatWarning(): string {
@@ -704,6 +722,7 @@ function formatPunishment(punishment: SavedPunishment, userToFormat: User | unde
   }
 
   result += `for ${formatTime(punishment.till - punishment.createdAt)} ends <t:${Math.floor(punishment.till / 1000)}:R>`
+  if (punishment.forgiven >= 0) result += `\nForgiven at: <t:${Math.floor(punishment.forgiven / 1000)}>`
   result += `\n> ${escapeMarkdown(punishment.reason)}`
 
   return result

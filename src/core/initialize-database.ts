@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 13
+const CurrentVersion = 14
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -52,6 +52,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(12, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom12to13(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(13, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom13to14(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -712,6 +715,15 @@ function migrateFrom12to13(database: Database, logger: Logger4Js, newlyCreated: 
   }
 
   database.pragma('user_version = 13')
+}
+
+function migrateFrom13to14(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 13 to 14')
+
+  database.exec('ALTER TABLE "punishments" ADD COLUMN "forgiven" INTEGER NOT NULL DEFAULT -1;')
+  database.exec('ALTER TABLE "punishments" ADD COLUMN "expired" INTEGER NOT NULL DEFAULT 0;')
+
+  database.pragma('user_version = 14')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

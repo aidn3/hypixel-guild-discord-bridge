@@ -134,7 +134,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
   }
 
   private async hasBeenPunished(message: Message, user: DiscordUser): Promise<boolean> {
-    const punishments = user.punishments()
+    const punishments = user.activePunishments()
     const mutedTill = punishments.punishedTill(PunishmentType.Mute)
     if (mutedTill != undefined) {
       const emoji = message.client.application.emojis.cache.find((emoji) => emoji.name === MutedReaction.name)
