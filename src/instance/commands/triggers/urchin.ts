@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { usernameNotExists } from '../common/utility'
 
 export default class UrchinCommand extends ChatCommandHandler {
   constructor() {
@@ -11,22 +12,17 @@ export default class UrchinCommand extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const givenUsername = context.args[0] ?? context.username
+    if (context.app.urchinApi === undefined) return `${context.username}, Urchin API is not configured.`
 
-    if (context.app.urchinApi === undefined) {
-      return `${givenUsername}, Urchin API is not configured.`
-    }
+    const givenUsername = context.args.at(0) ?? context.username
+    const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
+    if (profile === undefined) return usernameNotExists(context, givenUsername)
 
-    const response = await context.app.urchinApi.getPlayer(givenUsername)
-    if (response === undefined) {
-      return `${givenUsername}, player not found on Urchin.`
-    }
-
-    if (response.tags.length === 0) {
-      return `${givenUsername} has no Urchin tags.`
-    }
+    const response = await context.app.urchinApi.getPlayer(profile.name)
+    if (response === undefined) return `${profile.name}, player not found on Urchin.`
+    if (response.tags.length === 0) return `${profile.name} has no Urchin tags.`
 
     const lines = response.tags.map((tag) => `${tag.type}: ${tag.reason}`)
-    return `${givenUsername} has the following Urchin tags:\n${lines.join('\n')}`
+    return `${profile.name} has the following Urchin tags:\n${lines.join('\n')}`
   }
 }
