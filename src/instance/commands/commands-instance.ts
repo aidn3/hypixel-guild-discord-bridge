@@ -103,6 +103,7 @@ import TrophyFish from './triggers/trophy-fish'
 import Uhc from './triggers/uhc'
 import Unlink from './triggers/unlink.js'
 import Unscramble from './triggers/unscramble'
+import UrchinCommand from './triggers/urchin'
 import Uuid from './triggers/uuid'
 import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
@@ -213,6 +214,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Uhc(),
       new Unlink(),
       new Unscramble(),
+      new UrchinCommand(),
       new Uuid(),
       new Vengeance(),
       new Warp(),

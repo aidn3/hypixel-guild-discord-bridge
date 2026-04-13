@@ -119,6 +119,7 @@ A shorter version can also be used: `!- rtca`
 | `uhc`            | Returns a player's UHC stats                                                       |
 | `unlink`         | Unlink Minecraft account from Discord                                              |
 | `unscramble`     | Start an unscrambling event                                                        |
+| `urchin`         | Returns a player's Urchin blacklist tags                                           |
 | `username`       | Show the Mojang UUID of a player                                                   |
 | `vengeance`      | Try your luck against another player for a 5 minute mute                           |
 | `warp`           | Warp a player out of a lobby                                                       |
