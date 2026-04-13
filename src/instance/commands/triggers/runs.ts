@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
@@ -18,8 +20,8 @@ export default class Runs extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const givenType = context.args[0]?.toLowerCase() ?? 'cata'
-    const givenUsername = context.args[1] ?? context.username
+    const givenUsername = context.args[0] ?? context.username
+    const givenType = context.args[1]?.toLowerCase() ?? 'cata'
 
     let masterMode = false
     if (givenType == 'cata' || givenType === 'catacombs') {
@@ -46,7 +48,13 @@ export default class Runs extends ChatCommandHandler {
       : this.getTotalRuns(dungeon.catacombs.tier_completions)
     if (runs.length === 0) return `${givenUsername}: ${givenType} - never done runs in this type before?`
 
-    return `${givenUsername}: ${givenType} - ${runs.join('/')}`
+    const entries: string[] = []
+    for (const [floor, run] of runs.entries()) {
+      entries.push(`${masterMode ? 'm' : 'f'}${floor + 1} ${run.toLocaleString('en-US')}`)
+    }
+    assert.notStrictEqual(entries.length, 0)
+
+    return `${givenUsername}: ${masterMode ? 'Mastermode' : 'Catacombs'} - ${entries.join(' - ')}`
   }
 
   private getTotalRuns(runs: Record<string, number | undefined> | undefined): number[] {
