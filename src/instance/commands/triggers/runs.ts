@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import {
@@ -50,8 +52,7 @@ export default class Runs extends ChatCommandHandler {
     for (const [floor, run] of runs.entries()) {
       entries.push(`${masterMode ? 'm' : 'f'}${floor + 1} ${run.toLocaleString('en-US')}`)
     }
-
-    if (entries.length === 0) return `${givenUsername} has never done Kuudra before?`
+    assert.notStrictEqual(entries.length, 0)
 
     return `${givenUsername}: ${masterMode ? 'Mastermode' : 'Catacombs'} - ${entries.join(' - ')}`
   }
