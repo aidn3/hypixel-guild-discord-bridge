@@ -179,8 +179,12 @@ export class Core extends Instance<InstanceType.Core> {
     return this.profanity.filterProfanity(message)
   }
 
-  public allPunishments(): SavedPunishment[] {
-    return this.punishments.all()
+  public allPunishments(
+    onlyActive: boolean,
+    offset: number,
+    limit: number
+  ): { page: SavedPunishment[]; total: number } {
+    return this.punishments.all(onlyActive, offset, limit)
   }
 
   public getPunishmentById(id: SavedPunishment['id']): SavedPunishment | undefined {

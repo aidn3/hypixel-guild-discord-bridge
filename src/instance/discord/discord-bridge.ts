@@ -153,7 +153,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if (event.type === GuildPlayerEventType.Mute && event.user !== undefined) {
       const game =
         event.user
-          .punishments()
+          .activePunishments()
           .all()
           .filter((punishment) => punishment.type === PunishmentType.Mute)
           .toSorted((a, b) => b.createdAt - a.createdAt)

@@ -249,7 +249,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       return
     }
 
-    const banned = user.punishments().longestPunishment(PunishmentType.Ban)
+    const banned = user.activePunishments().longestPunishment(PunishmentType.Ban)
     if (banned !== undefined) {
       await responseInteraction.editReply({
         content:
