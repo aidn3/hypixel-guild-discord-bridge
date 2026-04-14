@@ -380,6 +380,10 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       await this.unsafeWaitlistUpdated(savedGuild)
     })
 
+    await interaction.channel?.messages
+      .edit(interaction.message.id, { components: [this.clientInstance.discordInviteButtons(true)] })
+      .catch(this.errorHandler.promiseCatch('disabling actions buttons of the guild invite'))
+
     await interaction.editReply('You have successfully declined the offer. Thank you for your speedy response!')
   }
 
@@ -398,6 +402,10 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       if (result) await this.unsafeWaitlistUpdated(savedGuild)
       return result
     })
+
+    await interaction.channel?.messages
+      .edit(interaction.message.id, { components: [this.clientInstance.discordInviteButtons(true)] })
+      .catch(this.errorHandler.promiseCatch('disabling actions buttons of the guild invite'))
 
     if (rescheduled) {
       await interaction.editReply(
