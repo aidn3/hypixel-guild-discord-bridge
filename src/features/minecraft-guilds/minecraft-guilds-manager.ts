@@ -464,31 +464,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
             `\n\nPress **Invite** to re-send the guild join invite in case you missed it.` +
             `\nPress **Reschedule** to be put back at the end of the waiting list if you can't decide yet.` +
             `\nPress **Decline** to decline the offer, so the next player on the waitlist receives it sooner.`,
-          components: [
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Success,
-                  customId: DiscordWaitlistInteraction.InviteId,
-                  label: 'Invite'
-                },
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Secondary,
-                  customId: DiscordWaitlistInteraction.RescheduleId,
-                  label: 'Reschedule'
-                },
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Danger,
-                  customId: DiscordWaitlistInteraction.DeclineId,
-                  label: 'Decline'
-                }
-              ]
-            }
-          ]
+          components: [this.discordInviteButtons(false)]
         })
 
         this.database.addSentWaitlist({
@@ -529,6 +505,10 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
             reply: { messageReference: discordReference.messageId, failIfNotExists: false }
           })
           .catch(this.errorHandler.promiseCatch('sending you missed the guild invitation deadline in DM'))
+
+        await channel.messages
+          .edit(discordReference.messageId, { components: [this.discordInviteButtons(true)] })
+          .catch(this.errorHandler.promiseCatch('disabling actions buttons of the guild invite'))
       }
     }
 
@@ -537,6 +517,35 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       this.logger.warn(
         `Processed an expired waitlist invite but it does not exist in the database? ${JSON.stringify(entry)}`
       )
+    }
+  }
+
+  public discordInviteButtons(disabled: boolean) {
+    return {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Success,
+          disabled: disabled,
+          customId: DiscordWaitlistInteraction.InviteId,
+          label: 'Invite'
+        },
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Secondary,
+          disabled: disabled,
+          customId: DiscordWaitlistInteraction.RescheduleId,
+          label: 'Reschedule'
+        },
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Danger,
+          disabled: disabled,
+          customId: DiscordWaitlistInteraction.DeclineId,
+          label: 'Decline'
+        }
+      ]
     }
   }
 }
