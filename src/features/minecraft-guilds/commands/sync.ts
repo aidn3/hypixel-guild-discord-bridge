@@ -32,7 +32,7 @@ export default class Sync extends ChatCommandHandler {
     const guildMember = guild.members.find((member) => member.uuid === targetProfile.id)
     assert.ok(guildMember !== undefined)
 
-    const savedGuild = this.database.allGuilds().find((guild) => guild.id === guild.id)
+    const savedGuild = this.database.allGuilds().find((savedGuild) => savedGuild.id === guild._id)
     if (savedGuild === undefined) return `${targetProfile.name} is in an outside guild: ${guild.name}.`
 
     const resolvedRank = await this.resolveRank(context, savedGuild, guild, guildMember, targetUser, targetProfile)
