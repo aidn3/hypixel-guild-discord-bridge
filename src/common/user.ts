@@ -188,7 +188,7 @@ export class User {
     const otherIdentifier = other.getUserIdentifier()
     if (
       this.userIdentifier.originInstance === otherIdentifier.originInstance &&
-      this.userIdentifier.userId !== otherIdentifier.userId
+      this.userIdentifier.userId === otherIdentifier.userId
     )
       return true
 
