@@ -38,7 +38,7 @@ export class User {
     if (mojangProfile !== undefined) return mojangProfile.name
 
     const discordProfile = this.discordProfile()
-    if (discordProfile !== undefined) return discordProfile.displayName
+    if (discordProfile?.type === 'cached') return discordProfile.displayName
 
     return this.getUserIdentifier().userId.slice(0, 16)
   }
@@ -50,7 +50,7 @@ export class User {
     }
 
     const discordProfile = this.discordProfile()
-    if (discordProfile?.avatar !== undefined) {
+    if (discordProfile?.type === 'cached' && discordProfile.avatar !== undefined) {
       return discordProfile.avatar
     }
 
@@ -346,11 +346,19 @@ export interface DiscordUser extends User {
   profileLink(): string
 }
 
-export interface DiscordProfile {
+export type DiscordProfile = CachedDiscordProfile | RawDiscordProfile
+
+export interface CachedDiscordProfile {
+  type: 'cached'
   id: string
   username: string
   displayName: string
   avatar: string | undefined
+}
+
+export interface RawDiscordProfile {
+  type: 'raw'
+  id: string
 }
 
 export interface MojangProfile {

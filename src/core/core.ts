@@ -254,7 +254,7 @@ export class Core extends Instance<InstanceType.Core> {
     let profile: DiscordProfile | undefined
     const userLink = await this.application.core.verification.findByIngame(mojangProfile.id)
     if (userLink !== undefined) {
-      profile = this.application.discordInstance.profileById(userLink.discordId, context.guild)
+      profile = await this.application.discordInstance.profileById(userLink.discordId, context.guild)
     }
 
     const user = new User(this.application, this.userContext(), identifier, mojangProfile, profile, userLink)
@@ -275,7 +275,7 @@ export class Core extends Instance<InstanceType.Core> {
         return this.initializeMinecraftUser(profile, context)
       }
       case InstanceType.Discord: {
-        const profile = this.application.discordInstance.profileById(identifier.userId, context.guild)
+        const profile = await this.application.discordInstance.profileById(identifier.userId, context.guild)
         if (profile !== undefined) return this.initializeDiscordUser(profile, context)
       }
     }
