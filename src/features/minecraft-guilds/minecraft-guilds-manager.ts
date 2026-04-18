@@ -353,15 +353,15 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       let message: string
       let color = Color.Info
       if (result.ingameInvited && result.discordMessage) {
-        message = `Waitlist accepted ${waitEntry.mojangId}: Invited and direct-messaged`
+        message = `Waitlist accepted ${result.profile.name}: Invited and direct-messaged`
         color = Color.Good
       } else if (result.ingameInvited && !result.discordMessage) {
-        message = `Waitlist accepted ${waitEntry.mojangId}: Invited but could not direct-message`
+        message = `Waitlist accepted ${result.profile.name}: Invited but could not direct-message`
       } else if (!result.ingameInvited && result.discordMessage) {
-        message = `Waitlist accepted ${waitEntry.mojangId}: Can not invite but managed to direct-message`
+        message = `Waitlist accepted ${result.profile.name}: Can not invite but managed to direct-message`
       } else {
         color = Color.Info
-        message = `Waitlist accepted ${waitEntry.mojangId}: Can not invite nor direct-message the person sadly :(`
+        message = `Waitlist accepted ${result.profile.name}: Can not invite nor direct-message the person sadly :(`
       }
       await this.application.emit('broadcast', {
         ...this.eventHelper.fillBaseEvent(),
