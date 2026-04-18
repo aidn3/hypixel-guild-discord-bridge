@@ -20,7 +20,11 @@ export default class Discord extends ChatCommandHandler {
     const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, { guild: undefined })
     const discordProfile = targetUser.discordProfile()
     if (discordProfile !== undefined) {
-      return `${mojangProfile.name} has linked to ${discordProfile.username} (${discordProfile.id})`
+      if (discordProfile.type === 'cached') {
+        return `${mojangProfile.name} has linked to ${discordProfile.username} (${discordProfile.id})`
+      }
+
+      return `${mojangProfile.name} has linked to ${discordProfile.id}`
     }
 
     const player = await context.app.hypixelApi.getPlayer(mojangProfile.id)

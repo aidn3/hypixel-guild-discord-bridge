@@ -98,15 +98,17 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     )
   }
 
-  public profileById(userId: Snowflake, guild: Guild | undefined): DiscordProfile | undefined {
-    const user = this.client.users.cache.get(userId)
-    if (user !== undefined) return this.profileByUser(user, guild?.members.cache.get(userId))
+  public async profileById(userId: Snowflake, guild: Guild | undefined): Promise<DiscordProfile | undefined> {
+    const user = await this.client.users.fetch(userId).catch(() => undefined)
+    if (user === undefined) return { type: 'raw', id: userId }
 
-    return undefined
+    const guildMember = await guild?.members.fetch(userId)
+    return this.profileByUser(user, guildMember)
   }
 
   public profileByUser(user: User, guildMember: GuildMember | undefined): DiscordProfile {
     return {
+      type: 'cached',
       id: user.id,
       username: user.username,
       displayName:
