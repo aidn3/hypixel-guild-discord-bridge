@@ -49,7 +49,7 @@ export default {
       )
   },
 
-  permission: Permission.Officer,
+  permission: Permission.Admin,
 
   handler: async function (context: Readonly<DiscordCommandContext>) {
     const interaction = context.interaction
