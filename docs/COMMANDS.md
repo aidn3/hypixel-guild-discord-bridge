@@ -45,6 +45,7 @@ A shorter version can also be used: `!- rtca`
 | `da`             | Show the remaining time till next Dark Auction                                     |
 | `dadjoke`        | Show you a random dad joke                                                         |
 | `devexcuse`      | Show you a random excuse for why this bot isn't working                            |
+| `diana`          | Returns a player's Mythological stats                                              |
 | `dice`           | Roll an Archfiend Dice                                                             |
 | `discord`        | Returns a player's Discord social                                                  |
 | `dojo`           | Returns a player's Crimson Isle's Dojo stats                                       |
