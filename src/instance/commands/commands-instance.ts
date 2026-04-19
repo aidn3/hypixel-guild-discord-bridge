@@ -28,6 +28,7 @@ import Chocolate from './triggers/chocolate'
 import ClassAverage from './triggers/classaverage.js'
 import Coinflip from './triggers/coinflip.js'
 import Collection from './triggers/collection'
+import Contests from './triggers/contests'
 import CopsAndCrims from './triggers/cops-and-crims.js'
 import CountingChain from './triggers/counting-chain'
 import CurrentDungeon from './triggers/current-dungeon.js'
@@ -141,6 +142,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new ClassAverage(),
       new Coinflip(),
       new Collection(),
+      new Contests(),
       new CopsAndCrims(),
       new Command67(),
       new CountingChain(),

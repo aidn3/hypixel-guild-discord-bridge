@@ -40,6 +40,7 @@ A shorter version can also be used: `!- rtca`
 | `classavg`       | Returns a player's class average                                                   |
 | `coinflip`       | Flip a coin                                                                        |
 | `collection`     | Returns a player's SkyBlock collection stats                                       |
+| `contests`       | Show current and future Jacob contests                                             |
 | `counting`       | Start a counting chain event                                                       |
 | `currentdungeon` | Returns a player's last dungeon run                                                |
 | `currentkuudra`  | Returns a player's last kuudra run                                                 |
