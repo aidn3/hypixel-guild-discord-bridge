@@ -38,7 +38,7 @@ export default class CurrentDungeon extends ChatCommandHandler {
     const dungeons = selectedProfile.dungeons
     if (dungeons === undefined) return playerNeverPlayedDungeons(givenUsername)
 
-    let runs = dungeons.treasures?.runs
+    let runs = dungeons.treasures?.runs?.filter((run) => run.type === 'DUNGEON')
     if (runs === undefined || runs.length === 0) return `${givenUsername} hasn't done any dungeon runs lately.`
 
     if (runs.length > 1) {
