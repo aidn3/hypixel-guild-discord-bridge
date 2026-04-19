@@ -71,6 +71,7 @@ import Motes from './triggers/motes.js'
 import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import News from './triggers/news.js'
+import OverflowSkills from './triggers/oskills'
 import PartyManager from './triggers/party.js'
 import PersonalBest from './triggers/personal-best.js'
 import Placeholder from './triggers/placeholder'
@@ -182,6 +183,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Motes(),
       new Mute(),
       new Networth(),
+      new OverflowSkills(),
       ...new PartyManager().resolveCommands(),
       new PersonalBest(),
       new Placeholder(),

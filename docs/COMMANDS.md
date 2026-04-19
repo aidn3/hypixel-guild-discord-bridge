@@ -83,6 +83,7 @@ A shorter version can also be used: `!- rtca`
 | `mute`           | Mute a random online person for 5 minutes for no good reason                       |
 | `networth`       | Returns a calculation of a player's networth                                       |
 | `news`           | Returns the latest SkyBlock news                                                   |
+| `oskills`        | Returns a player's skills levels without cap                                       |
 | `parties`        | List all active parties in guild                                                   |
 | `pb`             | Returns a players best dungeon run time                                            |
 | `placeholder`    | Resolve a placeholder                                                              |
