@@ -5,6 +5,7 @@ import { InGuild } from './handlers/in-guild'
 import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master'
 import { InGuildWithRank } from './handlers/in-guild-with-rank'
 import { Linked } from './handlers/linked'
+import { SkyblockApi } from './handlers/skyblock-api'
 import { SkyblockLevel } from './handlers/skyblock-level'
 import { SkyblockNetworth } from './handlers/skyblock-networth'
 
@@ -17,6 +18,7 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockLevel())
     this.registerHandler(new CatacombsLevel())
     this.registerHandler(new SkyblockNetworth())
+    this.registerHandler(new SkyblockApi())
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
     this.registerHandler(new InGuildAsGuildmaster())
