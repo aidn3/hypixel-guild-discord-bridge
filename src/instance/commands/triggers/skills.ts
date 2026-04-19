@@ -1,12 +1,9 @@
+import assert from 'node:assert'
+
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock-types'
-import {
-  getSelectedSkyblockProfile,
-  getUuidIfExists,
-  playerNeverPlayedSkyblock,
-  usernameNotExists
-} from '../common/utility'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Skills extends ChatCommandHandler {
   constructor() {
@@ -23,11 +20,18 @@ export default class Skills extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const profile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
-    if (profile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
+    const profiles = await context.app.hypixelApi.getSkyblockProfiles(uuid)
+    if (!profiles || profiles.length === 0) return playerNeverPlayedSkyblock(context, givenUsername)
+    const memberProfile = profiles.find((p) => p.selected)
+    assert.ok(memberProfile !== undefined)
+
+    const profile = memberProfile.members[uuid]
 
     const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
     const skills = skillsResponse.skills
+    const totalSocialExperience = Object.values(memberProfile.members) // Social level is the sum of all coop members
+      .map((profile) => profile.player_data.experience?.SKILL_SOCIAL ?? 0)
+      .reduce((a, b) => a + b, 0)
 
     const farmingCap = profile.jacobs_contest?.perks?.farming_level_cap ?? 0
     const tamingCap = profile.pets_data?.pet_care?.pet_types_sacrificed?.length ?? 0
@@ -41,7 +45,7 @@ export default class Skills extends ChatCommandHandler {
     const alchemy = this.getLevel(skills.ALCHEMY, profile.player_data.experience?.SKILL_ALCHEMY ?? 0)
     const carpentry = this.getLevel(skills.CARPENTRY, profile.player_data.experience?.SKILL_CARPENTRY ?? 0)
     const runecrafting = this.getLevel(skills.RUNECRAFTING, profile.player_data.experience?.SKILL_RUNECRAFTING ?? 0)
-    const social = this.getLevel(skills.SOCIAL, profile.player_data.experience?.SKILL_SOCIAL ?? 0)
+    const social = this.getLevel(skills.SOCIAL, totalSocialExperience)
     const taming = this.getLevel(skills.TAMING, profile.player_data.experience?.SKILL_TAMING ?? 0)
     const hunting = this.getLevel(skills.HUNTING, profile.player_data.experience?.SKILL_HUNTING ?? 0)
 
