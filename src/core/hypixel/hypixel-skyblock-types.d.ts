@@ -179,7 +179,7 @@ export interface SkyblockEssencePerks {
 export interface SkyblockDungeons {
   dungeon_types: SkyblockDungeonsTypes
   player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockDungeonsClass | undefined>
-  treasures?: { runs?: SkyblockDungeonRun[] }
+  treasures?: { runs?: (SkyblockDungeonRun | SkyblockKuudraRun)[] }
 }
 
 export interface SkyblockDungeonsTypes {
@@ -210,9 +210,17 @@ export interface SkyblockDungeonsClass {
 }
 
 export interface SkyblockDungeonRun {
+  type: 'DUNGEON'
   completion_ts: number
   dungeon_type: 'catacombs' | 'master_catacombs'
   dungeon_tier: number
+  participants: { player_uuid: string; display_name: string }[]
+}
+
+export interface SkyblockKuudraRun {
+  type: 'KUUDRA'
+  completion_ts: number
+  tier_id: 'BASIC' | 'HOT' | 'BURNING' | 'FIERY' | 'INFERNAL'
   participants: { player_uuid: string; display_name: string }[]
 }
 

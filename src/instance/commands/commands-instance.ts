@@ -31,6 +31,7 @@ import Collection from './triggers/collection'
 import CopsAndCrims from './triggers/cops-and-crims.js'
 import CountingChain from './triggers/counting-chain'
 import CurrentDungeon from './triggers/current-dungeon.js'
+import CurrentKuudra from './triggers/current-kuudra'
 import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
@@ -142,6 +143,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Command67(),
       new CountingChain(),
       new CurrentDungeon(),
+      new CurrentKuudra(),
       new DadJoke(),
       new DarkAuction(),
       new DevelopmentExcuse(),
