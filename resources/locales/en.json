@@ -103,6 +103,8 @@
     "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role."
   },
 
+  "discord.conditions.handler.skyblock-api.title": "Skyblock API Enabled",
+  "discord.conditions.handler.skyblock-api.formatted": "All Skyblock APIs enabled on all profiles",
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
