@@ -102,7 +102,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     const user = await this.client.users.fetch(userId).catch(() => undefined)
     if (user === undefined) return { type: 'raw', id: userId }
 
-    const guildMember = await guild?.members.fetch(userId)
+    const guildMember = await guild?.members.fetch(userId).catch(() => undefined)
     return this.profileByUser(user, guildMember)
   }
 
