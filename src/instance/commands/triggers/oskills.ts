@@ -33,18 +33,30 @@ export default class OverflowSkills extends ChatCommandHandler {
       .map((profile) => profile.player_data.experience?.SKILL_SOCIAL ?? 0)
       .reduce((a, b) => a + b, 0)
 
-    const farming = this.getLevel(skills.FARMING, profile.player_data.experience?.SKILL_FARMING ?? 0)
-    const mining = this.getLevel(skills.MINING, profile.player_data.experience?.SKILL_MINING ?? 0)
-    const combat = this.getLevel(skills.COMBAT, profile.player_data.experience?.SKILL_COMBAT ?? 0)
-    const foraging = this.getLevel(skills.FORAGING, profile.player_data.experience?.SKILL_FORAGING ?? 0)
-    const fishing = this.getLevel(skills.FISHING, profile.player_data.experience?.SKILL_FISHING ?? 0)
-    const enchanting = this.getLevel(skills.ENCHANTING, profile.player_data.experience?.SKILL_ENCHANTING ?? 0)
-    const alchemy = this.getLevel(skills.ALCHEMY, profile.player_data.experience?.SKILL_ALCHEMY ?? 0)
-    const carpentry = this.getLevel(skills.CARPENTRY, profile.player_data.experience?.SKILL_CARPENTRY ?? 0)
-    const runecrafting = this.getLevel(skills.RUNECRAFTING, profile.player_data.experience?.SKILL_RUNECRAFTING ?? 0)
-    const social = this.getLevel(skills.SOCIAL, totalSocialExperience)
-    const taming = this.getLevel(skills.TAMING, profile.player_data.experience?.SKILL_TAMING ?? 0)
-    const hunting = this.getLevel(skills.HUNTING, profile.player_data.experience?.SKILL_HUNTING ?? 0)
+    const farming = this.getLevel(skills.COMBAT, skills.FARMING, profile.player_data.experience?.SKILL_FARMING ?? 0)
+    const mining = this.getLevel(skills.COMBAT, skills.MINING, profile.player_data.experience?.SKILL_MINING ?? 0)
+    const combat = this.getLevel(skills.COMBAT, skills.COMBAT, profile.player_data.experience?.SKILL_COMBAT ?? 0)
+    const foraging = this.getLevel(skills.COMBAT, skills.FORAGING, profile.player_data.experience?.SKILL_FORAGING ?? 0)
+    const fishing = this.getLevel(skills.COMBAT, skills.FISHING, profile.player_data.experience?.SKILL_FISHING ?? 0)
+    const enchanting = this.getLevel(
+      skills.COMBAT,
+      skills.ENCHANTING,
+      profile.player_data.experience?.SKILL_ENCHANTING ?? 0
+    )
+    const alchemy = this.getLevel(skills.COMBAT, skills.ALCHEMY, profile.player_data.experience?.SKILL_ALCHEMY ?? 0)
+    const carpentry = this.getLevel(
+      skills.COMBAT,
+      skills.CARPENTRY,
+      profile.player_data.experience?.SKILL_CARPENTRY ?? 0
+    )
+    const runecrafting = this.getLevel(
+      skills.COMBAT,
+      skills.RUNECRAFTING,
+      profile.player_data.experience?.SKILL_RUNECRAFTING ?? 0
+    )
+    const social = this.getLevel(skills.COMBAT, skills.SOCIAL, totalSocialExperience)
+    const taming = this.getLevel(skills.COMBAT, skills.TAMING, profile.player_data.experience?.SKILL_TAMING ?? 0)
+    const hunting = this.getLevel(skills.COMBAT, skills.HUNTING, profile.player_data.experience?.SKILL_HUNTING ?? 0)
 
     const totalLevels =
       farming + mining + combat + foraging + fishing + enchanting + alchemy + carpentry + taming + hunting
@@ -74,10 +86,19 @@ export default class OverflowSkills extends ChatCommandHandler {
       hunting: hunting
     })
   }
-
-  private getLevel(skill: HypixelSkyblockSkill, experience: number): number {
-    const levelingTable = skill.levels.map((level, index) =>
-      index === 0 ? level.totalExpRequired : level.totalExpRequired - skill.levels[index - 1].totalExpRequired
+  /*
+   * Alternative leveling is required since some skills are capped
+   * and need to supplement their levels with another
+   * that has the required levels data.
+   *
+   * It isn't perfect, but it will give a more precise approximation to the uncapped level.
+   */
+  private getLevel(alternativeSkill: HypixelSkyblockSkill, skill: HypixelSkyblockSkill, experience: number): number {
+    const levelingTable = skill.levels.map((level, index, array) =>
+      index === 0 ? level.totalExpRequired : level.totalExpRequired - array[index - 1].totalExpRequired
+    )
+    const alternativeLevelingTable = alternativeSkill.levels.map((level, index, array) =>
+      index === 0 ? level.totalExpRequired : level.totalExpRequired - array[index - 1].totalExpRequired
     )
 
     let level = 0
@@ -89,8 +110,12 @@ export default class OverflowSkills extends ChatCommandHandler {
       experience -= nextLevelExperience
 
       if (level >= levelingTable.length) {
-        nextLevelExperience += skillOverflowSlope
-        if (level % 10 === 0 && level != 60) skillOverflowSlope *= 2
+        if (level < alternativeLevelingTable.length) {
+          nextLevelExperience = alternativeLevelingTable[level]
+        } else {
+          nextLevelExperience += skillOverflowSlope
+          if (level % 10 === 0 && level != 60) skillOverflowSlope *= 2
+        }
       } else {
         nextLevelExperience = levelingTable[level]
       }
