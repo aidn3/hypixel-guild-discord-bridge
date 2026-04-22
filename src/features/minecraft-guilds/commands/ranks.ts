@@ -15,7 +15,7 @@ export default class Ranks extends ChatCommandHandler {
 
   async handler(context: ChatCommandContext): Promise<string> {
     const savedGuilds = this.database.allGuilds()
-    if (savedGuilds.length === 0) return `${context.username}, no guild not registered.`
+    if (savedGuilds.length === 0) return `${context.username}, no guild registered.`
 
     if (savedGuilds.length === 1) {
       const savedGuild = savedGuilds[0]
