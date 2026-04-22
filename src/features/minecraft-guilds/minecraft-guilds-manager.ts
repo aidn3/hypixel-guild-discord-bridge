@@ -29,6 +29,7 @@ import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandl
 import Invite from './commands/invite'
 import Ranks from './commands/ranks'
 import Sync from './commands/sync'
+import SyncGuild from './commands/sync-guild'
 import type { MinecraftGuild, WaitlistEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
@@ -57,6 +58,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
 
     this.application.registerChatCommand(new Ranks(this.database))
     this.application.registerChatCommand(new Sync(this.database))
+    this.application.registerChatCommand(new SyncGuild(this.database))
     this.application.registerChatCommand(new Invite(this.database))
     this.application.registerDiscordCommand({
       ...DiscordGuildCommand,
