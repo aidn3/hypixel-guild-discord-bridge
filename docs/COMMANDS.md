@@ -115,6 +115,7 @@ A shorter version can also be used: `!- rtca`
 | `startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
 | `status`         | Show a player's Hypixel status and current location                                |
 | `sync`           | Update a user in-game guild rank                                                   |
+| `sync-guild`     | Update ranks of all members in a guild                                             |
 | `timecharm`      | Returns a player's rift obtained time charms                                       |
 | `toggle`         | Enable/disable commands                                                            |
 | `toggled`        | Show disabled commands                                                             |
