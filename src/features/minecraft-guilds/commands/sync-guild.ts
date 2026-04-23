@@ -6,12 +6,14 @@ import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser } from '../../../common/user'
+import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
 import type { Database, MinecraftGuild } from '../database'
 
 import { resolveGuildRank } from './utlity'
 
 export default class SyncGuild extends ChatCommandHandler {
+  private static readonly FeedbackEvery = Duration.seconds(30)
   private readonly singleton = new PromiseQueue(1)
 
   constructor(private readonly database: Database) {
@@ -64,34 +66,61 @@ export default class SyncGuild extends ChatCommandHandler {
   }
 
   private async syncGuild(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
-    const guild = await context.app.hypixelApi.getGuildById(savedGuild.id)
-    if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
+    const currentTime = Date.now()
 
-    let synced = 0
-    for (const guildMember of guild.members) {
+    const guild = await context.app.hypixelApi.getGuildById(savedGuild.id, currentTime)
+    if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
+    await context.sendFeedback(`Syncing ${savedGuild.name}`)
+
+    let lastFeedback = currentTime
+    let changed = 0
+    let already = 0
+    let skipped = 0
+    for (let index = 0; index < guild.members.length; index++) {
+      const guildMember = guild.members[index]
+      if (lastFeedback + SyncGuild.FeedbackEvery.toMilliseconds() < Date.now()) {
+        await context.sendFeedback(`Syncing ${savedGuild.name} ${index + 1} out of ${guild.members.length} members.`)
+        lastFeedback = Date.now()
+      }
       const target = await this.resolveUser(context, guildMember.uuid)
       if (typeof target === 'string') continue
 
-      const resolvedRank = await resolveGuildRank(context, this.database, savedGuild, guild, guildMember, target)
-      if (resolvedRank === 'not-whitelisted' || resolvedRank === 'no-condition') continue
+      const resolvedRank = await resolveGuildRank(
+        context,
+        this.database,
+        currentTime,
+        savedGuild,
+        guild,
+        guildMember,
+        target
+      )
+      if (resolvedRank === 'not-whitelisted' || resolvedRank === 'no-condition') {
+        skipped++
+        continue
+      }
 
       if (resolvedRank === 'no-rank') {
         const defaultRank = guild.ranks.find((rank) => rank.default)?.name
         assert.ok(defaultRank !== undefined)
-        if (guildMember.rank !== undefined && guildMember.rank === defaultRank) continue
+        if (guildMember.rank !== undefined && guildMember.rank === defaultRank) {
+          already++
+          continue
+        }
 
         await this.setRank(context, target.mojangProfile().id, defaultRank)
-        synced++
+        changed++
         continue
       }
 
       if (guildMember.rank === undefined || guildMember.rank !== resolvedRank.rank) {
         await this.setRank(context, target.mojangProfile().id, resolvedRank.rank)
-        synced++
+        changed++
+      } else {
+        already++
       }
     }
 
-    return `Synced ${synced} out of ${guild.members.length} in ${savedGuild.name}`
+    return `Synced ${savedGuild.name}: Changed ${changed} - Already ${already} - Skipped ${skipped}`
   }
 
   private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
