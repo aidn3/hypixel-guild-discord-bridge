@@ -18,9 +18,7 @@ export async function resolveGuildRank(
   const defaultRank = guild.ranks.find((rank) => rank.default)?.name
   assert.ok(defaultRank !== undefined)
   if (guildMember.rank !== undefined && guildMember.rank !== defaultRank) {
-    const currentSavedRank = savedGuild.roles.find((role) =>
-      guild.ranks.some((guildRank) => guildRank.name === role.name)
-    )
+    const currentSavedRank = savedGuild.roles.find((role) => role.name === guildMember.rank)
     if (!currentSavedRank?.whitelisted) {
       return 'not-whitelisted'
     }
