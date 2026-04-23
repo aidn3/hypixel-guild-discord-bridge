@@ -67,31 +67,41 @@ export default class SyncGuild extends ChatCommandHandler {
     const guild = await context.app.hypixelApi.getGuildById(savedGuild.id)
     if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
 
-    let synced = 0
+    let changed = 0
+    let already = 0
+    let skipped = 0
     for (const guildMember of guild.members) {
       const target = await this.resolveUser(context, guildMember.uuid)
       if (typeof target === 'string') continue
 
       const resolvedRank = await resolveGuildRank(context, this.database, savedGuild, guild, guildMember, target)
-      if (resolvedRank === 'not-whitelisted' || resolvedRank === 'no-condition') continue
+      if (resolvedRank === 'not-whitelisted' || resolvedRank === 'no-condition') {
+        skipped++
+        continue
+      }
 
       if (resolvedRank === 'no-rank') {
         const defaultRank = guild.ranks.find((rank) => rank.default)?.name
         assert.ok(defaultRank !== undefined)
-        if (guildMember.rank !== undefined && guildMember.rank === defaultRank) continue
+        if (guildMember.rank !== undefined && guildMember.rank === defaultRank) {
+          already++
+          continue
+        }
 
         await this.setRank(context, target.mojangProfile().id, defaultRank)
-        synced++
+        changed++
         continue
       }
 
       if (guildMember.rank === undefined || guildMember.rank !== resolvedRank.rank) {
         await this.setRank(context, target.mojangProfile().id, resolvedRank.rank)
-        synced++
+        changed++
+      } else {
+        already++
       }
     }
 
-    return `Synced ${synced} out of ${guild.members.length} in ${savedGuild.name}`
+    return `Synced ${savedGuild.name}: Changed ${changed} - Already ${already} - Skipped ${skipped}`
   }
 
   private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
