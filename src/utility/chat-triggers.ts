@@ -28,7 +28,8 @@ export const RankChat: RegexChat = {
   success: [
     ...GeneralChat.success,
     /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was promoted from.*/,
-    /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was demoted from.*/
+    /^(?:\[[+A-Z]{1,10}] )*(\w{3,32}) was demoted from.*/,
+    /^They already have that rank!/
   ],
   failure: [
     ...GeneralChat.failure,
