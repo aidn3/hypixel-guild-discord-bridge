@@ -1,15 +1,24 @@
 import assert from 'node:assert'
 
+import { TTLCache } from '@isaacs/ttlcache'
+
 import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
-import type { MinecraftUser } from '../../../common/user'
+import type { MinecraftUser, MojangProfile } from '../../../common/user'
 import { usernameNotExists } from '../../../instance/commands/common/utility'
+import Duration from '../../../utility/duration'
+import { formatTime } from '../../../utility/shared-utility'
 import type { Database } from '../database'
 
 import { resolveGuildRank } from './utlity'
 
 export default class Sync extends ChatCommandHandler {
+  private readonly cooldowns = new TTLCache<MojangProfile['id'], { createdAt: number }>({
+    ttl: Duration.minutes(5).toMilliseconds()
+  })
+  private static readonly Cooldown = Duration.minutes(5)
+
   constructor(private readonly database: Database) {
     super({
       triggers: ['sync', 'rankup', 'guildrankup', 'grankup'],
@@ -27,6 +36,18 @@ export default class Sync extends ChatCommandHandler {
     const target = await this.resolveUser(context)
     if (typeof target === 'string') return target
     const targetProfile = target.mojangProfile()
+
+    if ((await context.message.user.permission()) === Permission.Anyone) {
+      const identifier = context.message.user.getUserIdentifier()
+      const id = `${identifier.originInstance}:${identifier.userId}`
+      const cooldownResult = this.cooldowns.get(id)
+      if (cooldownResult !== undefined && cooldownResult.createdAt + Sync.Cooldown.toMilliseconds() > currentTime) {
+        const againIn = cooldownResult.createdAt + Sync.Cooldown.toMilliseconds() - currentTime
+        return `${context.username}, you can use this command again in ${formatTime(againIn)}.`
+      } else {
+        this.cooldowns.set(id, { createdAt: currentTime })
+      }
+    }
 
     const guild = await context.app.hypixelApi.getGuildByPlayer(targetProfile.id, currentTime)
     if (guild === undefined) return `${targetProfile.name} is not in a guild.`
