@@ -39,7 +39,7 @@ export default class Catacombs extends ChatCommandHandler {
     }
 
     const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
-    const secrets = hypixelProfile.achievements?.skyblock_treasure_hunter ?? 0
+    const secrets = selectedProfile.dungeons?.secrets ?? 0
 
     const healer = getDungeonLevelWithOverflow(dungeons.player_classes?.healer?.experience ?? 0)
     const mage = getDungeonLevelWithOverflow(dungeons.player_classes?.mage?.experience ?? 0)
