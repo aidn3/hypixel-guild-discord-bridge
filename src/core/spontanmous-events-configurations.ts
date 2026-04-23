@@ -32,6 +32,42 @@ export class SpontaneousEventsConfigurations {
     this.configuration.setStringArray('enabledEvents', eventNames)
   }
 
+  public getCountingChainDuration(): Duration {
+    const seconds = this.configuration.getNumber('countingChainDuration', 10)
+    return Duration.seconds(seconds)
+  }
+
+  public setCountingChainDuration(duration: Duration): void {
+    this.configuration.setNumber('countingChainDuration', duration.toSeconds())
+  }
+
+  public getQuickMathDuration(): Duration {
+    const seconds = this.configuration.getNumber('quickMathDuration', 30)
+    return Duration.seconds(seconds)
+  }
+
+  public setQuickMathDuration(duration: Duration): void {
+    this.configuration.setNumber('quickMathDuration', duration.toSeconds())
+  }
+
+  public getTriviaDuration(): Duration {
+    const seconds = this.configuration.getNumber('triviaDuration', 30)
+    return Duration.seconds(seconds)
+  }
+
+  public setTriviaDuration(duration: Duration): void {
+    this.configuration.setNumber('triviaDuration', duration.toSeconds())
+  }
+
+  public getUnscrambleDuration(): Duration {
+    const seconds = this.configuration.getNumber('unscrambleDuration', 30)
+    return Duration.seconds(seconds)
+  }
+
+  public setUnscrambleDuration(duration: Duration): void {
+    this.configuration.setNumber('unscrambleDuration', duration.toSeconds())
+  }
+
   public getActivityDuration(): Duration {
     const milliseconds = this.configuration.getNumber('activityDuration', Duration.minutes(30).toMilliseconds())
     return Duration.milliseconds(milliseconds)

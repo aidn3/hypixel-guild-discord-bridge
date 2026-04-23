@@ -316,6 +316,12 @@ function fetchQualityOptions(application: Application): CategoryOption {
   const plugins = application.core.applicationConfigurations
   const minecraft = application.core.minecraftConfigurations
 
+  const quickMathDescription = 'Create a math question and the fastest who can answer wins.'
+  const countingChainDescription =
+    'Create a counting chain where the before last person to stop gets muted for 5 minutes.'
+  const unscrambleDescription = 'A word is scrambled and the fastest who can answer wins.'
+  const triviaDescription = 'Ask a trivia with options answers. Answer is later revealed.'
+
   return {
     type: OptionType.Category,
     name: 'Quality Of Life',
@@ -356,26 +362,14 @@ function fetchQualityOptions(application: Application): CategoryOption {
             min: 0,
             max: Object.values(SpontaneousEventsNames).length,
             options: [
-              {
-                label: 'Quick Math',
-                value: SpontaneousEventsNames.QuickMath,
-                description: 'Create a math question and the fastest who can answer wins.'
-              },
+              { label: 'Quick Math', value: SpontaneousEventsNames.QuickMath, description: quickMathDescription },
               {
                 label: 'Counting Chain',
                 value: SpontaneousEventsNames.CountingChain,
-                description: 'Create a counting chain where the before last person to stop gets muted for 5 minutes.'
+                description: countingChainDescription
               },
-              {
-                label: 'Unscramble',
-                value: SpontaneousEventsNames.Unscramble,
-                description: 'A word is scrambled and the fastest who can answer wins.'
-              },
-              {
-                label: 'Trivia',
-                value: SpontaneousEventsNames.Trivia,
-                description: 'Ask a trivia with options answers. Answer is later revealed.'
-              }
+              { label: 'Unscramble', value: SpontaneousEventsNames.Unscramble, description: unscrambleDescription },
+              { label: 'Trivia', value: SpontaneousEventsNames.Trivia, description: triviaDescription }
             ],
             getOption: () => events.getEnabledEvents(),
             setOption: (values) => {
@@ -383,7 +377,66 @@ function fetchQualityOptions(application: Application): CategoryOption {
             }
           },
           {
-            type: OptionType.EmbedCategory,
+            type: OptionType.Category,
+            name: 'Events Durations',
+            description: 'How long should each event lasts in seconds before it is considered abandoned.',
+            options: [
+              {
+                type: OptionType.Number,
+                name: 'Quick Math',
+                description: quickMathDescription,
+                min: 1,
+                max: 3600,
+                getOption: () => {
+                  return Math.ceil(events.getQuickMathDuration().toSeconds())
+                },
+                setOption: (value) => {
+                  events.setQuickMathDuration(Duration.seconds(value))
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: 'Counting Chain',
+                description: countingChainDescription,
+                min: 1,
+                max: 3600,
+                getOption: () => {
+                  return Math.ceil(events.getCountingChainDuration().toSeconds())
+                },
+                setOption: (value) => {
+                  events.setCountingChainDuration(Duration.seconds(value))
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: 'Unscramble',
+                description: unscrambleDescription,
+                min: 1,
+                max: 3600,
+                getOption: () => {
+                  return Math.ceil(events.getUnscrambleDuration().toSeconds())
+                },
+                setOption: (value) => {
+                  events.setUnscrambleDuration(Duration.seconds(value))
+                }
+              },
+              {
+                type: OptionType.Number,
+                name: 'Trivia',
+                description: triviaDescription,
+                min: 1,
+                max: 3600,
+                getOption: () => {
+                  return Math.ceil(events.getTriviaDuration().toSeconds())
+                },
+                setOption: (value) => {
+                  events.setTriviaDuration(Duration.seconds(value))
+                }
+              }
+            ]
+          },
+          {
+            type: OptionType.Category,
             name: 'Advanced Options',
             description:
               'Control When To Start An Event. ' +

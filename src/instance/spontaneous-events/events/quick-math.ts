@@ -1,7 +1,7 @@
 import type { ChatEvent } from '../../../common/application-event'
 import { ChannelType, Color } from '../../../common/application-event'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
-import Duration from '../../../utility/duration'
+import type Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout'
 import { type EventContext, SpontaneousEventHandler } from '../common'
 
@@ -20,7 +20,8 @@ export class QuickMath extends SpontaneousEventHandler {
       broadcastMessage: (message, color) => this.broadcastMessage(message, color)
     }
 
-    const result = await startQuickMath(context, Duration.seconds(10))
+    const duration = this.application.core.spontaneousEventsConfigurations.getQuickMathDuration()
+    const result = await startQuickMath(context, duration)
     await context.broadcastMessage(result.message, result.color)
   }
 }
