@@ -2,7 +2,7 @@ import type { ChatEvent } from '../../../common/application-event'
 import { ChannelType, Color } from '../../../common/application-event'
 import type { User } from '../../../common/user'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
-import Duration from '../../../utility/duration'
+import type Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout'
 import { type EventContext, shuffleArrayInPlace, SpontaneousEventHandler } from '../common'
 
@@ -21,7 +21,8 @@ export class Trivia extends SpontaneousEventHandler {
       broadcastMessage: (message, color) => this.broadcastMessage(message, color)
     }
 
-    const result = await startTrivia(context, Duration.seconds(30))
+    const duration = this.application.core.spontaneousEventsConfigurations.getTriviaDuration()
+    const result = await startTrivia(context, duration)
     await context.broadcastMessage(result.message, result.color)
   }
 }

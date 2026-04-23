@@ -22,7 +22,8 @@ export class CountingChain extends SpontaneousEventHandler {
       broadcastMessage: (message, color) => this.broadcastMessage(message, color)
     }
 
-    const result = await startCountingChain(context, Duration.seconds(10))
+    const duration = this.application.core.spontaneousEventsConfigurations.getCountingChainDuration()
+    const result = await startCountingChain(context, duration)
     await context.broadcastMessage(result.message, result.color)
   }
 }
