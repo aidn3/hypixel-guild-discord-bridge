@@ -245,7 +245,7 @@
   "commands.boop.cooldown": "Can use command again in {{cooldown}} seconds.",
   "commands.boop.no-account": "No active connected Minecraft account exists to use.",
   "commands.weight.response": "{{username}} Senither weight: {{senitherWeight, number(maximumFractionDigits: 0)}} - Lily weight: {{lilyWeight, number(maximumFractionDigits: 0)}} - Farming weight: {{farmingWeight, number(maximumFractionDigits: 0)}}",
-  "commands.secrets.response": "{{username}}'s lifetime secrets {{lifetime, number}} - current profiles's secrets {{profileSecrets, number}} - average {{averageSecrets, number}}",
+  "commands.secrets.response": "{{username}}'s lifetime secrets {{lifetimeSecrets, number}} - current profiles's secrets {{profileSecrets, number}} - average {{averageSecrets, number}}",
 
   "commands.8ball": [
     "{{username}}, as I see it, yes.",
