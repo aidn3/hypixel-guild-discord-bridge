@@ -6,12 +6,14 @@ import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser } from '../../../common/user'
+import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
 import type { Database, MinecraftGuild } from '../database'
 
 import { resolveGuildRank } from './utlity'
 
 export default class SyncGuild extends ChatCommandHandler {
+  private static readonly FeedbackEvery = Duration.seconds(30)
   private readonly singleton = new PromiseQueue(1)
 
   constructor(private readonly database: Database) {
@@ -68,11 +70,18 @@ export default class SyncGuild extends ChatCommandHandler {
 
     const guild = await context.app.hypixelApi.getGuildById(savedGuild.id, currentTime)
     if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
+    await context.sendFeedback(`Syncing ${savedGuild.name}`)
 
+    let lastFeedback = currentTime
     let changed = 0
     let already = 0
     let skipped = 0
-    for (const guildMember of guild.members) {
+    for (let index = 0; index < guild.members.length; index++) {
+      const guildMember = guild.members[index]
+      if (lastFeedback + SyncGuild.FeedbackEvery.toMilliseconds() < Date.now()) {
+        await context.sendFeedback(`Syncing ${savedGuild.name} ${index + 1} out of ${guild.members.length} members.`)
+        lastFeedback = Date.now()
+      }
       const target = await this.resolveUser(context, guildMember.uuid)
       if (typeof target === 'string') continue
 
