@@ -23,11 +23,12 @@ export default class Sync extends ChatCommandHandler {
       return 'Command can only be used in public and officer channels.'
     }
 
+    const currentTime = Date.now()
     const target = await this.resolveUser(context)
     if (typeof target === 'string') return target
     const targetProfile = target.mojangProfile()
 
-    const guild = await context.app.hypixelApi.getGuildByPlayer(targetProfile.id)
+    const guild = await context.app.hypixelApi.getGuildByPlayer(targetProfile.id, currentTime)
     if (guild === undefined) return `${targetProfile.name} is not in a guild.`
     const guildMember = guild.members.find((member) => member.uuid === targetProfile.id)
     assert.ok(guildMember !== undefined)
@@ -35,7 +36,15 @@ export default class Sync extends ChatCommandHandler {
     const savedGuild = this.database.allGuilds().find((savedGuild) => savedGuild.id === guild._id)
     if (savedGuild === undefined) return `${targetProfile.name} is in an outside guild: ${guild.name}.`
 
-    const resolvedRank = await resolveGuildRank(context, this.database, savedGuild, guild, guildMember, target)
+    const resolvedRank = await resolveGuildRank(
+      context,
+      this.database,
+      currentTime,
+      savedGuild,
+      guild,
+      guildMember,
+      target
+    )
     if (resolvedRank === 'not-whitelisted') {
       return `${targetProfile.name} current rank ${guildMember.rank ?? 'Member'} is not whitelisted to be changed.`
     } else if (resolvedRank === 'no-condition') {

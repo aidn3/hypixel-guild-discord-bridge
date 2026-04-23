@@ -64,7 +64,9 @@ export default class SyncGuild extends ChatCommandHandler {
   }
 
   private async syncGuild(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
-    const guild = await context.app.hypixelApi.getGuildById(savedGuild.id)
+    const currentTime = Date.now()
+
+    const guild = await context.app.hypixelApi.getGuildById(savedGuild.id, currentTime)
     if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
 
     let changed = 0
@@ -74,7 +76,15 @@ export default class SyncGuild extends ChatCommandHandler {
       const target = await this.resolveUser(context, guildMember.uuid)
       if (typeof target === 'string') continue
 
-      const resolvedRank = await resolveGuildRank(context, this.database, savedGuild, guild, guildMember, target)
+      const resolvedRank = await resolveGuildRank(
+        context,
+        this.database,
+        currentTime,
+        savedGuild,
+        guild,
+        guildMember,
+        target
+      )
       if (resolvedRank === 'not-whitelisted' || resolvedRank === 'no-condition') {
         skipped++
         continue

@@ -8,6 +8,7 @@ import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
 export async function resolveGuildRank(
   context: ChatCommandContext,
   database: Database,
+  currentTime: number,
   savedGuild: MinecraftGuild,
   guild: HypixelGuild,
   guildMember: HypixelGuildMember,
@@ -35,7 +36,7 @@ export async function resolveGuildRank(
   const roleConditions = database.getRoleConditions(savedGuild.id)
   const conditionContext = {
     application: context.app,
-    startTime: Date.now(),
+    startTime: currentTime,
     abortSignal: new AbortController().signal
   }
 
