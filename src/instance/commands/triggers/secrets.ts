@@ -34,10 +34,16 @@ export default class Secrets extends ChatCommandHandler {
 
     const totalRuns = this.getTotalRuns(catacombRuns) + this.getTotalRuns(mastermodeRuns)
 
-    const secrets = hypixelProfile?.achievements?.skyblock_treasure_hunter ?? 0
+    const lifetimeSecrets = hypixelProfile?.achievements?.skyblock_treasure_hunter ?? 0
+    const secrets = skyblockProfile.dungeons?.secrets ?? 0
     const averageSecrets = (secrets / totalRuns).toFixed(2)
 
-    return `${givenUsername}'s secrets: ${secrets.toLocaleString() || 0} Total ${averageSecrets} Average`
+    return context.app.i18n.t(($) => $['commands.secrets.response'], {
+      username: givenUsername,
+      lifetimeSecrets,
+      secrets,
+      averageSecrets
+    })
   }
 
   private getTotalRuns(runs: Record<string, number | undefined> | undefined): number {

@@ -183,6 +183,7 @@ export interface SkyblockDungeons {
   dungeon_types: SkyblockDungeonsTypes
   player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockDungeonsClass | undefined>
   treasures?: { runs?: (SkyblockDungeonRun | SkyblockKuudraRun)[] }
+  secrets?: number
 }
 
 export interface SkyblockDungeonsTypes {
