@@ -307,21 +307,11 @@ export class User {
   }
 
   public isMojangUser(): this is MinecraftUser {
-    if (this.userIdentifier.originInstance === InstanceType.Minecraft) {
-      assert.ok(this.userMojang !== undefined)
-      return true
-    }
-
-    return false
+    return this.userMojang !== undefined
   }
 
   public isDiscordUser(): this is DiscordUser {
-    if (this.userIdentifier.originInstance === InstanceType.Discord) {
-      assert.ok(this.userDiscord !== undefined)
-      return true
-    }
-
-    return false
+    return this.userDiscord !== undefined
   }
 
   // noinspection JSUnusedGlobalSymbols
