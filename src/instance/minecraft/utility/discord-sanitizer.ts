@@ -1,11 +1,13 @@
 export default class DiscordSanitizer {
   public process(message: string): string {
-    // regex is done to be case-insensitive except for the letter to replace:
-    // - positive lookbehind with case-insensitive for "d"
-    // - literal letter to replace, either "i" or "I" and replace it with a similar looking letter
-    // - positive lookahead with case-insensitive "scord"
-    let result = message.replaceAll(/(?<=(?i:d))i(?=(?i:scord))/g, 'і')
-    result = result.replaceAll(/(?<=(?i:d))I(?=(?i:scord))/g, 'І')
-    return result
+    const regex = /(?<=d)i(?=scord)/gi
+    let match: RegExpExecArray | null
+    while ((match = regex.exec(message)) != undefined) {
+      const letter = match[0]
+      const replacement = letter === 'i' ? 'і' : 'І' // alternative letters
+      message = message.slice(0, match.index) + replacement + message.slice(match.index + 1)
+    }
+
+    return message
   }
 }
