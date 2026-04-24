@@ -15,7 +15,7 @@ export default class Runs extends ChatCommandHandler {
     super({
       triggers: ['runs', 'r'],
       description: 'Returns how many dungeon runs a player has done',
-      example: `runs mm %s`
+      example: `runs %s mm`
     })
   }
 
@@ -50,7 +50,7 @@ export default class Runs extends ChatCommandHandler {
 
     const entries: string[] = []
     for (const [floor, run] of runs.entries()) {
-      entries.push(`${masterMode ? 'm' : 'f'}${floor + 1} ${run.toLocaleString('en-US')}`)
+      entries.push(`${masterMode ? `M${floor + 1}` : floor === 0 ? 'E' : `F${floor}`} ${run.toLocaleString('en-US')}`)
     }
     assert.notStrictEqual(entries.length, 0)
 
