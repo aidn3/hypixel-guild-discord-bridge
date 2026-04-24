@@ -2,6 +2,7 @@ import type Application from '../../../application.js'
 
 import Antispam from './antispam.js'
 import ArabicFixer from './arabic-fixer.js'
+import DiscordSanitizer from './discord-sanitizer.js'
 import EmojiSanitizer from './emoji-sanitizer.js'
 import EzSanitizer from './ez-sanitizer.js'
 import LineSanitizer from './line-sanitizer.js'
@@ -12,6 +13,7 @@ export class Sanitizer {
   private readonly link: LinksSanitizer
   private readonly emoji: EmojiSanitizer
   private readonly ez: EzSanitizer
+  private readonly discordSanitizer: DiscordSanitizer
   private readonly arabicFixer: ArabicFixer
   private readonly antispam: Antispam
 
@@ -20,6 +22,7 @@ export class Sanitizer {
     this.link = new LinksSanitizer(application.core.minecraftConfigurations)
     this.emoji = new EmojiSanitizer()
     this.ez = new EzSanitizer()
+    this.discordSanitizer = new DiscordSanitizer()
     this.arabicFixer = new ArabicFixer(application.core.minecraftConfigurations)
     this.antispam = new Antispam(application.core.minecraftConfigurations)
   }
@@ -29,6 +32,7 @@ export class Sanitizer {
     message = await this.link.process(message)
     message = this.emoji.process(message)
     message = this.ez.process(message)
+    message = this.discordSanitizer.process(message)
     message = this.arabicFixer.encode(message)
     message = this.antispam.process(instanceName, message)
 
