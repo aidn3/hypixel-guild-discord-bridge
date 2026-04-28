@@ -36,7 +36,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: string): APIEmbed {
     footer: {
       text: DefaultCommandFooter
     }
-  } as APIEmbed
+  }
 }
 
 export default {

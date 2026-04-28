@@ -105,7 +105,7 @@ export class StatusHistory {
       }
       for (const messageEntry of messageEntries) {
         Object.assign(messageEntry, { entryType: StatusHistoryEntryType.Message })
-        const entry: Writeable<StatusHistoryMessage> = messageEntry as Writeable<StatusHistoryMessage>
+        const entry: Writeable<StatusHistoryMessage> = messageEntry
         entry.value = entry.value ?? undefined // change null to undefined
       }
       for (const entry of entries) {

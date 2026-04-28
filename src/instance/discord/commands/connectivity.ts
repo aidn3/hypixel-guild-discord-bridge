@@ -41,7 +41,7 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
     footer: {
       text: DefaultCommandFooter
     }
-  } as APIEmbed
+  }
 }
 
 export default {
