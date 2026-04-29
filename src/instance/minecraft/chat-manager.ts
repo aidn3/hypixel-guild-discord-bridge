@@ -131,7 +131,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
       if (verifiedPacket.targetName) {
         Object.assign(parameters, { target: JSON.parse(verifiedPacket.targetName) as object })
       }
-      resultMessage = clientSession.prismChat.fromNetwork(verifiedPacket.type, parameters as Record<string, object>)
+      resultMessage = clientSession.prismChat.fromNetwork(verifiedPacket.type, parameters)
 
       if (verifiedPacket.unsignedContent) {
         resultMessage.unsigned = clientSession.prismChat.fromNetwork(verifiedPacket.type, {

@@ -75,7 +75,7 @@ export default class MagicalPower extends ChatCommandHandler {
 
     const parsed = await parse(Buffer.from(bagRaw.data, 'base64'))
     // @ts-expect-error too nested
-    const slots: InventorySlot[] = parsed.parsed.value.i.value.value as unknown as InventorySlot[]
+    const slots: InventorySlot[] = parsed.parsed.value.i.value.value as InventorySlot[]
 
     const result: { name: string; count: number }[] = []
     for (const slot of slots) {
