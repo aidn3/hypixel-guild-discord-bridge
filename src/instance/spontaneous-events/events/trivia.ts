@@ -466,7 +466,7 @@ const TriviaEntries = [
   {
     question: 'What is the largest ocean on Earth?',
     correctAnswer: 'Pacific Ocean',
-    otherAnswers: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Southern Ocean']
+    otherAnswers: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean']
   },
   {
     question: 'Which animal is the only mammal capable of true flight?',
@@ -481,7 +481,7 @@ const TriviaEntries = [
   {
     question: 'What is the largest species of shark?',
     correctAnswer: 'Whale shark',
-    otherAnswers: ['Great white shark', 'Hammerhead shark', 'Tiger shark', 'Mako shark']
+    otherAnswers: ['Great white', 'Hammerhead', 'Tiger shark']
   },
   {
     question: 'What do bees collect from flowers to make honey?',
@@ -491,7 +491,7 @@ const TriviaEntries = [
   {
     question: 'What is the process called when a caterpillar becomes a butterfly?',
     correctAnswer: 'Metamorphosis',
-    otherAnswers: ['Migration', 'Pollination', 'Hibernation', 'Fermentation']
+    otherAnswers: ['Migration', 'Pollination', 'Hibernation']
   },
   {
     question: 'How many chambers does a human heart have?',
@@ -516,7 +516,7 @@ const TriviaEntries = [
   {
     question: 'Which gas do plants absorb from the atmosphere for photosynthesis?',
     correctAnswer: 'Carbon dioxide',
-    otherAnswers: ['Oxygen', 'Nitrogen', 'Hydrogen', 'Helium']
+    otherAnswers: ['Oxygen', 'Nitrogen', 'Hydrogen']
   },
   {
     question: "What is molten rock below Earth's surface called?",
@@ -571,7 +571,7 @@ const TriviaEntries = [
   {
     question: 'Which detective lives at 221B Baker Street?',
     correctAnswer: 'Sherlock Holmes',
-    otherAnswers: ['Hercule Poirot', 'Nancy Drew', 'Miss Marple', 'Arsene Lupin']
+    otherAnswers: ['Hercule Poirot', 'Nancy Drew', 'Miss Marple']
   },
   {
     question: 'What is the capital of Australia?',
@@ -584,9 +584,9 @@ const TriviaEntries = [
     otherAnswers: ['Santiago', 'Lima', 'Montevideo', 'Bogota']
   },
   {
-    question: 'What is the longest river in South America?',
-    correctAnswer: 'Amazon River',
-    otherAnswers: ['Parana River', 'Orinoco River', 'Nile River', 'Mississippi River']
+    question: "What is South America's longest river?",
+    correctAnswer: 'Amazon',
+    otherAnswers: ['Parana', 'Orinoco', 'Nile']
   },
   {
     question: 'Which is the smallest continent?',
@@ -599,9 +599,9 @@ const TriviaEntries = [
     otherAnswers: ['Greece', 'Egypt', 'Bulgaria', 'Romania']
   },
   {
-    question: 'What imaginary line divides Earth into the Northern and Southern Hemispheres?',
+    question: 'What line divides Earth into north and south hemispheres?',
     correctAnswer: 'Equator',
-    otherAnswers: ['Prime Meridian', 'Tropic of Cancer', 'Arctic Circle', 'International Date Line']
+    otherAnswers: ['Prime Meridian', 'Tropic of Cancer', 'Arctic Circle']
   },
   {
     question: 'What is the largest island in the world?',
@@ -611,7 +611,7 @@ const TriviaEntries = [
   {
     question: 'Which sea lies between Europe and Africa?',
     correctAnswer: 'Mediterranean Sea',
-    otherAnswers: ['Black Sea', 'Red Sea', 'Baltic Sea', 'Arabian Sea']
+    otherAnswers: ['Black Sea', 'Red Sea', 'Baltic Sea']
   },
   {
     question: 'What is the capital of South Korea?',
@@ -621,7 +621,7 @@ const TriviaEntries = [
   {
     question: 'Which mountain range forms a natural border between France and Spain?',
     correctAnswer: 'Pyrenees',
-    otherAnswers: ['Alps', 'Apennines', 'Andes', 'Carpathians']
+    otherAnswers: ['Alps', 'Apennines', 'Andes']
   },
   {
     question: 'Which bird is capable of flying backward?',
@@ -641,7 +641,7 @@ const TriviaEntries = [
   {
     question: 'What is the largest land animal?',
     correctAnswer: 'African elephant',
-    otherAnswers: ['Asian elephant', 'White rhinoceros', 'Giraffe', 'Hippopotamus']
+    otherAnswers: ['Asian elephant', 'Giraffe', 'Hippopotamus']
   },
   {
     question: 'What word describes animals that are active at night?',
@@ -706,7 +706,7 @@ const TriviaEntries = [
   {
     question: 'What is a scientist who studies earthquakes called?',
     correctAnswer: 'Seismologist',
-    otherAnswers: ['Meteorologist', 'Astronomer', 'Ecologist', 'Volcanologist']
+    otherAnswers: ['Meteorologist', 'Astronomer', 'Ecologist']
   },
   {
     question: 'What layer of Earth lies directly beneath the crust?',
@@ -716,7 +716,7 @@ const TriviaEntries = [
   {
     question: 'What is the process called when water vapor turns into liquid water?',
     correctAnswer: 'Condensation',
-    otherAnswers: ['Evaporation', 'Sublimation', 'Freezing', 'Erosion']
+    otherAnswers: ['Evaporation', 'Sublimation', 'Freezing']
   },
   {
     question: "What is molten rock called after it reaches Earth's surface?",
@@ -726,17 +726,17 @@ const TriviaEntries = [
   {
     question: 'Who wrote 1984?',
     correctAnswer: 'George Orwell',
-    otherAnswers: ['Aldous Huxley', 'J.R.R. Tolkien', 'Ernest Hemingway', 'Mark Twain']
+    otherAnswers: ['Aldous Huxley', 'J.R.R. Tolkien', 'Mark Twain']
   },
   {
     question: 'Who wrote Romeo and Juliet?',
     correctAnswer: 'William Shakespeare',
-    otherAnswers: ['Leo Tolstoy', 'Jane Austen', 'Oscar Wilde', 'John Milton']
+    otherAnswers: ['Leo Tolstoy', 'Jane Austen', 'Oscar Wilde']
   },
   {
     question: 'Who was the first President of the United States?',
     correctAnswer: 'George Washington',
-    otherAnswers: ['Thomas Jefferson', 'John Adams', 'Abraham Lincoln', 'James Madison']
+    otherAnswers: ['Thomas Jefferson', 'John Adams', 'Abraham Lincoln']
   },
   {
     question: 'What ship carried the Pilgrims to America in 1620?',
@@ -751,17 +751,17 @@ const TriviaEntries = [
   {
     question: 'In which novel does Atticus Finch appear?',
     correctAnswer: 'To Kill a Mockingbird',
-    otherAnswers: ['The Great Gatsby', '1984', 'Of Mice and Men', 'Pride and Prejudice']
+    otherAnswers: ['The Great Gatsby', '1984', 'Of Mice and Men']
   },
   {
     question: 'Who painted The Scream?',
     correctAnswer: 'Edvard Munch',
-    otherAnswers: ['Claude Monet', 'Vincent van Gogh', 'Pablo Picasso', 'Salvador Dali']
+    otherAnswers: ['Claude Monet', 'Vincent van Gogh', 'Pablo Picasso']
   },
   {
     question: 'Which ancient wonder was located in Egypt?',
-    correctAnswer: 'Great Pyramid of Giza',
-    otherAnswers: ['Hanging Gardens of Babylon', 'Colossus of Rhodes', 'Temple of Artemis', 'Lighthouse of Alexandria']
+    correctAnswer: 'Pyramid of Giza',
+    otherAnswers: ['Hanging Gardens of Babylon', 'Colossus of Rhodes', 'Temple of Artemis']
   },
   {
     question: 'What is the score of zero in tennis called?',
@@ -804,9 +804,9 @@ const TriviaEntries = [
     otherAnswers: ['Antonym', 'Acronym', 'Homophone', 'Palindrome']
   },
   {
-    question: 'What do you call words that sound alike but have different meanings?',
+    question: 'What do you call words that sound alike but mean different things?',
     correctAnswer: 'Homophones',
-    otherAnswers: ['Synonyms', 'Antonyms', 'Anagrams', 'Palindromes']
+    otherAnswers: ['Synonyms', 'Antonyms', 'Anagrams']
   },
   {
     question: 'What is the currency of the United Kingdom?',
