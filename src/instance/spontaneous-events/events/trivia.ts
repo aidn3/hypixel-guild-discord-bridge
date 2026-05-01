@@ -89,8 +89,16 @@ const TriviaEntries = [
     correctAnswer: 'India',
     otherAnswers: ['China', 'USA', 'Indonesia']
   },
-  { question: 'What is the currency of Japan?', correctAnswer: 'Yen', otherAnswers: ['Dollar', 'Euro', 'Peso'] },
-  { question: 'What is the chemical symbol for gold?', correctAnswer: 'Au', otherAnswers: ['Ag', 'Go', 'Gd'] },
+  {
+    question: 'What is the currency of Japan?',
+    correctAnswer: 'Yen',
+    otherAnswers: ['Dollar', 'Euro', 'Peso']
+  },
+  {
+    question: 'What is the chemical symbol for gold?',
+    correctAnswer: 'Au',
+    otherAnswers: ['Ag', 'Go', 'Gd']
+  },
   {
     question: 'Which planet is famous for its rings?',
     correctAnswer: 'Saturn',
@@ -190,7 +198,11 @@ const TriviaEntries = [
     correctAnswer: 'Leonardo da Vinci',
     otherAnswers: ['Raphael', 'Titian', 'Botticelli']
   },
-  { question: 'What year did World War II end?', correctAnswer: '1945', otherAnswers: ['1939', '1941', '1950'] },
+  {
+    question: 'What year did World War II end?',
+    correctAnswer: '1945',
+    otherAnswers: ['1939', '1941', '1950']
+  },
   {
     question: 'Which document began with “We the People”?',
     correctAnswer: 'US Constitution',
@@ -261,7 +273,11 @@ const TriviaEntries = [
     correctAnswer: 'Cascading Style Sheets',
     otherAnswers: ['Computer Style System', 'Creative Styling Source', 'Code Styling Syntax']
   },
-  { question: 'How many skills are there in SkyBlock?', correctAnswer: '13', otherAnswers: ['11', '12', '10'] },
+  {
+    question: 'How many skills are there in SkyBlock?',
+    correctAnswer: '13',
+    otherAnswers: ['11', '12', '10']
+  },
   {
     question: 'What is the base Crit Chance stat in Hypixel SkyBlock?',
     correctAnswer: '30%',
@@ -282,7 +298,11 @@ const TriviaEntries = [
     correctAnswer: '5',
     otherAnswers: ['3', '10', '8']
   },
-  { question: 'What Mining level unlocks the Dwarven Mines?', correctAnswer: '12', otherAnswers: ['5', '10', '8'] },
+  {
+    question: 'What Mining level unlocks the Dwarven Mines?',
+    correctAnswer: '12',
+    otherAnswers: ['5', '10', '8']
+  },
   {
     question: 'What Farming skill level unlocks access to the Mushroom Desert?',
     correctAnswer: '5',
@@ -312,6 +332,591 @@ const TriviaEntries = [
     question: 'Which NPC makes players hack into terminals in the rift?',
     correctAnswer: 'Unhinged Kloon',
     otherAnswers: ['Okron', 'Aidn', 'Cosmo']
+  },
+  {
+    question: 'What is the chemical symbol for silver?',
+    correctAnswer: 'Ag',
+    otherAnswers: ['Au', 'Al', 'Si', 'Sn']
+  },
+  {
+    question: 'What is the chemical symbol for iron?',
+    correctAnswer: 'Fe',
+    otherAnswers: ['Ir', 'In', 'Fr', 'I']
+  },
+  {
+    question: 'What is the chemical symbol for sodium?',
+    correctAnswer: 'Na',
+    otherAnswers: ['Ne', 'N', 'Nd', 'Ni']
+  },
+  {
+    question: 'What is the chemical symbol for potassium?',
+    correctAnswer: 'K',
+    otherAnswers: ['Kr', 'P', 'Ca', 'Pt']
+  },
+  {
+    question: 'What is the chemical symbol for copper?',
+    correctAnswer: 'Cu',
+    otherAnswers: ['Co', 'Cr', 'Cm', 'C']
+  },
+  {
+    question: 'What is the chemical symbol for lead?',
+    correctAnswer: 'Pb',
+    otherAnswers: ['Pd', 'Pt', 'Fe', 'Li']
+  },
+  {
+    question: 'What is the chemical symbol for chlorine?',
+    correctAnswer: 'Cl',
+    otherAnswers: ['Ca', 'Cr', 'C', 'Co']
+  },
+  {
+    question: 'What is the chemical symbol for magnesium?',
+    correctAnswer: 'Mg',
+    otherAnswers: ['Mn', 'Mo', 'Hg', 'Ag']
+  },
+  {
+    question: 'Which element has the symbol Hg?',
+    correctAnswer: 'Mercury',
+    otherAnswers: ['Helium', 'Magnesium', 'Silver', 'Hydrogen']
+  },
+  {
+    question: 'Which element has the symbol Sn?',
+    correctAnswer: 'Tin',
+    otherAnswers: ['Sulfur', 'Sodium', 'Zinc', 'Silver']
+  },
+  {
+    question: 'Which element has the symbol W?',
+    correctAnswer: 'Tungsten',
+    otherAnswers: ['Tin', 'Zinc', 'Gold', 'Uranium']
+  },
+  {
+    question: 'What is the largest planet in the Solar System?',
+    correctAnswer: 'Jupiter',
+    otherAnswers: ['Saturn', 'Neptune', 'Earth', 'Mars']
+  },
+  {
+    question: 'What galaxy is Earth located in?',
+    correctAnswer: 'Milky Way',
+    otherAnswers: ['Andromeda', 'Triangulum', 'Whirlpool', 'Sombrero']
+  },
+  {
+    question: 'What is the closest star to Earth?',
+    correctAnswer: 'Sun',
+    otherAnswers: ['Proxima Centauri', 'Sirius', 'Polaris', 'Alpha Centauri A']
+  },
+  {
+    question: 'Which planet is known as the Red Planet?',
+    correctAnswer: 'Mars',
+    otherAnswers: ['Venus', 'Mercury', 'Jupiter', 'Saturn']
+  },
+  {
+    question: 'Which planet has the Great Red Spot?',
+    correctAnswer: 'Jupiter',
+    otherAnswers: ['Saturn', 'Mars', 'Neptune', 'Uranus']
+  },
+  {
+    question: 'What do you call a space rock that lands on Earth?',
+    correctAnswer: 'Meteorite',
+    otherAnswers: ['Asteroid', 'Comet', 'Nebula', 'Satellite']
+  },
+  {
+    question: 'What was the first artificial satellite launched into space?',
+    correctAnswer: 'Sputnik 1',
+    otherAnswers: ['Apollo 11', 'Explorer 1', 'Voyager 1', 'Luna 2']
+  },
+  {
+    question: 'What force keeps planets in orbit around the Sun?',
+    correctAnswer: 'Gravity',
+    otherAnswers: ['Magnetism', 'Friction', 'Radiation', 'Pressure']
+  },
+  {
+    question: 'Which dwarf planet was once considered the ninth planet?',
+    correctAnswer: 'Pluto',
+    otherAnswers: ['Ceres', 'Eris', 'Haumea', 'Makemake']
+  },
+  {
+    question: 'What is the Sun mostly made of?',
+    correctAnswer: 'Hydrogen',
+    otherAnswers: ['Helium', 'Oxygen', 'Carbon', 'Iron']
+  },
+  {
+    question: 'What is a group of stars forming a recognized pattern called?',
+    correctAnswer: 'Constellation',
+    otherAnswers: ['Galaxy', 'Nebula', 'Orbit', 'Eclipse']
+  },
+  {
+    question: 'What is the largest mammal on Earth?',
+    correctAnswer: 'Blue whale',
+    otherAnswers: ['African elephant', 'Orca', 'Giraffe', 'Hippopotamus']
+  },
+  {
+    question: 'What is the hardest natural substance?',
+    correctAnswer: 'Diamond',
+    otherAnswers: ['Quartz', 'Iron', 'Obsidian', 'Granite']
+  },
+  {
+    question: 'What is the largest organ in the human body?',
+    correctAnswer: 'Skin',
+    otherAnswers: ['Heart', 'Liver', 'Lungs', 'Brain']
+  },
+  {
+    question: 'Which part of the body contains the smallest bones?',
+    correctAnswer: 'Ear',
+    otherAnswers: ['Hand', 'Foot', 'Spine', 'Skull']
+  },
+  {
+    question: 'What is the largest ocean on Earth?',
+    correctAnswer: 'Pacific Ocean',
+    otherAnswers: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Southern Ocean']
+  },
+  {
+    question: 'Which animal is the only mammal capable of true flight?',
+    correctAnswer: 'Bat',
+    otherAnswers: ['Flying squirrel', 'Sugar glider', 'Penguin', 'Ostrich']
+  },
+  {
+    question: 'Which sea creature has three hearts?',
+    correctAnswer: 'Octopus',
+    otherAnswers: ['Crab', 'Seahorse', 'Dolphin', 'Starfish']
+  },
+  {
+    question: 'What is the largest species of shark?',
+    correctAnswer: 'Whale shark',
+    otherAnswers: ['Great white shark', 'Hammerhead shark', 'Tiger shark', 'Mako shark']
+  },
+  {
+    question: 'What do bees collect from flowers to make honey?',
+    correctAnswer: 'Nectar',
+    otherAnswers: ['Pollen', 'Sap', 'Dew', 'Seeds']
+  },
+  {
+    question: 'What is the process called when a caterpillar becomes a butterfly?',
+    correctAnswer: 'Metamorphosis',
+    otherAnswers: ['Migration', 'Pollination', 'Hibernation', 'Fermentation']
+  },
+  {
+    question: 'How many chambers does a human heart have?',
+    correctAnswer: '4',
+    otherAnswers: ['2', '3', '5', '6']
+  },
+  {
+    question: 'The femur is a bone in which part of the body?',
+    correctAnswer: 'Thigh',
+    otherAnswers: ['Forearm', 'Skull', 'Chest', 'Neck']
+  },
+  {
+    question: 'Which organ produces insulin?',
+    correctAnswer: 'Pancreas',
+    otherAnswers: ['Liver', 'Kidney', 'Spleen', 'Gallbladder']
+  },
+  {
+    question: 'Which part of a plant absorbs most water from the soil?',
+    correctAnswer: 'Roots',
+    otherAnswers: ['Leaves', 'Stem', 'Petals', 'Seeds']
+  },
+  {
+    question: 'Which gas do plants absorb from the atmosphere for photosynthesis?',
+    correctAnswer: 'Carbon dioxide',
+    otherAnswers: ['Oxygen', 'Nitrogen', 'Hydrogen', 'Helium']
+  },
+  {
+    question: "What is molten rock below Earth's surface called?",
+    correctAnswer: 'Magma',
+    otherAnswers: ['Lava', 'Ash', 'Quartz', 'Basalt']
+  },
+  {
+    question: 'Which instrument records earthquake activity?',
+    correctAnswer: 'Seismograph',
+    otherAnswers: ['Barometer', 'Thermometer', 'Altimeter', 'Anemometer']
+  },
+  {
+    question: 'What is the largest desert in the world?',
+    correctAnswer: 'Antarctica',
+    otherAnswers: ['Sahara', 'Gobi', 'Arabian', 'Kalahari']
+  },
+  {
+    question: 'What is the study of weather called?',
+    correctAnswer: 'Meteorology',
+    otherAnswers: ['Geology', 'Astronomy', 'Ecology', 'Seismology']
+  },
+  {
+    question: 'How many squares are on a chessboard?',
+    correctAnswer: '64',
+    otherAnswers: ['49', '56', '72', '81']
+  },
+  {
+    question: 'Which chess piece moves in an L shape?',
+    correctAnswer: 'Knight',
+    otherAnswers: ['Bishop', 'Rook', 'Pawn', 'Queen']
+  },
+  {
+    question: 'What ingredient makes bread rise?',
+    correctAnswer: 'Yeast',
+    otherAnswers: ['Salt', 'Sugar', 'Butter', 'Vinegar']
+  },
+  {
+    question: 'What is a word with the opposite meaning of another word called?',
+    correctAnswer: 'Antonym',
+    otherAnswers: ['Synonym', 'Acronym', 'Homonym', 'Palindrome']
+  },
+  {
+    question: 'What do you call a word spelled the same forward and backward?',
+    correctAnswer: 'Palindrome',
+    otherAnswers: ['Anagram', 'Homophone', 'Acronym', 'Antonym']
+  },
+  {
+    question: 'Which family of instruments does a trumpet belong to?',
+    correctAnswer: 'Brass',
+    otherAnswers: ['Strings', 'Woodwind', 'Percussion', 'Keyboard']
+  },
+  {
+    question: 'Which detective lives at 221B Baker Street?',
+    correctAnswer: 'Sherlock Holmes',
+    otherAnswers: ['Hercule Poirot', 'Nancy Drew', 'Miss Marple', 'Arsene Lupin']
+  },
+  {
+    question: 'What is the capital of Australia?',
+    correctAnswer: 'Canberra',
+    otherAnswers: ['Sydney', 'Melbourne', 'Perth', 'Brisbane']
+  },
+  {
+    question: 'What is the capital of Argentina?',
+    correctAnswer: 'Buenos Aires',
+    otherAnswers: ['Santiago', 'Lima', 'Montevideo', 'Bogota']
+  },
+  {
+    question: 'What is the longest river in South America?',
+    correctAnswer: 'Amazon River',
+    otherAnswers: ['Parana River', 'Orinoco River', 'Nile River', 'Mississippi River']
+  },
+  {
+    question: 'Which is the smallest continent?',
+    correctAnswer: 'Australia',
+    otherAnswers: ['Europe', 'Antarctica', 'South America', 'Africa']
+  },
+  {
+    question: 'Which country is home to Istanbul?',
+    correctAnswer: 'Turkey',
+    otherAnswers: ['Greece', 'Egypt', 'Bulgaria', 'Romania']
+  },
+  {
+    question: 'What imaginary line divides Earth into the Northern and Southern Hemispheres?',
+    correctAnswer: 'Equator',
+    otherAnswers: ['Prime Meridian', 'Tropic of Cancer', 'Arctic Circle', 'International Date Line']
+  },
+  {
+    question: 'What is the largest island in the world?',
+    correctAnswer: 'Greenland',
+    otherAnswers: ['Madagascar', 'Borneo', 'New Guinea', 'Iceland']
+  },
+  {
+    question: 'Which sea lies between Europe and Africa?',
+    correctAnswer: 'Mediterranean Sea',
+    otherAnswers: ['Black Sea', 'Red Sea', 'Baltic Sea', 'Arabian Sea']
+  },
+  {
+    question: 'What is the capital of South Korea?',
+    correctAnswer: 'Seoul',
+    otherAnswers: ['Busan', 'Tokyo', 'Bangkok', 'Beijing']
+  },
+  {
+    question: 'Which mountain range forms a natural border between France and Spain?',
+    correctAnswer: 'Pyrenees',
+    otherAnswers: ['Alps', 'Apennines', 'Andes', 'Carpathians']
+  },
+  {
+    question: 'Which bird is capable of flying backward?',
+    correctAnswer: 'Hummingbird',
+    otherAnswers: ['Sparrow', 'Eagle', 'Penguin', 'Falcon']
+  },
+  {
+    question: 'What is a group of lions called?',
+    correctAnswer: 'Pride',
+    otherAnswers: ['Pack', 'Herd', 'School', 'Flock']
+  },
+  {
+    question: 'What is the fastest land animal?',
+    correctAnswer: 'Cheetah',
+    otherAnswers: ['Lion', 'Leopard', 'Horse', 'Gazelle']
+  },
+  {
+    question: 'What is the largest land animal?',
+    correctAnswer: 'African elephant',
+    otherAnswers: ['Asian elephant', 'White rhinoceros', 'Giraffe', 'Hippopotamus']
+  },
+  {
+    question: 'What word describes animals that are active at night?',
+    correctAnswer: 'Nocturnal',
+    otherAnswers: ['Herbivorous', 'Domestic', 'Endangered', 'Aquatic']
+  },
+  {
+    question: 'What is the colored part of the eye called?',
+    correctAnswer: 'Iris',
+    otherAnswers: ['Retina', 'Pupil', 'Cornea', 'Lens']
+  },
+  {
+    question: 'What is the largest internal organ in the human body?',
+    correctAnswer: 'Liver',
+    otherAnswers: ['Brain', 'Lung', 'Kidney', 'Stomach']
+  },
+  {
+    question: 'What do red blood cells mainly carry around the body?',
+    correctAnswer: 'Oxygen',
+    otherAnswers: ['Carbon dioxide', 'Nitrogen', 'Calcium', 'Water']
+  },
+  {
+    question: 'Which vitamin is produced when skin is exposed to sunlight?',
+    correctAnswer: 'Vitamin D',
+    otherAnswers: ['Vitamin A', 'Vitamin B12', 'Vitamin C', 'Vitamin K']
+  },
+  {
+    question: 'Which animal is known for being able to regenerate lost arms?',
+    correctAnswer: 'Starfish',
+    otherAnswers: ['Jellyfish', 'Seahorse', 'Lobster', 'Stingray']
+  },
+  {
+    question: 'What structure do honeybees live in?',
+    correctAnswer: 'Hive',
+    otherAnswers: ['Nest', 'Burrow', 'Den', 'Stable']
+  },
+  {
+    question: 'Which reptile is famous for changing color?',
+    correctAnswer: 'Chameleon',
+    otherAnswers: ['Gecko', 'Iguana', 'Crocodile', 'Tortoise']
+  },
+  {
+    question: 'Which instrument measures air pressure?',
+    correctAnswer: 'Barometer',
+    otherAnswers: ['Thermometer', 'Hygrometer', 'Compass', 'Altimeter']
+  },
+  {
+    question: 'What is the calm center of a hurricane called?',
+    correctAnswer: 'Eye',
+    otherAnswers: ['Eyewall', 'Front', 'Vortex', 'Core']
+  },
+  {
+    question: 'Which type of cloud typically produces thunderstorms?',
+    correctAnswer: 'Cumulonimbus',
+    otherAnswers: ['Cirrus', 'Stratus', 'Cumulus', 'Altocumulus']
+  },
+  {
+    question: 'At sea level, what is the boiling point of water in degrees Celsius?',
+    correctAnswer: '100',
+    otherAnswers: ['90', '80', '110', '120']
+  },
+  {
+    question: 'What is a scientist who studies earthquakes called?',
+    correctAnswer: 'Seismologist',
+    otherAnswers: ['Meteorologist', 'Astronomer', 'Ecologist', 'Volcanologist']
+  },
+  {
+    question: 'What layer of Earth lies directly beneath the crust?',
+    correctAnswer: 'Mantle',
+    otherAnswers: ['Core', 'Atmosphere', 'Crust', 'Biosphere']
+  },
+  {
+    question: 'What is the process called when water vapor turns into liquid water?',
+    correctAnswer: 'Condensation',
+    otherAnswers: ['Evaporation', 'Sublimation', 'Freezing', 'Erosion']
+  },
+  {
+    question: "What is molten rock called after it reaches Earth's surface?",
+    correctAnswer: 'Lava',
+    otherAnswers: ['Magma', 'Ash', 'Basalt', 'Granite']
+  },
+  {
+    question: 'Who wrote 1984?',
+    correctAnswer: 'George Orwell',
+    otherAnswers: ['Aldous Huxley', 'J.R.R. Tolkien', 'Ernest Hemingway', 'Mark Twain']
+  },
+  {
+    question: 'Who wrote Romeo and Juliet?',
+    correctAnswer: 'William Shakespeare',
+    otherAnswers: ['Leo Tolstoy', 'Jane Austen', 'Oscar Wilde', 'John Milton']
+  },
+  {
+    question: 'Who was the first President of the United States?',
+    correctAnswer: 'George Washington',
+    otherAnswers: ['Thomas Jefferson', 'John Adams', 'Abraham Lincoln', 'James Madison']
+  },
+  {
+    question: 'What ship carried the Pilgrims to America in 1620?',
+    correctAnswer: 'Mayflower',
+    otherAnswers: ['Santa Maria', 'Beagle', 'Endeavour', 'Victory']
+  },
+  {
+    question: 'Which civilization built Machu Picchu?',
+    correctAnswer: 'Inca',
+    otherAnswers: ['Aztec', 'Maya', 'Roman', 'Egyptian']
+  },
+  {
+    question: 'In which novel does Atticus Finch appear?',
+    correctAnswer: 'To Kill a Mockingbird',
+    otherAnswers: ['The Great Gatsby', '1984', 'Of Mice and Men', 'Pride and Prejudice']
+  },
+  {
+    question: 'Who painted The Scream?',
+    correctAnswer: 'Edvard Munch',
+    otherAnswers: ['Claude Monet', 'Vincent van Gogh', 'Pablo Picasso', 'Salvador Dali']
+  },
+  {
+    question: 'Which ancient wonder was located in Egypt?',
+    correctAnswer: 'Great Pyramid of Giza',
+    otherAnswers: ['Hanging Gardens of Babylon', 'Colossus of Rhodes', 'Temple of Artemis', 'Lighthouse of Alexandria']
+  },
+  {
+    question: 'What is the score of zero in tennis called?',
+    correctAnswer: 'Love',
+    otherAnswers: ['Nil', 'Blank', 'Duck', 'Zero']
+  },
+  {
+    question: 'How many holes are in a standard round of golf?',
+    correctAnswer: '18',
+    otherAnswers: ['9', '12', '24', '27']
+  },
+  {
+    question: 'What does a checker piece become when it reaches the opposite end of the board?',
+    correctAnswer: 'King',
+    otherAnswers: ['Queen', 'Crown', 'Rook', 'Knight']
+  },
+  {
+    question: 'What is usually the highest card in poker?',
+    correctAnswer: 'Ace',
+    otherAnswers: ['King', 'Queen', 'Jack', 'Joker']
+  },
+  {
+    question: 'What is the main ingredient in guacamole?',
+    correctAnswer: 'Avocado',
+    otherAnswers: ['Cucumber', 'Spinach', 'Zucchini', 'Celery']
+  },
+  {
+    question: 'What is the main ingredient in hummus?',
+    correctAnswer: 'Chickpeas',
+    otherAnswers: ['Lentils', 'Black beans', 'Peas', 'Soybeans']
+  },
+  {
+    question: 'What ingredient is commonly used to make pickles sour?',
+    correctAnswer: 'Vinegar',
+    otherAnswers: ['Sugar', 'Salt', 'Butter', 'Cinnamon']
+  },
+  {
+    question: 'What do you call a word with the same meaning as another word?',
+    correctAnswer: 'Synonym',
+    otherAnswers: ['Antonym', 'Acronym', 'Homophone', 'Palindrome']
+  },
+  {
+    question: 'What do you call words that sound alike but have different meanings?',
+    correctAnswer: 'Homophones',
+    otherAnswers: ['Synonyms', 'Antonyms', 'Anagrams', 'Palindromes']
+  },
+  {
+    question: 'What is the currency of the United Kingdom?',
+    correctAnswer: 'Pound sterling',
+    otherAnswers: ['Euro', 'US dollar', 'Swiss franc', 'Krona']
+  },
+  {
+    question: 'What is the currency of India?',
+    correctAnswer: 'Rupee',
+    otherAnswers: ['Yen', 'Peso', 'Lira', 'Rand']
+  },
+  {
+    question: 'What is the currency of Mexico?',
+    correctAnswer: 'Peso',
+    otherAnswers: ['Real', 'Baht', 'Rupee', 'Euro']
+  },
+  {
+    question: 'What is the currency of Brazil?',
+    correctAnswer: 'Real',
+    otherAnswers: ['Peso', 'Euro', 'Lira', 'Franc']
+  },
+  {
+    question: 'What is the currency of Switzerland?',
+    correctAnswer: 'Swiss franc',
+    otherAnswers: ['Euro', 'Krone', 'Pound sterling', 'Peso']
+  },
+  {
+    question: 'What is the currency of Thailand?',
+    correctAnswer: 'Baht',
+    otherAnswers: ['Won', 'Krona', 'Rupee', 'Dinar']
+  },
+  {
+    question: 'What is the currency of South Africa?',
+    correctAnswer: 'Rand',
+    otherAnswers: ['Lira', 'Peso', 'Franc', 'Baht']
+  },
+  {
+    question: 'What is the currency of Poland?',
+    correctAnswer: 'Zloty',
+    otherAnswers: ['Koruna', 'Krone', 'Euro', 'Lira']
+  },
+  {
+    question: 'What is the capital of Spain?',
+    correctAnswer: 'Madrid',
+    otherAnswers: ['Barcelona', 'Seville', 'Valencia', 'Lisbon']
+  },
+  {
+    question: 'What is the capital of Portugal?',
+    correctAnswer: 'Lisbon',
+    otherAnswers: ['Porto', 'Madrid', 'Barcelona', 'Seville']
+  },
+  {
+    question: 'What is the capital of Greece?',
+    correctAnswer: 'Athens',
+    otherAnswers: ['Sparta', 'Thessaloniki', 'Rome', 'Sofia']
+  },
+  {
+    question: 'What is the capital of Turkey?',
+    correctAnswer: 'Ankara',
+    otherAnswers: ['Istanbul', 'Izmir', 'Antalya', 'Bursa']
+  },
+  {
+    question: 'What is the capital of Peru?',
+    correctAnswer: 'Lima',
+    otherAnswers: ['Cusco', 'Quito', 'Santiago', 'La Paz']
+  },
+  {
+    question: 'What is the capital of New Zealand?',
+    correctAnswer: 'Wellington',
+    otherAnswers: ['Auckland', 'Christchurch', 'Hamilton', 'Dunedin']
+  },
+  {
+    question: 'Which country is home to the Taj Mahal?',
+    correctAnswer: 'India',
+    otherAnswers: ['Pakistan', 'Nepal', 'Bangladesh', 'Sri Lanka']
+  },
+  {
+    question: 'Which country is home to Mount Fuji?',
+    correctAnswer: 'Japan',
+    otherAnswers: ['China', 'South Korea', 'Nepal', 'Thailand']
+  },
+  {
+    question: 'Which country contains the city of Barcelona?',
+    correctAnswer: 'Spain',
+    otherAnswers: ['Portugal', 'Italy', 'France', 'Greece']
+  },
+  {
+    question: 'Which country contains the city of Venice?',
+    correctAnswer: 'Italy',
+    otherAnswers: ['Spain', 'Croatia', 'France', 'Greece']
+  },
+  {
+    question: 'Which country is Machu Picchu located in?',
+    correctAnswer: 'Peru',
+    otherAnswers: ['Chile', 'Bolivia', 'Ecuador', 'Argentina']
+  },
+  {
+    question: 'What is the longest river in Europe?',
+    correctAnswer: 'Volga',
+    otherAnswers: ['Danube', 'Rhine', 'Seine', 'Thames']
+  },
+  {
+    question: 'Which country is the largest in Africa by area?',
+    correctAnswer: 'Algeria',
+    otherAnswers: ['Sudan', 'Egypt', 'Libya', 'Ethiopia']
+  },
+  {
+    question: 'Which desert stretches across northern China and southern Mongolia?',
+    correctAnswer: 'Gobi',
+    otherAnswers: ['Sahara', 'Kalahari', 'Atacama', 'Mojave']
   }
 ]
 
