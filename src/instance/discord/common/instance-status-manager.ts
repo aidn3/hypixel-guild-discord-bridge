@@ -63,9 +63,7 @@ export class InstanceStatusManager {
       interaction.user,
       interaction.inCachedGuild() ? interaction.member : undefined
     )
-    const user = await this.application.core.initializeDiscordUser(identifier, {
-      guild: interaction.guild ?? undefined
-    })
+    const user = await this.application.core.initializeDiscordUser(identifier)
 
     const permission = await user.permission()
     if (permission < InstanceStatusManager.PermissionToView) {

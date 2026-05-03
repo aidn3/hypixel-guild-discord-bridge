@@ -70,9 +70,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
       interaction.user,
       interaction.inCachedGuild() ? interaction.member : undefined
     )
-    const user = await this.application.core.initializeDiscordUser(identifier, {
-      guild: interaction.guild ?? undefined
-    })
+    const user = await this.application.core.initializeDiscordUser(identifier)
 
     const DefaultOptions = {
       guildId: leaderboardConfig.guildId,

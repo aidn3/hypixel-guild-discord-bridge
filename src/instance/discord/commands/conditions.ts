@@ -1,15 +1,13 @@
-import assert from 'node:assert'
-
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js'
 
 import type Application from '../../../application'
-import { Permission } from '../../../common/application-event.js'
 import type {
   DiscordAutoCompleteContext,
   DiscordCommandContext,
   DiscordCommandHandler
 } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import { OnUnmet } from '../../../core/conditions/common'
 import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
 import type { CommandConditionHandler } from '../common/commands-conditions'
@@ -49,13 +47,12 @@ export default {
       )
   },
 
-  permission: Permission.Admin,
+  origin: CommandOrigin.Guild,
+  onlyAdmins: true,
 
-  handler: async function (context: Readonly<DiscordCommandContext>) {
+  handler: async function (context) {
     const interaction = context.interaction
     const subCommand = interaction.options.getSubcommand(true)
-    assert.ok(interaction.inGuild())
-    assert.ok(interaction.inCachedGuild())
 
     switch (subCommand) {
       case 'list': {
@@ -72,7 +69,7 @@ export default {
       }
     }
   },
-  autoComplete: async function (context: Readonly<DiscordAutoCompleteContext>) {
+  autoComplete: async function (context: Readonly<DiscordAutoCompleteContext<CommandOrigin.Guild>>) {
     const interaction = context.interaction
     if (!interaction.inCachedGuild()) return
 
@@ -183,19 +180,22 @@ function getManager(groupCommand: string, guildId: string, application: Applicat
 }
 
 async function handleList(
-  interaction: ChatInputCommandInteraction<'cached'>,
-  context: Readonly<DiscordCommandContext>
+  interaction: ChatInputCommandInteraction<'raw' | 'cached'>,
+  context: Readonly<DiscordCommandContext<CommandOrigin.Guild>>
 ) {
   const manager = getManager(interaction.options.getSubcommandGroup(true), interaction.guildId, context.application)
   await handleConditionList(interaction, context, manager)
 }
-async function handleAdd(interaction: ChatInputCommandInteraction<'cached'>, context: Readonly<DiscordCommandContext>) {
+async function handleAdd(
+  interaction: ChatInputCommandInteraction<'raw' | 'cached'>,
+  context: Readonly<DiscordCommandContext<CommandOrigin.Guild>>
+) {
   const manager = getManager(interaction.options.getSubcommandGroup(true), interaction.guildId, context.application)
   await handleConditionAdd(interaction, context, manager)
 }
 async function handleRemove(
-  interaction: ChatInputCommandInteraction<'cached'>,
-  context: Readonly<DiscordCommandContext>
+  interaction: ChatInputCommandInteraction<'raw' | 'cached'>,
+  context: Readonly<DiscordCommandContext<CommandOrigin.Guild>>
 ) {
   const manager = getManager(interaction.options.getSubcommandGroup(true), interaction.guildId, context.application)
   await handleConditionRemove(interaction, context, manager)

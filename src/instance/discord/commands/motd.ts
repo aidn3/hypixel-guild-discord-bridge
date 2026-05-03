@@ -1,20 +1,21 @@
 import { AttachmentBuilder, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { GuildManagerError } from '../../../core/users/guild-manager'
 import MinecraftRenderer from '../../../utility/minecraft-renderer'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('motd').setDescription('Show a guild MOTD'),
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
-
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireOne,
   permission: Permission.Helper,
+
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instance: string = context.interaction.options.getString('instance', true)
+    const instance = context.minecraftInstance
     try {
       const motd = await context.application.core.guildManager.motd(instance)
       if (motd.lines.type === 'empty') {
@@ -46,4 +47,4 @@ export default {
       throw error
     }
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

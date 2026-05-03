@@ -17,7 +17,12 @@ import {
 
 import type Application from '../../../application'
 import { Color, Permission } from '../../../common/application-event'
-import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands'
+import type {
+  DiscordAutoCompleteContext,
+  DiscordBridgeCommandHandler,
+  DiscordCommandContext
+} from '../../../common/commands'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands'
 import type { MojangProfile } from '../../../common/user'
 import {
   addConditionCommand,
@@ -119,11 +124,13 @@ export const DiscordGuildCommand = {
           )
       )
   },
-  permission: Permission.Officer
-} satisfies Omit<DiscordCommandHandler, 'handler' | 'autoComplete'>
+  origin: CommandOrigin.Bridge,
+  permission: Permission.Officer,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.None
+} satisfies Omit<DiscordBridgeCommandHandler<OptionMinecraftInstance.None>, 'handler' | 'autoComplete'>
 
 export async function discordGuildCommandHandler(
-  context: Readonly<DiscordCommandContext>,
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ) {
@@ -162,7 +169,10 @@ export async function discordGuildCommandHandler(
   }
 }
 
-export async function discordGuildAutocomplete(context: Readonly<DiscordAutoCompleteContext>, database: Database) {
+export async function discordGuildAutocomplete(
+  context: Readonly<DiscordAutoCompleteContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   const groupCommand = interaction.options.getSubcommandGroup() ?? undefined
   const subCommand = interaction.options.getSubcommand()
@@ -250,7 +260,7 @@ export async function discordGuildAutocomplete(context: Readonly<DiscordAutoComp
   }
 }
 
-async function handleRegister(context: DiscordCommandContext, database: Database): Promise<void> {
+async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridge>, database: Database): Promise<void> {
   const interaction = context.interaction
   assert.ok(interaction.inGuild())
   await interaction.deferReply()
@@ -306,7 +316,7 @@ async function handleRegister(context: DiscordCommandContext, database: Database
 }
 
 async function handleUnregister(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ): Promise<void> {
@@ -421,7 +431,10 @@ async function handleUnregister(
   assert.fail(`unknown customId: ${response.customId}`)
 }
 
-async function handleSettings(context: DiscordCommandContext, database: Database): Promise<void> {
+async function handleSettings(
+  context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>,
+  database: Database
+): Promise<void> {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
   await interaction.deferReply()
@@ -545,7 +558,10 @@ function getJoinConditionManager(savedGuild: MinecraftGuild, database: Database)
   }
 }
 
-async function handleJoinConditionList(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleJoinConditionList(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -559,7 +575,10 @@ async function handleJoinConditionList(context: Readonly<DiscordCommandContext>,
   await handleConditionList(interaction, context, manager)
 }
 
-async function handleJoinConditionAdd(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleJoinConditionAdd(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -573,7 +592,10 @@ async function handleJoinConditionAdd(context: Readonly<DiscordCommandContext>, 
   await handleConditionAdd(interaction, context, manager)
 }
 
-async function handleJoinConditionRemove(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleJoinConditionRemove(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -625,7 +647,10 @@ function getRoleConditionManager(
   }
 }
 
-async function handleRoleConditionList(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleRoleConditionList(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -639,7 +664,10 @@ async function handleRoleConditionList(context: Readonly<DiscordCommandContext>,
   await handleConditionList(interaction, context, manager)
 }
 
-async function handleRoleConditionAdd(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleRoleConditionAdd(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -653,7 +681,10 @@ async function handleRoleConditionAdd(context: Readonly<DiscordCommandContext>, 
   await handleConditionAdd(interaction, context, manager)
 }
 
-async function handleRoleConditionRemove(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleRoleConditionRemove(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -668,7 +699,7 @@ async function handleRoleConditionRemove(context: Readonly<DiscordCommandContext
 }
 
 async function handleWaitlistList(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ): Promise<void> {
@@ -683,7 +714,7 @@ async function handleWaitlistList(
 }
 
 async function handleWaitlistAdd(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ): Promise<void> {
@@ -740,7 +771,7 @@ async function handleWaitlistAdd(
 }
 
 async function handleWaitlistRemove(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ): Promise<void> {
@@ -791,7 +822,7 @@ async function handleWaitlistRemove(
 }
 
 async function handleWaitlistPanel(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ): Promise<void> {
@@ -857,7 +888,10 @@ async function handleWaitlistPanel(
   )
 }
 
-function getGuild(context: DiscordCommandContext, database: Database): MinecraftGuild | Promise<undefined> {
+function getGuild(
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
+  database: Database
+): MinecraftGuild | Promise<undefined> {
   const query = context.interaction.options.getString('name', true).trim()
 
   const savedGuild = database

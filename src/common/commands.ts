@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
+  ModalSubmitInteraction,
   SlashCommandBuilder,
   SlashCommandOptionsOnlyBuilder,
   SlashCommandSubcommandsOnlyBuilder
 } from 'discord.js'
+import type { TFunction } from 'i18next'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
@@ -12,7 +15,7 @@ import type Application from '../application.js'
 import type { ChatEvent, Content, InstanceType, Permission } from './application-event.js'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
-import type { DiscordUser } from './user'
+import type { AnonymousUser, DiscordUser } from './user'
 
 export abstract class ChatCommandHandler {
   public readonly triggers: string[]
@@ -35,6 +38,7 @@ export abstract class ChatCommandHandler {
 export interface ChatCommandContext {
   app: Application
 
+  t: TFunction
   eventHelper: EventHelper<InstanceType.Commands>
   logger: Logger
   errorHandler: UnexpectedErrorHandler
@@ -49,67 +53,110 @@ export interface ChatCommandContext {
   sendFeedback: (feedback: Content | string) => Promise<void>
 }
 
-export interface DiscordCommandHandler {
+export type DiscordCommandHandler =
+  | DiscordPrivateCommandHandler
+  | DiscordGuildCommandHandler
+  | DiscordBridgeCommandHandler<OptionMinecraftInstance>
+
+interface BaseDiscordCommandHandler {
   readonly getCommandBuilder: () =>
     | SlashCommandBuilder
     | SlashCommandSubcommandsOnlyBuilder
     | SlashCommandOptionsOnlyBuilder
-  /**
-   * @default OptionToAddMinecraftInstances.Disabled
-   */
-  readonly addMinecraftInstancesToOptions?: OptionToAddMinecraftInstances
-  /**
-   * @default CommandScope.Public
-   */
-  readonly scope?: CommandScope
-  /**
-   * @default Permission.Anyone
-   */
-  readonly permission?: Permission
-
-  readonly handler: (context: Readonly<DiscordCommandContext>) => Promise<void>
-  readonly autoComplete?: (context: Readonly<DiscordAutoCompleteContext>) => Promise<void>
 }
 
-export enum OptionToAddMinecraftInstances {
-  Disabled,
-  Optional,
-  Required
+export interface DiscordPrivateCommandHandler extends BaseDiscordCommandHandler {
+  readonly origin: CommandOrigin.Private
+  readonly permission: Permission.Anyone | Permission.ApplicationAdmin
+  readonly handler: (context: Readonly<DiscordCommandContext<CommandOrigin.Private, void>>) => Promise<void>
+  readonly autoComplete?: (context: Readonly<DiscordAutoCompleteContext<CommandOrigin.Private>>) => Promise<void>
 }
 
-export enum CommandScope {
+export interface DiscordGuildCommandHandler extends BaseDiscordCommandHandler {
+  readonly origin: CommandOrigin.Guild
   /**
-   * only allow to execute in the registered chat channels
+   * Only Discord server admin where the command is being executed
    */
-  Chat,
-  /**
-   * only allow to execute in officer channels
-   */
-  Privileged,
-  /**
-   * Allow to execute in any channel anywhere without limitations
-   */
-  Anywhere
+  readonly onlyAdmins: boolean
+  readonly handler: (context: Readonly<DiscordCommandContext<CommandOrigin.Guild, void>>) => Promise<void>
+  readonly autoComplete?: (context: Readonly<DiscordAutoCompleteContext<CommandOrigin.Guild>>) => Promise<void>
 }
 
-interface DiscordContext {
+export interface DiscordBridgeCommandHandler<
+  MinecraftOption extends OptionMinecraftInstance
+> extends BaseDiscordCommandHandler {
+  readonly origin: CommandOrigin.Bridge
+  readonly addMinecraftInstancesToOptions: MinecraftOption
+  readonly permission: Permission.Anyone | Permission.Helper | Permission.Officer | Permission.BridgeAdmin
+  readonly handler: (context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, MinecraftOption>>) => Promise<void>
+  readonly autoComplete?: (context: Readonly<DiscordAutoCompleteContext<CommandOrigin.Bridge>>) => Promise<void>
+}
+
+export enum OptionMinecraftInstance {
+  None = 'none',
+  RequireOne = 'requireOne',
+  RequireAll = 'requireAll'
+}
+
+interface BaseDiscordContext<Origin extends CommandOrigin> {
   application: Application
   eventHelper: EventHelper<InstanceType.Discord>
   logger: Logger
-  instanceName: string
+  t: TFunction
 
-  user: DiscordUser
   permission: Permission
+  //bridgeId: Origin extends CommandOrigin.Bridge ? BridgeId : BridgeId | undefined
+  user: OriginDecider<Origin, AnonymousUser, AnonymousUser, DiscordUser>
   errorHandler: UnexpectedErrorHandler
 
   allCommands: DiscordCommandHandler[]
 }
 
-export interface DiscordCommandContext extends DiscordContext {
-  interaction: ChatInputCommandInteraction
+export enum CommandOrigin {
+  Private = 'private',
+  Guild = 'guild',
+  Bridge = 'bridge'
+}
+type OriginDecider<
+  Origin extends CommandOrigin,
+  PrivateType,
+  GuildType,
+  BridgeType
+> = Origin extends CommandOrigin.Private
+  ? PrivateType
+  : Origin extends CommandOrigin.Guild
+    ? GuildType
+    : Origin extends CommandOrigin.Bridge
+      ? BridgeType
+      : never
+
+export interface DiscordCommandContext<
+  Origin extends CommandOrigin,
+  MinecraftOption = Origin extends CommandOrigin.Bridge ? OptionMinecraftInstance : undefined
+> extends BaseDiscordContext<Origin> {
+  interaction: OriginDecider<
+    Origin,
+    ChatInputCommandInteraction,
+    ChatInputCommandInteraction<'raw' | 'cached'>,
+    MinecraftOption extends OptionMinecraftInstance.RequireOne
+      ?
+          | ChatInputCommandInteraction<'raw' | 'cached'>
+          | (ModalSubmitInteraction<'raw' | 'cached'> & { options: ChatInputCommandInteraction['options'] })
+      : ChatInputCommandInteraction<'raw' | 'cached'>
+  >
+  minecraftInstance: [MinecraftOption] extends [OptionMinecraftInstance.RequireOne]
+    ? string
+    : [MinecraftOption] extends [OptionMinecraftInstance.RequireAll]
+      ? string[]
+      : undefined
   showPermissionDenied: (requiredPermission: Exclude<Permission, Permission.Anyone>) => Promise<void>
 }
 
-export interface DiscordAutoCompleteContext extends DiscordContext {
-  interaction: AutocompleteInteraction
+export interface DiscordAutoCompleteContext<Origin extends CommandOrigin> extends BaseDiscordContext<Origin> {
+  interaction: OriginDecider<
+    Origin,
+    AutocompleteInteraction,
+    AutocompleteInteraction<'raw' | 'cached'>,
+    AutocompleteInteraction<'raw' | 'cached'>
+  >
 }

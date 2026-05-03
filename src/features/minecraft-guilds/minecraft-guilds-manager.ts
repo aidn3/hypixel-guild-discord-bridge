@@ -14,6 +14,7 @@ import {
   MinecraftSendChatPriority,
   PunishmentType
 } from '../../common/application-event'
+import type { DiscordBridgeCommandHandler, OptionMinecraftInstance } from '../../common/commands'
 import { Status } from '../../common/connectable-instance'
 import { Instance, InternalInstancePrefix } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
@@ -64,7 +65,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       ...DiscordGuildCommand,
       handler: (context) => discordGuildCommandHandler(context, this.database, this.waitlistInteraction),
       autoComplete: (context) => discordGuildAutocomplete(context, this.database)
-    })
+    } as DiscordBridgeCommandHandler<OptionMinecraftInstance.None>)
 
     this.application.on('guildPlayer', async (event) => {
       await this.handleJoinRequest(event)

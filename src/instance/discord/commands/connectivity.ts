@@ -3,9 +3,9 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color, InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
+import { Color, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { antiSpamString } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
@@ -48,7 +48,10 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('connectivity').setDescription('Check connectivity to Minecraft instances'),
 
-  scope: CommandScope.Chat,
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
+  permission: Permission.Anyone,
+
   handler: async function (context) {
     await context.interaction.deferReply()
 

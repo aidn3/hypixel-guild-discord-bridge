@@ -23,6 +23,7 @@ import {
 import type Application from '../../../application.js'
 import { Color, InstanceType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { translateInstanceMessage, translateInstanceStatus } from '../../../core/instance/instance-language'
 import { ApplicationLanguages } from '../../../core/language-configurations'
@@ -32,7 +33,7 @@ import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configu
 import Duration from '../../../utility/duration'
 import { beautifyInstanceName } from '../../../utility/shared-utility'
 import { Timeout } from '../../../utility/timeout.js'
-import { DefaultCommandFooter } from '../common/discord-config.js'
+import { DefaultCommandFooter, MaxMinecraftInstances } from '../common/discord-config.js'
 import { interactivePaging } from '../utility/discord-pager'
 import type { ActionOption, CategoryOption, EmbedCategoryOption, LabelOption } from '../utility/options-handler.js'
 import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
@@ -50,7 +51,9 @@ const CategoryLabel =
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('settings').setDescription('Control application settings.'),
-  permission: Permission.Admin,
+  origin: CommandOrigin.Bridge,
+  permission: Permission.BridgeAdmin,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.None,
 
   handler: async function (context) {
     assert.ok(context.interaction.inCachedGuild())
@@ -1257,6 +1260,14 @@ async function minecraftInstanceAdd(
   interaction: ButtonInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<boolean> {
+  if (application.getInstancesNames(InstanceType.Minecraft).length >= MaxMinecraftInstances) {
+    await interaction.reply({
+      content: `You can only have up to ${MaxMinecraftInstances} Minecraft instances.`,
+      flags: MessageFlags.Ephemeral
+    })
+    return true
+  }
+
   await interaction.showModal({
     customId: 'minecraft-instance-add',
     title: `Add Minecraft Instance`,

@@ -5,9 +5,9 @@ import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { UserLink } from '../../../common/application-event.js'
-import { Color, InstanceType } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
+import { Color, InstanceType, Permission } from '../../../common/application-event.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { Hypixel } from '../../../core/hypixel/hypixel'
 import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
@@ -93,7 +93,9 @@ export default {
       )
       .setName('list')
       .setDescription('List players in your guild(s)'),
-  scope: CommandScope.Chat,
+  origin: CommandOrigin.Bridge,
+  permission: Permission.Anyone,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
 
   handler: async function (context) {
     await context.interaction.deferReply()
@@ -127,7 +129,7 @@ export default {
 
     await pageMessage(context.interaction, createEmbed(lists, onlyOnline), context.errorHandler)
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireAll>
 
 async function listMembers(
   app: Application,

@@ -20,3 +20,6 @@ export interface Emoji {
   name: string
   path: string
 }
+
+// Based on RadioGroup max size for when selecting an instance during Discord interactions
+export const MaxMinecraftInstances = 10

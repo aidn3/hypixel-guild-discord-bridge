@@ -60,7 +60,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     }
 
     const userProfile = this.clientInstance.profileByUser(event.author, event.member ?? undefined)
-    const user = await this.application.core.initializeDiscordUser(userProfile, {})
+    const user = await this.application.core.initializeDiscordUser(userProfile)
 
     if (!user.verified() && config.getEnforceVerification()) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
@@ -177,7 +177,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     if (replyMessage.webhookId != undefined) return replyMessage.author.username
 
     const resolvedProfile = this.clientInstance.profileByUser(replyMessage.author, replyMessage.member ?? undefined)
-    const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile, {})
+    const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile)
 
     return replyUser.displayName()
   }

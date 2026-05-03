@@ -54,8 +54,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
       if (context.abortSignal.aborted) return
 
       const user = await this.application.core.initializeDiscordUser(
-        this.clientInstance.profileByUser(guildMember.user, guildMember),
-        { guild: guild }
+        this.clientInstance.profileByUser(guildMember.user, guildMember)
       )
       try {
         await this.updateMemberViaCache(guildContext, { guildMember, user })

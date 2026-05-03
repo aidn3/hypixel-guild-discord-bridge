@@ -212,7 +212,8 @@ export enum Permission {
   Anyone,
   Helper,
   Officer,
-  Admin
+  BridgeAdmin,
+  ApplicationAdmin
 }
 
 /**

@@ -3,14 +3,16 @@ import assert from 'node:assert'
 import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
 import { ButtonStyle, ComponentType, SlashCommandBuilder, TextChannel } from 'discord.js'
 
-import { Color, Permission } from '../../../common/application-event'
+import { Color } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import LinkButtonsManager from '../features/link-buttons-manager'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('link-panel').setDescription('Create a panel with buttons to help users link'),
-  permission: Permission.Officer,
+  origin: CommandOrigin.Guild,
+  onlyAdmins: true,
 
   handler: async function (context) {
     const interaction = context.interaction

@@ -224,7 +224,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     assert.ok(responseInteraction.inCachedGuild())
 
     const profile = this.application.discordInstance.profileByUser(responseInteraction.user, responseInteraction.member)
-    const user = await this.application.core.initializeDiscordUser(profile, { guild: responseInteraction.guild })
+    const user = await this.application.core.initializeDiscordUser(profile)
     const mojangProfile = user.mojangProfile()
 
     if (!mojangProfile) {

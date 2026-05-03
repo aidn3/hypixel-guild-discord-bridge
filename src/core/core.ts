@@ -34,6 +34,7 @@ import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
 import { StatusHistory } from './instance/status-history'
 import { LanguageConfigurations } from './language-configurations'
+import { MigrationConfigurations } from './migration-configurations'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
 import { SessionsManager } from './minecraft/sessions-manager'
@@ -86,6 +87,7 @@ export class Core extends Instance<InstanceType.Core> {
 
   // misc
   public readonly applicationConfigurations: ApplicationConfigurations
+  public readonly migrationConfigurations: MigrationConfigurations
   public readonly languageConfigurations: LanguageConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
@@ -112,6 +114,7 @@ export class Core extends Instance<InstanceType.Core> {
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
+    this.migrationConfigurations = new MigrationConfigurations(this.configurationsManager)
 
     this.discordConfigurations = new DiscordConfigurations(this.configurationsManager)
     this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
@@ -221,14 +224,9 @@ export class Core extends Instance<InstanceType.Core> {
   /**
    * Initialize a user based on a given profile and load all metadata in advance
    * @param profile Profile to base the user on
-   * @param context additional information that might help with constructing user metadata
    * @returns a full initialized object that contains user data at the moment of execution
    */
-  async initializeDiscordUser(
-    profile: DiscordProfile,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: InitializeOptions
-  ): Promise<DiscordUser> {
+  async initializeDiscordUser(profile: DiscordProfile): Promise<DiscordUser> {
     const identifier: UserIdentifier = { userId: profile.id, originInstance: InstanceType.Discord }
 
     let mojangProfile: MojangProfile | undefined
@@ -276,7 +274,7 @@ export class Core extends Instance<InstanceType.Core> {
       }
       case InstanceType.Discord: {
         const profile = await this.application.discordInstance.profileById(identifier.userId, context.guild)
-        if (profile !== undefined) return this.initializeDiscordUser(profile, context)
+        if (profile !== undefined) return this.initializeDiscordUser(profile)
       }
     }
 

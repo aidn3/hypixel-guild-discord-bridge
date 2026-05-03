@@ -2,11 +2,14 @@ import { SlashCommandBuilder } from 'discord.js'
 
 import { InstanceSignalType, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('restart').setDescription('Send signal to restart the bridge'),
-  permission: Permission.Admin,
+
+  origin: CommandOrigin.Private,
+  permission: Permission.ApplicationAdmin,
 
   handler: async function (context) {
     await context.interaction.reply(

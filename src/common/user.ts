@@ -12,20 +12,19 @@ import type Duration from '../utility/duration'
 
 import type { BasePunishment, InformEvent, PunishmentPurpose, UserLink } from './application-event'
 import { InstanceType, Permission, PunishmentType } from './application-event'
-import { Status } from './connectable-instance'
 
 export interface InitializeOptions {
   guild?: Guild
 }
 
-export class User {
+export class AnonymousUser {
   public constructor(
     protected readonly application: Application,
     protected readonly context: ManagerContext,
-    private readonly userIdentifier: UserIdentifier,
-    private readonly userMojang: MojangProfile | undefined,
-    private readonly userDiscord: DiscordProfile | undefined,
-    private readonly userLink: UserLink | undefined
+    protected readonly userIdentifier: UserIdentifier,
+    protected readonly userMojang: MojangProfile | undefined,
+    protected readonly userDiscord: DiscordProfile | undefined,
+    protected readonly userLink: UserLink | undefined
   ) {
     if (userLink !== undefined && userMojang !== undefined && userDiscord !== undefined) {
       assert.strictEqual(userMojang.id, userLink.uuid)
@@ -79,18 +78,15 @@ export class User {
 
     const discordProfile = this.discordProfile()
     if (discordProfile !== undefined) {
-      const discordInstance = this.application.discordInstance
-      if (discordInstance.currentStatus() === Status.Connected) {
-        const discordPermission = discordInstance.resolvePermission(discordProfile.id)
-        if (discordPermission > permission) permission = discordPermission
-      }
+      const discordPermission = discordProfile.permission
+      if (discordPermission > permission) permission = discordPermission
     }
 
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
       const configurations = this.application.core.minecraftConfigurations
       if (mojangProfile.name.toLowerCase() === configurations.getAdminUsername().toLowerCase()) {
-        return Permission.Admin
+        return Permission.BridgeAdmin
       }
 
       const guildPermission = await this.getMinecraftPermission(mojangProfile)
@@ -143,7 +139,8 @@ export class User {
   }
 
   public async immune(): Promise<boolean> {
-    if ((await this.permission()) === Permission.Admin) return true
+    const currentPermission = await this.permission()
+    if (currentPermission === Permission.BridgeAdmin || currentPermission === Permission.ApplicationAdmin) return true
 
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
@@ -238,6 +235,21 @@ export class User {
     return result
   }
 
+  public isMojangUser(): this is MinecraftAnonymousUser {
+    return this.userMojang !== undefined
+  }
+
+  public isDiscordUser(): this is DiscordAnonymousUser {
+    return this.userDiscord !== undefined
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  public toJSON(): object {
+    return { ...this.userIdentifier }
+  }
+}
+
+export class User extends AnonymousUser {
   public activePunishments(): PunishmentInstant {
     const punishments = this.context.punishments.findByUser(this, true, -1, -1).page
     return new PunishmentInstant(this, punishments)
@@ -306,17 +318,12 @@ export class User {
     return await this.context.commandsHeat.tryAdd(this, type)
   }
 
-  public isMojangUser(): this is MinecraftUser {
+  public override isMojangUser(): this is MinecraftUser {
     return this.userMojang !== undefined
   }
 
-  public isDiscordUser(): this is DiscordUser {
+  public override isDiscordUser(): this is DiscordUser {
     return this.userDiscord !== undefined
-  }
-
-  // noinspection JSUnusedGlobalSymbols
-  public toJSON(): object {
-    return { ...this.userIdentifier }
   }
 }
 
@@ -336,11 +343,29 @@ export interface DiscordUser extends User {
   profileLink(): string
 }
 
+export interface MinecraftAnonymousUser extends AnonymousUser {
+  mojangProfile(): MojangProfile
+
+  avatar(): string
+
+  profileLink(): string
+}
+
+export interface DiscordAnonymousUser extends AnonymousUser {
+  discordProfile(): DiscordProfile
+
+  avatar(): string
+
+  profileLink(): string
+}
+
 export type DiscordProfile = CachedDiscordProfile | RawDiscordProfile
 
 export interface CachedDiscordProfile {
   type: 'cached'
   id: string
+  permission: Permission
+
   username: string
   displayName: string
   avatar: string | undefined
@@ -349,6 +374,7 @@ export interface CachedDiscordProfile {
 export interface RawDiscordProfile {
   type: 'raw'
   id: string
+  permission: Permission
 }
 
 export interface MojangProfile {

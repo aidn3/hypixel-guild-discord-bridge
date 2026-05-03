@@ -11,9 +11,14 @@ import { ApplicationCommandOptionType, MessageFlags, SlashCommandBuilder } from 
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
+import Duration from '../../../utility/duration'
+import { pageMessage } from '../utility/discord-pager'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('help').setDescription('Show available commands.'),
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
 
   handler: async function (context) {
     if (!context.interaction.inGuild()) {
@@ -22,47 +27,33 @@ export default {
     }
 
     await context.interaction.deferReply()
-    assert.ok(context.interaction.inCachedGuild())
-    const guildCommands = await context.interaction.guild.commands.fetch()
+    const registeredCommands = await context.interaction.client.application.commands.fetch()
 
-    const userPermission = context.permission
-    const embed = { title: 'Commands Help', description: '' } satisfies APIEmbed
+    const pages: { description: string }[] = []
+    const MaxPerPage = 3500
+    for (const command of context.allCommands) {
+      const formattedEntry = createField(registeredCommands, [command])
 
-    const allCommands = context.allCommands
+      if (pages.length === 0) {
+        pages.push({ description: '' })
+      }
+      let lastPage = pages.at(-1)
+      assert.ok(lastPage !== undefined)
 
-    embed.description += '**Anyone**\n'
-    embed.description += createField(
-      guildCommands,
-      allCommands.filter((command) => command.permission === undefined || command.permission === Permission.Anyone)
-    )
-    embed.description += '\n'
+      if (lastPage.description.length > 0 && lastPage.description.length + formattedEntry.length > MaxPerPage) {
+        lastPage = { description: '' }
+        pages.push(lastPage)
+      }
 
-    if (userPermission >= Permission.Helper) {
-      embed.description += '**Helper**\n'
-      embed.description += createField(
-        guildCommands,
-        allCommands.filter((command) => command.permission === Permission.Helper)
-      )
-      embed.description += '\n'
-    }
-    if (userPermission >= Permission.Officer) {
-      embed.description += '**Officer**\n'
-      embed.description += createField(
-        guildCommands,
-        allCommands.filter((command) => command.permission === Permission.Officer)
-      )
-      embed.description += '\n'
-    }
-    if (userPermission >= Permission.Admin) {
-      embed.description += '**Admin**\n'
-      embed.description += createField(
-        guildCommands,
-        allCommands.filter((command) => command.permission === Permission.Admin)
-      )
-      embed.description += '\n'
+      lastPage.description += formattedEntry + '\n'
     }
 
-    await context.interaction.editReply({ embeds: [embed] })
+    for (let index = 0; index < pages.length; index++) {
+      const page = pages[index] as APIEmbed
+      page.title = `Commands (Page ${index + 1} out of ${pages.length})`
+    }
+
+    await pageMessage(context.interaction, pages, context.errorHandler, Duration.minutes(15).toMilliseconds())
   }
 } satisfies DiscordCommandHandler
 

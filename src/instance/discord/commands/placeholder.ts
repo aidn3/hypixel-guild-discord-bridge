@@ -9,8 +9,9 @@ import {
   SlashCommandSubcommandBuilder
 } from 'discord.js'
 
-import { Color } from '../../../common/application-event'
+import { Color, Permission } from '../../../common/application-event'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import type { PlaceholderContext } from '../../../core/placeholder/common'
 import { CanNotResolve } from '../../../core/placeholder/common'
 import { formatNumberOptions, formatStringOptions } from '../../../core/placeholder/utility'
@@ -37,6 +38,9 @@ export default {
           )
       ),
 
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
+
   handler: async function (context) {
     switch (context.interaction.options.getSubcommand(true)) {
       case 'help': {
@@ -61,7 +65,7 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function help(context: DiscordCommandContext) {
+async function help(context: DiscordCommandContext<CommandOrigin.Private>) {
   let helpBody = '# Placeholders Tutorial\n\n'
 
   helpBody +=
@@ -120,7 +124,10 @@ async function help(context: DiscordCommandContext) {
   })
 }
 
-async function handlePlaceholderOptionsList(context: DiscordCommandContext, interaction: ButtonInteraction) {
+async function handlePlaceholderOptionsList(
+  context: DiscordCommandContext<CommandOrigin.Private>,
+  interaction: ButtonInteraction
+) {
   await interaction.deferReply()
 
   return await interactivePaging(
@@ -147,14 +154,13 @@ async function handlePlaceholderOptionsList(context: DiscordCommandContext, inte
   )
 }
 
-async function format(context: DiscordCommandContext) {
+async function format(context: DiscordCommandContext<CommandOrigin.Private>) {
   assert.ok(context.interaction.inCachedGuild())
 
   await context.interaction.deferReply()
 
   const user = await context.application.core.initializeDiscordUser(
-    context.application.discordInstance.profileByUser(context.interaction.user, context.interaction.member),
-    { guild: context.interaction.guild }
+    context.application.discordInstance.profileByUser(context.interaction.user, context.interaction.member)
   )
 
   const placeholderContext = {

@@ -1,8 +1,8 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { checkChatTriggers, InviteAcceptChat } from '../../../utility/chat-triggers.js'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
 
@@ -18,7 +18,8 @@ export default {
           .setRequired(true)
           .setAutocomplete(true)
       ),
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireOne,
   permission: Permission.Helper,
 
   handler: async function (context) {
@@ -27,7 +28,7 @@ export default {
     const name: string = context.interaction.options.getString('name', true)
     const command = `/g join ${name}`
 
-    const instance: string = context.interaction.options.getString('instance', true)
+    const instance = context.minecraftInstance
     const result = await checkChatTriggers(
       context.application,
       context.eventHelper,
@@ -49,4 +50,4 @@ export default {
       await context.interaction.respond(response)
     }
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

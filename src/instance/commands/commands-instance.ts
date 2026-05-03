@@ -300,6 +300,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       const commandResponse = await command.handler({
         app: this.application,
 
+        t: this.application.i18n.t,
         eventHelper: this.eventHelper,
         logger: this.logger,
         errorHandler: this.errorHandler,

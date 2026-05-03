@@ -4,7 +4,7 @@ import type { AutocompleteInteraction, ChatInputCommandInteraction, ModalSubmitI
 import { escapeMarkdown, MessageFlags, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
-import type { DiscordAutoCompleteContext, DiscordCommandContext } from '../../../common/commands'
+import type { CommandOrigin, DiscordAutoCompleteContext, DiscordCommandContext } from '../../../common/commands'
 import type {
   ConditionHandler,
   ConditionId,
@@ -62,8 +62,8 @@ export function removeConditionCommand(
 }
 
 export async function handleConditionList(
-  interaction: ChatInputCommandInteraction<'cached'>,
-  context: Readonly<DiscordCommandContext>,
+  interaction: ChatInputCommandInteraction,
+  context: Readonly<DiscordCommandContext<CommandOrigin>>,
   manager: CommandConditionHandler
 ): Promise<void> {
   await interaction.deferReply()
@@ -71,7 +71,7 @@ export async function handleConditionList(
   const handlerContext = {
     application: context.application,
     startTime: Date.now() - Duration.minutes(15).toMilliseconds(), // Allowing caching if possible
-    discordGuild: interaction.guild
+    discordGuild: interaction.guild ?? undefined
   } satisfies HandlerDisplayContext
 
   await interactivePaging(interaction, 0, Duration.minutes(15).toMilliseconds(), context.errorHandler, async (page) => {
@@ -125,8 +125,8 @@ export async function handleConditionList(
 }
 
 export async function handleConditionAdd(
-  interaction: ChatInputCommandInteraction<'cached'>,
-  context: Readonly<DiscordCommandContext>,
+  interaction: ChatInputCommandInteraction,
+  context: Readonly<DiscordCommandContext<CommandOrigin>>,
   manager: CommandConditionHandler
 ): Promise<void> {
   const conditionQuery = interaction.options.getString('type', true)
@@ -134,7 +134,7 @@ export async function handleConditionAdd(
   const handlerContext = {
     application: context.application,
     startTime: Date.now() - Duration.minutes(15).toMilliseconds(), // Allowing caching if possible
-    discordGuild: interaction.guild
+    discordGuild: interaction.guild ?? undefined
   } satisfies HandlerDisplayContext
 
   let handler: ConditionHandler<ConditionOption> | undefined
@@ -225,8 +225,8 @@ export async function handleConditionAdd(
 }
 
 export async function handleConditionRemove(
-  interaction: ChatInputCommandInteraction<'cached'>,
-  context: Readonly<DiscordCommandContext>,
+  interaction: ChatInputCommandInteraction,
+  context: Readonly<DiscordCommandContext<CommandOrigin>>,
   manager: CommandConditionHandler
 ): Promise<void> {
   const conditionQueryRaw = interaction.options.getString('condition', true)
@@ -242,7 +242,7 @@ export async function handleConditionRemove(
   const handlerContext = {
     application: context.application,
     startTime: Date.now() - Duration.minutes(15).toMilliseconds(), // Allowing caching if possible
-    discordGuild: interaction.guild
+    discordGuild: interaction.guild ?? undefined
   } satisfies HandlerDisplayContext
 
   let conditionToDelete: ConditionId | undefined
@@ -282,7 +282,7 @@ export async function handleConditionRemove(
 
 export async function handleSuggestConditionsAdd(
   interaction: AutocompleteInteraction<'cached'>,
-  context: Readonly<DiscordAutoCompleteContext>,
+  context: Readonly<DiscordAutoCompleteContext<CommandOrigin>>,
   allHandlers: ConditionHandler<ConditionOption>[]
 ): Promise<void> {
   const option = interaction.options.getFocused(true)
@@ -304,7 +304,7 @@ export async function handleSuggestConditionsAdd(
 
 export async function handleSuggestConditionsRemove(
   interaction: AutocompleteInteraction<'cached'>,
-  context: Readonly<DiscordAutoCompleteContext>,
+  context: Readonly<DiscordAutoCompleteContext<CommandOrigin>>,
   allHandlers: ConditionHandler<ConditionOption>[],
   manager: CommandConditionHandler
 ): Promise<void> {
