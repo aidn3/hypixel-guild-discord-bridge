@@ -97,7 +97,11 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
   override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      void this.onMessage(chatMessage.toString(), chatMessage.toMotd(), chatMessage.json).catch(
+      void this.onMessage(
+        chatMessage.toString(),
+        chatMessage.toMotd(),
+        this.normalizeJsonMessage(chatMessage.json)
+      ).catch(
         this.errorHandler.promiseCatch('processing minecraft raw chat')
       )
     })
@@ -112,6 +116,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
   private async onFormattedMessage(clientSession: ClientSession, data: object): Promise<void> {
     const message = (data as { formattedMessage?: string }).formattedMessage
     let resultMessage: ChatMessage & Partial<{ unsigned: ChatMessage }>
+    let jsonMessage: unknown
 
     if (this.minecraftData.supportFeature('clientsideChatFormatting')) {
       const verifiedPacket = data as {
@@ -121,9 +126,11 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
         unsignedContent?: string
         type: number
       }
+      const rawContent = message ?? verifiedPacket.unsignedContent
       const parameters: { content: object; sender?: object; target?: object } = {
-        content: message ? (JSON.parse(message) as object) : { text: verifiedPacket.plainMessage }
+        content: rawContent ? (JSON.parse(rawContent) as object) : { text: verifiedPacket.plainMessage }
       }
+      jsonMessage = this.normalizeJsonMessage(parameters.content)
 
       if (verifiedPacket.senderName) {
         Object.assign(parameters, { sender: JSON.parse(verifiedPacket.senderName) as object })
@@ -145,9 +152,43 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
     } else {
       assert.ok(message) // old packet means message exists
       resultMessage = clientSession.prismChat.fromNotch(message)
+      jsonMessage = this.normalizeJsonMessage(resultMessage.json)
     }
 
-    await this.onMessage(resultMessage.toString(), resultMessage.toMotd(), resultMessage.json)
+    await this.onMessage(resultMessage.toString(), resultMessage.toMotd(), jsonMessage)
+  }
+
+  private normalizeJsonMessage(jsonMessage: unknown): unknown {
+    if (Array.isArray(jsonMessage)) {
+      return jsonMessage.map((entry) => this.normalizeJsonMessage(entry))
+    }
+
+    if (typeof jsonMessage !== 'object' || jsonMessage == null) {
+      return jsonMessage
+    }
+
+    const normalized = Object.fromEntries(
+      Object.entries(jsonMessage).map(([key, value]) => [key, this.normalizeJsonMessage(value)])
+    )
+
+    const clickEvent = normalized.click_event as
+      | { action?: unknown; command?: unknown; value?: { command?: { value?: unknown } } }
+      | undefined
+    const clickCommand =
+      typeof clickEvent?.command === 'string'
+        ? clickEvent.command
+        : typeof clickEvent?.value?.command?.value === 'string'
+          ? clickEvent.value.command.value
+          : undefined
+
+    if (clickCommand && normalized.clickEvent == null) {
+      normalized.clickEvent = {
+        action: typeof clickEvent?.action === 'string' ? clickEvent.action : 'run_command',
+        value: clickCommand
+      }
+    }
+
+    return normalized
   }
 
   private async onMessage(message: string, rawMessage: string, jsonMessage: unknown): Promise<void> {

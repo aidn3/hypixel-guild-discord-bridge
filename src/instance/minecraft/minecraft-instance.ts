@@ -35,9 +35,9 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     // increased from 30 seconds to 60 seconds to reduce connection dropouts
     checkTimeoutInterval: Duration.seconds(60).toMilliseconds(),
 
-    host: 'me.hypixel.net',
+    host: 'mc.hypixel.net',
     port: 25_565,
-    version: '1.8.9'
+    version: '1.21.11'
   }
 
   private clientSession: ClientSession | undefined

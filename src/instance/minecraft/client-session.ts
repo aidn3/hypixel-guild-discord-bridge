@@ -19,6 +19,7 @@ export default class ClientSession {
     this.prismChat = PrismarineChat(this.registry)
 
     this.listenForRegistry(client)
+    this.listenForSettings(client)
   }
 
   /*
@@ -28,8 +29,8 @@ export default class ClientSession {
    */
   private listenForRegistry(client: Client): void {
     // 1.20.2+
-    client.on('registry_data', (packet: { codec: NBT }) => {
-      this.registry.loadDimensionCodec(packet.codec)
+    client.on('registry_data', (packet: { codec?: NBT; id?: string; entries?: unknown[] }) => {
+      this.registry.loadDimensionCodec((packet.codec ?? packet) as NBT)
     })
     // older versions
     client.on('login', (packet: { dimensionCodec?: NBT }) => {
@@ -41,6 +42,25 @@ export default class ClientSession {
       if (packet.dimensionCodec) {
         this.registry.loadDimensionCodec(packet.dimensionCodec)
       }
+    })
+  }
+
+  private listenForSettings(client: Client): void {
+    client.on('state', (newState: string) => {
+      const supportFeature = (client as Client & { _supportFeature?: (name: string) => boolean })._supportFeature
+      if (newState !== 'configuration' || supportFeature?.('hasConfigurationState') !== true) return
+
+      client.write('settings', {
+        locale: 'en_us',
+        viewDistance: 8,
+        chatFlags: 0,
+        chatColors: true,
+        skinParts: 0x7f,
+        mainHand: 1,
+        enableTextFiltering: false,
+        enableServerListing: true,
+        particleStatus: 'all'
+      })
     })
   }
 }
