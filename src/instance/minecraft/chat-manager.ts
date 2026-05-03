@@ -101,9 +101,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
         chatMessage.toString(),
         chatMessage.toMotd(),
         this.normalizeJsonMessage(chatMessage.json)
-      ).catch(
-        this.errorHandler.promiseCatch('processing minecraft raw chat')
-      )
+      ).catch(this.errorHandler.promiseCatch('processing minecraft raw chat'))
     })
 
     clientSession.client.on('playerChat', (data: object) => {
@@ -160,16 +158,18 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
 
   private normalizeJsonMessage(jsonMessage: unknown): unknown {
     if (Array.isArray(jsonMessage)) {
-      return jsonMessage.map((entry) => this.normalizeJsonMessage(entry))
+      return jsonMessage.map((entry: unknown) => this.normalizeJsonMessage(entry))
     }
 
-    if (typeof jsonMessage !== 'object' || jsonMessage == null) {
+    if (typeof jsonMessage !== 'object' || jsonMessage == undefined) {
       return jsonMessage
     }
 
     const normalized = Object.fromEntries(
-      Object.entries(jsonMessage).map(([key, value]) => [key, this.normalizeJsonMessage(value)])
-    )
+      Object.entries(jsonMessage as Record<string, unknown>).map(
+        ([key, value]: [string, unknown]): [string, unknown] => [key, this.normalizeJsonMessage(value)]
+      )
+    ) as Record<string, unknown>
 
     const clickEvent = normalized.click_event as
       | { action?: unknown; command?: unknown; value?: { command?: { value?: unknown } } }
@@ -181,7 +181,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
           ? clickEvent.value.command.value
           : undefined
 
-    if (clickCommand && normalized.clickEvent == null) {
+    if (clickCommand && normalized.clickEvent == undefined) {
       normalized.clickEvent = {
         action: typeof clickEvent?.action === 'string' ? clickEvent.action : 'run_command',
         value: clickCommand
