@@ -21,6 +21,7 @@ import { User } from '../common/user'
 
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
+import { CommandsCooldown } from './commands/commands-cooldown'
 import { ConditionsRegistry } from './conditions/conditions-registry'
 import { ConfigurationsManager } from './configurations'
 import { DiscordConfigurations } from './discord/discord-configurations'
@@ -47,6 +48,7 @@ import PunishmentsEnforcer from './moderation/punishments-enforcer'
 import { PlaceholderManager } from './placeholder/placeholder-manager'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import { Urchin } from './urchin/urchin'
+import { Users } from './users'
 import Autocomplete from './users/autocomplete'
 import { GuildManager } from './users/guild-manager'
 import { MojangApi } from './users/mojang'
@@ -61,6 +63,7 @@ export class Core extends Instance<InstanceType.Core> {
   private readonly enforcer: PunishmentsEnforcer
 
   // users
+  public readonly users: Users
   private readonly autoComplete: Autocomplete
   public readonly guildManager: GuildManager
   public readonly mojangApi: MojangApi
@@ -90,6 +93,7 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly migrationConfigurations: MigrationConfigurations
   public readonly languageConfigurations: LanguageConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
+  public readonly commandsCooldown: CommandsCooldown
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
   public readonly hypixelApi: Hypixel
   public readonly urchinApi: Urchin | undefined
@@ -115,6 +119,7 @@ export class Core extends Instance<InstanceType.Core> {
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
     this.migrationConfigurations = new MigrationConfigurations(this.configurationsManager)
+    this.users = new Users(this.sqliteManager)
 
     this.discordConfigurations = new DiscordConfigurations(this.configurationsManager)
     this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
@@ -133,6 +138,7 @@ export class Core extends Instance<InstanceType.Core> {
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
+    this.commandsCooldown = new CommandsCooldown(this.sqliteManager, this.users)
     this.spontaneousEventsConfigurations = new SpontaneousEventsConfigurations(this.configurationsManager)
 
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)

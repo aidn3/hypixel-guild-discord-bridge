@@ -126,6 +126,8 @@ export enum ChannelType {
   Private = 'private'
 }
 
+export type UserId = number | bigint
+
 /**
  * The severity of the event.
  * This is also used to choose an embed color when displaying messages in discord.

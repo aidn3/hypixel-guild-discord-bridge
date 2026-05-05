@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 15
+const CurrentVersion = 16
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -58,6 +58,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(14, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom14to15(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(15, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom15to16(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -735,6 +738,45 @@ function migrateFrom14to15(database: Database, logger: Logger4Js, newlyCreated: 
   database.exec('DROP TABLE "autocompleteRanks"')
 
   database.pragma('user_version = 15')
+}
+
+function migrateFrom15to16(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 15 to 16')
+
+  database.exec(
+    'CREATE TABLE "users" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId TEXT NOT NULL,' +
+      '  originInstance TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  UNIQUE(userId, originInstance)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "chatCommandGlobalCooldown" (' +
+      '  trigger TEXT PRIMARY KEY COLLATE NOCASE NOT NULL,' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "chatCommandUserCooldown" (' +
+      '  trigger TEXT COLLATE NOCASE NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(trigger, userId)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "chatCommandChannelCooldown" (' +
+      '  trigger TEXT COLLATE NOCASE NOT NULL,' +
+      '  channelType TEXT NOT NULL,' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(trigger, channelType)' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 16')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

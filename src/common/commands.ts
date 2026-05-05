@@ -11,11 +11,51 @@ import type { TFunction } from 'i18next'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
+// eslint-disable-next-line import/no-restricted-paths
+import type Duration from '../utility/duration'
 
-import type { ChatEvent, Content, InstanceType, Permission } from './application-event.js'
+import type { ChannelType, ChatEvent, Content, InstanceType, Permission } from './application-event.js'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 import type { AnonymousUser, DiscordUser } from './user'
+
+export interface ChatCommandRequirements {
+  permission?: Permission
+  sources?: ChannelType[]
+  platforms?: (InstanceType.Minecraft | InstanceType.Discord)[]
+}
+
+export type ChatCommandCooldown =
+  | {
+      type: CooldownType.User | CooldownType.Channel | CooldownType.Community | CooldownType.Global
+      duration: Duration
+    }
+  | { type: CooldownType.Disabled }
+
+export enum CooldownType {
+  /**
+   * Cooldown is completely disabled
+   */
+  Disabled = 'none',
+  /**
+   * Every user has their own cooldown independent of other users
+   */
+  User = 'user',
+  /**
+   * Every channel {@link ChannelType} has its own cooldown.
+   * so the command can not be executed multiple times in a row by different users on the same channel
+   */
+  Channel = 'channel',
+  /**
+   * Every community (all its channels combined) share a single cooldown.
+   * Private usage has no cooldown.
+   */
+  Community = 'bridge',
+  /**
+   * The command has a cooldown that is shared by everyone.
+   */
+  Global = 'global'
+}
 
 export abstract class ChatCommandHandler {
   public readonly triggers: string[]
@@ -30,6 +70,27 @@ export abstract class ChatCommandHandler {
 
   public getExample(commandPrefix: string): string {
     return `Example: ${commandPrefix}${this.example}`
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public enabled(application: Application): boolean {
+    return true
+  }
+
+  public cooldownOptions(): ChatCommandCooldown {
+    return { type: CooldownType.Disabled }
+  }
+
+  /**
+   * Check pre-conditions before executing a command in {@link ChatCommandHandler#handler} of the command.
+   * @param context the chat command context that will be used
+   *   on the {@link ChatCommandHandler#handler} if the requirements are met
+   * @returns an `object` containing the requirements to automatically check
+   *   OR `string` that contains a rejection message specifically for this command execution.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    return {}
   }
 
   public abstract handler(context: ChatCommandContext): Promise<Content | string> | Content | string
@@ -51,6 +112,7 @@ export interface ChatCommandContext {
   args: string[]
 
   sendFeedback: (feedback: Content | string) => Promise<void>
+  resetCooldown: () => void
 }
 
 export type DiscordCommandHandler =

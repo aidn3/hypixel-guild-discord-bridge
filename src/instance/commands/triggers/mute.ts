@@ -1,8 +1,7 @@
 import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
+import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
-import { formatTime } from '../../../utility/shared-utility'
 
 export default class Mute extends ChatCommandHandler {
   public static readonly DefaultMessages = [
@@ -21,7 +20,6 @@ export default class Mute extends ChatCommandHandler {
     'I am agent of chaos!'
   ]
   private static readonly TimeLength = Duration.minutes(5)
-  private lastCommandExecutionAt = 0
 
   constructor() {
     super({
@@ -31,24 +29,27 @@ export default class Mute extends ChatCommandHandler {
     })
   }
 
-  async handler(context: ChatCommandContext): Promise<string> {
-    if (context.message.instanceType !== InstanceType.Minecraft || context.message.channelType !== ChannelType.Public) {
-      return 'Command can only be executed in-game in guild public channel'
-    }
-    const currentTime = Date.now()
-    if (this.lastCommandExecutionAt + Mute.TimeLength.toMilliseconds() > currentTime) {
-      return `Can use command again in ${formatTime(this.lastCommandExecutionAt + Mute.TimeLength.toMilliseconds() - currentTime)}.`
-    }
-    this.lastCommandExecutionAt = currentTime
+  override requirements(): ChatCommandRequirements | string {
+    return { platforms: [InstanceType.Minecraft], sources: [ChannelType.Public] }
+  }
 
+  override cooldownOptions(): ChatCommandCooldown {
+    return { type: CooldownType.Community, duration: Mute.TimeLength }
+  }
+
+  async handler(context: ChatCommandContext): Promise<string> {
     await context.sendFeedback('Choosing a victim...')
     const usernames = await this.getUsernames(context)
-    if (usernames.length === 0) return 'No username to randomly mute??'
+    if (usernames.length === 0) {
+      context.resetCooldown()
+      return 'No username to randomly mute??'
+    }
 
     const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
     const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
     const user = await context.app.core.initializeMinecraftUser(userProfile, {})
     if ((await user.permission()) >= Permission.Helper || (await user.immune())) {
+      context.resetCooldown()
       return `I tried to mute ${selectedUsername}, but then I remembered I'll die if I were to touch this person XD`
     }
 

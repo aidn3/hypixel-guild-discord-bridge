@@ -2,10 +2,13 @@ import StringComparison from 'string-comparison'
 
 import type Application from '../../application.js'
 import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
-import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
-import type { ChatCommandHandler } from '../../common/commands.js'
+import { ChannelType, ContentType, InstanceType, Permission } from '../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandHandler, ChatCommandRequirements } from '../../common/commands.js'
 import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import { capitalize } from '../../utility/shared-utility'
 
+import { CommandsCooldownHandler } from './commands-cooldown-handler'
+import { canOnlyUseIngame } from './common/utility'
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Agatha from './triggers/agatha.js'
@@ -116,9 +119,11 @@ import Woolwars from './triggers/woolwars'
 
 export class CommandsInstance extends Instance<InstanceType.Commands> {
   private readonly commands: ChatCommandHandler[] = []
+  private readonly cooldownHandler: CommandsCooldownHandler
 
   constructor(app: Application) {
     super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
+    this.cooldownHandler = new CommandsCooldownHandler(this.application)
 
     const commandsToAdd = [
       new Agatha(),
@@ -284,6 +289,8 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     if (command == undefined) {
       await this.trySuggest(event, commandName)
       return
+    } else if (!command.enabled(this.application)) {
+      return
     }
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
@@ -297,7 +304,8 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     }
 
     try {
-      const commandResponse = await command.handler({
+      const cooldownOptions = command.cooldownOptions()
+      const context: ChatCommandContext = {
         app: this.application,
 
         t: this.application.i18n.t,
@@ -314,9 +322,25 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
         sendFeedback: async (feedbackResponse) => {
           await this.feedback(event, command.triggers[0], this.formatContent(feedbackResponse))
+        },
+        resetCooldown: () => {
+          this.cooldownHandler.resetCooldown(command, cooldownOptions, event)
         }
-      })
+      }
 
+      const commandRequirements = command.requirements(context)
+      if (typeof commandRequirements === 'string') {
+        await this.reply(event, command.triggers[0], this.formatContent(commandRequirements))
+        return
+      }
+
+      const requirementsDenied = await this.checkRequirements(command, commandRequirements, context)
+      if (requirementsDenied !== undefined) {
+        await this.reply(event, command.triggers[0], this.formatContent(requirementsDenied))
+        return
+      }
+
+      const commandResponse = await this.cooldownHandler.handle(command, cooldownOptions, context)
       await this.reply(event, command.triggers[0], this.formatContent(commandResponse))
     } catch (error) {
       this.logger.error('Error while handling command', error)
@@ -327,6 +351,70 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
           `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
         )
       )
+    }
+  }
+
+  private async checkRequirements(
+    command: ChatCommandHandler,
+    requirements: ChatCommandRequirements,
+    context: ChatCommandContext
+  ): Promise<string | undefined> {
+    if (requirements.permission !== undefined) {
+      const userPermission = await context.message.user.permission()
+      if (userPermission < requirements.permission) {
+        return `${context.username}, you do not have permission to execute this command.`
+      }
+    }
+
+    if (requirements.platforms !== undefined) {
+      const platform = context.message.instanceType
+      if (
+        requirements.platforms.length === 1 &&
+        requirements.platforms[0] === InstanceType.Minecraft &&
+        platform !== InstanceType.Minecraft
+      ) {
+        return canOnlyUseIngame(context)
+      }
+      if (
+        requirements.platforms.length === 1 &&
+        requirements.platforms[0] === InstanceType.Discord &&
+        platform !== InstanceType.Discord
+      ) {
+        return `${context.username}, command can only be executed in a Discord chat!`
+      }
+
+      if (!(requirements.platforms as InstanceType[]).includes(platform)) {
+        return `${context.username}, command ${context.commandPrefix}${command.triggers[0]} can only be executed in these places: ${requirements.platforms.map((name) => capitalize(name)).join(', ')}`
+      }
+    }
+
+    if (requirements.sources !== undefined) {
+      const channelType = context.message.channelType
+      if (
+        requirements.sources.length === 1 &&
+        requirements.sources[0] === ChannelType.Public &&
+        channelType !== ChannelType.Public
+      ) {
+        return `${context.username}, command can only be executed in public chat!`
+      }
+      if (
+        requirements.sources.length === 1 &&
+        requirements.sources[0] === ChannelType.Officer &&
+        channelType !== ChannelType.Officer
+      ) {
+        return `${context.username}, command can only be executed in officer chat!`
+      }
+      if (
+        requirements.sources.length === 1 &&
+        requirements.sources[0] === ChannelType.Private &&
+        channelType !== ChannelType.Private
+      ) {
+        return `${context.username}, command can only be executed in private chat!`
+      }
+
+      if (!requirements.sources.includes(channelType)) {
+        return `${context.username}, command ${context.commandPrefix}${command.triggers[0]} can only be executed in these channels: ${requirements.sources.map((name) => capitalize(name)).join(', ')}`
+      }
     }
   }
 
