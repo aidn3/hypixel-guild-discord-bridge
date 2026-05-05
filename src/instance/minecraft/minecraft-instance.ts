@@ -232,8 +232,15 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       .map((chunk) => chunk.trim())
       .join(' ')
 
-    if (message.length > 256) {
-      message = message.slice(0, 253) + '...'
+    if (Buffer.byteLength(message, 'utf8') > 256) {
+      let truncated = ''
+
+      for (const char of message) {
+        if (Buffer.byteLength(truncated + char + '...', 'utf8') > 256) break
+        truncated += char
+      }
+
+      message = truncated + '...'
 
       if (originEventId !== undefined) {
         await this.application.emit('instanceReactive', {
