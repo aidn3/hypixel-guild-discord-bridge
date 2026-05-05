@@ -174,10 +174,6 @@ export class Core extends Instance<InstanceType.Core> {
     return this.autoComplete.username(query, limit)
   }
 
-  public completeRank(query: string, limit: number): string[] {
-    return this.autoComplete.rank(query, limit)
-  }
-
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
     return this.profanity.filterProfanity(message)
   }

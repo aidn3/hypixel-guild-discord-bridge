@@ -3,14 +3,14 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application'
-import { InstanceType } from '../../common/application-event'
+import type { InstanceType } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import Duration from '../../utility/duration'
-import { setIntervalAsync, setTimeoutAsync } from '../../utility/scheduling'
+import { setIntervalAsync } from '../../utility/scheduling'
 import type { Core } from '../core'
 
 export default class Autocomplete extends SubInstance<Core, InstanceType.Core, void> {
@@ -45,29 +45,14 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
       errorHandler: this.errorHandler.promiseCatch('fetching guild info for autocomplete')
     })
 
-    const ranksResolver = setTimeoutAsync(async () => this.resolveGuildRanks(), {
-      delay: Duration.seconds(10),
-      errorHandler: this.errorHandler.promiseCatch('resolving guild ranks')
-    })
-    application.on('minecraftSelfBroadcast', (): void => {
-      ranksResolver.refresh()
-    })
-    application.on('instanceAnnouncement', (event): void => {
-      if (event.instanceType === InstanceType.Minecraft) {
-        ranksResolver.refresh()
-      }
-    })
-
     this.sqliteManager.registerCleaner(() => {
       const database = this.sqliteManager.getDatabase()
       database.transaction(() => {
         const oldestTimestamp = Date.now() - Autocomplete.MaxLife.toMilliseconds()
         const cleanUsernames = database.prepare('DELETE FROM "autocompleteUsernames" WHERE timestamp < ?')
-        const cleanRanks = database.prepare('DELETE FROM "autocompleteRanks" WHERE timestamp < ?')
 
         let count = 0
         count += cleanUsernames.run(Math.floor(oldestTimestamp / 1000)).changes
-        count += cleanRanks.run(Math.floor(oldestTimestamp / 1000)).changes
         if (count > 0) this.logger.debug(`Deleted ${count} old autocomplete entry`)
       })()
     })
@@ -75,10 +60,6 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
 
   public username(query: string, limit: number): string[] {
     return this.fetch('autocompleteUsernames', query, limit)
-  }
-
-  public rank(query: string, limit: number): string[] {
-    return this.fetch('autocompleteRanks', query, limit)
   }
 
   private fetch(table: string, query: string, limit: number): string[] {
@@ -114,10 +95,6 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
     this.add('autocompleteUsernames', usernames)
   }
 
-  private addRanks(ranks: string[]): void {
-    this.add('autocompleteRanks', ranks)
-  }
-
   private add(table: string, entries: string[]): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
@@ -135,7 +112,6 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
   private async fetchGuildInfo(): Promise<void> {
     const tasks = []
     const usernames: string[] = []
-    const ranks: string[] = []
 
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       if (instance.currentStatus() !== Status.Connected) continue
@@ -145,7 +121,6 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
         .then((guild) => {
           for (const member of guild.members) {
             usernames.push(member.username)
-            ranks.push(member.rank)
           }
         })
         .catch(() => undefined)
@@ -156,27 +131,5 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
     await Promise.all(tasks)
 
     this.addUsernames(usernames)
-    this.addRanks(ranks)
-  }
-
-  private async resolveGuildRanks(): Promise<void> {
-    this.logger.debug('Resolving guild ranks from server')
-
-    const guildsResolver = this.application.minecraftManager
-      .getMinecraftBots()
-      .map((bots) => bots.uuid)
-      .map((uuid) => this.application.hypixelApi.getGuildByPlayer(uuid))
-
-    const guilds = await Promise.all(guildsResolver)
-    const ranks: string[] = []
-    for (const guild of guilds) {
-      if (guild === undefined) continue
-
-      for (const rank of guild.ranks) {
-        ranks.push(rank.name)
-      }
-    }
-
-    this.addRanks(ranks)
   }
 }
