@@ -99,7 +99,7 @@ export default class Bits extends ChatCommandHandler {
   }
 
   private async updatePrices(): Promise<void> {
-    const response = await DefaultAxios.get(`https://moulberry.codes/lowestbin.json`).then(
+    const response = await DefaultAxios.get(`https://api.eliteskyblock.com/resources/auctions/neu`).then(
       (response: AxiosResponse<Record<string, number>, unknown>) => response.data
     )
 
