@@ -54,14 +54,14 @@ export default class ClientSession {
 
       client.write('settings', {
         locale: 'en_us',
-        viewDistance: 8,
+        viewDistance: 2,
         chatFlags: 0,
         chatColors: true,
-        skinParts: 0x7f,
+        skinParts: 0,
         mainHand: 1,
         enableTextFiltering: false,
         enableServerListing: true,
-        particleStatus: 'all'
+        particleStatus: 2
       })
     })
   }
