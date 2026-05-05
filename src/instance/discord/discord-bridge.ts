@@ -176,7 +176,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       }
 
       const responsibleUser = 'responsible' in event ? event.responsible : undefined
-      if (responsibleUser !== undefined) {
+      if (responsibleUser !== undefined && responsibleUser.displayName() !== targetUser?.displayName()) {
         const username = responsibleUser.displayName()
         const clickableUsername = hyperlink(username, responsibleUser.profileLink())
         messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
