@@ -646,7 +646,10 @@ const ScrambleWords = [
   'Ragnarok',
   'Flaming Worm',
   'Lava Blaze',
-  'Lava Pigman'
+  'Lava Pigman',
+  'Manta Ray',
+  'Volcanic Snail',
+  'Magma Pillar'
 ]
 
 export async function startUnscramble(
