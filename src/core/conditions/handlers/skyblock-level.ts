@@ -31,7 +31,7 @@ export class SkyblockLevel extends ConditionHandler<SkyblockLevelOptions> {
     if (profiles.length === 0) return false
 
     const highestLevel = profiles
-      .map((profile) => (profile.leveling?.experience ?? 0) / 100)
+      .map((profile) => Math.floor((profile.leveling?.experience ?? 0) / 100))
       // eslint-disable-next-line unicorn/no-array-reduce
       .reduce((a, b) => Math.max(a, b))
 
