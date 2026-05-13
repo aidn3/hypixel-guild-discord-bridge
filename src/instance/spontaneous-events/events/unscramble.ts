@@ -585,8 +585,8 @@ const ScrambleWords = [
   'Old Shaman Nyko',
   'Sea Walker',
   'Squid',
-  'Night Squid',
-  'Sea Guardian',
+  'Inkling',
+  "Jumpin' Jack",
   'Sea Witch',
   'Sea Archer',
   'Rider of the Deep',
@@ -646,7 +646,10 @@ const ScrambleWords = [
   'Ragnarok',
   'Flaming Worm',
   'Lava Blaze',
-  'Lava Pigman'
+  'Lava Pigman',
+  'Manta Ray',
+  'Volcanic Snail',
+  'Magma Pillar'
 ]
 
 export async function startUnscramble(
