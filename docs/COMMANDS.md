@@ -137,6 +137,7 @@ A shorter version can also be used: `!- rtca`
 | --------------------- | ---------------------------------------------------------------- |
 | `/about`              | Display basic info about the client.                             |
 | `/accept`             | Accept a player to the guild if they have a join request in-game |
+| `/admin`              | Control application settings.                                    |
 | `/conditions`         | Manage conditions                                                |
 | `/connectivity`       | Check connectivity to Minecraft instances                        |
 | `/create-leaderboard` | Create a leaderboard message in this channel                     |
@@ -163,7 +164,7 @@ A shorter version can also be used: `!- rtca`
 | `/reconnect`          | Reconnect minecraft clients                                      |
 | `/restart`            | Send signal to restart the bridge                                |
 | `/setrank`            | Setrank guild member in-game                                     |
-| `/settings`           | Control application settings.                                    |
+| `/settings`           | Control bridge settings.                                         |
 | `/sync`               | Synchronize roles and other user options                         |
 | `/syncall`            | Synchronize roles and other options for all users                |
 | `/unlink`             | Unlink your Discord account from your Minecraft account          |

@@ -19,6 +19,7 @@ import type {
 } from '../common/user'
 import { User } from '../common/user'
 
+import { AdminConfigurations } from './admin-configurations'
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
 import { CommandsCooldown } from './commands/commands-cooldown'
@@ -86,6 +87,7 @@ export class Core extends Instance {
   public readonly applicationConfigurations: ApplicationConfigurations
   public readonly migrationConfigurations: MigrationConfigurations
   public readonly languageConfigurations: LanguageConfigurations
+  public readonly adminConfigurations: AdminConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
   public readonly commandsCooldown: CommandsCooldown
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
@@ -129,6 +131,7 @@ export class Core extends Instance {
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
+    this.adminConfigurations = new AdminConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
     this.commandsCooldown = new CommandsCooldown(this.sqliteManager, this.users)
     this.spontaneousEventsConfigurations = new SpontaneousEventsConfigurations(this.configurationsManager)

@@ -51,8 +51,7 @@ const CategoryLabel =
   `Check [the documentations](https://github.com/aidn3/hypixel-guild-discord-bridge/blob/master/docs/FAQ.md) for more information.`
 
 export default {
-  getCommandBuilder: () =>
-    new SlashCommandBuilder().setName('settings').setDescription('Control application settings.'),
+  getCommandBuilder: () => new SlashCommandBuilder().setName('settings').setDescription('Control bridge settings.'),
   origin: CommandOrigin.Bridge,
   permission: Permission.BridgeAdmin,
   addMinecraftInstancesToOptions: OptionMinecraftInstance.None,
@@ -1262,9 +1261,30 @@ async function minecraftInstanceAdd(
   interaction: ButtonInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<boolean> {
-  if (application.minecraftManager.getAllInstances().length >= MaxMinecraftInstances) {
+  const existingInstances = application.minecraftManager.getAllInstances()
+  if (existingInstances.length >= MaxMinecraftInstances) {
     await interaction.reply({
       content: `You can only have up to ${MaxMinecraftInstances} Minecraft instances.`,
+      flags: MessageFlags.Ephemeral
+    })
+    return true
+  }
+
+  const adminMaxMinecraft = application.core.adminConfigurations.getMaxMinecraft()
+  if (existingInstances.length >= adminMaxMinecraft) {
+    await interaction.reply({
+      content:
+        `Max Minecraft instances (set by the admin) have been reached.\n` +
+        `The entire application only allows up to ${adminMaxMinecraft}.\n` +
+        `Contact the application admin for help.`,
+      flags: MessageFlags.Ephemeral
+    })
+    return true
+  }
+
+  if (!application.core.adminConfigurations.getAllowCreateMinecraft()) {
+    await interaction.reply({
+      content: `The application admin has limited this feature.\nContact the admin for help.`,
       flags: MessageFlags.Ephemeral
     })
     return true
@@ -1301,7 +1321,7 @@ async function minecraftInstanceAdd(
 
             minLength: 0,
             maxLength: 1024,
-            required: false
+            required: application.core.adminConfigurations.getRequireProxy()
           }
         ]
       }

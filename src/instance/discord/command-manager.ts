@@ -31,6 +31,7 @@ import type MinecraftInstance from '../minecraft/minecraft-instance'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
+import AdminCommand from './commands/admin.js'
 import RolesCommand from './commands/conditions'
 import ConnectivityCommand from './commands/connectivity.js'
 import CreateLeaderboardCommand from './commands/create-leaderboard.js'
@@ -104,6 +105,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     const toAdd: DiscordCommandHandler[] = [
       AboutCommand,
       AcceptCommand,
+      AdminCommand,
       SettingsCommand,
       ConnectivityCommand,
       CreateLeaderboardCommand,
