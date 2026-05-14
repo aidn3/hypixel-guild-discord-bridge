@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 17
+const CurrentVersion = 18
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -64,6 +64,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(16, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom16to17(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(17, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom17to18(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -829,6 +832,16 @@ function migrateFrom16to17(database: Database, logger: Logger4Js, newlyCreated: 
   )
 
   database.pragma('user_version = 17')
+}
+
+function migrateFrom17to18(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 17 to 18')
+
+  // reference: hypixel/hypixel-database.ts
+  database.exec('DROP TABLE "hypixelApiRequest"')
+  database.exec('DROP TABLE "hypixelApiResponse"')
+
+  database.pragma('user_version = 18')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

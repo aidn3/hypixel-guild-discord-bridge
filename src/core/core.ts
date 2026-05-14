@@ -4,6 +4,8 @@
  */
 import assert from 'node:assert'
 
+import Logger from 'log4js'
+
 import type Application from '../application'
 import { Platform } from '../common/application-event'
 import { Instance } from '../common/instance'
@@ -32,6 +34,7 @@ import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-in
 import { DiscordLinkButton } from './discord/link-button'
 import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
+import { initializeHypixelDatabase } from './hypixel/initialize-hypixel'
 import { initializeCoreDatabase } from './initialize-database'
 import { LanguageConfigurations } from './language-configurations'
 import { MigrationConfigurations } from './migration-configurations'
@@ -98,6 +101,7 @@ export class Core extends Instance {
 
   // database
   private readonly sqliteManager: SqliteManager
+  private readonly hypixelManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
 
   public constructor(application: Application, hypixelApiKey: string, urchinApiKey: string | undefined) {
@@ -112,6 +116,14 @@ export class Core extends Instance {
       application.memoryOnly ? undefined : application.getConfigFilePath(sqliteName)
     )
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
+
+    const hypixelName = 'hypixel.sqlite'
+    this.hypixelManager = new SqliteManager(
+      application,
+      Logger.getLogger('Hypixel-API'),
+      application.memoryOnly ? undefined : application.getConfigFilePath(hypixelName)
+    )
+    initializeHypixelDatabase(this.hypixelManager, hypixelName)
 
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
     this.migrationConfigurations = new MigrationConfigurations(this.configurationsManager)
@@ -142,7 +154,7 @@ export class Core extends Instance {
 
     this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
-    this.hypixelApi = new Hypixel(hypixelApiKey, this.sqliteManager, this.logger)
+    this.hypixelApi = new Hypixel(hypixelApiKey, this.hypixelManager, this.logger)
     this.urchinApi = urchinApiKey === undefined ? undefined : new Urchin(urchinApiKey, this.logger)
 
     this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
@@ -225,6 +237,9 @@ export class Core extends Instance {
   public awaitReady(): void {
     this.sqliteManager.clean()
     this.sqliteManager.optimize()
+
+    this.hypixelManager.clean()
+    this.hypixelManager.optimize()
   }
 
   /**
