@@ -52,6 +52,7 @@ import MotdCommand from './commands/motd'
 import PingCommand from './commands/ping.js'
 import PlaceholderCommand from './commands/placeholder.js'
 import ProfanityCommand from './commands/profanity.js'
+import ProfileCommand from './commands/profile'
 import PromoteCommand from './commands/promote.js'
 import PunishmentsCommand from './commands/punishments.js'
 import ReconnectCommand from './commands/reconnect.js'
@@ -126,6 +127,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
       PingCommand,
       PlaceholderCommand,
       ProfanityCommand,
+      ProfileCommand,
       PromoteCommand,
       PunishmentsCommand,
       ReconnectCommand,

@@ -159,6 +159,7 @@ A shorter version can also be used: `!- rtca`
 | `/ping`               | Discord ping                                                     |
 | `/placeholder`        | Manage and help with placeholders                                |
 | `/profanity`          | Manage application profanity filter                              |
+| `/profile`            | Customize Bot profile inside a Discord server.                   |
 | `/promote`            | Promote guild member in-game                                     |
 | `/punishments`        | Manage active punishments                                        |
 | `/reconnect`          | Reconnect minecraft clients                                      |
