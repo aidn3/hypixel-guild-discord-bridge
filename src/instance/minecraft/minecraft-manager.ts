@@ -51,12 +51,6 @@ export class MinecraftManager extends Instance {
   }
 
   public async initiateAndStart(config: MinecraftInstanceConfig): Promise<MinecraftInstance> {
-    if (
-      this.getAllInstances().some((instance) => instance.getConfigName().toLowerCase() === config.name.toLowerCase())
-    ) {
-      throw new Error('Minecraft instance name already exists')
-    }
-
     const instance = new MinecraftInstance(this.application, config)
     this.instances.add(instance)
 

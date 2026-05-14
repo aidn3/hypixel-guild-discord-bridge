@@ -1333,6 +1333,18 @@ async function minecraftInstanceAdd(
     })
   }
 
+  if (
+    application.minecraftManager
+      .getAllInstances()
+      .some((instance) => instance.getConfigName().toLowerCase() === instanceName.toLowerCase())
+  ) {
+    await interaction.reply({
+      content: `Minecraft instance name already exists: **${escapeMarkdown(instanceName)}**`,
+      flags: MessageFlags.Ephemeral
+    })
+    return true
+  }
+
   let proxy: ProxyConfig | undefined = undefined
   if (proxyOptions.length > 0) {
     try {
