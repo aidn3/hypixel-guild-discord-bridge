@@ -336,16 +336,11 @@ async function handleForgive(
     'User has been removed from all internal punishments list.\n' +
     'User will be treated as if never punished before.'
 
-  const mojangProfile = target.mojangProfile()
-  let command: string | undefined
-  if (mojangProfile !== undefined) {
-    command = `/guild unmute ${mojangProfile.id}`
-  }
+  const forgivenPunishments = await target.forgive(context.eventHelper.fillBaseEvent())
 
-  const post = async () => {
+  const post = () => {
     let result = '## Forgiven punishment(s)\n'
 
-    const forgivenPunishments = await target.forgive(context.eventHelper.fillBaseEvent())
     if (forgivenPunishments.length === 0) {
       result += 'No saved punishment found to forgive. All good!'
     } else {
@@ -358,7 +353,7 @@ async function handleForgive(
     return result.trimEnd()
   }
 
-  await takeAction(context, responsible, target, header, HeatType.Mute, command, UnmuteChat, post)
+  await takeAction(context, responsible, target, header, HeatType.Mute, undefined, UnmuteChat, post)
 }
 
 async function handleEdit(

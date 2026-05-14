@@ -43,7 +43,7 @@ function createEmbed(instances: Map<MinecraftInstance, string[]>): APIEmbed {
     footer: {
       text: DefaultCommandFooter
     }
-  } as APIEmbed
+  }
 }
 
 export default {

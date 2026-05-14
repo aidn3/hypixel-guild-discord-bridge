@@ -49,7 +49,9 @@ export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions> 
         .then((museum) => museum.members[uuid] as object)
 
       const calculator = new ProfileNetworthCalculator(profile.members[uuid], museumData, profile.banking?.balance ?? 0)
-      const networth = await calculator.getNetworth({ onlyNetworth: true }).then((response) => response.networth)
+      const networth = Math.floor(
+        await calculator.getNetworth({ onlyNetworth: true }).then((response) => response.networth)
+      )
       if (condition.fromValue <= networth && condition.toValue >= networth) return true
     }
 

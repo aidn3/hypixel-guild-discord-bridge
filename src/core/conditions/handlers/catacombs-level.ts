@@ -37,7 +37,7 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
       // eslint-disable-next-line unicorn/no-array-reduce
       .reduce((a, b) => Math.max(a, b))
 
-    const level = getDungeonLevelWithOverflow(highestExperience)
+    const level = Math.floor(getDungeonLevelWithOverflow(highestExperience))
     return level >= condition.fromLevel && level <= condition.toLevel
   }
 

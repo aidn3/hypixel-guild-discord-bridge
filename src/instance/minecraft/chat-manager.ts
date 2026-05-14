@@ -96,9 +96,11 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
   override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      void this.onMessage(chatMessage.toString(), chatMessage.toMotd(), chatMessage.json).catch(
-        this.errorHandler.promiseCatch('processing minecraft raw chat')
-      )
+      void this.onMessage(
+        chatMessage.toString(),
+        chatMessage.toMotd(),
+        this.normalizeJsonMessage(chatMessage.json)
+      ).catch(this.errorHandler.promiseCatch('processing minecraft raw chat'))
     })
 
     clientSession.client.on('playerChat', (data: object) => {
@@ -111,6 +113,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
   private async onFormattedMessage(clientSession: ClientSession, data: object): Promise<void> {
     const message = (data as { formattedMessage?: string }).formattedMessage
     let resultMessage: ChatMessage & Partial<{ unsigned: ChatMessage }>
+    let jsonMessage: unknown
 
     if (this.minecraftData.supportFeature('clientsideChatFormatting')) {
       const verifiedPacket = data as {
@@ -120,9 +123,11 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
         unsignedContent?: string
         type: number
       }
+      const rawContent = message ?? verifiedPacket.unsignedContent
       const parameters: { content: object; sender?: object; target?: object } = {
-        content: message ? (JSON.parse(message) as object) : { text: verifiedPacket.plainMessage }
+        content: rawContent ? (JSON.parse(rawContent) as object) : { text: verifiedPacket.plainMessage }
       }
+      jsonMessage = this.normalizeJsonMessage(parameters.content)
 
       if (verifiedPacket.senderName) {
         Object.assign(parameters, { sender: JSON.parse(verifiedPacket.senderName) as object })
@@ -130,7 +135,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
       if (verifiedPacket.targetName) {
         Object.assign(parameters, { target: JSON.parse(verifiedPacket.targetName) as object })
       }
-      resultMessage = clientSession.prismChat.fromNetwork(verifiedPacket.type, parameters as Record<string, object>)
+      resultMessage = clientSession.prismChat.fromNetwork(verifiedPacket.type, parameters)
 
       if (verifiedPacket.unsignedContent) {
         resultMessage.unsigned = clientSession.prismChat.fromNetwork(verifiedPacket.type, {
@@ -144,9 +149,45 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
     } else {
       assert.ok(message) // old packet means message exists
       resultMessage = clientSession.prismChat.fromNotch(message)
+      jsonMessage = this.normalizeJsonMessage(resultMessage.json)
     }
 
-    await this.onMessage(resultMessage.toString(), resultMessage.toMotd(), resultMessage.json)
+    await this.onMessage(resultMessage.toString(), resultMessage.toMotd(), jsonMessage)
+  }
+
+  private normalizeJsonMessage(jsonMessage: unknown): unknown {
+    if (Array.isArray(jsonMessage)) {
+      return jsonMessage.map((entry: unknown) => this.normalizeJsonMessage(entry))
+    }
+
+    if (typeof jsonMessage !== 'object' || jsonMessage == undefined) {
+      return jsonMessage
+    }
+
+    const normalized = Object.fromEntries(
+      Object.entries(jsonMessage as Record<string, unknown>).map(
+        ([key, value]: [string, unknown]): [string, unknown] => [key, this.normalizeJsonMessage(value)]
+      )
+    ) as Record<string, unknown>
+
+    const clickEvent = normalized.click_event as
+      | { action?: unknown; command?: unknown; value?: { command?: { value?: unknown } } }
+      | undefined
+    const clickCommand =
+      typeof clickEvent?.command === 'string'
+        ? clickEvent.command
+        : typeof clickEvent?.value?.command?.value === 'string'
+          ? clickEvent.value.command.value
+          : undefined
+
+    if (clickCommand && normalized.clickEvent == undefined) {
+      normalized.clickEvent = {
+        action: typeof clickEvent?.action === 'string' ? clickEvent.action : 'run_command',
+        value: clickCommand
+      }
+    }
+
+    return normalized
   }
 
   private async onMessage(message: string, rawMessage: string, jsonMessage: unknown): Promise<void> {

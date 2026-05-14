@@ -79,7 +79,7 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
     lastPage.description += entry
   }
 
-  return pages as APIEmbed[]
+  return pages
 }
 
 export default {

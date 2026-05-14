@@ -36,9 +36,9 @@ export default class MinecraftInstance extends ConnectableInstance {
     // increased from 30 seconds to 60 seconds to reduce connection dropouts
     checkTimeoutInterval: Duration.seconds(60).toMilliseconds(),
 
-    host: 'me.hypixel.net',
+    host: 'mc.hypixel.net',
     port: 25_565,
-    version: '1.8.9'
+    version: '1.21.11'
   }
 
   private clientSession: ClientSession | undefined
@@ -252,8 +252,15 @@ export default class MinecraftInstance extends ConnectableInstance {
       .map((chunk) => chunk.trim())
       .join(' ')
 
-    if (message.length > 256) {
-      message = message.slice(0, 253) + '...'
+    if (Buffer.byteLength(message, 'utf8') > 256) {
+      let truncated = ''
+
+      for (const char of message) {
+        if (Buffer.byteLength(truncated + char + '...', 'utf8') > 256) break
+        truncated += char
+      }
+
+      message = truncated + '...'
 
       if (originEventId !== undefined) {
         await this.application.emit('instanceReactive', {

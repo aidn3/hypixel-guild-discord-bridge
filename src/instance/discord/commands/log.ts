@@ -38,7 +38,7 @@ function formatEmbed(chatResult: ChatResult, targetInstance: MinecraftInstance):
     footer: {
       text: DefaultCommandFooter
     }
-  } as APIEmbed
+  }
 }
 
 export default {
