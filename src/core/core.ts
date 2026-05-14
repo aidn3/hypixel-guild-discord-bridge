@@ -148,16 +148,31 @@ export class Core extends Instance {
     this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
     this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
-    this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.enforcer = new PunishmentsEnforcer(
+      application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
 
-    this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.guildManager = new GuildManager(
+      application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.autoComplete = new Autocomplete(
       application,
       this,
       this.eventHelper,
       this.logger,
       this.errorHandler,
-      this.sqliteManager
+      this.sqliteManager,
+      this.abortController.signal
     )
 
     this.verification = new Verification(this.sqliteManager)
@@ -167,7 +182,8 @@ export class Core extends Instance {
       this.eventHelper,
       this.logger,
       this.errorHandler,
-      this.sqliteManager
+      this.sqliteManager,
+      this.abortController.signal
     )
   }
 

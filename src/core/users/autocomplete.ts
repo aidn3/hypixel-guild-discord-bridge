@@ -21,9 +21,10 @@ export default class Autocomplete extends SubInstance<Core, void> {
     eventHelper: EventHelper<Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
-    private readonly sqliteManager: SqliteManager
+    private readonly sqliteManager: SqliteManager,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     application.on('chat', (event) => {
       this.addUsernames([event.user.displayName()])

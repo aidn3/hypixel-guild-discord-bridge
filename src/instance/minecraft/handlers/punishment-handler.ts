@@ -21,14 +21,19 @@ export default class PunishmentHandler extends SubInstance<MinecraftInstance, Cl
     clientInstance: MinecraftInstance,
     eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.application.on('guildPlayer', async (event) => {
-      if (event.instance !== this.clientInstance) return
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
+    this.application.on(
+      'guildPlayer',
+      async (event) => {
+        if (event.instance !== this.clientInstance) return
 
-      await this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
-    })
+        await this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
+      },
+      { signal: this.abortSignal }
+    )
   }
 
   private async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {

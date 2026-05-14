@@ -21,9 +21,10 @@ export default class PunishmentsEnforcer extends SubInstance<Core, void> {
     instance: Core,
     eventHelper: EventHelper<Core>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, instance, eventHelper, logger, errorHandler)
+    super(application, instance, eventHelper, logger, errorHandler, abortSignal)
 
     this.application.on('guildPlayer', async (event) => {
       await this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))

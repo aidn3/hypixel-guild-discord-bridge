@@ -28,6 +28,7 @@ export class MinecraftStatus extends Instance {
       this.eventHelper,
       this.logger,
       this.errorHandler,
+      this.abortController.signal,
       this.statusDatabase,
       this.buttonDatabase
     )

@@ -75,9 +75,10 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     clientInstance: DiscordInstance,
     eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
     this.addDefaultCommands()
   }
 

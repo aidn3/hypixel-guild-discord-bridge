@@ -44,6 +44,7 @@ export default class MinecraftInstance extends ConnectableInstance {
   private clientSession: ClientSession | undefined
 
   private stateHandler: StateHandler
+
   private selfbroadcastHandler: SelfbroadcastHandler
   private chatManager: ChatManager
   private punishmentHandler: PunishmentHandler
@@ -51,8 +52,8 @@ export default class MinecraftInstance extends ConnectableInstance {
   private reactionHandler: Reaction
   private playerMuted: PlayerMuted
   private limboHandler: LimboHandler
-
   private readonly messageAssociation: MessageAssociation
+
   private readonly bridge: MinecraftBridge
   private readonly sendQueue: SendQueue
 
@@ -64,18 +65,33 @@ export default class MinecraftInstance extends ConnectableInstance {
     this.config = config
 
     this.messageAssociation = new MessageAssociation()
-    this.bridge = new MinecraftBridge(app, this, this.logger, this.errorHandler, this.messageAssociation)
-    this.sendQueue = new SendQueue(this.errorHandler, (command) => {
+    this.bridge = new MinecraftBridge(
+      app,
+      this,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal,
+      this.messageAssociation
+    )
+    this.sendQueue = new SendQueue(this.abortController.signal, this.errorHandler, (command) => {
       this.sendNow(command)
     })
 
-    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.stateHandler = new StateHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.selfbroadcastHandler = new SelfbroadcastHandler(
       this.application,
       this,
       this.eventHelper,
       this.logger,
-      this.errorHandler
+      this.errorHandler,
+      this.abortController.signal
     )
     this.chatManager = new ChatManager(
       this.application,
@@ -83,19 +99,49 @@ export default class MinecraftInstance extends ConnectableInstance {
       this.eventHelper,
       this.logger,
       this.errorHandler,
+      this.abortController.signal,
       this.messageAssociation
     )
-    this.gameToggle = new GameTogglesHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.gameToggle = new GameTogglesHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.punishmentHandler = new PunishmentHandler(
       this.application,
       this,
       this.eventHelper,
       this.logger,
-      this.errorHandler
+      this.errorHandler,
+      this.abortController.signal
     )
-    this.limboHandler = new LimboHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.reactionHandler = new Reaction(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.playerMuted = new PlayerMuted(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.limboHandler = new LimboHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.reactionHandler = new Reaction(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.playerMuted = new PlayerMuted(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
   }
 
   override async signal(type: InstanceSignalType): Promise<void> {
@@ -147,10 +193,22 @@ export default class MinecraftInstance extends ConnectableInstance {
     return this.config.proxy !== undefined
   }
 
+  public override destroy(reason?: string): void {
+    if (this.clientSession !== undefined) {
+      assert.ok(this.clientSession.isDestroyed())
+    }
+
+    super.destroy(reason)
+  }
+
   async connect(): Promise<void> {
     if (this.clientSession !== undefined) {
       this.clientSession.silentQuit = true
       this.clientSession.client.end(QuitOwnVolition)
+
+      // wait till next cycle to let the clients close properly
+      await setImmediate()
+      this.clientSession.destroy()
     }
 
     this.stateHandler.resetLoginAttempts()
@@ -158,6 +216,8 @@ export default class MinecraftInstance extends ConnectableInstance {
   }
 
   public async automaticReconnect(): Promise<void> {
+    assert.ok(!this.abortController.signal.aborted)
+
     const autoConnect = this.application.core.minecraftSessions.getInstanceAutoConnect(this.config.name)
     if (!autoConnect) {
       this.logger.debug(
@@ -171,19 +231,24 @@ export default class MinecraftInstance extends ConnectableInstance {
       return
     }
 
+    const msaReference = new WeakRef((text: string) => {
+      void this.broadcastInstanceMessage({
+        type: InstanceMessageType.MinecraftAuthenticationCode,
+        value: text
+      }).catch(this.errorHandler.promiseCatch('broadcasting authentication code'))
+    })
+
     const client = createClient({
       ...this.defaultBotConfig,
       username: this.config.name,
       auth: 'microsoft',
-      // @ts-expect-error profilesFolder is directly passed to 'prismarine-auth'.Authflow, which that library also allow a factory function
+      // @ts-expect-error profilesFolder is directly passed to 'prismarine-auth' .Authflow, which that library also allow a factory function
       profilesFolder: this.application.core.minecraftSessions.getSessionsFactory(this.config.name),
 
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {
-        void this.broadcastInstanceMessage({
-          type: InstanceMessageType.MinecraftAuthenticationCode,
-          value: `${code.verification_uri}?otc=${code.user_code}`
-        }).catch(this.errorHandler.promiseCatch('broadcasting authentication code'))
+        const caller = msaReference.deref()
+        if (caller) caller(`${code.verification_uri}?otc=${code.user_code}`)
       }
     })
 
@@ -206,6 +271,7 @@ export default class MinecraftInstance extends ConnectableInstance {
     // wait till next cycle to let the clients close properly
     await setImmediate()
     await this.setAndBroadcastNewStatus(Status.Ended)
+    this.clientSession?.destroy()
   }
 
   username(): string | undefined {

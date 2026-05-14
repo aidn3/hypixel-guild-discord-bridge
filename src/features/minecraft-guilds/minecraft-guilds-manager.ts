@@ -52,6 +52,7 @@ export class MinecraftGuildsManager extends Instance {
       this.eventHelper,
       this.logger,
       this.errorHandler,
+      this.abortController.signal,
       this.database,
       this.detectionQueue
     )
@@ -60,6 +61,7 @@ export class MinecraftGuildsManager extends Instance {
     this.application.registerChatCommand(new Sync(this.database))
     this.application.registerChatCommand(new SyncGuild(this.database))
     this.application.registerChatCommand(new Invite(this.database))
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     this.application.registerDiscordCommand({
       ...DiscordGuildCommand,
       handler: (context) => discordGuildCommandHandler(context, this.database, this.waitlistInteraction),

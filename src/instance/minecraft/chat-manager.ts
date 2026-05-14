@@ -54,9 +54,10 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
     eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
     private readonly messageAssociation: MessageAssociation
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     this.minecraftData = GetMinecraftData(clientInstance.defaultBotConfig.version)
 

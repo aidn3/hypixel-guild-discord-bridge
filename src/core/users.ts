@@ -30,7 +30,7 @@ export class Users {
       const insertResult = insert.run(user.userId, user.originInstance)
       assert.strictEqual(insertResult.changes, 1)
 
-      return insertResult.lastInsertRowid as unknown as UserId
+      return insertResult.lastInsertRowid
     })
 
     return transaction()

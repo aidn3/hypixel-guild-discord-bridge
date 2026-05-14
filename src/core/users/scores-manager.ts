@@ -39,9 +39,10 @@ export default class ScoresManager extends SubInstance<Core, void> {
     eventHelper: EventHelper<Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
-    sqliteManager: SqliteManager
+    sqliteManager: SqliteManager,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     this.database = new ScoreDatabase(this, sqliteManager)
 

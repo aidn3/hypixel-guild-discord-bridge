@@ -16,29 +16,34 @@ export default class PlayerMuted extends SubInstance<MinecraftInstance, ClientSe
     clientInstance: MinecraftInstance,
     eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
-    this.application.on('chat', async (event) => {
-      if (event.instance !== this.clientInstance || event.platform !== Platform.Minecraft) return
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
+    this.application.on(
+      'chat',
+      async (event) => {
+        if (event.instance !== this.clientInstance || event.platform !== Platform.Minecraft) return
 
-      if (!this.application.core.minecraftConfigurations.getAnnounceMutedPlayer()) return
+        if (!this.application.core.minecraftConfigurations.getAnnounceMutedPlayer()) return
 
-      if (!event.message.startsWith("Hey! I'm currently muted")) return
-      if (!event.rawMessage.includes('§eHey!')) return
+        if (!event.message.startsWith("Hey! I'm currently muted")) return
+        if (!event.rawMessage.includes('§eHey!')) return
 
-      let message = this.application.core.languageConfigurations.getAnnounceMutedPlayer()
-      message = message.replaceAll('{username}', event.user.displayName())
+        let message = this.application.core.languageConfigurations.getAnnounceMutedPlayer()
+        message = message.replaceAll('{username}', event.user.displayName())
 
-      await this.application.emit('broadcast', {
-        ...this.eventHelper.fillBaseEvent(),
+        await this.application.emit('broadcast', {
+          ...this.eventHelper.fillBaseEvent(),
 
-        channels: [ChannelType.Public],
-        color: Color.Default,
+          channels: [ChannelType.Public],
+          color: Color.Default,
 
-        user: event.user,
-        message: message
-      })
-    })
+          user: event.user,
+          message: message
+        })
+      },
+      { signal: this.abortSignal }
+    )
   }
 }

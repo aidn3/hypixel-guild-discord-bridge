@@ -43,10 +43,11 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
     eventHelper: EventHelper<MinecraftStatus>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
     private readonly statusDatabase: StatusDatabase,
     private readonly buttonDatabase: ButtonDatabase
   ) {
-    super(application, instance, eventHelper, logger, errorHandler)
+    super(application, instance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = this.application.discordInstance.getClient()
     client.on('interactionCreate', (interaction) => {

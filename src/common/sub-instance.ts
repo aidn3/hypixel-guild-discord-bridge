@@ -8,25 +8,14 @@ import type { Instance } from './instance.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
 export default abstract class SubInstance<K extends ConnectableInstance | Instance, O> {
-  protected application: Application
-  protected clientInstance: K
-  protected eventHelper: EventHelper<K>
-  protected logger: Logger
-  protected errorHandler: UnexpectedErrorHandler
-
   public constructor(
-    application: Application,
-    clientInstance: K,
-    eventHelper: EventHelper<K>,
-    logger: Logger,
-    errorHandler: UnexpectedErrorHandler
-  ) {
-    this.application = application
-    this.clientInstance = clientInstance
-    this.eventHelper = eventHelper
-    this.logger = logger
-    this.errorHandler = errorHandler
-  }
+    protected readonly application: Application,
+    protected readonly clientInstance: K,
+    protected readonly eventHelper: EventHelper<K>,
+    protected readonly logger: Logger,
+    protected readonly errorHandler: UnexpectedErrorHandler,
+    protected readonly abortSignal: AbortSignal
+  ) {}
 
   /**
    * Called every time the client reconnects.

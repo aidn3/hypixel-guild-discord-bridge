@@ -30,9 +30,10 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
     clientInstance: DiscordInstance,
     eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     setIntervalAsync(async () => this.updateLeaderboards(), {
       delay: Leaderboard.CheckUpdateEvery,

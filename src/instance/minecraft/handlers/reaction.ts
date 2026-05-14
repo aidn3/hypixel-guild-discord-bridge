@@ -43,79 +43,84 @@ export default class Reaction extends SubInstance<MinecraftInstance, ClientSessi
     clientInstance: MinecraftInstance,
     eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
-    this.application.on('guildPlayer', async (event) => {
-      if (event.instance !== this.clientInstance) return
+    this.application.on(
+      'guildPlayer',
+      async (event) => {
+        if (event.instance !== this.clientInstance) return
 
-      if (
-        event.type === GuildPlayerEventType.Join &&
-        this.application.core.minecraftConfigurations.getJoinGuildReaction()
-      ) {
-        const messages = this.application.core.languageConfigurations.getGuildJoinReaction()
-        if (messages.length === 0) {
-          this.logger.error('There is no guild join reaction messages. Dropping the reaction entirely.')
-          return
+        if (
+          event.type === GuildPlayerEventType.Join &&
+          this.application.core.minecraftConfigurations.getJoinGuildReaction()
+        ) {
+          const messages = this.application.core.languageConfigurations.getGuildJoinReaction()
+          if (messages.length === 0) {
+            this.logger.error('There is no guild join reaction messages. Dropping the reaction entirely.')
+            return
+          }
+          let message = messages[Math.floor(Math.random() * messages.length)]
+          message = message.replaceAll('{username}', event.user.displayName())
+
+          await this.application.emit('broadcast', {
+            ...this.eventHelper.fillBaseEvent(),
+
+            channels: [ChannelType.Public],
+            color: Color.Good,
+
+            user: event.user,
+            message: message
+          })
         }
-        let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.user.displayName())
 
-        await this.application.emit('broadcast', {
-          ...this.eventHelper.fillBaseEvent(),
+        if (
+          event.type === GuildPlayerEventType.Leave &&
+          this.application.core.minecraftConfigurations.getLeaveGuildReaction()
+        ) {
+          const messages = this.application.core.languageConfigurations.getGuildLeaveReaction()
+          if (messages.length === 0) {
+            this.logger.error('There is no guild leave reaction messages. Dropping the reaction entirely.')
+            return
+          }
+          let message = messages[Math.floor(Math.random() * messages.length)]
+          message = message.replaceAll('{username}', event.user.displayName())
+          await this.application.emit('broadcast', {
+            ...this.eventHelper.fillBaseEvent(),
 
-          channels: [ChannelType.Public],
-          color: Color.Good,
+            channels: [ChannelType.Public],
+            color: Color.Bad,
 
-          user: event.user,
-          message: message
-        })
-      }
-
-      if (
-        event.type === GuildPlayerEventType.Leave &&
-        this.application.core.minecraftConfigurations.getLeaveGuildReaction()
-      ) {
-        const messages = this.application.core.languageConfigurations.getGuildLeaveReaction()
-        if (messages.length === 0) {
-          this.logger.error('There is no guild leave reaction messages. Dropping the reaction entirely.')
-          return
+            user: event.user,
+            message: message
+          })
         }
-        let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.user.displayName())
-        await this.application.emit('broadcast', {
-          ...this.eventHelper.fillBaseEvent(),
 
-          channels: [ChannelType.Public],
-          color: Color.Bad,
+        if (
+          event.type === GuildPlayerEventType.Kick &&
+          this.application.core.minecraftConfigurations.getKickGuildReaction()
+        ) {
+          const messages = this.application.core.languageConfigurations.getGuildKickReaction()
+          if (messages.length === 0) {
+            this.logger.error('There is no guild kick reaction messages. Dropping the reaction entirely.')
+            return
+          }
+          let message = messages[Math.floor(Math.random() * messages.length)]
+          message = message.replaceAll('{username}', event.user.displayName())
+          await this.application.emit('broadcast', {
+            ...this.eventHelper.fillBaseEvent(),
 
-          user: event.user,
-          message: message
-        })
-      }
+            channels: [ChannelType.Public],
+            color: Color.Bad,
 
-      if (
-        event.type === GuildPlayerEventType.Kick &&
-        this.application.core.minecraftConfigurations.getKickGuildReaction()
-      ) {
-        const messages = this.application.core.languageConfigurations.getGuildKickReaction()
-        if (messages.length === 0) {
-          this.logger.error('There is no guild kick reaction messages. Dropping the reaction entirely.')
-          return
+            user: event.user,
+            message: message
+          })
         }
-        let message = messages[Math.floor(Math.random() * messages.length)]
-        message = message.replaceAll('{username}', event.user.displayName())
-        await this.application.emit('broadcast', {
-          ...this.eventHelper.fillBaseEvent(),
-
-          channels: [ChannelType.Public],
-          color: Color.Bad,
-
-          user: event.user,
-          message: message
-        })
-      }
-    })
+      },
+      { signal: this.abortSignal }
+    )
   }
 }

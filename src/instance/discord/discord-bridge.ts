@@ -56,20 +56,25 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     messageAssociation: MessageAssociation,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
-    staticDiscordConfig: StaticDiscordConfig
+    staticDiscordConfig: StaticDiscordConfig,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, logger, errorHandler)
+    super(application, clientInstance, logger, errorHandler, abortSignal)
 
     this.messageAssociation = messageAssociation
     this.staticConfig = staticDiscordConfig
 
     this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance)
 
-    this.application.on('instanceReactive', async (event) => {
-      await this.queue
-        .add(async () => this.onInstanceReactiveEvent(event))
-        .catch(this.errorHandler.promiseCatch('handling event instanceReactive'))
-    })
+    this.application.on(
+      'instanceReactive',
+      async (event) => {
+        await this.queue
+          .add(async () => this.onInstanceReactiveEvent(event))
+          .catch(this.errorHandler.promiseCatch('handling event instanceReactive'))
+      },
+      { signal: this.abortSignal }
+    )
   }
 
   async onInstance(event: InstanceStatus): Promise<void> {

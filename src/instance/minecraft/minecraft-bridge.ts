@@ -41,9 +41,10 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     clientInstance: MinecraftInstance,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
     private readonly messageAssociation: MessageAssociation
   ) {
-    super(application, clientInstance, logger, errorHandler)
+    super(application, clientInstance, logger, errorHandler, abortSignal)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

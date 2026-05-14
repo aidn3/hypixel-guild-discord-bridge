@@ -60,10 +60,11 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     eventHelper: EventHelper<MinecraftGuildsManager>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
     private readonly database: Database,
     private readonly queue: PromiseQueue
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = this.clientInstance.discordClient()
     client.on('interactionCreate', (interaction) => {

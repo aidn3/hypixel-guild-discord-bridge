@@ -22,71 +22,103 @@ import type UnexpectedErrorHandler from './unexpected-error-handler.js'
  * to integrate bridge to other services. Use this class as a base when connecting two services.
  */
 export default abstract class Bridge<K extends Instance> {
-  protected readonly application: Application
-  protected readonly clientInstance: K
-
-  protected readonly logger: Logger
-  protected readonly errorHandler: UnexpectedErrorHandler
   protected readonly queue: PromiseQueue = new PromiseQueue(1)
 
   protected constructor(
-    application: Application,
-    clientInstance: K,
-    logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    protected readonly application: Application,
+    protected readonly clientInstance: K,
+    protected readonly logger: Logger,
+    protected readonly errorHandler: UnexpectedErrorHandler,
+    protected readonly abortSignal: AbortSignal
   ) {
     this.application = application
     this.clientInstance = clientInstance
     this.logger = logger
     this.errorHandler = errorHandler
 
-    this.application.on('command', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onCommand(event)))
-        .catch(this.errorHandler.promiseCatch('handling command event'))
-    })
-    this.application.on('commandFeedback', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onCommandFeedback(event)))
-        .catch(this.errorHandler.promiseCatch('handling command feedback'))
-    })
-    this.application.on('commandSuggestion', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onCommandSuggestion(event)))
-        .catch(this.errorHandler.promiseCatch('handling command suggestion'))
-    })
+    this.application.on(
+      'command',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onCommand(event)))
+          .catch(this.errorHandler.promiseCatch('handling command event'))
+      },
+      { signal: this.abortSignal }
+    )
+    this.application.on(
+      'commandFeedback',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onCommandFeedback(event)))
+          .catch(this.errorHandler.promiseCatch('handling command feedback'))
+      },
+      { signal: this.abortSignal }
+    )
+    this.application.on(
+      'commandSuggestion',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onCommandSuggestion(event)))
+          .catch(this.errorHandler.promiseCatch('handling command suggestion'))
+      },
+      { signal: this.abortSignal }
+    )
 
-    this.application.on('chat', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onChat(event)))
-        .catch(this.errorHandler.promiseCatch('handling chat event'))
-    })
+    this.application.on(
+      'chat',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onChat(event)))
+          .catch(this.errorHandler.promiseCatch('handling chat event'))
+      },
+      { signal: this.abortSignal }
+    )
 
-    this.application.on('guildPlayer', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onGuildPlayer(event)))
-        .catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
-    })
-    this.application.on('guildGeneral', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onGuildGeneral(event)))
-        .catch(this.errorHandler.promiseCatch('handling guildGeneral event'))
-    })
-    this.application.on('minecraftChatEvent', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onMinecraftChatEvent(event)))
-        .catch(this.errorHandler.promiseCatch('handling minecraftChat event'))
-    })
-    this.application.on('instanceStatus', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onInstance(event)))
-        .catch(this.errorHandler.promiseCatch('handling instance event'))
-    })
-    this.application.on('broadcast', async (event) => {
-      await this.queue
-        .add(() => Promise.resolve(this.onBroadcast(event)))
-        .catch(this.errorHandler.promiseCatch('handling broadcast event'))
-    })
+    this.application.on(
+      'guildPlayer',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onGuildPlayer(event)))
+          .catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
+      },
+      { signal: this.abortSignal }
+    )
+    this.application.on(
+      'guildGeneral',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onGuildGeneral(event)))
+          .catch(this.errorHandler.promiseCatch('handling guildGeneral event'))
+      },
+      { signal: this.abortSignal }
+    )
+    this.application.on(
+      'minecraftChatEvent',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onMinecraftChatEvent(event)))
+          .catch(this.errorHandler.promiseCatch('handling minecraftChat event'))
+      },
+      { signal: this.abortSignal }
+    )
+    this.application.on(
+      'instanceStatus',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onInstance(event)))
+          .catch(this.errorHandler.promiseCatch('handling instance event'))
+      },
+      { signal: this.abortSignal }
+    )
+    this.application.on(
+      'broadcast',
+      async (event) => {
+        await this.queue
+          .add(() => Promise.resolve(this.onBroadcast(event)))
+          .catch(this.errorHandler.promiseCatch('handling broadcast event'))
+      },
+      { signal: this.abortSignal }
+    )
   }
 
   protected abstract onCommand(event: CommandEvent): void | Promise<void>

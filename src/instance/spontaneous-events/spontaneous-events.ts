@@ -31,10 +31,39 @@ export class SpontaneousEvents extends Instance {
       await this.singletonPromise.add(() => this.handlePublicChatEvent(event.user, event.createdAt))
     })
 
-    this.registerEvent(new QuickMath(this.application, this, this.eventHelper, this.logger, this.errorHandler))
-    this.registerEvent(new CountingChain(this.application, this, this.eventHelper, this.logger, this.errorHandler))
-    this.registerEvent(new Unscramble(this.application, this, this.eventHelper, this.logger, this.errorHandler))
-    this.registerEvent(new Trivia(this.application, this, this.eventHelper, this.logger, this.errorHandler))
+    this.registerEvent(
+      new QuickMath(
+        this.application,
+        this,
+        this.eventHelper,
+        this.logger,
+        this.errorHandler,
+        this.abortController.signal
+      )
+    )
+    this.registerEvent(
+      new CountingChain(
+        this.application,
+        this,
+        this.eventHelper,
+        this.logger,
+        this.errorHandler,
+        this.abortController.signal
+      )
+    )
+    this.registerEvent(
+      new Unscramble(
+        this.application,
+        this,
+        this.eventHelper,
+        this.logger,
+        this.errorHandler,
+        this.abortController.signal
+      )
+    )
+    this.registerEvent(
+      new Trivia(this.application, this, this.eventHelper, this.logger, this.errorHandler, this.abortController.signal)
+    )
   }
 
   public registerEvent(handler: SpontaneousEventHandler): void {

@@ -18,9 +18,10 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
     clientInstance: DiscordInstance,
     eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = clientInstance.getClient()
     client.on('guildDelete', (guild) => {

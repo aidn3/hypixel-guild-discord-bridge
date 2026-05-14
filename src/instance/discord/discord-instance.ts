@@ -66,27 +66,71 @@ export default class DiscordInstance extends ConnectableInstance {
       this.application.core.discordMessagesDeleted(messages.map((message) => message.id))
     })
 
-    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.emojiHandler = new EmojiHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.stateHandler = new StateHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.statusHandler = new StatusHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.emojiHandler = new EmojiHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.chatManager = new ChatManager(
       this.application,
       this,
       this.messageAssociation,
       this.eventHelper,
       this.logger,
-      this.errorHandler
+      this.errorHandler,
+      this.abortController.signal
     )
-    this.commandsManager = new CommandManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.leaderboard = new Leaderboard(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.commandsManager = new CommandManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.leaderboard = new Leaderboard(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.conditionsManager = new ConditionsManager(
       this.application,
       this,
       this.eventHelper,
       this.logger,
-      this.errorHandler
+      this.errorHandler,
+      this.abortController.signal
     )
-    this.linkButtons = new LinkButtonsManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.linkButtons = new LinkButtonsManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
 
     this.bridge = new DiscordBridge(
       this.application,
@@ -94,7 +138,8 @@ export default class DiscordInstance extends ConnectableInstance {
       this.messageAssociation,
       this.logger,
       this.errorHandler,
-      this.staticConfig
+      this.staticConfig,
+      this.abortController.signal
     )
   }
 

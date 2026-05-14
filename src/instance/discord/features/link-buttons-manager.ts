@@ -26,9 +26,10 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
     clientInstance: DiscordInstance,
     eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = this.clientInstance.getClient()
     client.on('interactionCreate', (interaction) => {

@@ -29,9 +29,10 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
     messageAssociation: MessageAssociation,
     eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
     this.messageAssociation = messageAssociation
   }
 

@@ -12,6 +12,7 @@ export abstract class Instance {
   protected readonly logger: Logger
   protected readonly errorHandler: UnexpectedErrorHandler
   protected readonly eventHelper: EventHelper<this>
+  protected readonly abortController = new AbortController()
 
   protected constructor(
     protected readonly application: Application,
@@ -24,10 +25,13 @@ export abstract class Instance {
     this.errorHandler = new UnexpectedErrorHandler(this.logger)
     this.eventHelper = new EventHelper<this>(this.instanceId, this)
 
-    this.application.onAny((name, event) => {
-      if (event.instance !== this) return
-      this.logger.log(`[${name}] ${JSON.stringify(event)}`)
-    })
+    this.application.onAny(
+      (name, event) => {
+        if (event.instance !== this) return
+        this.logger.log(`[${name}] ${JSON.stringify(event)}`)
+      },
+      { signal: this.abortController.signal }
+    )
   }
 
   public getLogName(): string {
@@ -36,6 +40,11 @@ export abstract class Instance {
 
   public static createLogger(name: string): Logger {
     return Logger4Js.getLogger(name)
+  }
+
+  public destroy(reason?: string): void {
+    this.logger.debug('Destroy signal received: ', reason)
+    this.abortController.abort(reason)
   }
 
   // noinspection JSUnusedGlobalSymbols

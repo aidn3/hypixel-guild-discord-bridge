@@ -27,9 +27,10 @@ export default class StateHandler extends SubInstance<MinecraftInstance, ClientS
     clientInstance: MinecraftInstance,
     eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     this.loginAttempts = 0
     this.loggedIn = false
@@ -222,7 +223,8 @@ export default class StateHandler extends SubInstance<MinecraftInstance, ClientS
 
     setTimeoutAsync(() => this.clientInstance.automaticReconnect(), {
       delay: Duration.milliseconds(loginDelay),
-      errorHandler: this.errorHandler.promiseCatch('trying to auto reconnect')
+      errorHandler: this.errorHandler.promiseCatch('trying to auto reconnect'),
+      abortSignal: this.abortSignal
     })
   }
 }
