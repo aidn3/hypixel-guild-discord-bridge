@@ -16,7 +16,7 @@ export default {
 
     const targetInstance = context.minecraftInstance
 
-    await context.application.sendSignal([targetInstance], InstanceSignalType.Shutdown)
+    await targetInstance.signal(InstanceSignalType.Shutdown)
     await context.interaction.editReply('disconnect signal has been sent!')
   }
 } satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

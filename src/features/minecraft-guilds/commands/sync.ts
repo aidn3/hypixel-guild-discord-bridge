@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import { TTLCache } from '@isaacs/ttlcache'
 
-import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
+import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser, MojangProfile } from '../../../common/user'
@@ -92,7 +92,7 @@ export default class Sync extends ChatCommandHandler {
 
   private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
     await context.app.sendMinecraft(
-      context.app.getInstancesNames(InstanceType.Minecraft),
+      context.app.minecraftManager.getAllInstances(),
       MinecraftSendChatPriority.High,
       undefined,
       `/guild setrank ${uuid} ${rank}`

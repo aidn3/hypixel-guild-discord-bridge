@@ -2,11 +2,10 @@ import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { PluginsManager } from '../instance/features/plugins-manager.js'
 
-import { InstanceType } from './application-event.js'
 import type { ChatCommandHandler, DiscordCommandHandler } from './commands.js'
 import { Instance } from './instance.js'
 
-export default abstract class PluginInstance extends Instance<InstanceType.Plugin> {
+export default abstract class PluginInstance extends Instance {
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
 
   protected readonly pluginsManager: PluginsManager
@@ -17,10 +16,10 @@ export default abstract class PluginInstance extends Instance<InstanceType.Plugi
    * Modifying the signature can lead to crashes.
    * @param application Application instance
    * @param pluginsManager The parent manager that creates and handles this instance
-   * @param instanceName A unique name that follows {@link InstanceIdentifier#instanceName}
+   * @param instanceName The plugin name
    */
   public constructor(application: Application, pluginsManager: PluginsManager, instanceName: string) {
-    super(application, instanceName, InstanceType.Plugin)
+    super(application, instanceName)
     this.pluginsManager = pluginsManager
   }
 

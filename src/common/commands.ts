@@ -12,9 +12,15 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
+import type { CommandsInstance } from '../instance/commands/commands-instance'
+// eslint-disable-next-line import/no-restricted-paths
+import type DiscordInstance from '../instance/discord/discord-instance'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance'
+// eslint-disable-next-line import/no-restricted-paths
 import type Duration from '../utility/duration'
 
-import type { ChannelType, ChatEvent, Content, InstanceType, Permission } from './application-event.js'
+import type { ChannelType, ChatEvent, Content, Permission, Platform } from './application-event.js'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 import type { AnonymousUser, DiscordUser } from './user'
@@ -22,7 +28,7 @@ import type { AnonymousUser, DiscordUser } from './user'
 export interface ChatCommandRequirements {
   permission?: Permission
   sources?: ChannelType[]
-  platforms?: (InstanceType.Minecraft | InstanceType.Discord)[]
+  platforms?: (Platform.Minecraft | Platform.Discord)[]
 }
 
 export type ChatCommandCooldown =
@@ -100,7 +106,7 @@ export interface ChatCommandContext {
   app: Application
 
   t: TFunction
-  eventHelper: EventHelper<InstanceType.Commands>
+  eventHelper: EventHelper<CommandsInstance>
   logger: Logger
   errorHandler: UnexpectedErrorHandler
 
@@ -162,7 +168,7 @@ export enum OptionMinecraftInstance {
 
 interface BaseDiscordContext<Origin extends CommandOrigin> {
   application: Application
-  eventHelper: EventHelper<InstanceType.Discord>
+  eventHelper: EventHelper<DiscordInstance>
   logger: Logger
   t: TFunction
 
@@ -207,9 +213,9 @@ export interface DiscordCommandContext<
       : ChatInputCommandInteraction<'raw' | 'cached'>
   >
   minecraftInstance: [MinecraftOption] extends [OptionMinecraftInstance.RequireOne]
-    ? string
+    ? MinecraftInstance
     : [MinecraftOption] extends [OptionMinecraftInstance.RequireAll]
-      ? string[]
+      ? MinecraftInstance[]
       : undefined
   showPermissionDenied: (requiredPermission: Exclude<Permission, Permission.Anyone>) => Promise<void>
 }

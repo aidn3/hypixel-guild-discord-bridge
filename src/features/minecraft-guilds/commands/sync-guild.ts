@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import PromiseQueue from 'promise-queue'
 
-import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
+import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser } from '../../../common/user'
@@ -125,7 +125,7 @@ export default class SyncGuild extends ChatCommandHandler {
 
   private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
     await context.app.sendMinecraft(
-      context.app.getInstancesNames(InstanceType.Minecraft),
+      context.app.minecraftManager.getAllInstances(),
       MinecraftSendChatPriority.High,
       undefined,
       `/guild setrank ${uuid} ${rank}`

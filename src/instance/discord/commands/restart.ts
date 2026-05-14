@@ -17,7 +17,7 @@ export default {
     )
 
     try {
-      await context.application.sendSignal([context.application.instanceName], InstanceSignalType.Restart)
+      await context.application.signalApplication(InstanceSignalType.Restart)
     } catch (error: unknown) {
       context.logger.error(error)
       await context.interaction.editReply('Failed to restart the application somehow?? Check the console for more info')

@@ -1,14 +1,14 @@
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import { ChannelType, Color, GuildPlayerEventType, type InstanceType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class Reaction extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class Reaction extends SubInstance<MinecraftInstance, ClientSession> {
   public static JoinMessages = [
     'Welcome {username} to our guild! Do /g discord and !help for ingame commands :-)',
     "{username}, what a nice new member. Why don't you run /g discord & !help here while you're at it :P",
@@ -41,18 +41,14 @@ export default class Reaction extends SubInstance<MinecraftInstance, InstanceTyp
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
-    eventHelper: EventHelper<InstanceType.Minecraft>,
+    eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
 
     this.application.on('guildPlayer', async (event) => {
-      if (
-        event.instanceName !== this.clientInstance.instanceName ||
-        event.instanceType !== this.clientInstance.instanceType
-      )
-        return
+      if (event.instance !== this.clientInstance) return
 
       if (
         event.type === GuildPlayerEventType.Join &&

@@ -5,7 +5,7 @@ import type { Client } from 'minecraft-protocol'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application.js'
-import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
+import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { ChannelType, Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
@@ -17,7 +17,7 @@ import { sleep } from '../../../utility/shared-utility'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class GameTogglesHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class GameTogglesHandler extends SubInstance<MinecraftInstance, ClientSession> {
   /*
    Wait for client to be afk in the world before allowing the routine
    */
@@ -41,7 +41,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
-    eventHelper: EventHelper<InstanceType.Minecraft>,
+    eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
@@ -67,7 +67,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     )
 
     this.application.on('chat', (event) => {
-      if (event.instanceName !== this.clientInstance.instanceName) return
+      if (event.instance !== this.clientInstance) return
 
       const uuid = this.clientInstance.uuid()
       assert.ok(uuid !== undefined)
@@ -80,7 +80,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
     })
 
     this.application.on('minecraftChat', (event: MinecraftRawChatEvent) => {
-      if (event.message.length === 0 || event.instanceName !== this.clientInstance.instanceName) return
+      if (event.message.length === 0 || event.instance !== this.clientInstance) return
 
       const uuid = this.clientInstance.uuid()
       if (uuid === undefined) {
@@ -153,7 +153,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
           color: Color.Good,
 
           user: undefined,
-          message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
+          message: `Account at ${this.clientInstance.getDisplayName()} has finished discovery phase. All ready!`
         })
       }
 

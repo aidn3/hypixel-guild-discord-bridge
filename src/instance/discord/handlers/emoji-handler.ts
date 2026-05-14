@@ -3,13 +3,12 @@ import fs from 'node:fs/promises'
 
 import type { ApplicationEmojiManager, Client } from 'discord.js'
 
-import type { InstanceType } from '../../../common/application-event.js'
 import SubInstance from '../../../common/sub-instance'
 import type { EmojiConfig } from '../../../core/discord/discord-emojis'
 import { AllEmojis } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 
-export default class EmojiHandler extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class EmojiHandler extends SubInstance<DiscordInstance, Client> {
   override registerEvents(client: Client): void {
     client.on('clientReady', (readyClient) => {
       void this.registerEmojis(readyClient.application.emojis).catch(

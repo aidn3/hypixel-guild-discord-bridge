@@ -7,23 +7,25 @@ import { Color, MinecraftSendChatPriority, Permission } from '../../../common/ap
 import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { Timeout } from '../../../utility/timeout'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../../minecraft/minecraft-instance'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const Title = 'Guild Log Audit'
 
-function formatEmbed(chatResult: ChatResult, targetInstance: string): APIEmbed {
+function formatEmbed(chatResult: ChatResult, targetInstance: MinecraftInstance): APIEmbed {
   let result = ''
   let pageTitle = ''
 
-  result += `**${escapeMarkdown(targetInstance)}**\n`
+  result += `**${escapeMarkdown(targetInstance.getDisplayName())}**\n`
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
       result += `- <t:${entry.time / 1000}>: ${entry.line}\n`
     }
   } else {
-    result += `_Could not fetch information for ${targetInstance}._`
+    result += `_Could not fetch information for ${targetInstance.getDisplayName()}._`
     if (chatResult.error) {
       result += `\n${escapeMarkdown(chatResult.error)}`
     }
@@ -91,7 +93,7 @@ export default {
 
 async function getGuildLog(
   app: Application,
-  targetInstance: string,
+  targetInstance: MinecraftInstance,
   selectedUsername: string | undefined,
   page: number
 ): Promise<ChatResult> {
@@ -101,7 +103,7 @@ async function getGuildLog(
   const timeout = new Timeout<void>(5000)
 
   const chatListener = function (event: MinecraftRawChatEvent): void {
-    if (event.instanceName !== targetInstance || event.message.length === 0) return
+    if (event.instance !== targetInstance || event.message.length === 0) return
 
     if (event.message.startsWith('Your guild rank does not have permission to use this')) {
       result.error = event.message.trim()

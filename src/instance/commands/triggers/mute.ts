@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -30,7 +30,7 @@ export default class Mute extends ChatCommandHandler {
   }
 
   override requirements(): ChatCommandRequirements | string {
-    return { platforms: [InstanceType.Minecraft], sources: [ChannelType.Public] }
+    return { platforms: [Platform.Minecraft], sources: [ChannelType.Public] }
   }
 
   override cooldownOptions(): ChatCommandCooldown {
@@ -72,7 +72,7 @@ export default class Mute extends ChatCommandHandler {
     const usernames: Promise<string[]>[] = []
     for (const instance of instances) {
       const chunk = context.app.core.guildManager
-        .list(instance.instanceName)
+        .list(instance)
         .then((guild) => guild.members)
         .then((members) => members.filter((member) => member.online).map((member) => member.username))
         .then((usernames) => usernames.filter((username) => !context.app.minecraftManager.isMinecraftBot(username)))

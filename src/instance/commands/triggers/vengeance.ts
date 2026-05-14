@@ -1,8 +1,8 @@
-import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
-import { canOnlyUseIngame, usernameNotExists } from '../common/utility'
+import { usernameNotExists } from '../common/utility'
 
 export default class Vengeance extends ChatCommandHandler {
   public static readonly LossMessages = [
@@ -44,14 +44,11 @@ export default class Vengeance extends ChatCommandHandler {
     })
   }
 
-  async handler(context: ChatCommandContext): Promise<string> {
-    if (context.message.instanceType !== InstanceType.Minecraft) {
-      return canOnlyUseIngame(context)
-    }
-    if (context.message.channelType !== ChannelType.Public) {
-      return `${context.username}, Command can only be executed in public chat!`
-    }
+  override requirements(): ChatCommandRequirements | string {
+    return { platforms: [Platform.Minecraft], sources: [ChannelType.Public] }
+  }
 
+  async handler(context: ChatCommandContext): Promise<string> {
     const givenUsername = context.args[0] as string | undefined
     if (givenUsername === undefined) return `${context.username}, you need to specify someone!`
 

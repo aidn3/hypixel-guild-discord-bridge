@@ -1,18 +1,19 @@
+import assert from 'node:assert'
 import { setImmediate } from 'node:timers/promises'
 
 import { createClient, states } from 'minecraft-protocol'
 
 import type Application from '../../application.js'
-import type { ChannelType } from '../../common/application-event.js'
+import type { ChannelType, InstanceStatus } from '../../common/application-event.js'
 import {
   InstanceMessageType,
   InstanceReactiveType,
   InstanceSignalType,
-  InstanceType,
   MinecraftSendChatPriority
 } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
+import type { MinecraftStatusEntry } from '../../features/minecraft-status/minecraft-status'
 import Duration from '../../utility/duration'
 import type { Timeout } from '../../utility/timeout.js'
 
@@ -30,7 +31,7 @@ import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
 
-export default class MinecraftInstance extends ConnectableInstance<InstanceType.Minecraft> {
+export default class MinecraftInstance extends ConnectableInstance {
   readonly defaultBotConfig = {
     // increased from 30 seconds to 60 seconds to reduce connection dropouts
     checkTimeoutInterval: Duration.seconds(60).toMilliseconds(),
@@ -57,8 +58,8 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
   private readonly config: MinecraftInstanceConfig
 
-  constructor(app: Application, instanceName: string, config: MinecraftInstanceConfig) {
-    super(app, instanceName, InstanceType.Minecraft)
+  constructor(app: Application, config: MinecraftInstanceConfig) {
+    super(app, `minecraft/${config.name}`)
 
     this.config = config
 
@@ -101,7 +102,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     const connected = this.currentStatus() === Status.Connected
 
     if (type === InstanceSignalType.Restart) {
-      this.application.core.minecraftSessions.setInstanceAutoConnect(this.instanceName, true)
+      this.application.core.minecraftSessions.setInstanceAutoConnect(this.config.name, true)
 
       if (connected) {
         await this.send(`/gc @Instance restarting...`, MinecraftSendChatPriority.High, undefined)
@@ -109,7 +110,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     } else if (type === InstanceSignalType.Shutdown) {
-      this.application.core.minecraftSessions.setInstanceAutoConnect(this.instanceName, false)
+      this.application.core.minecraftSessions.setInstanceAutoConnect(this.config.name, false)
 
       if (connected) {
         await this.send(`/gc @Instance shutting down...`, MinecraftSendChatPriority.High, undefined)
@@ -119,8 +120,27 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
     return super.signal(type)
   }
 
+  protected override async broadcastStatusEvent(event: InstanceStatus): Promise<void> {
+    // Directly add the entry into the database before broadcasting it,
+    // so listeners can query database for entire history directly after
+    // without worry if they ever wish to
+    assert.ok(event.instance instanceof MinecraftInstance)
+    const typedInstance = event as MinecraftStatusEntry
+    this.application.minecraftStatus.addStatus(typedInstance)
+
+    return super.broadcastStatusEvent(event)
+  }
+
   public async acquireLimbo(): Promise<Timeout<void>> {
     return this.limboHandler.acquire()
+  }
+
+  public getDisplayName(): string {
+    return this.config.name
+  }
+
+  public getConfigName(): string {
+    return this.config.name
   }
 
   public hasProxy(): boolean {
@@ -138,7 +158,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
   }
 
   public async automaticReconnect(): Promise<void> {
-    const autoConnect = this.application.core.minecraftSessions.getInstanceAutoConnect(this.instanceName)
+    const autoConnect = this.application.core.minecraftSessions.getInstanceAutoConnect(this.config.name)
     if (!autoConnect) {
       this.logger.debug(
         `instance is attempting to connect automatically but configured to not auto-connect. Attempt stopped.`
@@ -156,7 +176,7 @@ export default class MinecraftInstance extends ConnectableInstance<InstanceType.
       username: this.config.name,
       auth: 'microsoft',
       // @ts-expect-error profilesFolder is directly passed to 'prismarine-auth'.Authflow, which that library also allow a factory function
-      profilesFolder: this.application.core.minecraftSessions.getSessionsFactory(this.instanceName),
+      profilesFolder: this.application.core.minecraftSessions.getSessionsFactory(this.config.name),
 
       ...resolveProxyIfExist(this.logger, this.config.proxy, this.defaultBotConfig),
       onMsaCode: (code) => {

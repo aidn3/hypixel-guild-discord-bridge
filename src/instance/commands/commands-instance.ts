@@ -1,10 +1,12 @@
+import assert from 'node:assert'
+
 import StringComparison from 'string-comparison'
 
 import type Application from '../../application.js'
 import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
-import { ChannelType, ContentType, InstanceType, Permission } from '../../common/application-event.js'
+import { ChannelType, ContentType, Permission, Platform } from '../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandHandler, ChatCommandRequirements } from '../../common/commands.js'
-import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import { Instance } from '../../common/instance.js'
 import { capitalize } from '../../utility/shared-utility'
 
 import { CommandsCooldownHandler } from './commands-cooldown-handler'
@@ -117,12 +119,12 @@ import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 import Woolwars from './triggers/woolwars'
 
-export class CommandsInstance extends Instance<InstanceType.Commands> {
+export class CommandsInstance extends Instance {
   private readonly commands: ChatCommandHandler[] = []
   private readonly cooldownHandler: CommandsCooldownHandler
 
   constructor(app: Application) {
-    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
+    super(app, 'chat-commands')
     this.cooldownHandler = new CommandsCooldownHandler(this.application)
 
     const commandsToAdd = [
@@ -361,29 +363,31 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
   ): Promise<string | undefined> {
     if (requirements.permission !== undefined) {
       const userPermission = await context.message.user.permission()
-      if (userPermission < requirements.permission) {
+      if (requirements.permission === Permission.BridgeAdmin && userPermission < Permission.BridgeAdmin) {
+        return context.app.i18n.t(($) => $['commands.error.must-be-admin'], { username: context.username })
+      } else if (userPermission < requirements.permission) {
         return `${context.username}, you do not have permission to execute this command.`
       }
     }
 
     if (requirements.platforms !== undefined) {
-      const platform = context.message.instanceType
+      const platform = context.message.platform
       if (
         requirements.platforms.length === 1 &&
-        requirements.platforms[0] === InstanceType.Minecraft &&
-        platform !== InstanceType.Minecraft
+        requirements.platforms[0] === Platform.Minecraft &&
+        platform !== Platform.Minecraft
       ) {
         return canOnlyUseIngame(context)
       }
       if (
         requirements.platforms.length === 1 &&
-        requirements.platforms[0] === InstanceType.Discord &&
-        platform !== InstanceType.Discord
+        requirements.platforms[0] === Platform.Discord &&
+        platform !== Platform.Discord
       ) {
         return `${context.username}, command can only be executed in a Discord chat!`
       }
 
-      if (!(requirements.platforms as InstanceType[]).includes(platform)) {
+      if (!(requirements.platforms as Platform[]).includes(platform)) {
         return `${context.username}, command ${context.commandPrefix}${command.triggers[0]} can only be executed in these places: ${requirements.platforms.map((name) => capitalize(name)).join(', ')}`
       }
     }
@@ -431,14 +435,14 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
   }
 
   private format(event: ChatEvent, commandName: string, response: Content): CommandLike {
-    switch (event.instanceType) {
-      case InstanceType.Discord: {
+    switch (event.platform) {
+      case Platform.Discord: {
         return {
           eventId: this.eventHelper.generate(),
           createdAt: Date.now(),
 
-          instanceName: event.instanceName,
-          instanceType: event.instanceType,
+          instance: event.instance,
+          platform: event.platform,
 
           channelType: event.channelType,
           originEventId: event.eventId,
@@ -449,13 +453,13 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
         }
       }
 
-      case InstanceType.Minecraft: {
+      case Platform.Minecraft: {
         return {
           eventId: this.eventHelper.generate(),
           createdAt: Date.now(),
 
-          instanceName: event.instanceName,
-          instanceType: event.instanceType,
+          instance: event.instance,
+          platform: event.platform,
 
           channelType: event.channelType,
           originEventId: event.eventId,
@@ -467,20 +471,8 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       }
 
       default: {
-        return {
-          eventId: this.eventHelper.generate(),
-          createdAt: Date.now(),
-
-          instanceName: event.instanceName,
-          instanceType: event.instanceType,
-
-          channelType: event.channelType,
-          originEventId: event.eventId,
-          user: event.user,
-
-          commandName: commandName,
-          commandResponse: response
-        }
+        event satisfies never
+        assert.fail(`not sure how to respond to this event: ${JSON.stringify(event)}`)
       }
     }
   }

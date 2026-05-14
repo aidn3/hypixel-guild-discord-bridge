@@ -10,13 +10,12 @@ import {
   ChannelType,
   Color,
   GuildPlayerEventType,
-  InstanceType,
   MinecraftSendChatPriority,
   PunishmentType
 } from '../../common/application-event'
 import type { DiscordBridgeCommandHandler, OptionMinecraftInstance } from '../../common/commands'
 import { Status } from '../../common/connectable-instance'
-import { Instance, InternalInstancePrefix } from '../../common/instance'
+import { Instance } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { MojangProfile, User } from '../../common/user'
 import type { GuildFetch } from '../../core/users/guild-manager'
@@ -35,7 +34,7 @@ import type { MinecraftGuild, WaitlistEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 
-export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
+export class MinecraftGuildsManager extends Instance {
   private static readonly MaxGuildMembers = 125
   private static readonly WaitlistRequestDuration = Duration.days(1)
   private static readonly ForceReschedule = Duration.days(7)
@@ -45,7 +44,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   private readonly waitlistInteraction: DiscordWaitlistInteraction
 
   public constructor(application: Application, sqliteManager: SqliteManager) {
-    super(application, InternalInstancePrefix + 'minecraft-guilds-manager', InstanceType.Utility)
+    super(application, 'minecraft-guilds-manager')
     this.database = new Database(sqliteManager, this.logger)
     this.waitlistInteraction = new DiscordWaitlistInteraction(
       this.application,
@@ -154,9 +153,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   private async handleJoin(event: GuildPlayerEvent): Promise<void> {
     if (event.type !== GuildPlayerEventType.Join) return
 
-    const instance = this.application.minecraftManager
-      .getAllInstances()
-      .find((instance) => instance.instanceName === event.instanceName)
+    const instance = this.application.minecraftManager.getAllInstances().find((instance) => instance === event.instance)
     if (instance === undefined) return
 
     const savedGuild = await this.findSavedGuildFromInstance(instance)
@@ -178,7 +175,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     if (instance.currentStatus() !== Status.Connected) return
 
     const guildListResult = await this.application.core.guildManager
-      .list(instance.instanceName, Duration.minutes(5))
+      .list(instance, Duration.minutes(5))
       .catch(() => undefined)
     if (guildListResult === undefined) return
 
@@ -186,7 +183,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       (guild) => guild.name.toLowerCase().trim() === guildListResult.name.toLowerCase().trim()
     )
     if (savedGuild !== undefined) return
-    this.logger.info(`Auto registering an in-game guild for the instance ${instance.instanceName}`)
+    this.logger.info(`Auto registering an in-game guild for the instance ${instance.getLogName()}`)
 
     const botUuid = instance.uuid()
     if (botUuid === undefined) {
@@ -211,9 +208,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     const banned = event.user.activePunishments().longestPunishment(PunishmentType.Ban)
     if (banned !== undefined) return
 
-    const instance = this.application.minecraftManager
-      .getAllInstances()
-      .find((instance) => instance.instanceName === event.instanceName)
+    const instance = this.application.minecraftManager.getAllInstances().find((instance) => instance === event.instance)
     if (instance === undefined) return
 
     const savedGuild = await this.findSavedGuildFromInstance(instance)
@@ -233,7 +228,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       message: `${event.user.displayName()} is auto-accepted into the guild for meeting the join requirements.`
     })
     await this.application.sendMinecraft(
-      [event.instanceName],
+      [event.instance],
       MinecraftSendChatPriority.High,
       event.eventId,
       `/guild accept ${event.user.mojangProfile().id}`
@@ -242,7 +237,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
 
   private async findSavedGuildFromInstance(instance: MinecraftInstance): Promise<MinecraftGuild | undefined> {
     if (instance.currentStatus() !== Status.Connected) return
-    const guildListResult = await this.application.core.guildManager.list(instance.instanceName)
+    const guildListResult = await this.application.core.guildManager.list(instance)
 
     const allSavedGuilds = this.database.allGuilds()
     if (allSavedGuilds.length === 0) return
@@ -309,7 +304,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     let openSlots = MinecraftGuildsManager.MaxGuildMembers
 
     const guildListResult = await this.application.core.guildManager
-      .list(instance.instanceName, Duration.minutes(1))
+      .list(instance, Duration.minutes(1))
       .catch(() => undefined)
     if (guildListResult === undefined) return
     openSlots -= guildListResult.members.length
@@ -403,9 +398,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     )
 
     const profile = await this.application.mojangApi.profileByUuid(waitlistEntry.mojangId)
-    const result = await this.application.core.guildManager
-      .invite(instance.instanceName, profile.name)
-      .catch(() => undefined)
+    const result = await this.application.core.guildManager.invite(instance, profile.name).catch(() => undefined)
 
     switch (result) {
       case GuildInviteStatus.AlreadyJoined:

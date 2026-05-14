@@ -2,8 +2,6 @@ import assert from 'node:assert'
 
 import Logger4js from 'log4js'
 
-import { InternalInstancePrefix } from '../common/instance.js'
-
 import Duration from './duration'
 
 export function sufficeToTime(suffice: string): number {
@@ -158,13 +156,12 @@ export function capitalize(name: string): string {
  * This function aimed to beautify the instanceName and prepare for human display.
  */
 export function beautifyInstanceName(instanceName: string): string {
-  instanceName = instanceName.startsWith(InternalInstancePrefix)
-    ? instanceName.slice(InternalInstancePrefix.length)
-    : instanceName
+  let formatted = instanceName.split('/').at(-1)
+  assert.ok(formatted !== undefined)
 
-  if (instanceName !== instanceName.toLowerCase()) return instanceName
+  if (formatted !== formatted.toLowerCase()) return formatted
 
-  instanceName = instanceName
+  formatted = formatted
     .replaceAll('-', ' ')
     .split(' ')
     .map((part) => part.trim())
@@ -172,7 +169,7 @@ export function beautifyInstanceName(instanceName: string): string {
     .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ')
 
-  return instanceName
+  return formatted
 }
 
 /**

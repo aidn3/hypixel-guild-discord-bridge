@@ -2,7 +2,6 @@ import type { Registry } from 'prom-client'
 import { Gauge } from 'prom-client'
 
 import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
 
 export default class GuildOnlineMetrics {
   private readonly guildTotalMembersCount
@@ -26,14 +25,12 @@ export default class GuildOnlineMetrics {
 
   async collectMetrics(app: Application): Promise<void> {
     const tasks: Promise<unknown>[] = []
-    for (const instanceName of app.getInstancesNames(InstanceType.Minecraft)) {
+    for (const instance of app.minecraftManager.getAllInstances()) {
+      const name = instance.getConfigName()
       tasks.push(
-        app.core.guildManager.list(instanceName).then((guild) => {
-          this.guildOnlineMembersCount.set(
-            { name: instanceName },
-            guild.members.filter((member) => member.online).length
-          )
-          this.guildTotalMembersCount.set({ name: instanceName }, guild.members.length)
+        app.core.guildManager.list(instance).then((guild) => {
+          this.guildOnlineMembersCount.set({ name: name }, guild.members.filter((member) => member.online).length)
+          this.guildTotalMembersCount.set({ name: name }, guild.members.length)
         })
       )
     }

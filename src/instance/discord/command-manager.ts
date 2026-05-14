@@ -11,7 +11,7 @@ import { Collection, escapeMarkdown, MessageFlags, REST, Routes } from 'discord.
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
-import { Color, InstanceType, Permission } from '../../common/application-event.js'
+import { Color, Permission } from '../../common/application-event.js'
 import type {
   DiscordBridgeCommandHandler,
   DiscordCommandContext,
@@ -26,6 +26,8 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 import type { User } from '../../common/user'
 import Duration from '../../utility/duration'
 import { beautifyInstanceName } from '../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../minecraft/minecraft-instance'
 
 import AboutCommand from './commands/about.js'
 import AcceptCommand from './commands/accept.js'
@@ -63,13 +65,13 @@ import { DefaultCommandFooter } from './common/discord-config.js'
 import { translateNoPermission } from './common/discord-language'
 import type DiscordInstance from './discord-instance.js'
 
-export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export class CommandManager extends SubInstance<DiscordInstance, Client> {
   readonly commands = new Collection<string, DiscordCommandHandler>()
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
@@ -298,7 +300,7 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       return
     }
 
-    const instances = this.application.getInstancesNames(InstanceType.Minecraft)
+    const instances = this.application.minecraftManager.getAllInstances()
     if (
       (command.addMinecraftInstancesToOptions === OptionMinecraftInstance.RequireOne ||
         command.addMinecraftInstancesToOptions === OptionMinecraftInstance.RequireAll) &&
@@ -330,10 +332,10 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
       }
       case OptionMinecraftInstance.RequireOne: {
         let modifiedInteraction: DiscordCommandContext<CommandOrigin.Bridge>['interaction'] = interaction
-        let instanceName: string
+        let targetInstance: MinecraftInstance | undefined
 
         if (instances.length === 1) {
-          instanceName = instances[0]
+          targetInstance = instances[0]
         } else {
           await interaction.showModal({
             customId: interaction.id,
@@ -345,7 +347,10 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
                 description: `Multiple Minecraft instances detected. Choose one for the command ${interaction.commandName} to use.`,
                 component: {
                   type: ComponentType.RadioGroup,
-                  options: instances.map((instance) => ({ label: beautifyInstanceName(instance), value: instance })),
+                  options: instances.map((instance) => ({
+                    label: beautifyInstanceName(instance.getDisplayName()),
+                    value: instance.getConfigName()
+                  })),
                   customId: 'instances',
                   required: true
                 }
@@ -354,15 +359,16 @@ export class CommandManager extends SubInstance<DiscordInstance, InstanceType.Di
           })
 
           const modalResult = await interaction.awaitModalSubmit({ time: Duration.minutes(15).toMilliseconds() })
-          instanceName = modalResult.fields.getRadioGroup('instance', true)
-          assert.ok(instances.includes(instanceName))
+          const instanceName = modalResult.fields.getRadioGroup('instance', true)
+          targetInstance = instances.find((instance) => instance.getConfigName() === instanceName)
+          assert.ok(targetInstance !== undefined)
           modifiedInteraction = Object.assign(modalResult, { options: interaction.options })
         }
 
         const baseContext = this.fillContext(interaction, user, permission)
         const context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.RequireOne> = {
           ...baseContext,
-          minecraftInstance: instanceName
+          minecraftInstance: targetInstance
         }
         context.interaction = modifiedInteraction
 

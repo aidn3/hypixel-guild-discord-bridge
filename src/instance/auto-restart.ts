@@ -1,17 +1,17 @@
 import { uptime } from 'node:process'
 
 import type Application from '../application'
-import { ChannelType, Color, InstanceSignalType, InstanceType } from '../common/application-event'
-import { Instance, InternalInstancePrefix } from '../common/instance'
+import { ChannelType, Color, InstanceSignalType } from '../common/application-event'
+import { Instance } from '../common/instance'
 import Duration from '../utility/duration'
 import { setIntervalAsync } from '../utility/scheduling'
 
-export default class AutoRestart extends Instance<InstanceType.Utility> {
+export default class AutoRestart extends Instance {
   private static readonly MaxLifeTillRestart = Duration.hours(24)
   private static readonly CheckEvery = Duration.minutes(5)
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'auto-restart', InstanceType.Utility)
+    super(application, 'auto-restart')
 
     let shuttingDown = false
 
@@ -34,7 +34,7 @@ export default class AutoRestart extends Instance<InstanceType.Utility> {
             message: 'Application Restarting: Scheduled restart'
           })
 
-          await this.application.sendSignal([this.application.instanceName], InstanceSignalType.Restart)
+          await this.application.signalApplication(InstanceSignalType.Restart)
         }
       },
       {

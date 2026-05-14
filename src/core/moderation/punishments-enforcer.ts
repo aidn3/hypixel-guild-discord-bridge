@@ -2,27 +2,24 @@ import type { Logger } from 'log4js'
 
 import type Application from '../../application'
 import type { GuildPlayerEvent, Punishment, PunishmentForgive } from '../../common/application-event'
-import {
-  GuildPlayerEventType,
-  InstanceType,
-  MinecraftSendChatPriority,
-  PunishmentType
-} from '../../common/application-event'
+import { GuildPlayerEventType, MinecraftSendChatPriority, PunishmentType } from '../../common/application-event'
 import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import type { MinecraftUser } from '../../common/user'
+// eslint-disable-next-line import/no-restricted-paths
+import MinecraftInstance from '../../instance/minecraft/minecraft-instance'
 import Duration from '../../utility/duration'
 import { durationToMinecraftDuration } from '../../utility/shared-utility'
 import type { Core } from '../core'
 
-export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.Core, void> {
+export default class PunishmentsEnforcer extends SubInstance<Core, void> {
   private static readonly LagLeniency = Duration.seconds(30)
 
   constructor(
     application: Application,
     instance: Core,
-    eventHelper: EventHelper<InstanceType.Core>,
+    eventHelper: EventHelper<Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
@@ -41,7 +38,7 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
   }
 
   private async onPunishmentAdd(event: Punishment): Promise<void> {
-    if (event.instanceType === InstanceType.Minecraft) return
+    if (event.instance instanceof MinecraftInstance) return
 
     const userUuid: string | undefined = event.user.mojangProfile()?.id
     if (userUuid === undefined) return
@@ -63,7 +60,7 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
   }
 
   private async onPunishmentForgive(event: PunishmentForgive): Promise<void> {
-    if (event.instanceType === InstanceType.Minecraft) return
+    if (event.instance instanceof MinecraftInstance) return
 
     const userUuid: string | undefined = event.user.mojangProfile()?.id
     if (userUuid === undefined) return
@@ -112,7 +109,7 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
 
   private async unmute(userUuid: string): Promise<void> {
     await this.application.sendMinecraft(
-      this.application.getInstancesNames(InstanceType.Minecraft),
+      this.application.minecraftManager.getAllInstances(),
       MinecraftSendChatPriority.High,
       undefined,
       `/guild unmute ${userUuid}`
@@ -136,7 +133,7 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
     const muteDuration = event.till - startTime
 
     await this.application.sendMinecraft(
-      this.application.getInstancesNames(InstanceType.Minecraft),
+      this.application.minecraftManager.getAllInstances(),
       MinecraftSendChatPriority.High,
       undefined,
       `/guild mute ${userUuid} ${durationToMinecraftDuration(muteDuration)}`
@@ -145,7 +142,7 @@ export default class PunishmentsEnforcer extends SubInstance<Core, InstanceType.
 
   private async enforceBan(userUuid: string, reason: string): Promise<void> {
     await this.application.sendMinecraft(
-      this.application.getInstancesNames(InstanceType.Minecraft),
+      this.application.minecraftManager.getAllInstances(),
       MinecraftSendChatPriority.High,
       undefined,
       `/guild kick ${userUuid} ${reason}`

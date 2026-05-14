@@ -26,19 +26,20 @@ import {
   Color,
   ContentType,
   GuildPlayerEventType,
-  InstanceType,
   MinecraftReactiveEventType,
+  Platform,
   PunishmentPurpose,
   PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { User } from '../../common/user'
+import type { AnonymousUser } from '../../common/user'
 import MinecraftRenderer from '../../utility/minecraft-renderer'
 import { beautifyInstanceName } from '../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
+import MinecraftInstance from '../minecraft/minecraft-instance'
 
 import { BlockReaction, GuildMutedReaction, RepeatReaction } from './common/discord-config.js'
-import { InstanceStatusManager } from './common/instance-status-manager'
 import type MessageAssociation from './common/message-association.js'
 import type { DiscordAssociatedMessage } from './common/message-association.js'
 import MessageDeleter from './common/message-deletor.js'
@@ -47,9 +48,6 @@ import type DiscordInstance from './discord-instance.js'
 export default class DiscordBridge extends Bridge<DiscordInstance> {
   public readonly messageDeleter: MessageDeleter
   private readonly messageAssociation: MessageAssociation
-
-  private readonly instanceStatusManager: InstanceStatusManager
-
   private readonly staticConfig: Readonly<StaticDiscordConfig>
 
   constructor(
@@ -66,12 +64,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     this.staticConfig = staticDiscordConfig
 
     this.messageDeleter = new MessageDeleter(application, errorHandler, this.clientInstance)
-    this.instanceStatusManager = new InstanceStatusManager(
-      this.application,
-      this.clientInstance,
-      this.messageAssociation,
-      this.errorHandler
-    )
 
     this.application.on('instanceReactive', async (event) => {
       await this.queue
@@ -81,20 +73,22 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onInstance(event: InstanceStatus): Promise<void> {
-    if (event.instanceName === this.clientInstance.instanceName) return
-    switch (event.instanceType) {
-      case InstanceType.Main:
-      case InstanceType.Commands:
-      case InstanceType.Prometheus:
-      case InstanceType.Metrics:
-      case InstanceType.Plugin:
-      case InstanceType.Utility:
-      case InstanceType.Core: {
-        return
-      }
-    }
+    if (event.instance === this.clientInstance) return
+    if (!(event instanceof MinecraftInstance)) return
 
-    await this.instanceStatusManager.send(event)
+    const config = this.application.core.discordConfigurations
+    const channels = new Set([
+      ...config.getPublicChannelIds(),
+      ...config.getOfficerChannelIds(),
+      ...config.getLoggerChannelIds()
+    ])
+
+    await this.application.minecraftStatus.updateDiscord(
+      this.clientInstance.getClient(),
+      this.messageAssociation,
+      channels,
+      event
+    )
   }
 
   async onChat(event: ChatEvent): Promise<void> {
@@ -102,10 +96,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     const username = event.user.displayName()
 
     for (const channelId of channels) {
-      if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
+      if (event.platform === Platform.Discord && channelId === event.channelId) continue
 
       if (
-        event.instanceType === InstanceType.Minecraft &&
+        event.platform === Platform.Minecraft &&
         this.minecraftRenderImageEnabled() &&
         MinecraftRenderer.renderSupported()
       ) {
@@ -116,12 +110,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         const webhook = await this.getWebhook(channelId)
 
         let displayUsername =
-          event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
+          event.platform === Platform.Discord && event.replyUsername !== undefined
             ? `${username}⇾${event.replyUsername}`
             : username
 
         if (this.application.core.applicationConfigurations.getOriginTag()) {
-          displayUsername += event.instanceType === InstanceType.Discord ? ` [DC]` : ` [${event.instanceName}]`
+          displayUsername += event.platform === Platform.Discord ? ` [DC]` : ` [${event.instance.getDisplayName()}]`
         }
 
         const message = await webhook.send({
@@ -140,12 +134,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
-    if (
-      event.instanceType === this.clientInstance.instanceType &&
-      event.instanceName === this.clientInstance.instanceName
-    )
-      return
-
     const config = this.application.core.discordConfigurations
     if (event.type === GuildPlayerEventType.Online && !config.getGuildOnline()) return
     if (event.type === GuildPlayerEventType.Offline && !config.getGuildOffline()) return
@@ -182,7 +170,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
       }
 
-      const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${messageBody}`
+      const newMessage = `**${escapeMarkdown(event.instance.getDisplayName())} >** ${messageBody}`
       return {
         url: targetUser?.profileLink() ?? responsibleUser?.profileLink() ?? undefined,
         description: newMessage,
@@ -230,12 +218,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
-    if (
-      event.instanceType === this.clientInstance.instanceType &&
-      event.instanceName === this.clientInstance.instanceName
-    )
-      return
-
     if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
       const image = MinecraftRenderer.generateMessageImage(event.rawMessage)
       await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [image])
@@ -297,11 +279,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
-    if (
-      event.instanceType === this.clientInstance.instanceType &&
-      event.instanceName === this.clientInstance.instanceName
-    )
-      return
+    if (event.instance === this.clientInstance) return
 
     const channels = this.resolveChannels(event.channels)
     if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
@@ -405,7 +383,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     const embed: APIEmbed = {
       description: escapeMarkdown(event.message),
 
-      footer: { text: beautifyInstanceName(event.instanceName) }
+      footer: {
+        text:
+          event.instance instanceof MinecraftInstance
+            ? event.instance.getDisplayName()
+            : beautifyInstanceName(event.instance.getLogName())
+      }
     } satisfies APIEmbed
 
     if ('color' in event) {
@@ -527,7 +510,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private formatEmbedCommand(
-    event: { user: User; response: CommandEvent['commandResponse'] },
+    event: { user: AnonymousUser; response: CommandEvent['commandResponse'] },
     feedback: boolean
   ): { content: APIEmbed | string | undefined; attachments: AttachmentBuilder[] } {
     const { text, images } = this.extractCommandInfo(event.response)
@@ -553,7 +536,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private formatImageCommand(
-    event: { user: User; response: CommandEvent['commandResponse'] },
+    event: { user: AnonymousUser; response: CommandEvent['commandResponse'] },
     feedback: boolean
   ): { content: string | undefined; images: Buffer[] } | undefined {
     let content: string | undefined
@@ -602,7 +585,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendCommandResponse(
-    event: ReplyEvent & { user: User; commandResponse: CommandEvent['commandResponse'] },
+    event: ReplyEvent & { user: AnonymousUser; commandResponse: CommandEvent['commandResponse'] },
     feedback: boolean
   ): Promise<void> {
     let cachedEmbed: { content: APIEmbed | string | undefined; attachments: AttachmentBuilder[] } | undefined
@@ -627,7 +610,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
   }
 
-  private assignAvatar(embed: APIEmbed, user: User): void {
+  private assignAvatar(embed: APIEmbed, user: AnonymousUser): void {
     const avatar = user.avatar()
     if (avatar !== undefined) embed.thumbnail = { url: avatar }
     const profileLink = user.profileLink()
@@ -660,9 +643,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 }
 
-type GenerateEmbedType = Pick<BaseEvent, 'instanceName'> & {
+type GenerateEmbedType = Pick<BaseEvent, 'instance'> & {
   message: string
-  user?: User
+  user?: AnonymousUser
   color?: Color
   type?: MinecraftReactiveEventType | undefined
 }

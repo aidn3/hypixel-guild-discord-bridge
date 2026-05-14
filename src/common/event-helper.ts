@@ -1,23 +1,23 @@
-import type { BaseEvent, InstanceType } from './application-event.js'
+import type { BaseEvent } from './application-event.js'
+import type { Instance } from './instance'
 
-export default class EventHelper<K extends InstanceType> {
+export default class EventHelper<T extends Instance> {
   constructor(
-    private readonly instanceName: string,
-    private readonly instanceType: K
+    private readonly instanceId: number,
+    private readonly instance: T
   ) {}
   private lastId = 0
 
   public generate(): string {
-    return `${this.instanceType}:${this.instanceName}:${this.lastId++}`
+    return `${this.instanceId}:${this.lastId++}`
   }
 
-  public fillBaseEvent(): BaseEvent & { instanceType: K } {
+  public fillBaseEvent(): Omit<BaseEvent, 'instance'> & { instance: T } {
     return {
-      eventId: this.generate(),
-      createdAt: Date.now(),
+      instance: this.instance,
 
-      instanceType: this.instanceType,
-      instanceName: this.instanceName
+      eventId: this.generate(),
+      createdAt: Date.now()
     }
   }
 }

@@ -6,13 +6,12 @@ import * as Client from 'prom-client'
 
 import type { PrometheusConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
-import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import { Instance } from '../../common/instance.js'
 
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class PrometheusInstance extends Instance<InstanceType.Prometheus> {
+export default class PrometheusInstance extends Instance {
   private readonly httpServer
   private readonly register
 
@@ -22,7 +21,7 @@ export default class PrometheusInstance extends Instance<InstanceType.Prometheus
   private readonly config: PrometheusConfig
 
   constructor(app: Application, config: PrometheusConfig) {
-    super(app, InternalInstancePrefix + InstanceType.Prometheus, InstanceType.Prometheus)
+    super(app, 'Prometheus')
 
     assert.ok(config.enabled)
     this.config = config

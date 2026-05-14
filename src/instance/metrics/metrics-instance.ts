@@ -3,18 +3,15 @@ import DefaultAxios from 'axios'
 
 import type Application from '../../application.js'
 import type { ApplicationEvents } from '../../common/application-event.js'
-import { InstanceType } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
-import { InternalInstancePrefix } from '../../common/instance.js'
 import Duration from '../../utility/duration'
 
 export interface Stats {
   id: string
-  instancesUsed: InstanceType[]
   events: Map<keyof ApplicationEvents, number>
 }
 
-export default class MetricsInstance extends ConnectableInstance<InstanceType.Metrics> {
+export default class MetricsInstance extends ConnectableInstance {
   private static readonly SendEvery = Duration.minutes(20)
   private static readonly Host = 'https://bridge-stats.aidn5.com/metrics'
 
@@ -23,11 +20,10 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
   private intervalId: NodeJS.Timeout | undefined
 
   constructor(app: Application) {
-    super(app, InternalInstancePrefix + InstanceType.Metrics, InstanceType.Metrics)
+    super(app, 'Metrics')
 
     this.stats = {
       id: '',
-      instancesUsed: [],
       events: new Map()
     }
 
@@ -39,7 +35,6 @@ export default class MetricsInstance extends ConnectableInstance<InstanceType.Me
 
   private async send(): Promise<void> {
     this.logger.debug('collecting anonymous metrics to send')
-    this.stats.instancesUsed = this.application.getAllInstancesIdentifiers().map((instance) => instance.instanceType)
 
     await DefaultAxios.post(MetricsInstance.Host, this.stats)
       .then((response: AxiosResponse<{ id: string }, unknown>) => response.data)

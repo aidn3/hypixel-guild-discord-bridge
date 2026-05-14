@@ -1,8 +1,8 @@
-import type { InstanceMessage, InstanceStatus, InstanceType } from './application-event.js'
+import type { InstanceMessage, InstanceStatus } from './application-event.js'
 import { InstanceMessageType, InstanceSignalType } from './application-event.js'
 import { Instance } from './instance.js'
 
-export abstract class ConnectableInstance<T extends InstanceType> extends Instance<T> {
+export abstract class ConnectableInstance extends Instance {
   private status: Status = Status.Fresh
 
   public async signal(type: InstanceSignalType): Promise<void> {
@@ -72,12 +72,7 @@ export abstract class ConnectableInstance<T extends InstanceType> extends Instan
     await this.broadcastStatusEvent(event)
   }
 
-  private async broadcastStatusEvent(event: InstanceStatus): Promise<void> {
-    // Directly add the entry into the database before broadcasting it,
-    // so listeners can query database for entire history directly after
-    // without worry if they ever wish to
-    this.application.core.statusHistory.add(event)
-
+  protected async broadcastStatusEvent(event: InstanceStatus): Promise<void> {
     await this.application.emit('instanceStatus', event)
   }
 

@@ -15,13 +15,7 @@ import {
 } from 'discord.js'
 
 import type { BasePunishment } from '../../../common/application-event.js'
-import {
-  Color,
-  InstanceType,
-  Permission,
-  PunishmentPurpose,
-  PunishmentType
-} from '../../../common/application-event.js'
+import { Color, Permission, PunishmentPurpose, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordBridgeCommandHandler, DiscordCommandContext } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type { DiscordUser, MojangProfile, User } from '../../../common/user'
@@ -527,13 +521,12 @@ async function takeAction(
   let result = header
 
   const mojangProfile = target.mojangProfile()
-  const instances = context.application.getInstancesNames(InstanceType.Minecraft)
+  const instances = context.application.minecraftManager.getAllInstances()
   if (mojangProfile !== undefined && command !== undefined && instances.length > 0) {
     result += '\n\n### In-game Actions\n'
 
     const triggerResult = await checkChatTriggers(
       context.application,
-      context.eventHelper,
       chatTrigger,
       instances,
       command,

@@ -1,4 +1,4 @@
-import { ChannelType, InstanceType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
@@ -16,7 +16,7 @@ export default class Airstrike extends ChatCommandHandler {
   }
 
   override requirements(): ChatCommandRequirements | string {
-    return { platforms: [InstanceType.Minecraft], sources: [ChannelType.Public] }
+    return { platforms: [Platform.Minecraft], sources: [ChannelType.Public] }
   }
 
   override cooldownOptions(): ChatCommandCooldown {

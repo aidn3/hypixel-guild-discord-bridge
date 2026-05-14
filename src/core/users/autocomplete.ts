@@ -3,7 +3,6 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application'
-import type { InstanceType } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import type { SqliteManager } from '../../common/sqlite-manager'
@@ -13,13 +12,13 @@ import Duration from '../../utility/duration'
 import { setIntervalAsync } from '../../utility/scheduling'
 import type { Core } from '../core'
 
-export default class Autocomplete extends SubInstance<Core, InstanceType.Core, void> {
+export default class Autocomplete extends SubInstance<Core, void> {
   private static readonly MaxLife = Duration.years(1)
 
   constructor(
     application: Application,
     clientInstance: Core,
-    eventHelper: EventHelper<InstanceType.Core>,
+    eventHelper: EventHelper<Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     private readonly sqliteManager: SqliteManager
@@ -117,7 +116,7 @@ export default class Autocomplete extends SubInstance<Core, InstanceType.Core, v
       if (instance.currentStatus() !== Status.Connected) continue
 
       const task = this.application.core.guildManager
-        .list(instance.instanceName, Duration.minutes(1))
+        .list(instance, Duration.minutes(1))
         .then((guild) => {
           for (const member of guild.members) {
             usernames.push(member.username)

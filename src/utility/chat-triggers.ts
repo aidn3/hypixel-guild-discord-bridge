@@ -1,10 +1,7 @@
 import type Application from '../application.js'
-import {
-  type InstanceType,
-  type MinecraftRawChatEvent,
-  MinecraftSendChatPriority
-} from '../common/application-event.js'
-import type EventHelper from '../common/event-helper.js'
+import { type MinecraftRawChatEvent, MinecraftSendChatPriority } from '../common/application-event.js'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance'
 
 import { Timeout } from './timeout.js'
 
@@ -122,9 +119,8 @@ export interface ChatTriggerResult {
 
 export async function checkChatTriggers(
   app: Application,
-  eventHelper: EventHelper<InstanceType>,
   regexList: RegexChat,
-  targetInstance: string[],
+  targetInstance: MinecraftInstance[],
   command: string,
   username: string
 ): Promise<ChatTriggerResult> {
@@ -149,7 +145,7 @@ export async function checkChatTriggers(
 
       if (result.status !== 'success') result.message = []
       result.status = 'success'
-      result.message.push({ instanceName: event.instanceName, content: match[0] })
+      result.message.push({ instanceName: event.instance.getDisplayName(), content: match[0] })
 
       successCount++
       if (targetInstance.length >= successCount) timeout.resolve()
@@ -162,7 +158,7 @@ export async function checkChatTriggers(
         if (match.length > 1 && match[1].toLowerCase() !== username.toLowerCase()) continue
 
         result.status = 'failed'
-        result.message.push({ instanceName: event.instanceName, content: match[0] })
+        result.message.push({ instanceName: event.instance.getDisplayName(), content: match[0] })
       }
     }
   }

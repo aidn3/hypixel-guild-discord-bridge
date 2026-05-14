@@ -23,7 +23,7 @@ import type { Logger } from 'log4js'
 import type PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
-import { Color, type InstanceType, PunishmentType } from '../../common/application-event'
+import { Color, PunishmentType } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
@@ -44,7 +44,7 @@ import Duration from '../../utility/duration'
 import type { Database, MinecraftGuild, WaitlistPanel } from './database'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
 
-export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManager, InstanceType.Utility, Client> {
+export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManager, Client> {
   public static readonly SignupId = 'signup'
   public static readonly ListId = 'list'
 
@@ -57,7 +57,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   constructor(
     application: Application,
     clientInstance: MinecraftGuildsManager,
-    eventHelper: EventHelper<InstanceType.Utility>,
+    eventHelper: EventHelper<MinecraftGuildsManager>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     private readonly database: Database,
@@ -336,7 +336,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       if (potentialInstance.currentStatus() !== Status.Connected) continue
 
       const guildListResult = await this.application.core.guildManager
-        .list(potentialInstance.instanceName, Duration.minutes(5))
+        .list(potentialInstance, Duration.minutes(5))
         .catch(() => undefined)
       if (guildListResult === undefined) continue
 
@@ -353,14 +353,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
 
     const command = `/g invite ${profile.name}`
 
-    const result = await checkChatTriggers(
-      this.application,
-      this.eventHelper,
-      InviteAcceptChat,
-      [instance.instanceName],
-      command,
-      profile.name
-    )
+    const result = await checkChatTriggers(this.application, InviteAcceptChat, [instance], command, profile.name)
     const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(profile.name)}`)
 
     await interaction.editReply({ embeds: [formatted] })

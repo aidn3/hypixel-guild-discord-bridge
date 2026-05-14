@@ -1,16 +1,16 @@
-import { InstanceType } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { Platform } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
+import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
 import { checkChatTriggers, PrivateMessageChat } from '../../../utility/chat-triggers.js'
+import Duration from '../../../utility/duration'
 import { antiSpamString } from '../../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../../minecraft/minecraft-instance'
 // eslint-disable-next-line import/no-restricted-paths
 import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
 
 export default class Boo extends ChatCommandHandler {
-  private static readonly CommandCoolDown = 60_000
-  private lastCommandExecutionAt = 0
-
   constructor() {
     super({
       triggers: ['boo'],
@@ -19,33 +19,32 @@ export default class Boo extends ChatCommandHandler {
     })
   }
 
+  override cooldownOptions(): ChatCommandCooldown {
+    return { type: CooldownType.Community, duration: Duration.minutes(1) }
+  }
+
   async handler(context: ChatCommandContext): Promise<string> {
     const now = new Date()
     if (now.getMonth() !== 9) {
+      context.resetCooldown()
       return context.app.i18n.t(($) => $['commands.boo.wrong-month'])
     }
 
     const givenUsername = context.args[0] ?? context.username
-    const currentTime = Date.now()
-    if (this.lastCommandExecutionAt + Boo.CommandCoolDown > currentTime) {
-      return context.app.i18n.t(($) => $['commands.boo.cooldown'], {
-        cooldown: Math.floor((this.lastCommandExecutionAt + Boo.CommandCoolDown - currentTime) / 1000)
-      })
-    }
-    const minecraftInstanceName =
-      context.message.instanceType === InstanceType.Minecraft
-        ? context.message.instanceName
+
+    const minecraftInstance =
+      context.message.platform === Platform.Minecraft
+        ? context.message.instance
         : this.getActiveMinecraftInstanceName(context.app.minecraftManager)
-    if (minecraftInstanceName === undefined) {
+    if (minecraftInstance === undefined) {
+      context.resetCooldown()
       return context.app.i18n.t(($) => $['commands.boo.no-account'])
     }
-    this.lastCommandExecutionAt = currentTime
 
     const result = await checkChatTriggers(
       context.app,
-      context.eventHelper,
       PrivateMessageChat,
-      [minecraftInstanceName],
+      [minecraftInstance],
       `/boo ${givenUsername} @${antiSpamString()} @${antiSpamString()} @${antiSpamString()} @${antiSpamString()}`,
       givenUsername
     )
@@ -65,8 +64,7 @@ export default class Boo extends ChatCommandHandler {
     }
   }
 
-  private getActiveMinecraftInstanceName(minecraftManager: MinecraftManager): string | undefined {
+  private getActiveMinecraftInstanceName(minecraftManager: MinecraftManager): MinecraftInstance | undefined {
     return minecraftManager.getAllInstances().find((instance) => instance.currentStatus() === Status.Connected)
-      ?.instanceName
   }
 }

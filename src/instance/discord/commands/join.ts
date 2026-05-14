@@ -29,14 +29,7 @@ export default {
     const command = `/g join ${name}`
 
     const instance = context.minecraftInstance
-    const result = await checkChatTriggers(
-      context.application,
-      context.eventHelper,
-      InviteAcceptChat,
-      [instance],
-      command,
-      name
-    )
+    const result = await checkChatTriggers(context.application, InviteAcceptChat, [instance], command, name)
     const formatted = formatChatTriggerResponse(result, `Join ${escapeMarkdown(name)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })

@@ -5,7 +5,6 @@ import { ButtonStyle, ComponentType, DiscordAPIError, escapeMarkdown, MessageFla
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { InstanceType } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
@@ -19,7 +18,7 @@ import { DefaultCommandFooter } from '../common/discord-config'
 import type DiscordInstance from '../discord-instance.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager'
 
-export default class Leaderboard extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
   private static readonly EntriesPerPage = 10
   private static readonly CheckUpdateEvery = Duration.minutes(1)
   private static readonly UpdateEvery = Duration.minutes(30)
@@ -29,7 +28,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, InstanceTy
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {

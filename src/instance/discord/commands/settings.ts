@@ -21,18 +21,20 @@ import {
 } from 'discord.js'
 
 import type Application from '../../../application.js'
-import { Color, InstanceType, Permission } from '../../../common/application-event.js'
+import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { translateInstanceMessage, translateInstanceStatus } from '../../../core/instance/instance-language'
 import { ApplicationLanguages } from '../../../core/language-configurations'
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
+import { translateInstanceMessage, translateInstanceStatus } from '../../../features/minecraft-status/instance-language'
 import Duration from '../../../utility/duration'
 import { beautifyInstanceName } from '../../../utility/shared-utility'
 import { Timeout } from '../../../utility/timeout.js'
+// eslint-disable-next-line import/no-restricted-paths
+import MinecraftInstance from '../../minecraft/minecraft-instance'
 import { DefaultCommandFooter, MaxMinecraftInstances } from '../common/discord-config.js'
 import { interactivePaging } from '../utility/discord-pager'
 import type { ActionOption, CategoryOption, EmbedCategoryOption, LabelOption } from '../utility/options-handler.js'
@@ -789,7 +791,7 @@ function fetchPluginsOptions(application: Application): ActionOption {
           result = '__Empty List__'
         } else {
           for (const entry of entries) {
-            result += `- ${bold(escapeMarkdown(beautifyInstanceName(entry.instanceName)))}: ${escapeMarkdown(entry.pluginInfo().description)}\n`
+            result += `- ${bold(escapeMarkdown(beautifyInstanceName(entry.getLogName())))}: ${escapeMarkdown(entry.pluginInfo().description)}\n`
           }
         }
 
@@ -1203,9 +1205,9 @@ async function minecraftInstancesStatus(application: Application, interaction: B
 
   const registeredText: string[] = []
   for (const instance of instances) {
-    const instanceConfig = savedInstances.find((configInstance) => instance.instanceName === configInstance.name)
+    const instanceConfig = savedInstances.find((configInstance) => instance.getConfigName() === configInstance.name)
     if (instanceConfig === undefined) continue
-    let text = `- **${instance.instanceName}:** ${instance.currentStatus()}`
+    let text = `- **${instance.getDisplayName()}:** ${instance.currentStatus()}`
     if (instanceConfig.proxy !== undefined || instance.hasProxy()) text += ' (proxied)'
     registeredText.push(text)
   }
@@ -1215,7 +1217,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   } satisfies APIEmbedField)
 
   const dynamicInstances = instances.filter(
-    (instance) => !savedInstances.some((configInstance) => instance.instanceName === configInstance.name)
+    (instance) => !savedInstances.some((configInstance) => instance.getConfigName() === configInstance.name)
   )
   if (dynamicInstances.length > 0) {
     embed.fields.push({
@@ -1223,14 +1225,14 @@ async function minecraftInstancesStatus(application: Application, interaction: B
       value: dynamicInstances
         .map(
           (instance) =>
-            `- **${instance.instanceName}:** ${instance.currentStatus()}${instance.hasProxy() ? ' (proxied)' : ''}`
+            `- **${instance.getDisplayName()}:** ${instance.currentStatus()}${instance.hasProxy() ? ' (proxied)' : ''}`
         )
         .join('\n')
     } satisfies APIEmbedField)
   }
 
   const unavailableInstances = savedInstances.filter(
-    (instanceConfig) => !instances.some((instance) => instance.instanceName === instanceConfig.name)
+    (instanceConfig) => !instances.some((instance) => instance.getConfigName() === instanceConfig.name)
   )
   if (unavailableInstances.length > 0) {
     embed.color = Color.Bad
@@ -1260,7 +1262,7 @@ async function minecraftInstanceAdd(
   interaction: ButtonInteraction,
   errorHandler: UnexpectedErrorHandler
 ): Promise<boolean> {
-  if (application.getInstancesNames(InstanceType.Minecraft).length >= MaxMinecraftInstances) {
+  if (application.minecraftManager.getAllInstances().length >= MaxMinecraftInstances) {
     await interaction.reply({
       content: `You can only have up to ${MaxMinecraftInstances} Minecraft instances.`,
       flags: MessageFlags.Ephemeral
@@ -1317,13 +1319,7 @@ async function minecraftInstanceAdd(
   const EmbedTitle = 'Adding new minecraft instance'
   const InitiationTimeout = 30 * 60 * 1000
 
-  try {
-    application.applicationIntegrity.ensureInstanceName({
-      instanceName: instanceName,
-      instanceType: InstanceType.Minecraft
-    })
-  } catch (error: unknown) {
-    errorHandler.error('adding new minecraft instance', error)
+  if (!/^[\w -]+$/g.test(instanceName)) {
     await modalInteraction.reply({
       embeds: [
         {
@@ -1335,7 +1331,6 @@ async function minecraftInstanceAdd(
         } satisfies APIEmbed
       ]
     })
-    return true
   }
 
   let proxy: ProxyConfig | undefined = undefined
@@ -1389,7 +1384,8 @@ async function minecraftInstanceAdd(
   application.on(
     'instanceStatus',
     (event) => {
-      if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
+      const minecraft = event.instance
+      if (!(minecraft instanceof MinecraftInstance) || minecraft.getConfigName() !== instanceName) return
 
       assert.ok(embed.description)
       if (event.status !== undefined) {
@@ -1408,7 +1404,8 @@ async function minecraftInstanceAdd(
   application.on(
     'instanceAnnouncement',
     (event) => {
-      if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
+      const minecraft = event.instance
+      if (!(minecraft instanceof MinecraftInstance) || minecraft.getConfigName() !== instanceName) return
 
       assert.ok(embed.description)
       embed.description += `- Instance has been created\n`
@@ -1419,7 +1416,8 @@ async function minecraftInstanceAdd(
   application.on(
     'minecraftSelfBroadcast',
     (event) => {
-      if (event.instanceName !== instanceName || event.instanceType !== InstanceType.Minecraft) return
+      const minecraft = event.instance
+      if (!(minecraft instanceof MinecraftInstance) || minecraft.getConfigName() !== instanceName) return
 
       assert.ok(embed.description)
       embed.description += `- Instance has logged in as ${event.username} (${event.uuid})\n`
@@ -1431,14 +1429,18 @@ async function minecraftInstanceAdd(
   )
 
   try {
-    embed.description += `- Creating a fresh Minecraft instance\n`
-    await application.minecraftManager.addAndStart({ name: instanceName, proxy: proxy })
-
+    embed.description += `- Creating settings for a fresh Minecraft instance\n`
     application.core.minecraftSessions.addInstance({ name: instanceName, proxy: proxy })
-    embed.description += `- Instance has been added to settings for future reboot\n`
+
+    embed.description += `- initializing the Minecraft instance\n`
+    await application.minecraftManager.initiateAndStart({ name: instanceName, proxy: proxy })
   } catch (error: unknown) {
     embed.description += `- ERROR: Failed to add minecraft instance. ${errorMessage(error)}\n`
     embed.color = Color.Error
+
+    embed.description += `- Deleting all data of this instance\n`
+    application.core.minecraftSessions.deleteInstance(instanceName)
+
     sleepTimeout.resolve(true)
   }
   await sleepTimeout.wait()

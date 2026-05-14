@@ -5,8 +5,7 @@ import { escapeMarkdown } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
-import type { InstanceType } from '../../common/application-event.js'
-import { ChannelType, PunishmentType } from '../../common/application-event.js'
+import { ChannelType, Platform, PunishmentType } from '../../common/application-event.js'
 import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -16,7 +15,7 @@ import { FilteredReaction, MutedReaction, UnverifiedReaction } from './common/di
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class ChatManager extends SubInstance<DiscordInstance, Client> {
   private static readonly WarnMuteEvery = 10 * 60 * 1000
   private static readonly WarnVerificationEvery = 10 * 60 * 1000
   private readonly lastVerificationWarn = new Map<string, number>()
@@ -28,7 +27,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     application: Application,
     clientInstance: DiscordInstance,
     messageAssociation: MessageAssociation,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
@@ -123,6 +122,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
 
     await this.application.emit('chat', {
       ...fillBaseEvent,
+      platform: Platform.Discord,
 
       channelType: channelType,
       channelId: event.channel.id,

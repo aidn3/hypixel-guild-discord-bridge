@@ -34,11 +34,6 @@ export class SqliteManager {
       this.newlyCreated = true
       this.database = new Database()
     } else {
-      application.applicationIntegrity.addConfigPath(this.configFilePath)
-      // temp files
-      application.applicationIntegrity.addConfigPath(this.configFilePath + '-shm')
-      application.applicationIntegrity.addConfigPath(this.configFilePath + '-wal')
-
       application.addShutdownListener(() => {
         this.close()
       })
@@ -101,7 +96,6 @@ export class SqliteManager {
         )
         if (changed && !newlyCreated) {
           const backupPath = this.application.getBackupPath(sqliteName)
-          this.application.applicationIntegrity.addConfigPath(backupPath)
           this.logger.debug(`Backing up old database before committing changes. backup path: ${backupPath}`)
           this.backup(backupPath)
         }

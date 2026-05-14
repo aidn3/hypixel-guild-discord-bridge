@@ -11,7 +11,7 @@ import type { SavedPunishment } from '../core/moderation/punishments'
 import type Duration from '../utility/duration'
 
 import type { BasePunishment, InformEvent, PunishmentPurpose, UserLink } from './application-event'
-import { InstanceType, Permission, PunishmentType } from './application-event'
+import { Permission, Platform, PunishmentType } from './application-event'
 
 export interface InitializeOptions {
   guild?: Guild
@@ -222,14 +222,14 @@ export class AnonymousUser {
 
     add(this.userIdentifier)
     const mojangProfile = this.mojangProfile()
-    if (mojangProfile !== undefined) add({ originInstance: InstanceType.Minecraft, userId: mojangProfile.id })
+    if (mojangProfile !== undefined) add({ originInstance: Platform.Minecraft, userId: mojangProfile.id })
 
     const discordProfile = this.discordProfile()
-    if (discordProfile !== undefined) add({ originInstance: InstanceType.Discord, userId: discordProfile.id })
+    if (discordProfile !== undefined) add({ originInstance: Platform.Discord, userId: discordProfile.id })
 
     if (this.userLink !== undefined) {
-      add({ originInstance: InstanceType.Minecraft, userId: this.userLink.uuid })
-      add({ originInstance: InstanceType.Discord, userId: this.userLink.discordId })
+      add({ originInstance: Platform.Minecraft, userId: this.userLink.uuid })
+      add({ originInstance: Platform.Discord, userId: this.userLink.discordId })
     }
 
     return result
@@ -417,7 +417,7 @@ export interface UserIdentifier {
    * The target of the punishment.
    * Where the {@link #userId} resides and how the {@link #userId} should be interpreted.
    */
-  readonly originInstance: InstanceType
+  readonly originInstance: Platform
   /**
    * User unique Identifier within the {@link #originInstance}.
    * It can be Mojang UUID, or Discord user ID, etc.

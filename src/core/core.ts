@@ -5,8 +5,8 @@
 import assert from 'node:assert'
 
 import type Application from '../application'
-import { InstanceType } from '../common/application-event'
-import { Instance, InternalInstancePrefix } from '../common/instance'
+import { Platform } from '../common/application-event'
+import { Instance } from '../common/instance'
 import { SqliteManager } from '../common/sqlite-manager'
 import type {
   DiscordProfile,
@@ -28,12 +28,10 @@ import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
-import { InstanceHistoryButton } from './discord/instance-history-button'
 import { DiscordLinkButton } from './discord/link-button'
 import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
 import { initializeCoreDatabase } from './initialize-database'
-import { StatusHistory } from './instance/status-history'
 import { LanguageConfigurations } from './language-configurations'
 import { MigrationConfigurations } from './migration-configurations'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
@@ -55,7 +53,7 @@ import { MojangApi } from './users/mojang'
 import ScoresManager from './users/scores-manager'
 import { Verification } from './users/verification'
 
-export class Core extends Instance<InstanceType.Core> {
+export class Core extends Instance {
   // moderation
   private readonly commandsHeat: CommandsHeat
   public readonly profanity: Profanity
@@ -74,7 +72,6 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordConfigurations: DiscordConfigurations
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
-  public readonly discordInstanceHistoryButton: InstanceHistoryButton
   public readonly discordLinkButton: DiscordLinkButton
   public readonly discordEmojis: DiscordEmojis
   public readonly discordUserConditions: UserConditions
@@ -84,9 +81,6 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly minecraftSessions: SessionsManager
   public readonly moderationConfiguration: ModerationConfigurations
   public readonly minecraftAccounts: MinecraftAccounts
-
-  // instance
-  public readonly statusHistory: StatusHistory
 
   // misc
   public readonly applicationConfigurations: ApplicationConfigurations
@@ -105,7 +99,7 @@ export class Core extends Instance<InstanceType.Core> {
   private readonly configurationsManager: ConfigurationsManager
 
   public constructor(application: Application, hypixelApiKey: string, urchinApiKey: string | undefined) {
-    super(application, InternalInstancePrefix + 'core', InstanceType.Core)
+    super(application, 'core')
 
     this.conditonsRegistry = new ConditionsRegistry()
 
@@ -127,12 +121,10 @@ export class Core extends Instance<InstanceType.Core> {
       this.sqliteManager,
       this.discordConfigurations
     )
-    this.discordInstanceHistoryButton = new InstanceHistoryButton(this.sqliteManager, this.logger)
     this.discordLinkButton = new DiscordLinkButton(this.sqliteManager)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
     this.discordUserConditions = new UserConditions(this.sqliteManager)
 
-    this.statusHistory = new StatusHistory(this.sqliteManager, this.logger)
     this.placeHolder = new PlaceholderManager()
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
@@ -229,7 +221,7 @@ export class Core extends Instance<InstanceType.Core> {
    * @returns a full initialized object that contains user data at the moment of execution
    */
   async initializeDiscordUser(profile: DiscordProfile): Promise<DiscordUser> {
-    const identifier: UserIdentifier = { userId: profile.id, originInstance: InstanceType.Discord }
+    const identifier: UserIdentifier = { userId: profile.id, originInstance: Platform.Discord }
 
     let mojangProfile: MojangProfile | undefined
     const userLink = await this.application.core.verification.findByDiscord(profile.id)
@@ -249,7 +241,7 @@ export class Core extends Instance<InstanceType.Core> {
    * @returns a full initialized object that contains user data at the moment of execution
    */
   async initializeMinecraftUser(mojangProfile: MojangProfile, context: InitializeOptions): Promise<MinecraftUser> {
-    const identifier: UserIdentifier = { userId: mojangProfile.id, originInstance: InstanceType.Minecraft }
+    const identifier: UserIdentifier = { userId: mojangProfile.id, originInstance: Platform.Minecraft }
 
     let profile: DiscordProfile | undefined
     const userLink = await this.application.core.verification.findByIngame(mojangProfile.id)
@@ -270,11 +262,11 @@ export class Core extends Instance<InstanceType.Core> {
    */
   async initializeUser(identifier: UserIdentifier, context: InitializeOptions): Promise<User> {
     switch (identifier.originInstance) {
-      case InstanceType.Minecraft: {
+      case Platform.Minecraft: {
         const profile = await this.application.mojangApi.profileByUuid(identifier.userId)
         return this.initializeMinecraftUser(profile, context)
       }
-      case InstanceType.Discord: {
+      case Platform.Discord: {
         const profile = await this.application.discordInstance.profileById(identifier.userId, context.guild)
         if (profile !== undefined) return this.initializeDiscordUser(profile)
       }
@@ -289,7 +281,6 @@ export class Core extends Instance<InstanceType.Core> {
     const transaction = database.transaction(() => {
       this.discordLeaderboards.remove(messagesIds)
       this.discordTemporarilyInteractions.remove(messagesIds)
-      this.discordInstanceHistoryButton.remove(messagesIds)
       this.discordLinkButton.remove(messagesIds)
     })
 

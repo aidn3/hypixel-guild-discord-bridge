@@ -5,7 +5,6 @@ import GetMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
 
 import type Application from '../../application.js'
-import type { InstanceType } from '../../common/application-event.js'
 import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -45,14 +44,14 @@ import type MessageAssociation from './common/message-association.js'
 import { stufDecode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
-export default class ChatManager extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class ChatManager extends SubInstance<MinecraftInstance, ClientSession> {
   private readonly chatModules: MinecraftChatMessage[]
   private readonly minecraftData
 
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
-    eventHelper: EventHelper<InstanceType.Minecraft>,
+    eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     private readonly messageAssociation: MessageAssociation
@@ -159,7 +158,6 @@ export default class ChatManager extends SubInstance<MinecraftInstance, Instance
           application: this.application,
 
           clientInstance: this.clientInstance,
-          instanceName: this.clientInstance.instanceName,
           eventHelper: this.eventHelper,
 
           logger: this.logger,

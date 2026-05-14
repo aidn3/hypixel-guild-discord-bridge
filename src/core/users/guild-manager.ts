@@ -2,9 +2,11 @@ import assert from 'node:assert'
 
 import PromiseQueue from 'promise-queue'
 
-import type { InstanceType, MinecraftRawChatEvent } from '../../common/application-event'
+import type { MinecraftRawChatEvent } from '../../common/application-event'
 import { MinecraftSendChatPriority } from '../../common/application-event'
 import SubInstance from '../../common/sub-instance'
+// eslint-disable-next-line import/no-restricted-paths
+import MinecraftInstance from '../../instance/minecraft/minecraft-instance'
 import Duration from '../../utility/duration'
 import { Timeout } from '../../utility/timeout'
 import type { Core } from '../core'
@@ -14,9 +16,9 @@ import type { Core } from '../core'
  * That means data within must be done within a cycle and not separated by an "async/await".
  * So all data must be "whole" across cycles at all times.
  */
-export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
+export class GuildManager extends SubInstance<Core, void> {
   public static readonly DefaultDataExpire = Duration.seconds(30)
-  private readonly guildInfo = new Map<string, GuildInformation>()
+  private readonly guildInfo = new WeakMap<MinecraftInstance, GuildInformation>()
 
   /**
    * Fetch online players in a guild
@@ -27,7 +29,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
    * @return an object containing
    */
   public async list(
-    instanceName: string,
+    instanceName: MinecraftInstance,
     newerThan: Duration = GuildManager.DefaultDataExpire
   ): Promise<Readonly<GuildFetch>> {
     const guildInfo = this.getGuildInfo(instanceName)
@@ -63,7 +65,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
    * @return an object containing the requested data
    */
   public async motd(
-    instanceName: string,
+    instanceName: MinecraftInstance,
     newerThan: Duration = GuildManager.DefaultDataExpire
   ): Promise<Readonly<GuildMOTD>> {
     const guildInfo = this.getGuildInfo(instanceName)
@@ -90,12 +92,12 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     })
   }
 
-  public async invite(instanceName: string, username: string): Promise<GuildInviteStatus> {
+  public async invite(instanceName: MinecraftInstance, username: string): Promise<GuildInviteStatus> {
     const guildInfo = this.getGuildInfo(instanceName)
     return await this.queueTask(guildInfo, () => this.inviteNow(instanceName, username))
   }
 
-  private getGuildInfo(instanceName: string): GuildInformation {
+  private getGuildInfo(instanceName: MinecraftInstance): GuildInformation {
     let guild = this.guildInfo.get(instanceName)
     if (guild === undefined) {
       guild = { commandQueue: new PromiseQueue(1), guild: undefined, motd: undefined }
@@ -112,12 +114,12 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
    * @param guild the guild object OR instanceName string
    * @param task a callback that will be executed to start the new promise AFTER the old task has finished executing
    */
-  public async queueTask<T>(guild: GuildInformation | string, task: () => Promise<T>): Promise<T> {
-    if (typeof guild === 'string') guild = this.getGuildInfo(guild)
+  public async queueTask<T>(guild: GuildInformation | MinecraftInstance, task: () => Promise<T>): Promise<T> {
+    if (guild instanceof MinecraftInstance) guild = this.getGuildInfo(guild)
     return guild.commandQueue.add(task)
   }
 
-  private async listNow(instanceName: string): Promise<Readonly<GuildFetch>> {
+  private async listNow(instanceName: MinecraftInstance): Promise<Readonly<GuildFetch>> {
     const timeout = new Timeout<GuildManagerError | undefined>(10_000)
     const guild: GuildFetch = { fetchedAt: Date.now(), name: '', members: [] }
 
@@ -131,7 +133,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
       if (event.message.length === 0) return
-      if (event.instanceName !== instanceName) return
+      if (event.instance !== instanceName) return
 
       const nameMatch = nameRegex.exec(event.message)
       if (nameMatch != undefined) {
@@ -221,7 +223,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     return Object.freeze(guild)
   }
 
-  private async motdNow(instanceName: string): Promise<Readonly<GuildMOTD>> {
+  private async motdNow(instanceName: MinecraftInstance): Promise<Readonly<GuildMOTD>> {
     const timeout = new Timeout<GuildManagerError | undefined>(10_000)
     const motd: GuildMOTD = { fetchedAt: Date.now(), lines: { type: 'empty' } }
 
@@ -237,7 +239,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     let started = false
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
-      if (event.instanceName !== instanceName) return
+      if (event.instance !== instanceName) return
 
       if (noMotd.test(event.message)) {
         timeout.resolve(undefined)
@@ -286,7 +288,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     return Object.freeze(motd)
   }
 
-  private async inviteNow(instanceName: string, username: string): Promise<GuildInviteStatus> {
+  private async inviteNow(instanceName: MinecraftInstance, username: string): Promise<GuildInviteStatus> {
     const InviteAcceptChat: { regex: RegExp; type: GuildInviteStatus }[] = [
       { regex: /^Your guild is full!/, type: GuildInviteStatus.GuildFull },
       {
@@ -318,7 +320,7 @@ export class GuildManager extends SubInstance<Core, InstanceType.Core, void> {
     const timeout = new Timeout<GuildInviteStatus>(10_000)
 
     const chatListener = function (event: MinecraftRawChatEvent): void {
-      if (event.instanceName !== instanceName) return
+      if (event.instance !== instanceName) return
 
       for (const entry of InviteAcceptChat) {
         const match = entry.regex.exec(event.message)

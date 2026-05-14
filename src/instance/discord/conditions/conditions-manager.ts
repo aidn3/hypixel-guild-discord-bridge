@@ -3,7 +3,6 @@ import { DiscordAPIError, userMention } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application'
-import type { InstanceType } from '../../../common/application-event'
 import type EventHelper from '../../../common/event-helper'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
@@ -13,11 +12,11 @@ import type DiscordInstance from '../discord-instance'
 
 import type { UpdateContext, UpdateGuildContext, UpdateMemberContext } from './common'
 
-export default class ConditionsManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class ConditionsManager extends SubInstance<DiscordInstance, Client> {
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {

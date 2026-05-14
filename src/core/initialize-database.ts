@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 16
+const CurrentVersion = 17
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -61,6 +61,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(15, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom15to16(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(16, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom16to17(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -777,6 +780,55 @@ function migrateFrom15to16(database: Database, logger: Logger4Js, newlyCreated: 
   )
 
   database.pragma('user_version = 16')
+}
+
+function migrateFrom16to17(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 16 to 17')
+
+  // reference: features/minecraft-status
+  database.exec('DROP TABLE "instanceStatusHistory"')
+  database.exec(
+    'CREATE TABLE "minecraftStatusHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  fromStatus TEXT NOT NULL,' +
+      '  toStatus TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('DROP TABLE "instanceMessageHistory"')
+  database.exec(
+    'CREATE TABLE "minecraftMessageHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  type TEXT NOT NULL,' +
+      '  value TEXT DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('DROP TABLE "discordInstanceHistoryButton"')
+  database.exec(
+    'CREATE TABLE "discordMinecraftStatusButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  type TEXT NOT NULL,' +
+      '  startTime INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  endTime INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('DROP TABLE "discordInstanceHistoryLastButton"')
+  database.exec(
+    'CREATE TABLE "discordMinecraftStatusLastButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(channelId, name)' +
+      ' ) STRICT'
+  )
+
+  database.pragma('user_version = 17')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

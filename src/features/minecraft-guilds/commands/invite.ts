@@ -32,9 +32,7 @@ export default class Invite extends ChatCommandHandler {
     const instance = await this.findInstance(savedGuild, context.app.minecraftManager, context.app.core.guildManager)
     if (instance === undefined) return 'Can not process this request right now due to inability to connect to Hypixel'
 
-    const result = await context.app.core.guildManager
-      .invite(instance.instanceName, mojangProfile.name)
-      .catch(() => undefined)
+    const result = await context.app.core.guildManager.invite(instance, mojangProfile.name).catch(() => undefined)
     if (result === undefined) return 'Failed to invite somehow :D'
 
     switch (result) {
@@ -85,9 +83,7 @@ export default class Invite extends ChatCommandHandler {
     for (const potentialInstance of minecraftManager.getAllInstances()) {
       if (potentialInstance.currentStatus() !== Status.Connected) continue
 
-      const guildListResult = await guildManager
-        .list(potentialInstance.instanceName, Duration.minutes(5))
-        .catch(() => undefined)
+      const guildListResult = await guildManager.list(potentialInstance, Duration.minutes(5)).catch(() => undefined)
       if (guildListResult === undefined) continue
 
       if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {

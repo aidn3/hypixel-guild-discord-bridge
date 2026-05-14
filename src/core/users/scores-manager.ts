@@ -4,7 +4,7 @@ import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
-import { ChannelType, InstanceType } from '../../common/application-event'
+import { ChannelType, Platform } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import type { SqliteManager } from '../../common/sqlite-manager'
@@ -14,7 +14,7 @@ import Duration from '../../utility/duration'
 import { setIntervalAsync } from '../../utility/scheduling'
 import type { Core } from '../core'
 
-export default class ScoresManager extends SubInstance<Core, InstanceType.Core, void> {
+export default class ScoresManager extends SubInstance<Core, void> {
   public static readonly DeleteMembersOlderThan = Duration.years(3)
   public static readonly DeleteMessagesOlderThan = Duration.years(3)
   public static readonly LeniencyTime = Duration.minutes(5)
@@ -36,7 +36,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
   constructor(
     application: Application,
     clientInstance: Core,
-    eventHelper: EventHelper<InstanceType.Core>,
+    eventHelper: EventHelper<Core>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     sqliteManager: SqliteManager
@@ -52,12 +52,12 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
     this.application.on('chat', (event) => {
       if (event.channelType !== ChannelType.Public) return
 
-      switch (event.instanceType) {
-        case InstanceType.Discord: {
+      switch (event.platform) {
+        case Platform.Discord: {
           this.database.addDiscordMessage(event.user.discordProfile().id, this.timestamp())
           break
         }
-        case InstanceType.Minecraft: {
+        case Platform.Minecraft: {
           this.database.addMinecraftMessage(event.user.mojangProfile().id, this.timestamp())
         }
       }
@@ -66,13 +66,13 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
     this.application.on('command', (event) => {
       if (event.channelType !== ChannelType.Public) return
 
-      switch (event.instanceType) {
-        case InstanceType.Discord: {
+      switch (event.platform) {
+        case Platform.Discord: {
           const profile = event.user.discordProfile()
           this.database.addDiscordCommand(profile.id, this.timestamp())
           break
         }
-        case InstanceType.Minecraft: {
+        case Platform.Minecraft: {
           const profile = event.user.mojangProfile()
           this.database.addMinecraftCommand(profile.id, this.timestamp())
         }
@@ -202,7 +202,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
 
       if (instance.currentStatus() === Status.Connected) {
         const onlineTask = this.application.core.guildManager
-          .list(instance.instanceName)
+          .list(instance)
           .then((guild) => guild.members.filter((member) => member.online).map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
           .then((profiles) => {
@@ -219,7 +219,7 @@ export default class ScoresManager extends SubInstance<Core, InstanceType.Core, 
           .catch(this.errorHandler.promiseCatch('fetching and adding online members'))
 
         const allTask = this.application.core.guildManager
-          .list(instance.instanceName)
+          .list(instance)
           .then((guild) => guild.members.map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
           .then((profiles) => {

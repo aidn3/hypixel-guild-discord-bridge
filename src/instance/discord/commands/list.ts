@@ -5,7 +5,7 @@ import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { UserLink } from '../../../common/application-event.js'
-import { Color, InstanceType, Permission } from '../../../common/application-event.js'
+import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
@@ -275,15 +275,15 @@ async function getGuilds(app: Application, errorHandler: UnexpectedErrorHandler)
 
   const result: GuildsLookup = { fetched: [], failed: [] }
 
-  for (const instanceName of app.getInstancesNames(InstanceType.Minecraft)) {
+  for (const instance of app.minecraftManager.getAllInstances()) {
     const task = app.core.guildManager
-      .list(instanceName)
+      .list(instance)
       .then((guild) => {
         result.fetched.push(guild)
       })
       .catch((error: unknown) => {
         errorHandler.error('fetching guild info', error)
-        result.failed.push(instanceName)
+        result.failed.push(instance.getDisplayName())
       })
 
     tasks.push(task)

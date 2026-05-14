@@ -2,23 +2,22 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 
-import type { InstanceType } from './application-event.js'
 import type { ConnectableInstance } from './connectable-instance.js'
 import type EventHelper from './event-helper.js'
 import type { Instance } from './instance.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export default abstract class SubInstance<K extends ConnectableInstance<T> | Instance<T>, T extends InstanceType, O> {
+export default abstract class SubInstance<K extends ConnectableInstance | Instance, O> {
   protected application: Application
   protected clientInstance: K
-  protected eventHelper: EventHelper<T>
+  protected eventHelper: EventHelper<K>
   protected logger: Logger
   protected errorHandler: UnexpectedErrorHandler
 
   public constructor(
     application: Application,
     clientInstance: K,
-    eventHelper: EventHelper<T>,
+    eventHelper: EventHelper<K>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {

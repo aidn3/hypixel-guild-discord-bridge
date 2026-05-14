@@ -18,7 +18,7 @@ export default {
     const targetInstance = context.minecraftInstance
     assert.ok(targetInstance)
 
-    await context.application.sendSignal([targetInstance], InstanceSignalType.Restart)
+    await targetInstance.signal(InstanceSignalType.Restart)
     await context.interaction.editReply('Reconnect signal has been sent!')
   }
 } satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

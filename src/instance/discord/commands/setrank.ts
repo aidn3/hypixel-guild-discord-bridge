@@ -30,14 +30,7 @@ export default {
     const rank: string = context.interaction.options.getString('rank', true)
 
     const command = `/g setrank ${username} ${rank}`
-    const result = await checkChatTriggers(
-      context.application,
-      context.eventHelper,
-      RankChat,
-      context.minecraftInstance,
-      command,
-      username
-    )
+    const result = await checkChatTriggers(context.application, RankChat, context.minecraftInstance, command, username)
     const formatted = formatChatTriggerResponse(result, `Setrank ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })

@@ -5,7 +5,7 @@ import { Client, GatewayIntentBits, GuildMember, Options, Partials } from 'disco
 
 import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceType, Permission } from '../../common/application-event.js'
+import { Permission, Platform } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { DiscordProfile } from '../../common/user'
 
@@ -20,7 +20,7 @@ import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
-export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
+export default class DiscordInstance extends ConnectableInstance {
   readonly commandsManager: CommandManager
   readonly leaderboard: Leaderboard
   readonly conditionsManager: ConditionsManager
@@ -40,7 +40,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   private connected = false
 
   constructor(app: Application, config: StaticDiscordConfig) {
-    super(app, InstanceType.Discord, InstanceType.Discord)
+    super(app, Platform.Discord)
 
     this.staticConfig = config
 

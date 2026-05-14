@@ -1,7 +1,7 @@
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { GuildPlayerEvent, GuildPlayerResponsible, InstanceType } from '../../../common/application-event.js'
+import type { GuildPlayerEvent, GuildPlayerResponsible } from '../../../common/application-event.js'
 import {
   ChannelType,
   Color,
@@ -15,21 +15,17 @@ import { HeatResult, HeatType } from '../../../core/moderation/commands-heat'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class PunishmentHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class PunishmentHandler extends SubInstance<MinecraftInstance, ClientSession> {
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
-    eventHelper: EventHelper<InstanceType.Minecraft>,
+    eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler)
     this.application.on('guildPlayer', async (event) => {
-      if (
-        event.instanceName !== this.clientInstance.instanceName ||
-        event.instanceType !== this.clientInstance.instanceType
-      )
-        return
+      if (event.instance !== this.clientInstance) return
 
       await this.onGuildPlayer(event).catch(this.errorHandler.promiseCatch('handling guildPlayer event'))
     })
