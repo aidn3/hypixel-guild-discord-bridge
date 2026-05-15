@@ -37,9 +37,9 @@ export default {
         flags: MessageFlags.Ephemeral
       })
     }
-    const guildCommands = await interaction.guild.commands.fetch()
-    const linkCommand = guildCommands.find((command) => command.name === 'link')
-    const syncCommand = guildCommands.find((command) => command.name === 'sync')
+    const commands = interaction.client.application.commands.cache
+    const linkCommand = commands.find((command) => command.name === 'link')
+    const syncCommand = commands.find((command) => command.name === 'sync')
 
     const message =
       '## Account linking & roles/name syncing' +

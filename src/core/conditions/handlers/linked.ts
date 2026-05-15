@@ -16,10 +16,10 @@ export class Linked extends ConditionHandler<LinkedBindingCondition> {
     return context.application.i18n.t(($) => $['discord.conditions.handler.link.title'])
   }
 
-  override async displayCondition(context: HandlerDisplayContext): Promise<string> {
+  override displayCondition(context: HandlerDisplayContext): string {
     let linkCommand = '0'
     if (context.discordGuild !== undefined) {
-      const guildCommands = await context.discordGuild.commands.fetch()
+      const guildCommands = context.discordGuild.client.application.commands.cache
       linkCommand = guildCommands.find((command) => command.name === 'link')?.id ?? '0'
     }
 

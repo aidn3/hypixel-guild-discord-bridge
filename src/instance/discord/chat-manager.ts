@@ -73,7 +73,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
       ) {
         this.lastVerificationWarn.set(event.author.id, currentTimestamp)
         assert.ok(event.inGuild())
-        const commands = await event.guild.commands.fetch()
+        const commands = event.client.application.commands.cache
         const linkCommand = commands.find((command) => command.name === 'link')
 
         await event.reply({

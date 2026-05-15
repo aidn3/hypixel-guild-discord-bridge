@@ -89,7 +89,7 @@ export default {
         fetchCommandsOptions(context.application),
         fetchPluginsOptions(context.application),
         fetchLanguageOptions(context.application),
-        await fetchOtherOptions(context.interaction)
+        fetchOtherOptions(context.interaction)
       ]
     }
 
@@ -1025,8 +1025,8 @@ function fetchLanguageOptions(application: Application): CategoryOption {
   }
 }
 
-async function fetchOtherOptions(interaction: ChatInputCommandInteraction<'cached'>): Promise<LabelOption> {
-  const commands = await interaction.guild.commands.fetch()
+function fetchOtherOptions(interaction: ChatInputCommandInteraction<'cached'>): LabelOption {
+  const commands = interaction.client.application.commands.cache
   const faqCommand = commands.find((command) => command.name === 'faq')
   const guildCommand = commands.find((command) => command.name === 'guild')
   const profanityCommand = commands.find((command) => command.name === 'profanity')

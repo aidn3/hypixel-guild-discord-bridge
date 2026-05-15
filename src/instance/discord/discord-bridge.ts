@@ -275,7 +275,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             files: [new AttachmentBuilder(MinecraftRenderer.generateMessageImage(event.rawMessage))]
           })
         } else {
-          await this.reply(event.eventId, replyId, await this.generateEmbed(event, replyId.guildId))
+          await this.reply(event.eventId, replyId, this.generateEmbed(event, replyId.guildId))
         }
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message')
@@ -361,11 +361,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     for (const replyId of replyIds) {
       try {
-        await this.reply(
-          event.eventId,
-          replyId,
-          await this.generateEmbed({ ...event, type: undefined }, replyId.guildId)
-        )
+        await this.reply(event.eventId, replyId, this.generateEmbed({ ...event, type: undefined }, replyId.guildId))
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message. sending the event independently')
         await this.sendEmbedToChannels({ ...event, type: undefined }, [replyId.channelId], undefined)
@@ -384,7 +380,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     return finalMessage
   }
 
-  private async generateEmbed(event: GenerateEmbedType, guildId: string | undefined): Promise<APIEmbed> {
+  private generateEmbed(event: GenerateEmbedType, guildId: string | undefined): APIEmbed {
     const embed: APIEmbed = {
       description: escapeMarkdown(event.message),
 
@@ -408,18 +404,14 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     // all enums are unique and must unique for this to work.
     // the other solutions is just too complicated
     if ('type' in event && event.type === MinecraftReactiveEventType.RequireGuild && guildId !== undefined) {
-      const commands = await this.clientInstance
-        .getClient()
-        .guilds.fetch(guildId)
-        .then((guild) => guild.commands.fetch())
-      const joinCommand = commands.find((command) => command.name === 'join')
-      const setupCommand = commands.find((command) => command.name === 'setup')
+      const commands = this.clientInstance.getClient().application?.commands.cache
+      const joinCommand = commands?.find((command) => command.name === 'join')
 
       const adminList = this.staticConfig.adminIds.map((adminId) => `<@${adminId}>`)
       embed.description =
         `Looks like the Minecraft account is not in a guild for this to work.\n` +
         `You can ask ${adminList.join(', ')} or any staff who has access\n` +
-        `to set it up using </join:${joinCommand?.id}> before using </setup:${setupCommand?.id}> right after.`
+        `to set it up using </join:${joinCommand?.id ?? 0}>.`
     }
 
     return embed
@@ -466,7 +458,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         const embed =
           preGeneratedEmbed ??
           // commands always have a preGenerated embed
-          (await this.generateEmbed(event, channel.guildId))
+          this.generateEmbed(event, channel.guildId)
         const message = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } })
 
         messages.push(message)

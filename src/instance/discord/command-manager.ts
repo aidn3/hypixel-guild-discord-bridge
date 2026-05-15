@@ -460,6 +460,9 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
       this.application.core.migrationConfigurations.setDeleteDiscordGuildCommands(true)
       this.logger.info('Finished Discord guild commands migration.')
     }
+
+    // update cache
+    await client.application.commands.fetch()
   }
 
   private getCommandsJson(): RESTPostAPIChatInputApplicationCommandsJSONBody[] {

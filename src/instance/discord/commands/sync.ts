@@ -50,8 +50,8 @@ export default {
       context.application.discordInstance.profileByUser(guildMember.user, guildMember)
     )
 
-    const guildCommands = await interaction.guild.commands.fetch()
-    const linkCommand = guildCommands.find((command) => command.name === 'link')
+    const commands = interaction.client.application.commands.cache
+    const linkCommand = commands.find((command) => command.name === 'link')
     assert.ok(linkCommand)
 
     const progress: UpdateProgress = {
