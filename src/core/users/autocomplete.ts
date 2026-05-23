@@ -116,8 +116,8 @@ export default class Autocomplete extends SubInstance<Core, void> {
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       if (instance.currentStatus() !== Status.Connected) continue
 
-      const task = this.application.core.guildManager
-        .list(instance, Duration.minutes(1))
+      const task = instance.guildManager
+        .list(Duration.minutes(1))
         .then((guild) => {
           for (const member of guild.members) {
             usernames.push(member.username)

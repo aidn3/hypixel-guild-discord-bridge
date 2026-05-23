@@ -52,7 +52,6 @@ import { SpontaneousEventsConfigurations } from './spontanmous-events-configurat
 import { Urchin } from './urchin/urchin'
 import { Users } from './users'
 import Autocomplete from './users/autocomplete'
-import { GuildManager } from './users/guild-manager'
 import { MojangApi } from './users/mojang'
 import ScoresManager from './users/scores-manager'
 import { Verification } from './users/verification'
@@ -67,7 +66,6 @@ export class Core extends Instance {
   // users
   public readonly users: Users
   private readonly autoComplete: Autocomplete
-  public readonly guildManager: GuildManager
   public readonly mojangApi: MojangApi
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
@@ -169,14 +167,6 @@ export class Core extends Instance {
       this.abortController.signal
     )
 
-    this.guildManager = new GuildManager(
-      application,
-      this,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler,
-      this.abortController.signal
-    )
     this.autoComplete = new Autocomplete(
       application,
       this,

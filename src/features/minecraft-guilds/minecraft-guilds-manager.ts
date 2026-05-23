@@ -19,8 +19,8 @@ import { Instance } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { MojangProfile, User } from '../../common/user'
 import { ConditionResultType } from '../../core/conditions/common'
-import type { GuildFetch } from '../../core/users/guild-manager'
-import { GuildInviteStatus } from '../../core/users/guild-manager'
+import type { GuildFetch } from '../../instance/minecraft/guild-manager'
+import { GuildInviteStatus } from '../../instance/minecraft/guild-manager'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
 import Duration from '../../utility/duration'
 import { setIntervalAsync } from '../../utility/scheduling'
@@ -177,9 +177,7 @@ export class MinecraftGuildsManager extends Instance {
   private async autoRegisterGuild(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {
     if (instance.currentStatus() !== Status.Connected) return
 
-    const guildListResult = await this.application.core.guildManager
-      .list(instance, Duration.minutes(5))
-      .catch(() => undefined)
+    const guildListResult = await instance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
     if (guildListResult === undefined) return
 
     const savedGuild = allSavedGuilds.find(
@@ -240,7 +238,7 @@ export class MinecraftGuildsManager extends Instance {
 
   private async findSavedGuildFromInstance(instance: MinecraftInstance): Promise<MinecraftGuild | undefined> {
     if (instance.currentStatus() !== Status.Connected) return
-    const guildListResult = await this.application.core.guildManager.list(instance)
+    const guildListResult = await instance.guildManager.list()
 
     const allSavedGuilds = this.database.allGuilds()
     if (allSavedGuilds.length === 0) return
@@ -306,9 +304,7 @@ export class MinecraftGuildsManager extends Instance {
     let changed = false
     let openSlots = MinecraftGuildsManager.MaxGuildMembers
 
-    const guildListResult = await this.application.core.guildManager
-      .list(instance, Duration.minutes(1))
-      .catch(() => undefined)
+    const guildListResult = await instance.guildManager.list(Duration.minutes(1)).catch(() => undefined)
     if (guildListResult === undefined) return
     openSlots -= guildListResult.members.length
 
@@ -401,7 +397,7 @@ export class MinecraftGuildsManager extends Instance {
     )
 
     const profile = await this.application.mojangApi.profileByUuid(waitlistEntry.mojangId)
-    const result = await this.application.core.guildManager.invite(instance, profile.name).catch(() => undefined)
+    const result = await instance.guildManager.invite(profile.name).catch(() => undefined)
 
     switch (result) {
       case GuildInviteStatus.AlreadyJoined:

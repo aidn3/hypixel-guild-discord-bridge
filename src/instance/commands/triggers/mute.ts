@@ -71,8 +71,8 @@ export default class Mute extends ChatCommandHandler {
 
     const usernames: Promise<string[]>[] = []
     for (const instance of instances) {
-      const chunk = context.app.core.guildManager
-        .list(instance)
+      const chunk = instance.guildManager
+        .list()
         .then((guild) => guild.members)
         .then((members) => members.filter((member) => member.online).map((member) => member.username))
         .then((usernames) => usernames.filter((username) => !context.app.minecraftManager.isMinecraftBot(username)))

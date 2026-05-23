@@ -202,8 +202,8 @@ export default class ScoresManager extends SubInstance<Core, void> {
       if (botUuid !== undefined) this.database.addBotUuid(botUuid)
 
       if (instance.currentStatus() === Status.Connected) {
-        const onlineTask = this.application.core.guildManager
-          .list(instance)
+        const onlineTask = instance.guildManager
+          .list()
           .then((guild) => guild.members.filter((member) => member.online).map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
           .then((profiles) => {
@@ -219,8 +219,8 @@ export default class ScoresManager extends SubInstance<Core, void> {
           })
           .catch(this.errorHandler.promiseCatch('fetching and adding online members'))
 
-        const allTask = this.application.core.guildManager
-          .list(instance)
+        const allTask = instance.guildManager
+          .list()
           .then((guild) => guild.members.map((member) => member.username))
           .then((usernames) => this.application.mojangApi.profilesByUsername(new Set(usernames)))
           .then((profiles) => {

@@ -24,7 +24,7 @@ export default class List extends ChatCommandHandler {
     } else if (instances.length === 1) {
       const instance = instances[0]
 
-      const members = await this.onlineMembers(context, instance)
+      const members = await this.onlineMembers(instance)
       if (members.length === 0) return `No one is online??`
 
       const pageRaw = context.args[0] ?? '1'
@@ -36,7 +36,7 @@ export default class List extends ChatCommandHandler {
         const tasks: Promise<string>[] = []
         for (const instance of instances) {
           tasks.push(
-            this.onlineMembers(context, instance)
+            this.onlineMembers(instance)
               .then((members) => {
                 totalCount += members.length
                 return `${beautifyInstanceName(instance.getDisplayName())} ${members.length}`
@@ -56,7 +56,7 @@ export default class List extends ChatCommandHandler {
         return `Can only query online Minecraft instances: ${instances.map((instance) => instance.getDisplayName()).join(', ')}`
       }
 
-      const members = await this.onlineMembers(context, foundInstance)
+      const members = await this.onlineMembers(foundInstance)
       if (members.length === 0) return `No one is online??`
 
       const pageRaw = context.args[1] ?? '1'
@@ -76,8 +76,8 @@ export default class List extends ChatCommandHandler {
     return `Online ${members.length} (page ${page}/${totalPages}): ${chunk.join(', ')}`
   }
 
-  private async onlineMembers(context: ChatCommandContext, instance: MinecraftInstance): Promise<string[]> {
-    const guild = await context.app.core.guildManager.list(instance)
+  private async onlineMembers(instance: MinecraftInstance): Promise<string[]> {
+    const guild = await instance.guildManager.list()
     return guild.members.filter((member) => member.online).map((member) => member.username)
   }
 }

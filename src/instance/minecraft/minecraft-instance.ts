@@ -22,6 +22,7 @@ import ClientSession from './client-session.js'
 import MessageAssociation from './common/message-association.js'
 import { resolveProxyIfExist } from './common/proxy-handler.js'
 import { CommandType, SendQueue } from './common/send-queue.js'
+import { GuildManager } from './guild-manager'
 import GameTogglesHandler from './handlers/game-toggles-handler.js'
 import LimboHandler from './handlers/limbo-handler.js'
 import PlayerMuted from './handlers/player-muted.js'
@@ -40,6 +41,8 @@ export default class MinecraftInstance extends ConnectableInstance {
     port: 25_565,
     version: '1.21.11'
   }
+
+  public readonly guildManager: GuildManager
 
   private clientSession: ClientSession | undefined
 
@@ -119,6 +122,14 @@ export default class MinecraftInstance extends ConnectableInstance {
       this.abortController.signal
     )
     this.limboHandler = new LimboHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.guildManager = new GuildManager(
       this.application,
       this,
       this.eventHelper,

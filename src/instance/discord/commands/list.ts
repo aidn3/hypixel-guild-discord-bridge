@@ -11,10 +11,11 @@ import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { Hypixel } from '../../../core/hypixel/hypixel'
 import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
-import type { GuildFetch } from '../../../core/users/guild-manager'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
 import { capitalize } from '../../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
+import type { GuildFetch } from '../../minecraft/guild-manager'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -276,8 +277,8 @@ async function getGuilds(app: Application, errorHandler: UnexpectedErrorHandler)
   const result: GuildsLookup = { fetched: [], failed: [] }
 
   for (const instance of app.minecraftManager.getAllInstances()) {
-    const task = app.core.guildManager
-      .list(instance)
+    const task = instance.guildManager
+      .list()
       .then((guild) => {
         result.fetched.push(guild)
       })

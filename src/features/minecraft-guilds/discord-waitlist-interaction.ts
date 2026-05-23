@@ -346,9 +346,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     for (const potentialInstance of this.application.minecraftManager.getAllInstances()) {
       if (potentialInstance.currentStatus() !== Status.Connected) continue
 
-      const guildListResult = await this.application.core.guildManager
-        .list(potentialInstance, Duration.minutes(5))
-        .catch(() => undefined)
+      const guildListResult = await potentialInstance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
       if (guildListResult === undefined) continue
 
       if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {
