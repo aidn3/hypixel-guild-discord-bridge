@@ -5,7 +5,7 @@ import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
 import type { MinecraftRawChatEvent } from '../../common/application-event'
-import { MinecraftSendChatPriority } from '../../common/application-event'
+import { GuildPlayerEventType, MinecraftSendChatPriority } from '../../common/application-event'
 import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
@@ -34,6 +34,16 @@ export class GuildManager extends SubInstance<MinecraftInstance, void> {
     abortSignal: AbortSignal
   ) {
     super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
+
+    this.application.on('guildPlayer', (event) => {
+      switch (event.type) {
+        case GuildPlayerEventType.Kicked:
+        case GuildPlayerEventType.Joined: {
+          this.guildData = undefined
+          this.motdData = undefined
+        }
+      }
+    })
   }
 
   /**
