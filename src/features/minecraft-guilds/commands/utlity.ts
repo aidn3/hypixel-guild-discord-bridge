@@ -2,6 +2,7 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands'
 import type { MinecraftUser } from '../../../common/user'
+import { ConditionResultType } from '../../../core/conditions/common'
 import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hypixel-guild'
 import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
 
@@ -49,8 +50,12 @@ export async function resolveGuildRank(
       if (whitelistedRole.name !== roleCondition.role) continue
       const handler = registry.get(roleCondition.typeId)
       if (handler === undefined) continue
-      const meetsCondition = await handler.meetsCondition(conditionContext, { user: targetUser }, roleCondition.options)
-      if (meetsCondition) {
+      const conditionsResult = await handler.meetsCondition(
+        conditionContext,
+        { user: targetUser },
+        roleCondition.options
+      )
+      if (conditionsResult.type === ConditionResultType.Pass) {
         const display = await handler.displayCondition(
           { ...conditionContext, discordGuild: undefined },
           roleCondition.options

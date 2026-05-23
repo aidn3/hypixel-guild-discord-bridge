@@ -4,11 +4,17 @@ import { getDungeonLevelWithOverflow } from '../../../instance/commands/common/u
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import type { HandlerContext, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from '../common'
-import { ConditionHandler, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
-import { getSkyblockUserProfiles } from '../utilities'
+import type {
+  ConditionResult,
+  HandlerContext,
+  HandlerOperationContext,
+  HandlerUser,
+  SkyblockProfileOptionType
+} from '../common'
+import { ConditionHandler, ConditionResultType, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
+import { formatPrimitiveValue, getSkyblockUserProfiles } from '../utilities'
 
-export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
+export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions, number> {
   override getId(): string {
     return 'reached-hypixel-skyblock-catacombs-level'
   }
@@ -28,9 +34,22 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
     context: HandlerOperationContext,
     handlerUser: HandlerUser,
     condition: SkyblockCatacombsOptions
-  ): Promise<boolean> {
-    const profiles = await getSkyblockUserProfiles(context, handlerUser, condition.profileTypes)
-    if (profiles.length === 0) return false
+  ): Promise<ConditionResult<number>> {
+    const mojangProfile = handlerUser.user.mojangProfile()
+    if (mojangProfile === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.not-linked'])
+      }
+    }
+
+    const profiles = await getSkyblockUserProfiles(context, mojangProfile, condition.profileTypes)
+    if (profiles.length === 0) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.never-played-skyblock'])
+      }
+    }
 
     const highestExperience = profiles
       .map((profile) => profile.dungeons?.dungeon_types.catacombs.experience ?? 0)
@@ -38,7 +57,15 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions> {
       .reduce((a, b) => Math.max(a, b))
 
     const level = Math.floor(getDungeonLevelWithOverflow(highestExperience))
-    return level >= condition.fromLevel && level <= condition.toLevel
+
+    return {
+      type:
+        level >= condition.fromLevel && level <= condition.toLevel
+          ? ConditionResultType.Pass
+          : ConditionResultType.Fail,
+      value: level,
+      valueFormatted: formatPrimitiveValue(context.application.i18n.t, level)
+    }
   }
 
   public override createOptions(): ModalOption[] {

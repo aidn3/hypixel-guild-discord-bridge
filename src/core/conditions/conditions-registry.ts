@@ -1,4 +1,4 @@
-import type { ConditionHandler, ConditionOption } from './common'
+import type { ConditionHandler, ConditionOption, ConditionValue } from './common'
 import { CatacombsLevel } from './handlers/catacombs-level'
 import { HasDiscordRole } from './handlers/has-discord-role'
 import { InGuild } from './handlers/in-guild'
@@ -10,7 +10,7 @@ import { SkyblockLevel } from './handlers/skyblock-level'
 import { SkyblockNetworth } from './handlers/skyblock-networth'
 
 export class ConditionsRegistry {
-  private readonly handlers = new Map<string, ConditionHandler<ConditionOption>>()
+  private readonly handlers = new Map<string, ConditionHandler<ConditionOption, ConditionValue>>()
 
   constructor() {
     this.registerHandler(new Linked())
@@ -24,15 +24,15 @@ export class ConditionsRegistry {
     this.registerHandler(new InGuildAsGuildmaster())
   }
 
-  public allHandlers(): ConditionHandler<ConditionOption>[] {
+  public allHandlers(): ConditionHandler<ConditionOption, ConditionValue>[] {
     return [...this.handlers.values()]
   }
 
-  public get(id: string): ConditionHandler<ConditionOption> | undefined {
+  public get(id: string): ConditionHandler<ConditionOption, ConditionValue> | undefined {
     return this.handlers.get(id)
   }
 
-  public registerHandler(handler: ConditionHandler<ConditionOption>): void {
+  public registerHandler(handler: ConditionHandler<ConditionOption, ConditionValue>): void {
     const id = handler.getId()
     if (this.handlers.has(id)) {
       throw new Error(`handler id ${id} already registered`)

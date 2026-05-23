@@ -6,7 +6,7 @@ import type Application from '../../../application'
 import type EventHelper from '../../../common/event-helper'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
-import { OnUnmet } from '../../../core/conditions/common'
+import { ConditionResultType, OnUnmet } from '../../../core/conditions/common'
 import { CanNotResolve } from '../../../core/placeholder/common'
 import type DiscordInstance from '../discord-instance'
 
@@ -155,7 +155,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
 
       let meetsCondition: boolean
       try {
-        meetsCondition = await handler.meetsCondition(context, memberContext, condition.options)
+        const conditionResult = await handler.meetsCondition(context, memberContext, condition.options)
+        meetsCondition = conditionResult.type === ConditionResultType.Pass
       } catch {
         meetsCondition = false
       }
@@ -196,7 +197,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
 
       let meetsCondition: boolean
       try {
-        meetsCondition = await handler.meetsCondition(context, memberContext, condition.options)
+        const conditionResult = await handler.meetsCondition(context, memberContext, condition.options)
+        meetsCondition = conditionResult.type === ConditionResultType.Pass
       } catch {
         meetsCondition = false
       }

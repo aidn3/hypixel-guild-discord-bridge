@@ -18,6 +18,7 @@ import { Status } from '../../common/connectable-instance'
 import { Instance } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { MojangProfile, User } from '../../common/user'
+import { ConditionResultType } from '../../core/conditions/common'
 import type { GuildFetch } from '../../core/users/guild-manager'
 import { GuildInviteStatus } from '../../core/users/guild-manager'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
@@ -274,7 +275,7 @@ export class MinecraftGuildsManager extends Instance {
       if (handler === undefined) continue
 
       const meetsCondition = await handler.meetsCondition(conditionContext, conditionUser, condition.options)
-      if (meetsCondition) conditionsMet++
+      if (meetsCondition.type === ConditionResultType.Pass) conditionsMet++
       if (conditionsMet >= savedGuild.neededJoinConditions) return true
     }
 

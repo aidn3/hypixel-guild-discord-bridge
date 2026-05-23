@@ -1,13 +1,15 @@
 import type {
   ConditionOption,
+  ConditionResult,
   HandlerContext,
   HandlerDisplayContext,
   HandlerOperationContext,
   HandlerUser
 } from '../common'
-import { ConditionHandler } from '../common'
+import { ConditionHandler, ConditionResultType } from '../common'
+import { formatPrimitiveValue } from '../utilities'
 
-export class Linked extends ConditionHandler<LinkedBindingCondition> {
+export class Linked extends ConditionHandler<LinkedBindingCondition, boolean> {
   override getId(): string {
     return 'has-linked'
   }
@@ -26,8 +28,13 @@ export class Linked extends ConditionHandler<LinkedBindingCondition> {
     return context.application.i18n.t(($) => $['discord.conditions.handler.link.formatted'], { commandId: linkCommand })
   }
 
-  public override meetsCondition(context: HandlerOperationContext, handlerUser: HandlerUser): boolean {
-    return handlerUser.user.verified()
+  public override meetsCondition(context: HandlerOperationContext, handlerUser: HandlerUser): ConditionResult<boolean> {
+    const result = handlerUser.user.verified()
+    return {
+      type: result ? ConditionResultType.Pass : ConditionResultType.Fail,
+      value: result,
+      valueFormatted: formatPrimitiveValue(context.application.i18n.t, result)
+    }
   }
 }
 

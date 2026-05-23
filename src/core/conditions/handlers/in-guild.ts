@@ -6,14 +6,16 @@ import type { ModalOption } from '../../../instance/discord/utility/modal-option
 import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler'
 import type {
   ConditionOption,
+  ConditionResult,
   HandlerContext,
   HandlerDisplayContext,
   HandlerOperationContext,
   HandlerUser
 } from '../common'
-import { ConditionHandler } from '../common'
+import { ConditionHandler, ConditionResultType } from '../common'
+import { formatPrimitiveValue } from '../utilities'
 
-export class InGuild extends ConditionHandler<InGuildOptions> {
+export class InGuild extends ConditionHandler<InGuildOptions, boolean> {
   override getId(): string {
     return 'in-hypixel-guild'
   }
@@ -37,15 +39,30 @@ export class InGuild extends ConditionHandler<InGuildOptions> {
     context: HandlerOperationContext,
     handlerUser: HandlerUser,
     options: InGuildOptions
-  ): Promise<boolean> {
+  ): Promise<ConditionResult<boolean>> {
     const mojangProfile = handlerUser.user.mojangProfile()
-    if (mojangProfile === undefined) return false
+    if (mojangProfile === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.not-linked'])
+      }
+    }
     const uuid = mojangProfile.id
 
     const guild = await context.application.hypixelApi.getGuildById(options.guildId, context.startTime)
-    if (guild === undefined) return false
+    if (guild === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.guild-disbanded'])
+      }
+    }
 
-    return guild.members.some((member) => member.uuid === uuid)
+    const result = guild.members.some((member) => member.uuid === uuid)
+    return {
+      type: result ? ConditionResultType.Pass : ConditionResultType.Fail,
+      value: result,
+      valueFormatted: formatPrimitiveValue(context.application.i18n.t, result)
+    }
   }
 
   public override createOptions(): ModalOption[] {

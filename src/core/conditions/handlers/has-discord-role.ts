@@ -6,14 +6,16 @@ import type { ModalOption } from '../../../instance/discord/utility/modal-option
 import { OptionType } from '../../../instance/discord/utility/options-handler'
 import type {
   ConditionOption,
+  ConditionResult,
   HandlerContext,
   HandlerDisplayContext,
   HandlerOperationContext,
   HandlerUser
 } from '../common'
-import { ConditionHandler } from '../common'
+import { ConditionHandler, ConditionResultType } from '../common'
+import { formatPrimitiveValue } from '../utilities'
 
-export class HasDiscordRole extends ConditionHandler<HasDiscordRoleOptions> {
+export class HasDiscordRole extends ConditionHandler<HasDiscordRoleOptions, boolean> {
   override getId(): string {
     return 'has-discord-role'
   }
@@ -32,18 +34,38 @@ export class HasDiscordRole extends ConditionHandler<HasDiscordRoleOptions> {
     context: HandlerOperationContext,
     handlerUser: HandlerUser,
     options: HasDiscordRoleOptions
-  ): Promise<boolean> {
+  ): Promise<ConditionResult<boolean>> {
     const discordProfile = handlerUser.user.discordProfile()
-    if (discordProfile === undefined) return false
+    if (discordProfile === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.no-discord-linked'])
+      }
+    }
 
     const client = context.application.discordInstance.getClient()
     const guild = await client.guilds.fetch(options.guildId).catch(() => undefined)
-    if (guild === undefined) return false
+    if (guild === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.discord-server-deleted'])
+      }
+    }
 
     const member = await guild.members.fetch(discordProfile.id).catch(() => undefined)
-    if (member === undefined) return false
+    if (member === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.user-not-in-server'])
+      }
+    }
 
-    return member.roles.cache.has(options.roleId)
+    const result = member.roles.cache.has(options.roleId)
+    return {
+      type: result ? ConditionResultType.Pass : ConditionResultType.Fail,
+      value: result,
+      valueFormatted: formatPrimitiveValue(context.application.i18n.t, result)
+    }
   }
 
   override async createCondition(context: HandlerContext, rawOptions: ConditionOption): Promise<HasDiscordRoleOptions> {

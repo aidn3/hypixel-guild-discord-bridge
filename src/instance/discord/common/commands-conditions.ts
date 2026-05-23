@@ -9,6 +9,7 @@ import type {
   ConditionHandler,
   ConditionId,
   ConditionOption,
+  ConditionValue,
   HandlerDisplayContext
 } from '../../../core/conditions/common'
 import Duration from '../../../utility/duration'
@@ -137,7 +138,7 @@ export async function handleConditionAdd(
     discordGuild: interaction.guild ?? undefined
   } satisfies HandlerDisplayContext
 
-  let handler: ConditionHandler<ConditionOption> | undefined
+  let handler: ConditionHandler<ConditionOption, ConditionValue> | undefined
   handler = allHandlers.find((handler) => handler.getId() == conditionQuery)
   if (handler === undefined) {
     for (const potentialHandler of allHandlers) {
@@ -283,7 +284,7 @@ export async function handleConditionRemove(
 export async function handleSuggestConditionsAdd(
   interaction: AutocompleteInteraction<'cached'>,
   context: Readonly<DiscordAutoCompleteContext<CommandOrigin>>,
-  allHandlers: ConditionHandler<ConditionOption>[]
+  allHandlers: ConditionHandler<ConditionOption, ConditionValue>[]
 ): Promise<void> {
   const option = interaction.options.getFocused(true)
   const handlerContext = {
@@ -305,7 +306,7 @@ export async function handleSuggestConditionsAdd(
 export async function handleSuggestConditionsRemove(
   interaction: AutocompleteInteraction<'cached'>,
   context: Readonly<DiscordAutoCompleteContext<CommandOrigin>>,
-  allHandlers: ConditionHandler<ConditionOption>[],
+  allHandlers: ConditionHandler<ConditionOption, ConditionValue>[],
   manager: CommandConditionHandler
 ): Promise<void> {
   const option = interaction.options.getFocused(true)

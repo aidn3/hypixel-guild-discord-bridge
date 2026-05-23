@@ -10,6 +10,7 @@ import type {
   ModalSubmitInteraction
 } from 'discord.js'
 import {
+  bold,
   ButtonStyle,
   ComponentType,
   escapeCodeBlock,
@@ -29,6 +30,8 @@ import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import type { MojangProfile } from '../../common/user'
+import type { ConditionResult, ConditionValue } from '../../core/conditions/common'
+import { ConditionResultType } from '../../core/conditions/common'
 import { formatChatTriggerResponse } from '../../instance/discord/common/chattrigger-format'
 import { formatUser } from '../../instance/discord/common/commands-format'
 import { DefaultCommandFooter } from '../../instance/discord/common/discord-config'
@@ -269,21 +272,22 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     }
     const conditionUser = { user: user }
     let conditionsMet = 0
-    const conditionsMetList: boolean[] = []
+    const conditionsMetList: (ConditionResult<ConditionValue> | undefined)[] = []
     for (const condition of joinConditions) {
       const handler = conditionsManager.get(condition.typeId)
       if (handler === undefined) {
-        conditionsMetList.push(false)
+        conditionsMetList.push(undefined)
         continue
       }
       const meetsCondition = await handler.meetsCondition(conditionContext, conditionUser, condition.options)
+      conditionsMetList.push(meetsCondition)
 
-      if (meetsCondition) {
-        conditionsMetList.push(true)
+      if (meetsCondition.type === ConditionResultType.Pass) {
         conditionsMet++
       }
       if (conditionsMet >= selectedGuild.neededJoinConditions) break
     }
+
     if (joinConditions.length > 0 && conditionsMet < selectedGuild.neededJoinConditions) {
       assert.strictEqual(joinConditions.length, joinConditions.length)
       const displayContext = { ...conditionContext, discordGuild: responseInteraction.guild }
@@ -294,14 +298,20 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
         const handler = conditionsManager.get(condition.typeId)
 
         message += '\n- '
-        message += meetsCondition ? '✅' : '❌'
+        message += meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'
         message += ` `
 
         if (handler === undefined) {
           message += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
         } else {
           const display = await handler.displayCondition(displayContext, condition.options)
-          message += escapeMarkdown(display)
+          message += bold(escapeMarkdown(display))
+        }
+
+        if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
+          message += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
+        } else if (meetsCondition?.type === ConditionResultType.Error) {
+          message += `: ${escapeMarkdown(meetsCondition.reason)}`
         }
       }
       await responseInteraction.editReply(message)
