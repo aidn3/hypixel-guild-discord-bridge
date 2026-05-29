@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook, SendableChannels } from 'discord.js'
+import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook } from 'discord.js'
 import { AttachmentBuilder, ChannelType as DiscordChannelType, escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
@@ -34,6 +34,7 @@ import {
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { User } from '../../common/user'
+import { DiscordChatFormat } from '../../core/discord/discord-configurations'
 import MinecraftRenderer from '../../utility/minecraft-renderer'
 import { beautifyInstanceName } from '../../utility/shared-utility'
 
@@ -105,24 +106,36 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     for (const channelId of channels) {
       if (event.instanceType === InstanceType.Discord && channelId === event.channelId) continue
 
-      if (
-        event.instanceType === InstanceType.Minecraft &&
-        this.minecraftRenderImageEnabled() &&
-        MinecraftRenderer.renderSupported()
-      ) {
-        const formattedMessage = this.removeGuildPrefix(event.rawMessage)
-        const image = MinecraftRenderer.generateMessageImage(formattedMessage)
-        await this.sendImageToChannels(event.eventId, [channelId], [image])
-        return // slight "guard clause" thing here to prevent a big else block
-      }
-
-      switch (config.getMessageFormat()) {
-        case 'Webhook':
+      const chatFormat = config.getChatFormat()
+      switch (chatFormat) {
+        case DiscordChatFormat.MinecraftRender: {
+          if (
+            event.instanceType === InstanceType.Minecraft &&
+            this.minecraftRenderImageEnabled() &&
+            MinecraftRenderer.renderSupported()
+          ) {
+            const formattedMessage = this.removeGuildPrefix(event.rawMessage)
+            const image = MinecraftRenderer.generateMessageImage(formattedMessage)
+            await this.sendImageToChannels(event.eventId, [channelId], [image])
+          } else {
+            // default fallback
+            await this.sendAsWebhook(event, channelId, username)
+          }
+          break
+        }
+        case DiscordChatFormat.Webhook: {
           await this.sendAsWebhook(event, channelId, username)
           break
-        case 'Embed':
+        }
+        case DiscordChatFormat.Embed: {
           await this.sendAsEmbed(event, channelId, username)
           break
+        }
+        default: {
+          chatFormat satisfies never
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          assert.fail(`unknown chat format: ${chatFormat}`)
+        }
       }
     }
   }
@@ -132,19 +145,25 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       return
     let displayUsername = username
 
-    let embedFooter = ""
+    const embedFooters: string[] = []
     switch (event.channelType) {
-      case ChannelType.Private:
-        embedFooter = "<3" // TODO genuinely no clue how to behave thenn
+      case ChannelType.Private: {
+        // do nothing
         break
+      }
       case ChannelType.Public:
-      case ChannelType.Officer:
-        embedFooter = event.guildRank
+      case ChannelType.Officer: {
+        if (event.instanceType === InstanceType.Minecraft) embedFooters.push(event.guildRank)
         break
+      }
+      default: {
+        event satisfies never
+        assert.fail(`Unknown chat channelType from ${JSON.stringify(event)}`)
+      }
     }
 
     if (this.application.core.applicationConfigurations.getOriginTag()) {
-      embedFooter += ` • ${event.instanceName}`
+      embedFooters.push(event.instanceName)
     }
 
     const channel: SendableChannels = await this.clientInstance.getClient().channels.fetch(channelId)
@@ -154,9 +173,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           description: escapeMarkdown(event.message),
           color: this.getRandomColor(),
           timestamp: new Date(),
-          footer: {
-            text: embedFooter
-          },
+          footer: embedFooters.length > 0 ? { text: embedFooters.join(' • ') } : undefined,
           author: {
             name: displayUsername,
             icon_url: event.user.avatar()
@@ -724,7 +741,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
   private minecraftRenderImageEnabled(): boolean {
     const config = this.application.core.discordConfigurations
-    return config.getTextToImage()
+    return config.getChatFormat() === DiscordChatFormat.MinecraftRender
   }
 }
 

@@ -1,6 +1,12 @@
 import Duration from '../../utility/duration'
 import type { Configuration, ConfigurationsManager } from '../configurations'
 
+export enum DiscordChatFormat {
+  MinecraftRender = 'minecraftRender',
+  Webhook = 'webhook',
+  Embed = 'embed'
+}
+
 export class DiscordConfigurations {
   private readonly configuration: Configuration
 
@@ -22,14 +28,6 @@ export class DiscordConfigurations {
 
   public setOfficerChannelIds(channelIds: string[]): void {
     this.configuration.setStringArray('officerChannelIds', channelIds)
-  }
-  
-  public getMessageFormat(): string { 
-    return this.configuration.getString('messageFormat', 'Webhook')
-  }
-
-  public setMessageFormat(newMessageFormat: string): void {
-    this.configuration.setString('messageFormat', newMessageFormat)
   }
 
   public getHelperRoleIds(): string[] {
@@ -72,12 +70,12 @@ export class DiscordConfigurations {
     this.configuration.setBoolean('enforceVerification', enabled)
   }
 
-  public getTextToImage(): boolean {
-    return this.configuration.getBoolean('textToImage', false)
+  public getChatFormat(): DiscordChatFormat {
+    return this.configuration.getString('chatFormat', DiscordChatFormat.Webhook) as DiscordChatFormat
   }
 
-  public setTextToImage(enabled: boolean): void {
-    this.configuration.setBoolean('textToImage', enabled)
+  public setChatFormat(format: DiscordChatFormat): void {
+    this.configuration.setString('chatFormat', format)
   }
 
   public getGuildOnline(): boolean {
