@@ -30,6 +30,8 @@ export default class Collection extends ChatCommandHandler {
     'RAW_FISH:2': 'TROPICAL_FISH',
     'RAW_FISH:3': 'PUFFERFISH',
 
+    WATER_LILY: `LILY_PAD`,
+
     SAND: 'SAND',
     'SAND:1': 'RED_SAND',
 
