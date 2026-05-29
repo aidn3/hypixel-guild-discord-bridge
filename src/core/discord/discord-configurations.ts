@@ -23,6 +23,14 @@ export class DiscordConfigurations {
   public setOfficerChannelIds(channelIds: string[]): void {
     this.configuration.setStringArray('officerChannelIds', channelIds)
   }
+  
+  public getMessageFormat(): string { 
+    return this.configuration.getString('messageFormat', 'Webhook')
+  }
+
+  public setMessageFormat(newMessageFormat: string): void {
+    this.configuration.setString('messageFormat', newMessageFormat)
+  }
 
   public getHelperRoleIds(): string[] {
     return this.configuration.getStringArray('helperRoleIds', [])

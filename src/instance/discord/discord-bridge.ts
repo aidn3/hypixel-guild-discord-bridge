@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook } from 'discord.js'
+import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook, SendableChannels } from 'discord.js'
 import { AttachmentBuilder, ChannelType as DiscordChannelType, escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
@@ -98,6 +98,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onChat(event: ChatEvent): Promise<void> {
+    const config = this.application.core.discordConfigurations
     const channels = this.resolveChannels([event.channelType])
     const username = event.user.displayName()
 
@@ -112,31 +113,98 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         const formattedMessage = this.removeGuildPrefix(event.rawMessage)
         const image = MinecraftRenderer.generateMessageImage(formattedMessage)
         await this.sendImageToChannels(event.eventId, [channelId], [image])
-      } else {
-        const webhook = await this.getWebhook(channelId)
+        return // slight "guard clause" thing here to prevent a big else block
+      }
 
-        let displayUsername =
-          event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
-            ? `${username}⇾${event.replyUsername}`
-            : username
-
-        if (this.application.core.applicationConfigurations.getOriginTag()) {
-          displayUsername += event.instanceType === InstanceType.Discord ? ` [DC]` : ` [${event.instanceName}]`
-        }
-
-        const message = await webhook.send({
-          content: escapeMarkdown(event.message),
-          username: displayUsername,
-          avatarURL: event.user.avatar(),
-          allowedMentions: { parse: [] }
-        })
-        this.messageAssociation.addMessageId(event.eventId, {
-          guildId: message.guildId,
-          channelId: message.channelId,
-          messageId: message.id
-        })
+      switch (config.getMessageFormat()) {
+        case 'Webhook':
+          await this.sendAsWebhook(event, channelId, username)
+          break
+        case 'Embed':
+          await this.sendAsEmbed(event, channelId, username)
+          break
       }
     }
+  }
+
+  private async sendAsEmbed(event: ChatEvent, channelId: string, username: string): Promise<void> {
+    if (event.instanceType !== InstanceType.Minecraft)
+      return
+    let displayUsername = username
+
+    let embedFooter = ""
+    switch (event.channelType) {
+      case ChannelType.Private:
+        embedFooter = "<3" // TODO genuinely no clue how to behave thenn
+        break
+      case ChannelType.Public:
+      case ChannelType.Officer:
+        embedFooter = event.guildRank
+        break
+    }
+
+    if (this.application.core.applicationConfigurations.getOriginTag()) {
+      embedFooter += ` • ${event.instanceName}`
+    }
+
+    const channel: SendableChannels = await this.clientInstance.getClient().channels.fetch(channelId)
+    const message = await channel.send({
+      embeds: [
+        {
+          description: escapeMarkdown(event.message),
+          color: this.getRandomColor(),
+          timestamp: new Date(),
+          footer: {
+            text: embedFooter
+          },
+          author: {
+            name: displayUsername,
+            icon_url: event.user.avatar()
+          }
+        }
+      ]
+    })
+    this.messageAssociation.addMessageId(event.eventId, {
+      guildId: message.guildId,
+      channelId: message.channelId,
+      messageId: message.id
+    })
+  }
+
+  /**
+   * This is a placeholder method to randomly assign a color to embeds.
+   * Any change suggestions are welcome.
+   * @returns a randomly-chosen color in decimal format
+   */
+  private getRandomColor(): number {
+    const min = Math.ceil(0)
+    const max = Math.floor(16777215)
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
+
+  private async sendAsWebhook(event: ChatEvent, channelId: string, username: string): Promise<void> {
+    const webhook = await this.getWebhook(channelId)
+
+    let displayUsername =
+      event.instanceType === InstanceType.Discord && event.replyUsername !== undefined
+        ? `${username}⇾${event.replyUsername}`
+        : username
+
+    if (this.application.core.applicationConfigurations.getOriginTag()) {
+      displayUsername += event.instanceType === InstanceType.Discord ? ` [DC]` : ` [${event.instanceName}]`
+    }
+
+    const message = await webhook.send({
+      content: escapeMarkdown(event.message),
+      username: displayUsername,
+      avatarURL: event.user.avatar(),
+      allowedMentions: { parse: [] }
+    })
+    this.messageAssociation.addMessageId(event.eventId, {
+      guildId: message.guildId,
+      channelId: message.channelId,
+      messageId: message.id
+    })
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {

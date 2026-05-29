@@ -591,6 +591,29 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.PresetList,
+
+        name: `Message Format`,
+        description: 'Allows to change how Minecraft messages are displayed in the Discord',
+
+        min: 1,
+        max: 1,
+
+        getOption: () => [discord.getMessageFormat()],
+        setOption: (values) => {
+          let selected = values[0]
+          if (!['Webhook', 'Embed'].includes(selected))
+            selected = 'Webhook'
+          assert.notStrictEqual(selected, undefined)
+          assert.ok(['Webhook', 'Embed'].includes(selected))
+          discord.setMessageFormat(selected)
+        },
+        options: [
+          {label: 'Webhook', value: 'Webhook', description: 'Send messages using webhooks, stylizing Minecraft messages like actual users'},
+          {label: 'Embed', value: 'Embed', description: 'Send messages using embeds, the same way instance statuses are sent'}
+        ]
+      },
+      {
         type: OptionType.Boolean,
         name: 'Always Reply',
         description:
