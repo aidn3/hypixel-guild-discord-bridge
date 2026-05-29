@@ -141,8 +141,6 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendAsEmbed(event: ChatEvent, channelId: string, username: string): Promise<void> {
-    if (event.instanceType !== InstanceType.Minecraft)
-      return
     const displayUsername = username
 
     const embedFooters: string[] = []
