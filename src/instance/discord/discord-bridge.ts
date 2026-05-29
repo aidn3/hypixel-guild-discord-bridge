@@ -143,7 +143,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   private async sendAsEmbed(event: ChatEvent, channelId: string, username: string): Promise<void> {
     if (event.instanceType !== InstanceType.Minecraft)
       return
-    let displayUsername = username
+    const displayUsername = username
 
     const embedFooters: string[] = []
     switch (event.channelType) {
@@ -166,23 +166,26 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       embedFooters.push(event.instanceName)
     }
 
-    const channel: SendableChannels = await this.clientInstance.getClient().channels.fetch(channelId)
+    const channel = await this.clientInstance.getClient().channels.fetch(channelId)
+    assert.ok(channel != undefined)
+    assert.ok(channel.isSendable())
     const message = await channel.send({
       embeds: [
         {
           description: escapeMarkdown(event.message),
           color: this.getRandomColor(),
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
           footer: embedFooters.length > 0 ? { text: embedFooters.join(' • ') } : undefined,
           author: {
             name: displayUsername,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             icon_url: event.user.avatar()
           }
         }
       ]
     })
     this.messageAssociation.addMessageId(event.eventId, {
-      guildId: message.guildId,
+      guildId: message.guildId ?? undefined,
       channelId: message.channelId,
       messageId: message.id
     })
@@ -195,7 +198,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
    */
   private getRandomColor(): number {
     const min = Math.ceil(0)
-    const max = Math.floor(16777215)
+    const max = Math.floor(16_777_215)
     return Math.floor(Math.random() * (max - min + 1)) + min
   }
 
