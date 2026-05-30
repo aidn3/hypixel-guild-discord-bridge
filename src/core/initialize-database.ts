@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 14
+const CurrentVersion = 15
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -55,6 +55,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(13, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom13to14(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(14, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom14to15(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -724,6 +727,26 @@ function migrateFrom13to14(database: Database, logger: Logger4Js, newlyCreated: 
   database.exec('ALTER TABLE "punishments" ADD COLUMN "expired" INTEGER NOT NULL DEFAULT 0;')
 
   database.pragma('user_version = 14')
+}
+
+function migrateFrom14to15(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 14 to 15')
+
+  const selectedOption = database
+    .prepare('SELECT value FROM "configurations" WHERE category = ? AND name = ?')
+    .pluck(true)
+    .get('discord', 'textToImage') as string | undefined
+  if (selectedOption !== undefined) {
+    const result = database
+      .prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
+      .run('discord', 'chatFormat', selectedOption === '1' ? 'minecraftRender' : 'webhook')
+
+    assert.strictEqual(result.changes, 1)
+  }
+
+  database.exec("DELETE FROM 'configurations' WHERE category = 'discord' AND name = 'textToImage'")
+
+  database.pragma('user_version = 15')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
