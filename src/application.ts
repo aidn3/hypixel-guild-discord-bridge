@@ -256,10 +256,6 @@ export default class Application extends Emittery<ApplicationEvents> {
       .catch(this.errorHandler.promiseCatch('shutting down application with instanceSignal'))
   }
 
-  public getMinecraftNames(): string[] {
-    return this.minecraftManager.getAllInstances().map((instance) => instance.getDisplayName())
-  }
-
   public generateNewInstanceId() {
     return this.lastInstanceId++
   }
