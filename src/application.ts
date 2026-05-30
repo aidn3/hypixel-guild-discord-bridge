@@ -186,9 +186,7 @@ export default class Application extends Emittery<ApplicationEvents> {
           await checkedInstance.connect()
         }
       } else if (checkedInstance instanceof MinecraftInstance) {
-        this.logger.debug(
-          `Connecting Minecraft instance id=${checkedInstance.getDisplayName()},name=${checkedInstance.getDisplayName()}`
-        )
+        this.logger.debug(`Connecting Minecraft instance ${checkedInstance.getLogName()}`)
         await checkedInstance.connect()
       } else if (checkedInstance instanceof ConnectableInstance) {
         this.logger.debug(`Connecting instance id=${checkedInstance.instanceId}`)
