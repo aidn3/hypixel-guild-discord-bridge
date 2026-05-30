@@ -11,7 +11,7 @@ import { antiSpamString } from '../../../utility/shared-utility'
 import type MinecraftInstance from '../../minecraft/minecraft-instance'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
-function createEmbed(instances: Map<MinecraftInstance, string[]>): APIEmbed {
+async function createEmbed(instances: Map<MinecraftInstance, string[]>): Promise<APIEmbed> {
   let content =
     '_An echo is sent to all Minecraft channels (Public, Officer, Private)_.\n' +
     '_Results are collected after. If a message is missing, it means there is a problem._\n' +
@@ -21,7 +21,7 @@ function createEmbed(instances: Map<MinecraftInstance, string[]>): APIEmbed {
     '- Bot does not have permission to send/receive messages in that channel\n\n'
 
   for (const [instance, list] of instances) {
-    content += `**${escapeMarkdown(instance.getDisplayName())}**\n`
+    content += `**${escapeMarkdown(await instance.displayName())}**\n`
 
     if (list.length > 0) {
       content += '```'
@@ -58,7 +58,7 @@ export default {
     await context.interaction.deferReply()
 
     const lists = await checkConnectivity(context.application)
-    await context.interaction.editReply({ embeds: [createEmbed(lists)] })
+    await context.interaction.editReply({ embeds: [await createEmbed(lists)] })
   }
 } satisfies DiscordCommandHandler
 

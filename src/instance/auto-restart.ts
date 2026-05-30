@@ -2,11 +2,12 @@ import { uptime } from 'node:process'
 
 import type Application from '../application'
 import { ChannelType, Color, InstanceSignalType } from '../common/application-event'
+import type { DisplayableInstance } from '../common/instance'
 import { Instance } from '../common/instance'
 import Duration from '../utility/duration'
 import { setIntervalAsync } from '../utility/scheduling'
 
-export default class AutoRestart extends Instance {
+export default class AutoRestart extends Instance implements DisplayableInstance {
   private static readonly MaxLifeTillRestart = Duration.hours(24)
   private static readonly CheckEvery = Duration.minutes(5)
 
@@ -42,6 +43,10 @@ export default class AutoRestart extends Instance {
         errorHandler: this.errorHandler.promiseCatch('sending signal to restart application')
       }
     )
+  }
+
+  public displayName(): string {
+    return 'Auto Restart'
   }
 
   private enabled(): boolean {

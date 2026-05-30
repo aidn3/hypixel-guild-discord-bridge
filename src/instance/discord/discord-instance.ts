@@ -7,6 +7,7 @@ import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { Permission, Platform } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import type { DisplayableInstance } from '../../common/instance'
 import type { DiscordProfile } from '../../common/user'
 
 import ChatManager from './chat-manager.js'
@@ -20,7 +21,7 @@ import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
-export default class DiscordInstance extends ConnectableInstance {
+export default class DiscordInstance extends ConnectableInstance implements DisplayableInstance {
   readonly commandsManager: CommandManager
   readonly leaderboard: Leaderboard
   readonly conditionsManager: ConditionsManager
@@ -141,6 +142,10 @@ export default class DiscordInstance extends ConnectableInstance {
       this.staticConfig,
       this.abortController.signal
     )
+  }
+
+  public displayName(): string {
+    return 'Discord'
   }
 
   public async profileById(userId: Snowflake, guild: Guild | undefined): Promise<DiscordProfile | undefined> {

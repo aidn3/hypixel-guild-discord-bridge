@@ -145,7 +145,7 @@ export async function checkChatTriggers(
 
       if (result.status !== 'success') result.message = []
       result.status = 'success'
-      result.message.push({ instanceName: event.instance.getDisplayName(), content: match[0] })
+      result.message.push({ instanceName: event.instance.getConfigName(), content: match[0] })
 
       successCount++
       if (targetInstance.length >= successCount) timeout.resolve()
@@ -158,7 +158,7 @@ export async function checkChatTriggers(
         if (match.length > 1 && match[1].toLowerCase() !== username.toLowerCase()) continue
 
         result.status = 'failed'
-        result.message.push({ instanceName: event.instance.getDisplayName(), content: match[0] })
+        result.message.push({ instanceName: event.instance.getConfigName(), content: match[0] })
       }
     }
   }

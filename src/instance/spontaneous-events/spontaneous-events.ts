@@ -4,6 +4,7 @@ import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
 import { ChannelType, type ChatEvent } from '../../common/application-event'
+import type { DisplayableInstance } from '../../common/instance'
 import { Instance } from '../../common/instance'
 import type { User } from '../../common/user'
 
@@ -14,7 +15,7 @@ import { QuickMath } from './events/quick-math'
 import { Trivia } from './events/trivia'
 import { Unscramble } from './events/unscramble'
 
-export class SpontaneousEvents extends Instance {
+export class SpontaneousEvents extends Instance implements DisplayableInstance {
   private readonly registeredEventHandlers: SpontaneousEventHandler[] = []
   private readonly singletonPromise = new PromiseQueue(1)
 
@@ -64,6 +65,10 @@ export class SpontaneousEvents extends Instance {
     this.registerEvent(
       new Trivia(this.application, this, this.eventHelper, this.logger, this.errorHandler, this.abortController.signal)
     )
+  }
+
+  public displayName(): string {
+    return 'Spontaneous Event'
   }
 
   public registerEvent(handler: SpontaneousEventHandler): void {

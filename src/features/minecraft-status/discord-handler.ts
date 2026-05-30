@@ -184,7 +184,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       const channel = await client.channels.fetch(channelId).catch(() => undefined)
       if (!channel?.isSendable()) continue
 
-      const result = this.createMessage(event, channel.id)
+      const result = await this.createMessage(event, channel.id)
       if (result === undefined) continue
 
       const message = await this.privateEditOrSend(
@@ -263,10 +263,10 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
     else return DiscordInstanceHistoryButtonType.Notice
   }
 
-  private createMessage(
+  private async createMessage(
     event: MinecraftStatusEntry,
     channelId: string
-  ):
+  ): Promise<
     | {
         payload: MessagePayload
         onlySend: boolean
@@ -274,7 +274,8 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
         lastMessageId: string | undefined
         replyMessageId: string | undefined
       }
-    | undefined {
+    | undefined
+  > {
     const configName = event.instance.getConfigName()
     const lastMessage = this.buttonDatabase.lastButton(channelId, configName)
 
@@ -289,7 +290,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
     if (lastMessage === undefined) {
       if (event.status?.from === Status.Connected && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
         return {
-          payload: this.generateInterrupted(event.instance.getDisplayName()),
+          payload: this.generateInterrupted(await event.instance.displayName()),
           onlySend: false,
           status: currentStatus,
           lastMessageId: undefined,
@@ -297,7 +298,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
         }
       } else if (event.status?.from === Status.Fresh && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
         return {
-          payload: this.generateInitiation(event.instance.getDisplayName()),
+          payload: this.generateInitiation(await event.instance.displayName()),
           onlySend: false,
           status: currentStatus,
           lastMessageId: undefined,
@@ -308,7 +309,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       switch (currentStatus) {
         case DiscordInstanceHistoryButtonType.Failed: {
           return {
-            payload: this.generateFailed(event.instance.getDisplayName()),
+            payload: this.generateFailed(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -317,7 +318,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
         }
         case DiscordInstanceHistoryButtonType.Notice: {
           return {
-            payload: this.generateNotice(event.instance.getDisplayName()),
+            payload: this.generateNotice(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -326,7 +327,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
         }
         case DiscordInstanceHistoryButtonType.Success: {
           return {
-            payload: this.generateSuccess(event.instance.getDisplayName()),
+            payload: this.generateSuccess(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -343,7 +344,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
     // Don't combine success status
     if (currentStatus === DiscordInstanceHistoryButtonType.Success) {
       return {
-        payload: this.generateSuccess(event.instance.getDisplayName()),
+        payload: this.generateSuccess(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: undefined,
@@ -358,7 +359,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
 
       if (firstMessageEntry?.type === InstanceMessageType.MinecraftAuthenticationCode) {
         return {
-          payload: this.generateAuthentication(event.instance.getDisplayName()),
+          payload: this.generateAuthentication(await event.instance.displayName()),
           onlySend: false,
           status: DiscordInstanceHistoryButtonType.Notice,
           lastMessageId: lastMessage.messageId,
@@ -367,7 +368,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       }
 
       return {
-        payload: this.generateAuthentication(event.instance.getDisplayName()),
+        payload: this.generateAuthentication(await event.instance.displayName()),
         onlySend: true,
         status: DiscordInstanceHistoryButtonType.Notice,
         lastMessageId: undefined,
@@ -379,7 +380,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       switch (currentStatus) {
         case DiscordInstanceHistoryButtonType.Failed: {
           return {
-            payload: this.generateFailed(event.instance.getDisplayName()),
+            payload: this.generateFailed(await event.instance.displayName()),
             onlySend: true,
             status: currentStatus,
             lastMessageId: lastMessage.messageId,
@@ -388,7 +389,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
         }
         case DiscordInstanceHistoryButtonType.Notice: {
           return {
-            payload: this.generateNotice(event.instance.getDisplayName()),
+            payload: this.generateNotice(await event.instance.displayName()),
             onlySend: true,
             status: currentStatus,
             lastMessageId: lastMessage.messageId,
@@ -401,7 +402,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       }
     } else if (event.status?.from === Status.Fresh && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
       return {
-        payload: this.generateInitiation(event.instance.getDisplayName()),
+        payload: this.generateInitiation(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: lastMessage.messageId,
@@ -412,7 +413,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       currentStatus === DiscordInstanceHistoryButtonType.Notice
     ) {
       return {
-        payload: this.generateNotice(event.instance.getDisplayName()),
+        payload: this.generateNotice(await event.instance.displayName()),
         onlySend: true,
         status: currentStatus,
         lastMessageId: lastMessage.messageId,
@@ -420,7 +421,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       }
     } else if (event.status?.from === Status.Connected && currentStatus === DiscordInstanceHistoryButtonType.Notice) {
       return {
-        payload: this.generateInterrupted(event.instance.getDisplayName()),
+        payload: this.generateInterrupted(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: undefined,
@@ -431,7 +432,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       currentStatus === DiscordInstanceHistoryButtonType.Failed
     ) {
       return {
-        payload: this.generateFailed(event.instance.getDisplayName()),
+        payload: this.generateFailed(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: lastMessage.messageId,
@@ -441,7 +442,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
       switch (currentStatus) {
         case DiscordInstanceHistoryButtonType.Failed: {
           return {
-            payload: this.generateFailed(event.instance.getDisplayName()),
+            payload: this.generateFailed(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -450,7 +451,7 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
         }
         case DiscordInstanceHistoryButtonType.Notice: {
           return {
-            payload: this.generateNotice(event.instance.getDisplayName()),
+            payload: this.generateNotice(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,

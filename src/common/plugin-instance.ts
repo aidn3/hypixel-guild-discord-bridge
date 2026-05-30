@@ -1,14 +1,18 @@
 import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { PluginsManager } from '../instance/features/plugins-manager.js'
+// eslint-disable-next-line import/no-restricted-paths
+import { beautifyInstanceName } from '../utility/shared-utility'
 
 import type { ChatCommandHandler, DiscordCommandHandler } from './commands.js'
+import type { DisplayableInstance } from './instance.js'
 import { Instance } from './instance.js'
 
-export default abstract class PluginInstance extends Instance {
+export default abstract class PluginInstance extends Instance implements DisplayableInstance {
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
 
   protected readonly pluginsManager: PluginsManager
+  private readonly pluginName: string
 
   /**
    * Do NOT supersede the function and change its signature.
@@ -21,11 +25,16 @@ export default abstract class PluginInstance extends Instance {
   public constructor(application: Application, pluginsManager: PluginsManager, instanceName: string) {
     super(application, instanceName)
     this.pluginsManager = pluginsManager
+    this.pluginName = instanceName
   }
 
   public abstract onReady(): Promise<void> | void
 
   public abstract pluginInfo(): PluginInfo
+
+  public displayName(): string {
+    return beautifyInstanceName(this.pluginName)
+  }
 
   protected addChatCommand(command: ChatCommandHandler): void {
     this.application.registerChatCommand(command)

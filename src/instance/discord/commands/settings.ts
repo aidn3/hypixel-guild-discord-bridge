@@ -1206,7 +1206,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
   for (const instance of instances) {
     const instanceConfig = savedInstances.find((configInstance) => instance.getConfigName() === configInstance.name)
     if (instanceConfig === undefined) continue
-    let text = `- **${instance.getDisplayName()}:** ${instance.currentStatus()}`
+    let text = `- **${instance.getConfigName()}:** ${instance.currentStatus()}`
     if (instanceConfig.proxy !== undefined || instance.hasProxy()) text += ' (proxied)'
     registeredText.push(text)
   }
@@ -1224,7 +1224,7 @@ async function minecraftInstancesStatus(application: Application, interaction: B
       value: dynamicInstances
         .map(
           (instance) =>
-            `- **${instance.getDisplayName()}:** ${instance.currentStatus()}${instance.hasProxy() ? ' (proxied)' : ''}`
+            `- **${instance.getConfigName()}:** ${instance.currentStatus()}${instance.hasProxy() ? ' (proxied)' : ''}`
         )
         .join('\n')
     } satisfies APIEmbedField)

@@ -189,7 +189,7 @@ export default class StateHandler extends SubInstance<MinecraftInstance, ClientS
         value: undefined
       })
 
-      this.application.core.minecraftSessions.clearCachedSessions(this.clientInstance.getDisplayName())
+      this.application.core.minecraftSessions.clearCachedSessions(this.clientInstance.getConfigName())
       await this.tryRestarting()
     } else if (error.message.includes(QuitProxyError)) {
       await this.clientInstance.setAndBroadcastNewStatusWithMessage(Status.Disconnected, {

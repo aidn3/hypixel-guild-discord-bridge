@@ -35,7 +35,6 @@ import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { AnonymousUser } from '../../common/user'
 import MinecraftRenderer from '../../utility/minecraft-renderer'
-import { beautifyInstanceName } from '../../utility/shared-utility'
 // eslint-disable-next-line import/no-restricted-paths
 import MinecraftInstance from '../minecraft/minecraft-instance'
 
@@ -120,7 +119,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             : username
 
         if (this.application.core.applicationConfigurations.getOriginTag()) {
-          displayUsername += event.platform === Platform.Discord ? ` [DC]` : ` [${event.instance.getDisplayName()}]`
+          const displayName = await event.instance.displayName()
+          displayUsername += ` [${displayName}]`
         }
 
         const message = await webhook.send({
@@ -157,7 +157,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     const removeLater = event.type === GuildPlayerEventType.Offline || event.type === GuildPlayerEventType.Online
 
-    function formatEmbed() {
+    async function formatEmbed() {
       const withoutPrefix = event.message.replaceAll(/^-+/g, '').replaceAll('Guild > ', '')
       let messageBody = escapeMarkdown(withoutPrefix)
 
@@ -175,7 +175,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
       }
 
-      const newMessage = `**${escapeMarkdown(event.instance.getDisplayName())} >** ${messageBody}`
+      const displayName = await event.instance.displayName()
+      const newMessage = `**${escapeMarkdown(displayName)} >** ${messageBody}`
       return {
         url: targetUser?.profileLink() ?? responsibleUser?.profileLink() ?? undefined,
         description: newMessage,
@@ -183,7 +184,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       } satisfies APIEmbed
     }
 
-    const embed = formatEmbed()
+    const embed = await formatEmbed()
 
     const messages: Message[] = []
     if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
@@ -195,7 +196,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       messages.push(...sentMessages)
     } else {
       const sentMessages = await this.sendEmbedToChannels(
-        { ...event, type: undefined },
+        { ...event, type: undefined, instanceDisplayName: await event.instance.displayName() },
         this.resolveChannels(event.channels),
         embed
       )
@@ -204,7 +205,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     if (!removeLater) {
       const logMessages = await this.sendEmbedToChannels(
-        { ...event, type: undefined },
+        { ...event, type: undefined, instanceDisplayName: await event.instance.displayName() },
         config.getLoggerChannelIds(),
         embed
       )
@@ -227,7 +228,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const image = MinecraftRenderer.generateMessageImage(event.rawMessage)
       await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [image])
     } else {
-      await this.sendEmbedToChannels({ ...event, type: undefined }, this.resolveChannels(event.channels), undefined)
+      await this.sendEmbedToChannels(
+        { ...event, type: undefined, instanceDisplayName: await event.instance.displayName() },
+        this.resolveChannels(event.channels),
+        undefined
+      )
     }
   }
 
@@ -275,7 +280,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             files: [new AttachmentBuilder(MinecraftRenderer.generateMessageImage(event.rawMessage))]
           })
         } else {
-          await this.reply(event.eventId, replyId, this.generateEmbed(event, replyId.guildId))
+          await this.reply(
+            event.eventId,
+            replyId,
+            this.generateEmbed({ ...event, instanceDisplayName: await event.instance.displayName() }, replyId.guildId)
+          )
         }
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message')
@@ -315,7 +324,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       const image = MinecraftRenderer.generateMessageImage(formatted + event.message)
       await this.sendImageToChannels(event.eventId, channels, [image])
     } else {
-      await this.sendEmbedToChannels(event, channels, undefined)
+      await this.sendEmbedToChannels(
+        { ...event, instanceDisplayName: await event.instance.displayName() },
+        channels,
+        undefined
+      )
     }
   }
 
@@ -361,10 +374,25 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     for (const replyId of replyIds) {
       try {
-        await this.reply(event.eventId, replyId, this.generateEmbed({ ...event, type: undefined }, replyId.guildId))
+        await this.reply(
+          event.eventId,
+          replyId,
+          this.generateEmbed(
+            {
+              ...event,
+              type: undefined,
+              instanceDisplayName: await event.instance.displayName()
+            },
+            replyId.guildId
+          )
+        )
       } catch (error: unknown) {
         this.logger.error(error, 'can not reply to message. sending the event independently')
-        await this.sendEmbedToChannels({ ...event, type: undefined }, [replyId.channelId], undefined)
+        await this.sendEmbedToChannels(
+          { ...event, type: undefined, instanceDisplayName: await event.instance.displayName() },
+          [replyId.channelId],
+          undefined
+        )
       }
     }
   }
@@ -385,10 +413,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       description: escapeMarkdown(event.message),
 
       footer: {
-        text:
-          event.instance instanceof MinecraftInstance
-            ? event.instance.getDisplayName()
-            : beautifyInstanceName(event.instance.getLogName())
+        text: event.instanceDisplayName
       }
     } satisfies APIEmbed
 
@@ -442,7 +467,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   private async sendEmbedToChannels(
-    event: GenerateEmbedType & Pick<BaseEvent, 'eventId'>,
+    event: GenerateEmbedType,
     channels: string[],
     preGeneratedEmbed: APIEmbed | undefined
   ): Promise<Message<true>[]> {
@@ -640,7 +665,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 }
 
-type GenerateEmbedType = Pick<BaseEvent, 'instance'> & {
+type GenerateEmbedType = Pick<BaseEvent, 'eventId'> & {
+  instanceDisplayName: string
   message: string
   user?: AnonymousUser
   color?: Color

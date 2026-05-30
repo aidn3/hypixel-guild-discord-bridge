@@ -52,3 +52,7 @@ export abstract class Instance {
     return this.loggerName
   }
 }
+
+export interface DisplayableInstance {
+  displayName(): string | Promise<string>
+}

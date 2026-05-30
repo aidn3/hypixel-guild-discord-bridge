@@ -6,6 +6,7 @@ import type Application from '../../application.js'
 import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
 import { ChannelType, ContentType, Permission, Platform } from '../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandHandler, ChatCommandRequirements } from '../../common/commands.js'
+import type { DisplayableInstance } from '../../common/instance.js'
 import { Instance } from '../../common/instance.js'
 import { capitalize } from '../../utility/shared-utility'
 
@@ -119,7 +120,7 @@ import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 import Woolwars from './triggers/woolwars'
 
-export class CommandsInstance extends Instance {
+export class CommandsInstance extends Instance implements DisplayableInstance {
   private readonly commands: ChatCommandHandler[] = []
   private readonly cooldownHandler: CommandsCooldownHandler
 
@@ -271,6 +272,10 @@ export class CommandsInstance extends Instance {
     }
 
     this.commands.push(commandToAdd)
+  }
+
+  public displayName(): string {
+    return 'Commands'
   }
 
   async handle(event: ChatEvent): Promise<void> {

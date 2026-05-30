@@ -65,7 +65,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
     const chatFormat = this.application.core.minecraftConfigurations.getChatPlaceholder()
-    const origin = event.platform === Platform.Discord ? 'DC' : event.instance.getDisplayName()
+    const origin = event.platform === Platform.Discord ? 'DC' : await event.instance.displayName()
     const originTag = `[${origin}] `
     const usernameWithReply = `${username}${replyUsername ? `⇾${replyUsername}` : ''}`
 
@@ -149,7 +149,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         }
 
         await this.send(
-          `/gc @[${event.instance.getDisplayName()}]: ${event.message}`,
+          `/gc @[${await event.instance.displayName()}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -162,7 +162,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         }
 
         await this.send(
-          `/oc @[${event.instance.getDisplayName()}]: ${event.message}`,
+          `/oc @[${await event.instance.displayName()}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -170,7 +170,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       }
       case ChannelType.Private: {
         await this.send(
-          `/msg ${reply.username} @[${event.instance.getDisplayName()}]: ${event.message}`,
+          `/msg ${reply.username} @[${await event.instance.displayName()}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -181,13 +181,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
       await this.send(
-        `/gc @[${event.instance.getDisplayName()}]: ${event.message}`,
+        `/gc @[${await event.instance.displayName()}]: ${event.message}`,
         MinecraftSendChatPriority.Default,
         event.eventId
       )
     else if (event.channels.includes(ChannelType.Officer))
       await this.send(
-        `/oc @[${event.instance.getDisplayName()}]: ${event.message}`,
+        `/oc @[${await event.instance.displayName()}]: ${event.message}`,
         MinecraftSendChatPriority.Default,
         event.eventId
       )

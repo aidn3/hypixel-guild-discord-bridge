@@ -25,7 +25,6 @@ import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { User } from '../../common/user'
 import Duration from '../../utility/duration'
-import { beautifyInstanceName } from '../../utility/shared-utility'
 // eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../minecraft/minecraft-instance'
 
@@ -353,7 +352,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
                 component: {
                   type: ComponentType.RadioGroup,
                   options: instances.map((instance) => ({
-                    label: beautifyInstanceName(instance.getDisplayName()),
+                    label: instance.getConfigName(),
                     value: instance.getConfigName()
                   })),
                   customId: 'instances',

@@ -12,6 +12,7 @@ import {
   MinecraftSendChatPriority
 } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import type { DisplayableInstance } from '../../common/instance'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
 import type { MinecraftStatusEntry } from '../../features/minecraft-status/minecraft-status'
 import Duration from '../../utility/duration'
@@ -32,7 +33,7 @@ import SelfbroadcastHandler from './handlers/selfbroadcast-handler.js'
 import StateHandler, { QuitOwnVolition } from './handlers/state-handler.js'
 import MinecraftBridge from './minecraft-bridge.js'
 
-export default class MinecraftInstance extends ConnectableInstance {
+export default class MinecraftInstance extends ConnectableInstance implements DisplayableInstance {
   readonly defaultBotConfig = {
     // increased from 30 seconds to 60 seconds to reduce connection dropouts
     checkTimeoutInterval: Duration.seconds(60).toMilliseconds(),
@@ -155,6 +156,15 @@ export default class MinecraftInstance extends ConnectableInstance {
     )
   }
 
+  async displayName(): Promise<string> {
+    const guildName = await this.guildManager
+      .list()
+      .then((guild) => guild.name)
+      .catch(() => undefined)
+
+    return guildName ?? this.config.name
+  }
+
   override async signal(type: InstanceSignalType): Promise<void> {
     const connected = this.currentStatus() === Status.Connected
 
@@ -190,10 +200,6 @@ export default class MinecraftInstance extends ConnectableInstance {
 
   public async acquireLimbo(): Promise<Timeout<void>> {
     return this.limboHandler.acquire()
-  }
-
-  public getDisplayName(): string {
-    return this.config.name
   }
 
   public getConfigName(): string {

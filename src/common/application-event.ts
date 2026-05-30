@@ -4,7 +4,7 @@ import type DiscordInstance from '../instance/discord/discord-instance'
 import type MinecraftInstance from '../instance/minecraft/minecraft-instance'
 
 import type { Status } from './connectable-instance.js'
-import type { Instance } from './instance'
+import type { DisplayableInstance, Instance } from './instance'
 import type { AnonymousUser, DiscordUser, MinecraftUser, User } from './user'
 
 /*
@@ -604,6 +604,7 @@ export interface MinecraftReactiveEvent extends ReplyEvent, MinecraftRawMessage 
  * When a plugin or a component wishes to broadcast a message to all instances.
  */
 export interface BroadcastEvent extends InformEvent {
+  readonly instance: Instance & DisplayableInstance
   /**
    * The message to broadcast
    */
@@ -843,6 +844,8 @@ export interface StatusChange {
 }
 
 export interface InstanceReactive extends ReplyEvent {
+  readonly instance: Instance & DisplayableInstance
+
   type: InstanceReactiveType
   message: string
 }

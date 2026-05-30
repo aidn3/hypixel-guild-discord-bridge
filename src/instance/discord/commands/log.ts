@@ -14,18 +14,19 @@ import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const Title = 'Guild Log Audit'
 
-function formatEmbed(chatResult: ChatResult, targetInstance: MinecraftInstance): APIEmbed {
+async function formatEmbed(chatResult: ChatResult, targetInstance: MinecraftInstance): Promise<APIEmbed> {
+  const displayName = await targetInstance.displayName()
   let result = ''
   let pageTitle = ''
 
-  result += `**${escapeMarkdown(targetInstance.getDisplayName())}**\n`
+  result += `**${escapeMarkdown(displayName)}**\n`
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
       result += `- <t:${entry.time / 1000}>: ${entry.line}\n`
     }
   } else {
-    result += `_Could not fetch information for ${targetInstance.getDisplayName()}._`
+    result += `_Could not fetch information for ${displayName}._`
     if (chatResult.error) {
       result += `\n${escapeMarkdown(chatResult.error)}`
     }
@@ -75,7 +76,7 @@ export default {
         )
         return {
           totalPages: chatResult.guildLog?.total ?? 0,
-          embed: formatEmbed(chatResult, targetInstanceName)
+          embed: await formatEmbed(chatResult, targetInstanceName)
         }
       }
     )

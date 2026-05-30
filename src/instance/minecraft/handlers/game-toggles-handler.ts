@@ -163,7 +163,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, C
           color: Color.Good,
 
           user: undefined,
-          message: `Account at ${this.clientInstance.getDisplayName()} has finished discovery phase. All ready!`
+          message: `Account at ${this.clientInstance.getConfigName()} has finished discovery phase. All ready!`
         })
       }
 

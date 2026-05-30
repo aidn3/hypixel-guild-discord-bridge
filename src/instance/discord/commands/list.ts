@@ -284,7 +284,7 @@ async function getGuilds(app: Application, errorHandler: UnexpectedErrorHandler)
       })
       .catch((error: unknown) => {
         errorHandler.error('fetching guild info', error)
-        result.failed.push(instance.getDisplayName())
+        result.failed.push(instance.getConfigName())
       })
 
     tasks.push(task)

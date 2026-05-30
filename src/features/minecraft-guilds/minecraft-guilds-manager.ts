@@ -15,6 +15,7 @@ import {
 } from '../../common/application-event'
 import type { DiscordBridgeCommandHandler, OptionMinecraftInstance } from '../../common/commands'
 import { Status } from '../../common/connectable-instance'
+import type { DisplayableInstance } from '../../common/instance'
 import { Instance } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { MojangProfile, User } from '../../common/user'
@@ -35,7 +36,7 @@ import type { MinecraftGuild, WaitlistEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 
-export class MinecraftGuildsManager extends Instance {
+export class MinecraftGuildsManager extends Instance implements DisplayableInstance {
   private static readonly MaxGuildMembers = 125
   private static readonly WaitlistRequestDuration = Duration.days(1)
   private static readonly ForceReschedule = Duration.days(7)
@@ -93,6 +94,10 @@ export class MinecraftGuildsManager extends Instance {
     discordClient.on('messageDeleteBulk', (messages) => {
       this.database.deleteMessage(messages.map((message) => message.id))
     })
+  }
+
+  public displayName(): string {
+    return 'Guilds Manager'
   }
 
   public discordClient(): Client {
