@@ -1,9 +1,12 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { bold, ButtonStyle, escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
+import type Application from '../../../application'
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import type { CategoryOption } from '../utility/options-handler.js'
+import Duration from '../../../utility/duration'
+import { interactivePaging } from '../utility/discord-pager'
+import type { ActionOption, CategoryOption } from '../utility/options-handler.js'
 import { OptionsHandler, OptionType } from '../utility/options-handler.js'
 
 export default {
@@ -94,7 +97,8 @@ export default {
               }
             }
           ]
-        }
+        },
+        fetchPluginsOptions(context.application)
       ]
     }
 
@@ -102,3 +106,42 @@ export default {
     await optionsHandler.forwardInteraction(context.interaction, context.errorHandler)
   }
 } satisfies DiscordCommandHandler
+
+function fetchPluginsOptions(application: Application): ActionOption {
+  return {
+    type: OptionType.Action,
+    name: 'Plugins',
+    label: 'Show',
+    style: ButtonStyle.Primary,
+    onInteraction: async (interaction, errorHandler) => {
+      await interaction.deferReply()
+
+      const plugins = application.pluginsManager.getAllInstances()
+      await interactivePaging(interaction, 0, Duration.minutes(5).toMilliseconds(), errorHandler, (page) => {
+        const EntriesPerPage = 10
+
+        const entries = plugins.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
+        const totalPages = Math.ceil(plugins.length / EntriesPerPage)
+
+        let result = ''
+        if (entries.length === 0) {
+          result = '__Empty List__'
+        } else {
+          for (const entry of entries) {
+            result += `- ${bold(escapeMarkdown(entry.displayName()))}: ${escapeMarkdown(entry.pluginInfo().description)}\n`
+          }
+        }
+
+        return {
+          totalPages: totalPages,
+          embed: {
+            title: `Installed Plugins (page ${page + 1} out of ${Math.max(totalPages, 1)})`,
+            description: result.trim()
+          }
+        }
+      })
+
+      return true
+    }
+  }
+}
