@@ -1,23 +1,16 @@
 import type { Database } from 'better-sqlite3'
-import type { Logger as Logger4Js } from 'log4js'
 
 import type { SqliteManager } from '../../common/sqlite-manager'
 
-const CurrentVersion = 1
-
 export function initializeHypixelDatabase(sqliteManager: SqliteManager, name: string): void {
-  sqliteManager.setTargetVersion(CurrentVersion)
-
-  sqliteManager.registerMigrator(0, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom0to1(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom0to1(database)
   })
 
   sqliteManager.migrate(name)
 }
 
-function migrateFrom0to1(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 0 to 1')
-
+function migrateFrom0to1(database: Database): void {
   // reference: hypixel/hypixel-database.ts
   database.exec(
     'CREATE TABLE "hypixelApiRequest" (' +
@@ -37,6 +30,4 @@ function migrateFrom0to1(database: Database, logger: Logger4Js, newlyCreated: bo
       '  lastAccessAt INTEGER NOT NULL' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 1')
 }
