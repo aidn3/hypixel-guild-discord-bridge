@@ -24,6 +24,7 @@ import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { DiscordChatFormat } from '../../../core/discord/discord-configurations'
 import { ApplicationLanguages } from '../../../core/language-configurations'
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager'
@@ -591,6 +592,40 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         }
       },
       {
+        type: OptionType.PresetList,
+
+        name: `Message Format`,
+        description: 'Change how messages are displayed in Discord',
+
+        min: 1,
+        max: 1,
+
+        getOption: () => [discord.getChatFormat()],
+        setOption: (values) => {
+          const selected = values[0] as DiscordChatFormat
+          assert.ok(Object.values(DiscordChatFormat).includes(selected))
+          discord.setChatFormat(selected)
+        },
+        options: [
+          {
+            label: 'Webhook',
+            value: DiscordChatFormat.Webhook,
+            description: 'Send messages using webhooks, stylizing Minecraft messages like actual users'
+          },
+          {
+            label: 'Minecraft Rendering',
+            value: DiscordChatFormat.MinecraftRender,
+            description:
+              'Render chat messages the same way Minecraft renders them in-game. **DOES NOT WORK ON WINDOWS OS.**'
+          },
+          {
+            label: 'Embed',
+            value: DiscordChatFormat.Embed,
+            description: 'Send messages using embeds, the same way instance statuses are sent'
+          }
+        ]
+      },
+      {
         type: OptionType.Boolean,
         name: 'Always Reply',
         description:
@@ -607,16 +642,6 @@ function fetchDiscordOptions(application: Application): CategoryOption {
         getOption: () => discord.getEnforceVerification(),
         toggleOption: () => {
           discord.setEnforceVerification(!discord.getEnforceVerification())
-        }
-      },
-      {
-        type: OptionType.Boolean,
-        name: 'Minecraft Text Images',
-        description:
-          'Render chat messages the same way they are rendered in Minecraft in-game. **DOES NOT WORK ON WINDOWS OS.**',
-        getOption: () => discord.getTextToImage(),
-        toggleOption: () => {
-          discord.setTextToImage(!discord.getTextToImage())
         }
       },
       {

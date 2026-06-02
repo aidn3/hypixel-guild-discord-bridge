@@ -64,6 +64,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom17to18(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom18to19(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -675,10 +678,26 @@ function migrateFrom13to14(database: Database): void {
 }
 
 function migrateFrom14to15(database: Database): void {
-  database.exec('DROP TABLE "autocompleteRanks"')
+  const selectedOption = database
+    .prepare('SELECT value FROM "configurations" WHERE category = ? AND name = ?')
+    .pluck(true)
+    .get('discord', 'textToImage') as string | undefined
+  if (selectedOption !== undefined) {
+    const result = database
+      .prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
+      .run('discord', 'chatFormat', selectedOption === '1' ? 'minecraftRender' : 'webhook')
+
+    assert.strictEqual(result.changes, 1)
+  }
+
+  database.exec("DELETE FROM 'configurations' WHERE category = 'discord' AND name = 'textToImage'")
 }
 
 function migrateFrom15to16(database: Database): void {
+  database.exec('DROP TABLE "autocompleteRanks"')
+}
+
+function migrateFrom16to17(database: Database): void {
   database.exec(
     'CREATE TABLE "users" (' +
       '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
@@ -713,7 +732,7 @@ function migrateFrom15to16(database: Database): void {
   )
 }
 
-function migrateFrom16to17(database: Database): void {
+function migrateFrom17to18(database: Database): void {
   // reference: features/minecraft-status
   database.exec('DROP TABLE "instanceStatusHistory"')
   database.exec(
@@ -758,7 +777,7 @@ function migrateFrom16to17(database: Database): void {
   )
 }
 
-function migrateFrom17to18(database: Database): void {
+function migrateFrom18to19(database: Database): void {
   // reference: hypixel/hypixel-database.ts
   database.exec('DROP TABLE "hypixelApiRequest"')
   database.exec('DROP TABLE "hypixelApiResponse"')
