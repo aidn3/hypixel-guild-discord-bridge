@@ -24,6 +24,7 @@ This project is made to be fully flexible and customisable, offering a high qual
 - [Compatibility and future support](docs/COMPATIBILITY.md)
 - [Migrating to newer version](docs/MIGRATION.md)
 - [Tracking metrics via Prometheus](docs/PROMETHEUS.md)
+- [Security Policy](SECURITY.md)
 - [Privacy Notice](docs/PRIVACY.md)
 - [How to create plugins](docs/PLUGIN-TUTORIAL.md)
 - [Contribute](CONTRIBUTING.md)
