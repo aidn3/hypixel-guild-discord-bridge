@@ -2,10 +2,11 @@
 
 <p>
   <a href="https://github.com/plantain-00/type-coverage"><img alt="type-coverage" src="https://img.shields.io/badge/dynamic/json.svg?label=type-coverage&prefix=%E2%89%A5&suffix=%&query=$.typeCoverage.atLeast&uri=https%3A%2F%2Fraw.githubusercontent.com%2Faidn3%2Fhypixel-guild-discord-bridge%2Fmaster%2Fpackage.json"></a>
-  <img alt="A badge displaying the number of messages being sent via the project" src="https://img.shields.io/badge/dynamic/json?label=Messages%20Sent&query=totalChatShort&url=https%3A%2F%2Faidn5.com%2Fstats.json">
+  <img alt="A badge displaying the number of active instances" src="https://shm.aidn5.com/badge/hypixel-guild-discord-bridge/instances?label=Instances">
+  <img alt="A badge displaying the number of total messages that have been processed via this project" src="https://shm.aidn5.com/badge/hypixel-guild-discord-bridge/metric/totalMessages?label=Total%20messages">
   <a href="https://discord.gg/ej7tQHPF8y"><img src="https://img.shields.io/discord/1002575659694043206?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 </p>
-
+  
 ## Introduction
 
 A service that connects multiple Hypixel guilds and Discord servers together.
@@ -23,6 +24,7 @@ This project is made to be fully flexible and customisable, offering a high qual
 - [Compatibility and future support](docs/COMPATIBILITY.md)
 - [Migrating to newer version](docs/MIGRATION.md)
 - [Tracking metrics via Prometheus](docs/PROMETHEUS.md)
+- [Privacy Notice](docs/PRIVACY.md)
 - [How to create plugins](docs/PLUGIN-TUTORIAL.md)
 - [Contribute](CONTRIBUTING.md)
 - [Development Documentation](./docs/DEVELOPMENT.md)
@@ -109,6 +111,13 @@ Use Discord slash command `/settings` to configure the application:
 - Set up the public and officer channels
 - Check [How to prepare and add Minecraft account](docs/FAQ.md#how-to-prepare-a-minecraft-account-to-be-added).
 
+## Privacy Notice
+
+Aggregated anonymous data are collected to be displayed here on the main page,
+such as how many total instances of this project is being hosted by everyone.
+
+For further information, check [Privacy Notice](docs/PRIVACY.md).
+
 ## Credits
 
 - The Project is inspired by [hypixel-discord-chat-bridge by Senither](https://github.com/Senither/hypixel-discord-chat-bridge).
@@ -117,4 +126,5 @@ Use Discord slash command `/settings` to configure the application:
 - [WildWolfsblut](https://github.com/WildWolfsblut) for helping with various designs and structures
 - [SkyCryptWebsite](https://github.com/SkyCryptWebsite) for providing [Senither weight](https://github.com/SkyCryptWebsite/SkyCrypt/blob/e2f421dec3a8afdd4830a26d206ec439e933266f/src/constants/weight/senither-weight.js)
 - [Elite Skyblock](https://api.eliteskyblock.com) for providing the farming weight API
+- [SHM](https://github.com/kOlapsis/shm) for providing a selfhost-able metrics server
 - All contributors whether by code, ideas/suggestions or testing

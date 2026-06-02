@@ -216,6 +216,13 @@ export class Core extends Instance {
     return this.sqliteManager
   }
 
+  /*
+   * @internal Use only for creation of instances or other code that manages its own data
+   */
+  public getConfigurationsManager(): ConfigurationsManager {
+    return this.configurationsManager
+  }
+
   public editPunishment(
     id: SavedPunishment['id'],
     reason: SavedPunishment['reason'] | undefined,
