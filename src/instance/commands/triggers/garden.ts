@@ -18,7 +18,7 @@ export default class Garden extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const profile = await context.app.hypixelApi.getSkyblockProfiles(uuid)
-    const selectedProfile = profile?.find((profile) => profile.selected)
+    const selectedProfile = profile?.find((profile) => profile.selected) ?? profile?.at(0)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const bestiary = selectedProfile.members[uuid].bestiary?.kills ?? {}

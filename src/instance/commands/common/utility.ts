@@ -25,7 +25,7 @@ export async function getSelectedSkyblockProfile(
   const profiles = await hypixelApi.getSkyblockProfiles(uuid)
 
   if (!profiles) return undefined
-  const profile = profiles.find((p) => p.selected)
+  const profile = profiles.find((p) => p.selected) ?? profiles.at(0)
 
   const selected = profile?.members[uuid]
   assert.ok(selected)

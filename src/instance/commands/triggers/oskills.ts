@@ -22,7 +22,7 @@ export default class OverflowSkills extends ChatCommandHandler {
 
     const profiles = await context.app.hypixelApi.getSkyblockProfiles(uuid)
     if (!profiles || profiles.length === 0) return playerNeverPlayedSkyblock(context, givenUsername)
-    const memberProfile = profiles.find((p) => p.selected)
+    const memberProfile = profiles.find((p) => p.selected) ?? profiles.at(0)
     assert.ok(memberProfile !== undefined)
 
     const profile = memberProfile.members[uuid]
