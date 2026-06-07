@@ -33,8 +33,7 @@ export default {
           .setRequired(true)
           .addChoices(
             { name: 'Last 24 Hours', value: 'last_24_hours' },
-            { name: 'Last 7 Days', value: 'last_7_days' },
-            { name: 'Last 30 Days', value: 'last_30_days' }
+            { name: 'Last 7 Days', value: 'last_7_days' }
           )
       )
       .addStringOption((option) =>
@@ -82,80 +81,37 @@ export default {
 
     const botUuids = context.application.minecraftManager.getMinecraftBots().map((bot) => bot.uuid)
 
-    let guildMembers: { uuid: string; gexp: number }[] = []
-    let totalGuildMembers = 0
-
-    // Fetch data based on duration
-    if (duration === 'last_30_days') {
-      const trackerApiUrl = context.application.getConfig().general.trackerApiUrl
-      if (!trackerApiUrl) {
-        await context.interaction.editReply({
-          embeds: [
-            {
-              title: 'Purge Failed',
-              color: Color.Bad,
-              description: 'Tracker API URL is not configured in `config.yaml`. Cannot fetch 30-day data.',
-              footer: { text: DefaultCommandFooter }
-            }
-          ]
-        })
-        return
-      }
-
-      const trackedGuild = await fetchTrackedGuild(botUuid, 'player', trackerApiUrl)
-      if (!trackedGuild) {
-        await context.interaction.editReply({
-          embeds: [
-            {
-              title: 'Purge Failed',
-              color: Color.Bad,
-              description: 'Failed to fetch tracked guild data from the configured Tracker API.',
-              footer: { text: DefaultCommandFooter }
-            }
-          ]
-        })
-        return
-      }
-
-      const processedGuild = process30DayGexp(trackedGuild)
-      totalGuildMembers = processedGuild.members.length
-      guildMembers = processedGuild.members.map((m) => ({
-        uuid: m.uuid.replace(/-/g, ''), // Ensure clean UUID format without dashes
-        gexp: m.monthlyLast30Days ?? 0
-      }))
-    } else {
-      const hypixelGuild = await context.application.hypixelApi.getGuildByPlayer(botUuid)
-      if (!hypixelGuild) {
-        await context.interaction.editReply({
-          embeds: [
-            {
-              title: 'Purge Failed',
-              color: Color.Bad,
-              description: 'Failed to fetch guild data from Hypixel API.',
-              footer: { text: DefaultCommandFooter }
-            }
-          ]
-        })
-        return
-      }
-
-      totalGuildMembers = hypixelGuild.members.length
-      guildMembers = hypixelGuild.members.map((member) => {
-        let gexp = 0
-        const historyEntries = Object.entries(member.expHistory)
-
-        if (duration === 'last_7_days') {
-          gexp = historyEntries.reduce((acc, [_, val]) => acc + val, 0)
-        } else if (duration === 'last_24_hours') {
-          // Keys are date strings, sorting chronologically ensures the last is the most recent
-          historyEntries.sort((a, b) => a[0].localeCompare(b[0]))
-          if (historyEntries.length > 0) {
-            gexp = historyEntries[historyEntries.length - 1][1]
+    const hypixelGuild = await context.application.hypixelApi.getGuildByPlayer(botUuid)
+    if (!hypixelGuild) {
+      await context.interaction.editReply({
+        embeds: [
+          {
+            title: 'Purge Failed',
+            color: Color.Bad,
+            description: 'Failed to fetch guild data from Hypixel API.',
+            footer: { text: DefaultCommandFooter }
           }
-        }
-        return { uuid: member.uuid, gexp }
+        ]
       })
+      return
     }
+
+    const totalGuildMembers = hypixelGuild.members.length
+    const guildMembers = hypixelGuild.members.map((member) => {
+      let gexp = 0
+      const historyEntries = Object.entries(member.expHistory)
+
+      if (duration === 'last_7_days') {
+        gexp = historyEntries.reduce((acc, [_, val]) => acc + val, 0)
+      } else if (duration === 'last_24_hours') {
+        // Keys are date strings, sorting chronologically ensures the last is the most recent
+        historyEntries.sort((a, b) => a[0].localeCompare(b[0]))
+        if (historyEntries.length > 0) {
+          gexp = historyEntries[historyEntries.length - 1][1]
+        }
+      }
+      return { uuid: member.uuid, gexp }
+    })
 
     // Resolve usernames
     const cachedGuildList = await context.application.core.guildManager.list(instanceName).catch(() => undefined)
@@ -364,84 +320,3 @@ export default {
     })
   }
 } satisfies DiscordCommandHandler
-
-// Tracker API Utilities
-
-interface ExpHistory {
-  [date: string]: number
-}
-
-interface GuildMember {
-  uuid: string
-  username?: string
-  rank: string
-  joined: string
-  expHistory: ExpHistory
-  monthlyLast30Days?: number
-}
-
-interface TrackedGuild {
-  _id: string
-  name: string
-  tag?: string
-  tagColor?: string
-  level: number
-  members: GuildMember[]
-  monthlyLast30Days?: number
-}
-
-const get30DaysAgoBoundary = (): Date => {
-  const dateNow = new Date()
-  return new Date(dateNow.getTime() - 30 * 24 * 60 * 60 * 1000)
-}
-
-async function fetchTrackedGuild(
-  query: string,
-  searchType: 'name' | 'player',
-  trackerApiBaseUrl: string
-): Promise<TrackedGuild | null> {
-  try {
-    const cleanBase = trackerApiBaseUrl.replace(/\/+$/, '')
-    const url = new URL(`${cleanBase}/api/tracked/${encodeURIComponent(query)}`)
-    url.searchParams.append('fetch', 'true')
-    url.searchParams.append('currentMembersOnly', 'true')
-    url.searchParams.append('type', searchType)
-
-    const response = await fetch(url.toString())
-    if (!response.ok) {
-      throw new Error(`Tracker API error: ${response.statusText}`)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = (await response.json()) as any
-    if (data.error) {
-      return null
-    }
-
-    return (data.guild || data) as TrackedGuild
-  } catch (error) {
-    console.error('Failed to fetch tracked guild data:', error)
-    return null
-  }
-}
-
-function process30DayGexp(guild: TrackedGuild): TrackedGuild {
-  const boundary = get30DaysAgoBoundary()
-  const boundaryTime = boundary.getTime()
-
-  guild.members.forEach((member) => {
-    const historyEntries = Object.entries(member.expHistory || {})
-    const sum = historyEntries
-      .filter(([dateString]) => {
-        const entryDate = new Date(dateString)
-        return entryDate.getTime() > boundaryTime
-      })
-      .reduce((accumulator, [_, expValue]) => accumulator + expValue, 0)
-
-    member.monthlyLast30Days = sum
-  })
-
-  guild.monthlyLast30Days = guild.members.reduce((acc, member) => acc + (member.monthlyLast30Days || 0), 0)
-
-  return guild
-}

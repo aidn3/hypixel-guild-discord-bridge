@@ -7,7 +7,6 @@ import * as t from "ts-interface-checker";
 export const GeneralConfig = t.iface([], {
   "hypixelApiKey": "string",
   "urchinApiKey": t.opt("string"),
-  "trackerApiUrl": t.opt("string"),
   "shareMetrics": "boolean",
 });
 

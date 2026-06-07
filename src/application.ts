@@ -141,10 +141,6 @@ export default class Application extends Emittery<ApplicationEvents> implements 
     this.autoRestart = new AutoRestart(this)
   }
 
-  public getConfig(): Readonly<ApplicationConfig> {
-    return this.config
-  }
-
   public getConfigFilePath(filename: string): string {
     return path.resolve(this.configsDirectory, path.basename(filename))
   }

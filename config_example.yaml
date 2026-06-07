@@ -6,9 +6,6 @@ general:
 
   # Optional: Urchin blacklist API key from https://urchin.ws
   # urchinApiKey: 'your-urchin-api-key'
-  
-  # Optional: Tracker API URL for retrieving 30-day GEXP
-  # trackerApiUrl: 'http://your-tracker-api-endpoint'
 
   # Share basic anonymous metrics to display on the project main page as a way to show its popularity.
   # All metrics are anonymous and are limited to counting and never about anything specific

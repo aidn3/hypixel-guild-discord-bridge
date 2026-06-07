@@ -3,7 +3,6 @@ export const ApplicationConfigVersion = 2
 export interface GeneralConfig {
   hypixelApiKey: string
   urchinApiKey?: string //TODO: next config update, make this explicit. Use null if needed
-  trackerApiUrl?: string // API proxy for tracking 30-day GEXP data
   shareMetrics: boolean
 }
 
