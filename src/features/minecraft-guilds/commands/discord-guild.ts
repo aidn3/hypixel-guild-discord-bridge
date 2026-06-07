@@ -1043,13 +1043,6 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
-  const member = interaction.member
-  if (typeof member.permissions === 'string') return
-  if (!member.permissions.has(PermissionFlagsBits.Administrator)) {
-    await context.showPermissionDenied(Permission.Admin)
-    return
-  }
-
   await interaction.deferReply()
 
   const savedGuild = await getGuild(context, database)
