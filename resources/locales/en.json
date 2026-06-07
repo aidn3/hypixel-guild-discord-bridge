@@ -46,9 +46,12 @@
   "conditions.format.true": "True",
   "conditions.format.false": "False",
   "conditions.format.number": "{{value, number}}",
+  "conditions.format.from-greater-than-to": "\"from\" {{from, number}} can not be greater than \"to\" {{to, number}}{{value, number}}",
 
   "conditions.in-guild-with-gexp.title": "In Guild with GEXP",
   "conditions.in-guild-with-gexp.description": "In Guild {{guildName}} with {{gexp, number}} GEXP in {{days, number}} days",
+  "conditions.skyblock-kuudra-collection.title": "Kuudra Collection",
+  "conditions.skyblock-kuudra-collection.formatted": "{{profileTypes}} Skyblock Kuudra collection {{from, number}} to {{to, number}}",
 
   "discord.status.chat-interrupted": "Chat with {{instanceName}} has been interrupted.",
   "discord.status.chat-resumed": "Chat is connected with {{instanceName}}.",

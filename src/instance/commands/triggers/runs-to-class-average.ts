@@ -2,8 +2,8 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
+import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import {
-  getDungeonLevelWithOverflow,
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,

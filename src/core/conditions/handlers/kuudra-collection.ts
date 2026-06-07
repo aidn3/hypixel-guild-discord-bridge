@@ -2,8 +2,9 @@
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import { getDungeonLevelWithOverflow } from '../../hypixel/hypixel-skyblock'
+import { kuudraCollection } from '../../hypixel/hypixel-skyblock'
 import type {
+  ConditionOption,
   ConditionResult,
   HandlerContext,
   HandlerOperationContext,
@@ -13,18 +14,18 @@ import type {
 import { ConditionHandler, ConditionResultType, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
 import { formatPrimitiveValue, getSkyblockUserProfiles } from '../utilities'
 
-export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions, number> {
+export class KuudraCollection extends ConditionHandler<SkyblockKuudraOptions, number> {
   override getId(): string {
-    return 'reached-hypixel-skyblock-catacombs-level'
+    return 'reached-hypixel-skyblock-kuudra-collection'
   }
   override getDisplayName(context: HandlerContext): string {
-    return context.application.i18n.t(($) => $['discord.conditions.handler.skyblock-catacombs-level.title'])
+    return context.application.i18n.t(($) => $['conditions.skyblock-kuudra-collection.title'])
   }
 
-  override displayCondition(context: HandlerContext, options: SkyblockCatacombsOptions): string {
-    return context.application.i18n.t(($) => $['discord.conditions.handler.skyblock-catacombs-level.formatted'], {
-      fromLevel: options.fromLevel,
-      toLevel: options.toLevel,
+  override displayCondition(context: HandlerContext, options: SkyblockKuudraOptions): string {
+    return context.application.i18n.t(($) => $['conditions.skyblock-kuudra-collection.formatted'], {
+      from: options.from,
+      to: options.to,
       profileTypes: translateSkyblockProfileTypes(options.profileTypes)
     })
   }
@@ -32,7 +33,7 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions, n
   override async meetsCondition(
     context: HandlerOperationContext,
     handlerUser: HandlerUser,
-    condition: SkyblockCatacombsOptions
+    condition: SkyblockKuudraOptions
   ): Promise<ConditionResult<number>> {
     const mojangProfile = handlerUser.user.mojangProfile()
     if (mojangProfile === undefined) {
@@ -50,20 +51,17 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions, n
       }
     }
 
-    const highestExperience = profiles
-      .map((profile) => profile.dungeons?.dungeon_types.catacombs.experience ?? 0)
+    const total = profiles
+      .map((profile) => profile.nether_island_player_data?.kuudra_completed_tiers)
+      .filter((entry) => entry !== undefined)
+      .map((entry) => kuudraCollection(entry))
       // eslint-disable-next-line unicorn/no-array-reduce
       .reduce((a, b) => Math.max(a, b))
 
-    const level = Math.floor(getDungeonLevelWithOverflow(highestExperience))
-
     return {
-      type:
-        level >= condition.fromLevel && level <= condition.toLevel
-          ? ConditionResultType.Pass
-          : ConditionResultType.Fail,
-      value: level,
-      valueFormatted: formatPrimitiveValue(context.application.i18n.t, level)
+      type: total >= condition.from && total <= condition.to ? ConditionResultType.Pass : ConditionResultType.Fail,
+      value: total,
+      valueFormatted: formatPrimitiveValue(context.application.i18n.t, total)
     }
   }
 
@@ -72,21 +70,34 @@ export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions, n
       SkyblockProfileOption,
       {
         type: OptionType.Number,
-        name: 'From Catacombs Level',
-        key: 'fromLevel',
-        max: 10_000,
+        name: 'From Kuudra Collection',
+        key: 'from',
+        max: Number.MAX_SAFE_INTEGER,
         min: 0,
         defaultValue: 0
       },
       {
         type: OptionType.Number,
-        name: 'To Catacombs Level',
-        key: 'toLevel',
-        max: 10_000,
+        name: 'To Kuudra Collection',
+        key: 'to',
+        max: Number.MAX_SAFE_INTEGER,
         min: 1
       }
     ]
   }
+
+  override async createCondition(
+    context: HandlerContext,
+    rawOptions: ConditionOption,
+    prompt: ModalOption[]
+  ): Promise<SkyblockKuudraOptions | string> {
+    const from = rawOptions.from as number
+    const to = rawOptions.to as number
+
+    if (from > to) return context.application.i18n.t(($) => $['conditions.format.from-greater-than-to'], { from, to })
+
+    return super.createCondition(context, rawOptions, prompt)
+  }
 }
 
-export type SkyblockCatacombsOptions = SkyblockProfileOptionType & { fromLevel: number; toLevel: number }
+export type SkyblockKuudraOptions = SkyblockProfileOptionType & { from: number; to: number }

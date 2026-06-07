@@ -17,9 +17,9 @@ import type {
   HypixelSkyblockSkill,
   HypixelSkyblockSkillsResponse,
   SkyblockMember
-} from '../../../core/hypixel/hypixel-skyblock-types'
+} from '../../../core/hypixel/hypixel-skyblock'
+import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import {
-  getDungeonLevelWithOverflow,
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,

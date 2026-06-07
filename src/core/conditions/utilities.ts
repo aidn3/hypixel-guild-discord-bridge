@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next'
 
 import type { MojangProfile } from '../../common/user'
 import type { HypixelPlayer } from '../hypixel/hypixel-player'
-import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock-types'
+import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock'
 
 import type { ConditionValue, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common'
 

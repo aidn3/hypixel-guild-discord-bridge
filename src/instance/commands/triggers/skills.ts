@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock-types'
+import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Skills extends ChatCommandHandler {

@@ -5,6 +5,7 @@ import { InGuild } from './handlers/in-guild'
 import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master'
 import { InGuildWithGexp } from './handlers/in-guild-with-gexp'
 import { InGuildWithRank } from './handlers/in-guild-with-rank'
+import { KuudraCollection } from './handlers/kuudra-collection'
 import { Linked } from './handlers/linked'
 import { SkyblockApi } from './handlers/skyblock-api'
 import { SkyblockLevel } from './handlers/skyblock-level'
@@ -18,6 +19,7 @@ export class ConditionsRegistry {
     this.registerHandler(new HasDiscordRole())
     this.registerHandler(new SkyblockLevel())
     this.registerHandler(new CatacombsLevel())
+    this.registerHandler(new KuudraCollection())
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())
     this.registerHandler(new InGuild())
