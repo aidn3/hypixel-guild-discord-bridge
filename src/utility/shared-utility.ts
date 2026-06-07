@@ -16,6 +16,32 @@ export function sufficeToTime(suffice: string): number {
   throw new Error(`Unexpected suffice: ${suffice}. Need a new update to handle the new one`)
 }
 
+export class InvalidNumberWithSuffice extends Error {
+  constructor(public readonly given: string) {
+    super()
+  }
+}
+
+export function parseNumberWithSuffice(query: string): number {
+  const regex = /^(?<whole>\d+(?:\.\d+)?)(?<suffice>[kmbtq]?)$/gi
+  const match = regex.exec(query)
+  if (match == undefined) throw new InvalidNumberWithSuffice(query)
+  const rawValue = match.groups?.whole
+  const suffice = match.groups?.suffice
+  assert.ok(rawValue !== undefined)
+  assert.ok(suffice !== undefined)
+
+  const parsed = rawValue.includes('.') ? Number.parseFloat(rawValue) : Number.parseInt(rawValue, 10)
+  if (suffice.length === 0) return parsed
+  if (suffice === 'k') return parsed * 1000
+  if (suffice === 'm') return parsed * 1000 * 1000
+  if (suffice === 'b') return parsed * 1000 * 1000 * 1000
+  if (suffice === 't') return parsed * 1000 * 1000 * 1000 * 1000
+  if (suffice === 'q') return parsed * 1000 * 1000 * 1000 * 1000 * 1000
+
+  assert.fail(`unknown suffice: ${suffice}`)
+}
+
 export function getDuration(short: string): Duration {
   const regex = /^(\d*)([ydhms]*)$/g
   const match = regex.exec(short)
