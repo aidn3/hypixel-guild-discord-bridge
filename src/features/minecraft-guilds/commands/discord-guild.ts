@@ -20,6 +20,7 @@ import {
 import type Application from '../../../application'
 import { Color, InstanceType, Permission } from '../../../common/application-event'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands'
+import { Status } from '../../../common/connectable-instance'
 import type { MojangProfile } from '../../../common/user'
 import {
   addConditionCommand,
@@ -1050,6 +1051,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
 
   let instanceName: string | undefined
   for (const instance of context.application.minecraftManager.getAllInstances()) {
+    if (instance.currentStatus() !== Status.Connected) continue
     try {
       const guildData = await context.application.core.guildManager.list(instance.instanceName)
       if (guildData.name.toLowerCase() === savedGuild.name.toLowerCase()) {
@@ -1157,10 +1159,8 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
     let evaluatedAtLeastOne = false
 
     for (const condition of stayConditions) {
-      const handler = context.application.core.conditonsRegistry
-        .allHandlers()
-        .find((h) => h.getId() === condition.typeId)
-      if (!handler) {
+      const handler = context.application.core.conditonsRegistry.get(condition.typeId)
+      if (handler === undefined) {
         meetsAll = false
         continue
       }
