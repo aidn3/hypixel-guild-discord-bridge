@@ -47,6 +47,9 @@
   "conditions.format.false": "False",
   "conditions.format.number": "{{value, number}}",
 
+  "conditions.in-guild-with-gexp.title": "In Guild with GEXP",
+  "conditions.in-guild-with-gexp.description": "In Guild {{guildName}} with {{gexp, number}} GEXP in {{days, number}} days",
+
   "discord.status.chat-interrupted": "Chat with {{instanceName}} has been interrupted.",
   "discord.status.chat-resumed": "Chat is connected with {{instanceName}}.",
   "discord.status.chat-failed": "Chat with {{instanceName}} has been permanently interrupted. Manual intervention is required!",
