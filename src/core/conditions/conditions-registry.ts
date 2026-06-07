@@ -1,5 +1,6 @@
 import type { ConditionHandler, ConditionOption } from './common'
 import { CatacombsLevel } from './handlers/catacombs-level'
+import { GuildGexp } from './handlers/guild-gexp'
 import { HasDiscordRole } from './handlers/has-discord-role'
 import { InGuild } from './handlers/in-guild'
 import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master'
@@ -22,6 +23,7 @@ export class ConditionsRegistry {
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
     this.registerHandler(new InGuildAsGuildmaster())
+    this.registerHandler(new GuildGexp())
   }
 
   public allHandlers(): ConditionHandler<ConditionOption>[] {

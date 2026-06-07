@@ -116,6 +116,7 @@ export class Database {
         'minecraftGuildMember',
         'minecraftGuildJoinConditions',
         'minecraftGuildRoleConditions',
+        'minecraftGuildStayConditions',
         'minecraftGuildWaitlist',
         'minecraftGuildRoles'
       ]
@@ -159,6 +160,8 @@ export class Database {
     // noinspection PointlessBooleanExpressionJS
     guild.acceptJoinRequests = !!guild.acceptJoinRequests
     guild.createdAt = guild.createdAt * 1000
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    guild.includedPurgeRanks = JSON.parse(guild.includedPurgeRanks as unknown as string)
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
 
@@ -599,12 +602,117 @@ export class Database {
 
     return transaction()
   }
+
+  public addStayCondition(condition: GuildStayCondition): SavedGuildStayCondition {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "minecraftGuildStayConditions" (guildId, typeId, options) VALUES (?, ?, ?)'
+      )
+      const select = database.prepare<[number | bigint], SavedGuildStayCondition>(
+        'SELECT * FROM "minecraftGuildStayConditions" WHERE id = ?'
+      )
+
+      const insertResult = insert.run(condition.guildId, condition.typeId, JSON.stringify(condition.options))
+      assert.strictEqual(insertResult.changes, 1)
+      const id = insertResult.lastInsertRowid
+
+      const selectResult = select.get(id)
+      assert.ok(selectResult !== undefined)
+
+      this.deserializeJoinCondition(selectResult)
+      return selectResult
+    })
+
+    return transaction()
+  }
+
+  public removeStayCondition(
+    guildId: GuildStayCondition['guildId'],
+    conditionId: SavedGuildStayCondition['id']
+  ): SavedGuildStayCondition | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const deleteEntry = database.prepare('DELETE FROM "minecraftGuildStayConditions" WHERE id = ? AND guildId = ?')
+      const select = database.prepare<[number | bigint, string], SavedGuildStayCondition>(
+        'SELECT * FROM "minecraftGuildStayConditions" WHERE id = ? AND guildId = ?'
+      )
+
+      const condition = select.get(conditionId, guildId)
+      if (condition === undefined) return
+
+      this.deserializeJoinCondition(condition)
+
+      assert.strictEqual(deleteEntry.run(conditionId, guildId).changes, 1)
+      return condition
+    })
+
+    return transaction()
+  }
+
+  public getStayConditions(guildId: GuildStayCondition['guildId']): SavedGuildStayCondition[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[typeof guildId], SavedGuildStayCondition>(
+        'SELECT * FROM "minecraftGuildStayConditions" WHERE guildId = ?'
+      )
+
+      const conditions = select.all(guildId)
+      for (const condition of conditions) {
+        this.deserializeJoinCondition(condition)
+      }
+
+      return conditions
+    })
+
+    return transaction()
+  }
+
+  public getStayConditionMode(guildId: string): 'all' | 'any' {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare('SELECT stayConditionMode FROM "minecraftGuild" WHERE id = ?')
+      return select.pluck(true).get(guildId) as 'all' | 'any'
+    })
+    return transaction()
+  }
+
+  public setStayConditionMode(guildId: string, mode: 'all' | 'any'): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const update = database.prepare('UPDATE "minecraftGuild" SET stayConditionMode = ? WHERE id = ?')
+      update.run(mode, guildId)
+    })
+    transaction()
+  }
+
+  public getIncludedPurgeRanks(guildId: string): string[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare('SELECT includedPurgeRanks FROM "minecraftGuild" WHERE id = ?')
+      const raw = select.pluck(true).get(guildId) as string
+      return JSON.parse(raw) as string[]
+    })
+    return transaction()
+  }
+
+  public setIncludedPurgeRanks(guildId: string, ranks: string[]): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const update = database.prepare('UPDATE "minecraftGuild" SET includedPurgeRanks = ? WHERE id = ?')
+      update.run(JSON.stringify(ranks), guildId)
+    })
+    transaction()
+  }
 }
 
 export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
 
 export type GuildJoinCondition = GuildCondition
 export type SavedGuildJoinCondition = GuildJoinCondition & ConditionId
+
+export type GuildStayCondition = GuildCondition
+export type SavedGuildStayCondition = GuildStayCondition & ConditionId
 
 export type GuildRoleCondition = GuildCondition & { role: string }
 export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
@@ -621,6 +729,8 @@ export interface MinecraftGuild {
   neededJoinConditions: number
   acceptJoinRequests: boolean
   createdAt: number
+  stayConditionMode: 'all' | 'any'
+  includedPurgeRanks: string[]
 }
 
 export interface MinecraftGuildRole {

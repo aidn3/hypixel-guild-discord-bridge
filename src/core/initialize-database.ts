@@ -9,7 +9,7 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 15
+const CurrentVersion = 16
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.setTargetVersion(CurrentVersion)
@@ -58,6 +58,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   })
   sqliteManager.registerMigrator(14, (database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom14to15(database, logger, newlyCreated)
+  })
+  sqliteManager.registerMigrator(15, (database, logger, postCleanupActions, newlyCreated) => {
+    migrateFrom15to16(database, logger, newlyCreated)
   })
 
   sqliteManager.migrate(name)
@@ -747,6 +750,25 @@ function migrateFrom14to15(database: Database, logger: Logger4Js, newlyCreated: 
   database.exec("DELETE FROM 'configurations' WHERE category = 'discord' AND name = 'textToImage'")
 
   database.pragma('user_version = 15')
+}
+
+function migrateFrom15to16(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
+  if (!newlyCreated) logger.debug('Migrating database from version 15 to 16')
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildStayConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" TEXT NOT NULL DEFAULT "any";')
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "includedPurgeRanks" TEXT NOT NULL DEFAULT "[]";')
+
+  database.pragma('user_version = 16')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

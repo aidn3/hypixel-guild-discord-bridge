@@ -24,7 +24,7 @@ export interface CommandConditionHandler {
   remove: (id: ConditionId['id']) => boolean
   createOptions: { top: ModalOption[]; bottom: ModalOption[] }
   add: (handlerId: string, data: ModalResult, conditionData: ConditionOption) => ConditionId
-  translationKey: 'roles' | 'nicknames' | 'guild-join' | 'guild-role'
+  translationKey: 'roles' | 'nicknames' | 'guild-join' | 'guild-role' | 'guild-stay'
 }
 
 export function listConditionCommand(
