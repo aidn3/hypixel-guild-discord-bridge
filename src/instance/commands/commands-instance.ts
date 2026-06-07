@@ -56,6 +56,7 @@ import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
 import Forge from './triggers/forge'
 import Garden from './triggers/garden'
+import Gexp from './triggers/gexp'
 import Gifted from './triggers/gifted.js'
 import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
@@ -174,6 +175,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Fetchur(),
       new Forge(),
       new Garden(),
+      new Gexp(),
       new Gifted(),
       new Guild(),
       new GuildCheck(),

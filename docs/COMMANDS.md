@@ -62,6 +62,7 @@ A shorter version can also be used: `!- rtca`
 | `fetchur`        | Show what Fetchur NPC is requesting                                                |
 | `forge`          | Returns a player's SkyBlock forge slots                                            |
 | `garden`         | Returns a player's Garden stats                                                    |
+| `gexp`           | Shows weekly and monthly GEXP for a guild member in this guild                     |
 | `gifted`         | Returns how many times a player has gifted a rank                                  |
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |

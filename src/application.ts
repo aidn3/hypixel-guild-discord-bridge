@@ -59,7 +59,7 @@ export default class Application extends Emittery<ApplicationEvents> {
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
-  private readonly minecraftGuildsManager: MinecraftGuildsManager
+  public readonly minecraftGuildsManager: MinecraftGuildsManager
   public readonly minecraftStatus: MinecraftStatus
   private readonly skyblockReminders: SkyblockReminders
   private readonly spontaneousEvents: SpontaneousEvents
