@@ -58,7 +58,7 @@ export default class Sync extends ChatCommandHandler {
     if (savedGuild === undefined) return `${targetProfile.name} is in an outside guild: ${guild.name}.`
 
     const resolvedRank = await resolveGuildRank(
-      context,
+      context.app,
       this.database,
       currentTime,
       savedGuild,
@@ -66,6 +66,8 @@ export default class Sync extends ChatCommandHandler {
       guildMember,
       target
     )
+    this.database.updatedGuildMember(guild._id, guildMember, { lastRoleCheckAt: currentTime })
+
     if (resolvedRank === 'not-whitelisted') {
       return `${targetProfile.name} current rank ${guildMember.rank ?? 'Member'} is not whitelisted to be changed.`
     } else if (resolvedRank === 'no-condition') {

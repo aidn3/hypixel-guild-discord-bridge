@@ -296,13 +296,7 @@ async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridg
     return
   }
 
-  savedGuild = database.initGuild(
-    guild._id,
-    guild.name,
-    guild.ranks
-      .filter((rank) => !rank.default)
-      .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
-  )
+  savedGuild = database.initGuild(guild)
   await interaction.editReply({
     embeds: [
       {
@@ -474,6 +468,19 @@ async function handleSettings(
               const refreshed = manager.allGuilds().find((entry) => entry.id === savedGuild?.id)
               assert.ok(refreshed !== undefined)
               savedGuild = refreshed
+            }
+          },
+          {
+            type: OptionType.Boolean,
+            name: 'Auto Update Roles',
+            description: 'Automatically check and update guild members roles based on the set conditions',
+            getOption: () => {
+              assert.ok(savedGuild !== undefined)
+              return manager.getAutoUpdateRoleEnabled(savedGuild.id)
+            },
+            toggleOption: () => {
+              assert.ok(savedGuild !== undefined)
+              manager.setAutoUpdateRoleEnabled(savedGuild.id, !manager.getAutoUpdateRoleEnabled(savedGuild.id))
             }
           }
         ]

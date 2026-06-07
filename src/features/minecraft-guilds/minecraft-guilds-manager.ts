@@ -20,6 +20,7 @@ import { Instance } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { MojangProfile, User } from '../../common/user'
 import { ConditionResultType } from '../../core/conditions/common'
+import type { HypixelGuild } from '../../core/hypixel/hypixel-guild'
 import type { GuildFetch } from '../../instance/minecraft/guild-manager'
 import { GuildInviteStatus } from '../../instance/minecraft/guild-manager'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
@@ -27,12 +28,13 @@ import Duration from '../../utility/duration'
 import { setIntervalAsync } from '../../utility/scheduling'
 import { formatTime } from '../../utility/shared-utility'
 
+import { AutoGuildSync } from './auto-guild-sync'
 import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandler } from './commands/discord-guild'
 import Invite from './commands/invite'
 import Ranks from './commands/ranks'
 import Sync from './commands/sync'
 import SyncGuild from './commands/sync-guild'
-import type { MinecraftGuild, WaitlistEntry } from './database'
+import type { MinecraftGuild, MinecraftGuildMemberGexp, WaitlistEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 
@@ -44,11 +46,22 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
   private readonly detectionQueue = new PromiseQueue(1)
   private readonly database: Database
   private readonly waitlistInteraction: DiscordWaitlistInteraction
+  private readonly minecraftDataScrapper: AutoGuildSync
 
   public constructor(application: Application, sqliteManager: SqliteManager) {
     super(application, 'minecraft-guilds-manager')
     this.database = new Database(sqliteManager, this.logger)
     this.waitlistInteraction = new DiscordWaitlistInteraction(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal,
+      this.database,
+      this.detectionQueue
+    )
+    this.minecraftDataScrapper = new AutoGuildSync(
       this.application,
       this,
       this.eventHelper,
@@ -102,6 +115,14 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
 
   public discordClient(): Client {
     return this.application.discordInstance.getClient()
+  }
+
+  public getAndSupplementedMemberGexp(guild: HypixelGuild, uuid: string, days: number): MinecraftGuildMemberGexp[] {
+    return this.database.getAndSupplementedMemberGexp(guild, uuid, days)
+  }
+
+  public getMemberGexp(guildId: MinecraftGuild['id'], uuid: string, days: number): MinecraftGuildMemberGexp[] {
+    return this.database.getMemberGexp(guildId, uuid, days)
   }
 
   private async autoRegisterGuilds(): Promise<void> {
@@ -199,13 +220,7 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
     const hypixelGuild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
     if (hypixelGuild === undefined) return // probably the account left and guildListResult cache is outdated
 
-    this.database.initGuild(
-      hypixelGuild._id,
-      hypixelGuild.name,
-      hypixelGuild.ranks
-        .filter((rank) => !rank.default)
-        .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
-    )
+    this.database.initGuild(hypixelGuild)
   }
 
   private async handleJoinRequest(event: GuildPlayerEvent): Promise<void> {

@@ -1,13 +1,13 @@
 import assert from 'node:assert'
 
-import type { ChatCommandContext } from '../../../common/commands'
+import type Application from '../../../application'
 import type { MinecraftUser } from '../../../common/user'
 import { ConditionResultType } from '../../../core/conditions/common'
 import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hypixel-guild'
 import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
 
 export async function resolveGuildRank(
-  context: ChatCommandContext,
+  application: Application,
   database: Database,
   currentTime: number,
   savedGuild: MinecraftGuild,
@@ -33,10 +33,10 @@ export async function resolveGuildRank(
     if (whitelistedRole !== undefined) whitelistedRoles.push(whitelistedRole)
   }
 
-  const registry = context.app.core.conditonsRegistry
+  const registry = application.core.conditonsRegistry
   const roleConditions = database.getRoleConditions(savedGuild.id)
   const conditionContext = {
-    application: context.app,
+    application: application,
     startTime: currentTime,
     abortSignal: new AbortController().signal
   }

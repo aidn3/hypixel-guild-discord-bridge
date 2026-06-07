@@ -67,6 +67,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom18to19(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom19to20(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -781,6 +784,32 @@ function migrateFrom18to19(database: Database): void {
   // reference: hypixel/hypixel-database.ts
   database.exec('DROP TABLE "hypixelApiRequest"')
   database.exec('DROP TABLE "hypixelApiResponse"')
+}
+
+function migrateFrom19to20(database: Database): void {
+  database.exec('DROP TABLE "minecraftGuildMember"')
+  database.exec(
+    'CREATE TABLE "minecraftGuildMember" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  userId TEXT NOT NULL,' +
+      '  joinedAt INTEGER NOT NULL,' +
+      '  leftAt INTEGER NOT NULL DEFAULT (-1),' +
+      '  lastRoleCheckAt INTEGER NOT NULL DEFAULT (-1),' +
+      '  UNIQUE(guildId, userId)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildMemberGEXP" (' +
+      '  guildMemberId INTEGER NOT NULL REFERENCES minecraftGuildMember(id) ON DELETE CASCADE,' +
+      '  date TEXT NOT NULL,' +
+      '  value INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildMemberId, date)' +
+      ' ) STRICT'
+  )
+
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "autoUpdateRoles" INTEGER NOT NULL DEFAULT 0;')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

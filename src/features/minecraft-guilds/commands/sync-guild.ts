@@ -86,7 +86,7 @@ export default class SyncGuild extends ChatCommandHandler {
       if (typeof target === 'string') continue
 
       const resolvedRank = await resolveGuildRank(
-        context,
+        context.app,
         this.database,
         currentTime,
         savedGuild,
@@ -94,6 +94,8 @@ export default class SyncGuild extends ChatCommandHandler {
         guildMember,
         target
       )
+      this.database.updatedGuildMember(guild._id, guildMember, { lastRoleCheckAt: currentTime })
+
       if (resolvedRank === 'not-whitelisted' || resolvedRank === 'no-condition') {
         skipped++
         continue

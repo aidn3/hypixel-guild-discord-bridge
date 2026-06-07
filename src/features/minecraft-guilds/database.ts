@@ -4,6 +4,7 @@ import type { Logger } from 'log4js'
 
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { ConditionId } from '../../core/conditions/common'
+import type { HypixelGuild, HypixelGuildMember } from '../../core/hypixel/hypixel-guild'
 
 export class Database {
   constructor(
@@ -44,7 +45,14 @@ export class Database {
     })
   }
 
-  public initGuild(id: string, name: string, roles: MinecraftGuildRole[]): MinecraftGuild {
+  public initGuild(guild: HypixelGuild): MinecraftGuild {
+    const id = guild._id
+    const name = guild.name
+    const roles = guild.ranks
+      .filter((rank) => !rank.default)
+      .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
+    const members = guild.members
+
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       // definitely possible with UPSERT. but I'd rather not since it can get real messy
@@ -76,6 +84,35 @@ export class Database {
         id,
         roles.map((role) => role.name)
       )
+
+      const selectMember = database
+        .prepare('SELECT id FROM "minecraftGuildMember" WHERE guildId = ? AND userId = ?')
+        .pluck(true)
+      const upsertGexp = database.prepare(
+        'INSERT INTO "minecraftGuildMemberGEXP" (guildMemberId, date, value) VALUES(?, ?, ?) ON CONFLICT DO UPDATE SET value = ?'
+      )
+      const existingMembers = database
+        .prepare('SELECT userId FROM "minecraftGuildMember" WHERE guildId = ?')
+        .pluck(true)
+        .all(id) as string[]
+      const setAsLeft = database.prepare(
+        'UPDATE "minecraftGuildMember" SET leftAt = ? WHERE guildId = ? AND userId = ?'
+      )
+      for (const member of members) {
+        this.updatedGuildMember(id, member, {})
+        const memberId = selectMember.get(id, member.uuid) as number | bigint | undefined
+        assert.ok(memberId !== undefined)
+
+        for (const [date, value] of Object.entries(member.expHistory)) {
+          const result = upsertGexp.run(memberId, date, value, value)
+          assert.strictEqual(result.changes, 1)
+        }
+      }
+      for (const existingMember of existingMembers) {
+        if (members.some((member) => member.uuid === existingMember)) continue
+        const result = setAsLeft.run(Math.floor(Date.now() / 1000), id, existingMember)
+        assert.strictEqual(result.changes, 1)
+      }
 
       const entry = select.get(id)
       assert.ok(entry !== undefined)
@@ -112,6 +149,17 @@ export class Database {
       const guildExists = database.prepare<[typeof id], number>('SELECT COUNT(*) FROM "minecraftGuild" WHERE id = ?')
       if (guildExists.pluck(true).get(id) === 0) return 0
 
+      let count = 0
+
+      const membersId = database
+        .prepare('SELECT id FROM minecraftGuildMember WHERE guildId = ?')
+        .pluck(true)
+        .all(id) as number[]
+      const deleteGexp = database.prepare('DELETE FROM minecraftGuildMemberGEXP WHERE guildMemberId = ?')
+      for (const memberId of membersId) {
+        count += deleteGexp.run(memberId).changes
+      }
+
       const tables = [
         'minecraftGuildMember',
         'minecraftGuildJoinConditions',
@@ -120,7 +168,6 @@ export class Database {
         'minecraftGuildRoles'
       ]
 
-      let count = 0
       for (const table of tables) {
         count += database.prepare(`DELETE FROM "${table}" WHERE guildId = ?`).run(id).changes
       }
@@ -158,6 +205,8 @@ export class Database {
     guild.inviteWishlist = !!guild.inviteWishlist
     // noinspection PointlessBooleanExpressionJS
     guild.acceptJoinRequests = !!guild.acceptJoinRequests
+    // noinspection PointlessBooleanExpressionJS
+    guild.autoUpdateRoles = !!guild.autoUpdateRoles
     guild.createdAt = guild.createdAt * 1000
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
@@ -599,6 +648,144 @@ export class Database {
 
     return transaction()
   }
+
+  public updatedGuildMember(
+    guildId: MinecraftGuild['id'],
+    member: HypixelGuildMember,
+    options: Partial<Pick<MinecraftGuildMember, 'lastRoleCheckAt'>>
+  ): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const upsertMember = database.prepare(
+        'INSERT INTO "minecraftGuildMember" (guildId, userId, joinedAt) VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET leftAt = ?, joinedAt = ?'
+      )
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const joinedAt = Math.floor((member.joined ?? Date.now()) / 1000)
+      const result = upsertMember.run(guildId, member.uuid, joinedAt, -1, joinedAt)
+      assert.strictEqual(result.changes, 1)
+
+      if (options.lastRoleCheckAt !== undefined) {
+        const updateRole = database
+          .prepare('UPDATE "minecraftGuildMember" SET lastRoleCheckAt = ? WHERE guildId = ? AND userId = ?')
+          .run(Math.floor(options.lastRoleCheckAt / 1000), guildId, member.uuid)
+        assert.strictEqual(updateRole.changes, 1)
+      }
+    })
+
+    transaction()
+  }
+
+  public getSkippedMembers(guildId: MinecraftGuild['id'], oldestTimestamp: number): string[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare(
+        'SELECT userId FROM "minecraftGuildMember" WHERE guildId = ? AND lastRoleCheckAt >= ?'
+      )
+
+      return select.pluck(true).all(guildId, Math.floor(oldestTimestamp / 1000)) as string[]
+    })
+
+    return transaction()
+  }
+
+  public getAutoUpdateRoleEnabled(guildId: string): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare('SELECT autoUpdateRoles FROM "minecraftGuild" WHERE id = ?')
+
+      const raw = select.pluck(true).get(guildId) as number | undefined
+      return typeof raw === 'number' ? !!raw : false
+    })
+
+    return transaction()
+  }
+
+  public setAutoUpdateRoleEnabled(guildId: string, enabled: boolean): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const update = database.prepare('UPDATE "minecraftGuild" SET autoUpdateRoles = ? WHERE id = ?')
+
+      update.run(enabled ? 1 : 0, guildId)
+    })
+
+    transaction()
+  }
+
+  public getAndSupplementedMemberGexp(guild: HypixelGuild, uuid: string, days: number): MinecraftGuildMemberGexp[] {
+    assert.ok(days >= 1, 'days must be equal or greater than 1')
+    assert.strictEqual(Math.floor(days), days, 'days must be a whole number')
+
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      this.initGuild(guild)
+
+      return this.getMemberGexp(guild._id, uuid, days)
+    })
+
+    return transaction()
+  }
+
+  public getMemberGexp(guildId: MinecraftGuild['id'], uuid: string, days: number): MinecraftGuildMemberGexp[] {
+    assert.ok(days >= 1, 'days must be equal or greater than 1')
+    assert.strictEqual(Math.floor(days), days, 'days must be a whole number')
+
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const memberId = database
+        .prepare('SELECT id FROM "minecraftGuildMember" WHERE guildId = ? AND userId = ?')
+        .pluck(true)
+        .get(guildId, uuid) as number | bigint | undefined
+
+      const dates = Database.getLastUTCDays(days)
+      const oldestDate = dates.at(-1)
+      assert.ok(oldestDate !== undefined)
+      const earliestDate = dates[0]
+
+      const fetchedData =
+        memberId === undefined
+          ? []
+          : database
+              .prepare<
+                [number | bigint, MinecraftGuildMemberGexp['date'], MinecraftGuildMemberGexp['date']],
+                MinecraftGuildMemberGexp
+              >('SELECT date, value FROM "minecraftGuildMemberGEXP" WHERE guildMemberId = ? AND date >= ? AND date <= ?')
+              .all(memberId, oldestDate, earliestDate)
+
+      const result: MinecraftGuildMemberGexp[] = []
+      for (const date of dates) {
+        const found = fetchedData.find((entry) => entry.date === date)
+        result.push({ date: date, value: found?.value ?? 0 })
+      }
+
+      return result
+    })
+
+    return transaction()
+  }
+
+  /**
+   *
+   * @param days the number of days to return
+   * @return date starting from today and going backward
+   * @private
+   */
+  private static getLastUTCDays(days: number): MinecraftGuildMemberGexp['date'][] {
+    const dates: MinecraftGuildMemberGexp['date'][] = []
+    const today = new Date()
+
+    for (let index = 0; index < days; index++) {
+      const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - index))
+
+      const year = date.getUTCFullYear()
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+      const day = String(date.getUTCDate()).padStart(2, '0')
+
+      dates.push(`${year}-${month as unknown as number}-${day as unknown as number}`)
+    }
+
+    return dates
+  }
 }
 
 export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
@@ -620,6 +807,7 @@ export interface MinecraftGuild {
   selfWishlist: boolean
   neededJoinConditions: number
   acceptJoinRequests: boolean
+  autoUpdateRoles: boolean
   createdAt: number
 }
 
@@ -656,4 +844,17 @@ export interface WaitlistPanel {
 
   lastUpdatedAt: number
   createdAt: number
+}
+
+export interface MinecraftGuildMember {
+  guildId: string
+  userId: string
+  joinedAt: number
+  leftAt: number
+  lastRoleCheckAt: number
+}
+
+export interface MinecraftGuildMemberGexp {
+  date: `${number}-${number}-${number}`
+  value: number
 }
