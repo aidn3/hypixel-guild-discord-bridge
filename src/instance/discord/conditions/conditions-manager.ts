@@ -168,7 +168,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
         roleAlreadyGiven.add(condition.roleId)
       } else if (condition.onUnmet === OnUnmet.Remove) {
         // Don't remove the role since another condition already added it
-        if (roleAlreadyGiven.has(condition.roleId)) {
+        if (!roleAlreadyGiven.has(condition.roleId)) {
           assignedRoles.delete(condition.roleId)
         }
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
