@@ -145,6 +145,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
     editPayload: GuildMemberEditOptions
   ): Promise<void> {
     const assignedRoles = new Set<string>(memberContext.guildMember.roles.cache.keys())
+    const roleAlreadyGiven = new Set<string>()
     let changed = false
 
     for (const condition of context.rolesConditions) {
@@ -164,8 +165,12 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
       const assignedRolesSize = assignedRoles.size
       if (meetsCondition) {
         assignedRoles.add(condition.roleId)
+        roleAlreadyGiven.add(condition.roleId)
       } else if (condition.onUnmet === OnUnmet.Remove) {
-        assignedRoles.delete(condition.roleId)
+        // Don't remove the role since another condition already added it
+        if (roleAlreadyGiven.has(condition.roleId)) {
+          assignedRoles.delete(condition.roleId)
+        }
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (condition.onUnmet === OnUnmet.Keep) {
         // do nothing
