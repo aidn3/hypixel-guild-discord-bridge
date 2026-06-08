@@ -766,7 +766,7 @@ function migrateFrom15to16(database: Database, logger: Logger4Js, newlyCreated: 
   )
 
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" TEXT NOT NULL DEFAULT "any";')
-  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "includedPurgeRanks" TEXT NOT NULL DEFAULT "[]";')
+  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "includedPurge" INTEGER NOT NULL DEFAULT 0;')
 
   database.pragma('user_version = 16')
 }

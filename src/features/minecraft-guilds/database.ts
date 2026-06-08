@@ -60,7 +60,7 @@ export class Database {
         `DELETE FROM minecraftGuildRoles WHERE guildId = ? AND name NOT IN (${roles.map(() => '?').join(',')})`
       )
       const selectRoles = database.prepare<[typeof id], MinecraftGuildRole>(
-        'SELECT name, priority, whitelisted FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted, includedPurge FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       if (exists.all(id).length === 0) {
@@ -92,7 +92,7 @@ export class Database {
     const transaction = database.transaction(() => {
       const select = database.prepare<[], MinecraftGuild>('SELECT * FROM minecraftGuild')
       const selectRoles = database.prepare<[string], MinecraftGuildRole>(
-        'SELECT name, priority, whitelisted FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted, includedPurge FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       const guilds = select.all()
@@ -160,8 +160,12 @@ export class Database {
     // noinspection PointlessBooleanExpressionJS
     guild.acceptJoinRequests = !!guild.acceptJoinRequests
     guild.createdAt = guild.createdAt * 1000
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    guild.includedPurgeRanks = JSON.parse(guild.includedPurgeRanks as unknown as string)
+
+    for (const role of guild.roles) {
+      role.whitelisted = !!role.whitelisted
+      role.includedPurge = !!role.includedPurge
+    }
+    guild.includedPurgeRanks = guild.roles.filter((role) => role.includedPurge).map((role) => role.name)
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
 
@@ -668,16 +672,16 @@ export class Database {
     return transaction()
   }
 
-  public getStayConditionMode(guildId: string): 'all' | 'any' {
+  public getStayConditionMode(guildId: string): StayConditionMode {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const select = database.prepare('SELECT stayConditionMode FROM "minecraftGuild" WHERE id = ?')
-      return select.pluck(true).get(guildId) as 'all' | 'any'
+      return select.pluck(true).get(guildId) as StayConditionMode
     })
     return transaction()
   }
 
-  public setStayConditionMode(guildId: string, mode: 'all' | 'any'): void {
+  public setStayConditionMode(guildId: string, mode: StayConditionMode): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const update = database.prepare('UPDATE "minecraftGuild" SET stayConditionMode = ? WHERE id = ?')
@@ -689,9 +693,10 @@ export class Database {
   public getIncludedPurgeRanks(guildId: string): string[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const select = database.prepare('SELECT includedPurgeRanks FROM "minecraftGuild" WHERE id = ?')
-      const raw = select.pluck(true).get(guildId) as string
-      return JSON.parse(raw) as string[]
+      const select = database.prepare<[string], { name: string }>(
+        'SELECT name FROM minecraftGuildRoles WHERE guildId = ? AND includedPurge = 1'
+      )
+      return select.all(guildId).map((role) => role.name)
     })
     return transaction()
   }
@@ -699,8 +704,21 @@ export class Database {
   public setIncludedPurgeRanks(guildId: string, ranks: string[]): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const update = database.prepare('UPDATE "minecraftGuild" SET includedPurgeRanks = ? WHERE id = ?')
-      update.run(JSON.stringify(ranks), guildId)
+      if (ranks.length === 0) {
+        const unPurgeAll = database.prepare('UPDATE minecraftGuildRoles SET includedPurge = 0 WHERE guildId = ?')
+        unPurgeAll.run(guildId)
+        return
+      }
+
+      const unPurge = database.prepare(
+        `UPDATE minecraftGuildRoles SET includedPurge = 0 WHERE guildId = ? AND name NOT IN (${ranks.map(() => '?').join(',')})`
+      )
+      const purge = database.prepare(
+        `UPDATE minecraftGuildRoles SET includedPurge = 1 WHERE guildId = ? AND name IN (${ranks.map(() => '?').join(',')})`
+      )
+
+      unPurge.run(guildId, ...ranks)
+      purge.run(guildId, ...ranks)
     })
     transaction()
   }
@@ -717,6 +735,11 @@ export type SavedGuildStayCondition = GuildStayCondition & ConditionId
 export type GuildRoleCondition = GuildCondition & { role: string }
 export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
 
+export enum StayConditionMode {
+  All = 'all',
+  Any = 'any'
+}
+
 export interface MinecraftGuild {
   id: string
   name: string
@@ -729,7 +752,7 @@ export interface MinecraftGuild {
   neededJoinConditions: number
   acceptJoinRequests: boolean
   createdAt: number
-  stayConditionMode: 'all' | 'any'
+  stayConditionMode: StayConditionMode
   includedPurgeRanks: string[]
 }
 
@@ -737,6 +760,7 @@ export interface MinecraftGuildRole {
   name: string
   priority: number
   whitelisted: boolean
+  includedPurge?: boolean
 }
 
 export interface WaitlistEntry {

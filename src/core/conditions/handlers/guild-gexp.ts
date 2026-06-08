@@ -2,7 +2,6 @@
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler'
-import { parseGexpShorthand } from '../../../utility/gexp-parser'
 import {
   ConditionHandler,
   type ConditionOption,
@@ -86,10 +85,34 @@ export class GuildGexp extends ConditionHandler<GexpConditionOption> {
     }
 
     try {
-      const minimumGexp = parseGexpShorthand(rawOptions.minimumGexp as string)
+      const minimumGexp = this.parseGexpShorthand(rawOptions.minimumGexp as string)
       return { days, minimumGexp }
     } catch {
       return 'Invalid GEXP input format. Use numbers or shorthand like 100k, 1.5m.'
     }
+  }
+
+  private parseGexpShorthand(input: string): number {
+    if (!input) {
+      throw new Error('Input is empty.')
+    }
+
+    const sanitized = input.trim().toLowerCase()
+    let multiplier = 1
+
+    if (sanitized.endsWith('k')) {
+      multiplier = 1000
+    } else if (sanitized.endsWith('m')) {
+      multiplier = 1_000_000
+    }
+
+    const numberPart = multiplier === 1 ? sanitized : sanitized.slice(0, -1)
+    const parsed = Number.parseFloat(numberPart)
+
+    if (Number.isNaN(parsed) || !Number.isFinite(parsed) || parsed < 0) {
+      throw new Error(`Invalid GEXP input: ${input}`)
+    }
+
+    return Math.floor(parsed * multiplier)
   }
 }
