@@ -136,6 +136,16 @@ export class UserConditions {
 
     return transaction()
   }
+
+  public deleteNicknameCondition(guildId: string, conditionId: ConditionId['id']): boolean {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const deleteEntry = database.prepare('DELETE FROM "discordNicknameConditions" WHERE guildId = ? AND id = ?')
+      return deleteEntry.run(guildId, conditionId).changes !== 0
+    })
+
+    return transaction()
+  }
 }
 
 export interface RoleCondition {
