@@ -1,3 +1,4 @@
+import { PermissionFlagsBits } from 'discord-api-types/v10'
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
@@ -8,6 +9,7 @@ export default {
     new SlashCommandBuilder()
       .setName('profile')
       .setDescription('Customize Bot profile inside a Discord server.')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
           .setName('set')
@@ -18,7 +20,7 @@ export default {
       )
       .addSubcommand(new SlashCommandSubcommandBuilder().setName('reset').setDescription('Reset all customizations.')),
   origin: CommandOrigin.Guild,
-  onlyAdmins: true,
+  onlyAdmins: false,
 
   handler: async function (context) {
     switch (context.interaction.options.getSubcommand(true)) {

@@ -1,5 +1,6 @@
 import assert from 'node:assert'
 
+import { PermissionFlagsBits } from 'discord-api-types/v10'
 import { SlashCommandBuilder } from 'discord.js'
 import PromiseQueue from 'promise-queue'
 
@@ -11,9 +12,12 @@ import type { UpdateContext, UpdateProgress } from '../conditions/common'
 
 export default {
   getCommandBuilder: () =>
-    new SlashCommandBuilder().setName('syncall').setDescription('Synchronize roles and other options for all users'),
+    new SlashCommandBuilder()
+      .setName('syncall')
+      .setDescription('Synchronize roles and other options for all users')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
   origin: CommandOrigin.Guild,
-  onlyAdmins: true,
+  onlyAdmins: false,
 
   handler: async function (context) {
     const interaction = context.interaction

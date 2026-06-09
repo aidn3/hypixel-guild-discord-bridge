@@ -10,9 +10,12 @@ import LinkButtonsManager from '../features/link-buttons-manager'
 
 export default {
   getCommandBuilder: () =>
-    new SlashCommandBuilder().setName('link-panel').setDescription('Create a panel with buttons to help users link'),
+    new SlashCommandBuilder()
+      .setName('link-panel')
+      .setDescription('Create a panel with buttons to help users link')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
   origin: CommandOrigin.Guild,
-  onlyAdmins: true,
+  onlyAdmins: false,
 
   handler: async function (context) {
     const interaction = context.interaction

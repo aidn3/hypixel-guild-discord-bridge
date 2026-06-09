@@ -1,5 +1,6 @@
 import assert from 'node:assert'
 
+import { PermissionFlagsBits } from 'discord-api-types/v10'
 import type { APIEmbed, CommandInteraction, MessageActionRowComponentData, SendableChannels } from 'discord.js'
 import { ComponentType, MessageFlags, SlashCommandBuilder } from 'discord.js'
 
@@ -16,6 +17,7 @@ export default {
     new SlashCommandBuilder()
       .setName('create-leaderboard')
       .setDescription('Create a leaderboard message in this channel')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
       .addStringOption((o) =>
         o
           .setName('type')
@@ -25,7 +27,7 @@ export default {
       )
       .addStringOption((o) => o.setName('guild-name').setDescription('Hypixel Guild name')),
   origin: CommandOrigin.Guild,
-  onlyAdmins: true,
+  onlyAdmins: false,
 
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())

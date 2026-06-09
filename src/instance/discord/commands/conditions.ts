@@ -1,3 +1,4 @@
+import { PermissionFlagsBits } from 'discord-api-types/v10'
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js'
 
@@ -29,6 +30,9 @@ export default {
     return new SlashCommandBuilder()
       .setName('conditions')
       .setDescription('Manage conditions')
+      .setDefaultMemberPermissions(
+        PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles | PermissionFlagsBits.BanMembers
+      )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
           .setName('roles')
@@ -48,7 +52,7 @@ export default {
   },
 
   origin: CommandOrigin.Guild,
-  onlyAdmins: true,
+  onlyAdmins: false,
 
   handler: async function (context) {
     const interaction = context.interaction
