@@ -8,8 +8,6 @@ import type {
   CommandInteraction,
   ComponentInContainerData,
   ContainerComponentData,
-  InteractionResponse,
-  Message,
   MessageComponentInteraction,
   ModalMessageModalSubmitInteraction,
   SectionComponentData
@@ -19,6 +17,7 @@ import {
   ButtonStyle,
   ChannelType,
   ComponentType,
+  DiscordAPIError,
   escapeMarkdown,
   MessageFlags,
   SelectMenuDefaultValueType,
@@ -27,6 +26,7 @@ import {
 } from 'discord.js'
 
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import Duration from '../../../utility/duration'
 
 export enum OptionType {
   Category = 'category',
@@ -164,8 +164,8 @@ export class ValueRejected extends Error {
 
 export class OptionsHandler {
   public static readonly BackButton = 'back-button'
-  private static readonly InactivityTime = 600_000
-  private originalReply: InteractionResponse | Message | undefined
+  private static readonly InactivityTime = Duration.minutes(10)
+  private interaction: ChatInputCommandInteraction | undefined
   private enabled = true
   private path: string[] = []
   private ids = new Map<string, OptionId>()
@@ -184,6 +184,7 @@ export class OptionsHandler {
   }
 
   public async forwardInteraction(interaction: ChatInputCommandInteraction, errorHandler: UnexpectedErrorHandler) {
+    let messageDeleted = false
     const alreadySent = interaction.replied || interaction.deferred
     const payload = {
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
@@ -193,40 +194,46 @@ export class OptionsHandler {
       ? await interaction.editReply({ ...payload, flags: MessageFlags.IsComponentsV2 })
       : await interaction.reply({ ...payload, flags: MessageFlags.IsComponentsV2 })
 
-    this.originalReply = originalReply
-    const replyId = await originalReply.fetch().then((message) => message.id)
+    this.interaction = interaction
     const collector = originalReply.createMessageComponentCollector({
       filter: (messageInteraction) =>
-        messageInteraction.user.id === interaction.user.id && messageInteraction.message.id === replyId
+        messageInteraction.user.id === interaction.user.id && messageInteraction.message.id === originalReply.id,
+      time: OptionsHandler.InactivityTime.toMilliseconds()
     })
-    const timeoutId = setTimeout(() => {
-      collector.stop()
-    }, OptionsHandler.InactivityTime)
 
     collector.on('collect', (messageInteraction) => {
-      timeoutId.refresh()
+      collector.resetTimer()
       void Promise.resolve()
         .then(async () => {
           const alreadyReplied = await this.handleInteraction(messageInteraction, errorHandler)
-
-          await (alreadyReplied
-            ? this.updateView()
-            : messageInteraction.update({
-                components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
-                flags: MessageFlags.IsComponentsV2,
-                allowedMentions: { parse: [] }
-              }))
+          if (!alreadyReplied) await this.updateView(messageInteraction)
         })
-        .catch(errorHandler.promiseCatch('updating container'))
+        .catch((error: unknown) => {
+          if (error instanceof DiscordAPIError && error.code === 10_008) {
+            messageDeleted = true
+            collector.stop('Message deleted')
+          } else {
+            errorHandler.error('updating container', error)
+          }
+        })
     })
 
     collector.on('end', () => {
       this.enabled = false
-      void this.updateView().catch(errorHandler.promiseCatch('updating container'))
+      if (messageDeleted) return
+      void this.updateView().catch((error: unknown) => {
+        if (error instanceof DiscordAPIError && error.code === 10_008) {
+          // message is deleted. do nothing since collector already stopped
+        } else {
+          errorHandler.error('updating container', error)
+        }
+      })
     })
   }
 
-  private async updateView(interaction?: ModalMessageModalSubmitInteraction): Promise<void> {
+  private async updateView(
+    interaction?: ModalMessageModalSubmitInteraction | MessageComponentInteraction
+  ): Promise<void> {
     if (interaction !== undefined) {
       await interaction.update({
         components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
@@ -236,8 +243,8 @@ export class OptionsHandler {
       return
     }
 
-    assert.ok(this.originalReply)
-    await this.originalReply.edit({
+    assert.ok(this.interaction)
+    await this.interaction.editReply({
       components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
