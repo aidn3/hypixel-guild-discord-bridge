@@ -148,7 +148,7 @@ function getManager(groupCommand: string, guildId: string, application: Applicat
     case 'nicknames': {
       return {
         conditions: () => application.core.discordUserConditions.getAllConditions(guildId).nicknames,
-        remove: (id) => application.core.discordUserConditions.deleteRoleCondition(guildId, id),
+        remove: (id) => application.core.discordUserConditions.deleteNicknameCondition(guildId, id),
         createOptions: {
           top: [
             {
