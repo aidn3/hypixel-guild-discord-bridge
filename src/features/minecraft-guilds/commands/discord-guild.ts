@@ -22,6 +22,7 @@ import { Color, Permission } from '../../../common/application-event'
 import type { DiscordAutoCompleteContext, DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands'
 import { Status } from '../../../common/connectable-instance'
 import type { MojangProfile } from '../../../common/user'
+import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild'
 import {
   addConditionCommand,
   type CommandConditionHandler,
@@ -1098,7 +1099,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
     return
   }
 
-  let hypixelGuild
+  let hypixelGuild: HypixelGuild | undefined
   try {
     hypixelGuild = await context.application.hypixelApi.getGuildByPlayer(botUuid)
   } catch (error: unknown) {
