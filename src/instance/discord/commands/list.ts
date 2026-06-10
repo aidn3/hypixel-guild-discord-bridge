@@ -27,7 +27,7 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
 
     total += players
 
-    entries.push(`**${escapeMarkdown(guildName)} (${players})**\n`)
+    entries.push(`**${escapeMarkdown(guildName)}**\n`)
 
     if (list.length > 0) {
       for (const user of list) {
@@ -63,8 +63,8 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
       currentCount = 0
 
       pages.push({
-        color: 0x5a_64_dc,
-        title: onlyOnline ? `Guild Online Players:` : `Guild Players:`,
+        color: Color.Default,
+        title: onlyOnline ? `Guild Online Players (${total}):` : `Guild Players (${total}):`,
         description: '',
         footer: {
           text: DefaultCommandFooter
@@ -157,7 +157,6 @@ async function listMembers(
     }
   }
 
-  const isHypixelApiAvailable: boolean = hypixelApi.isKeyValid
   const statuses = await look(onlineMojangProfiles, hypixelApi, errorHandler)
 
   const result = new Map<string, string[]>()
@@ -177,32 +176,27 @@ async function listMembers(
     }
 
     const sortedMembers = guild.members.toSorted((a, b) => a.username.localeCompare(b.username))
-
     for (const currentRank of ranksOrder) {
-      const rankMembers = sortedMembers.filter(m => m.rank === currentRank)
-      if (rankMembers.length === 0 && onlyOnline) continue
-    
-      const useLines = onlyOnline && isHypixelApiAvailable
-      const result: string[] = useLines ? [] : ["  - "]
-    
-      for (const member of rankMembers) {
+      const guildTemporarilyResult: string[] = []
+      for (const member of sortedMembers) {
+        if (!member.online || member.rank !== currentRank) continue
+
         const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
-        if (useLines) {
-          const status = statuses.get(member.username.toLowerCase())
-          result.push(`  - ${formatLocation(member.username, link, status)}`)
-        } else {
-          result.push(`${formatUser(member.username, link)}, `)
+        const status = statuses.get(member.username.toLowerCase())
+        guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
+      }
+      if (!onlyOnline) {
+        for (const member of sortedMembers) {
+          if (member.online || member.rank !== currentRank) continue
+
+          const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
+          guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}`)
         }
       }
-    
-      if (useLines && result.length === 0) continue
-    
-      guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
-      if (useLines) {
-        guildResult.push(...result)
-      } else {
-        const finalMsg = "".concat(...result).trimEnd()
-        guildResult.push(finalMsg.substring(0, finalMsg.length - 1))
+
+      if (guildTemporarilyResult.length > 0) {
+        guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
+        guildResult.push(...guildTemporarilyResult)
       }
     }
   }
@@ -250,7 +244,7 @@ async function getUserLink(
 }
 
 function formatUser(username: string, link: UserLink | undefined): string {
-  let message = `\`${escapeMarkdown(username)}\``
+  let message = `**${escapeMarkdown(username)}**`
   if (link !== undefined) message += ` (${userMention(link.discordId)})`
 
   return message
