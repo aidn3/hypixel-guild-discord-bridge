@@ -52,7 +52,7 @@ export class Hypixel {
    */
   private static readonly DefaultCache = Duration.minutes(5)
 
-  private isKeyValid: boolean = true
+  public isKeyValid: boolean = true
   private readonly database: HypixelDatabase
   private readonly cache: HypixelCache = new HypixelCache()
 

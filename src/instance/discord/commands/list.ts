@@ -63,8 +63,8 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
       currentCount = 0
 
       pages.push({
-        color: Color.Default,
-        title: onlyOnline ? `Guild Online Players (${total}):` : `Guild Players (${total}):`,
+        color: 0x5a_64_dc,
+        title: onlyOnline ? `Guild Online Players:` : `Guild Players:`, // Tyg: removed the total count from the title
         description: '',
         footer: {
           text: DefaultCommandFooter
@@ -157,6 +157,7 @@ async function listMembers(
     }
   }
 
+  const isHypixelApiAvailable: boolean = hypixelApi.isKeyValid
   const statuses = await look(onlineMojangProfiles, hypixelApi, errorHandler)
 
   const result = new Map<string, string[]>()
@@ -176,27 +177,44 @@ async function listMembers(
     }
 
     const sortedMembers = guild.members.toSorted((a, b) => a.username.localeCompare(b.username))
-    for (const currentRank of ranksOrder) {
-      const guildTemporarilyResult: string[] = []
-      for (const member of sortedMembers) {
-        if (!member.online || member.rank !== currentRank) continue
-
-        const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
-        const status = statuses.get(member.username.toLowerCase())
-        guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
-      }
-      if (!onlyOnline) {
-        for (const member of sortedMembers) {
-          if (member.online || member.rank !== currentRank) continue
-
-          const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
-          guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}`)
+    // Tyg: this fixes /list all and /list online working better
+    for (const currentRank of ranksOrder)
+    {
+      if (isHypixelApiAvailable)
+      {
+        if (onlyOnline)
+        {
+          const guildTemporarilyResult: string[] = []
+          for (const member of sortedMembers)
+          {
+            if (!member.online || member.rank !== currentRank) continue
+            const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
+            const status = statuses.get(member.username.toLowerCase())
+            guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
+          }
+          if (guildTemporarilyResult.length > 0)
+          {
+            guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
+            guildResult.push(...guildTemporarilyResult)
+          }
         }
       }
-
-      if (guildTemporarilyResult.length > 0) {
-        guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
-        guildResult.push(...guildTemporarilyResult)
+      else
+      {
+        const guildTemporarilyResult: string[] = ["  - "]
+        for (const member of sortedMembers)
+          {
+            if (member.rank !== currentRank) continue
+            if (onlyOnline && !member.online) continue
+            const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
+            guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}, `)
+          }
+          if (guildTemporarilyResult.length > 0)
+          {
+            guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
+            let finalMsg = "".concat(...guildTemporarilyResult).trimEnd()
+            guildResult.push(finalMsg.substring(0, finalMsg.length - 1))
+          }
       }
     }
   }
