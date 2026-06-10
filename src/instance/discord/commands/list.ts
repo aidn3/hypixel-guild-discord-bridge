@@ -63,8 +63,8 @@ function createEmbed(instances: Map<string, string[]>, onlyOnline: boolean): API
       currentCount = 0
 
       pages.push({
-        color: Color.Default,
-        title: onlyOnline ? `Guild Online Players (${total}):` : `Guild Players (${total}):`,
+        color: 0x5a_64_dc,
+        title: onlyOnline ? `Guild Online Players:` : `Guild Players:`,
         description: '',
         footer: {
           text: DefaultCommandFooter
