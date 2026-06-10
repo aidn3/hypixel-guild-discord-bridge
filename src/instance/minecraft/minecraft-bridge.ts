@@ -56,7 +56,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async onChat(event: ChatEvent): Promise<void> {
     if (event.instanceName === this.clientInstance.instanceName) return
     if (event.channelType === ChannelType.Private) return
-
+    
     const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
     const prefix = event.channelType === ChannelType.Public ? 'gc' : 'oc'
 
@@ -280,7 +280,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     const chatFormat = this.application.core.minecraftConfigurations.getChatPlaceholder()
     const origin = instanceType === InstanceType.Discord ? 'DC' : instanceName
     const originTag = `[${origin}] `
-    const usernameWithReply = `${username}${replyUsername ? `⇾${replyUsername}` : ''}`
+    const usernameWithReply = `${username}${replyUsername ? ` replying to ${replyUsername}` : ''}`
 
     const context: PlaceholderContext = {
       application: this.application,
