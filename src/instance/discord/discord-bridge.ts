@@ -33,7 +33,7 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { User } from '../../common/user'
+import type { DiscordUser, MinecraftUser, User } from '../../common/user'
 import { DiscordChatFormat } from '../../core/discord/discord-configurations'
 import MinecraftRenderer from '../../utility/minecraft-renderer'
 import { beautifyInstanceName } from '../../utility/shared-utility'
@@ -171,7 +171,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       embeds: [
         {
           description: escapeMarkdown(event.message),
-          color: this.getRandomColor(),
+          color: this.getColorFromUUID(event.user),
           timestamp: new Date().toISOString(),
           footer: embedFooters.length > 0 ? { text: embedFooters.join(' • ') } : undefined,
           author: {
@@ -190,14 +190,36 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   /**
-   * This is a placeholder method to randomly assign a color to embeds.
-   * Any change suggestions are welcome.
-   * @returns a randomly-chosen color in decimal format
+   * Creates a color from either the Minecraft UUID, Discord ID, or pseudo-random generation.
+   * @returns a color for the embed
    */
-  private getRandomColor(): number {
-    const min = Math.ceil(0)
-    const max = Math.floor(16_777_215)
-    return Math.floor(Math.random() * (max - min + 1)) + min
+  private getColorFromUUID(user: MinecraftUser | DiscordUser | User): number {
+    const id = user.getUserIdentifier()
+    switch (id.originInstance)
+    {
+      case InstanceType.Minecraft:
+        const uuid = id.userId
+        const parsed = uuid.replace(/-/g, '')
+        const h = parseInt(parsed.slice(0, 4), 16) % 360;
+        const s = 55 + (parseInt(parsed.slice(4, 6), 16) % 26);
+        const l = 45 + (parseInt(parsed.slice(6, 8), 16) % 16);
+
+        const channel = (n: number): number => {
+          const k = (n + h / 30) % 12;
+          const ln = l / 100;
+          return ln - ((s / 100) * Math.min(ln, 1 - ln)) * Math.max(-1, Math.min(k - 3, 9 - k, 1))
+        }
+
+        return (Math.round(channel(0) * 255) << 16) | (Math.round(channel(8) * 255)) | Math.round(channel(4) * 255);
+      case InstanceType.Discord:
+        const discId = id.userId
+        return Number(BigInt(discId) % 16_777_216n)
+      default:
+        // fallback: randomness
+        const min = Math.ceil(0)
+        const max = Math.floor(16_777_215)
+        return Math.floor(Math.random() * (max - min + 1)) + min
+    }
   }
 
   private async sendAsWebhook(event: ChatEvent, channelId: string, username: string): Promise<void> {
@@ -255,10 +277,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       let messageBody = escapeMarkdown(withoutPrefix)
 
       const targetUser = event.user
+      let playerHead = ""
       if (targetUser !== undefined) {
         const username = targetUser.displayName()
         const clickableUsername = hyperlink(username, targetUser.profileLink())
         messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
+        playerHead = targetUser.avatar()
       }
 
       const responsibleUser = 'responsible' in event ? event.responsible : undefined
@@ -268,11 +292,15 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
       }
 
+      // Tyg: here is the creation of the GuildPlayerEvent embed
       const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${messageBody}`
       return {
         url: targetUser?.profileLink() ?? responsibleUser?.profileLink() ?? undefined,
         description: newMessage,
-        color: event.color
+        color: event.color,
+        author: playerHead != "" ? {
+          icon_url: playerHead
+        } : undefined
       } satisfies APIEmbed
     }
 
