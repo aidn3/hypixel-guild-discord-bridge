@@ -174,7 +174,13 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     const channel = messageEvent.channel
 
     const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
-    if (replyMessage.webhookId != undefined) return replyMessage.author.username
+    
+    // Tyg: this is in case the Discord Chat Format is set to Embeds instead of Webhooks
+    if (replyMessage.embeds.length > 0)
+      return replyMessage.embeds[0].author.name
+    
+    if (replyMessage.webhookId != undefined)
+      return replyMessage.author.username
 
     const resolvedProfile = this.clientInstance.profileByUser(replyMessage.author, replyMessage.member ?? undefined)
     const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile, {})
