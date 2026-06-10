@@ -14,7 +14,7 @@ export default {
       await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
 
-        color: Color.Info,
+        color: Color.Bad,
         channels: [ChannelType.Public],
 
         type: GuildPlayerEventType.Offline,
