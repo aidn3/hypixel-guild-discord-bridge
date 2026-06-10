@@ -165,7 +165,6 @@ export class Database {
       role.whitelisted = !!role.whitelisted
       role.includedPurge = !!role.includedPurge
     }
-    guild.includedPurgeRanks = guild.roles.filter((role) => role.includedPurge).map((role) => role.name)
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
 
@@ -753,7 +752,6 @@ export interface MinecraftGuild {
   acceptJoinRequests: boolean
   createdAt: number
   stayConditionMode: StayConditionMode
-  includedPurgeRanks: string[]
 }
 
 export interface MinecraftGuildRole {

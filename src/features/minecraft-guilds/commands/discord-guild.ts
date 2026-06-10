@@ -1259,33 +1259,28 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, cancelButton)
 
-  const response = await interactivePaging(
-    interaction,
-    0,
-    120_000,
-    context.errorHandler,
-    (page) => {
-      const EntriesPerPage = 15
-      const entries = toKick.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
-      const totalPages = Math.ceil(toKick.length / EntriesPerPage)
+  const response = await interactivePaging(interaction, 0, 120_000, context.errorHandler, (page) => {
+    const EntriesPerPage = 15
+    const entries = toKick.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
+    const totalPages = Math.ceil(toKick.length / EntriesPerPage)
 
-      const displayList = entries.map((m) => `• **${escapeMarkdown(m.username)}** (${m.rank})`).join('\n')
+    const displayList = entries.map((m) => `• **${escapeMarkdown(m.username)}** (${m.rank})`).join('\n')
 
-      return {
-        totalPages: totalPages,
-        embed: {
-          title: `Purge Confirmation - ${savedGuild.name}`,
-          color: Color.Info,
-          description:
-            `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${savedGuild.name}** failed the stay-conditions (Mode: ${stayConditionMode.toUpperCase()}).\n\n` +
-            `Members to be kicked (page ${page + 1} of ${Math.max(totalPages, 1)}):\n${displayList}\n\n` +
-            `Are you sure you want to execute this purge?`,
-          footer: { text: DefaultCommandFooter }
-        }
+    return {
+      totalPages: totalPages,
+      embed: {
+        title: `Purge Confirmation - ${savedGuild.name}`,
+        color: Color.Info,
+        description:
+          `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${savedGuild.name}** failed the stay-conditions (Mode: ${stayConditionMode.toUpperCase()}).\n\n` +
+          `Members to be kicked (page ${page + 1} of ${Math.max(totalPages, 1)}):\n${displayList}\n\n` +
+          `Are you sure you want to execute this purge?`,
+        footer: { text: DefaultCommandFooter }
       }
-    },
-    [row]
-  )
+    }
+  })
+
+  await response.edit({ components: [...response.components, row] })
 
   try {
     const confirmation = await response.awaitMessageComponent({
@@ -1378,12 +1373,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
   const failedKicks: { username: string; reason: string }[] = []
   const kickReason = `Failed stay conditions`
 
-  for (let index = 0; index < 10; index++) {
-    if (isAborted()) {
-      break
-    }
-    await sleep(1000)
-  }
+  await sleep(10_000)
 
   if (isAborted()) {
     return
