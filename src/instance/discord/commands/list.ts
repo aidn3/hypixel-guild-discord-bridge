@@ -180,41 +180,32 @@ async function listMembers(
     // Tyg: this fixes /list all and /list online working better
     for (const currentRank of ranksOrder)
     {
-      if (isHypixelApiAvailable)
+      const guildTemporarilyResult: string[] = []
+      if (!onlyOnline) guildTemporarilyResult.push("  - ")
+      for (const member of sortedMembers)
       {
+        if (member.rank !== currentRank) continue
+        const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
+        if (isHypixelApiAvailable && onlyOnline)
+        {
+          const status = statuses.get(member.username.toLowerCase())
+          guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
+          continue
+        }
+        guildTemporarilyResult.push(`${formatUser(member.username, link)}, `)
+      }
+      if (guildTemporarilyResult.length > 0)
+      {
+        guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
         if (onlyOnline)
         {
-          const guildTemporarilyResult: string[] = []
-          for (const member of sortedMembers)
-          {
-            if (!member.online || member.rank !== currentRank) continue
-            const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
-            const status = statuses.get(member.username.toLowerCase())
-            guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
-          }
-          if (guildTemporarilyResult.length > 0)
-          {
-            guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
-            guildResult.push(...guildTemporarilyResult)
-          }
+          guildResult.push(...guildTemporarilyResult)
         }
-      }
-      else
-      {
-        const guildTemporarilyResult: string[] = ["  - "]
-        for (const member of sortedMembers)
-          {
-            if (member.rank !== currentRank) continue
-            if (onlyOnline && !member.online) continue
-            const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
-            guildTemporarilyResult.push(`  - ${formatUser(member.username, link)}, `)
-          }
-          if (guildTemporarilyResult.length > 0)
-          {
-            guildResult.push(`- **${escapeMarkdown(currentRank)}**`)
-            let finalMsg = "".concat(...guildTemporarilyResult).trimEnd()
-            guildResult.push(finalMsg.substring(0, finalMsg.length - 1))
-          }
+        else
+        {
+          let finalMsg = "".concat(...guildTemporarilyResult).trimEnd()
+          guildResult.push(finalMsg.substring(0, finalMsg.length - 1))
+        }
       }
     }
   }
