@@ -290,15 +290,18 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         const username = responsibleUser.displayName()
         const clickableUsername = hyperlink(username, responsibleUser.profileLink())
         messageBody = messageBody.replaceAll(escapeMarkdown(username), clickableUsername)
+        playerHead = responsibleUser.avatar()
       }
 
       // Tyg: here is the creation of the GuildPlayerEvent embed
-      const newMessage = `**${escapeMarkdown(event.instanceName)} >** ${messageBody}`
       return {
+        footer: { text: escapeMarkdown(event.instanceName) },
+        timestamp: new Date().toISOString(),
         url: targetUser?.profileLink() ?? responsibleUser?.profileLink() ?? undefined,
-        description: newMessage,
+        description: messageBody,
         color: event.color,
         author: playerHead != "" ? {
+          name: targetUser?.displayName() ?? responsibleUser?.displayName() ?? " ",
           icon_url: playerHead
         } : undefined
       } satisfies APIEmbed
