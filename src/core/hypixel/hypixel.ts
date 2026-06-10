@@ -52,6 +52,7 @@ export class Hypixel {
    */
   private static readonly DefaultCache = Duration.minutes(5)
 
+  private isKeyValid: boolean = true
   private readonly database: HypixelDatabase
   private readonly cache: HypixelCache = new HypixelCache()
 
@@ -216,6 +217,14 @@ export class Hypixel {
   }
 
   private async fetch<T extends HypixelSuccessResponse>(request: ApiEntry): Promise<T> {
+    // worldoffer <3
+    if (!this.isKeyValid) {
+      throw new HypixelApiFail(
+        request,
+        { success: false, message: 'Invalid API key.' },
+        HypixelFailType.Auth
+      )
+    }
     const parameters: Record<string, string> = {}
     if ('key' in request) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -241,6 +250,15 @@ export class Hypixel {
       if (error instanceof AxiosError) {
         const hypixelError = (error as AxiosError<HypixelFailResponse>).response?.data
         switch (error.status) {
+          // worldoffer <3
+          case 403: {
+            this.isKeyValid = false
+            throw new HypixelApiFail(
+              request,
+              hypixelError ?? { success: false, message: 'Invalid API key.' },
+              HypixelFailType.Auth
+            )
+          }
           case 429: {
             throw new HypixelApiFail(
               request,
@@ -294,6 +312,7 @@ export class HypixelApiFail extends Error {
 }
 
 export enum HypixelFailType {
+  Auth = 'auth',
   Throttle = 'throttle',
   Other = 'other'
 }
