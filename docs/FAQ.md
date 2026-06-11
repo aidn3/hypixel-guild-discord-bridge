@@ -30,7 +30,7 @@ Make an application for a key and wait for its activation.
 
 > Do **NOT generate and use developing key** for the application!
 
-For Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot).
+For Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/legacy/preparations/app-setup).
 
 ## How to prepare a Minecraft account to be added
 
