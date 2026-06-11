@@ -40,6 +40,9 @@ export default class Ranks extends ChatCommandHandler {
   }
 
   private async formatRanks(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
+    const hypixelGuild = await context.app.hypixelApi.getGuildById(savedGuild.id)
+    if (hypixelGuild === undefined) return `Guild ${savedGuild.name} disbanded??`
+
     const registry = context.app.core.conditonsRegistry
     const joinConditions = this.database.getJoinConditions(savedGuild.id)
     const roleConditions = this.database.getRoleConditions(savedGuild.id)
@@ -57,7 +60,7 @@ export default class Ranks extends ChatCommandHandler {
       formattedJoinConditions.push(`Join ${formattedMessage}`)
     }
 
-    const sortedRoles = savedGuild.roles.toSorted((a, b) => a.priority - b.priority)
+    const sortedRoles = hypixelGuild.ranks.filter((rank) => !rank.default).toSorted((a, b) => a.priority - b.priority)
     const sortedRoleConditions = []
     for (const sortedRole of sortedRoles) {
       sortedRoleConditions.push(

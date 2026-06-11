@@ -634,6 +634,7 @@ function getRoleConditionManager(
           max: 1,
           min: 1,
           options: savedGuild.roles
+            .filter((role) => !role.isDefault)
             .toSorted((a, b) => a.priority - b.priority)
             .map((role) => ({ label: role.name, value: role.name }))
         }

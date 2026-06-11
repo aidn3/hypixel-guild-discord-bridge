@@ -70,6 +70,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom19to20(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom20to21(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -810,6 +813,10 @@ function migrateFrom19to20(database: Database): void {
   )
 
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "autoUpdateRoles" INTEGER NOT NULL DEFAULT 0;')
+}
+
+function migrateFrom20to21(database: Database): void {
+  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "isDefault" INTEGER NOT NULL DEFAULT 0;')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

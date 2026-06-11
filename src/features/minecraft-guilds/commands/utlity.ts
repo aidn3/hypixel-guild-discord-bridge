@@ -15,20 +15,19 @@ export async function resolveGuildRank(
   guildMember: HypixelGuildMember,
   targetUser: MinecraftUser
 ): Promise<{ rank: string; condition: string } | 'not-whitelisted' | 'no-rank' | 'no-condition'> {
-  // check if the current rank is default OR explicitly whitelisted to be changed
-  // default rank is a special rank that is made as a fallback for other ranks
   const defaultRank = guild.ranks.find((rank) => rank.default)?.name
   assert.ok(defaultRank !== undefined)
-  if (guildMember.rank !== undefined && guildMember.rank !== defaultRank) {
-    const currentSavedRank = savedGuild.roles.find((role) => role.name === guildMember.rank)
-    if (!currentSavedRank?.whitelisted) {
-      return 'not-whitelisted'
-    }
+  const memberRank = guildMember.rank ?? defaultRank
+  const currentSavedRank = savedGuild.roles.find((role) => role.name === memberRank)
+  if (!currentSavedRank?.whitelisted) {
+    return 'not-whitelisted'
   }
 
   const sortedRanks = guild.ranks.toSorted((a, b) => a.priority - b.priority)
   const whitelistedRoles: MinecraftGuildRole[] = []
   for (const sortedRank of sortedRanks) {
+    if (sortedRank.default) continue // default used as a fallback in case no condition is met
+
     const whitelistedRole = savedGuild.roles.find((role) => role.name === sortedRank.name)
     if (whitelistedRole !== undefined) whitelistedRoles.push(whitelistedRole)
   }

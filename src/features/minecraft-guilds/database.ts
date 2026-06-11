@@ -48,9 +48,7 @@ export class Database {
   public initGuild(guild: HypixelGuild): MinecraftGuild {
     const id = guild._id
     const name = guild.name
-    const roles = guild.ranks
-      .filter((rank) => !rank.default)
-      .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
+    const roles = guild.ranks.map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
     const members = guild.members
 
     const database = this.sqliteManager.getDatabase()
@@ -68,7 +66,7 @@ export class Database {
         `DELETE FROM minecraftGuildRoles WHERE guildId = ? AND name NOT IN (${roles.map(() => '?').join(',')})`
       )
       const selectRoles = database.prepare<[typeof id], MinecraftGuildRole>(
-        'SELECT name, priority, whitelisted FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted, isDefault FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       if (exists.all(id).length === 0) {
@@ -77,6 +75,9 @@ export class Database {
         assert.strictEqual(update.run(name, id).changes, 1)
       }
 
+      const defaultRoles = guild.ranks.filter((rank) => rank.default)
+      assert.strictEqual(defaultRoles.length, 1)
+      const defaultRole = defaultRoles[0]
       for (const role of roles) {
         insertRole.run(id, role.name, role.priority)
       }
@@ -84,6 +85,12 @@ export class Database {
         id,
         roles.map((role) => role.name)
       )
+
+      database.prepare('UPDATE minecraftGuildRoles SET isDefault = 0 WHERE guildId = ?').run(guild._id)
+      const setDefaultRole = database
+        .prepare('UPDATE minecraftGuildRoles SET isDefault = 1 WHERE guildId = ? AND name = ?')
+        .run(guild._id, defaultRole.name)
+      assert.strictEqual(setDefaultRole.changes, 1)
 
       const selectMember = database
         .prepare('SELECT id FROM "minecraftGuildMember" WHERE guildId = ? AND userId = ?')
@@ -129,7 +136,7 @@ export class Database {
     const transaction = database.transaction(() => {
       const select = database.prepare<[], MinecraftGuild>('SELECT * FROM minecraftGuild')
       const selectRoles = database.prepare<[string], MinecraftGuildRole>(
-        'SELECT name, priority, whitelisted FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted, isDefault FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       const guilds = select.all()
@@ -208,6 +215,13 @@ export class Database {
     // noinspection PointlessBooleanExpressionJS
     guild.autoUpdateRoles = !!guild.autoUpdateRoles
     guild.createdAt = guild.createdAt * 1000
+
+    for (const role of guild.roles) {
+      // noinspection PointlessBooleanExpressionJS
+      role.isDefault = !!role.isDefault
+      // noinspection PointlessBooleanExpressionJS
+      role.whitelisted = !!role.whitelisted
+    }
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
 
@@ -799,9 +813,6 @@ export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
 export interface MinecraftGuild {
   id: string
   name: string
-  /**
-   * Non-default additional roles
-   */
   roles: MinecraftGuildRole[]
   inviteWishlist: boolean
   selfWishlist: boolean
@@ -813,6 +824,7 @@ export interface MinecraftGuild {
 
 export interface MinecraftGuildRole {
   name: string
+  isDefault: boolean
   priority: number
   whitelisted: boolean
 }
