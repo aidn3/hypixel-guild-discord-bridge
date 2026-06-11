@@ -1,7 +1,7 @@
 [
   {
     "title": "How to get Discord And Hypixel Keys",
-    "body": "Get hypixel key at [Hypixel Developer Dashboard](https://developer.hypixel.net).\nMake an application for a key and wait for its activation.\n\n> Do **NOT generate and use developing key** for the application!\n\nFor Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot)."
+    "body": "Get hypixel key at [Hypixel Developer Dashboard](https://developer.hypixel.net).\nMake an application for a key and wait for its activation.\n\n> Do **NOT generate and use developing key** for the application!\n\nFor Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/legacy/preparations/app-setup)."
   },
   {
     "title": "How to prepare a Minecraft account to be added",
