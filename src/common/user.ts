@@ -86,7 +86,8 @@ export class AnonymousUser {
     if (mojangProfile !== undefined) {
       const configurations = this.application.core.minecraftConfigurations
       if (mojangProfile.name.toLowerCase() === configurations.getAdminUsername().toLowerCase()) {
-        return Permission.BridgeAdmin
+        const minecraftPermission = Permission.BridgeAdmin
+        if (minecraftPermission > permission) permission = minecraftPermission
       }
 
       const guildPermission = await this.getMinecraftPermission(mojangProfile)
