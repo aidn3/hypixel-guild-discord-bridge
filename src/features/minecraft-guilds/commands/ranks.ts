@@ -1,5 +1,5 @@
-import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandHandler } from '../../../common/commands'
+import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands'
+import { ChatCommandHandler, CooldownType } from '../../../common/commands'
 import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
 import type { Database, MinecraftGuild } from '../database'
@@ -11,6 +11,11 @@ export default class Ranks extends ChatCommandHandler {
       description: 'List guild ranks requirements',
       example: `ranks [GuildName]`
     })
+  }
+
+  override cooldownOptions(): ChatCommandCooldown {
+    // ensure one instance is executed at a time
+    return { type: CooldownType.Community, duration: Duration.seconds(1) }
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
