@@ -7,19 +7,19 @@ import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import type { MinecraftUser } from '../../common/user'
-// eslint-disable-next-line import/no-restricted-paths
-import MinecraftInstance from '../../instance/minecraft/minecraft-instance'
 import Duration from '../../utility/duration'
 import { durationToMinecraftDuration } from '../../utility/shared-utility'
-import type { Core } from '../core'
 
-export default class PunishmentsEnforcer extends SubInstance<Core, void> {
+import MinecraftInstance from './minecraft-instance'
+import type { MinecraftManager } from './minecraft-manager'
+
+export default class PunishmentsEnforcer extends SubInstance<MinecraftManager, void> {
   private static readonly LagLeniency = Duration.seconds(30)
 
   constructor(
     application: Application,
-    instance: Core,
-    eventHelper: EventHelper<Core>,
+    instance: MinecraftManager,
+    eventHelper: EventHelper<MinecraftManager>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
     abortSignal: AbortSignal

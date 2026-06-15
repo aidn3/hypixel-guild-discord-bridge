@@ -6,6 +6,7 @@ import { Instance } from '../../common/instance.js'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
 
 import MinecraftInstance from './minecraft-instance.js'
+import PunishmentsEnforcer from './punishments-enforcer'
 import { Sanitizer } from './utility/sanitizer.js'
 
 export class MinecraftManager extends Instance {
@@ -13,6 +14,7 @@ export class MinecraftManager extends Instance {
 
   private readonly instances = new Set<MinecraftInstance>()
   private readonly minecraftBots = new WeakMap<MinecraftInstance, MinecraftSelfBroadcast>()
+  private readonly enforcer: PunishmentsEnforcer
 
   constructor(application: Application) {
     super(application, 'MinecraftManager')
@@ -21,6 +23,15 @@ export class MinecraftManager extends Instance {
     this.application.on('minecraftSelfBroadcast', (event) => {
       this.minecraftBots.set(event.instance, event)
     })
+
+    this.enforcer = new PunishmentsEnforcer(
+      application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
   }
 
   public isMinecraftBot(username: string): boolean {

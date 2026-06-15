@@ -46,7 +46,6 @@ import { ModerationConfigurations } from './moderation/moderation-configurations
 import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
-import PunishmentsEnforcer from './moderation/punishments-enforcer'
 import { PlaceholderManager } from './placeholder/placeholder-manager'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import { Urchin } from './urchin/urchin'
@@ -61,7 +60,6 @@ export class Core extends Instance {
   private readonly commandsHeat: CommandsHeat
   public readonly profanity: Profanity
   private readonly punishments: Punishments
-  private readonly enforcer: PunishmentsEnforcer
 
   // users
   public readonly users: Users
@@ -158,14 +156,6 @@ export class Core extends Instance {
     this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
     this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
-    this.enforcer = new PunishmentsEnforcer(
-      application,
-      this,
-      this.eventHelper,
-      this.logger,
-      this.errorHandler,
-      this.abortController.signal
-    )
 
     this.autoComplete = new Autocomplete(
       application,
@@ -255,7 +245,7 @@ export class Core extends Instance {
     const identifier: UserIdentifier = { userId: profile.id, originInstance: Platform.Discord }
 
     let mojangProfile: MojangProfile | undefined
-    const userLink = await this.application.core.verification.findByDiscord(profile.id)
+    const userLink = await this.verification.findByDiscord(profile.id)
     if (userLink !== undefined) {
       mojangProfile = await this.application.mojangApi.profileByUuid(userLink.uuid)
     }
