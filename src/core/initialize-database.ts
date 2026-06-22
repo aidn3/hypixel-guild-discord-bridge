@@ -73,6 +73,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom20to21(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom21to22(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -821,6 +824,12 @@ function migrateFrom20to21(database: Database): void {
   database
     .prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
     .run('migration', 'addGuildDefaultRank', JSON.stringify(guildIds))
+}
+
+function migrateFrom21to22(database: Database): void {
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "lastUpdateAt" INTEGER NOT NULL DEFAULT (unixepoch());')
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "forceUpdate" INTEGER NOT NULL DEFAULT 0;')
+  database.exec('UPDATE "minecraftGuild" SET "forceUpdate" = 1') // force update current guilds
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

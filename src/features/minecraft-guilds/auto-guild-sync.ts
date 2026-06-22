@@ -19,6 +19,7 @@ import type { Database, MinecraftGuild } from './database'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
 
 export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
+  private static readonly CheckGuildEvery = Duration.hours(2)
   private static readonly AutoUpdateRoleEvery = Duration.days(3)
 
   constructor(
@@ -35,7 +36,7 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
 
     setIntervalAsync(() => this.queue.add(() => this.updateGuild()), {
       errorHandler: this.errorHandler.promiseCatch('updating in-game guild data'),
-      delay: Duration.hours(3),
+      delay: Duration.minutes(5),
       abortSignal: this.abortSignal
     })
   }
@@ -44,25 +45,24 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
     const savedGuilds = this.database.allGuilds()
 
     for (const savedGuild of savedGuilds) {
-      this.logger.debug(`Updating name=${savedGuild.name},id=${savedGuild.id} guild data`)
+      const currentTime = Date.now()
+      if (
+        savedGuild.forceUpdate ||
+        savedGuild.lastUpdateAt + AutoGuildSync.CheckGuildEvery.toMilliseconds() < currentTime
+      ) {
+        this.logger.debug(`Updating name=${savedGuild.name},id=${savedGuild.id} guild`)
 
-      const instance = await this.findInstance(savedGuild)
-      if (instance === undefined) {
-        this.logger.warn(
-          'Can not proceed with updating this guild since no active Minecraft instance is avilable to execute any commands'
-        )
-        continue
+        const guild = await this.application.hypixelApi.getGuildById(savedGuild.id)
+        if (guild === undefined) {
+          this.logger.error(
+            `Tried fetching guild name=${savedGuild.name},id=${savedGuild.id} but returned empty. guild disbanded??`
+          )
+          continue
+        }
+
+        const updatedSavedGuild = this.database.initGuild(guild)
+        await this.syncGuild(updatedSavedGuild, guild)
       }
-
-      const guild = await this.application.hypixelApi.getGuildById(savedGuild.id)
-      if (guild === undefined) {
-        this.logger.error(
-          `Tried fetching guild name=${savedGuild.name},id=${savedGuild.id} but returned empty. guild disbanded??`
-        )
-        continue
-      }
-
-      await this.syncGuild(savedGuild, guild)
     }
   }
 
@@ -79,15 +79,27 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
   }
 
   private async syncGuild(savedGuild: MinecraftGuild, guild: HypixelGuild): Promise<void> {
-    this.database.initGuild(guild)
     const currentTime = Date.now()
 
     const skippedMembers = this.database.getSkippedMembers(
       savedGuild.id,
       currentTime - AutoGuildSync.AutoUpdateRoleEvery.toMilliseconds()
     )
+    let instanceFound = false
+
     for (const guildMember of guild.members) {
       if (skippedMembers.includes(guildMember.uuid)) continue
+
+      if (!instanceFound) {
+        const instance = await this.findInstance(savedGuild)
+        if (instance === undefined) {
+          this.logger.warn(
+            'Can not proceed with updating this guild members since no active Minecraft instance is avilable to execute any commands'
+          )
+          break
+        }
+        instanceFound = true
+      }
 
       this.logger.trace(`fetching Mojang profile for ${guildMember.uuid} to auto update guild member status`)
       const profile = await this.application.mojangApi.profileByUuid(guildMember.uuid).catch(() => undefined)

@@ -57,7 +57,9 @@ export class Database {
       const select = database.prepare<[typeof id], MinecraftGuild>('SELECT * FROM minecraftGuild WHERE id = ?')
       const exists = database.prepare('SELECT id FROM minecraftGuild WHERE id = ?')
       const insert = database.prepare('INSERT INTO minecraftGuild (id, name) VALUES (?, ?)')
-      const update = database.prepare('UPDATE minecraftGuild SET name = ? WHERE id = ?')
+      const update = database.prepare(
+        'UPDATE minecraftGuild SET name = ?, forceUpdate = 0, lastUpdateAt = (unixepoch()) WHERE id = ?'
+      )
 
       const insertRole = database.prepare(
         'INSERT INTO minecraftGuildRoles (guildId, name, priority) VALUES (?, ?, ?) ON CONFLICT(guildId, name) DO NOTHING'
@@ -214,7 +216,10 @@ export class Database {
     guild.acceptJoinRequests = !!guild.acceptJoinRequests
     // noinspection PointlessBooleanExpressionJS
     guild.autoUpdateRoles = !!guild.autoUpdateRoles
+    // noinspection PointlessBooleanExpressionJS
+    guild.forceUpdate = !!guild.forceUpdate
     guild.createdAt = guild.createdAt * 1000
+    guild.lastUpdateAt = guild.lastUpdateAt * 1000
 
     for (const role of guild.roles) {
       // noinspection PointlessBooleanExpressionJS
@@ -820,6 +825,9 @@ export interface MinecraftGuild {
   acceptJoinRequests: boolean
   autoUpdateRoles: boolean
   createdAt: number
+
+  lastUpdateAt: number
+  forceUpdate: boolean
 }
 
 export interface MinecraftGuildRole {
