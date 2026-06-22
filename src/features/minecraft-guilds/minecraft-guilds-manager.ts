@@ -91,6 +91,15 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
       await this.detectionQueue.add(() => this.handleJoin(event))
     })
 
+    // queue and execute as soon as possible before anything else loads
+    void this.detectionQueue
+      .add(() => this.autoMigrateGuilds())
+      .catch(this.errorHandler.promiseCatch('handling autoMigrateGuilds()'))
+    setIntervalAsync(() => this.detectionQueue.add(() => this.autoMigrateGuilds()), {
+      delay: Duration.minutes(5),
+      errorHandler: this.errorHandler.promiseCatch('handling autoMigrateGuilds()')
+    })
+
     setIntervalAsync(() => this.detectionQueue.add(() => this.autoRegisterGuilds()), {
       delay: Duration.minutes(1),
       errorHandler: this.errorHandler.promiseCatch('handling autoRegisterGuilds()')
@@ -561,6 +570,51 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
           label: 'Decline'
         }
       ]
+    }
+  }
+
+  private async autoMigrateGuilds(): Promise<void> {
+    const toMigrateGuilds = this.application.core.migrationConfigurations.getAddGuildDefaultRank()
+    if (toMigrateGuilds.length === 0) return
+
+    this.logger.info('Migrating legacy guilds into the new system')
+    const savedGuilds = this.database.allGuilds()
+
+    const migrationConfigurations = this.application.core.migrationConfigurations
+    function save(index: number): void {
+      const remaining = toMigrateGuilds.slice(index + 1)
+      migrationConfigurations.setAddGuildDefaultRank(remaining)
+    }
+
+    for (const [index, toMigrateGuild] of toMigrateGuilds.entries()) {
+      const savedGuild = savedGuilds.find((guild) => guild.id === toMigrateGuild)
+      if (savedGuild === undefined) {
+        save(index)
+        continue
+      }
+
+      const conditions = this.database.getRoleConditions(toMigrateGuild)
+      if (conditions.length === 0) {
+        save(index)
+        continue
+      }
+
+      const guild = await this.application.hypixelApi.getGuildById(toMigrateGuild)
+      if (guild === undefined) {
+        this.logger.warn(
+          `Tried migrating guild name=${savedGuild.name},id=${savedGuild.id} but could not be found on Hypixel. `
+        )
+        save(index)
+        continue
+      }
+      const defaultRank = guild.ranks.find((rank) => rank.default)
+      assert.ok(defaultRank !== undefined)
+
+      const updatedGuild = this.database.initGuild(guild)
+      const whitelistedRanks = updatedGuild.roles.filter((role) => role.whitelisted).map((role) => role.name)
+      whitelistedRanks.push(defaultRank.name)
+      this.database.setWhitelistedGuildRoles(guild._id, whitelistedRanks)
+      this.logger.info(`Migrated guild name=${savedGuild.name},id=${savedGuild.id}.`)
     }
   }
 }

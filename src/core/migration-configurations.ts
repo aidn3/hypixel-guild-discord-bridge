@@ -14,4 +14,12 @@ export class MigrationConfigurations {
   public setDeleteDiscordGuildCommands(on: boolean): void {
     this.configuration.setBoolean('deleteDiscordGuildCommands', on)
   }
+
+  public getAddGuildDefaultRank(): string[] {
+    return this.configuration.getStringArray('addGuildDefaultRank', [])
+  }
+
+  public setAddGuildDefaultRank(guildIds: string[]): void {
+    this.configuration.setStringArray('addGuildDefaultRank', guildIds)
+  }
 }

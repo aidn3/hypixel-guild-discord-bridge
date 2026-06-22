@@ -817,6 +817,10 @@ function migrateFrom19to20(database: Database): void {
 
 function migrateFrom20to21(database: Database): void {
   database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "isDefault" INTEGER NOT NULL DEFAULT 0;')
+  const guildIds = database.prepare('SELECT DISTINCT guildId FROM minecraftGuildRoleConditions').pluck(true).all()
+  database
+    .prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
+    .run('migration', 'addGuildDefaultRank', JSON.stringify(guildIds))
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
