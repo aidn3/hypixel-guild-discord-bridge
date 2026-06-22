@@ -827,7 +827,7 @@ function migrateFrom20to21(database: Database): void {
 }
 
 function migrateFrom21to22(database: Database): void {
-  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "lastUpdateAt" INTEGER NOT NULL DEFAULT (unixepoch());')
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "lastUpdateAt" INTEGER NOT NULL DEFAULT 0;')
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "forceUpdate" INTEGER NOT NULL DEFAULT 0;')
   database.exec('UPDATE "minecraftGuild" SET "forceUpdate" = 1') // force update current guilds
 }

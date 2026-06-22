@@ -56,7 +56,9 @@ export class Database {
       // definitely possible with UPSERT. but I'd rather not since it can get real messy
       const select = database.prepare<[typeof id], MinecraftGuild>('SELECT * FROM minecraftGuild WHERE id = ?')
       const exists = database.prepare('SELECT id FROM minecraftGuild WHERE id = ?')
-      const insert = database.prepare('INSERT INTO minecraftGuild (id, name) VALUES (?, ?)')
+      const insert = database.prepare(
+        'INSERT INTO minecraftGuild (id, name, lastUpdateAt) VALUES (?, ?, (unixepoch()))'
+      )
       const update = database.prepare(
         'UPDATE minecraftGuild SET name = ?, forceUpdate = 0, lastUpdateAt = (unixepoch()) WHERE id = ?'
       )
