@@ -35,11 +35,14 @@ export default class Status extends ChatCommandHandler {
     }
 
     const sessionModeDisplayName = getSessionModeDisplayName(session.mode)
+    const modePrefix =
+      sessionModeDisplayName === session.mode?.toLowerCase() && sessionModeDisplayName !== undefined ? ' in ' : ''
 
     if (session.map !== undefined && sessionModeDisplayName !== undefined) {
       return context.app.i18n.t(($) => $['commands.status.online-with-map'], {
         username: givenUsername,
         game: capitalize(session.gameType),
+        modePrefix,
         mode: sessionModeDisplayName,
         map: session.map
       })
@@ -47,6 +50,7 @@ export default class Status extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.status.online-with-mode'], {
         username: givenUsername,
         game: capitalize(session.gameType),
+        modePrefix,
         mode: sessionModeDisplayName
       })
     }

@@ -263,7 +263,8 @@ function formatLocation(
   message += '*' // START discord markdown. italic
   message += `playing __${escapeMarkdown(capitalize(session.gameType))}__`
   const sessionModeDisplayName = getSessionModeDisplayName(session.mode)
-  if (sessionModeDisplayName !== undefined) message += ` in ${escapeMarkdown(sessionModeDisplayName)}`
+  if (sessionModeDisplayName === session.mode?.toLowerCase() && sessionModeDisplayName !== undefined) message += ` in`
+  if (sessionModeDisplayName !== undefined) message += ` ${escapeMarkdown(sessionModeDisplayName)}`
   message += '*' // END discord markdown. italic
 
   return message

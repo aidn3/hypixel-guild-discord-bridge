@@ -229,49 +229,49 @@ export function getSessionModeDisplayName(sessionMode: string | undefined): stri
 
   switch (mode) {
     case 'crimson_isle': {
-      return 'Crimson Isle'
+      return 'on Crimson Isle'
     }
     case 'kuudra': {
-      return 'Kuudra'
+      return 'in Kuudra'
     }
     case 'dungeon_hub': {
-      return 'Dungeon Hub'
+      return 'in Dungeon Hub'
     }
     case 'dungeon': {
-      return 'The Catacombs'
+      return 'in The Catacombs'
     }
     case 'combat_1': {
-      return "Spider's Den"
+      return "on Spider's Den"
     }
     case 'combat_3': {
-      return 'The End'
+      return 'in The End'
     }
     case 'mining_1': {
-      return 'Gold Mine'
+      return 'in Gold Mine'
     }
     case 'mining_2': {
-      return 'Deep Caverns'
+      return 'in Deep Caverns'
     }
     case 'mining_3': {
-      return 'Dwarven Mines'
+      return 'in Dwarven Mines'
     }
     case 'foraging_1': {
-      return 'The Park'
+      return 'in The Park'
     }
     case 'foraging_2': {
-      return 'Galatea'
+      return 'on Galatea'
     }
     case 'fishing_1': {
-      return 'Backwater Bayou'
+      return 'on Backwater Bayou'
     }
     case 'lotus_atoll': {
-      return 'Lotus Atoll'
+      return 'on Lotus Atoll'
     }
     case 'garden': {
-      return 'Garden'
+      return 'on Garden'
     }
     case 'dynamic': {
-      return 'Private Island'
+      return 'on Private Island'
     }
     // No default
   }
