@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { capitalize, formatTime } from '../../../utility/shared-utility'
+import { capitalize, formatTime, getSessionModeDisplayName } from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Status extends ChatCommandHandler {
@@ -34,18 +34,20 @@ export default class Status extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.status.api-disabled'], { username: givenUsername })
     }
 
-    if (session.map !== undefined && session.mode !== undefined) {
+    const sessionModeDisplayName = getSessionModeDisplayName(session.mode)
+
+    if (session.map !== undefined && sessionModeDisplayName !== undefined) {
       return context.app.i18n.t(($) => $['commands.status.online-with-map'], {
         username: givenUsername,
         game: capitalize(session.gameType),
-        mode: session.mode.toLowerCase(),
+        mode: sessionModeDisplayName,
         map: session.map
       })
-    } else if (session.mode !== undefined) {
+    } else if (sessionModeDisplayName !== undefined) {
       return context.app.i18n.t(($) => $['commands.status.online-with-mode'], {
         username: givenUsername,
         game: capitalize(session.gameType),
-        mode: session.mode.toLowerCase()
+        mode: sessionModeDisplayName
       })
     }
 

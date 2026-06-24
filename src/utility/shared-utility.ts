@@ -223,3 +223,58 @@ export function searchObjects<T>(query: string, collection: T[], callback: (entr
 
   return sortedResults
 }
+
+export function getSessionModeDisplayName(sessionMode: string | undefined): string | undefined {
+  const mode = sessionMode?.toLowerCase()
+
+  switch (mode) {
+    case 'crimson_isle': {
+      return 'Crimson Isle'
+    }
+    case 'kuudra': {
+      return 'Kuudra'
+    }
+    case 'dungeon_hub': {
+      return 'Dungeon Hub'
+    }
+    case 'dungeon': {
+      return 'The Catacombs'
+    }
+    case 'combat_1': {
+      return "Spider's Den"
+    }
+    case 'combat_3': {
+      return 'The End'
+    }
+    case 'mining_1': {
+      return 'Gold Mine'
+    }
+    case 'mining_2': {
+      return 'Deep Caverns'
+    }
+    case 'mining_3': {
+      return 'Dwarven Mines'
+    }
+    case 'foraging_1': {
+      return 'The Park'
+    }
+    case 'foraging_2': {
+      return 'Galatea'
+    }
+    case 'fishing_1': {
+      return 'Backwater Bayou'
+    }
+    case 'lotus_atoll': {
+      return 'Lotus Atoll'
+    }
+    case 'garden': {
+      return 'Garden'
+    }
+    case 'dynamic': {
+      return 'Private Island'
+    }
+    // No default
+  }
+
+  return mode
+}

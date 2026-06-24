@@ -14,7 +14,7 @@ import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
 import type { GuildFetch } from '../../../core/users/guild-manager'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
-import { capitalize } from '../../../utility/shared-utility'
+import { capitalize, getSessionModeDisplayName } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -262,7 +262,8 @@ function formatLocation(
 
   message += '*' // START discord markdown. italic
   message += `playing __${escapeMarkdown(capitalize(session.gameType))}__`
-  if (session.mode !== undefined) message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
+  const sessionModeDisplayName = getSessionModeDisplayName(session.mode)
+  if (sessionModeDisplayName !== undefined) message += ` in ${escapeMarkdown(sessionModeDisplayName)}`
   message += '*' // END discord markdown. italic
 
   return message
