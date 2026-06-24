@@ -255,6 +255,9 @@ export function getSessionModeDisplayName(sessionMode: string | undefined): stri
     case 'mining_3': {
       return 'in Dwarven Mines'
     }
+    case 'crystal_hollows': {
+      return 'in Crystal Hollows'
+    }
     case 'foraging_1': {
       return 'in The Park'
     }
