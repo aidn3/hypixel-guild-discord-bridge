@@ -261,7 +261,7 @@ function formatLocation(
   if (!session.online) return message + ' is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  message += `playing __${escapeMarkdown(capitalize(session.gameType))}__`
+  message += `is playing __${escapeMarkdown(capitalize(session.gameType))}__`
   const sessionModeDisplayName = getSessionModeDisplayName(session.mode)
   if (sessionModeDisplayName === session.mode?.toLowerCase() && sessionModeDisplayName !== undefined) message += ` in`
   if (sessionModeDisplayName !== undefined) message += ` ${escapeMarkdown(sessionModeDisplayName)}`
