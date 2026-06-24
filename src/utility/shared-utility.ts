@@ -270,6 +270,9 @@ export function getSessionModeDisplayName(sessionMode: string | undefined): stri
     case 'lotus_atoll': {
       return 'on Lotus Atoll'
     }
+    case 'farming_1': {
+      return 'on The Farming Islands'
+    }
     case 'garden': {
       return 'on Garden'
     }
