@@ -183,7 +183,7 @@ async function listMembers(
 
         const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
         const status = statuses.get(member.username.toLowerCase())
-        guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
+        guildTemporarilyResult.push(`  - ${await formatLocation(member.username, link, status)}`)
       }
       if (!onlyOnline) {
         for (const member of sortedMembers) {
@@ -218,7 +218,7 @@ async function look(
   for (const [username, uuid] of mojangProfiles) {
     tasks.push(
       hypixelApi
-        .getPlayerStatus(uuid)
+        .getPlayerStatus(uuid, Date.now())
         .then((status) => result.set(username.toLowerCase(), status))
         .catch(errorHandler.promiseCatch(`fetching hypixel status of ${uuid} for command /list`))
     )
@@ -250,20 +250,19 @@ function formatUser(username: string, link: UserLink | undefined): string {
   return message
 }
 
-function formatLocation(
+async function formatLocation(
   username: string,
   link: UserLink | undefined,
   session: HypixelPlayerStatus | undefined
-): string {
+): Promise<string> {
   let message = `${formatUser(username, link)} `
 
-  if (session === undefined) return message + ' is *__unknown?__*'
-  if (!session.online) return message + ' is *__offline?__*'
+  if (session === undefined) return message + 'is *__unknown?__*'
+  if (!session.online) return message + 'is *__offline?__*'
 
   message += '*' // START discord markdown. italic
   message += `is playing __${escapeMarkdown(capitalize(session.gameType))}__`
-  const sessionModeDisplayName = getSessionModeDisplayName(session.mode)
-  if (sessionModeDisplayName === session.mode?.toLowerCase() && sessionModeDisplayName !== undefined) message += ` in`
+  const sessionModeDisplayName = await getSessionModeDisplayName(session.mode) // This function also adds a prefix word before the display name.
   if (sessionModeDisplayName !== undefined) message += ` ${escapeMarkdown(sessionModeDisplayName)}`
   message += '*' // END discord markdown. italic
 
