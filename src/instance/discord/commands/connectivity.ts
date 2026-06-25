@@ -3,13 +3,15 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
-import { Color, InstanceType, MinecraftSendChatPriority } from '../../../common/application-event.js'
+import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { antiSpamString } from '../../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../../minecraft/minecraft-instance'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
-function createEmbed(instances: Map<string, string[]>): APIEmbed {
+async function createEmbed(instances: Map<MinecraftInstance, string[]>): Promise<APIEmbed> {
   let content =
     '_An echo is sent to all Minecraft channels (Public, Officer, Private)_.\n' +
     '_Results are collected after. If a message is missing, it means there is a problem._\n' +
@@ -18,8 +20,8 @@ function createEmbed(instances: Map<string, string[]>): APIEmbed {
     '- Bot muted by the server/community\n' +
     '- Bot does not have permission to send/receive messages in that channel\n\n'
 
-  for (const [instanceName, list] of instances) {
-    content += `**${escapeMarkdown(instanceName)}**\n`
+  for (const [instance, list] of instances) {
+    content += `**${escapeMarkdown(await instance.displayName())}**\n`
 
     if (list.length > 0) {
       content += '```'
@@ -48,23 +50,21 @@ export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('connectivity').setDescription('Check connectivity to Minecraft instances'),
 
-  scope: CommandScope.Chat,
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
+  permission: Permission.Anyone,
+
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instancesNames = context.application.getInstancesNames(InstanceType.Minecraft)
-    const lists: Map<string, string[]> = await checkConnectivity(context.application)
-
-    for (const instancesName of instancesNames) {
-      if (!lists.has(instancesName)) lists.set(instancesName, [])
-    }
-
-    await context.interaction.editReply({ embeds: [createEmbed(lists)] })
+    const lists = await checkConnectivity(context.application)
+    await context.interaction.editReply({ embeds: [await createEmbed(lists)] })
   }
 } satisfies DiscordCommandHandler
 
-async function checkConnectivity(app: Application): Promise<Map<string, string[]>> {
-  const receivedResponses = new Map<string, string[]>()
+async function checkConnectivity(app: Application): Promise<Map<MinecraftInstance, string[]>> {
+  const instances = app.minecraftManager.getAllInstances()
+  const receivedResponses = new Map<MinecraftInstance, string[]>()
   const queryWords = [
     `Testing Connectivity 1 - @${antiSpamString()}`,
     `Testing Connectivity 2 - @${antiSpamString()}`,
@@ -76,10 +76,10 @@ async function checkConnectivity(app: Application): Promise<Map<string, string[]
     if (event.message.length === 0) return
 
     if (queryWords.some((query) => event.message.includes(query))) {
-      let responses = receivedResponses.get(event.instanceName)
+      let responses = receivedResponses.get(event.instance)
       if (responses == undefined) {
         responses = []
-        receivedResponses.set(event.instanceName, responses)
+        receivedResponses.set(event.instance, responses)
       }
       responses.push(event.message.trim())
     }
@@ -88,29 +88,14 @@ async function checkConnectivity(app: Application): Promise<Map<string, string[]
   app.on('minecraftChat', chatListener)
 
   const tasks: Promise<void>[] = [
-    app.sendMinecraft(
-      app.getInstancesNames(InstanceType.Minecraft),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/ac ${queryWords[0]}`
-    ),
-    app.sendMinecraft(
-      app.getInstancesNames(InstanceType.Minecraft),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/gc ${queryWords[1]}`
-    ),
-    app.sendMinecraft(
-      app.getInstancesNames(InstanceType.Minecraft),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/oc ${queryWords[2]}`
-    )
+    app.sendMinecraft(instances, MinecraftSendChatPriority.High, undefined, `/ac ${queryWords[0]}`),
+    app.sendMinecraft(instances, MinecraftSendChatPriority.High, undefined, `/gc ${queryWords[1]}`),
+    app.sendMinecraft(instances, MinecraftSendChatPriority.High, undefined, `/oc ${queryWords[2]}`)
   ]
 
   for (const bot of app.minecraftManager.getMinecraftBots()) {
     const task = app.sendMinecraft(
-      app.getInstancesNames(InstanceType.Minecraft),
+      instances,
       MinecraftSendChatPriority.High,
       undefined,
       `/msg ${bot.username} ${queryWords[3]}`

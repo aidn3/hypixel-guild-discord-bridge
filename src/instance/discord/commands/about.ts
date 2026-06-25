@@ -1,10 +1,14 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('about').setDescription('Display basic info about the client.'),
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
 
   handler: async function (context) {
     await context.interaction.reply(

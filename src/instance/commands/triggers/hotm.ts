@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock-types'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
 import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class HeartOfTheMountain extends ChatCommandHandler {

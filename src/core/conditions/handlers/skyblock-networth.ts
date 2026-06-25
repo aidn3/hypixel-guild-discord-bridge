@@ -4,16 +4,18 @@ import { ProfileNetworthCalculator } from 'skyhelper-networth'
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler'
+import { shortenNumber } from '../../../utility/shared-utility'
 import type {
   ConditionOption,
+  ConditionResult,
   HandlerContext,
   HandlerOperationContext,
   HandlerUser,
   SkyblockProfileOptionType
 } from '../common'
-import { ConditionHandler, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
+import { ConditionHandler, ConditionResultType, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
 
-export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions> {
+export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions, number> {
   override getId(): string {
     return 'hypixel-skyblock-networth'
   }
@@ -33,13 +35,25 @@ export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions> 
     context: HandlerOperationContext,
     handlerUser: HandlerUser,
     condition: SkyblockNetworthOptions
-  ): Promise<boolean> {
+  ): Promise<ConditionResult<number>> {
     const mojangProfile = handlerUser.user.mojangProfile()
-    if (mojangProfile === undefined) return false
+    if (mojangProfile === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.not-linked'])
+      }
+    }
     const uuid = mojangProfile.id
 
     const profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
-    if (!profiles) return false
+    if (profiles === undefined || profiles.length === 0) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.never-played-skyblock'])
+      }
+    }
+
+    let highestNetworth = 0
     for (const profile of profiles) {
       const profileType = profile.game_mode ?? 'classic'
       if (!condition.profileTypes.includes(profileType)) continue
@@ -49,13 +63,19 @@ export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions> 
         .then((museum) => museum.members[uuid] as object)
 
       const calculator = new ProfileNetworthCalculator(profile.members[uuid], museumData, profile.banking?.balance ?? 0)
-      const networth = Math.floor(
-        await calculator.getNetworth({ onlyNetworth: true }).then((response) => response.networth)
-      )
-      if (condition.fromValue <= networth && condition.toValue >= networth) return true
+      const networth = await calculator.getNetworth({ onlyNetworth: true }).then((response) => response.networth)
+      if (networth > highestNetworth) highestNetworth = networth
     }
 
-    return false
+    const normalized = Math.floor(highestNetworth)
+    return {
+      type:
+        condition.fromValue <= normalized && condition.toValue >= normalized
+          ? ConditionResultType.Pass
+          : ConditionResultType.Fail,
+      value: normalized,
+      valueFormatted: shortenNumber(normalized)
+    }
   }
 
   override createCondition(context: HandlerContext, rawOptions: ConditionOption): string | SkyblockNetworthOptions {

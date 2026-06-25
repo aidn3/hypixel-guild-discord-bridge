@@ -28,9 +28,16 @@ export class SendQueue {
   private threadSleep: Timeout<void> | undefined
 
   constructor(
-    private readonly errorHandler: UnexpectedErrorHandler,
+    private readonly abortSignal: AbortSignal,
+    errorHandler: UnexpectedErrorHandler,
     private readonly sender: (command: string) => void
   ) {
+    assert.ok(!abortSignal.aborted)
+
+    abortSignal.addEventListener('abort', () => {
+      this.threadSleep?.resolve()
+    })
+
     void this.startCycle().catch(errorHandler.promiseCatch('queuing commands via minecraft instance'))
   }
 
@@ -84,11 +91,12 @@ export class SendQueue {
   }
 
   private async startCycle(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    while (true) {
+    while (!this.abortSignal.aborted) {
       while (this.priorityQueue.empty()) {
         this.threadSleep = new Timeout(~(1 << 31)) // max 32bit integer
         await this.threadSleep.wait()
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.abortSignal.aborted) return
       }
 
       const entryToExecute = this.priorityQueue.pop()

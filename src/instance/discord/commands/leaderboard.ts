@@ -2,7 +2,9 @@ import assert from 'node:assert'
 
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 import { Messages30Days, Online30Days, Points30Days } from './create-leaderboard.js'
@@ -20,6 +22,9 @@ export default {
           .addChoices(Messages30Days, Online30Days, Points30Days)
       )
       .addStringOption((o) => o.setName('guild-name').setDescription('Hypixel Guild name')),
+  origin: CommandOrigin.Bridge,
+  permission: Permission.Anyone,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.None,
 
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())

@@ -1,85 +1,98 @@
 import type {
   ButtonInteraction,
+  Client,
   Message,
   MessageActionRowComponentData,
   MessageEditOptions,
   SendableChannels
 } from 'discord.js'
 import { ButtonStyle, ComponentType, escapeMarkdown, MessageFlags } from 'discord.js'
+import type { Logger } from 'log4js'
 
-import type Application from '../../../application'
-import type { InstanceStatus } from '../../../common/application-event'
-import { Color, InstanceMessageType, Permission } from '../../../common/application-event'
-import { Status } from '../../../common/connectable-instance'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
-import { DiscordInstanceHistoryButtonType } from '../../../core/discord/instance-history-button'
+import type Application from '../../application'
+import type { InstanceStatus } from '../../common/application-event'
+import { Color, InstanceMessageType, Permission } from '../../common/application-event'
+import { Status } from '../../common/connectable-instance'
+import type EventHelper from '../../common/event-helper'
+import SubInstance from '../../common/sub-instance'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
+import { translateNoPermission } from '../../instance/discord/common/discord-language'
+import type MessageAssociation from '../../instance/discord/common/message-association'
+import { DefaultTimeout, interactivePaging } from '../../instance/discord/utility/discord-pager'
+import { beautifyInstanceName } from '../../utility/shared-utility'
+
+import type { ButtonDatabase } from './button-database'
+import { DiscordInstanceHistoryButtonType } from './button-database'
 import {
   translateAuthenticationCodeExpired,
   translateInstanceMessage,
   translateInstanceStatus
-} from '../../../core/instance/instance-language'
-import { StatusHistoryEntryType } from '../../../core/instance/status-history'
-import { beautifyInstanceName } from '../../../utility/shared-utility'
-import type DiscordInstance from '../discord-instance'
-import { DefaultTimeout, interactivePaging } from '../utility/discord-pager'
+} from './instance-language'
+import type { MinecraftStatus, MinecraftStatusEntry } from './minecraft-status'
+import type { StatusDatabase } from './status-database'
+import { StatusHistoryEntryType } from './status-database'
 
-import { translateNoPermission } from './discord-language'
-import type MessageAssociation from './message-association'
-
-export class InstanceStatusManager {
+export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
   private static readonly PermissionToView = Permission.Helper
   private static readonly EntriesPerPage = 5
   private static readonly DetailsButtonId = 'show-instance-details'
 
   constructor(
-    private readonly application: Application,
-    private readonly clientInstance: DiscordInstance,
-    private readonly messageAssociation: MessageAssociation,
-    private readonly errorHandler: UnexpectedErrorHandler
+    application: Application,
+    instance: MinecraftStatus,
+    eventHelper: EventHelper<MinecraftStatus>,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
+    private readonly statusDatabase: StatusDatabase,
+    private readonly buttonDatabase: ButtonDatabase
   ) {
-    this.clientInstance.getClient().on('interactionCreate', (interaction) => {
+    super(application, instance, eventHelper, logger, errorHandler, abortSignal)
+
+    const client = this.application.discordInstance.getClient()
+    client.on('interactionCreate', (interaction) => {
       if (!interaction.isButton() || !interaction.isMessageComponent()) return
 
       switch (interaction.customId) {
-        case InstanceStatusManager.DetailsButtonId: {
+        case DiscordHandler.DetailsButtonId: {
           void this.handleDetailsButton(interaction).catch(
             this.errorHandler.promiseCatch('handling "show details" button in an instance status message.')
           )
         }
       }
     })
+
+    client.on('messageDelete', (message) => {
+      buttonDatabase.remove([message.id])
+    })
+    client.on('messageDeleteBulk', (messages) => {
+      buttonDatabase.remove(messages.map((message) => message.id))
+    })
   }
 
   public async handleDetailsButton(interaction: ButtonInteraction): Promise<void> {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-    const entry = this.application.core.discordInstanceHistoryButton.getButton(interaction.message.id)
+    const entry = this.buttonDatabase.getButton(interaction.message.id)
     if (entry === undefined) {
       await interaction.editReply('Message too old to find the history??')
       return
     }
 
-    const identifier = this.clientInstance.profileByUser(
-      interaction.user,
-      interaction.inCachedGuild() ? interaction.member : undefined
-    )
-    const user = await this.application.core.initializeDiscordUser(identifier, {
-      guild: interaction.guild ?? undefined
-    })
+    const identifier = this.application.discordInstance.profileByUser(interaction.user, interaction.member ?? undefined)
+    const user = await this.application.core.initializeDiscordUser(identifier)
 
     const permission = await user.permission()
-    if (permission < InstanceStatusManager.PermissionToView) {
+    if (permission < DiscordHandler.PermissionToView) {
       await interaction.editReply({
-        content: translateNoPermission(this.application, InstanceStatusManager.PermissionToView),
+        content: translateNoPermission(this.application, DiscordHandler.PermissionToView),
         allowedMentions: { parse: [] }
       })
       return
     }
 
     await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, (requestedPage) => {
-      const entries = this.application.core.statusHistory
-        .getHistory(entry.instanceName, entry.startTime, entry.endTime)
-        .toReversed()
+      const entries = this.statusDatabase.getHistory(entry.name, entry.startTime, entry.endTime).toReversed()
 
       // Only show latest authentication code since others have expired
       // and showing them might confuse user on which to use
@@ -108,8 +121,8 @@ export class InstanceStatusManager {
         }
       }
 
-      const start = requestedPage * InstanceStatusManager.EntriesPerPage
-      const end = Math.min((requestedPage + 1) * InstanceStatusManager.EntriesPerPage, entries.length)
+      const start = requestedPage * DiscordHandler.EntriesPerPage
+      const end = Math.min((requestedPage + 1) * DiscordHandler.EntriesPerPage, entries.length)
 
       let result = ''
       for (let index = start; index < end; index++) {
@@ -153,27 +166,25 @@ export class InstanceStatusManager {
 
       return {
         embed: {
-          title: `Status History for ${beautifyInstanceName(entry.instanceName)}`,
+          title: `Status History for ${beautifyInstanceName(entry.name)}`,
           description: result.trim()
         },
-        totalPages: Math.ceil(entries.length / InstanceStatusManager.EntriesPerPage)
+        totalPages: Math.ceil(entries.length / DiscordHandler.EntriesPerPage)
       }
     })
   }
 
-  public async send(event: InstanceStatus): Promise<void> {
-    const config = this.application.core.discordConfigurations
-    const channels = new Set([
-      ...config.getPublicChannelIds(),
-      ...config.getOfficerChannelIds(),
-      ...config.getLoggerChannelIds()
-    ])
-
-    for (const channelId of channels) {
-      const channel = await this.clientInstance.getClient().channels.fetch(channelId)
+  public async send(
+    client: Client,
+    association: MessageAssociation,
+    channelIds: Set<string>,
+    event: MinecraftStatusEntry
+  ): Promise<void> {
+    for (const channelId of channelIds) {
+      const channel = await client.channels.fetch(channelId).catch(() => undefined)
       if (!channel?.isSendable()) continue
 
-      const result = this.createMessage(event, channel.id)
+      const result = await this.createMessage(event, channel.id)
       if (result === undefined) continue
 
       const message = await this.privateEditOrSend(
@@ -186,7 +197,7 @@ export class InstanceStatusManager {
         result.replyMessageId
       )
 
-      this.messageAssociation.addMessageId(event.eventId, {
+      association.addMessageId(event.eventId, {
         guildId: message.guildId ?? undefined,
         channelId: message.channelId,
         messageId: message.id
@@ -195,7 +206,7 @@ export class InstanceStatusManager {
   }
 
   private async privateEditOrSend(
-    event: InstanceStatus,
+    event: MinecraftStatusEntry,
     payload: MessagePayload,
     onlySend: boolean,
     status: DiscordInstanceHistoryButtonType,
@@ -210,12 +221,12 @@ export class InstanceStatusManager {
 
         // at this point of code, it is confirmed that the message exists already. So, update nothing.
         if (onlySend) {
-          this.application.core.discordInstanceHistoryButton.extendButtonEndTimestamp(cachedMessage.id, event.createdAt)
+          this.buttonDatabase.extendButtonEndTimestamp(cachedMessage.id, event.createdAt)
           return cachedMessage
         }
 
         const message = await cachedMessage.edit(payload)
-        this.application.core.discordInstanceHistoryButton.extendButtonEndTimestamp(cachedMessage.id, event.createdAt)
+        this.buttonDatabase.extendButtonEndTimestamp(cachedMessage.id, event.createdAt)
         return message
       } catch (error: unknown) {
         this.errorHandler.error('fetching last instance status message', error)
@@ -232,9 +243,8 @@ export class InstanceStatusManager {
     }
     message ??= await channel.send({ ...payload, allowedMentions: { parse: [] } })
 
-    this.application.core.discordInstanceHistoryButton.add({
-      instanceName: event.instanceName,
-      instanceType: event.instanceType,
+    this.buttonDatabase.add({
+      name: event.instance.getConfigName(),
 
       messageId: message.id,
       channelId: channel.id,
@@ -253,10 +263,10 @@ export class InstanceStatusManager {
     else return DiscordInstanceHistoryButtonType.Notice
   }
 
-  private createMessage(
-    event: InstanceStatus,
+  private async createMessage(
+    event: MinecraftStatusEntry,
     channelId: string
-  ):
+  ): Promise<
     | {
         payload: MessagePayload
         onlySend: boolean
@@ -264,15 +274,14 @@ export class InstanceStatusManager {
         lastMessageId: string | undefined
         replyMessageId: string | undefined
       }
-    | undefined {
-    const lastMessage = this.application.core.discordInstanceHistoryButton.lastButton(channelId, event.instanceName)
+    | undefined
+  > {
+    const configName = event.instance.getConfigName()
+    const lastMessage = this.buttonDatabase.lastButton(channelId, configName)
 
     if (event.message === undefined && event.status.from === Status.Fresh) {
       if (lastMessage !== undefined) {
-        this.application.core.discordInstanceHistoryButton.extendButtonEndTimestamp(
-          lastMessage.messageId,
-          event.createdAt
-        )
+        this.buttonDatabase.extendButtonEndTimestamp(lastMessage.messageId, event.createdAt)
       }
       return undefined
     }
@@ -281,7 +290,7 @@ export class InstanceStatusManager {
     if (lastMessage === undefined) {
       if (event.status?.from === Status.Connected && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
         return {
-          payload: this.generateInterrupted(event.instanceName),
+          payload: this.generateInterrupted(await event.instance.displayName()),
           onlySend: false,
           status: currentStatus,
           lastMessageId: undefined,
@@ -289,7 +298,7 @@ export class InstanceStatusManager {
         }
       } else if (event.status?.from === Status.Fresh && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
         return {
-          payload: this.generateInitiation(event.instanceName),
+          payload: this.generateInitiation(await event.instance.displayName()),
           onlySend: false,
           status: currentStatus,
           lastMessageId: undefined,
@@ -300,7 +309,7 @@ export class InstanceStatusManager {
       switch (currentStatus) {
         case DiscordInstanceHistoryButtonType.Failed: {
           return {
-            payload: this.generateFailed(event.instanceName),
+            payload: this.generateFailed(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -309,7 +318,7 @@ export class InstanceStatusManager {
         }
         case DiscordInstanceHistoryButtonType.Notice: {
           return {
-            payload: this.generateNotice(event.instanceName),
+            payload: this.generateNotice(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -318,7 +327,7 @@ export class InstanceStatusManager {
         }
         case DiscordInstanceHistoryButtonType.Success: {
           return {
-            payload: this.generateSuccess(event.instanceName),
+            payload: this.generateSuccess(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -335,7 +344,7 @@ export class InstanceStatusManager {
     // Don't combine success status
     if (currentStatus === DiscordInstanceHistoryButtonType.Success) {
       return {
-        payload: this.generateSuccess(event.instanceName),
+        payload: this.generateSuccess(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: undefined,
@@ -344,13 +353,13 @@ export class InstanceStatusManager {
 
       // combine multiple authentication messages if all contain the same display message "this.generateAuthentication(...)"
     } else if (event.message?.type === InstanceMessageType.MinecraftAuthenticationCode) {
-      const firstMessageEntry = this.application.core.statusHistory
-        .getHistory(event.instanceName, lastMessage.startTime, lastMessage.endTime)
+      const firstMessageEntry = this.statusDatabase
+        .getHistory(configName, lastMessage.startTime, lastMessage.endTime)
         .find((entry) => entry.entryType === StatusHistoryEntryType.Message)
 
       if (firstMessageEntry?.type === InstanceMessageType.MinecraftAuthenticationCode) {
         return {
-          payload: this.generateAuthentication(event.instanceName),
+          payload: this.generateAuthentication(await event.instance.displayName()),
           onlySend: false,
           status: DiscordInstanceHistoryButtonType.Notice,
           lastMessageId: lastMessage.messageId,
@@ -359,7 +368,7 @@ export class InstanceStatusManager {
       }
 
       return {
-        payload: this.generateAuthentication(event.instanceName),
+        payload: this.generateAuthentication(await event.instance.displayName()),
         onlySend: true,
         status: DiscordInstanceHistoryButtonType.Notice,
         lastMessageId: undefined,
@@ -371,7 +380,7 @@ export class InstanceStatusManager {
       switch (currentStatus) {
         case DiscordInstanceHistoryButtonType.Failed: {
           return {
-            payload: this.generateFailed(event.instanceName),
+            payload: this.generateFailed(await event.instance.displayName()),
             onlySend: true,
             status: currentStatus,
             lastMessageId: lastMessage.messageId,
@@ -380,7 +389,7 @@ export class InstanceStatusManager {
         }
         case DiscordInstanceHistoryButtonType.Notice: {
           return {
-            payload: this.generateNotice(event.instanceName),
+            payload: this.generateNotice(await event.instance.displayName()),
             onlySend: true,
             status: currentStatus,
             lastMessageId: lastMessage.messageId,
@@ -393,7 +402,7 @@ export class InstanceStatusManager {
       }
     } else if (event.status?.from === Status.Fresh && currentStatus !== DiscordInstanceHistoryButtonType.Failed) {
       return {
-        payload: this.generateInitiation(event.instanceName),
+        payload: this.generateInitiation(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: lastMessage.messageId,
@@ -404,7 +413,7 @@ export class InstanceStatusManager {
       currentStatus === DiscordInstanceHistoryButtonType.Notice
     ) {
       return {
-        payload: this.generateNotice(event.instanceName),
+        payload: this.generateNotice(await event.instance.displayName()),
         onlySend: true,
         status: currentStatus,
         lastMessageId: lastMessage.messageId,
@@ -412,7 +421,7 @@ export class InstanceStatusManager {
       }
     } else if (event.status?.from === Status.Connected && currentStatus === DiscordInstanceHistoryButtonType.Notice) {
       return {
-        payload: this.generateInterrupted(event.instanceName),
+        payload: this.generateInterrupted(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: undefined,
@@ -423,7 +432,7 @@ export class InstanceStatusManager {
       currentStatus === DiscordInstanceHistoryButtonType.Failed
     ) {
       return {
-        payload: this.generateFailed(event.instanceName),
+        payload: this.generateFailed(await event.instance.displayName()),
         onlySend: false,
         status: currentStatus,
         lastMessageId: lastMessage.messageId,
@@ -433,7 +442,7 @@ export class InstanceStatusManager {
       switch (currentStatus) {
         case DiscordInstanceHistoryButtonType.Failed: {
           return {
-            payload: this.generateFailed(event.instanceName),
+            payload: this.generateFailed(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -442,7 +451,7 @@ export class InstanceStatusManager {
         }
         case DiscordInstanceHistoryButtonType.Notice: {
           return {
-            payload: this.generateNotice(event.instanceName),
+            payload: this.generateNotice(await event.instance.displayName()),
             onlySend: false,
             status: currentStatus,
             lastMessageId: undefined,
@@ -483,6 +492,7 @@ export class InstanceStatusManager {
       components: [{ type: ComponentType.ActionRow, components: this.generateButtons() }]
     }
   }
+
   private generateInitiation(instanceName: string): MessagePayload {
     return {
       embeds: [
@@ -543,7 +553,7 @@ export class InstanceStatusManager {
       {
         type: ComponentType.Button,
         style: ButtonStyle.Primary,
-        customId: InstanceStatusManager.DetailsButtonId,
+        customId: DiscordHandler.DetailsButtonId,
         label: 'Show Details',
         emoji: { name: '📑' }
       }

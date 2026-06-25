@@ -1,4 +1,4 @@
-import { Color, MinecraftReactiveEventType } from '../../../common/application-event.js'
+import { Color, MinecraftReactiveEventType, Platform } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 let lastWarning = 0
@@ -16,6 +16,7 @@ export default {
       }
       await context.application.emit('minecraftChatEvent', {
         ...context.eventHelper.fillBaseEvent(),
+        platform: Platform.Minecraft,
 
         color: Color.Bad,
         type: MinecraftReactiveEventType.Muted,

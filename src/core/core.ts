@@ -4,9 +4,11 @@
  */
 import assert from 'node:assert'
 
+import Logger from 'log4js'
+
 import type Application from '../application'
-import { InstanceType } from '../common/application-event'
-import { Instance, InternalInstancePrefix } from '../common/instance'
+import { Platform } from '../common/application-event'
+import { Instance } from '../common/instance'
 import { SqliteManager } from '../common/sqlite-manager'
 import type {
   DiscordProfile,
@@ -19,21 +21,23 @@ import type {
 } from '../common/user'
 import { User } from '../common/user'
 
+import { AdminConfigurations } from './admin-configurations'
 import { ApplicationConfigurations } from './application-configurations'
 import { CommandsConfigurations } from './commands/commands-configurations'
+import { CommandsCooldown } from './commands/commands-cooldown'
 import { ConditionsRegistry } from './conditions/conditions-registry'
 import { ConfigurationsManager } from './configurations'
 import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
-import { InstanceHistoryButton } from './discord/instance-history-button'
 import { DiscordLinkButton } from './discord/link-button'
 import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
+import { initializeHypixelDatabase } from './hypixel/initialize-hypixel'
 import { initializeCoreDatabase } from './initialize-database'
-import { StatusHistory } from './instance/status-history'
 import { LanguageConfigurations } from './language-configurations'
+import { MigrationConfigurations } from './migration-configurations'
 import { MinecraftAccounts } from './minecraft/minecraft-accounts'
 import { MinecraftConfigurations } from './minecraft/minecraft-configurations'
 import { SessionsManager } from './minecraft/sessions-manager'
@@ -42,26 +46,24 @@ import { ModerationConfigurations } from './moderation/moderation-configurations
 import { Profanity } from './moderation/profanity'
 import type { SavedPunishment } from './moderation/punishments'
 import Punishments from './moderation/punishments'
-import PunishmentsEnforcer from './moderation/punishments-enforcer'
 import { PlaceholderManager } from './placeholder/placeholder-manager'
 import { SpontaneousEventsConfigurations } from './spontanmous-events-configurations'
 import { Urchin } from './urchin/urchin'
+import { Users } from './users'
 import Autocomplete from './users/autocomplete'
-import { GuildManager } from './users/guild-manager'
 import { MojangApi } from './users/mojang'
 import ScoresManager from './users/scores-manager'
 import { Verification } from './users/verification'
 
-export class Core extends Instance<InstanceType.Core> {
+export class Core extends Instance {
   // moderation
   private readonly commandsHeat: CommandsHeat
   public readonly profanity: Profanity
   private readonly punishments: Punishments
-  private readonly enforcer: PunishmentsEnforcer
 
   // users
+  public readonly users: Users
   private readonly autoComplete: Autocomplete
-  public readonly guildManager: GuildManager
   public readonly mojangApi: MojangApi
   public readonly scoresManager: ScoresManager
   public readonly verification: Verification
@@ -70,7 +72,6 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly discordConfigurations: DiscordConfigurations
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
-  public readonly discordInstanceHistoryButton: InstanceHistoryButton
   public readonly discordLinkButton: DiscordLinkButton
   public readonly discordEmojis: DiscordEmojis
   public readonly discordUserConditions: UserConditions
@@ -81,13 +82,13 @@ export class Core extends Instance<InstanceType.Core> {
   public readonly moderationConfiguration: ModerationConfigurations
   public readonly minecraftAccounts: MinecraftAccounts
 
-  // instance
-  public readonly statusHistory: StatusHistory
-
   // misc
   public readonly applicationConfigurations: ApplicationConfigurations
+  public readonly migrationConfigurations: MigrationConfigurations
   public readonly languageConfigurations: LanguageConfigurations
+  public readonly adminConfigurations: AdminConfigurations
   public readonly commandsConfigurations: CommandsConfigurations
+  public readonly commandsCooldown: CommandsCooldown
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
   public readonly hypixelApi: Hypixel
   public readonly urchinApi: Urchin | undefined
@@ -96,10 +97,11 @@ export class Core extends Instance<InstanceType.Core> {
 
   // database
   private readonly sqliteManager: SqliteManager
+  private readonly hypixelManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
 
   public constructor(application: Application, hypixelApiKey: string, urchinApiKey: string | undefined) {
-    super(application, InternalInstancePrefix + 'core', InstanceType.Core)
+    super(application, 'core')
 
     this.conditonsRegistry = new ConditionsRegistry()
 
@@ -111,7 +113,17 @@ export class Core extends Instance<InstanceType.Core> {
     )
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
+    const hypixelName = 'hypixel.sqlite'
+    this.hypixelManager = new SqliteManager(
+      application,
+      Logger.getLogger('Hypixel-API'),
+      application.memoryOnly ? undefined : application.getConfigFilePath(hypixelName)
+    )
+    initializeHypixelDatabase(this.hypixelManager, hypixelName)
+
     this.configurationsManager = new ConfigurationsManager(this.sqliteManager)
+    this.migrationConfigurations = new MigrationConfigurations(this.configurationsManager)
+    this.users = new Users(this.sqliteManager)
 
     this.discordConfigurations = new DiscordConfigurations(this.configurationsManager)
     this.discordLeaderboards = new DiscordLeaderboards(this.sqliteManager)
@@ -119,17 +131,17 @@ export class Core extends Instance<InstanceType.Core> {
       this.sqliteManager,
       this.discordConfigurations
     )
-    this.discordInstanceHistoryButton = new InstanceHistoryButton(this.sqliteManager, this.logger)
     this.discordLinkButton = new DiscordLinkButton(this.sqliteManager)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
     this.discordUserConditions = new UserConditions(this.sqliteManager)
 
-    this.statusHistory = new StatusHistory(this.sqliteManager, this.logger)
     this.placeHolder = new PlaceholderManager()
 
     this.applicationConfigurations = new ApplicationConfigurations(this.configurationsManager)
     this.languageConfigurations = new LanguageConfigurations(this.configurationsManager)
+    this.adminConfigurations = new AdminConfigurations(this.configurationsManager)
     this.commandsConfigurations = new CommandsConfigurations(this.configurationsManager)
+    this.commandsCooldown = new CommandsCooldown(this.sqliteManager, this.users)
     this.spontaneousEventsConfigurations = new SpontaneousEventsConfigurations(this.configurationsManager)
 
     this.minecraftConfigurations = new MinecraftConfigurations(this.configurationsManager)
@@ -138,22 +150,21 @@ export class Core extends Instance<InstanceType.Core> {
 
     this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
-    this.hypixelApi = new Hypixel(hypixelApiKey, this.sqliteManager, this.logger)
+    this.hypixelApi = new Hypixel(hypixelApiKey, this.hypixelManager, this.logger)
     this.urchinApi = urchinApiKey === undefined ? undefined : new Urchin(urchinApiKey, this.logger)
 
     this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
     this.punishments = new Punishments(this.sqliteManager, application, this.logger)
     this.commandsHeat = new CommandsHeat(this.sqliteManager, this.moderationConfiguration, this.logger)
-    this.enforcer = new PunishmentsEnforcer(application, this, this.eventHelper, this.logger, this.errorHandler)
 
-    this.guildManager = new GuildManager(application, this, this.eventHelper, this.logger, this.errorHandler)
     this.autoComplete = new Autocomplete(
       application,
       this,
       this.eventHelper,
       this.logger,
       this.errorHandler,
-      this.sqliteManager
+      this.sqliteManager,
+      this.abortController.signal
     )
 
     this.verification = new Verification(this.sqliteManager)
@@ -163,16 +174,13 @@ export class Core extends Instance<InstanceType.Core> {
       this.eventHelper,
       this.logger,
       this.errorHandler,
-      this.sqliteManager
+      this.sqliteManager,
+      this.abortController.signal
     )
   }
 
   public completeUsername(query: string, limit: number): string[] {
     return this.autoComplete.username(query, limit)
-  }
-
-  public completeRank(query: string, limit: number): string[] {
-    return this.autoComplete.rank(query, limit)
   }
 
   public filterProfanity(message: string): { filteredMessage: string; changed: boolean } {
@@ -198,6 +206,13 @@ export class Core extends Instance<InstanceType.Core> {
     return this.sqliteManager
   }
 
+  /*
+   * @internal Use only for creation of instances or other code that manages its own data
+   */
+  public getConfigurationsManager(): ConfigurationsManager {
+    return this.configurationsManager
+  }
+
   public editPunishment(
     id: SavedPunishment['id'],
     reason: SavedPunishment['reason'] | undefined,
@@ -209,6 +224,9 @@ export class Core extends Instance<InstanceType.Core> {
   public awaitReady(): void {
     this.sqliteManager.clean()
     this.sqliteManager.optimize()
+
+    this.hypixelManager.clean()
+    this.hypixelManager.optimize()
   }
 
   /**
@@ -221,18 +239,13 @@ export class Core extends Instance<InstanceType.Core> {
   /**
    * Initialize a user based on a given profile and load all metadata in advance
    * @param profile Profile to base the user on
-   * @param context additional information that might help with constructing user metadata
    * @returns a full initialized object that contains user data at the moment of execution
    */
-  async initializeDiscordUser(
-    profile: DiscordProfile,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: InitializeOptions
-  ): Promise<DiscordUser> {
-    const identifier: UserIdentifier = { userId: profile.id, originInstance: InstanceType.Discord }
+  async initializeDiscordUser(profile: DiscordProfile): Promise<DiscordUser> {
+    const identifier: UserIdentifier = { userId: profile.id, originInstance: Platform.Discord }
 
     let mojangProfile: MojangProfile | undefined
-    const userLink = await this.application.core.verification.findByDiscord(profile.id)
+    const userLink = await this.verification.findByDiscord(profile.id)
     if (userLink !== undefined) {
       mojangProfile = await this.application.mojangApi.profileByUuid(userLink.uuid)
     }
@@ -249,7 +262,7 @@ export class Core extends Instance<InstanceType.Core> {
    * @returns a full initialized object that contains user data at the moment of execution
    */
   async initializeMinecraftUser(mojangProfile: MojangProfile, context: InitializeOptions): Promise<MinecraftUser> {
-    const identifier: UserIdentifier = { userId: mojangProfile.id, originInstance: InstanceType.Minecraft }
+    const identifier: UserIdentifier = { userId: mojangProfile.id, originInstance: Platform.Minecraft }
 
     let profile: DiscordProfile | undefined
     const userLink = await this.application.core.verification.findByIngame(mojangProfile.id)
@@ -270,13 +283,13 @@ export class Core extends Instance<InstanceType.Core> {
    */
   async initializeUser(identifier: UserIdentifier, context: InitializeOptions): Promise<User> {
     switch (identifier.originInstance) {
-      case InstanceType.Minecraft: {
+      case Platform.Minecraft: {
         const profile = await this.application.mojangApi.profileByUuid(identifier.userId)
         return this.initializeMinecraftUser(profile, context)
       }
-      case InstanceType.Discord: {
+      case Platform.Discord: {
         const profile = await this.application.discordInstance.profileById(identifier.userId, context.guild)
-        if (profile !== undefined) return this.initializeDiscordUser(profile, context)
+        if (profile !== undefined) return this.initializeDiscordUser(profile)
       }
     }
 
@@ -289,7 +302,6 @@ export class Core extends Instance<InstanceType.Core> {
     const transaction = database.transaction(() => {
       this.discordLeaderboards.remove(messagesIds)
       this.discordTemporarilyInteractions.remove(messagesIds)
-      this.discordInstanceHistoryButton.remove(messagesIds)
       this.discordLinkButton.remove(messagesIds)
     })
 

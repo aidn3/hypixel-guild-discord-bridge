@@ -2,11 +2,17 @@
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import type { HandlerContext, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from '../common'
-import { ConditionHandler, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
-import { getSkyblockUserProfiles } from '../utilities'
+import type {
+  ConditionResult,
+  HandlerContext,
+  HandlerOperationContext,
+  HandlerUser,
+  SkyblockProfileOptionType
+} from '../common'
+import { ConditionHandler, ConditionResultType, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
+import { formatPrimitiveValue, getSkyblockUserProfiles } from '../utilities'
 
-export class SkyblockLevel extends ConditionHandler<SkyblockLevelOptions> {
+export class SkyblockLevel extends ConditionHandler<SkyblockLevelOptions, number> {
   override getId(): string {
     return 'reached-hypixel-skyblock-level'
   }
@@ -26,16 +32,36 @@ export class SkyblockLevel extends ConditionHandler<SkyblockLevelOptions> {
     context: HandlerOperationContext,
     handlerUser: HandlerUser,
     condition: SkyblockLevelOptions
-  ): Promise<boolean> {
-    const profiles = await getSkyblockUserProfiles(context, handlerUser, condition.profileTypes)
-    if (profiles.length === 0) return false
+  ): Promise<ConditionResult<number>> {
+    const mojangProfile = handlerUser.user.mojangProfile()
+    if (mojangProfile === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.not-linked'])
+      }
+    }
+
+    const profiles = await getSkyblockUserProfiles(context, mojangProfile, condition.profileTypes)
+    if (profiles.length === 0) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.never-played-skyblock'])
+      }
+    }
 
     const highestLevel = profiles
       .map((profile) => Math.floor((profile.leveling?.experience ?? 0) / 100))
       // eslint-disable-next-line unicorn/no-array-reduce
       .reduce((a, b) => Math.max(a, b))
 
-    return highestLevel >= condition.fromLevel && highestLevel <= condition.toLevel
+    return {
+      type:
+        highestLevel >= condition.fromLevel && highestLevel <= condition.toLevel
+          ? ConditionResultType.Pass
+          : ConditionResultType.Fail,
+      value: highestLevel,
+      valueFormatted: formatPrimitiveValue(context.application.i18n.t, highestLevel)
+    }
   }
 
   public override createOptions(): ModalOption[] {

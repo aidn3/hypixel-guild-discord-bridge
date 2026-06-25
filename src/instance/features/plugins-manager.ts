@@ -3,39 +3,14 @@ import path from 'node:path'
 import process from 'node:process'
 
 import type Application from '../../application.js'
-import { InstanceType } from '../../common/application-event.js'
-import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import { Instance } from '../../common/instance.js'
 import type PluginInstance from '../../common/plugin-instance.js'
 
-export class PluginsManager extends Instance<InstanceType.Utility> {
+export class PluginsManager extends Instance {
   private readonly instances: PluginInstance[] = []
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'PluginsManager', InstanceType.Utility)
-  }
-
-  public checkConflicts(pluginsNames: string[]): { pluginName: string; incompatibleWith: string }[] {
-    if (pluginsNames.length <= 1) return []
-
-    const localPlugins = this.getAllInstances().filter((plugin) => pluginsNames.includes(plugin.instanceName))
-
-    const conflicts: { pluginName: string; incompatibleWith: string }[] = []
-
-    for (let index = 0; index < pluginsNames.length - 1; index++) {
-      const firstPlugin = localPlugins[index]
-
-      for (let secondIndex = index + 1; secondIndex < pluginsNames.length; secondIndex++) {
-        const secondPlugin = localPlugins[secondIndex]
-
-        if (firstPlugin.pluginInfo().conflicts?.includes(secondPlugin.instanceName)) {
-          conflicts.push({ pluginName: firstPlugin.instanceName, incompatibleWith: secondPlugin.instanceName })
-        } else if (secondPlugin.pluginInfo().conflicts?.includes(firstPlugin.instanceName)) {
-          conflicts.push({ pluginName: secondPlugin.instanceName, incompatibleWith: firstPlugin.instanceName })
-        }
-      }
-    }
-
-    return conflicts
+    super(application, 'PluginsManager')
   }
 
   public async loadPlugins(rootDirectory: string): Promise<void> {

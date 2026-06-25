@@ -1,12 +1,13 @@
 import assert from 'node:assert'
 
-import type { Guild, GuildMember, Snowflake, User } from 'discord.js'
-import { Client, GatewayIntentBits, Options, Partials } from 'discord.js'
+import type { APIInteractionGuildMember, Guild, Snowflake, User } from 'discord.js'
+import { Client, GatewayIntentBits, GuildMember, Options, Partials } from 'discord.js'
 
 import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { InstanceType, Permission } from '../../common/application-event.js'
+import { Permission, Platform } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import type { DisplayableInstance } from '../../common/instance'
 import type { DiscordProfile } from '../../common/user'
 
 import ChatManager from './chat-manager.js'
@@ -20,7 +21,7 @@ import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
 
-export default class DiscordInstance extends ConnectableInstance<InstanceType.Discord> {
+export default class DiscordInstance extends ConnectableInstance implements DisplayableInstance {
   readonly commandsManager: CommandManager
   readonly leaderboard: Leaderboard
   readonly conditionsManager: ConditionsManager
@@ -40,7 +41,7 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
   private connected = false
 
   constructor(app: Application, config: StaticDiscordConfig) {
-    super(app, InstanceType.Discord, InstanceType.Discord)
+    super(app, Platform.Discord)
 
     this.staticConfig = config
 
@@ -66,27 +67,71 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
       this.application.core.discordMessagesDeleted(messages.map((message) => message.id))
     })
 
-    this.stateHandler = new StateHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.statusHandler = new StatusHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.emojiHandler = new EmojiHandler(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.stateHandler = new StateHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.statusHandler = new StatusHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.emojiHandler = new EmojiHandler(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.chatManager = new ChatManager(
       this.application,
       this,
       this.messageAssociation,
       this.eventHelper,
       this.logger,
-      this.errorHandler
+      this.errorHandler,
+      this.abortController.signal
     )
-    this.commandsManager = new CommandManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
-    this.leaderboard = new Leaderboard(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.commandsManager = new CommandManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
+    this.leaderboard = new Leaderboard(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
     this.conditionsManager = new ConditionsManager(
       this.application,
       this,
       this.eventHelper,
       this.logger,
-      this.errorHandler
+      this.errorHandler,
+      this.abortController.signal
     )
-    this.linkButtons = new LinkButtonsManager(this.application, this, this.eventHelper, this.logger, this.errorHandler)
+    this.linkButtons = new LinkButtonsManager(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
 
     this.bridge = new DiscordBridge(
       this.application,
@@ -94,29 +139,44 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
       this.messageAssociation,
       this.logger,
       this.errorHandler,
-      this.staticConfig
+      this.staticConfig,
+      this.abortController.signal
     )
+  }
+
+  public displayName(): string {
+    return 'Discord'
   }
 
   public async profileById(userId: Snowflake, guild: Guild | undefined): Promise<DiscordProfile | undefined> {
     const user = await this.client.users.fetch(userId).catch(() => undefined)
-    if (user === undefined) return { type: 'raw', id: userId }
+    if (user === undefined) return { type: 'raw', id: userId, permission: this.resolvePermission(userId, undefined) }
 
     const guildMember = await guild?.members.fetch(userId).catch(() => undefined)
     return this.profileByUser(user, guildMember)
   }
 
-  public profileByUser(user: User, guildMember: GuildMember | undefined): DiscordProfile {
+  public profileByUser(user: User, guildMember: GuildMember | APIInteractionGuildMember | undefined): DiscordProfile {
+    const memberName =
+      guildMember === undefined
+        ? undefined
+        : guildMember instanceof GuildMember
+          ? guildMember.nickname
+          : guildMember.nick
+
+    const avatar = guildMember instanceof GuildMember ? guildMember.avatarURL() : undefined
+
     return {
       type: 'cached',
       id: user.id,
+      permission: this.resolvePermission(user.id, guildMember),
       username: user.username,
       displayName:
-        this.cleanUsername(guildMember?.displayName) ??
+        this.cleanUsername(memberName ?? undefined) ??
         this.cleanUsername(user.username) ??
         this.cleanUsername(user.displayName) ??
         user.id,
-      avatar: guildMember?.avatarURL() ?? user.avatarURL() ?? undefined
+      avatar: avatar ?? undefined
     }
   }
 
@@ -134,21 +194,16 @@ export default class DiscordInstance extends ConnectableInstance<InstanceType.Di
     return undefined
   }
 
-  public resolvePermission(userId: string): Permission {
-    assert.strictEqual(this.currentStatus(), Status.Connected)
-    assert.ok(this.client.isReady())
+  private resolvePermission(userId: string, member: GuildMember | APIInteractionGuildMember | undefined): Permission {
+    if (this.staticConfig.adminIds.includes(userId)) return Permission.ApplicationAdmin
 
-    if (this.staticConfig.adminIds.includes(userId)) return Permission.Admin
-
-    let highestPermission = Permission.Anyone
-    for (const guild of this.client.guilds.cache.values()) {
-      const guildMember = guild.members.cache.get(userId)
-      if (guildMember === undefined) continue
-      const permissionLevel = this.resolvePrivilegeLevel(guildMember.roles.cache.keys().toArray())
-      if (permissionLevel > highestPermission) highestPermission = permissionLevel
+    if (member instanceof GuildMember) {
+      return this.resolvePrivilegeLevel(member.roles.cache.keys().toArray())
+    } else if (member !== undefined) {
+      return this.resolvePrivilegeLevel(member.roles)
     }
 
-    return highestPermission
+    return Permission.Anyone
   }
 
   private resolvePrivilegeLevel(roles: string[]): Permission {

@@ -1,21 +1,22 @@
 import { SlashCommandBuilder } from 'discord.js'
 
 import { InstanceSignalType, Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('disconnect').setDescription('Disconnect minecraft clients'),
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireOne,
   permission: Permission.Helper,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const targetInstance: string = context.interaction.options.getString('instance', true)
+    const targetInstance = context.minecraftInstance
 
-    await context.application.sendSignal([targetInstance], InstanceSignalType.Shutdown)
+    await targetInstance.signal(InstanceSignalType.Shutdown)
     await context.interaction.editReply('disconnect signal has been sent!')
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

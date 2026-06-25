@@ -2,7 +2,7 @@ import { parse } from 'prismarine-nbt'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock-types'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,

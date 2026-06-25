@@ -21,7 +21,7 @@ export default class Purse extends ChatCommandHandler {
     const selectedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid)
       .then((profiles) => {
-        return profiles?.find((profile) => profile.selected)
+        return profiles?.find((profile) => profile.selected) ?? profiles?.at(0)
       })
       .catch(() => undefined)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)

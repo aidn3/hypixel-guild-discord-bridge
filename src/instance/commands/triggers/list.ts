@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
-import { beautifyInstanceName } from '../../../utility/shared-utility'
+import { searchObjects } from '../../../utility/shared-utility'
 
 export default class List extends ChatCommandHandler {
   constructor() {
@@ -22,7 +22,8 @@ export default class List extends ChatCommandHandler {
     } else if (instances.length === 1) {
       const instance = instances[0]
 
-      const members = await this.onlineMembers(context, instance.instanceName)
+      const guild = await instance.guildManager.list()
+      const members = guild.members.filter((member) => member.online).map((member) => member.username)
       if (members.length === 0) return `No one is online??`
 
       const pageRaw = context.args[0] ?? '1'
@@ -34,12 +35,14 @@ export default class List extends ChatCommandHandler {
         const tasks: Promise<string>[] = []
         for (const instance of instances) {
           tasks.push(
-            this.onlineMembers(context, instance.instanceName)
-              .then((members) => {
+            instance.guildManager
+              .list()
+              .then((guild) => {
+                const members = guild.members.filter((member) => member.online).map((member) => member.username)
                 totalCount += members.length
-                return `${beautifyInstanceName(instance.instanceName)} ${members.length}`
+                return `${guild.name} ${members.length}`
               })
-              .catch(() => `${beautifyInstanceName(instance.instanceName)} N/A`)
+              .catch(() => `${instance.getConfigName()} N/A`)
           )
         }
 
@@ -47,14 +50,13 @@ export default class List extends ChatCommandHandler {
         return `Online (${totalCount}): ` + responses
       }
 
-      const foundInstance = instances.find(
-        (instance) => instance.instanceName.toLowerCase() === instanceName.toLowerCase()
-      )
+      const foundInstance = searchObjects(instanceName, instances, (instance) => instance.getConfigName()).at(0)
       if (foundInstance === undefined) {
-        return `Can only query online Minecraft instances: ${instances.map((instance) => instance.instanceName).join(', ')}`
+        return `Can only query online Minecraft instances: ${instances.map((instance) => instance.getConfigName()).join(', ')}`
       }
 
-      const members = await this.onlineMembers(context, foundInstance.instanceName)
+      const guild = await foundInstance.guildManager.list()
+      const members = guild.members.filter((member) => member.online).map((member) => member.username)
       if (members.length === 0) return `No one is online??`
 
       const pageRaw = context.args[1] ?? '1'
@@ -72,10 +74,5 @@ export default class List extends ChatCommandHandler {
 
     const chunk = members.slice((page - 1) * PageSize, page * PageSize)
     return `Online ${members.length} (page ${page}/${totalPages}): ${chunk.join(', ')}`
-  }
-
-  private async onlineMembers(context: ChatCommandContext, instanceName: string): Promise<string[]> {
-    const guild = await context.app.core.guildManager.list(instanceName)
-    return guild.members.filter((member) => member.online).map((member) => member.username)
   }
 }

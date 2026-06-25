@@ -98,13 +98,7 @@ export interface SkyblockMember {
       dojo_points_lock_head: number
     }>
 
-    kuudra_completed_tiers: {
-      none?: number
-      hot?: number
-      burning?: number
-      fiery?: number
-      infernal?: number
-    }
+    kuudra_completed_tiers: Kuudra
   }
   slayer: SlayerProfile | undefined
   jacobs_contest?: {
@@ -177,6 +171,14 @@ export interface SkyblockEssencePerks {
   diamond_in_the_rough?: number
   toxophilite?: number
   unbridled_rage?: number
+}
+
+export interface Kuudra {
+  none?: number
+  hot?: number
+  burning?: number
+  fiery?: number
+  infernal?: number
 }
 
 export interface SkyblockDungeons {
@@ -392,3 +394,50 @@ export interface SkyblockBingoResourcesResponse extends HypixelSuccessResponse {
 }
 
 /* eslint-enable @typescript-eslint/naming-convention */
+
+export function getDungeonLevelWithOverflow(experience: number): number {
+  const DungeonXp = [
+    50, 75, 110, 160, 230, 330, 470, 670, 950, 1340, 1890, 2665, 3760, 5260, 7380, 10_300, 14_400, 20_000, 27_600,
+    38_000, 52_500, 71_500, 97_000, 132_000, 180_000, 243_000, 328_000, 445_000, 600_000, 800_000, 1_065_000, 1_410_000,
+    1_900_000, 2_500_000, 3_300_000, 4_300_000, 5_600_000, 7_200_000, 9_200_000, 1.2e7, 1.5e7, 1.9e7, 2.4e7, 3e7, 3.8e7,
+    4.8e7, 6e7, 7.5e7, 9.3e7, 1.1625e8
+  ]
+  const PerLevel = 200_000_000
+  const Max50Xp = 569_809_640
+
+  if (experience > Max50Xp) {
+    // account for overflow
+    const remainingExperience = experience - Max50Xp
+    const extraLevels = Math.floor(remainingExperience / PerLevel)
+    const fractionLevel = (remainingExperience % PerLevel) / PerLevel
+
+    return 50 + extraLevels + fractionLevel
+  }
+
+  let totalLevel = 0
+  let remainingXP = experience
+
+  for (const [index, levelXp] of DungeonXp.entries()) {
+    if (remainingXP > levelXp) {
+      totalLevel = index + 1
+      remainingXP -= levelXp
+    } else {
+      break
+    }
+  }
+
+  const fractionLevel = remainingXP / DungeonXp[totalLevel]
+  return totalLevel + fractionLevel
+}
+
+export function kuudraCollection(stats: Kuudra): number {
+  let count = 0
+
+  if (stats.none) count += stats.none
+  if (stats.hot) count += stats.hot * 2
+  if (stats.burning) count += stats.burning * 3
+  if (stats.fiery) count += stats.fiery * 4
+  if (stats.infernal) count += stats.infernal * 5
+
+  return count
+}

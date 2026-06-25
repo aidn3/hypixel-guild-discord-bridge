@@ -4,26 +4,29 @@ import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 import type Application from '../../../application.js'
 import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { Timeout } from '../../../utility/timeout'
+// eslint-disable-next-line import/no-restricted-paths
+import type MinecraftInstance from '../../minecraft/minecraft-instance'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const Title = 'Guild Log Audit'
 
-function formatEmbed(chatResult: ChatResult, targetInstance: string): APIEmbed {
+async function formatEmbed(chatResult: ChatResult, targetInstance: MinecraftInstance): Promise<APIEmbed> {
+  const displayName = await targetInstance.displayName()
   let result = ''
   let pageTitle = ''
 
-  result += `**${escapeMarkdown(targetInstance)}**\n`
+  result += `**${escapeMarkdown(displayName)}**\n`
   if (chatResult.guildLog) {
     pageTitle = ` (Page ${chatResult.guildLog.page} of ${chatResult.guildLog.total})`
     for (const entry of chatResult.guildLog.entries) {
       result += `- <t:${entry.time / 1000}>: ${entry.line}\n`
     }
   } else {
-    result += `_Could not fetch information for ${targetInstance}._`
+    result += `_Could not fetch information for ${displayName}._`
     if (chatResult.error) {
       result += `\n${escapeMarkdown(chatResult.error)}`
     }
@@ -48,15 +51,16 @@ export default {
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setAutocomplete(true)
       ),
+  origin: CommandOrigin.Bridge,
   permission: Permission.Helper,
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireOne,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const currentPage: number = context.interaction.options.getNumber('page') ?? 1
     const selectedUsername = context.interaction.options.getString('username') ?? undefined
-    const targetInstanceName: string = context.interaction.options.getString('instance', true)
+    const targetInstanceName = context.minecraftInstance
 
     await interactivePaging(
       context.interaction,
@@ -72,7 +76,7 @@ export default {
         )
         return {
           totalPages: chatResult.guildLog?.total ?? 0,
-          embed: formatEmbed(chatResult, targetInstanceName)
+          embed: await formatEmbed(chatResult, targetInstanceName)
         }
       }
     )
@@ -86,11 +90,11 @@ export default {
       await context.interaction.respond(response)
     }
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>
 
 async function getGuildLog(
   app: Application,
-  targetInstance: string,
+  targetInstance: MinecraftInstance,
   selectedUsername: string | undefined,
   page: number
 ): Promise<ChatResult> {
@@ -100,7 +104,7 @@ async function getGuildLog(
   const timeout = new Timeout<void>(5000)
 
   const chatListener = function (event: MinecraftRawChatEvent): void {
-    if (event.instanceName !== targetInstance || event.message.length === 0) return
+    if (event.instance !== targetInstance || event.message.length === 0) return
 
     if (event.message.startsWith('Your guild rank does not have permission to use this')) {
       result.error = event.message.trim()

@@ -5,7 +5,6 @@ import { ComponentType, escapeMarkdown, MessageFlags, TextInputStyle } from 'dis
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { InstanceType } from '../../../common/application-event.js'
 import { Color } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
@@ -19,17 +18,18 @@ import { DefaultCommandFooter } from '../common/discord-config'
 import type { UpdateContext, UpdateProgress } from '../conditions/common'
 import type DiscordInstance from '../discord-instance.js'
 
-export default class LinkButtonsManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class LinkButtonsManager extends SubInstance<DiscordInstance, Client> {
   public static readonly AutoLinkId = 'auto-link'
 
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = this.clientInstance.getClient()
     client.on('interactionCreate', (interaction) => {
@@ -207,8 +207,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Ins
     const guildMember = await interaction.member.fetch()
 
     const user = await this.application.core.initializeDiscordUser(
-      this.application.discordInstance.profileByUser(guildMember.user, guildMember),
-      { guild: guildMember.guild }
+      this.application.discordInstance.profileByUser(guildMember.user, guildMember)
     )
 
     await this.application.discordInstance.conditionsManager.updateMember(updateContext, { guildMember, user })

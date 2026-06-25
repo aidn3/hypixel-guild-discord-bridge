@@ -10,6 +10,7 @@ import type {
   ModalSubmitInteraction
 } from 'discord.js'
 import {
+  bold,
   ButtonStyle,
   ComponentType,
   escapeCodeBlock,
@@ -23,12 +24,14 @@ import type { Logger } from 'log4js'
 import type PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
-import { Color, type InstanceType, PunishmentType } from '../../common/application-event'
+import { Color, PunishmentType } from '../../common/application-event'
 import { Status } from '../../common/connectable-instance'
 import type EventHelper from '../../common/event-helper'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
 import type { MojangProfile } from '../../common/user'
+import type { ConditionResult, ConditionValue } from '../../core/conditions/common'
+import { ConditionResultType } from '../../core/conditions/common'
 import { formatChatTriggerResponse } from '../../instance/discord/common/chattrigger-format'
 import { formatUser } from '../../instance/discord/common/commands-format'
 import { DefaultCommandFooter } from '../../instance/discord/common/discord-config'
@@ -44,7 +47,7 @@ import Duration from '../../utility/duration'
 import type { Database, MinecraftGuild, WaitlistPanel } from './database'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager'
 
-export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManager, InstanceType.Utility, Client> {
+export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManager, Client> {
   public static readonly SignupId = 'signup'
   public static readonly ListId = 'list'
 
@@ -57,13 +60,14 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   constructor(
     application: Application,
     clientInstance: MinecraftGuildsManager,
-    eventHelper: EventHelper<InstanceType.Utility>,
+    eventHelper: EventHelper<MinecraftGuildsManager>,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
     private readonly database: Database,
     private readonly queue: PromiseQueue
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = this.clientInstance.discordClient()
     client.on('interactionCreate', (interaction) => {
@@ -224,7 +228,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     assert.ok(responseInteraction.inCachedGuild())
 
     const profile = this.application.discordInstance.profileByUser(responseInteraction.user, responseInteraction.member)
-    const user = await this.application.core.initializeDiscordUser(profile, { guild: responseInteraction.guild })
+    const user = await this.application.core.initializeDiscordUser(profile)
     const mojangProfile = user.mojangProfile()
 
     if (!mojangProfile) {
@@ -268,21 +272,22 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     }
     const conditionUser = { user: user }
     let conditionsMet = 0
-    const conditionsMetList: boolean[] = []
+    const conditionsMetList: (ConditionResult<ConditionValue> | undefined)[] = []
     for (const condition of joinConditions) {
       const handler = conditionsManager.get(condition.typeId)
       if (handler === undefined) {
-        conditionsMetList.push(false)
+        conditionsMetList.push(undefined)
         continue
       }
       const meetsCondition = await handler.meetsCondition(conditionContext, conditionUser, condition.options)
+      conditionsMetList.push(meetsCondition)
 
-      if (meetsCondition) {
-        conditionsMetList.push(true)
+      if (meetsCondition.type === ConditionResultType.Pass) {
         conditionsMet++
       }
       if (conditionsMet >= selectedGuild.neededJoinConditions) break
     }
+
     if (joinConditions.length > 0 && conditionsMet < selectedGuild.neededJoinConditions) {
       assert.strictEqual(joinConditions.length, joinConditions.length)
       const displayContext = { ...conditionContext, discordGuild: responseInteraction.guild }
@@ -293,14 +298,20 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
         const handler = conditionsManager.get(condition.typeId)
 
         message += '\n- '
-        message += meetsCondition ? '✅' : '❌'
+        message += meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'
         message += ` `
 
         if (handler === undefined) {
           message += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
         } else {
           const display = await handler.displayCondition(displayContext, condition.options)
-          message += escapeMarkdown(display)
+          message += bold(escapeMarkdown(display))
+        }
+
+        if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
+          message += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
+        } else if (meetsCondition?.type === ConditionResultType.Error) {
+          message += `: ${escapeMarkdown(meetsCondition.reason)}`
         }
       }
       await responseInteraction.editReply(message)
@@ -335,9 +346,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     for (const potentialInstance of this.application.minecraftManager.getAllInstances()) {
       if (potentialInstance.currentStatus() !== Status.Connected) continue
 
-      const guildListResult = await this.application.core.guildManager
-        .list(potentialInstance.instanceName, Duration.minutes(5))
-        .catch(() => undefined)
+      const guildListResult = await potentialInstance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
       if (guildListResult === undefined) continue
 
       if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {
@@ -353,14 +362,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
 
     const command = `/g invite ${profile.name}`
 
-    const result = await checkChatTriggers(
-      this.application,
-      this.eventHelper,
-      InviteAcceptChat,
-      [instance.instanceName],
-      command,
-      profile.name
-    )
+    const result = await checkChatTriggers(this.application, InviteAcceptChat, [instance], command, profile.name)
     const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(profile.name)}`)
 
     await interaction.editReply({ embeds: [formatted] })

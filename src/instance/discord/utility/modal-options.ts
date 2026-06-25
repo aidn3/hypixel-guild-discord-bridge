@@ -7,6 +7,7 @@ import type {
 import { ChannelType, ComponentType, escapeMarkdown, SelectMenuDefaultValueType, TextInputStyle } from 'discord.js'
 
 import type Duration from '../../../utility/duration'
+import { parseNumberWithSuffice } from '../../../utility/shared-utility'
 
 import type { BooleanOption, DiscordSelectOption, NumberOption, PresetListOption, TextOption } from './options-handler'
 import { InputStyle, OptionType } from './options-handler'
@@ -226,12 +227,19 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
       }
       case OptionType.Number: {
         const rawValue = modalResponse.fields.getTextInputValue(option.key)
-        const intValue = rawValue.includes('.') ? Number.parseFloat(rawValue) : Number.parseInt(rawValue, 10)
-        if (intValue < option.min || intValue > option.max || rawValue !== intValue.toString(10)) {
+        let intValue: number
+        try {
+          intValue = parseNumberWithSuffice(rawValue)
+          if (intValue < option.min || intValue > option.max) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error('dummy') // dummy caught locally
+          }
+        } catch {
           throw new Error(
             `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(rawValue)}`
           )
         }
+
         if (option.validate != undefined) {
           const response = option.validate(intValue)
           if (response !== undefined) throw new Error(response)

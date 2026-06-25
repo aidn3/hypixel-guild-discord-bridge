@@ -5,6 +5,7 @@ import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 
 import { Color, Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type { UpdateContext, UpdateProgress } from '../conditions/common'
 
@@ -14,6 +15,9 @@ export default {
       .setName('sync')
       .setDescription('Synchronize roles and other user options')
       .addUserOption((o) => o.setName('user').setDescription('User to synchronize')),
+
+  origin: CommandOrigin.Guild,
+  onlyAdmins: false,
 
   handler: async function (context) {
     const interaction = context.interaction
@@ -43,12 +47,11 @@ export default {
     }
 
     const user = await context.application.core.initializeDiscordUser(
-      context.application.discordInstance.profileByUser(guildMember.user, guildMember),
-      { guild: guildMember.guild }
+      context.application.discordInstance.profileByUser(guildMember.user, guildMember)
     )
 
-    const guildCommands = await interaction.guild.commands.fetch()
-    const linkCommand = guildCommands.find((command) => command.name === 'link')
+    const commands = interaction.client.application.commands.cache
+    const linkCommand = commands.find((command) => command.name === 'link')
     assert.ok(linkCommand)
 
     const progress: UpdateProgress = {
@@ -62,7 +65,7 @@ export default {
     }
     const updateContext = {
       application: context.application,
-      updateReason: `Manual sync via /${context.interaction.commandName} by ${interaction.user.username}`,
+      updateReason: `Manual sync via /sync by ${interaction.user.username}`,
       abortSignal: new AbortController().signal,
       startTime: Date.now(),
       progress: progress

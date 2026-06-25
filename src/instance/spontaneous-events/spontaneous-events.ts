@@ -3,7 +3,8 @@ import assert from 'node:assert'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application'
-import { ChannelType, type ChatEvent, InstanceType } from '../../common/application-event'
+import { ChannelType, type ChatEvent } from '../../common/application-event'
+import type { DisplayableInstance } from '../../common/instance'
 import { Instance } from '../../common/instance'
 import type { User } from '../../common/user'
 
@@ -14,7 +15,7 @@ import { QuickMath } from './events/quick-math'
 import { Trivia } from './events/trivia'
 import { Unscramble } from './events/unscramble'
 
-export class SpontaneousEvents extends Instance<InstanceType.Utility> {
+export class SpontaneousEvents extends Instance implements DisplayableInstance {
   private readonly registeredEventHandlers: SpontaneousEventHandler[] = []
   private readonly singletonPromise = new PromiseQueue(1)
 
@@ -24,17 +25,50 @@ export class SpontaneousEvents extends Instance<InstanceType.Utility> {
   private chatHeat: { user: User; timestamp: number }[] = []
 
   constructor(application: Application) {
-    super(application, 'spontaneous-events', InstanceType.Utility)
+    super(application, 'spontaneous-events')
 
     this.application.on('chat', async (event: ChatEvent) => {
       if (event.channelType !== ChannelType.Public) return
       await this.singletonPromise.add(() => this.handlePublicChatEvent(event.user, event.createdAt))
     })
 
-    this.registerEvent(new QuickMath(this.application, this, this.eventHelper, this.logger, this.errorHandler))
-    this.registerEvent(new CountingChain(this.application, this, this.eventHelper, this.logger, this.errorHandler))
-    this.registerEvent(new Unscramble(this.application, this, this.eventHelper, this.logger, this.errorHandler))
-    this.registerEvent(new Trivia(this.application, this, this.eventHelper, this.logger, this.errorHandler))
+    this.registerEvent(
+      new QuickMath(
+        this.application,
+        this,
+        this.eventHelper,
+        this.logger,
+        this.errorHandler,
+        this.abortController.signal
+      )
+    )
+    this.registerEvent(
+      new CountingChain(
+        this.application,
+        this,
+        this.eventHelper,
+        this.logger,
+        this.errorHandler,
+        this.abortController.signal
+      )
+    )
+    this.registerEvent(
+      new Unscramble(
+        this.application,
+        this,
+        this.eventHelper,
+        this.logger,
+        this.errorHandler,
+        this.abortController.signal
+      )
+    )
+    this.registerEvent(
+      new Trivia(this.application, this, this.eventHelper, this.logger, this.errorHandler, this.abortController.signal)
+    )
+  }
+
+  public displayName(): string {
+    return 'Spontaneous Event'
   }
 
   public registerEvent(handler: SpontaneousEventHandler): void {

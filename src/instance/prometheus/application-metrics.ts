@@ -39,24 +39,21 @@ export default class ApplicationMetrics {
 
   onChatEvent(event: ChatEvent): void {
     this.chatMetrics.inc({
-      location: event.instanceType,
       scope: event.channelType,
-      instance: event.instanceName
+      instance: event.instance.getLogName()
     })
   }
 
   onCommandEvent(event: CommandEvent): void {
     this.commandMetrics.inc({
-      location: event.instanceType,
-      instance: event.instanceName,
+      instance: event.instance.getLogName(),
       command: event.commandName
     })
   }
 
   onClientEvent(event: BaseInGameEvent<string> | MinecraftReactiveEvent): void {
     this.eventMetrics.inc({
-      location: event.instanceType,
-      instance: event.instanceName,
+      instance: event.instance.getLogName(),
       event: event.type
     })
   }

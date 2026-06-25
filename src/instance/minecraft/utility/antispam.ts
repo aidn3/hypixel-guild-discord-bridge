@@ -1,21 +1,22 @@
 import StringComparison from 'string-comparison'
 
 import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
+import type MinecraftInstance from '../minecraft-instance'
 
 export default class Antispam {
   static readonly MaxHistory = 3
   static readonly SafeScore = 0.8
   static readonly MaxAdditions = 15
 
-  private readonly history = new Map<string, string[]>()
+  private readonly history = new WeakMap<MinecraftInstance, string[]>()
 
   constructor(private readonly config: MinecraftConfigurations) {}
 
-  public process(instanceName: string, message: string): string {
-    let history = this.history.get(instanceName)
+  public process(instance: MinecraftInstance, message: string): string {
+    let history = this.history.get(instance)
     if (history === undefined) {
       history = []
-      this.history.set(instanceName, history)
+      this.history.set(instance, history)
     }
 
     if (!this.config.getAntispamEnabled()) {
