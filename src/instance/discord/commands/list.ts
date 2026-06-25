@@ -14,7 +14,7 @@ import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
 import type { GuildFetch } from '../../../core/users/guild-manager'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
-import { capitalize, getSessionModeDisplayName } from '../../../utility/shared-utility'
+import { capitalize, getSessionModeDisplayName, prefixSessionModeDisplayName } from '../../../utility/shared-utility'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -262,8 +262,10 @@ async function formatLocation(
 
   message += '*' // START discord markdown. italic
   message += `is playing __${escapeMarkdown(capitalize(session.gameType))}__`
-  const sessionModeDisplayName = await getSessionModeDisplayName(session.mode) // This function also adds a prefix word before the display name.
-  if (sessionModeDisplayName !== undefined) message += ` ${escapeMarkdown(sessionModeDisplayName)}`
+  const sessionModeDisplayName = await getSessionModeDisplayName(session.mode) // Get the session mode display name (e.g. "mining_3" is now "Dwarden Mines")
+  const prefixedSessionModeDisplayName = prefixSessionModeDisplayName(sessionModeDisplayName) // Add a prefix to the session mode display name (e.g. "Dwarven Mines" is now "in Dwarven Mines")
+  if (sessionModeDisplayName !== undefined && prefixedSessionModeDisplayName !== undefined)
+    message += ` ${escapeMarkdown(prefixedSessionModeDisplayName)}`
   message += '*' // END discord markdown. italic
 
   return message

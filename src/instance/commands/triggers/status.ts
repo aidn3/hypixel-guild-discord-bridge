@@ -1,6 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { capitalize, formatTime, getSessionModeDisplayName } from '../../../utility/shared-utility'
+import {
+  capitalize,
+  formatTime,
+  getSessionModeDisplayName,
+  prefixSessionModeDisplayName
+} from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Status extends ChatCommandHandler {
@@ -34,21 +39,25 @@ export default class Status extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.status.api-disabled'], { username: givenUsername })
     }
 
-    // This function also adds a prefix word before the display name.
-    const sessionModeDisplayName = await getSessionModeDisplayName(session.mode)
+    const sessionModeDisplayName = await getSessionModeDisplayName(session.mode) // Get the session mode display name (e.g. "mining_3" is now "Dwarden Mines")
+    const prefixedSessionModeDisplayName = prefixSessionModeDisplayName(sessionModeDisplayName) // Add a prefix to the session mode display name (e.g. "Dwarven Mines" is now "in Dwarven Mines")
 
-    if (session.map !== undefined && sessionModeDisplayName !== undefined) {
+    if (
+      session.map !== undefined &&
+      sessionModeDisplayName !== undefined &&
+      prefixedSessionModeDisplayName !== undefined
+    ) {
       return context.app.i18n.t(($) => $['commands.status.online-with-map'], {
         username: givenUsername,
         game: capitalize(session.gameType),
-        mode: sessionModeDisplayName,
+        mode: prefixedSessionModeDisplayName,
         map: session.map
       })
-    } else if (sessionModeDisplayName !== undefined) {
+    } else if (sessionModeDisplayName !== undefined && prefixedSessionModeDisplayName !== undefined) {
       return context.app.i18n.t(($) => $['commands.status.online-with-mode'], {
         username: givenUsername,
         game: capitalize(session.gameType),
-        mode: sessionModeDisplayName
+        mode: prefixedSessionModeDisplayName
       })
     }
 

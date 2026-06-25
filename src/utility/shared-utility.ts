@@ -237,7 +237,7 @@ export function searchObjects<T>(query: string, collection: T[], callback: (entr
 
 export async function getSessionModeDisplayName(sessionMode: string | undefined): Promise<string | undefined> {
   sessionMode = sessionMode?.toLowerCase()
-  if (sessionMode === undefined) return prefixSessionModeDisplayName(sessionMode)
+  if (sessionMode === undefined) return sessionMode
 
   const resolvedMode = sessionMode
 
@@ -248,10 +248,10 @@ export async function getSessionModeDisplayName(sessionMode: string | undefined)
     }
   )
 
-  return prefixSessionModeDisplayName(displayName ?? sessionMode)
+  return displayName ?? sessionMode
 }
 
-function prefixSessionModeDisplayName(displayName: string | undefined): string | undefined {
+export function prefixSessionModeDisplayName(displayName: string | undefined): string | undefined {
   if (displayName === undefined) return displayName
 
   switch (displayName) {
