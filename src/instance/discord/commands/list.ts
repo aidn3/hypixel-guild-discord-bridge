@@ -14,6 +14,7 @@ import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
 import { capitalize, getSessionModeDisplayName, prefixSessionModeDisplayName } from '../../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
 import type { GuildFetch } from '../../minecraft/guild-manager'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
