@@ -46,7 +46,7 @@ export class User {
   public avatar(): string | undefined {
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
-      return `https://mc-heads.net/avatar/${mojangProfile.id}.png`
+      return `https://nmsr.nickac.dev/face/${mojangProfile.id}`
     }
 
     const discordProfile = this.discordProfile()
