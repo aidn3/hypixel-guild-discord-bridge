@@ -133,6 +133,9 @@
   "discord.conditions.handler.has-discord-role.title": "Has Discord Role",
   "discord.conditions.handler.has-discord-role.formatted": "Has Discord role <@&{{roleId}}>",
 
+  "discord.conditions.handler.in-discord-server.title": "In Discord Server",
+  "discord.conditions.handler.in-discord-server.formatted": "In the Discord server",
+
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
   "commands.asian.correct": "Big brain!",
   "commands.asian.incorrect": "haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{answer}})",

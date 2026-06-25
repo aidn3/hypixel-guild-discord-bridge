@@ -1175,7 +1175,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
   const botUuids = new Set(context.application.minecraftManager.getMinecraftBots().map((bot) => bot.uuid))
   const totalGuildMembers = hypixelGuild.members.length
 
-  const toKick: { uuid: string; username: string; rank: string }[] = []
+  const toKick: { uuid: string; username: string; rank: string; discordId?: string }[] = []
 
   for (const member of hypixelGuild.members) {
     if (!member.rank || !includedRanks.includes(member.rank)) continue
@@ -1229,7 +1229,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
     }
 
     if (!isSafe) {
-      toKick.push({ uuid: member.uuid, username, rank: member.rank })
+      toKick.push({ uuid: member.uuid, username, rank: member.rank, discordId: handlerUser.user.discordProfile()?.id })
     }
   }
 
@@ -1252,12 +1252,17 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
     .setLabel('Confirm Purge')
     .setStyle(ButtonStyle.Danger)
 
+  const warnButton = new ButtonBuilder()
+    .setCustomId('warn_members')
+    .setLabel('Warn Members')
+    .setStyle(ButtonStyle.Primary)
+
   const cancelButton = new ButtonBuilder()
     .setCustomId('cancel_purge')
     .setLabel('Cancel')
     .setStyle(ButtonStyle.Secondary)
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, cancelButton)
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, warnButton, cancelButton)
 
   const pagerAbortController = new AbortController()
 
@@ -1311,6 +1316,56 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
           }
         ],
         components: []
+      })
+      return
+    }
+
+    if (confirmation.customId === 'warn_members') {
+      await confirmation.update({
+        content: '',
+        embeds: [
+          {
+            title: `Warning Members - ${savedGuild.name}`,
+            color: Color.Info,
+            description: `Preparing to send warning DMs to linked members who are failing stay conditions...`,
+            footer: { text: DefaultCommandFooter }
+          }
+        ],
+        components: []
+      })
+
+      const linkedToWarn = toKick.filter((m) => m.discordId !== undefined)
+      let successCount = 0
+      let failCount = 0
+
+      const client = context.application.discordInstance.getClient()
+      for (const member of linkedToWarn) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const discordUser = await client.users.fetch(member.discordId!)
+          const dmChannel = await discordUser.createDM()
+          await dmChannel.send(
+            `Hello! This is an automated notification regarding the upcoming purge in **${savedGuild.name}** Hypixel guild.\n\n` +
+              `You do not currently meet the stay requirements for the guild in the **${interaction.guild.name}** Discord server (specifically, you may not be present in the Discord server, or your account link needs verification).\n\n` +
+              `Please ensure you join/remain in the server and that your Minecraft account is properly linked to avoid being removed during the upcoming guild purge.\n\n` +
+              `If you have already resolved this or have any questions, please contact a guild/discord admin. Thank you for your cooperation!`
+          )
+          successCount++
+        } catch {
+          failCount++
+        }
+        await sleep(1000)
+      }
+
+      await interaction.editReply({
+        embeds: [
+          {
+            title: `Warnings Sent - ${savedGuild.name}`,
+            color: Color.Good,
+            description: `Warning process complete.\n\n**Successfully warned:** ${successCount} member(s)\n**Failed to warn (e.g. DMs closed):** ${failCount} member(s)\n\nNote: ${toKick.length - linkedToWarn.length} unlinked member(s) were skipped because their Discord accounts are unknown.`,
+            footer: { text: DefaultCommandFooter }
+          }
+        ]
       })
       return
     }
