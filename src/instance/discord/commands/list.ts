@@ -265,7 +265,7 @@ async function formatLocation(
   const sessionModeDisplayName = await getSessionModeDisplayName(session.mode) // Get the session mode display name (e.g. "mining_3" is now "Dwarden Mines")
   const prefixedSessionModeDisplayName = prefixSessionModeDisplayName(sessionModeDisplayName) // Add a prefix to the session mode display name (e.g. "Dwarven Mines" is now "in Dwarven Mines")
   if (sessionModeDisplayName !== undefined && prefixedSessionModeDisplayName !== undefined)
-    message += ` ${escapeMarkdown(prefixedSessionModeDisplayName)}`
+  message += ` ${escapeMarkdown(prefixedSessionModeDisplayName)}`
   message += '*' // END discord markdown. italic
 
   return message
