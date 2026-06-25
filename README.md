@@ -67,14 +67,23 @@ git clone https://github.com/aidn3/hypixel-guild-discord-bridge
 
 ### Install And Run
 
-If you are on linux, execute this command to auto download all libraries and start the application.
-It will also keep the application up to date:
+Execute the command specific to your operating system to auto download all libraries and start the application.
+It will also keep the application up to date.
+
+If you are running the application on Linux operating system:
 
 ```shell
 ./start.sh
 ```
 
 If you are running the application on Windows operating system:
+
+```shell
+"./start.bat"
+```
+
+Alternatively, you can run these commands if the above options are not viable or if you prefer not to use them.
+This method does **not** keep the application up to date:
 
 ```shell
 npm install
