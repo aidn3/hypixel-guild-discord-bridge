@@ -671,20 +671,23 @@ export class Database {
     return transaction()
   }
 
-  public getStayConditionMode(guildId: string): StayConditionMode {
+  public getNeededStayConditions(guildId: string): number {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const select = database.prepare('SELECT stayConditionMode FROM "minecraftGuild" WHERE id = ?')
-      return select.pluck(true).get(guildId) as StayConditionMode
+      const val = select.pluck(true).get(guildId) as string
+      if (val === 'any') return 1
+      if (val === 'all') return 99
+      return parseInt(val, 10) || 1
     })
     return transaction()
   }
 
-  public setStayConditionMode(guildId: string, mode: StayConditionMode): void {
+  public setNeededStayConditions(guildId: string, needed: number): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const update = database.prepare('UPDATE "minecraftGuild" SET stayConditionMode = ? WHERE id = ?')
-      update.run(mode, guildId)
+      update.run(needed.toString(), guildId)
     })
     transaction()
   }
@@ -734,10 +737,7 @@ export type SavedGuildStayCondition = GuildStayCondition & ConditionId
 export type GuildRoleCondition = GuildCondition & { role: string }
 export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
 
-export enum StayConditionMode {
-  All = 'all',
-  Any = 'any'
-}
+
 
 export interface MinecraftGuild {
   id: string
@@ -751,7 +751,7 @@ export interface MinecraftGuild {
   neededJoinConditions: number
   acceptJoinRequests: boolean
   createdAt: number
-  stayConditionMode: StayConditionMode
+  neededStayConditions: number
 }
 
 export interface MinecraftGuildRole {

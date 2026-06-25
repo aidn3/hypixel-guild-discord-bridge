@@ -44,7 +44,6 @@ import { OptionsHandler, OptionType } from '../../../instance/discord/utility/op
 import { checkChatTriggers, KickChat } from '../../../utility/chat-triggers'
 import Duration from '../../../utility/duration'
 import { search, searchObjects, sleep } from '../../../utility/shared-utility'
-import { StayConditionMode } from '../database'
 import type { Database, GuildJoinCondition, GuildRoleCondition, GuildStayCondition, MinecraftGuild } from '../database'
 import type { DiscordWaitlistInteraction } from '../discord-waitlist-interaction'
 
@@ -341,7 +340,6 @@ async function handleRegister(context: DiscordCommandContext, database: Database
     guild._id,
     guild.name,
     guild.ranks
-      .filter((rank) => !rank.default)
       .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
   )
   await interaction.editReply({
@@ -578,23 +576,19 @@ async function handleSettings(context: DiscordCommandContext, database: Database
             }
           },
           {
-            type: OptionType.PresetList,
-            name: 'Stay Condition Mode',
+            type: OptionType.Number,
+            name: 'Required stay conditions count',
             description:
-              'How stay conditions are evaluated. ANY = safe if any condition met. ALL = safe only if all conditions met.',
+              'How many stay conditions must a player meet before they are allowed to stay in the guild.',
             min: 1,
-            max: 1,
-            options: [
-              { label: 'Any (meet any condition to stay)', value: 'any' },
-              { label: 'All (must meet all conditions to stay)', value: 'all' }
-            ],
+            max: 99,
             getOption: () => {
               assert.ok(savedGuild !== undefined)
-              return [manager.getStayConditionMode(savedGuild.id)]
+              return manager.getNeededStayConditions(savedGuild.id)
             },
-            setOption: (values) => {
+            setOption: (value) => {
               assert.ok(savedGuild !== undefined)
-              manager.setStayConditionMode(savedGuild.id, values[0] as StayConditionMode)
+              manager.setNeededStayConditions(savedGuild.id, value)
             }
           }
         ]
@@ -1132,7 +1126,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
   }
 
   const includedRanks = database.getIncludedPurgeRanks(savedGuild.id)
-  const stayConditionMode = database.getStayConditionMode(savedGuild.id)
+  const neededStayConditions = database.getNeededStayConditions(savedGuild.id)
   const stayConditions = database.getStayConditions(savedGuild.id)
 
   if (includedRanks.length === 0) {
@@ -1196,7 +1190,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
       joinedAt: new Date(member.joined)
     }
 
-    let isSafe = stayConditionMode === StayConditionMode.All
+    let metConditionsCount = 0
 
     for (const condition of stayConditions) {
       const handler = context.application.core.conditonsRegistry.get(condition.typeId)
@@ -1218,15 +1212,12 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
         }
       }
 
-      if (conditionMet && stayConditionMode === StayConditionMode.Any) {
-        isSafe = true
-        break
-      }
-      if (!conditionMet && stayConditionMode === StayConditionMode.All) {
-        isSafe = false
-        break
+      if (conditionMet) {
+        metConditionsCount++
       }
     }
+
+    const isSafe = metConditionsCount >= neededStayConditions
 
     if (!isSafe) {
       toKick.push({ uuid: member.uuid, username, rank: member.rank, discordId: handlerUser.user.discordProfile()?.id })
@@ -1284,7 +1275,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
           title: `Purge Confirmation - ${savedGuild.name}`,
           color: Color.Info,
           description:
-            `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${savedGuild.name}** failed the stay-conditions (Mode: ${stayConditionMode.toUpperCase()}).\n\n` +
+            `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${savedGuild.name}** failed the stay-conditions (Mode: ${neededStayConditions} conditions required).\n\n` +
             `Members to be kicked (page ${page + 1} of ${Math.max(totalPages, 1)}):\n${displayList}\n\n` +
             `Are you sure you want to execute this purge?`,
           footer: { text: DefaultCommandFooter }

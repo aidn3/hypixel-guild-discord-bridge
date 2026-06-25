@@ -198,9 +198,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     this.database.initGuild(
       hypixelGuild._id,
       hypixelGuild.name,
-      hypixelGuild.ranks
-        .filter((rank) => !rank.default)
-        .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
+      hypixelGuild.ranks.map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
     )
   }
 
