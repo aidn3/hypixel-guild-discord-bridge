@@ -355,7 +355,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
                     label: instance.getConfigName(),
                     value: instance.getConfigName()
                   })),
-                  customId: 'instances',
+                  customId: 'instance',
                   required: true
                 }
               }
