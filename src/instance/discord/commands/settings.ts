@@ -676,8 +676,8 @@ function fetchDiscordOptions(application: Application): CategoryOption {
           {
             type: OptionType.Number,
             name: 'Delete Temporary Events After (In Seconds)',
-            description: 'Temporary events are `Online` and `Offline` events.',
-            min: 1,
+            description: 'Temporary events are `Online` and `Offline` events. Set to 0 to prevent deleting temporary events altogether.',
+            min: 0,
             max: 43_200,
             getOption: () => deleterConfig.getDurationTemporarilyInteractions().toSeconds(),
             setOption: (value) => {

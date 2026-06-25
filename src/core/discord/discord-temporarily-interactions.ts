@@ -29,6 +29,9 @@ export class DiscordTemporarilyInteractions {
       const maxInteractions = this.discordConfigurations.getMaxTemporarilyInteractions()
       const duration = this.discordConfigurations.getDurationTemporarilyInteractions()
 
+      if (duration.toSeconds() == 0)
+        return []
+
       const select = database.prepare('SELECT * FROM "discordTempInteractions"')
       const allInteractions = select.all() as DiscordMessage[]
 
