@@ -105,15 +105,6 @@ function fetchGeneralOptions(application: Application): CategoryOption {
     options: [
       {
         type: OptionType.Boolean,
-        name: `Auto Restart ${Recommended}`,
-        description: 'Schedule restarting every 24 hours.',
-        getOption: () => generalConfig.getAutoRestart(),
-        toggleOption: () => {
-          generalConfig.setAutoRestart(!generalConfig.getAutoRestart())
-        }
-      },
-      {
-        type: OptionType.Boolean,
         name: `Add origin tag`,
         description: "Adds an origin tag to messages that show where it's coming from.",
         getOption: () => generalConfig.getOriginTag(),

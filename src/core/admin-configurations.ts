@@ -7,6 +7,14 @@ export class AdminConfigurations {
     this.configuration = manager.create('admin')
   }
 
+  public getAutoRestart(): boolean {
+    return this.configuration.getBoolean('autoRestart', false)
+  }
+
+  public setAutoRestart(autoRestart: boolean): void {
+    this.configuration.setBoolean('autoRestart', autoRestart)
+  }
+
   public getAllowCreateMinecraft(): boolean {
     return this.configuration.getBoolean('allowCreateMinecraft', true)
   }

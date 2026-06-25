@@ -76,6 +76,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom21to22(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom22to23(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -830,6 +833,10 @@ function migrateFrom21to22(database: Database): void {
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "lastUpdateAt" INTEGER NOT NULL DEFAULT 0;')
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "forceUpdate" INTEGER NOT NULL DEFAULT 0;')
   database.exec('UPDATE "minecraftGuild" SET "forceUpdate" = 1') // force update current guilds
+}
+
+function migrateFrom22to23(database: Database): void {
+  database.exec("UPDATE configurations SET category = 'admin' WHERE category = 'general' AND name = 'autoRestart';")
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

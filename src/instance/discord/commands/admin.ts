@@ -25,6 +25,15 @@ export default {
 
       options: [
         {
+          type: OptionType.Boolean,
+          name: `Auto Restart`,
+          description: 'Schedule restarting every 24 hours.',
+          getOption: () => admin.getAutoRestart(),
+          toggleOption: () => {
+            admin.setAutoRestart(!admin.getAutoRestart())
+          }
+        },
+        {
           type: OptionType.EmbedCategory,
           name: 'Custom Profile',
           description: 'Allow all Discord server to customize the Discord bot on their Server.',

@@ -50,6 +50,6 @@ export default class AutoRestart extends Instance implements DisplayableInstance
   }
 
   private enabled(): boolean {
-    return this.application.core.applicationConfigurations.getAutoRestart()
+    return this.application.core.adminConfigurations.getAutoRestart()
   }
 }
