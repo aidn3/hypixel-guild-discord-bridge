@@ -10,7 +10,6 @@ import Logger4js from 'log4js'
 
 import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
-import { Instance } from './src/common/instance'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next'
 import { gracefullyExitProcess } from './src/utility/shared-utility'
@@ -112,16 +111,6 @@ try {
   const memoryOnly = process.argv.includes('--memory-only')
 
   app = new Application(configurations, RootDirectory, ConfigsDirectory, I18n.cloneInstance(), memoryOnly)
-
-  const loggers = new Map<string, Logger4js.Logger>()
-  app.onAny((name, event) => {
-    let instanceLogger = loggers.get(event.instanceName)
-    if (instanceLogger === undefined) {
-      instanceLogger = Instance.createLogger(event.instanceName)
-      loggers.set(event.instanceName, instanceLogger)
-    }
-    instanceLogger.log(`[${name}] ${JSON.stringify(event)}`)
-  })
   applicationLoaded = true
 
   await app.start()

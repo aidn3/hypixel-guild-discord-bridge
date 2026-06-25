@@ -22,7 +22,7 @@ export default class Level extends ChatCommandHandler {
     const profiles = await context.app.hypixelApi.getSkyblockProfiles(uuid)
 
     if (!profiles) return playerNeverPlayedSkyblock(context, givenUsername)
-    const profile = profiles.find((p) => p.selected)
+    const profile = profiles.find((p) => p.selected) ?? profiles.at(0)
     assert.ok(profile)
 
     const selected = profile.members[uuid]

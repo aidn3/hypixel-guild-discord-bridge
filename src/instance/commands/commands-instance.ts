@@ -1,11 +1,17 @@
+import assert from 'node:assert'
+
 import StringComparison from 'string-comparison'
 
 import type Application from '../../application.js'
 import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
-import { ContentType, InstanceType, Permission } from '../../common/application-event.js'
-import type { ChatCommandHandler } from '../../common/commands.js'
-import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import { ChannelType, ContentType, Permission, Platform } from '../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandHandler, ChatCommandRequirements } from '../../common/commands.js'
+import type { DisplayableInstance } from '../../common/instance.js'
+import { Instance } from '../../common/instance.js'
+import { capitalize } from '../../utility/shared-utility'
 
+import { CommandsCooldownHandler } from './commands-cooldown-handler'
+import { canOnlyUseIngame } from './common/utility'
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
 import Agatha from './triggers/agatha.js'
@@ -50,6 +56,7 @@ import Fairysouls from './triggers/fairysouls'
 import Fetchur from './triggers/fetchur.js'
 import Forge from './triggers/forge'
 import Garden from './triggers/garden'
+import Gexp from './triggers/gexp'
 import Gifted from './triggers/gifted.js'
 import GuildCheck from './triggers/guild-check'
 import Guild from './triggers/guild.js'
@@ -114,11 +121,13 @@ import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 import Woolwars from './triggers/woolwars'
 
-export class CommandsInstance extends Instance<InstanceType.Commands> {
+export class CommandsInstance extends Instance implements DisplayableInstance {
   private readonly commands: ChatCommandHandler[] = []
+  private readonly cooldownHandler: CommandsCooldownHandler
 
   constructor(app: Application) {
-    super(app, InternalInstancePrefix + InstanceType.Commands, InstanceType.Commands)
+    super(app, 'chat-commands')
+    this.cooldownHandler = new CommandsCooldownHandler(this.application)
 
     const commandsToAdd = [
       new Agatha(),
@@ -166,6 +175,7 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       new Fetchur(),
       new Forge(),
       new Garden(),
+      new Gexp(),
       new Gifted(),
       new Guild(),
       new GuildCheck(),
@@ -266,6 +276,10 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     this.commands.push(commandToAdd)
   }
 
+  public displayName(): string {
+    return 'Commands'
+  }
+
   async handle(event: ChatEvent): Promise<void> {
     const config = this.application.core.commandsConfigurations
     if (!config.getCommandsEnabled()) return
@@ -284,6 +298,8 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     if (command == undefined) {
       await this.trySuggest(event, commandName)
       return
+    } else if (!command.enabled(this.application)) {
+      return
     }
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
@@ -297,9 +313,11 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
     }
 
     try {
-      const commandResponse = await command.handler({
+      const cooldownOptions = command.cooldownOptions()
+      const context: ChatCommandContext = {
         app: this.application,
 
+        t: this.application.i18n.t,
         eventHelper: this.eventHelper,
         logger: this.logger,
         errorHandler: this.errorHandler,
@@ -313,9 +331,25 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
 
         sendFeedback: async (feedbackResponse) => {
           await this.feedback(event, command.triggers[0], this.formatContent(feedbackResponse))
+        },
+        resetCooldown: () => {
+          this.cooldownHandler.resetCooldown(command, cooldownOptions, event)
         }
-      })
+      }
 
+      const commandRequirements = command.requirements(context)
+      if (typeof commandRequirements === 'string') {
+        await this.reply(event, command.triggers[0], this.formatContent(commandRequirements))
+        return
+      }
+
+      const requirementsDenied = await this.checkRequirements(command, commandRequirements, context)
+      if (requirementsDenied !== undefined) {
+        await this.reply(event, command.triggers[0], this.formatContent(requirementsDenied))
+        return
+      }
+
+      const commandResponse = await this.cooldownHandler.handle(command, cooldownOptions, context)
       await this.reply(event, command.triggers[0], this.formatContent(commandResponse))
     } catch (error) {
       this.logger.error('Error while handling command', error)
@@ -326,6 +360,72 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
           `${event.user.displayName()}, an error occurred while trying to execute ${command.triggers[0]}.`
         )
       )
+    }
+  }
+
+  private async checkRequirements(
+    command: ChatCommandHandler,
+    requirements: ChatCommandRequirements,
+    context: ChatCommandContext
+  ): Promise<string | undefined> {
+    if (requirements.permission !== undefined) {
+      const userPermission = await context.message.user.permission()
+      if (requirements.permission === Permission.BridgeAdmin && userPermission < Permission.BridgeAdmin) {
+        return context.app.i18n.t(($) => $['commands.error.must-be-admin'], { username: context.username })
+      } else if (userPermission < requirements.permission) {
+        return `${context.username}, you do not have permission to execute this command.`
+      }
+    }
+
+    if (requirements.platforms !== undefined) {
+      const platform = context.message.platform
+      if (
+        requirements.platforms.length === 1 &&
+        requirements.platforms[0] === Platform.Minecraft &&
+        platform !== Platform.Minecraft
+      ) {
+        return canOnlyUseIngame(context)
+      }
+      if (
+        requirements.platforms.length === 1 &&
+        requirements.platforms[0] === Platform.Discord &&
+        platform !== Platform.Discord
+      ) {
+        return `${context.username}, command can only be executed in a Discord chat!`
+      }
+
+      if (!(requirements.platforms as Platform[]).includes(platform)) {
+        return `${context.username}, command ${context.commandPrefix}${command.triggers[0]} can only be executed in these places: ${requirements.platforms.map((name) => capitalize(name)).join(', ')}`
+      }
+    }
+
+    if (requirements.sources !== undefined) {
+      const channelType = context.message.channelType
+      if (
+        requirements.sources.length === 1 &&
+        requirements.sources[0] === ChannelType.Public &&
+        channelType !== ChannelType.Public
+      ) {
+        return `${context.username}, command can only be executed in public chat!`
+      }
+      if (
+        requirements.sources.length === 1 &&
+        requirements.sources[0] === ChannelType.Officer &&
+        channelType !== ChannelType.Officer
+      ) {
+        return `${context.username}, command can only be executed in officer chat!`
+      }
+      if (
+        requirements.sources.length === 1 &&
+        requirements.sources[0] === ChannelType.Private &&
+        channelType !== ChannelType.Private
+      ) {
+        return `${context.username}, command can only be executed in private chat!`
+      }
+
+      if (!requirements.sources.includes(channelType)) {
+        return `${context.username}, command ${context.commandPrefix}${command.triggers[0]} can only be executed in these channels: ${requirements.sources.map((name) => capitalize(name)).join(', ')}`
+      }
     }
   }
 
@@ -342,14 +442,14 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
   }
 
   private format(event: ChatEvent, commandName: string, response: Content): CommandLike {
-    switch (event.instanceType) {
-      case InstanceType.Discord: {
+    switch (event.platform) {
+      case Platform.Discord: {
         return {
           eventId: this.eventHelper.generate(),
           createdAt: Date.now(),
 
-          instanceName: event.instanceName,
-          instanceType: event.instanceType,
+          instance: event.instance,
+          platform: event.platform,
 
           channelType: event.channelType,
           originEventId: event.eventId,
@@ -360,13 +460,13 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
         }
       }
 
-      case InstanceType.Minecraft: {
+      case Platform.Minecraft: {
         return {
           eventId: this.eventHelper.generate(),
           createdAt: Date.now(),
 
-          instanceName: event.instanceName,
-          instanceType: event.instanceType,
+          instance: event.instance,
+          platform: event.platform,
 
           channelType: event.channelType,
           originEventId: event.eventId,
@@ -378,20 +478,8 @@ export class CommandsInstance extends Instance<InstanceType.Commands> {
       }
 
       default: {
-        return {
-          eventId: this.eventHelper.generate(),
-          createdAt: Date.now(),
-
-          instanceName: event.instanceName,
-          instanceType: event.instanceType,
-
-          channelType: event.channelType,
-          originEventId: event.eventId,
-          user: event.user,
-
-          commandName: commandName,
-          commandResponse: response
-        }
+        event satisfies never
+        assert.fail(`not sure how to respond to this event: ${JSON.stringify(event)}`)
       }
     }
   }

@@ -4,6 +4,7 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import type { UserLink } from '../../../common/application-event.js'
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import type { MojangApi } from '../../../core/users/mojang'
 import { formatInvalidUsername } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -26,25 +27,9 @@ export default {
           .setName('query-discord')
           .setDescription('query a Discord account')
           .addUserOption((option) => option.setName('user').setDescription('User to query').setRequired(true))
-      )
-      .addSubcommand(
-        new SlashCommandSubcommandBuilder()
-          .setName('unlink-minecraft')
-          .setDescription('Unlink a Minecraft account')
-          .addStringOption((option) =>
-            option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
-          )
-      )
-      .addSubcommand(
-        new SlashCommandSubcommandBuilder()
-          .setName('unlink-discord')
-          .setDescription('Unlink a Discord account')
-          .addUserOption((option) =>
-            option.setName('user').setDescription('User to associate with the username').setRequired(true)
-          )
       ),
-
-  permission: Permission.Helper,
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
 
   handler: async function (context) {
     const interaction = context.interaction
@@ -57,14 +42,6 @@ export default {
       }
       case 'query-discord': {
         await handleQueryDiscord(context)
-        break
-      }
-      case 'unlink-minecraft': {
-        await handleUnlinkMinecraft(context)
-        break
-      }
-      case 'unlink-discord': {
-        await handleUnlinkDiscord(context)
         break
       }
     }
@@ -80,32 +57,7 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function handleUnlinkMinecraft(context: Readonly<DiscordCommandContext>) {
-  const interaction = context.interaction
-  await interaction.deferReply()
-
-  const username: string = interaction.options.getString('username', true)
-
-  const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
-  if (mojangProfile === undefined) {
-    await interaction.editReply({ embeds: [formatInvalidUsername(username)] })
-    return
-  }
-
-  const count = context.application.core.verification.invalidate({ uuid: mojangProfile.id })
-  await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
-}
-
-async function handleUnlinkDiscord(context: Readonly<DiscordCommandContext>) {
-  const interaction = context.interaction
-  await interaction.deferReply()
-
-  const user = interaction.options.getUser('user', true)
-  const count = context.application.core.verification.invalidate({ discordId: user.id })
-  await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
-}
-
-async function handleQueryMinecraft(context: Readonly<DiscordCommandContext>) {
+async function handleQueryMinecraft(context: Readonly<DiscordCommandContext<CommandOrigin.Private>>) {
   const interaction = context.interaction
   await interaction.deferReply()
 
@@ -123,7 +75,7 @@ async function handleQueryMinecraft(context: Readonly<DiscordCommandContext>) {
   })
 }
 
-async function handleQueryDiscord(context: Readonly<DiscordCommandContext>) {
+async function handleQueryDiscord(context: Readonly<DiscordCommandContext<CommandOrigin.Private>>) {
   const interaction = context.interaction
   await interaction.deferReply()
 

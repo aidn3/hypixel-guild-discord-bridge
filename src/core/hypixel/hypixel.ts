@@ -24,7 +24,7 @@ import type {
   SkyblockMuseumResponse,
   SkyblockProfile,
   SkyblockProfilesResponse
-} from './hypixel-skyblock-types'
+} from './hypixel-skyblock'
 import type { HypixelPlayerStatus, HypixelPlayerStatusResponse } from './hypixel-status'
 
 export class Hypixel {

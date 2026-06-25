@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock-types'
+import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock'
 import { capitalize } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,

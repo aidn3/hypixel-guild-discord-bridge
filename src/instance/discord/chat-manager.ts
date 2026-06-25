@@ -5,8 +5,7 @@ import { escapeMarkdown } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
-import type { InstanceType } from '../../common/application-event.js'
-import { ChannelType, PunishmentType } from '../../common/application-event.js'
+import { ChannelType, Platform, PunishmentType } from '../../common/application-event.js'
 import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
@@ -16,7 +15,7 @@ import { FilteredReaction, MutedReaction, UnverifiedReaction } from './common/di
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
-export default class ChatManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class ChatManager extends SubInstance<DiscordInstance, Client> {
   private static readonly WarnMuteEvery = 10 * 60 * 1000
   private static readonly WarnVerificationEvery = 10 * 60 * 1000
   private readonly lastVerificationWarn = new Map<string, number>()
@@ -28,11 +27,12 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     application: Application,
     clientInstance: DiscordInstance,
     messageAssociation: MessageAssociation,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
     this.messageAssociation = messageAssociation
   }
 
@@ -60,7 +60,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     }
 
     const userProfile = this.clientInstance.profileByUser(event.author, event.member ?? undefined)
-    const user = await this.application.core.initializeDiscordUser(userProfile, {})
+    const user = await this.application.core.initializeDiscordUser(userProfile)
 
     if (!user.verified() && config.getEnforceVerification()) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
@@ -73,7 +73,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
       ) {
         this.lastVerificationWarn.set(event.author.id, currentTimestamp)
         assert.ok(event.inGuild())
-        const commands = await event.guild.commands.fetch()
+        const commands = event.client.application.commands.cache
         const linkCommand = commands.find((command) => command.name === 'link')
 
         await event.reply({
@@ -123,6 +123,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
 
     await this.application.emit('chat', {
       ...fillBaseEvent,
+      platform: Platform.Discord,
 
       channelType: channelType,
       channelId: event.channel.id,
@@ -177,7 +178,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, InstanceTy
     if (replyMessage.webhookId != undefined) return replyMessage.author.username
 
     const resolvedProfile = this.clientInstance.profileByUser(replyMessage.author, replyMessage.member ?? undefined)
-    const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile, {})
+    const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile)
 
     return replyUser.displayName()
   }

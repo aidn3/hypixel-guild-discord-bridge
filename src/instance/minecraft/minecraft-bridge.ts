@@ -20,15 +20,15 @@ import {
   ChannelType,
   ContentType,
   GuildPlayerEventType,
-  InstanceType,
   MinecraftReactiveEventType,
   MinecraftSendChatPriority,
+  Platform,
   PunishmentPurpose,
   PunishmentType
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { User } from '../../common/user'
+import type { AnonymousUser } from '../../common/user'
 import type { PlaceholderContext } from '../../core/placeholder/common'
 import Duration from '../../utility/duration'
 
@@ -41,9 +41,10 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     clientInstance: MinecraftInstance,
     logger: Logger,
     errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
     private readonly messageAssociation: MessageAssociation
   ) {
-    super(application, clientInstance, logger, errorHandler)
+    super(application, clientInstance, logger, errorHandler, abortSignal)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,31 +55,54 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   async onChat(event: ChatEvent): Promise<void> {
-    if (event.instanceName === this.clientInstance.instanceName) return
+    if (event.instance === this.clientInstance) return
     if (event.channelType === ChannelType.Private) return
 
-    const replyUsername = event.instanceType === InstanceType.Discord ? event.replyUsername : undefined
+    const username = event.user.displayName()
+    const replyUsername = event.platform === Platform.Discord ? event.replyUsername : undefined
     const prefix = event.channelType === ChannelType.Public ? 'gc' : 'oc'
 
     this.messageAssociation.addMessageId(event.eventId, { channel: event.channelType })
 
-    await this.send(
-      await this.formatChatMessage(
-        prefix,
-        event.user.displayName(),
-        replyUsername,
-        event.message,
-        event.instanceName,
-        event.instanceType,
-        event.user
-      ),
-      MinecraftSendChatPriority.Default,
-      event.eventId
-    ).catch(this.errorHandler.promiseCatch('sending chat message'))
+    const chatFormat = this.application.core.minecraftConfigurations.getChatPlaceholder()
+    const origin = event.platform === Platform.Discord ? 'DC' : await event.instance.displayName()
+    const originTag = `[${origin}] `
+    const usernameWithReply = `${username}${replyUsername ? `⇾${replyUsername}` : ''}`
+
+    const context: PlaceholderContext = {
+      application: this.application,
+      startTime: Date.now() - Duration.minutes(5).toMilliseconds(),
+      cachedPlaceholders: new Map(),
+      customPlaceholders: {
+        /* eslint-disable @typescript-eslint/naming-convention */
+        username: username,
+        username_with_reply: usernameWithReply,
+        reply_username: replyUsername ?? '',
+
+        origin: origin,
+        origin_tag_if_enabled: this.application.core.applicationConfigurations.getOriginTag() ? originTag : '',
+        origin_tag: originTag,
+
+        message: event.message
+        /* eslint-enable @typescript-eslint/naming-convention */
+      },
+      throwOnAnyFail: true,
+      user: event.user
+    }
+
+    const placeholderResult = await this.application.core.placeHolder.resolvePlaceholder(context, chatFormat)
+    const sanitizedMessage = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
+      this.clientInstance,
+      placeholderResult.trim()
+    )
+
+    await this.send(`/${prefix} ${sanitizedMessage}`, MinecraftSendChatPriority.Default, event.eventId).catch(
+      this.errorHandler.promiseCatch('sending chat message')
+    )
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
-    if (event.instanceName === this.clientInstance.instanceName) return
+    if (event.instance === this.clientInstance) return
     if (event.type === GuildPlayerEventType.Online || event.type === GuildPlayerEventType.Offline) return
 
     if (event.type === GuildPlayerEventType.Mute && event.user !== undefined) {
@@ -97,7 +121,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   async onGuildGeneral(event: GuildGeneralEvent): Promise<void> {
-    if (event.instanceName === this.clientInstance.instanceName) return
+    if (event.instance === this.clientInstance) return
 
     await this.handleInGameEvent(event)
   }
@@ -120,15 +144,12 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     this.messageAssociation.addMessageId(event.eventId, reply)
     switch (reply.channel) {
       case ChannelType.Public: {
-        if (
-          event.type === MinecraftReactiveEventType.RequireGuild &&
-          event.instanceName === this.clientInstance.instanceName
-        ) {
+        if (event.type === MinecraftReactiveEventType.RequireGuild && event.instance === this.clientInstance) {
           return
         }
 
         await this.send(
-          `/gc @[${event.instanceName}]: ${event.message}`,
+          `/gc @[${await event.instance.displayName()}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -136,15 +157,12 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       }
 
       case ChannelType.Officer: {
-        if (
-          event.type === MinecraftReactiveEventType.RequireGuild &&
-          event.instanceName === this.clientInstance.instanceName
-        ) {
+        if (event.type === MinecraftReactiveEventType.RequireGuild && event.instance === this.clientInstance) {
           return
         }
 
         await this.send(
-          `/oc @[${event.instanceName}]: ${event.message}`,
+          `/oc @[${await event.instance.displayName()}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -152,7 +170,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
       }
       case ChannelType.Private: {
         await this.send(
-          `/msg ${reply.username} @[${event.instanceName}]: ${event.message}`,
+          `/msg ${reply.username} @[${await event.instance.displayName()}]: ${event.message}`,
           MinecraftSendChatPriority.Default,
           event.eventId
         )
@@ -163,13 +181,13 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   async handleInGameEvent(event: BaseInGameEvent<string>): Promise<void> {
     if (event.channels.includes(ChannelType.Public))
       await this.send(
-        `/gc @[${event.instanceName}]: ${event.message}`,
+        `/gc @[${await event.instance.displayName()}]: ${event.message}`,
         MinecraftSendChatPriority.Default,
         event.eventId
       )
     else if (event.channels.includes(ChannelType.Officer))
       await this.send(
-        `/oc @[${event.instanceName}]: ${event.message}`,
+        `/oc @[${await event.instance.displayName()}]: ${event.message}`,
         MinecraftSendChatPriority.Default,
         event.eventId
       )
@@ -177,7 +195,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
 
   async onBroadcast(event: BroadcastEvent): Promise<void> {
     const message = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
-      this.clientInstance.instanceName,
+      this.clientInstance,
       event.message
     )
     if (event.channels.includes(ChannelType.Public))
@@ -205,7 +223,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   }
 
   private async handleCommand(
-    event: ReplyEvent & { user: User; commandResponse: CommandEvent['commandResponse'] },
+    event: ReplyEvent & { user: AnonymousUser; commandResponse: CommandEvent['commandResponse'] },
     feedback: boolean
   ) {
     const reply = this.messageAssociation.getMessageId(event.originEventId)
@@ -232,7 +250,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
     }
 
     const sanitizedResponse = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
-      this.clientInstance.instanceName,
+      this.clientInstance,
       response
     )
     let prefix = ''
@@ -246,7 +264,7 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
         break
       }
       case ChannelType.Private: {
-        if (event.instanceType !== InstanceType.Minecraft || event.instanceName !== this.clientInstance.instanceName) {
+        if (event.instance !== this.clientInstance) {
           return
         }
         assert.ok(event.user.isMojangUser())
@@ -266,49 +284,5 @@ export default class MinecraftBridge extends Bridge<MinecraftInstance> {
   private async send(message: string, priority: MinecraftSendChatPriority, eventId: string | undefined): Promise<void> {
     const newMessage = this.application.minecraftManager.sanitizer.sanitizeGenericCommand(message)
     await this.clientInstance.send(newMessage, priority, eventId)
-  }
-
-  private async formatChatMessage(
-    prefix: string,
-    username: string,
-    replyUsername: string | undefined,
-    message: string,
-    instanceName: string,
-    instanceType: InstanceType,
-    user: User
-  ): Promise<string> {
-    const chatFormat = this.application.core.minecraftConfigurations.getChatPlaceholder()
-    const origin = instanceType === InstanceType.Discord ? 'DC' : instanceName
-    const originTag = `[${origin}] `
-    const usernameWithReply = `${username}${replyUsername ? `⇾${replyUsername}` : ''}`
-
-    const context: PlaceholderContext = {
-      application: this.application,
-      startTime: Date.now() - Duration.minutes(5).toMilliseconds(),
-      cachedPlaceholders: new Map(),
-      customPlaceholders: {
-        /* eslint-disable @typescript-eslint/naming-convention */
-        username: username,
-        username_with_reply: usernameWithReply,
-        reply_username: replyUsername ?? '',
-
-        origin: origin,
-        origin_tag_if_enabled: this.application.core.applicationConfigurations.getOriginTag() ? originTag : '',
-        origin_tag: originTag,
-
-        message: message
-        /* eslint-enable @typescript-eslint/naming-convention */
-      },
-      throwOnAnyFail: true,
-      user: user
-    }
-
-    const placeholderResult = await this.application.core.placeHolder.resolvePlaceholder(context, chatFormat)
-    const sanitizedMessage = await this.application.minecraftManager.sanitizer.sanitizeChatMessage(
-      this.clientInstance.instanceName,
-      placeholderResult.trim()
-    )
-
-    return `/${prefix} ${sanitizedMessage}`
   }
 }

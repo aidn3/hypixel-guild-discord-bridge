@@ -1,4 +1,5 @@
 import type Application from '../../../application.js'
+import type MinecraftInstance from '../minecraft-instance'
 
 import Antispam from './antispam.js'
 import ArabicFixer from './arabic-fixer.js'
@@ -27,7 +28,7 @@ export class Sanitizer {
     this.antispam = new Antispam(application.core.minecraftConfigurations)
   }
 
-  public async sanitizeChatMessage(instanceName: string, message: string): Promise<string> {
+  public async sanitizeChatMessage(instanceName: MinecraftInstance, message: string): Promise<string> {
     message = this.line.process(message)
     message = await this.link.process(message)
     message = this.emoji.process(message)

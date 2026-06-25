@@ -3,6 +3,7 @@ import assert from 'node:assert'
 import { bold, italic, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import type { LeaderboardEntry } from '../../../core/discord/discord-leaderboards'
 import { DefaultCommandFooter } from '../common/discord-config'
 
@@ -11,6 +12,8 @@ import { Messages30Days, Online30Days, Points30Days } from './create-leaderboard
 export default {
   getCommandBuilder: () =>
     new SlashCommandBuilder().setName('list-leaderboard').setDescription('List all existing leaderboards'),
+  origin: CommandOrigin.Guild,
+  onlyAdmins: false,
 
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())

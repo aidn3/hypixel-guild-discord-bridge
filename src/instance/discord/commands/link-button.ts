@@ -3,14 +3,19 @@ import assert from 'node:assert'
 import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
 import { ButtonStyle, ComponentType, SlashCommandBuilder, TextChannel } from 'discord.js'
 
-import { Color, Permission } from '../../../common/application-event'
+import { Color } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import LinkButtonsManager from '../features/link-buttons-manager'
 
 export default {
   getCommandBuilder: () =>
-    new SlashCommandBuilder().setName('link-panel').setDescription('Create a panel with buttons to help users link'),
-  permission: Permission.Officer,
+    new SlashCommandBuilder()
+      .setName('link-panel')
+      .setDescription('Create a panel with buttons to help users link')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+  origin: CommandOrigin.Guild,
+  onlyAdmins: false,
 
   handler: async function (context) {
     const interaction = context.interaction
@@ -35,9 +40,9 @@ export default {
         flags: MessageFlags.Ephemeral
       })
     }
-    const guildCommands = await interaction.guild.commands.fetch()
-    const linkCommand = guildCommands.find((command) => command.name === 'link')
-    const syncCommand = guildCommands.find((command) => command.name === 'sync')
+    const commands = interaction.client.application.commands.cache
+    const linkCommand = commands.find((command) => command.name === 'link')
+    const syncCommand = commands.find((command) => command.name === 'sync')
 
     const message =
       '## Account linking & roles/name syncing' +

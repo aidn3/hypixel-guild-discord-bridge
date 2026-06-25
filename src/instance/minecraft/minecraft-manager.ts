@@ -1,58 +1,73 @@
 import assert from 'node:assert'
 
 import type Application from '../../application.js'
-import { InstanceType, type MinecraftSelfBroadcast } from '../../common/application-event.js'
-import { Instance, InternalInstancePrefix } from '../../common/instance.js'
+import { type MinecraftSelfBroadcast } from '../../common/application-event.js'
+import { Instance } from '../../common/instance.js'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
 
 import MinecraftInstance from './minecraft-instance.js'
+import PunishmentsEnforcer from './punishments-enforcer'
 import { Sanitizer } from './utility/sanitizer.js'
 
-export class MinecraftManager extends Instance<InstanceType.Utility> {
+export class MinecraftManager extends Instance {
   public sanitizer: Sanitizer
 
   private readonly instances = new Set<MinecraftInstance>()
-  private readonly minecraftBots = new Map<string, MinecraftSelfBroadcast>()
+  private readonly minecraftBots = new WeakMap<MinecraftInstance, MinecraftSelfBroadcast>()
+  private readonly enforcer: PunishmentsEnforcer
 
   constructor(application: Application) {
-    super(application, InternalInstancePrefix + 'MinecraftManager', InstanceType.Utility)
+    super(application, 'MinecraftManager')
     this.sanitizer = new Sanitizer(application)
 
     this.application.on('minecraftSelfBroadcast', (event) => {
-      this.minecraftBots.set(event.instanceName, event)
+      this.minecraftBots.set(event.instance, event)
     })
+
+    this.enforcer = new PunishmentsEnforcer(
+      application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal
+    )
   }
 
   public isMinecraftBot(username: string): boolean {
-    for (const value of this.minecraftBots.values()) {
-      if (username.toLowerCase() === value.username.toLowerCase()) return true
-      if (username.toLowerCase() === value.uuid.toLowerCase()) return true
+    for (const instance of this.instances) {
+      const entry = this.minecraftBots.get(instance)
+      if (entry === undefined) continue
+
+      if (username.toLowerCase() === entry.username.toLowerCase()) return true
+      if (username.toLowerCase() === entry.uuid.toLowerCase()) return true
     }
 
     return false
   }
 
   public getMinecraftBots(): MinecraftSelfBroadcast[] {
-    return Array.from(this.minecraftBots, ([, value]) => value)
+    return this.instances
+      .values()
+      .toArray()
+      .map((instance) => this.minecraftBots.get(instance))
+      .filter((entry) => entry !== undefined)
   }
 
   public loadInstances(): void {
     const instances = this.application.core.minecraftSessions.getAllInstances()
     for (const instanceConfig of instances) {
-      this.instances.add(new MinecraftInstance(this.application, instanceConfig.name, instanceConfig))
+      this.instances.add(new MinecraftInstance(this.application, instanceConfig))
     }
   }
 
-  public async addAndStart(config: MinecraftInstanceConfig): Promise<void> {
-    if (this.getAllInstances().some((instance) => instance.instanceName.toLowerCase() === config.name.toLowerCase())) {
-      throw new Error('Minecraft instance name already exists')
-    }
-
-    const instance = new MinecraftInstance(this.application, config.name, config)
+  public async initiateAndStart(config: MinecraftInstanceConfig): Promise<MinecraftInstance> {
+    const instance = new MinecraftInstance(this.application, config)
     this.instances.add(instance)
 
     try {
       await instance.connect()
+      return instance
     } catch (error: unknown) {
       await instance.disconnect().catch(() => undefined) // it might throw an error if connecting is throwing one already
       this.instances.delete(instance)
@@ -74,7 +89,7 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
     result.deletedConfig = config.deleteInstance(instanceName)
 
     const instances = this.getAllInstances().filter(
-      (instance) => instance.instanceName.toLowerCase() === instanceName.toLowerCase()
+      (instance) => instance.getConfigName().toLowerCase() === instanceName.toLowerCase()
     )
     for (const instance of instances) {
       await instance.disconnect()
@@ -82,7 +97,8 @@ export class MinecraftManager extends Instance<InstanceType.Utility> {
 
     for (const instance of instances) {
       assert.ok(this.instances.delete(instance))
-      this.minecraftBots.delete(instance.instanceName)
+      this.minecraftBots.delete(instance)
+      instance.destroy()
     }
     result.instanceRemoved += instances.length
 

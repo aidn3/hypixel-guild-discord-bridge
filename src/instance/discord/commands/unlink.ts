@@ -1,8 +1,13 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 
 export default {
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
+
   getCommandBuilder: () =>
     new SlashCommandBuilder()
       .setName('unlink')

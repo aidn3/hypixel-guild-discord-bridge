@@ -4,10 +4,10 @@ import Moment from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock-types'
+import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock'
+import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import type { MojangApi } from '../../../core/users/mojang'
 import {
-  getDungeonLevelWithOverflow,
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,

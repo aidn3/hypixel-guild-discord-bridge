@@ -1,5 +1,5 @@
 import { ChannelType } from '../../../common/application-event'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Select extends ChatCommandHandler {
@@ -11,11 +11,11 @@ export default class Select extends ChatCommandHandler {
     })
   }
 
-  async handler(context: ChatCommandContext): Promise<string> {
-    if (![ChannelType.Public, ChannelType.Officer].includes(context.message.channelType)) {
-      return `${context.username}, Command can only be executed in public and officer chat!`
-    }
+  override requirements(): ChatCommandRequirements | string {
+    return { sources: [ChannelType.Public, ChannelType.Officer] }
+  }
 
+  async handler(context: ChatCommandContext): Promise<string> {
     const usernames = await this.getUsernames(context)
     if (usernames.length === 0) return 'No guild member to select :('
 
@@ -36,8 +36,8 @@ export default class Select extends ChatCommandHandler {
 
     const usernames: Promise<string[]>[] = []
     for (const instance of instances) {
-      const chunk = context.app.core.guildManager
-        .list(instance.instanceName)
+      const chunk = instance.guildManager
+        .list()
         .then((guild) => guild.members)
         .then((members) => members.filter((member) => member.online).map((member) => member.username))
         .then((usernames) => usernames.filter((username) => !context.app.minecraftManager.isMinecraftBot(username)))

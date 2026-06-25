@@ -1,7 +1,12 @@
-import type { HypixelPlayer } from '../hypixel/hypixel-player'
-import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock-types'
+import assert from 'node:assert'
 
-import type { HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common'
+import type { TFunction } from 'i18next'
+
+import type { MojangProfile } from '../../common/user'
+import type { HypixelPlayer } from '../hypixel/hypixel-player'
+import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock'
+
+import type { ConditionValue, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common'
 
 export async function checkSkyblockEntireProfiles(
   context: HandlerOperationContext,
@@ -29,20 +34,12 @@ export async function checkSkyblockEntireProfiles(
 
 export async function getSkyblockUserProfiles(
   context: HandlerOperationContext,
-  handlerUser: HandlerUser,
+  mojangProfile: MojangProfile,
   allowedProfiles: SkyblockProfileOptionType['profileTypes']
 ): Promise<SkyblockMember[]> {
-  const mojangProfile = handlerUser.user.mojangProfile()
-  if (mojangProfile === undefined) return []
   const uuid = mojangProfile.id
-  let profiles: SkyblockProfile[] | undefined
-
-  try {
-    profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
-    if (profiles === undefined) return []
-  } catch {
-    return []
-  }
+  const profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
+  if (profiles === undefined) return []
 
   const result = []
   for (const profile of profiles) {
@@ -96,4 +93,18 @@ export async function checkHypixelGuild(
   }
 
   return false
+}
+
+export function formatPrimitiveValue(t: TFunction, value: ConditionValue): string {
+  if (typeof value === 'string') return value
+  else if (typeof value === 'boolean') {
+    if (value) return t(($) => $['conditions.format.true'])
+    return t(($) => $['conditions.format.false'])
+  } else if (typeof value === 'number') {
+    return t(($) => $['conditions.format.number'], { value })
+  } else {
+    value satisfies never
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    assert.fail(`Unknown value type: ${value}`)
+  }
 }

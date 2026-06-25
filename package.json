@@ -1,6 +1,6 @@
 {
   "name": "hypixel-guild-discord-bridge",
-  "version": "5.4.2",
+  "version": "5.5.0",
   "description": "A Hypixel guild chat and Discord chat bridge",
   "type": "module",
   "main": "index.ts",
@@ -39,6 +39,7 @@
   "dependencies": {
     "@hkh12/node-calc": "^4.2.1",
     "@isaacs/ttlcache": "^2.1.4",
+    "@kolapsis/shm-sdk": "^1.1.0",
     "axios": "^1.16.1",
     "bad-words": "3.0.4",
     "better-sqlite3": "^12.2.0",
@@ -68,7 +69,7 @@
     "socks": "^2.8.3",
     "string-comparison": "^1.3.0",
     "ts-interface-checker": "^1.0.2",
-    "tsx": "^4.16.2",
+    "tsx": "^4.22.4",
     "yaml": "^2.8.3"
   },
   "devDependencies": {

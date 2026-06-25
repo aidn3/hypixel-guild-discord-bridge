@@ -7,14 +7,6 @@ export class ApplicationConfigurations {
     this.configuration = manager.create('general')
   }
 
-  public getAutoRestart(): boolean {
-    return this.configuration.getBoolean('autoRestart', false)
-  }
-
-  public setAutoRestart(autoRestart: boolean): void {
-    this.configuration.setBoolean('autoRestart', autoRestart)
-  }
-
   public getOriginTag(): boolean {
     return this.configuration.getBoolean('originTag', false)
   }

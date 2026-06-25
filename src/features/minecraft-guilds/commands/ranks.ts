@@ -1,5 +1,5 @@
-import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandHandler } from '../../../common/commands'
+import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands'
+import { ChatCommandHandler, CooldownType } from '../../../common/commands'
 import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
 import type { Database, MinecraftGuild } from '../database'
@@ -11,6 +11,11 @@ export default class Ranks extends ChatCommandHandler {
       description: 'List guild ranks requirements',
       example: `ranks [GuildName]`
     })
+  }
+
+  override cooldownOptions(): ChatCommandCooldown {
+    // ensure one instance is executed at a time
+    return { type: CooldownType.Community, duration: Duration.seconds(1) }
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
@@ -40,6 +45,9 @@ export default class Ranks extends ChatCommandHandler {
   }
 
   private async formatRanks(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
+    const hypixelGuild = await context.app.hypixelApi.getGuildById(savedGuild.id)
+    if (hypixelGuild === undefined) return `Guild ${savedGuild.name} disbanded??`
+
     const registry = context.app.core.conditonsRegistry
     const joinConditions = this.database.getJoinConditions(savedGuild.id)
     const roleConditions = this.database.getRoleConditions(savedGuild.id)
@@ -57,7 +65,7 @@ export default class Ranks extends ChatCommandHandler {
       formattedJoinConditions.push(`Join ${formattedMessage}`)
     }
 
-    const sortedRoles = savedGuild.roles.toSorted((a, b) => a.priority - b.priority)
+    const sortedRoles = hypixelGuild.ranks.filter((rank) => !rank.default).toSorted((a, b) => a.priority - b.priority)
     const sortedRoleConditions = []
     for (const sortedRole of sortedRoles) {
       sortedRoleConditions.push(

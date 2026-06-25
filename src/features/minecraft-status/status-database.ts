@@ -2,12 +2,14 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 
-import type { InstanceIdentifier, InstanceMessage, InstanceStatus } from '../../common/application-event'
+import type { InstanceMessage } from '../../common/application-event'
 import type { Status } from '../../common/connectable-instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import Duration from '../../utility/duration'
 
-export class StatusHistory {
+import type { MinecraftStatusEntry } from './minecraft-status'
+
+export class StatusDatabase {
   private static readonly MaxLife = Duration.years(5)
   constructor(
     private readonly sqliteManager: SqliteManager,
@@ -18,40 +20,39 @@ export class StatusHistory {
       const transaction = database.transaction(() => {
         const currentTime = Math.floor(Date.now() / 1000)
 
-        const deleteStatus = database.prepare('DELETE FROM "instanceStatusHistory" WHERE createdAt < ?')
-        const statusCount = deleteStatus.run(currentTime - StatusHistory.MaxLife.toSeconds()).changes
+        const deleteStatus = database.prepare('DELETE FROM "minecraftStatusHistory" WHERE createdAt < ?')
+        const statusCount = deleteStatus.run(currentTime - StatusDatabase.MaxLife.toSeconds()).changes
 
-        const deleteMessage = database.prepare('DELETE FROM "instanceMessageHistory" WHERE createdAt < ?')
-        const messageCount = deleteMessage.run(currentTime - StatusHistory.MaxLife.toSeconds()).changes
+        const deleteMessage = database.prepare('DELETE FROM "minecraftMessageHistory" WHERE createdAt < ?')
+        const messageCount = deleteMessage.run(currentTime - StatusDatabase.MaxLife.toSeconds()).changes
 
         return [statusCount, messageCount]
       })
 
       const [statusCount, deleteMessage] = transaction()
       if (statusCount > 0) {
-        logger.debug(`Deleted ${statusCount} old entries in instanceStatusHistory.`)
+        logger.debug(`Deleted ${statusCount} old entries in minecraftStatusHistory.`)
       }
       if (deleteMessage > 0) {
-        logger.debug(`Deleted ${deleteMessage} old entries in instanceMessageHistory.`)
+        logger.debug(`Deleted ${deleteMessage} old entries in minecraftMessageHistory.`)
       }
     })
   }
 
-  public add(entry: InstanceStatus): void {
+  public add(entry: MinecraftStatusEntry): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const insertStatus = database.prepare(
-        'INSERT INTO "instanceStatusHistory" (instanceName, instanceType, createdAt, fromStatus, toStatus) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO "minecraftStatusHistory" (name, createdAt, fromStatus, toStatus) VALUES (?, ?, ?, ?)'
       )
       const insertMessage = database.prepare(
-        'INSERT INTO "instanceMessageHistory" (instanceName, instanceType, createdAt, type, value) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO "minecraftMessageHistory" (name, createdAt, type, value) VALUES (?, ?, ?, ?)'
       )
 
       let totalChanges = 0
       if (entry.status !== undefined) {
         const result = insertStatus.run(
-          entry.instanceName,
-          entry.instanceType,
+          entry.instance.getConfigName(),
           Math.floor(entry.createdAt / 1000),
           entry.status.from,
           entry.status.to
@@ -61,8 +62,7 @@ export class StatusHistory {
       }
       if (entry.message !== undefined) {
         const result = insertMessage.run(
-          entry.instanceName,
-          entry.instanceType,
+          entry.instance.getConfigName(),
           Math.floor(entry.createdAt / 1000),
           entry.message.type,
           entry.message.value
@@ -81,10 +81,10 @@ export class StatusHistory {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const selectStatus = database.prepare(
-        'SELECT * FROM "instanceStatusHistory" WHERE instanceName = ? AND createdAt >= ? AND createdAt <= ?'
+        'SELECT * FROM "minecraftStatusHistory" WHERE name = ? AND createdAt >= ? AND createdAt <= ?'
       )
       const selectMessage = database.prepare(
-        'SELECT * FROM "instanceMessageHistory" WHERE instanceName = ? AND createdAt >= ? AND createdAt <= ?'
+        'SELECT * FROM "minecraftMessageHistory" WHERE name = ? AND createdAt >= ? AND createdAt <= ?'
       )
 
       const statusEntries = selectStatus.all(
@@ -138,11 +138,11 @@ export type StatusHistoryEntry = StatusHistoryMessage | StatusHistoryChange
 
 export type StatusHistoryMessage = InstanceMessage & {
   entryType: StatusHistoryEntryType.Message
-} & InstanceIdentifier & { createdAt: number }
+} & { createdAt: number }
 
 export type StatusHistoryChange = { fromStatus: Status; toStatus: Status } & {
   entryType: StatusHistoryEntryType.Status
-} & InstanceIdentifier & { createdAt: number }
+} & { createdAt: number }
 
 export enum StatusHistoryEntryType {
   Message = 'message',

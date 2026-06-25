@@ -1,9 +1,9 @@
 import type Application from '../../application'
-import type { User } from '../../common/user'
+import type { AnonymousUser, User } from '../../common/user'
 
 export interface PlaceholderContext {
   application: Application
-  user: User | undefined
+  user: User | AnonymousUser | undefined
   startTime: number
   throwOnAnyFail: boolean
   customPlaceholders: Record<string, string>

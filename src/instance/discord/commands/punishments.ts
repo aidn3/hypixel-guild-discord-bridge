@@ -15,14 +15,9 @@ import {
 } from 'discord.js'
 
 import type { BasePunishment } from '../../../common/application-event.js'
-import {
-  Color,
-  InstanceType,
-  Permission,
-  PunishmentPurpose,
-  PunishmentType
-} from '../../../common/application-event.js'
-import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
+import { Color, Permission, PunishmentPurpose, PunishmentType } from '../../../common/application-event.js'
+import type { DiscordBridgeCommandHandler, DiscordCommandContext } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type { DiscordUser, MojangProfile, User } from '../../../common/user'
 import { HeatResult, HeatType } from '../../../core/moderation/commands-heat'
 import type { SavedPunishment } from '../../../core/moderation/punishments'
@@ -128,7 +123,9 @@ export default {
           .addBooleanOption((o) => o.setName('show-all').setDescription('Show only active punishments'))
       )
   },
+  origin: CommandOrigin.Bridge,
   permission: Permission.Helper,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.None,
 
   handler: async function (context) {
     const interaction = context.interaction
@@ -146,9 +143,7 @@ export default {
         context.interaction.user,
         guildMember
       )
-      const responsible = await context.application.core.initializeDiscordUser(responsibleProfile, {
-        guild: interaction.guild ?? undefined
-      })
+      const responsible = await context.application.core.initializeDiscordUser(responsibleProfile)
 
       if (context.permission < Permission.Officer) {
         await context.showPermissionDenied(Permission.Officer)
@@ -181,9 +176,7 @@ export default {
         const selectedUser = interaction.options.getUser('user', true)
         const guildMember = interaction.guild?.members.cache.get(selectedUser.id)
         const profile = context.application.discordInstance.profileByUser(selectedUser, guildMember)
-        target = await context.application.core.initializeDiscordUser(profile, {
-          guild: interaction.guild ?? undefined
-        })
+        target = await context.application.core.initializeDiscordUser(profile)
         break
       }
 
@@ -194,9 +187,7 @@ export default {
 
     const guildMember = interaction.guild?.members.cache.get(context.interaction.user.id)
     const responsibleProfile = context.application.discordInstance.profileByUser(context.interaction.user, guildMember)
-    const responsible = await context.application.core.initializeDiscordUser(responsibleProfile, {
-      guild: interaction.guild ?? undefined
-    })
+    const responsible = await context.application.core.initializeDiscordUser(responsibleProfile)
 
     const durationRaw = interaction.options.getString('duration') ?? undefined
     const reasonRaw = interaction.options.getString('reason') ?? undefined
@@ -258,10 +249,10 @@ export default {
       await context.interaction.respond(response)
     }
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.None>
 
 async function handleBan(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   responsible: DiscordUser,
   target: User,
   duration: Duration,
@@ -287,7 +278,7 @@ async function handleBan(
 }
 
 async function handleMute(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   responsible: DiscordUser,
   target: User,
   duration: Duration,
@@ -318,7 +309,7 @@ async function handleMute(
 }
 
 async function handleKick(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   responsible: DiscordUser,
   target: User,
   reason: string
@@ -335,7 +326,11 @@ async function handleKick(
   await takeAction(context, responsible, target, header, HeatType.Kick, command, KickChat, post)
 }
 
-async function handleForgive(context: DiscordCommandContext, responsible: DiscordUser, target: User): Promise<void> {
+async function handleForgive(
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
+  responsible: DiscordUser,
+  target: User
+): Promise<void> {
   const header =
     `## Forgive ${formatUser(target)}\n\n` +
     'User has been removed from all internal punishments list.\n' +
@@ -361,7 +356,10 @@ async function handleForgive(context: DiscordCommandContext, responsible: Discor
   await takeAction(context, responsible, target, header, HeatType.Mute, undefined, UnmuteChat, post)
 }
 
-async function handleEdit(context: DiscordCommandContext, responsible: DiscordUser): Promise<void> {
+async function handleEdit(
+  context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>,
+  responsible: DiscordUser
+): Promise<void> {
   const id = context.interaction.options.getNumber('id', true)
   const reason = context.interaction.options.getString('reason') ?? undefined
   const duration = context.interaction.options.getString('duration') ?? undefined
@@ -499,7 +497,7 @@ function getHeatType(punishmentType: BasePunishment['type']): HeatType {
 }
 
 async function takeAction(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>,
   responsible: DiscordUser,
   target: User,
   header: string,
@@ -518,13 +516,12 @@ async function takeAction(
   let result = header
 
   const mojangProfile = target.mojangProfile()
-  const instances = context.application.getInstancesNames(InstanceType.Minecraft)
+  const instances = context.application.minecraftManager.getAllInstances()
   if (mojangProfile !== undefined && command !== undefined && instances.length > 0) {
     result += '\n\n### In-game Actions\n'
 
     const triggerResult = await checkChatTriggers(
       context.application,
-      context.eventHelper,
       chatTrigger,
       instances,
       command,
@@ -570,7 +567,7 @@ async function takeAction(
   })
 }
 
-async function handleAllListInteraction(context: DiscordCommandContext): Promise<void> {
+async function handleAllListInteraction(context: DiscordCommandContext<CommandOrigin.Bridge>): Promise<void> {
   const showAll = context.interaction.options.getBoolean('show-all') ?? false
   await interactivePaging(
     context.interaction,
@@ -593,7 +590,10 @@ async function handleAllListInteraction(context: DiscordCommandContext): Promise
   )
 }
 
-async function handleCheckInteraction(context: DiscordCommandContext, target: User): Promise<void> {
+async function handleCheckInteraction(
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
+  target: User
+): Promise<void> {
   const showAll = context.interaction.options.getBoolean('show-all') ?? false
 
   await interactivePaging(
@@ -632,7 +632,10 @@ async function handleCheckInteraction(context: DiscordCommandContext, target: Us
   )
 }
 
-async function formatList(context: DiscordCommandContext | undefined, list: SavedPunishment[]): Promise<string> {
+async function formatList(
+  context: DiscordCommandContext<CommandOrigin.Bridge> | undefined,
+  list: SavedPunishment[]
+): Promise<string> {
   if (list.length === 0) return 'no punishment to view.'
 
   let result = ''

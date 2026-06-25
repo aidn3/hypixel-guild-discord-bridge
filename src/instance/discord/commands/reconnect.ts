@@ -3,21 +3,22 @@ import assert from 'node:assert'
 import { SlashCommandBuilder } from 'discord.js'
 
 import { InstanceSignalType, Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('reconnect').setDescription('Reconnect minecraft clients'),
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireOne,
   permission: Permission.Helper,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const targetInstance: string = context.interaction.options.getString('instance', true)
+    const targetInstance = context.minecraftInstance
     assert.ok(targetInstance)
 
-    await context.application.sendSignal([targetInstance], InstanceSignalType.Restart)
+    await targetInstance.signal(InstanceSignalType.Restart)
     await context.interaction.editReply('Reconnect signal has been sent!')
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

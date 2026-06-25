@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import { TTLCache } from '@isaacs/ttlcache'
 
-import { ChannelType, InstanceType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
+import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser, MojangProfile } from '../../../common/user'
@@ -58,7 +58,7 @@ export default class Sync extends ChatCommandHandler {
     if (savedGuild === undefined) return `${targetProfile.name} is in an outside guild: ${guild.name}.`
 
     const resolvedRank = await resolveGuildRank(
-      context,
+      context.app,
       this.database,
       currentTime,
       savedGuild,
@@ -66,6 +66,8 @@ export default class Sync extends ChatCommandHandler {
       guildMember,
       target
     )
+    this.database.updatedGuildMember(guild._id, guildMember, { lastRoleCheckAt: currentTime })
+
     if (resolvedRank === 'not-whitelisted') {
       return `${targetProfile.name} current rank ${guildMember.rank ?? 'Member'} is not whitelisted to be changed.`
     } else if (resolvedRank === 'no-condition') {
@@ -92,7 +94,7 @@ export default class Sync extends ChatCommandHandler {
 
   private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
     await context.app.sendMinecraft(
-      context.app.getInstancesNames(InstanceType.Minecraft),
+      context.app.minecraftManager.getAllInstances(),
       MinecraftSendChatPriority.High,
       undefined,
       `/guild setrank ${uuid} ${rank}`

@@ -25,8 +25,6 @@ export class ConfigManager<T extends object> {
     this.data = data
     this.defaultConfig = deepcopy(data)
 
-    application.applicationIntegrity.addConfigPath(this.configFilePath)
-
     setInterval(() => {
       this.saveIfDirty()
     }, ConfigManager.CheckDirtyEvery)

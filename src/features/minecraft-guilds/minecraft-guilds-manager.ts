@@ -10,31 +10,35 @@ import {
   ChannelType,
   Color,
   GuildPlayerEventType,
-  InstanceType,
   MinecraftSendChatPriority,
   PunishmentType
 } from '../../common/application-event'
+import type { DiscordBridgeCommandHandler, OptionMinecraftInstance } from '../../common/commands'
 import { Status } from '../../common/connectable-instance'
-import { Instance, InternalInstancePrefix } from '../../common/instance'
+import type { DisplayableInstance } from '../../common/instance'
+import { Instance } from '../../common/instance'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { MojangProfile, User } from '../../common/user'
-import type { GuildFetch } from '../../core/users/guild-manager'
-import { GuildInviteStatus } from '../../core/users/guild-manager'
+import { ConditionResultType } from '../../core/conditions/common'
+import type { HypixelGuild } from '../../core/hypixel/hypixel-guild'
+import type { GuildFetch } from '../../instance/minecraft/guild-manager'
+import { GuildInviteStatus } from '../../instance/minecraft/guild-manager'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
 import Duration from '../../utility/duration'
 import { setIntervalAsync } from '../../utility/scheduling'
 import { formatTime } from '../../utility/shared-utility'
 
+import { AutoGuildSync } from './auto-guild-sync'
 import { discordGuildAutocomplete, DiscordGuildCommand, discordGuildCommandHandler } from './commands/discord-guild'
 import Invite from './commands/invite'
 import Ranks from './commands/ranks'
 import Sync from './commands/sync'
 import SyncGuild from './commands/sync-guild'
-import type { MinecraftGuild, WaitlistEntry } from './database'
+import type { MinecraftGuild, MinecraftGuildMemberGexp, WaitlistEntry } from './database'
 import { Database } from './database'
 import { DiscordWaitlistInteraction } from './discord-waitlist-interaction'
 
-export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
+export class MinecraftGuildsManager extends Instance implements DisplayableInstance {
   private static readonly MaxGuildMembers = 125
   private static readonly WaitlistRequestDuration = Duration.days(1)
   private static readonly ForceReschedule = Duration.days(7)
@@ -42,9 +46,10 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   private readonly detectionQueue = new PromiseQueue(1)
   private readonly database: Database
   private readonly waitlistInteraction: DiscordWaitlistInteraction
+  private readonly minecraftDataScrapper: AutoGuildSync
 
   public constructor(application: Application, sqliteManager: SqliteManager) {
-    super(application, InternalInstancePrefix + 'minecraft-guilds-manager', InstanceType.Utility)
+    super(application, 'minecraft-guilds-manager')
     this.database = new Database(sqliteManager, this.logger)
     this.waitlistInteraction = new DiscordWaitlistInteraction(
       this.application,
@@ -52,6 +57,17 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       this.eventHelper,
       this.logger,
       this.errorHandler,
+      this.abortController.signal,
+      this.database,
+      this.detectionQueue
+    )
+    this.minecraftDataScrapper = new AutoGuildSync(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
+      this.abortController.signal,
       this.database,
       this.detectionQueue
     )
@@ -60,11 +76,12 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     this.application.registerChatCommand(new Sync(this.database))
     this.application.registerChatCommand(new SyncGuild(this.database))
     this.application.registerChatCommand(new Invite(this.database))
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     this.application.registerDiscordCommand({
       ...DiscordGuildCommand,
       handler: (context) => discordGuildCommandHandler(context, this.database, this.waitlistInteraction),
       autoComplete: (context) => discordGuildAutocomplete(context, this.database)
-    })
+    } as DiscordBridgeCommandHandler<OptionMinecraftInstance.None>)
 
     this.application.on('guildPlayer', async (event) => {
       await this.handleJoinRequest(event)
@@ -72,6 +89,15 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
 
     this.application.on('guildPlayer', async (event) => {
       await this.detectionQueue.add(() => this.handleJoin(event))
+    })
+
+    // queue and execute as soon as possible before anything else loads
+    void this.detectionQueue
+      .add(() => this.autoMigrateGuilds())
+      .catch(this.errorHandler.promiseCatch('handling autoMigrateGuilds()'))
+    setIntervalAsync(() => this.detectionQueue.add(() => this.autoMigrateGuilds()), {
+      delay: Duration.minutes(5),
+      errorHandler: this.errorHandler.promiseCatch('handling autoMigrateGuilds()')
     })
 
     setIntervalAsync(() => this.detectionQueue.add(() => this.autoRegisterGuilds()), {
@@ -92,8 +118,20 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     })
   }
 
+  public displayName(): string {
+    return 'Guilds Manager'
+  }
+
   public discordClient(): Client {
     return this.application.discordInstance.getClient()
+  }
+
+  public getAndSupplementedMemberGexp(guild: HypixelGuild, uuid: string, days: number): MinecraftGuildMemberGexp[] {
+    return this.database.getAndSupplementedMemberGexp(guild, uuid, days)
+  }
+
+  public getMemberGexp(guildId: MinecraftGuild['id'], uuid: string, days: number): MinecraftGuildMemberGexp[] {
+    return this.database.getMemberGexp(guildId, uuid, days)
   }
 
   private async autoRegisterGuilds(): Promise<void> {
@@ -153,9 +191,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   private async handleJoin(event: GuildPlayerEvent): Promise<void> {
     if (event.type !== GuildPlayerEventType.Join) return
 
-    const instance = this.application.minecraftManager
-      .getAllInstances()
-      .find((instance) => instance.instanceName === event.instanceName)
+    const instance = this.application.minecraftManager.getAllInstances().find((instance) => instance === event.instance)
     if (instance === undefined) return
 
     const savedGuild = await this.findSavedGuildFromInstance(instance)
@@ -176,16 +212,14 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
   private async autoRegisterGuild(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {
     if (instance.currentStatus() !== Status.Connected) return
 
-    const guildListResult = await this.application.core.guildManager
-      .list(instance.instanceName, Duration.minutes(5))
-      .catch(() => undefined)
+    const guildListResult = await instance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
     if (guildListResult === undefined) return
 
     const savedGuild = allSavedGuilds.find(
       (guild) => guild.name.toLowerCase().trim() === guildListResult.name.toLowerCase().trim()
     )
     if (savedGuild !== undefined) return
-    this.logger.info(`Auto registering an in-game guild for the instance ${instance.instanceName}`)
+    this.logger.info(`Auto registering an in-game guild for the instance ${instance.getLogName()}`)
 
     const botUuid = instance.uuid()
     if (botUuid === undefined) {
@@ -195,13 +229,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     const hypixelGuild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
     if (hypixelGuild === undefined) return // probably the account left and guildListResult cache is outdated
 
-    this.database.initGuild(
-      hypixelGuild._id,
-      hypixelGuild.name,
-      hypixelGuild.ranks
-        .filter((rank) => !rank.default)
-        .map((rank) => ({ name: rank.name, priority: rank.priority, whitelisted: false }))
-    )
+    this.database.initGuild(hypixelGuild)
   }
 
   private async handleJoinRequest(event: GuildPlayerEvent): Promise<void> {
@@ -210,9 +238,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     const banned = event.user.activePunishments().longestPunishment(PunishmentType.Ban)
     if (banned !== undefined) return
 
-    const instance = this.application.minecraftManager
-      .getAllInstances()
-      .find((instance) => instance.instanceName === event.instanceName)
+    const instance = this.application.minecraftManager.getAllInstances().find((instance) => instance === event.instance)
     if (instance === undefined) return
 
     const savedGuild = await this.findSavedGuildFromInstance(instance)
@@ -232,7 +258,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       message: `${event.user.displayName()} is auto-accepted into the guild for meeting the join requirements.`
     })
     await this.application.sendMinecraft(
-      [event.instanceName],
+      [event.instance],
       MinecraftSendChatPriority.High,
       event.eventId,
       `/guild accept ${event.user.mojangProfile().id}`
@@ -241,7 +267,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
 
   private async findSavedGuildFromInstance(instance: MinecraftInstance): Promise<MinecraftGuild | undefined> {
     if (instance.currentStatus() !== Status.Connected) return
-    const guildListResult = await this.application.core.guildManager.list(instance.instanceName)
+    const guildListResult = await instance.guildManager.list()
 
     const allSavedGuilds = this.database.allGuilds()
     if (allSavedGuilds.length === 0) return
@@ -276,7 +302,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
       if (handler === undefined) continue
 
       const meetsCondition = await handler.meetsCondition(conditionContext, conditionUser, condition.options)
-      if (meetsCondition) conditionsMet++
+      if (meetsCondition.type === ConditionResultType.Pass) conditionsMet++
       if (conditionsMet >= savedGuild.neededJoinConditions) return true
     }
 
@@ -307,9 +333,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     let changed = false
     let openSlots = MinecraftGuildsManager.MaxGuildMembers
 
-    const guildListResult = await this.application.core.guildManager
-      .list(instance.instanceName, Duration.minutes(1))
-      .catch(() => undefined)
+    const guildListResult = await instance.guildManager.list(Duration.minutes(1)).catch(() => undefined)
     if (guildListResult === undefined) return
     openSlots -= guildListResult.members.length
 
@@ -402,9 +426,7 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
     )
 
     const profile = await this.application.mojangApi.profileByUuid(waitlistEntry.mojangId)
-    const result = await this.application.core.guildManager
-      .invite(instance.instanceName, profile.name)
-      .catch(() => undefined)
+    const result = await instance.guildManager.invite(profile.name).catch(() => undefined)
 
     switch (result) {
       case GuildInviteStatus.AlreadyJoined:
@@ -548,6 +570,51 @@ export class MinecraftGuildsManager extends Instance<InstanceType.Utility> {
           label: 'Decline'
         }
       ]
+    }
+  }
+
+  private async autoMigrateGuilds(): Promise<void> {
+    const toMigrateGuilds = this.application.core.migrationConfigurations.getAddGuildDefaultRank()
+    if (toMigrateGuilds.length === 0) return
+
+    this.logger.info('Migrating legacy guilds into the new system')
+    const savedGuilds = this.database.allGuilds()
+
+    const migrationConfigurations = this.application.core.migrationConfigurations
+    function save(index: number): void {
+      const remaining = toMigrateGuilds.slice(index + 1)
+      migrationConfigurations.setAddGuildDefaultRank(remaining)
+    }
+
+    for (const [index, toMigrateGuild] of toMigrateGuilds.entries()) {
+      const savedGuild = savedGuilds.find((guild) => guild.id === toMigrateGuild)
+      if (savedGuild === undefined) {
+        save(index)
+        continue
+      }
+
+      const conditions = this.database.getRoleConditions(toMigrateGuild)
+      if (conditions.length === 0) {
+        save(index)
+        continue
+      }
+
+      const guild = await this.application.hypixelApi.getGuildById(toMigrateGuild)
+      if (guild === undefined) {
+        this.logger.warn(
+          `Tried migrating guild name=${savedGuild.name},id=${savedGuild.id} but could not be found on Hypixel. `
+        )
+        save(index)
+        continue
+      }
+      const defaultRank = guild.ranks.find((rank) => rank.default)
+      assert.ok(defaultRank !== undefined)
+
+      const updatedGuild = this.database.initGuild(guild)
+      const whitelistedRanks = updatedGuild.roles.filter((role) => role.whitelisted).map((role) => role.name)
+      whitelistedRanks.push(defaultRank.name)
+      this.database.setWhitelistedGuildRoles(guild._id, whitelistedRanks)
+      this.logger.info(`Migrated guild name=${savedGuild.name},id=${savedGuild.id}.`)
     }
   }
 }

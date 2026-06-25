@@ -1,7 +1,8 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { InstanceType, Permission } from '../../../common/application-event.js'
+import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { checkChatTriggers, RankChat } from '../../../utility/chat-triggers.js'
 import { search } from '../../../utility/shared-utility'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
@@ -15,23 +16,18 @@ export default {
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ),
+  origin: CommandOrigin.Bridge,
   permission: Permission.Helper,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
-    const instances = context.application.getInstancesNames(InstanceType.Minecraft)
+    const instances = context.application.minecraftManager.getAllInstances()
     const command = `/g promote ${username}`
 
-    const result = await checkChatTriggers(
-      context.application,
-      context.eventHelper,
-      RankChat,
-      instances,
-      command,
-      username
-    )
+    const result = await checkChatTriggers(context.application, RankChat, instances, command, username)
     const formatted = formatChatTriggerResponse(result, `Promote ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })

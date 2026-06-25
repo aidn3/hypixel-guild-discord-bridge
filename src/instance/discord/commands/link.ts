@@ -1,6 +1,8 @@
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 
 export default {
   getCommandBuilder: () =>
@@ -10,6 +12,8 @@ export default {
       .addStringOption((option) =>
         option.setName('username').setDescription('Username of the player').setRequired(true).setAutocomplete(true)
       ),
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
 
   handler: async function (context) {
     const interaction = context.interaction

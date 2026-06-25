@@ -1,4 +1,4 @@
-import { ChannelType } from '../../../common/application-event.js'
+import { ChannelType, Platform } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -21,6 +21,7 @@ export default {
       context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Private, username: username })
       await context.application.emit('chat', {
         ...event,
+        platform: Platform.Minecraft,
 
         channelType: ChannelType.Private,
 
