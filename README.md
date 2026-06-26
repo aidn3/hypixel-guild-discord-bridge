@@ -49,9 +49,9 @@ This project is made to be fully flexible and customisable, offering a high qual
 
 ### Prerequisites
 
-- [Nodejs version 1.20 or later](https://nodejs.dev/download)
-- [npm](https://nodejs.org/en/download/) (usually installed by default with `Nodejs`)
-- [Git](https://git-scm.com/downloads)
+- [Node.js version 22 or later](https://nodejs.dev/download)
+- [npm](https://nodejs.org/en/download/) (usually installed by default with `Node.js`)
+- [git](https://git-scm.com/downloads)
 - Minecraft alt account
 
 ### Download
