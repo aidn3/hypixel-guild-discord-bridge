@@ -3,8 +3,7 @@ import assert from 'node:assert'
 import type { ChatCommandContext } from '../../../common/commands'
 import { ChatCommandHandler } from '../../../common/commands'
 import { Status } from '../../../common/connectable-instance'
-import type { GuildManager } from '../../../core/users/guild-manager'
-import { GuildInviteStatus } from '../../../core/users/guild-manager'
+import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager'
 import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance'
 import type { MinecraftManager } from '../../../instance/minecraft/minecraft-manager'
 import Duration from '../../../utility/duration'
@@ -29,12 +28,10 @@ export default class Invite extends ChatCommandHandler {
     const savedGuild = this.database.allGuilds().find((guild) => guild.id === waitlistEntry.guildId)
     assert.ok(savedGuild !== undefined)
 
-    const instance = await this.findInstance(savedGuild, context.app.minecraftManager, context.app.core.guildManager)
+    const instance = await this.findInstance(savedGuild, context.app.minecraftManager)
     if (instance === undefined) return 'Can not process this request right now due to inability to connect to Hypixel'
 
-    const result = await context.app.core.guildManager
-      .invite(instance.instanceName, mojangProfile.name)
-      .catch(() => undefined)
+    const result = await instance.guildManager.invite(mojangProfile.name).catch(() => undefined)
     if (result === undefined) return 'Failed to invite somehow :D'
 
     switch (result) {
@@ -79,15 +76,12 @@ export default class Invite extends ChatCommandHandler {
 
   async findInstance(
     savedGuild: MinecraftGuild,
-    minecraftManager: MinecraftManager,
-    guildManager: GuildManager
+    minecraftManager: MinecraftManager
   ): Promise<MinecraftInstance | undefined> {
     for (const potentialInstance of minecraftManager.getAllInstances()) {
       if (potentialInstance.currentStatus() !== Status.Connected) continue
 
-      const guildListResult = await guildManager
-        .list(potentialInstance.instanceName, Duration.minutes(5))
-        .catch(() => undefined)
+      const guildListResult = await potentialInstance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
       if (guildListResult === undefined) continue
 
       if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {

@@ -20,8 +20,7 @@ export class SqliteManager {
   private cleanCallbacks: (() => void)[] = []
   private cleanInterval: NodeJS.Timeout
 
-  private readonly migrators = new Map<number, Migrator>()
-  private targetVersion = 0
+  private readonly migrators: Migrator[] = []
 
   public constructor(
     private readonly application: Application,
@@ -34,11 +33,6 @@ export class SqliteManager {
       this.newlyCreated = true
       this.database = new Database()
     } else {
-      application.applicationIntegrity.addConfigPath(this.configFilePath)
-      // temp files
-      application.applicationIntegrity.addConfigPath(this.configFilePath + '-shm')
-      application.applicationIntegrity.addConfigPath(this.configFilePath + '-wal')
-
       application.addShutdownListener(() => {
         this.close()
       })
@@ -63,15 +57,8 @@ export class SqliteManager {
     this.cleanCallbacks.push(callback)
   }
 
-  public registerMigrator(version: number, migrate: Migrator): this {
-    assert.ok(!this.migrators.has(version), `migration process for version ${version} already registered.`)
-    this.migrators.set(version, migrate)
-
-    return this
-  }
-
-  public setTargetVersion(version: number): this {
-    this.targetVersion = version
+  public registerMigrator(migrate: Migrator): this {
+    this.migrators.push(migrate)
 
     return this
   }
@@ -82,26 +69,31 @@ export class SqliteManager {
 
     const transaction = database.transaction(() => {
       const newlyCreated = this.isNewlyCreated()
+      let currentVersion = database.pragma('user_version', { simple: true }) as number
 
       let finished = false
       let changed = false
       while (!finished) {
-        const currentVersion = database.pragma('user_version', { simple: true }) as number
-        const migrator = this.migrators.get(currentVersion)
+        const migrator = this.migrators.at(currentVersion)
         if (migrator !== undefined) {
+          const newVersion = currentVersion + 1
+
+          this.logger.debug(`Migrating database from version ${currentVersion} to ${newVersion}`)
           migrator(database, this.logger, postCleanupActions, newlyCreated)
+
+          database.pragma(`user_version = ${newVersion}`)
+          currentVersion = newVersion
           changed = true
           continue
         }
 
         assert.strictEqual(
           currentVersion,
-          this.targetVersion,
-          'migration process failed to reach the target version somehow??'
+          this.migrators.length,
+          `migration process failed to reach the target version somehow?? current=${currentVersion},target=${this.migrators.length}`
         )
         if (changed && !newlyCreated) {
           const backupPath = this.application.getBackupPath(sqliteName)
-          this.application.applicationIntegrity.addConfigPath(backupPath)
           this.logger.debug(`Backing up old database before committing changes. backup path: ${backupPath}`)
           this.backup(backupPath)
         }

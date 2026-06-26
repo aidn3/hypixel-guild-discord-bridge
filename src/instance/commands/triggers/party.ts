@@ -1,7 +1,7 @@
 import Moment from 'moment'
 
-import { ChannelType, InstanceType } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChannelType, Platform } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import { getDuration } from '../../../utility/shared-utility'
@@ -30,15 +30,8 @@ export default class PartyManager {
     this.activeParties = this.activeParties.filter((party) => party.expiresAt > currentTime)
   }
 
-  allowedExecution(context: ChatCommandContext): string | undefined {
-    const originalMessage = context.message
-    if (originalMessage.channelType === ChannelType.Officer || originalMessage.channelType === ChannelType.Public) {
-      if (originalMessage.instanceType === InstanceType.Minecraft) return undefined
-
-      if (originalMessage.instanceType === InstanceType.Discord) return undefined
-    }
-
-    return 'Parties commands can only be executed in public and officer chat of either minecraft or discord.'
+  requirements(): ChatCommandRequirements {
+    return { platforms: [Platform.Minecraft, Platform.Discord], sources: [ChannelType.Public, ChannelType.Officer] }
   }
 }
 
@@ -55,10 +48,11 @@ class PartyList extends ChatCommandHandler {
     this.partyManager = partyManager
   }
 
-  handler(context: ChatCommandContext): string {
-    const notAllowed = this.partyManager.allowedExecution(context)
-    if (notAllowed) return notAllowed
+  override requirements(): ChatCommandRequirements | string {
+    return this.partyManager.requirements()
+  }
 
+  handler(context: ChatCommandContext): string {
     this.partyManager.cleanExpiredParties()
     if (this.partyManager.activeParties.length === 0) {
       return `${context.username}, There are no active parties. You can ${context.commandPrefix}startparty`
@@ -93,10 +87,11 @@ class PartyStart extends ChatCommandHandler {
     this.partyManager = partyManager
   }
 
-  handler(context: ChatCommandContext): string {
-    const notAllowed = this.partyManager.allowedExecution(context)
-    if (notAllowed) return notAllowed
+  override requirements(): ChatCommandRequirements | string {
+    return this.partyManager.requirements()
+  }
 
+  handler(context: ChatCommandContext): string {
     this.partyManager.cleanExpiredParties()
     const alreadyExistingParty = this.partyManager.activeParties.some((party) => party.username === context.username)
     if (alreadyExistingParty)
@@ -158,10 +153,11 @@ class PartyEnd extends ChatCommandHandler {
     this.partyManager = partyManager
   }
 
-  handler(context: ChatCommandContext): string {
-    const notAllowed = this.partyManager.allowedExecution(context)
-    if (notAllowed) return notAllowed
+  override requirements(): ChatCommandRequirements | string {
+    return this.partyManager.requirements()
+  }
 
+  handler(context: ChatCommandContext): string {
     this.partyManager.cleanExpiredParties()
     const changedParties = this.partyManager.activeParties.filter((party) => party.username !== context.username)
     const removed = changedParties.length !== this.partyManager.activeParties.length

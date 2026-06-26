@@ -5,8 +5,8 @@ import type { Logger } from 'log4js'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import Duration from '../../utility/duration'
 
-import type { ApiEntry, ApiEntryWithOption } from './hypixel'
 import type { HypixelSuccessResponse } from './hypixel-api'
+import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher'
 
 export class HypixelDatabase {
   private static readonly MaxLife = Duration.years(1)

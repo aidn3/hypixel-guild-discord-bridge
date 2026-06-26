@@ -1,8 +1,9 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Color } from '../../../common/application-event.js'
+import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 function createPing(latency: number, websocket: number, lag: number): APIEmbed {
@@ -19,6 +20,8 @@ function createPing(latency: number, websocket: number, lag: number): APIEmbed {
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('ping').setDescription('Discord ping'),
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
 
   handler: async function (context) {
     const timestamp = Date.now()

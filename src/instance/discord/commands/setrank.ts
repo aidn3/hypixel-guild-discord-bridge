@@ -1,7 +1,8 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { InstanceType, Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { Permission } from '../../../common/application-event.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { checkChatTriggers, RankChat } from '../../../utility/chat-triggers.js'
 import { search } from '../../../utility/shared-utility'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
@@ -18,24 +19,18 @@ export default {
       .addStringOption((option) =>
         option.setName('rank').setDescription('rank to change to').setRequired(true).setAutocomplete(true)
       ),
+  origin: CommandOrigin.Bridge,
   permission: Permission.Helper,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
 
   handler: async function (context) {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
-    const instances = context.application.getInstancesNames(InstanceType.Minecraft)
     const rank: string = context.interaction.options.getString('rank', true)
 
     const command = `/g setrank ${username} ${rank}`
-    const result = await checkChatTriggers(
-      context.application,
-      context.eventHelper,
-      RankChat,
-      instances,
-      command,
-      username
-    )
+    const result = await checkChatTriggers(context.application, RankChat, context.minecraftInstance, command, username)
     const formatted = formatChatTriggerResponse(result, `Setrank ${escapeMarkdown(username)}`)
 
     await context.interaction.editReply({ embeds: [formatted] })
@@ -62,4 +57,4 @@ export default {
       await context.interaction.respond(response)
     }
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireAll>

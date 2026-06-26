@@ -2,24 +2,22 @@ import type Application from '../../../application.js'
 import {
   ChannelType,
   Color,
-  InstanceType,
   type MinecraftRawChatEvent,
-  MinecraftSendChatPriority
+  MinecraftSendChatPriority,
+  Platform
 } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
+import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
+import Duration from '../../../utility/duration'
 import { sleep } from '../../../utility/shared-utility'
 import { Timeout } from '../../../utility/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
+import type { MinecraftManager } from '../../minecraft/minecraft-manager'
 
 export default class Warp extends ChatCommandHandler {
-  private static readonly CommandCoolDown = 60_000
-  private lastCommandExecutionAt = 0
-
   constructor() {
     super({
       triggers: ['warp', 'warpout'],
@@ -28,46 +26,35 @@ export default class Warp extends ChatCommandHandler {
     })
   }
 
+  override cooldownOptions(): ChatCommandCooldown {
+    return { type: CooldownType.Community, duration: Duration.minutes(1) }
+  }
+
   async handler(context: ChatCommandContext): Promise<string> {
     if (context.args.length === 0) {
+      context.resetCooldown()
       return this.getExample(context.commandPrefix)
-    }
-
-    const currentTime = Date.now()
-    if (this.lastCommandExecutionAt + Warp.CommandCoolDown > currentTime) {
-      return `Can use command again in ${Math.floor((this.lastCommandExecutionAt + Warp.CommandCoolDown - currentTime) / 1000)} seconds.`
     }
 
     const username = context.args[0]
     const instance = this.getActiveMinecraftInstanceName(
       context.app.minecraftManager,
-      context.message.instanceType === InstanceType.Minecraft ? context.message.instanceName : undefined
+      context.message.platform === Platform.Minecraft ? context.message.instance : undefined
     )
     if (instance === undefined) {
       return `No active connected Minecraft account exists to use`
     }
-
-    this.lastCommandExecutionAt = currentTime
 
     return await this.warpPlayer(instance, context, username)
   }
 
   private getActiveMinecraftInstanceName(
     minecraftManager: MinecraftManager,
-    preferredInstanceName: string | undefined
+    preferredInstance: MinecraftInstance | undefined
   ): MinecraftInstance | undefined {
-    const availableInstances = minecraftManager
-      .getAllInstances()
-      .filter((instance) => instance.currentStatus() === Status.Connected)
+    if (preferredInstance !== undefined) return preferredInstance
 
-    let result: MinecraftInstance | undefined
-    if (preferredInstanceName !== undefined)
-      result = availableInstances.find(
-        (instance) => instance.instanceName.toLowerCase() === preferredInstanceName.toLowerCase()
-      )
-    if (result === undefined && availableInstances.length > 0) result = availableInstances[0]
-
-    return result
+    return minecraftManager.getAllInstances().find((instance) => instance.currentStatus() === Status.Connected)
   }
 
   async warpPlayer(instance: MinecraftInstance, context: ChatCommandContext, username: string): Promise<string> {
@@ -124,7 +111,7 @@ export default class Warp extends ChatCommandHandler {
     const timeout = new Timeout<string | undefined>(30_000, "Player didn't accept the invite.")
 
     const chatListener = async (event: MinecraftRawChatEvent) => {
-      if (event.instanceName !== instance.instanceName) return
+      if (event.instance !== instance) return
 
       if (event.message.startsWith("You cannot invite that player since they're not online.")) {
         timeout.resolve('Player not online?')

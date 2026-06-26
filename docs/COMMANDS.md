@@ -62,6 +62,7 @@ A shorter version can also be used: `!- rtca`
 | `fetchur`        | Show what Fetchur NPC is requesting                                                |
 | `forge`          | Returns a player's SkyBlock forge slots                                            |
 | `garden`         | Returns a player's Garden stats                                                    |
+| `gexp`           | Shows weekly and monthly GEXP for a guild member in this guild                     |
 | `gifted`         | Returns how many times a player has gifted a rank                                  |
 | `guild`          | Returns a player's guild, if they're in one                                        |
 | `help`           | Shows a command description and an example about its usage                         |
@@ -137,6 +138,7 @@ A shorter version can also be used: `!- rtca`
 | --------------------- | ---------------------------------------------------------------- |
 | `/about`              | Display basic info about the client.                             |
 | `/accept`             | Accept a player to the guild if they have a join request in-game |
+| `/admin`              | Control application settings.                                    |
 | `/conditions`         | Manage conditions                                                |
 | `/connectivity`       | Check connectivity to Minecraft instances                        |
 | `/create-leaderboard` | Create a leaderboard message in this channel                     |
@@ -158,12 +160,13 @@ A shorter version can also be used: `!- rtca`
 | `/ping`               | Discord ping                                                     |
 | `/placeholder`        | Manage and help with placeholders                                |
 | `/profanity`          | Manage application profanity filter                              |
+| `/profile`            | Customize Bot profile inside a Discord server.                   |
 | `/promote`            | Promote guild member in-game                                     |
 | `/punishments`        | Manage active punishments                                        |
 | `/reconnect`          | Reconnect minecraft clients                                      |
 | `/restart`            | Send signal to restart the bridge                                |
 | `/setrank`            | Setrank guild member in-game                                     |
-| `/settings`           | Control application settings.                                    |
+| `/settings`           | Control bridge settings.                                         |
 | `/sync`               | Synchronize roles and other user options                         |
 | `/syncall`            | Synchronize roles and other options for all users                |
 | `/unlink`             | Unlink your Discord account from your Minecraft account          |

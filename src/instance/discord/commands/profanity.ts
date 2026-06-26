@@ -13,6 +13,7 @@ import type {
   DiscordCommandContext,
   DiscordCommandHandler
 } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type { ProfanityReplace } from '../../../core/moderation/profanity'
 import Duration from '../../../utility/duration'
 import { search } from '../../../utility/shared-utility'
@@ -99,7 +100,9 @@ export default {
               )
           )
       ),
+  origin: CommandOrigin.Bridge,
   permission: Permission.Officer,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.None,
 
   handler: async function (context) {
     if (!context.interaction.channel) {
@@ -140,7 +143,7 @@ export default {
   }
 } satisfies DiscordCommandHandler
 
-async function handleReplaceInteraction(context: Readonly<DiscordCommandContext>) {
+async function handleReplaceInteraction(context: Readonly<DiscordCommandContext<CommandOrigin.Bridge>>) {
   switch (context.interaction.options.getSubcommand()) {
     case List: {
       await handleReplaceList(context)
@@ -157,7 +160,7 @@ async function handleReplaceInteraction(context: Readonly<DiscordCommandContext>
   }
 }
 
-async function handleReplaceList(context: DiscordCommandContext): Promise<void> {
+async function handleReplaceList(context: DiscordCommandContext<CommandOrigin.Bridge>): Promise<void> {
   await context.interaction.deferReply()
 
   await interactivePaging(
@@ -190,7 +193,7 @@ async function handleReplaceList(context: DiscordCommandContext): Promise<void> 
   )
 }
 
-async function handleReplaceAdd(context: DiscordCommandContext): Promise<void> {
+async function handleReplaceAdd(context: DiscordCommandContext<CommandOrigin.Bridge>): Promise<void> {
   const search = context.interaction.options.getString('search', true)
   const replace = context.interaction.options.getString('replace', true)
 
@@ -225,7 +228,7 @@ async function handleReplaceAdd(context: DiscordCommandContext): Promise<void> {
   })
 }
 
-async function handleReplaceRemove(context: DiscordCommandContext): Promise<void> {
+async function handleReplaceRemove(context: DiscordCommandContext<CommandOrigin.Bridge>): Promise<void> {
   const id = context.interaction.options.getNumber('id', true)
   await context.interaction.deferReply()
 
@@ -262,7 +265,7 @@ function formatProfanityReplacer(entry: ProfanityReplace): string {
 }
 
 export async function handleProfanityInteraction(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
   switch (context.interaction.options.getSubcommand()) {
@@ -282,7 +285,7 @@ export async function handleProfanityInteraction(
 }
 
 async function handleList(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
   const EntriesPerPage = 20
@@ -306,7 +309,7 @@ async function handleList(
 }
 
 async function handleAdd(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
   const list = getList(context, group)
@@ -339,7 +342,7 @@ async function handleAdd(
 }
 
 async function handleRemove(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): Promise<void> {
   const list = getList(context, group)
@@ -368,7 +371,7 @@ async function handleRemove(
 }
 
 function getList(
-  context: DiscordCommandContext | DiscordAutoCompleteContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge> | DiscordAutoCompleteContext<CommandOrigin.Bridge>,
   group: typeof IncludeCommand | typeof ExcludeCommand
 ): string[] {
   const config = context.application.core.moderationConfiguration
@@ -384,7 +387,7 @@ function getList(
 }
 
 function setList(
-  context: DiscordCommandContext,
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
   group: typeof IncludeCommand | typeof ExcludeCommand,
   values: string[]
 ): void {

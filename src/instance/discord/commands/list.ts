@@ -5,16 +5,17 @@ import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type { UserLink } from '../../../common/application-event.js'
-import { Color, InstanceType } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandScope } from '../../../common/commands.js'
+import { Color, Permission } from '../../../common/application-event.js'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type { Hypixel } from '../../../core/hypixel/hypixel'
 import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
-import type { GuildFetch } from '../../../core/users/guild-manager'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
 import { capitalize } from '../../../utility/shared-utility'
+// eslint-disable-next-line import/no-restricted-paths
+import type { GuildFetch } from '../../minecraft/guild-manager'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { pageMessage } from '../utility/discord-pager.js'
 
@@ -93,7 +94,9 @@ export default {
       )
       .setName('list')
       .setDescription('List players in your guild(s)'),
-  scope: CommandScope.Chat,
+  origin: CommandOrigin.Bridge,
+  permission: Permission.Anyone,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
 
   handler: async function (context) {
     await context.interaction.deferReply()
@@ -127,7 +130,7 @@ export default {
 
     await pageMessage(context.interaction, createEmbed(lists, onlyOnline), context.errorHandler)
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireAll>
 
 async function listMembers(
   app: Application,
@@ -273,15 +276,15 @@ async function getGuilds(app: Application, errorHandler: UnexpectedErrorHandler)
 
   const result: GuildsLookup = { fetched: [], failed: [] }
 
-  for (const instanceName of app.getInstancesNames(InstanceType.Minecraft)) {
-    const task = app.core.guildManager
-      .list(instanceName)
+  for (const instance of app.minecraftManager.getAllInstances()) {
+    const task = instance.guildManager
+      .list()
       .then((guild) => {
         result.fetched.push(guild)
       })
       .catch((error: unknown) => {
         errorHandler.error('fetching guild info', error)
-        result.failed.push(instanceName)
+        result.failed.push(instance.getConfigName())
       })
 
     tasks.push(task)

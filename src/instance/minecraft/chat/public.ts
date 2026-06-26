@@ -1,4 +1,4 @@
-import { ChannelType, MinecraftSendChatPriority, PunishmentType } from '../../../common/application-event.js'
+import { ChannelType, MinecraftSendChatPriority, Platform, PunishmentType } from '../../../common/application-event.js'
 import { durationToMinecraftDuration } from '../../../utility/shared-utility'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 import { getUuidFromGuildChat } from '../common/common'
@@ -53,6 +53,7 @@ export default {
       context.messageAssociation.addMessageId(event.eventId, { channel: ChannelType.Public })
       await context.application.emit('chat', {
         ...event,
+        platform: Platform.Minecraft,
 
         channelType: ChannelType.Public,
 

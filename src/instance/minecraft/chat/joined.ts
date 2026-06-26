@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import { ChannelType, Color, GuildPlayerEventType } from '../../../common/application-event.js'
+import { ChannelType, Color, GuildPlayerEventType, Platform } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {
@@ -19,6 +19,7 @@ export default {
 
       await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
+        platform: Platform.Minecraft,
 
         color: Color.Good,
         channels: [ChannelType.Public, ChannelType.Officer],

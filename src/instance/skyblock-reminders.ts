@@ -1,20 +1,25 @@
 import assert from 'node:assert'
 
 import type Application from '../application'
-import { ChannelType, Color, InstanceType } from '../common/application-event'
+import { ChannelType, Color } from '../common/application-event'
+import type { DisplayableInstance } from '../common/instance'
 import { Instance } from '../common/instance'
 import Duration from '../utility/duration'
 import { setIntervalAsync } from '../utility/scheduling'
 
-export class SkyblockReminders extends Instance<InstanceType.Utility> {
+export class SkyblockReminders extends Instance implements DisplayableInstance {
   public static readonly DefaultDarkAuctionMessage = 'Dark Auction in {minutes} minute(s)!'
   public static readonly DefaultStarfallMessage = `Reminder: Star Cult is here. Get that free x200 starfall!`
 
   constructor(application: Application) {
-    super(application, 'skyblock-reminders', InstanceType.Utility)
+    super(application, 'skyblock-reminders')
 
     this.startDarkAuctionReminder()
     this.startStarfallCultReminder()
+  }
+
+  public displayName(): string {
+    return 'Skyblock Reminders'
   }
 
   private startDarkAuctionReminder(): void {

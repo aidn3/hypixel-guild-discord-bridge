@@ -12,6 +12,8 @@ export default class ClientSession {
 
   silentQuit = false
 
+  private destroyed = false
+
   constructor(client: Client) {
     this.client = client
 
@@ -20,6 +22,15 @@ export default class ClientSession {
 
     this.listenForRegistry(client)
     this.listenForSettings(client)
+  }
+
+  public isDestroyed(): boolean {
+    return this.destroyed
+  }
+
+  public destroy(): void {
+    this.client.removeAllListeners()
+    this.destroyed = true
   }
 
   /*

@@ -1,4 +1,10 @@
-import { ChannelType, Color, GuildPlayerEventType, PunishmentPurpose } from '../../../common/application-event.js'
+import {
+  ChannelType,
+  Color,
+  GuildPlayerEventType,
+  Platform,
+  PunishmentPurpose
+} from '../../../common/application-event.js'
 import type { MinecraftUser, MojangProfile } from '../../../common/user'
 import Duration from '../../../utility/duration'
 import { sufficeToTime } from '../../../utility/shared-utility'
@@ -49,6 +55,7 @@ export default {
 
       await context.application.emit('guildPlayer', {
         ...context.eventHelper.fillBaseEvent(),
+        platform: Platform.Minecraft,
 
         color: Color.Bad,
         channels: [ChannelType.Officer],

@@ -2,32 +2,20 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 
-import type { InstanceType } from './application-event.js'
 import type { ConnectableInstance } from './connectable-instance.js'
 import type EventHelper from './event-helper.js'
 import type { Instance } from './instance.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
 
-export default abstract class SubInstance<K extends ConnectableInstance<T> | Instance<T>, T extends InstanceType, O> {
-  protected application: Application
-  protected clientInstance: K
-  protected eventHelper: EventHelper<T>
-  protected logger: Logger
-  protected errorHandler: UnexpectedErrorHandler
-
+export default abstract class SubInstance<K extends ConnectableInstance | Instance, O> {
   public constructor(
-    application: Application,
-    clientInstance: K,
-    eventHelper: EventHelper<T>,
-    logger: Logger,
-    errorHandler: UnexpectedErrorHandler
-  ) {
-    this.application = application
-    this.clientInstance = clientInstance
-    this.eventHelper = eventHelper
-    this.logger = logger
-    this.errorHandler = errorHandler
-  }
+    protected readonly application: Application,
+    protected readonly clientInstance: K,
+    protected readonly eventHelper: EventHelper<K>,
+    protected readonly logger: Logger,
+    protected readonly errorHandler: UnexpectedErrorHandler,
+    protected readonly abortSignal: AbortSignal
+  ) {}
 
   /**
    * Called every time the client reconnects.

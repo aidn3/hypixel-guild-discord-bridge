@@ -26,7 +26,7 @@ export default class Networth extends ChatCommandHandler {
 
     const selectedProfile = await context.app.hypixelApi
       .getSkyblockProfiles(uuid)
-      .then((profiles) => profiles?.find((p) => p.selected))
+      .then((profiles) => profiles?.find((p) => p.selected) ?? profiles?.at(0))
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     let museumData: object | undefined

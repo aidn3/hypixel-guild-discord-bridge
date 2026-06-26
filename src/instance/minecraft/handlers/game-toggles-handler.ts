@@ -5,7 +5,7 @@ import type { Client } from 'minecraft-protocol'
 import PromiseQueue from 'promise-queue'
 
 import type Application from '../../../application.js'
-import type { InstanceType, MinecraftRawChatEvent } from '../../../common/application-event.js'
+import type { MinecraftRawChatEvent } from '../../../common/application-event.js'
 import { ChannelType, Color, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
 import SubInstance from '../../../common/sub-instance'
@@ -17,7 +17,7 @@ import { sleep } from '../../../utility/shared-utility'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
-export default class GameTogglesHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class GameTogglesHandler extends SubInstance<MinecraftInstance, ClientSession> {
   /*
    Wait for client to be afk in the world before allowing the routine
    */
@@ -41,11 +41,12 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
-    eventHelper: EventHelper<InstanceType.Minecraft>,
+    eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     setIntervalAsync(
       async () => {
@@ -62,69 +63,78 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       },
       {
         delay: GameTogglesHandler.ResendEvery,
-        errorHandler: this.errorHandler.promiseCatch('check and send periodical game toggles if needed')
+        errorHandler: this.errorHandler.promiseCatch('check and send periodical game toggles if needed'),
+        abortSignal: this.abortSignal
       }
     )
 
-    this.application.on('chat', (event) => {
-      if (event.instanceName !== this.clientInstance.instanceName) return
+    this.application.on(
+      'chat',
+      (event) => {
+        if (event.instance !== this.clientInstance) return
 
-      const uuid = this.clientInstance.uuid()
-      assert.ok(uuid !== undefined)
-      const config = this.getConfig(uuid)
+        const uuid = this.clientInstance.uuid()
+        assert.ok(uuid !== undefined)
+        const config = this.getConfig(uuid)
 
-      if (event.channelType === ChannelType.Public || event.channelType === ChannelType.Officer) {
-        config.guildChatEnabled = true
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
-    })
+        if (event.channelType === ChannelType.Public || event.channelType === ChannelType.Officer) {
+          config.guildChatEnabled = true
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
+      },
+      { signal: this.abortSignal }
+    )
 
-    this.application.on('minecraftChat', (event: MinecraftRawChatEvent) => {
-      if (event.message.length === 0 || event.instanceName !== this.clientInstance.instanceName) return
+    this.application.on(
+      'minecraftChat',
+      (event: MinecraftRawChatEvent) => {
+        if (event.message.length === 0 || event.instance !== this.clientInstance) return
 
-      const uuid = this.clientInstance.uuid()
-      if (uuid === undefined) {
-        this.logger.warn("minecraftChat event was received while the handler isn't ready yet. Ignoring this event.")
-        return
-      }
-      const config = this.getConfig(uuid)
+        const uuid = this.clientInstance.uuid()
+        if (uuid === undefined) {
+          this.logger.warn("minecraftChat event was received while the handler isn't ready yet. Ignoring this event.")
+          return
+        }
+        const config = this.getConfig(uuid)
 
-      if (event.message.startsWith('Your online status has been set to Online')) {
-        config.playerOnlineStatusEnabled = true
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
-      if (event.message.startsWith('Selected language: ')) {
-        config.selectedEnglish = event.message.startsWith('Selected language: English')
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
+        if (event.message.startsWith('Your online status has been set to Online')) {
+          config.playerOnlineStatusEnabled = true
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
+        if (event.message.startsWith('Selected language: ')) {
+          config.selectedEnglish = event.message.startsWith('Selected language: English')
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
 
-      if (event.message.startsWith('Enabled guild online mode!')) {
-        config.guildAllEnabled = false
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
-      if (event.message.startsWith('Disabled guild online mode!')) {
-        config.guildAllEnabled = true
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
+        if (event.message.startsWith('Enabled guild online mode!')) {
+          config.guildAllEnabled = false
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
+        if (event.message.startsWith('Disabled guild online mode!')) {
+          config.guildAllEnabled = true
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
 
-      if (event.message.startsWith('Enabled guild chat!')) {
-        config.guildChatEnabled = true
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
-      if (event.message.startsWith('Disabled guild chat!')) {
-        config.guildChatEnabled = false
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
+        if (event.message.startsWith('Enabled guild chat!')) {
+          config.guildChatEnabled = true
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
+        if (event.message.startsWith('Disabled guild chat!')) {
+          config.guildChatEnabled = false
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
 
-      if (event.message.startsWith('Enabled guild join/leave notifications!')) {
-        config.guildNotificationsEnabled = true
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
-      if (event.message.startsWith('Disabled guild join/leave notifications!')) {
-        config.guildNotificationsEnabled = false
-        this.application.core.minecraftAccounts.set(uuid, config)
-      }
-    })
+        if (event.message.startsWith('Enabled guild join/leave notifications!')) {
+          config.guildNotificationsEnabled = true
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
+        if (event.message.startsWith('Disabled guild join/leave notifications!')) {
+          config.guildNotificationsEnabled = false
+          this.application.core.minecraftAccounts.set(uuid, config)
+        }
+      },
+      { signal: this.abortSignal }
+    )
   }
 
   private allPrepared(config: GameToggleConfig): boolean {
@@ -153,7 +163,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
           color: Color.Good,
 
           user: undefined,
-          message: `Account at ${this.clientInstance.instanceName} has finished discovery phase. All ready!`
+          message: `Account at ${this.clientInstance.getConfigName()} has finished discovery phase. All ready!`
         })
       }
 
@@ -196,6 +206,7 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
   }
 
   override registerEvents(clientSession: ClientSession): void {
+    assert.ok(!this.abortSignal.aborted)
     this.initializeReadySignal(clientSession.client)
   }
 
@@ -230,7 +241,8 @@ export default class GameTogglesHandler extends SubInstance<MinecraftInstance, I
       },
       {
         delay: GameTogglesHandler.TillReady,
-        errorHandler: this.errorHandler.promiseCatch('checking and sending toggles after being ready')
+        errorHandler: this.errorHandler.promiseCatch('checking and sending toggles after being ready'),
+        abortSignal: this.abortSignal
       }
     )
 

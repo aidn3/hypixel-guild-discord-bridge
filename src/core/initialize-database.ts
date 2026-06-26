@@ -9,58 +9,79 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-const CurrentVersion = 16
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
-  sqliteManager.setTargetVersion(CurrentVersion)
-
-  sqliteManager.registerMigrator(0, (database, logger, postCleanupActions, newlyCreated) => {
+  sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom0to1(database, logger, newlyCreated)
   })
-  sqliteManager.registerMigrator(1, (database, logger, postCleanupActions, newlyCreated) => {
+  sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom1to2(application, database, logger, postCleanupActions, newlyCreated)
   })
-  sqliteManager.registerMigrator(2, (database, logger, postCleanupActions, newlyCreated) => {
+  sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom2to3(application, database, logger, postCleanupActions, newlyCreated)
   })
-  sqliteManager.registerMigrator(3, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom3to4(application, database, logger, postCleanupActions, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom3to4(database)
   })
-  sqliteManager.registerMigrator(4, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom4to5(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom4to5(database)
   })
-  sqliteManager.registerMigrator(5, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom5to6(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom5to6(database)
   })
-  sqliteManager.registerMigrator(6, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom6to7(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom6to7(database)
   })
-  sqliteManager.registerMigrator(7, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom7to8(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom7to8(database)
   })
-  sqliteManager.registerMigrator(8, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom8to9(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom8to9(database)
   })
-  sqliteManager.registerMigrator(9, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom9to10(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom9to10(database)
   })
-  sqliteManager.registerMigrator(10, (database, logger, postCleanupActions, newlyCreated) => {
+  sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom10to11(database, logger, newlyCreated)
   })
-  sqliteManager.registerMigrator(11, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom11to12(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom11to12(database)
   })
-  sqliteManager.registerMigrator(12, (database, logger, postCleanupActions, newlyCreated) => {
+  sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom12to13(database, logger, newlyCreated)
   })
-  sqliteManager.registerMigrator(13, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom13to14(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom13to14(database)
   })
-  sqliteManager.registerMigrator(14, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom14to15(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom14to15(database)
   })
-  sqliteManager.registerMigrator(15, (database, logger, postCleanupActions, newlyCreated) => {
-    migrateFrom15to16(database, logger, newlyCreated)
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom15to16(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom16to17(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom17to18(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom18to19(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom19to20(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom20to21(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom21to22(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom22to23(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom23to24(database)
   })
 
   sqliteManager.migrate(name)
@@ -71,8 +92,6 @@ function migrateFrom0to1(database: Database, logger: Logger4Js, newlyCreated: bo
     const checkedIfFresh = database.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
     const existingTable = checkedIfFresh.pluck(true).get('OnlineMembers')
     if (existingTable) {
-      logger.debug('Migrating database from version 0 to 1')
-
       // Check git commit: 9495ee42a6f50542d18938c85c1de2973f2ed769
       logger.debug('Checking and deleting all poisoned entries in OnlineMembers table if any exists')
       const prepareDeletion = database.prepare('DELETE FROM OnlineMembers')
@@ -169,8 +188,6 @@ function migrateFrom0to1(database: Database, logger: Logger4Js, newlyCreated: bo
   )
   database.exec('CREATE INDEX IF NOT EXISTS allMembersAppend ON "AllMembers" (uuid, fromDate, toDate);')
   database.exec('CREATE INDEX IF NOT EXISTS onlineMembersAppend ON "OnlineMembers" (uuid, fromDate, toDate);')
-
-  database.pragma('user_version = 1')
 }
 
 function migrateFrom1to2(
@@ -180,8 +197,6 @@ function migrateFrom1to2(
   postCleanupActions: (() => void)[],
   newlyCreated: boolean
 ): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 1 to 2')
-
   // reference: moderation/punishments.ts
   database.exec(
     'CREATE TABLE "punishments" (' +
@@ -242,8 +257,6 @@ function migrateFrom1to2(
       '  timestamp INTEGER NOT NULL' +
       ')'
   )
-
-  database.pragma('user_version = 2')
 }
 
 function migrateFrom2to3(
@@ -253,8 +266,6 @@ function migrateFrom2to3(
   postCleanupActions: (() => void)[],
   newlyCreated: boolean
 ): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 2 to 3')
-
   // reference: configurations.ts
   database.exec(
     'CREATE TABLE IF NOT EXISTS "configurations" (' +
@@ -371,19 +382,9 @@ function migrateFrom2to3(
   if (!newlyCreated) {
     migrateScoresManagerConfig(application, logger, postCleanupActions, database)
   }
-
-  database.pragma('user_version = 3')
 }
 
-function migrateFrom3to4(
-  application: Application,
-  database: Database,
-  logger: Logger4Js,
-  postCleanupActions: (() => void)[],
-  newlyCreated: boolean
-): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 3 to 4')
-
+function migrateFrom3to4(database: Database): void {
   // reference: minecraft/sessions-manager.ts
   database.exec('ALTER TABLE "mojangInstances" ADD COLUMN "connect" INTEGER NOT NULL DEFAULT 1;')
 
@@ -430,21 +431,13 @@ function migrateFrom3to4(
       '  PRIMARY KEY(channelId, instanceName)' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 4')
 }
 
-function migrateFrom4to5(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 4 to 5')
-
+function migrateFrom4to5(database: Database): void {
   database.exec('ALTER TABLE "mojangProfileSettings" ADD COLUMN "selectedEnglish" INTEGER NOT NULL DEFAULT 0;')
-
-  database.pragma('user_version = 5')
 }
 
-function migrateFrom5to6(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 5 to 6')
-
+function migrateFrom5to6(database: Database): void {
   // reference: hypixel/hypixel-database.ts
   database.exec(
     'CREATE TABLE "hypixelApiRequest" (' +
@@ -464,13 +457,9 @@ function migrateFrom5to6(database: Database, logger: Logger4Js, newlyCreated: bo
       '  lastAccessAt INTEGER NOT NULL' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 6')
 }
 
-function migrateFrom6to7(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 6 to 7')
-
+function migrateFrom6to7(database: Database): void {
   // reference: discord/roles-configurations.ts
   database.exec(
     'CREATE TABLE "discordUserUpdate" (' +
@@ -500,13 +489,9 @@ function migrateFrom6to7(database: Database, logger: Logger4Js, newlyCreated: bo
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 7')
 }
 
-function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 7 to 8')
-
+function migrateFrom7to8(database: Database): void {
   // reference: moderation/profanity.ts
   database.exec(
     'CREATE TABLE "profanityReplace" (' +
@@ -515,21 +500,13 @@ function migrateFrom7to8(database: Database, logger: Logger4Js, newlyCreated: bo
       '  replace TEXT NOT NULL' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 8')
 }
 
-function migrateFrom8to9(database: Database, logger: Logger4Js, newlyCreated: boolean) {
-  if (!newlyCreated) logger.debug('Migrating database from version 8 to 9')
-
+function migrateFrom8to9(database: Database) {
   database.exec('ALTER TABLE "discordRolesConditions" ADD COLUMN "onUnmet" TEXT NOT NULL DEFAULT "keep";')
-
-  database.pragma('user_version = 9')
 }
 
-function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 9 to 10')
-
+function migrateFrom9to10(database: Database): void {
   // reference: discord/link-button.ts
   database.exec(
     'CREATE TABLE "discordLinkButton" (' +
@@ -537,13 +514,10 @@ function migrateFrom9to10(database: Database, logger: Logger4Js, newlyCreated: b
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 10')
 }
 
 function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
   if (!newlyCreated) {
-    logger.debug('Migrating database from version 10 to 11')
     const tables = ['discordRolesConditions', 'discordNicknameConditions']
 
     /* eslint-disable @typescript-eslint/consistent-type-definitions */
@@ -596,13 +570,9 @@ function migrateFrom10to11(database: Database, logger: Logger4Js, newlyCreated: 
       logger.debug(`Updated ${totalCatacombsUpdates} discord conditions entry regarding skyblock catacombs level`)
     }
   }
-
-  database.pragma('user_version = 11')
 }
 
-function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 11 to 12')
-
+function migrateFrom11to12(database: Database): void {
   database.exec(
     'CREATE TABLE "minecraftGuild" (' +
       '  id TEXT PRIMARY KEY NOT NULL,' +
@@ -680,13 +650,10 @@ function migrateFrom11to12(database: Database, logger: Logger4Js, newlyCreated: 
       '  reference INTEGER NOT NULL UNIQUE REFERENCES minecraftGuildWaitlist(id) ON DELETE CASCADE' +
       ' ) STRICT'
   )
-
-  database.pragma('user_version = 12')
 }
 
 function migrateFrom12to13(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
   if (!newlyCreated) {
-    logger.debug('Migrating database from version 12 to 13')
     const tables = [
       'discordRolesConditions',
       'discordNicknameConditions',
@@ -719,22 +686,14 @@ function migrateFrom12to13(database: Database, logger: Logger4Js, newlyCreated: 
       logger.debug(`Updated ${totalUpdates} conditions entry regarding skyblock profile types`)
     }
   }
-
-  database.pragma('user_version = 13')
 }
 
-function migrateFrom13to14(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 13 to 14')
-
+function migrateFrom13to14(database: Database): void {
   database.exec('ALTER TABLE "punishments" ADD COLUMN "forgiven" INTEGER NOT NULL DEFAULT -1;')
   database.exec('ALTER TABLE "punishments" ADD COLUMN "expired" INTEGER NOT NULL DEFAULT 0;')
-
-  database.pragma('user_version = 14')
 }
 
-function migrateFrom14to15(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 14 to 15')
-
+function migrateFrom14to15(database: Database): void {
   const selectedOption = database
     .prepare('SELECT value FROM "configurations" WHERE category = ? AND name = ?')
     .pluck(true)
@@ -748,13 +707,143 @@ function migrateFrom14to15(database: Database, logger: Logger4Js, newlyCreated: 
   }
 
   database.exec("DELETE FROM 'configurations' WHERE category = 'discord' AND name = 'textToImage'")
-
-  database.pragma('user_version = 15')
 }
 
-function migrateFrom15to16(database: Database, logger: Logger4Js, newlyCreated: boolean): void {
-  if (!newlyCreated) logger.debug('Migrating database from version 15 to 16')
+function migrateFrom15to16(database: Database): void {
+  database.exec('DROP TABLE "autocompleteRanks"')
+}
 
+function migrateFrom16to17(database: Database): void {
+  database.exec(
+    'CREATE TABLE "users" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId TEXT NOT NULL,' +
+      '  originInstance TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  UNIQUE(userId, originInstance)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "chatCommandGlobalCooldown" (' +
+      '  trigger TEXT PRIMARY KEY COLLATE NOCASE NOT NULL,' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "chatCommandUserCooldown" (' +
+      '  trigger TEXT COLLATE NOCASE NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(trigger, userId)' +
+      ' ) STRICT'
+  )
+  database.exec(
+    'CREATE TABLE "chatCommandChannelCooldown" (' +
+      '  trigger TEXT COLLATE NOCASE NOT NULL,' +
+      '  channelType TEXT NOT NULL,' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(trigger, channelType)' +
+      ' ) STRICT'
+  )
+}
+
+function migrateFrom17to18(database: Database): void {
+  // reference: features/minecraft-status
+  database.exec('DROP TABLE "instanceStatusHistory"')
+  database.exec(
+    'CREATE TABLE "minecraftStatusHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  fromStatus TEXT NOT NULL,' +
+      '  toStatus TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('DROP TABLE "instanceMessageHistory"')
+  database.exec(
+    'CREATE TABLE "minecraftMessageHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  type TEXT NOT NULL,' +
+      '  value TEXT DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('DROP TABLE "discordInstanceHistoryButton"')
+  database.exec(
+    'CREATE TABLE "discordMinecraftStatusButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  type TEXT NOT NULL,' +
+      '  startTime INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  endTime INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('DROP TABLE "discordInstanceHistoryLastButton"')
+  database.exec(
+    'CREATE TABLE "discordMinecraftStatusLastButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name),' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(channelId, name)' +
+      ' ) STRICT'
+  )
+}
+
+function migrateFrom18to19(database: Database): void {
+  // reference: hypixel/hypixel-database.ts
+  database.exec('DROP TABLE "hypixelApiRequest"')
+  database.exec('DROP TABLE "hypixelApiResponse"')
+}
+
+function migrateFrom19to20(database: Database): void {
+  database.exec('DROP TABLE "minecraftGuildMember"')
+  database.exec(
+    'CREATE TABLE "minecraftGuildMember" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  userId TEXT NOT NULL,' +
+      '  joinedAt INTEGER NOT NULL,' +
+      '  leftAt INTEGER NOT NULL DEFAULT (-1),' +
+      '  lastRoleCheckAt INTEGER NOT NULL DEFAULT (-1),' +
+      '  UNIQUE(guildId, userId)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "minecraftGuildMemberGEXP" (' +
+      '  guildMemberId INTEGER NOT NULL REFERENCES minecraftGuildMember(id) ON DELETE CASCADE,' +
+      '  date TEXT NOT NULL,' +
+      '  value INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildMemberId, date)' +
+      ' ) STRICT'
+  )
+
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "autoUpdateRoles" INTEGER NOT NULL DEFAULT 0;')
+}
+
+function migrateFrom20to21(database: Database): void {
+  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "isDefault" INTEGER NOT NULL DEFAULT 0;')
+  const guildIds = database.prepare('SELECT DISTINCT guildId FROM minecraftGuildRoleConditions').pluck(true).all()
+  database
+    .prepare('INSERT INTO "configurations" (category, name, value) VALUES (?, ?, ?)')
+    .run('migration', 'addGuildDefaultRank', JSON.stringify(guildIds))
+}
+
+function migrateFrom21to22(database: Database): void {
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "lastUpdateAt" INTEGER NOT NULL DEFAULT 0;')
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "forceUpdate" INTEGER NOT NULL DEFAULT 0;')
+  database.exec('UPDATE "minecraftGuild" SET "forceUpdate" = 1') // force update current guilds
+}
+
+function migrateFrom22to23(database: Database): void {
+  database.exec("UPDATE configurations SET category = 'admin' WHERE category = 'general' AND name = 'autoRestart';")
+}
+
+function migrateFrom23to24(database: Database): void {
   database.exec(
     'CREATE TABLE "minecraftGuildStayConditions" (' +
       '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
@@ -767,8 +856,6 @@ function migrateFrom15to16(database: Database, logger: Logger4Js, newlyCreated: 
 
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" TEXT NOT NULL DEFAULT "any";')
   database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "includedPurge" INTEGER NOT NULL DEFAULT 0;')
-
-  database.pragma('user_version = 16')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

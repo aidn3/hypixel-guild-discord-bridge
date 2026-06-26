@@ -1,7 +1,6 @@
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application.js'
-import type { InstanceType } from '../../../common/application-event.js'
 import { InstanceMessageType } from '../../../common/application-event.js'
 import { Status } from '../../../common/connectable-instance.js'
 import type EventHelper from '../../../common/event-helper.js'
@@ -16,7 +15,7 @@ import type MinecraftInstance from '../minecraft-instance'
 export const QuitOwnVolition = 'disconnect.quitting'
 
 export const QuitProxyError = 'Proxy encountered a problem while connecting'
-export default class StateHandler extends SubInstance<MinecraftInstance, InstanceType.Minecraft, ClientSession> {
+export default class StateHandler extends SubInstance<MinecraftInstance, ClientSession> {
   private static readonly MaxLoginAttempts = 100
   private static readonly MaxDuration = Duration.minutes(5)
 
@@ -26,11 +25,12 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
-    eventHelper: EventHelper<InstanceType.Minecraft>,
+    eventHelper: EventHelper<MinecraftInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     this.loginAttempts = 0
     this.loggedIn = false
@@ -189,7 +189,7 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
         value: undefined
       })
 
-      this.application.core.minecraftSessions.clearCachedSessions(this.clientInstance.instanceName)
+      this.application.core.minecraftSessions.clearCachedSessions(this.clientInstance.getConfigName())
       await this.tryRestarting()
     } else if (error.message.includes(QuitProxyError)) {
       await this.clientInstance.setAndBroadcastNewStatusWithMessage(Status.Disconnected, {
@@ -223,7 +223,8 @@ export default class StateHandler extends SubInstance<MinecraftInstance, Instanc
 
     setTimeoutAsync(() => this.clientInstance.automaticReconnect(), {
       delay: Duration.milliseconds(loginDelay),
-      errorHandler: this.errorHandler.promiseCatch('trying to auto reconnect')
+      errorHandler: this.errorHandler.promiseCatch('trying to auto reconnect'),
+      abortSignal: this.abortSignal
     })
   }
 }

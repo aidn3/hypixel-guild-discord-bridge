@@ -1,18 +1,20 @@
-import type { ConditionHandler, ConditionOption } from './common'
+import type { ConditionHandler, ConditionOption, ConditionValue } from './common'
 import { CatacombsLevel } from './handlers/catacombs-level'
 import { GuildGexp } from './handlers/guild-gexp'
 import { HasDiscordRole } from './handlers/has-discord-role'
 import { InDiscordServer } from './handlers/in-discord-server'
 import { InGuild } from './handlers/in-guild'
 import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master'
+import { InGuildWithGexp } from './handlers/in-guild-with-gexp'
 import { InGuildWithRank } from './handlers/in-guild-with-rank'
+import { KuudraCollection } from './handlers/kuudra-collection'
 import { Linked } from './handlers/linked'
 import { SkyblockApi } from './handlers/skyblock-api'
 import { SkyblockLevel } from './handlers/skyblock-level'
 import { SkyblockNetworth } from './handlers/skyblock-networth'
 
 export class ConditionsRegistry {
-  private readonly handlers = new Map<string, ConditionHandler<ConditionOption>>()
+  private readonly handlers = new Map<string, ConditionHandler<ConditionOption, ConditionValue>>()
 
   constructor() {
     this.registerHandler(new Linked())
@@ -20,23 +22,25 @@ export class ConditionsRegistry {
     this.registerHandler(new InDiscordServer())
     this.registerHandler(new SkyblockLevel())
     this.registerHandler(new CatacombsLevel())
+    this.registerHandler(new KuudraCollection())
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
+    this.registerHandler(new InGuildWithGexp())
     this.registerHandler(new InGuildAsGuildmaster())
     this.registerHandler(new GuildGexp())
   }
 
-  public allHandlers(): ConditionHandler<ConditionOption>[] {
+  public allHandlers(): ConditionHandler<ConditionOption, ConditionValue>[] {
     return [...this.handlers.values()]
   }
 
-  public get(id: string): ConditionHandler<ConditionOption> | undefined {
+  public get(id: string): ConditionHandler<ConditionOption, ConditionValue> | undefined {
     return this.handlers.get(id)
   }
 
-  public registerHandler(handler: ConditionHandler<ConditionOption>): void {
+  public registerHandler(handler: ConditionHandler<ConditionOption, ConditionValue>): void {
     const id = handler.getId()
     if (this.handlers.has(id)) {
       throw new Error(`handler id ${id} already registered`)

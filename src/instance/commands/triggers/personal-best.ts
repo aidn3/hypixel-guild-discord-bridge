@@ -4,7 +4,7 @@ import type {
   DungeonFloors,
   DungeonFloorsWithEntrance,
   SkyblockDungeonsTypes
-} from '../../../core/hypixel/hypixel-skyblock-types'
+} from '../../../core/hypixel/hypixel-skyblock'
 import { formatTime } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,

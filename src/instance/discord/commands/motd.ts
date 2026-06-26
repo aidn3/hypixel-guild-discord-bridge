@@ -1,22 +1,24 @@
 import { AttachmentBuilder, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
-import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { OptionToAddMinecraftInstances } from '../../../common/commands.js'
-import { GuildManagerError } from '../../../core/users/guild-manager'
+import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import MinecraftRenderer from '../../../utility/minecraft-renderer'
+// eslint-disable-next-line import/no-restricted-paths
+import { GuildManagerError } from '../../minecraft/guild-manager'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('motd').setDescription('Show a guild MOTD'),
-  addMinecraftInstancesToOptions: OptionToAddMinecraftInstances.Required,
-
+  origin: CommandOrigin.Bridge,
+  addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireOne,
   permission: Permission.Helper,
+
   handler: async function (context) {
     await context.interaction.deferReply()
 
-    const instance: string = context.interaction.options.getString('instance', true)
+    const instance = context.minecraftInstance
     try {
-      const motd = await context.application.core.guildManager.motd(instance)
+      const motd = await instance.guildManager.motd()
       if (motd.lines.type === 'empty') {
         await context.interaction.editReply('Nothing to display. Guild does not have MOTD.')
         return
@@ -46,4 +48,4 @@ export default {
       throw error
     }
   }
-} satisfies DiscordCommandHandler
+} satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

@@ -7,7 +7,8 @@ import type { ModalOption } from '../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType, type PresetListOption } from '../../instance/discord/utility/options-handler'
 
-export abstract class ConditionHandler<T extends ConditionOption> {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export abstract class ConditionHandler<T extends ConditionOption, ValueType extends ConditionValue> {
   public abstract getId(): string
 
   public abstract getDisplayName(context: HandlerContext): string
@@ -18,7 +19,7 @@ export abstract class ConditionHandler<T extends ConditionOption> {
     context: HandlerOperationContext,
     user: HandlerUser,
     condition: T
-  ): Promise<boolean> | boolean
+  ): Promise<ConditionResult<ValueType>> | ConditionResult<ValueType>
 
   public createOptions(): ModalOption[] {
     return []
@@ -37,6 +38,40 @@ export abstract class ConditionHandler<T extends ConditionOption> {
 
     return result as T
   }
+}
+
+export type ConditionValue = string | number | boolean
+
+export enum ConditionResultType {
+  Pass = 'meet',
+  Fail = 'notMeet',
+  Error = 'error'
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export type ConditionResult<ValueType extends ConditionValue> =
+  | ConditionSuccessfulResult<ValueType>
+  | ConditionFailureResult
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface ConditionSuccessfulResult<ValueType extends ConditionValue> {
+  /**
+   * Whether the condition is met or not
+   */
+  type: ConditionResultType.Pass | ConditionResultType.Fail
+  /**
+   * The value that was compared or at least best fit
+   */
+  value: ValueType
+  valueFormatted: string
+}
+
+export interface ConditionFailureResult {
+  type: ConditionResultType.Error
+  /**
+   * Reason why the condition could not be checked in the first place
+   */
+  reason: string
 }
 
 export interface HandlerContext {

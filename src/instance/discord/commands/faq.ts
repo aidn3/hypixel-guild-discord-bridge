@@ -1,7 +1,9 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
+import { Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import { DefaultCommandFooter } from '../common/discord-config'
 import { pageMessage } from '../utility/discord-pager'
@@ -10,6 +12,9 @@ import FAQ from 'resources/faq.json'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('faq').setDescription('Show frequently asked questions'),
+  origin: CommandOrigin.Private,
+  permission: Permission.Anyone,
+
   handler: async function (context) {
     await context.interaction.deferReply()
 

@@ -3,25 +3,25 @@ import { DiscordAPIError, userMention } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../../application'
-import type { InstanceType } from '../../../common/application-event'
 import type EventHelper from '../../../common/event-helper'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
-import { OnUnmet } from '../../../core/conditions/common'
+import { ConditionResultType, OnUnmet } from '../../../core/conditions/common'
 import { CanNotResolve } from '../../../core/placeholder/common'
 import type DiscordInstance from '../discord-instance'
 
 import type { UpdateContext, UpdateGuildContext, UpdateMemberContext } from './common'
 
-export default class ConditionsManager extends SubInstance<DiscordInstance, InstanceType.Discord, Client> {
+export default class ConditionsManager extends SubInstance<DiscordInstance, Client> {
   constructor(
     application: Application,
     clientInstance: DiscordInstance,
-    eventHelper: EventHelper<InstanceType.Discord>,
+    eventHelper: EventHelper<DiscordInstance>,
     logger: Logger,
-    errorHandler: UnexpectedErrorHandler
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal
   ) {
-    super(application, clientInstance, eventHelper, logger, errorHandler)
+    super(application, clientInstance, eventHelper, logger, errorHandler, abortSignal)
 
     const client = clientInstance.getClient()
     client.on('guildDelete', (guild) => {
@@ -54,8 +54,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
       if (context.abortSignal.aborted) return
 
       const user = await this.application.core.initializeDiscordUser(
-        this.clientInstance.profileByUser(guildMember.user, guildMember),
-        { guild: guild }
+        this.clientInstance.profileByUser(guildMember.user, guildMember)
       )
       try {
         await this.updateMemberViaCache(guildContext, { guildMember, user })
@@ -145,6 +144,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
     editPayload: GuildMemberEditOptions
   ): Promise<void> {
     const assignedRoles = new Set<string>(memberContext.guildMember.roles.cache.keys())
+    const roleAlreadyGiven = new Set<string>()
     let changed = false
 
     for (const condition of context.rolesConditions) {
@@ -156,7 +156,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
 
       let meetsCondition: boolean
       try {
-        meetsCondition = await handler.meetsCondition(context, memberContext, condition.options)
+        const conditionResult = await handler.meetsCondition(context, memberContext, condition.options)
+        meetsCondition = conditionResult.type === ConditionResultType.Pass
       } catch {
         meetsCondition = false
       }
@@ -164,8 +165,12 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
       const assignedRolesSize = assignedRoles.size
       if (meetsCondition) {
         assignedRoles.add(condition.roleId)
+        roleAlreadyGiven.add(condition.roleId)
       } else if (condition.onUnmet === OnUnmet.Remove) {
-        assignedRoles.delete(condition.roleId)
+        // Don't remove the role since another condition already added it
+        if (!roleAlreadyGiven.has(condition.roleId)) {
+          assignedRoles.delete(condition.roleId)
+        }
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (condition.onUnmet === OnUnmet.Keep) {
         // do nothing
@@ -197,7 +202,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Inst
 
       let meetsCondition: boolean
       try {
-        meetsCondition = await handler.meetsCondition(context, memberContext, condition.options)
+        const conditionResult = await handler.meetsCondition(context, memberContext, condition.options)
+        meetsCondition = conditionResult.type === ConditionResultType.Pass
       } catch {
         meetsCondition = false
       }

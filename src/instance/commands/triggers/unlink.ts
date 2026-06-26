@@ -1,11 +1,11 @@
+import assert from 'node:assert'
 import { hash } from 'node:crypto'
 
 import NodeCache from 'node-cache'
 
-import { InstanceType } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import { Platform } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandHandler } from '../../../common/commands.js'
-import { canOnlyUseIngame } from '../common/utility'
 
 export default class Unlink extends ChatCommandHandler {
   private readonly confirmationId = new NodeCache({ stdTTL: 60 })
@@ -18,13 +18,13 @@ export default class Unlink extends ChatCommandHandler {
     })
   }
 
+  override requirements(): ChatCommandRequirements | string {
+    return { platforms: [Platform.Minecraft] }
+  }
+
   async handler(context: ChatCommandContext): Promise<string> {
+    assert.ok(context.message.user.isMojangUser())
     const givenId = context.args[0] ?? ''
-
-    if (context.message.instanceType !== InstanceType.Minecraft) {
-      return canOnlyUseIngame(context)
-    }
-
     const uuid = context.message.user.mojangProfile().id
 
     if (this.confirmationId.get<string>(givenId) === uuid) {

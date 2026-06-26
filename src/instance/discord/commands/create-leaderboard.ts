@@ -1,10 +1,11 @@
 import assert from 'node:assert'
 
+import { PermissionFlagsBits } from 'discord-api-types/v10'
 import type { APIEmbed, CommandInteraction, MessageActionRowComponentData, SendableChannels } from 'discord.js'
 import { ComponentType, MessageFlags, SlashCommandBuilder } from 'discord.js'
 
-import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
+import { CommandOrigin } from '../../../common/commands.js'
 import type { LeaderboardResult } from '../features/leaderboard'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
@@ -16,6 +17,7 @@ export default {
     new SlashCommandBuilder()
       .setName('create-leaderboard')
       .setDescription('Create a leaderboard message in this channel')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
       .addStringOption((o) =>
         o
           .setName('type')
@@ -24,7 +26,8 @@ export default {
           .addChoices(Messages30Days, Online30Days, Points30Days)
       )
       .addStringOption((o) => o.setName('guild-name').setDescription('Hypixel Guild name')),
-  permission: Permission.Officer,
+  origin: CommandOrigin.Guild,
+  onlyAdmins: false,
 
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())
