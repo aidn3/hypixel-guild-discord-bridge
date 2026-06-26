@@ -20,6 +20,7 @@ This project is made to be fully flexible and customisable, offering a high qual
 ## Documentation And Tutorials
 
 - [Frequently asked questions](docs/FAQ.md)
+- [Permissions required to function](./docs/PERMISSIONS.md)
 - [All Commands And Interactions](docs/COMMANDS.md)
 - [Compatibility and future support](docs/COMPATIBILITY.md)
 - [Migrating to newer version](docs/MIGRATION.md)
@@ -67,6 +68,10 @@ git clone https://github.com/aidn3/hypixel-guild-discord-bridge
 - Open `config.yaml` and fill in the information (Security: `config.yaml` contains sensitive information. Keep it safe!)
 - In `config.yaml` fill out `general.hypixelApiKey` and `discord.key` and `discord.adminIds`
 - (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
+
+> Make sure to grant permission to the application in various places to ensure its full functionality.
+> e.g. in-game for the Minecraft account and on a Discord server for the Discord bot.  
+> Check [this document](./docs/PERMISSIONS.md) for a comprehensive list of all the permissions needed for the application.
 
 ### Install And Run
 

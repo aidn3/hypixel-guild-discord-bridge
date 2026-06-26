@@ -4,6 +4,10 @@
     "body": "Get hypixel key at [Hypixel Developer Dashboard](https://developer.hypixel.net).\nMake an application for a key and wait for its activation.\n\n> Do **NOT generate and use developing key** for the application!\n\nFor Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/legacy/preparations/app-setup)."
   },
   {
+    "title": "What permissions do I need to give to the application",
+    "body": "Check [this file](./PERMISSIONS.md) for all the up-to-date details."
+  },
+  {
     "title": "How to prepare a Minecraft account to be added",
     "body": "While the Minecraft account is being actively used in the application, you won't be able to use it on Hypixel Network.\nTo avoid disruptions, make sure you:\n\n- choose a Minecraft account that you don't play on it often on Hypixel Network.\n- don't have anything you wish to access later like items on Hypixel Skyblock, etc. If you do, you can transfer the items first and finish any business before handing it off.\n\nTo prepare the account for the best experience, make sure you:\n\n- invite the account to the guild you wish the account to reside in.\n- change `/privacy` in-game, so only guild members can private message and party it at most.\n- enable chat by doing `/togglechat` in-game"
   },
