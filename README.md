@@ -9,11 +9,11 @@
   
 ## Introduction
 
-A service that connects multiple Hypixel guilds and Discord servers together.
-This project is made to be fully flexible and customisable, offering a high quality user experience while keeping it simple.
+A two-way chat bridge between Hypixel guilds and Discord channels.  
+This project is made with the philosophy to be fully user-oriented giving users full control with a simple yet an eye-candy UI.
 
 > **_DISCLAIMER_: This project interacts with Hypixel in an unintended way by simulating a minecraft client and by processing
-> packets which might get you banned if over-abused too much.  
+> packets which might get you banned if over-abused.  
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at
 > your own risk"**
 
@@ -33,9 +33,8 @@ This project is made to be fully flexible and customisable, offering a high qual
 
 ## Features
 
-- Connect multiple guilds chats together
-- Bind hypixel guild chats to Discord channels
-- Supports public, officer and private chat
+- Bridge multiple guilds chats and Discord channels
+- Supports public, officer and private chat in-game
 - Supports in-game moderation commands from Discord
 - Fully synchronize in-game chat and interactions with Discord including guild events such as
   online/offline/join/leave/mute notification/etc
@@ -44,6 +43,8 @@ This project is made to be fully flexible and customisable, offering a high qual
 - Provides detailed metrics per user and per guild (by Prometheus or by leaderboard)
 - Supports custom plugins with fully fleshed out public API
 - Supports proxies for Minecraft instances
+- Auto guild ranks and Discord roles sync with custom conditions
+- Automated management and moderation tools such as punishments, join waitlist
 
 ## Installing and Running
 
