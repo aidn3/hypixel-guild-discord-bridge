@@ -8,6 +8,7 @@ import { ChannelType, ContentType, Permission, Platform } from '../../common/app
 import type { ChatCommandContext, ChatCommandHandler, ChatCommandRequirements } from '../../common/commands.js'
 import type { DisplayableInstance } from '../../common/instance.js'
 import { Instance } from '../../common/instance.js'
+import { HypixelApiFail, HypixelFailType } from '../../core/hypixel/hypixel-fetcher'
 import { capitalize } from '../../utility/shared-utility'
 
 import { CommandsCooldownHandler } from './commands-cooldown-handler'
@@ -352,6 +353,29 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       const commandResponse = await this.cooldownHandler.handle(command, cooldownOptions, context)
       await this.reply(event, command.triggers[0], this.formatContent(commandResponse))
     } catch (error) {
+      if (error instanceof HypixelApiFail) {
+        switch (error.type) {
+          case HypixelFailType.Authentication: {
+            await this.reply(
+              event,
+              command.triggers[0],
+              this.formatContent(`${event.user.displayName()}, invalid Hypixel API key. Ask admin for help.`)
+            )
+            return
+          }
+          case HypixelFailType.Throttle: {
+            await this.reply(
+              event,
+              command.triggers[0],
+              this.formatContent(
+                this.formatContent(`${event.user.displayName()}, reached Hypixel ratelimit. Try again later.`)
+              )
+            )
+            return
+          }
+        }
+      }
+
       this.logger.error('Error while handling command', error)
       await this.reply(
         event,
