@@ -5,18 +5,20 @@ import { InputStyle, OptionType } from '../../../instance/discord/utility/option
 import {
   ConditionHandler,
   type ConditionOption,
+  type ConditionResult,
   type HandlerContext,
   type HandlerDisplayContext,
   type HandlerOperationContext,
   type HandlerUser
 } from '../common'
+import { ConditionResultType } from '../common'
 
 export interface GexpConditionOption extends Record<string, string | number | boolean | string[]> {
   days: number
   minimumGexp: number
 }
 
-export class GuildGexp extends ConditionHandler<GexpConditionOption> {
+export class GuildGexp extends ConditionHandler<GexpConditionOption, boolean> {
   public getId(): string {
     return 'guild-gexp-threshold'
   }
@@ -33,16 +35,32 @@ export class GuildGexp extends ConditionHandler<GexpConditionOption> {
     context: HandlerOperationContext,
     user: HandlerUser,
     condition: GexpConditionOption
-  ): Promise<boolean> {
+  ): Promise<ConditionResult<boolean>> {
     const mojangProfile = user.user.mojangProfile()
-    if (mojangProfile === undefined) return false
+    if (mojangProfile === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: context.application.i18n.t(($) => $['conditions.format.not-linked'])
+      }
+    }
 
     const hypixelGuild = await context.application.hypixelApi.getGuildByPlayer(mojangProfile.id).catch(() => undefined)
 
-    if (hypixelGuild === undefined) return false
+    if (hypixelGuild === undefined) {
+      return {
+        type: ConditionResultType.Error,
+        reason: 'Could not fetch Hypixel guild data'
+      }
+    }
 
     const member = hypixelGuild.members.find((m) => m.uuid === mojangProfile.id)
-    if (member === undefined) return false
+    if (member === undefined) {
+      return {
+        type: ConditionResultType.Fail,
+        value: false,
+        valueFormatted: 'No'
+      }
+    }
 
     const dates = Object.keys(member.expHistory).toSorted().toReversed()
     const daysToSum = Math.min(condition.days, dates.length)
@@ -52,7 +70,12 @@ export class GuildGexp extends ConditionHandler<GexpConditionOption> {
       totalGexp += member.expHistory[dates[index]]
     }
 
-    return totalGexp >= condition.minimumGexp
+    const met = totalGexp >= condition.minimumGexp
+    return {
+      type: met ? ConditionResultType.Pass : ConditionResultType.Fail,
+      value: met,
+      valueFormatted: met ? 'Yes' : 'No'
+    }
   }
 
   public override createOptions(): ModalOption[] {

@@ -9,7 +9,6 @@ import type { Logger, Logger as Logger4Js } from 'log4js'
 import type Application from '../application'
 import type { SqliteManager } from '../common/sqlite-manager'
 
-
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {
     migrateFrom0to1(database, logger, newlyCreated)

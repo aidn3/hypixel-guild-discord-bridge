@@ -25,7 +25,9 @@ import type {
   DiscordCommandContext
 } from '../../../common/commands'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands'
+import { Status } from '../../../common/connectable-instance'
 import type { MojangProfile } from '../../../common/user'
+import { ConditionResultType } from '../../../core/conditions/common'
 import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild'
 import {
   addConditionCommand,
@@ -598,8 +600,7 @@ async function handleSettings(
           {
             type: OptionType.Number,
             name: 'Required stay conditions count',
-            description:
-              'How many stay conditions must a player meet before they are allowed to stay in the guild.',
+            description: 'How many stay conditions must a player meet before they are allowed to stay in the guild.',
             min: 1,
             max: 99,
             getOption: () => {
@@ -1037,7 +1038,10 @@ function getStayConditionManager(savedGuild: MinecraftGuild, database: Database)
   }
 }
 
-async function handleStayConditionList(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleStayConditionList(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -1051,7 +1055,10 @@ async function handleStayConditionList(context: Readonly<DiscordCommandContext>,
   await handleConditionList(interaction, context, manager)
 }
 
-async function handleStayConditionAdd(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleStayConditionAdd(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -1065,7 +1072,10 @@ async function handleStayConditionAdd(context: Readonly<DiscordCommandContext>, 
   await handleConditionAdd(interaction, context, manager)
 }
 
-async function handleStayConditionRemove(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handleStayConditionRemove(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -1079,7 +1089,10 @@ async function handleStayConditionRemove(context: Readonly<DiscordCommandContext
   await handleConditionRemove(interaction, context, manager)
 }
 
-async function handlePurge(context: Readonly<DiscordCommandContext>, database: Database) {
+async function handlePurge(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+) {
   const interaction = context.interaction
   assert.ok(interaction.inCachedGuild())
 
@@ -1092,9 +1105,9 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
   for (const instance of context.application.minecraftManager.getAllInstances()) {
     if (instance.currentStatus() !== Status.Connected) continue
     try {
-      const guildData = await context.application.core.guildManager.list(instance.instanceName)
+      const guildData = await instance.guildManager.list()
       if (guildData.name.toLowerCase() === savedGuild.name.toLowerCase()) {
-        instanceName = instance.instanceName
+        instanceName = instance.getConfigName()
         break
       }
     } catch {
@@ -1118,10 +1131,10 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
 
   const instance = context.application.minecraftManager
     .getAllInstances()
-    .find((index) => index.instanceName === instanceName)
+    .find((index) => index.getConfigName() === instanceName)
   const botUuid = instance?.uuid()
 
-  if (!botUuid) {
+  if (!instance || !botUuid) {
     await interaction.editReply({
       embeds: [
         {
@@ -1243,11 +1256,12 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
         conditionMet = true
       } else {
         try {
-          conditionMet = await handler.meetsCondition(
+          const result = await handler.meetsCondition(
             { application: context.application, startTime: Date.now(), abortSignal: new AbortController().signal },
             handlerUser,
             condition.options
           )
+          conditionMet = result.type === ConditionResultType.Pass
         } catch (error: unknown) {
           context.errorHandler.error(`Error evaluating stay-condition ${condition.typeId} for ${username}`, error)
           conditionMet = true
@@ -1487,14 +1501,7 @@ async function handlePurge(context: Readonly<DiscordCommandContext>, database: D
 
     const command = `/g kick ${member.username} ${kickReason}`
 
-    const result = await checkChatTriggers(
-      context.application,
-      context.eventHelper,
-      KickChat,
-      [instanceName],
-      command,
-      member.username
-    )
+    const result = await checkChatTriggers(context.application, KickChat, [instance], command, member.username)
 
     if (result.status === 'success') {
       successfulKicks.push(member.username)

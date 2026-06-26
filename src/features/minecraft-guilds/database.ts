@@ -741,10 +741,10 @@ export class Database {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const select = database.prepare('SELECT stayConditionMode FROM "minecraftGuild" WHERE id = ?')
-      const val = select.pluck(true).get(guildId) as string
-      if (val === 'any') return 1
-      if (val === 'all') return 99
-      return parseInt(val, 10) || 1
+      const value = select.pluck(true).get(guildId) as string
+      if (value === 'any') return 1
+      if (value === 'all') return 99
+      return Number.parseInt(value, 10) || 1
     })
     return transaction()
   }
@@ -928,7 +928,6 @@ export class Database {
 
     return dates
   }
-
 }
 
 export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
@@ -941,8 +940,6 @@ export type SavedGuildStayCondition = GuildStayCondition & ConditionId
 
 export type GuildRoleCondition = GuildCondition & { role: string }
 export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
-
-
 
 export interface MinecraftGuild {
   id: string
