@@ -29,6 +29,7 @@ export class CommandsCooldownHandler {
       if (timeLeft > 0) {
         return `Command ${context.commandPrefix}${command.triggers[0]} can be executed again in ${formatTime(timeLeft)}.`
       }
+      this.setLastExecution(command, cooldownOptions, context.message)
 
       return await this.executeOrFailCommand(command, cooldownOptions.type, context)
     }
@@ -176,7 +177,7 @@ export class CommandsCooldownHandler {
         return this.application.core.commandsCooldown.getGlobalLastExecutionTime(command.triggers)
       }
       case CooldownType.Community: {
-        // TODO: global and community the same for now
+        // TODO: global and community are the same for now
         return this.application.core.commandsCooldown.getGlobalLastExecutionTime(command.triggers)
       }
       case CooldownType.Channel: {
@@ -187,6 +188,38 @@ export class CommandsCooldownHandler {
       }
       case CooldownType.User: {
         return this.application.core.commandsCooldown.getUserLastExecutionTime(command.triggers, event.user)
+      }
+      default: {
+        cooldownOptions satisfies never
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        assert.fail(`Unknown cooldown type: ${cooldownOptions}`)
+      }
+    }
+  }
+
+  private setLastExecution(command: ChatCommandHandler, cooldownOptions: ChatCommandCooldown, event: ChatEvent): void {
+    switch (cooldownOptions.type) {
+      case CooldownType.Disabled: {
+        return
+      }
+      case CooldownType.Global: {
+        this.application.core.commandsCooldown.updateGlobalLastExecutionTime(command.triggers)
+        return
+      }
+      case CooldownType.Community: {
+        // TODO: global and community are the same for now
+        this.application.core.commandsCooldown.updateGlobalLastExecutionTime(command.triggers)
+        return
+      }
+      case CooldownType.Channel: {
+        if (event.channelType === ChannelType.Public || event.channelType === ChannelType.Officer) {
+          this.application.core.commandsCooldown.updateChannelLastExecutionTime(command.triggers, event.channelType)
+        }
+        return
+      }
+      case CooldownType.User: {
+        this.application.core.commandsCooldown.updateUserLastExecutionTime(command.triggers, event.user)
+        return
       }
       default: {
         cooldownOptions satisfies never
