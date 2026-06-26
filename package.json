@@ -40,6 +40,7 @@
     "@hkh12/node-calc": "^4.2.1",
     "@isaacs/ttlcache": "^2.1.4",
     "@kolapsis/shm-sdk": "^1.1.0",
+    "async-cache-dedupe": "^3.4.0",
     "axios": "^1.16.1",
     "bad-words": "3.0.4",
     "better-sqlite3": "^12.2.0",
