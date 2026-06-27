@@ -42,17 +42,14 @@ export default class Airstrike extends ChatCommandHandler {
     const mojangProfile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (mojangProfile == undefined) return usernameNotExists(context, givenUsername)
     const targetUser = await context.app.core.initializeMinecraftUser(mojangProfile, {})
-    if ((await targetUser.permission()) >= Permission.Helper || (await targetUser.immune())) {
-      context.resetCooldown()
-      return `No way doing an airstrike on ${mojangProfile.name}!`
+    if ((await targetUser.permission()) < Permission.Helper && !(await targetUser.immune())) {
+      await targetUser.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        Airstrike.MuteDuration,
+        `Had ${context.commandPrefix}${this.triggers[0]} on them by ${context.username}`
+      )
     }
-
-    await targetUser.mute(
-      context.eventHelper.fillBaseEvent(),
-      PunishmentPurpose.Game,
-      Airstrike.MuteDuration,
-      `Had ${context.commandPrefix}${this.triggers[0]} on them by ${context.username}`
-    )
 
     return `${mojangProfile.name} ${mojangProfile.name} ${mojangProfile.name} ${mojangProfile.name} ${mojangProfile.name} :D`
   }
