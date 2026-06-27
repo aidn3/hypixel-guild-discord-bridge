@@ -70,7 +70,10 @@ Image is usually up to date.
 To start, first prepare the configuration as instructed in [this section](#configure). Then execute:
 
 ```shell
-sudo docker container run -it --rm -v ./config.yaml:/app/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest
+sudo docker container run -it --rm \
+  -v ./config.yaml:/app/config.yaml \
+  -v bridge-data:/app/config/ \
+  ghcr.io/aidn3/hypixel-guild-discord-bridge:latest
 ```
 
 Note that the path of the configuration source file must either be relative (with the `./`) or absolute.
@@ -78,7 +81,11 @@ Note that the path of the configuration source file must either be relative (wit
 Alternatively, providing the path as an argument to the docker container is also possible:
 
 ```shell
-sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
+sudo docker container run -it --rm \
+  -v ./config.yaml:/config/config.yaml \
+  -v bridge-data:/app/config/ \
+  ghcr.io/aidn3/hypixel-guild-discord-bridge:latest \
+  /config/config.yaml
 ```
 
 ## Setup Via Discord
