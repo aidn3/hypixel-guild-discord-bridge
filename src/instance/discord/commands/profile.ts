@@ -70,11 +70,11 @@ async function handleSet(context: DiscordCommandContext<CommandOrigin.Guild, voi
     }
   }
 
-  if (avatarAttachment != undefined) {
+  if (bannerAttachment != undefined) {
     if (!admin.getAllowCustomBanner()) {
       await context.interaction.reply("Setting custom banner is disabled by the application' admin")
       return
-    } else if (!avatarAttachment.contentType?.startsWith('image/')) {
+    } else if (!bannerAttachment.contentType?.startsWith('image/')) {
       await context.interaction.reply('The banner attachment must be an image of JPEG type.')
       return
     }
