@@ -17,7 +17,7 @@ This project is made with the philosophy to be fully user-oriented giving users 
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at
 > your own risk"**
 
-## Documentation And Tutorials
+## Documentations And Tutorials
 
 - [How to install and run](docs/INSTALL.md)
 - [Frequently asked questions](docs/FAQ.md)
