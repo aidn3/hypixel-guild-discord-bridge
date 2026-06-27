@@ -4,6 +4,7 @@
 
 - [Frequently Asked Questions](#frequently-asked-questions)
   - [How to get Discord And Hypixel Keys](#how-to-get-discord-and-hypixel-keys)
+  - [What permissions do I need to give to the application](#what-permissions-do-i-need-to-give-to-the-application)
   - [How to prepare a Minecraft account to be added](#how-to-prepare-a-minecraft-account-to-be-added)
   - [Use the account while it is connected](#use-the-account-while-it-is-connected)
   - [How to temporarily gain back access to the account](#how-to-temporarily-gain-back-access-to-the-account)
@@ -31,6 +32,10 @@ Make an application for a key and wait for its activation.
 > Do **NOT generate and use developing key** for the application!
 
 For Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/legacy/preparations/app-setup).
+
+## What permissions do I need to give to the application
+
+Check [this file](./PERMISSIONS.md) for all the up-to-date details.
 
 ## How to prepare a Minecraft account to be added
 

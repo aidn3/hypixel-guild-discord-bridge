@@ -9,17 +9,19 @@
   
 ## Introduction
 
-A service that connects multiple Hypixel guilds and Discord servers together.
-This project is made to be fully flexible and customisable, offering a high quality user experience while keeping it simple.
+A two-way chat bridge between Hypixel guilds and Discord channels.  
+This project is made with the philosophy to be fully user-oriented giving users full control with a simple yet an eye-candy UI.
 
 > **_DISCLAIMER_: This project interacts with Hypixel in an unintended way by simulating a minecraft client and by processing
-> packets which might get you banned if over-abused too much.  
+> packets which might get you banned if over-abused.  
 > Just like any other modification and service that interacts with Hypixel servers, this goes without saying: "Use at
 > your own risk"**
 
-## Documentation And Tutorials
+## Documentations And Tutorials
 
+- [How to install and run](docs/INSTALL.md)
 - [Frequently asked questions](docs/FAQ.md)
+- [Permissions required to function](./docs/PERMISSIONS.md)
 - [All Commands And Interactions](docs/COMMANDS.md)
 - [Compatibility and future support](docs/COMPATIBILITY.md)
 - [Migrating to newer version](docs/MIGRATION.md)
@@ -32,9 +34,8 @@ This project is made to be fully flexible and customisable, offering a high qual
 
 ## Features
 
-- Connect multiple guilds chats together
-- Bind hypixel guild chats to Discord channels
-- Supports public, officer and private chat
+- Bridge multiple guilds chats and Discord channels
+- Supports public, officer and private chat in-game
 - Supports in-game moderation commands from Discord
 - Fully synchronize in-game chat and interactions with Discord including guild events such as
   online/offline/join/leave/mute notification/etc
@@ -43,74 +44,37 @@ This project is made to be fully flexible and customisable, offering a high qual
 - Provides detailed metrics per user and per guild (by Prometheus or by leaderboard)
 - Supports custom plugins with fully fleshed out public API
 - Supports proxies for Minecraft instances
+- Auto guild ranks and Discord roles sync with custom conditions
+- Automated management and moderation tools such as punishments, join waitlist
 
-## Installing and Running
+## Showcase
 
-### Prerequisites
+**Control all the settings from fancy yet simple interface.**  
+**No more editing complicated configuration files or waiting for the hosting provider to do it for you.**  
+<img src="docs/assets/showcase-settings.gif" width="500">
 
-- [Nodejs version 1.20 or later](https://nodejs.dev/download)
-- [npm](https://nodejs.org/en/download/) (usually installed by default with `Nodejs`)
-- [Git](https://git-scm.com/downloads)
-- Minecraft alt account
+**Automate your guild's management, from waitlist to automated in-game rank syncing**  
+<img src="docs/assets/showcase-waitlist.gif" width="400">
 
-### Download
+**Over 100+ quality-of-life chat commands spanning from stats commands to fun and games ones:**  
+<img src="docs/assets/showcase-commands-response.png" width="400">
+<img src="docs/assets/showcase-commands-rendering.png" width="400">
 
-Clone and download the complete project by using `Git` tool:
+**Feel at home with the support of all popular chat types (webhook, embed, minecraft render style)**  
+<img src="docs/assets/showcase-chat-webhook.png" width="400">
+<img src="docs/assets/showcase-chat-render.png" width="400">
+<img src="docs/assets/showcase-chat-embed.png" width="400">
 
-```shell
-git clone https://github.com/aidn3/hypixel-guild-discord-bridge
-```
+**Keep track of your guild via metrics and leaderboards**  
+<img src="docs/assets/showcase-leaderboards.png" width="400">
 
-### Configure
+**Manage the guild from anywhere and keep track of everything like never before**  
+<img src="docs/assets/showcase-punishments.png" width="400">
+<img src="docs/assets/showcase-ingame-commands.png" width="400">
 
-- Explore the project files and copy the contents of `config_example.yaml` into `config.yaml`
-- Open `config.yaml` and fill in the information (Security: `config.yaml` contains sensitive information. Keep it safe!)
-- In `config.yaml` fill out `general.hypixelApiKey` and `discord.key` and `discord.adminIds`
-- (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
+## Install and run
 
-### Install And Run
-
-If you are on linux, execute this command to auto download all libraries and start the application.
-It will also keep the application up to date:
-
-```shell
-./start.sh
-```
-
-If you are running the application on Windows operating system:
-
-```shell
-npm install
-npm start
-```
-
-### Run Via Docker
-
-Alternatively, Docker image is available to use at [GitHub Container Service](https://github.com/aidn3/hypixel-guild-discord-bridge/pkgs/container/hypixel-guild-discord-bridge).
-Image is usually up to date.
-
-To start, first prepare the configuration as instructed in [this section](#configure). Then execute:
-
-```shell
-sudo docker container run -it --rm -v ./config.yaml:/app/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest
-```
-
-Note that the path of the configuration source file must either be relative (with the `./`) or absolute.
-
-Alternatively, providing the path as an argument to the docker container is also possible:
-
-```shell
-sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
-```
-
-## Setup Via Discord
-
-After installing and running the application, basic setup needs to be done to integrate the application.
-
-Use Discord slash command `/settings` to configure the application:
-
-- Set up the public and officer channels
-- Check [How to prepare and add Minecraft account](docs/FAQ.md#how-to-prepare-a-minecraft-account-to-be-added).
+[Read and follow this guide](docs/INSTALL.md) to start.
 
 ## Privacy Notice
 
