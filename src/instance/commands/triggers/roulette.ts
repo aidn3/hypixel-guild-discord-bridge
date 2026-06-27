@@ -36,10 +36,6 @@ export default class Roulette extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    if ((await context.message.user.permission()) >= Permission.Helper || (await context.message.user.immune())) {
-      return `${context.username}, Staff are immune. Why play this game? :P`
-    }
-
     // Default behaviour which is just "1/6 chance" is too unreliable
     // Some even managed to reach 24 win streak.
     // This will increase the chance of losing and cap the win streak as well
@@ -62,12 +58,14 @@ export default class Roulette extends ChatCommandHandler {
     if (Math.random() < currentChance) {
       this.countSinceLastLose = 0
 
-      await context.message.user.mute(
-        context.eventHelper.fillBaseEvent(),
-        PunishmentPurpose.Game,
-        Duration.minutes(15),
-        'Lost in RussianRoulette game'
-      )
+      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+        await context.message.user.mute(
+          context.eventHelper.fillBaseEvent(),
+          PunishmentPurpose.Game,
+          Duration.minutes(15),
+          'Lost in RussianRoulette game'
+        )
+      }
 
       const messages = context.app.core.languageConfigurations.getCommandRouletteLose()
       return messages[Math.floor(Math.random() * messages.length)].replaceAll('{username}', context.username)
