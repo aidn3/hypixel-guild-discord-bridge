@@ -47,6 +47,31 @@ This project is made with the philosophy to be fully user-oriented giving users 
 - Auto guild ranks and Discord roles sync with custom conditions
 - Automated management and moderation tools such as punishments, join waitlist
 
+## Showcase
+
+**Control all the settings from fancy yet simple interface.**  
+**No more editing complicated configuration files or waiting for the hosting provider to do it for you.**  
+<img src="docs/assets/showcase-settings.gif" width="500">
+
+**Automate your guild's management, from waitlist to automated in-game rank syncing**  
+<img src="docs/assets/showcase-waitlist.gif" width="400">
+
+**Over 100+ quality-of-life chat commands spanning from stats commands to fun and games ones:**  
+<img src="docs/assets/showcase-commands-response.png" width="400">
+<img src="docs/assets/showcase-commands-rendering.png" width="400">
+
+**Feel at home with the support of all popular chat types (webhook, embed, minecraft render style)**  
+<img src="docs/assets/showcase-chat-webhook.png" width="400">
+<img src="docs/assets/showcase-chat-render.png" width="400">
+<img src="docs/assets/showcase-chat-embed.png" width="400">
+
+**Keep track of your guild via metrics and leaderboards**  
+<img src="docs/assets/showcase-leaderboards.png" width="400">
+
+**Manage the guild from anywhere and keep track of everything like never before**  
+<img src="docs/assets/showcase-punishments.png" width="400">
+<img src="docs/assets/showcase-ingame-commands.png" width="400">
+
 ## Install and run
 
 [Read and follow this guide](docs/INSTALL.md) to start.
