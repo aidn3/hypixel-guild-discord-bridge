@@ -95,4 +95,4 @@ After installing and running the application, basic setup needs to be done to in
 Use Discord slash command `/settings` to configure the application:
 
 - Set up the public and officer channels
-- Check [How to prepare and add Minecraft account](docs/FAQ.md#how-to-prepare-a-minecraft-account-to-be-added).
+- Check [How to prepare and add Minecraft account](FAQ.md#how-to-prepare-a-minecraft-account-to-be-added).
