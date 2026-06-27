@@ -19,6 +19,7 @@ This project is made with the philosophy to be fully user-oriented giving users 
 
 ## Documentation And Tutorials
 
+- [How to install and run](docs/INSTALL.md)
 - [Frequently asked questions](docs/FAQ.md)
 - [Permissions required to function](./docs/PERMISSIONS.md)
 - [All Commands And Interactions](docs/COMMANDS.md)
@@ -46,77 +47,9 @@ This project is made with the philosophy to be fully user-oriented giving users 
 - Auto guild ranks and Discord roles sync with custom conditions
 - Automated management and moderation tools such as punishments, join waitlist
 
-## Installing and Running
+## Install and run
 
-### Prerequisites
-
-- [Node.js version 22 or later](https://nodejs.dev/download)
-- [npm](https://nodejs.org/en/download/) (usually installed by default with `Node.js`)
-- [git](https://git-scm.com/downloads)
-- Minecraft alt account
-
-### Download
-
-Clone and download the complete project by using `Git` tool:
-
-```shell
-git clone https://github.com/aidn3/hypixel-guild-discord-bridge
-```
-
-### Configure
-
-- Explore the project files and copy the contents of `config_example.yaml` into `config.yaml`
-- Open `config.yaml` and fill in the information (Security: `config.yaml` contains sensitive information. Keep it safe!)
-- In `config.yaml` fill out `general.hypixelApiKey` and `discord.key` and `discord.adminIds`
-- (Optional) for **Advanced users only:** Edit other options in `config.yaml` to fine tune the bridge
-
-> Make sure to grant permission to the application in various places to ensure its full functionality.
-> e.g. in-game for the Minecraft account and on a Discord server for the Discord bot.  
-> Check [this document](./docs/PERMISSIONS.md) for a comprehensive list of all the permissions needed for the application.
-
-### Install And Run
-
-If you are on linux, execute this command to auto download all libraries and start the application.
-It will also keep the application up to date:
-
-```shell
-./start.sh
-```
-
-If you are running the application on Windows operating system:
-
-```shell
-npm install
-npm start
-```
-
-### Run Via Docker
-
-Alternatively, Docker image is available to use at [GitHub Container Service](https://github.com/aidn3/hypixel-guild-discord-bridge/pkgs/container/hypixel-guild-discord-bridge).
-Image is usually up to date.
-
-To start, first prepare the configuration as instructed in [this section](#configure). Then execute:
-
-```shell
-sudo docker container run -it --rm -v ./config.yaml:/app/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest
-```
-
-Note that the path of the configuration source file must either be relative (with the `./`) or absolute.
-
-Alternatively, providing the path as an argument to the docker container is also possible:
-
-```shell
-sudo docker container run -it --rm -v ./config.yaml:/config/config.yaml ghcr.io/aidn3/hypixel-guild-discord-bridge:latest /config/config.yaml
-```
-
-## Setup Via Discord
-
-After installing and running the application, basic setup needs to be done to integrate the application.
-
-Use Discord slash command `/settings` to configure the application:
-
-- Set up the public and officer channels
-- Check [How to prepare and add Minecraft account](docs/FAQ.md#how-to-prepare-a-minecraft-account-to-be-added).
+[Read and follow this guide](docs/INSTALL.md) to start.
 
 ## Privacy Notice
 
