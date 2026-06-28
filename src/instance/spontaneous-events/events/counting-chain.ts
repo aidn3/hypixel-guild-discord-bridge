@@ -80,7 +80,7 @@ export async function startCountingChain(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,
         Duration.minutes(5),
-        'Did not continue chain counting'
+        'Did not continue counting chain'
       )
     }
 
