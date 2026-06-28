@@ -32,6 +32,14 @@ export class SpontaneousEventsConfigurations {
     this.configuration.setStringArray('enabledEvents', eventNames)
   }
 
+  public getMuteOnFail(): boolean {
+    return this.configuration.getBoolean('muteOnFail', true)
+  }
+
+  public setMuteOnFail(enabled: boolean): void {
+    this.configuration.setBoolean('muteOnFail', enabled)
+  }
+
   public getCountingChainDuration(): Duration {
     const seconds = this.configuration.getNumber('countingChainDuration', 10)
     return Duration.seconds(seconds)

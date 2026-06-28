@@ -76,12 +76,15 @@ export async function startCountingChain(
     return { message: `Never mind the counting chain :(`, color: Color.Info }
   } else {
     if ((await beforeLast.permission()) < Permission.Helper && !(await beforeLast.immune())) {
-      await beforeLast.mute(
-        context.eventHelper.fillBaseEvent(),
-        PunishmentPurpose.Game,
-        Duration.minutes(5),
-        'Did not continue chain counting'
-      )
+      const muteOnFail = context.application.core.spontaneousEventsConfigurations.getMuteOnFail()
+      if (muteOnFail) {
+        await beforeLast.mute(
+          context.eventHelper.fillBaseEvent(),
+          PunishmentPurpose.Game,
+          Duration.minutes(5),
+          'Did not continue counting chain'
+        )
+      }
     }
 
     return {
