@@ -369,6 +369,15 @@ function fetchQualityOptions(application: Application): CategoryOption {
             }
           },
           {
+            type: OptionType.Boolean,
+            name: `Mute On Fail`,
+            description: 'Slightly punish users who quit mid events by muting them for a short duration',
+            getOption: () => events.getMuteOnFail(),
+            toggleOption: () => {
+              events.setMuteOnFail(!events.getMuteOnFail())
+            }
+          },
+          {
             type: OptionType.Category,
             name: 'Events Durations',
             description: 'How long should each event lasts in seconds before it is considered abandoned.',
