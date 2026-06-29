@@ -853,8 +853,8 @@ function migrateFrom23to24(database: Database): void {
       ' ) STRICT'
   )
 
-  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" TEXT NOT NULL DEFAULT "any";')
-  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "includedPurge" INTEGER NOT NULL DEFAULT 0;')
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" INTEGER NOT NULL DEFAULT 1;')
+  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "canPurge" INTEGER NOT NULL DEFAULT 0;')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

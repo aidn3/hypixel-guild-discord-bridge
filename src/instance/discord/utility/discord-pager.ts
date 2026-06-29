@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type {
   APIEmbed,
   ButtonInteraction,
   CommandInteraction,
   Message,
+  MessageActionRowComponentData,
   ModalSubmitInteraction,
   TextBasedChannel,
   TextChannel
@@ -238,7 +238,6 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
 
 export interface FetchPageResult {
   embed?: APIEmbed
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  components?: any[]
+  components?: (ActionRowBuilder | MessageActionRowComponentData)[]
   totalPages: number
 }

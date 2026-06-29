@@ -44,7 +44,11 @@ export enum OptionType {
 
   Channel = 'channel',
   Role = 'role',
-  User = 'user'
+  User = 'user',
+
+  DiscordGuild = 'discord-guild',
+  DiscordChannel = 'discord-channel',
+  DiscordUser = 'discord-user'
 }
 
 export type OptionItem =

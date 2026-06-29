@@ -590,11 +590,11 @@ async function handleSettings(
             },
             getOption: () => {
               assert.ok(savedGuild !== undefined)
-              return manager.getIncludedPurgeRanks(savedGuild.id)
+              return manager.getCanPurgeRanks(savedGuild.id)
             },
             setOption: (values) => {
               assert.ok(savedGuild !== undefined)
-              manager.setIncludedPurgeRanks(savedGuild.id, values)
+              manager.setCanPurgeRanks(savedGuild.id, values)
             }
           },
           {
@@ -968,7 +968,7 @@ async function handleWaitlistPanel(
       options: savedGuilds.map((guild) => ({ label: guild.name, value: guild.id }))
     }
     const result = await showModal(interaction, 'Guild Join Waitlist', [option], Duration.minutes(10))
-    responseInteraction = result.modalResponse
+    responseInteraction = result.modalResponse as ChatInputCommandInteraction | ModalSubmitInteraction
     const guilds = result.result.guildIds as string[]
     selectedGuilds = savedGuilds.filter((savedGuild) => guilds.includes(savedGuild.id))
   }
@@ -1180,7 +1180,7 @@ async function handlePurge(
     return
   }
 
-  const includedRanks = database.getIncludedPurgeRanks(savedGuild.id)
+  const includedRanks = database.getCanPurgeRanks(savedGuild.id)
   const neededStayConditions = database.getNeededStayConditions(savedGuild.id)
   const stayConditions = database.getStayConditions(savedGuild.id)
 

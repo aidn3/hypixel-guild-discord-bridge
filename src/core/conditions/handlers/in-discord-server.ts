@@ -1,6 +1,11 @@
+import { DiscordAPIError } from 'discord.js'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
+// eslint-disable-next-line import/no-restricted-paths
+import { OptionType } from '../../../instance/discord/utility/options-handler'
 import type {
+  ConditionOption,
   ConditionResult,
   HandlerContext,
   HandlerDisplayContext,
@@ -18,8 +23,16 @@ export class InDiscordServer extends ConditionHandler<InDiscordServerOptions, bo
     return context.application.i18n.t(($) => $['discord.conditions.handler.in-discord-server.title'])
   }
 
-  override displayCondition(context: HandlerDisplayContext): string {
-    return context.application.i18n.t(($) => $['discord.conditions.handler.in-discord-server.formatted'])
+  override async displayCondition(context: HandlerDisplayContext, options: InDiscordServerOptions): Promise<string> {
+    const client = context.application.discordInstance.getClient()
+    const guild = await client.guilds.fetch(options.guildId).catch(() => undefined)
+    if (guild === undefined) {
+      return context.application.i18n.t(($) => $['discord.conditions.handler.in-discord-server.formatted-invalid'])
+    }
+
+    return context.application.i18n.t(($) => $['discord.conditions.handler.in-discord-server.formatted'], {
+      serverName: guild.name
+    })
   }
 
   override async meetsCondition(
@@ -37,37 +50,53 @@ export class InDiscordServer extends ConditionHandler<InDiscordServerOptions, bo
 
     const client = context.application.discordInstance.getClient()
 
-    // Try the configured guild, otherwise fallback to the first guild in cache (if any)
-    const guild = (await client.guilds.fetch(options.guildId).catch(() => undefined)) ?? client.guilds.cache.first()
+    const guild = await client.guilds.fetch(options.guildId).catch(() => undefined)
     if (guild === undefined) {
       return {
         type: ConditionResultType.Error,
-        reason: 'Could not find the Discord server'
+        reason: context.application.i18n.t(($) => $['conditions.format.discord-server-not-found'])
       }
     }
 
-    const member = await guild.members.fetch(discordProfile.id).catch(() => undefined)
-    const inServer = member !== undefined
+    try {
+      await guild.members.fetch(discordProfile.id)
+      return {
+        type: ConditionResultType.Pass,
+        value: true,
+        valueFormatted: 'Yes'
+      }
+    } catch (error: unknown) {
+      if (error instanceof DiscordAPIError && error.code === 10_007) {
+        return {
+          type: ConditionResultType.Fail,
+          value: false,
+          valueFormatted: 'No'
+        }
+      }
 
-    return {
-      type: inServer ? ConditionResultType.Pass : ConditionResultType.Fail,
-      value: inServer,
-      valueFormatted: inServer ? 'Yes' : 'No'
+      return {
+        type: ConditionResultType.Error,
+        reason: error instanceof Error ? error.message : String(error)
+      }
     }
   }
 
-  override createCondition(context: HandlerContext): InDiscordServerOptions {
-    const client = context.application.discordInstance.getClient()
-    const guildId = client.guilds.cache.first()?.id ?? '0'
-    return { guildId }
+  override createCondition(context: HandlerContext, rawOptions: ConditionOption): InDiscordServerOptions {
+    return { guildId: rawOptions.guildId as string }
   }
 
   public override createOptions(): ModalOption[] {
-    return []
+    return [
+      {
+        type: OptionType.DiscordGuild,
+        name: 'Discord Server',
+        key: 'guildId'
+      }
+    ]
   }
 }
 
-export interface InDiscordServerOptions {
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type InDiscordServerOptions = {
   guildId: string
-  [key: string]: string | number | boolean | string[]
 }

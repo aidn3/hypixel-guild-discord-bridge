@@ -2,7 +2,8 @@ import type {
   ButtonInteraction,
   ChatInputCommandInteraction,
   ModalComponentData,
-  ModalSubmitInteraction
+  ModalSubmitInteraction,
+  RepliableInteraction
 } from 'discord.js'
 import { ChannelType, ComponentType, escapeMarkdown, SelectMenuDefaultValueType, TextInputStyle } from 'discord.js'
 
@@ -11,6 +12,12 @@ import { parseNumberWithSuffice } from '../../../utility/shared-utility'
 
 import type { BooleanOption, DiscordSelectOption, NumberOption, PresetListOption, TextOption } from './options-handler'
 import { InputStyle, OptionType } from './options-handler'
+
+export interface DiscordContextOption {
+  type: OptionType.DiscordGuild | OptionType.DiscordChannel | OptionType.DiscordUser
+  name: string
+  description?: string
+}
 
 export type BaseModalOption =
   | (Omit<TextOption, 'getOption' | 'setOption'> & {
@@ -26,6 +33,7 @@ export type BaseModalOption =
   | (Omit<DiscordSelectOption, 'getOption' | 'setOption'> & {
       defaultValue?: ReturnType<DiscordSelectOption['getOption']>
     })
+  | DiscordContextOption
 
 export type ModalOption = BaseModalOption & {
   key: string
@@ -39,10 +47,17 @@ export async function showModal(
   title: string,
   options: ModalOption[],
   timeout: Duration
-): Promise<{ result: ModalResult; modalResponse: ModalSubmitInteraction }> {
+): Promise<{
+  result: ModalResult
+  modalResponse: ModalSubmitInteraction | ButtonInteraction | ChatInputCommandInteraction
+}> {
   const components = createComponents(options)
-  const modalData: ModalComponentData = { title, components, customId: interaction.id }
 
+  if (components.length === 0) {
+    return { result: parseContextOptions(options, interaction), modalResponse: interaction }
+  }
+
+  const modalData: ModalComponentData = { title, components, customId: interaction.id }
   await interaction.showModal(modalData)
 
   const modalResponse = await interaction.awaitModalSubmit({
@@ -203,12 +218,50 @@ function createComponents(options: ModalOption[]): ModalComponentData['component
   return components
 }
 
+function parseContextOptions(options: ModalOption[], interaction: RepliableInteraction): ModalResult {
+  const result: ModalResult = {}
+  for (const option of options) {
+    let value: ModalResultType
+    switch (option.type) {
+      case OptionType.DiscordGuild: {
+        value = interaction.guildId ?? '0'
+        break
+      }
+      case OptionType.DiscordChannel: {
+        value = interaction.channelId ?? '0'
+        break
+      }
+      case OptionType.DiscordUser: {
+        value = interaction.user.id
+        break
+      }
+      default: {
+        throw new Error(`Option type ${option.type} requires a modal submit response`)
+      }
+    }
+    result[option.key] = option.formatter === undefined ? value : option.formatter(value)
+  }
+  return result
+}
+
 function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInteraction): ModalResult {
   const result: ModalResult = {}
 
   for (const option of options) {
     let value: ModalResultType
     switch (option.type) {
+      case OptionType.DiscordGuild: {
+        value = modalResponse.guildId ?? '0'
+        break
+      }
+      case OptionType.DiscordChannel: {
+        value = modalResponse.channelId ?? '0'
+        break
+      }
+      case OptionType.DiscordUser: {
+        value = modalResponse.user.id
+        break
+      }
       case OptionType.Boolean: {
         value = modalResponse.fields.getStringSelectValues(option.key)[0] === 'true'
         break
