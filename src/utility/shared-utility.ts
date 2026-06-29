@@ -1,8 +1,19 @@
 import assert from 'node:assert'
 
+import DefaultAxios from 'axios'
 import Logger4js from 'log4js'
+import PromiseQueue from 'promise-queue'
 
 import Duration from './duration'
+
+const SessionModeLogger = Logger4js.getLogger()
+const SessionModeDisplayNameMaxLife = Duration.hours(6)
+const SessionModeDisplayNameUrl =
+  'https://raw.githubusercontent.com/NotEnoughUpdates/NotEnoughUpdates-REPO/refs/heads/master/constants/islands.json'
+const AreaNamesKey = 'area_names'
+const SessionModeDisplayNameQueue = new PromiseQueue(1)
+let sessionModeDisplayNameFetchedAt = -1
+let sessionModeIslandData: NeuIslands | undefined
 
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()
@@ -246,3 +257,106 @@ export function searchObjects<T>(query: string, collection: T[], callback: (entr
 
   return sortedResults
 }
+
+export async function getSessionModeDisplayName(sessionMode: string | undefined): Promise<string | undefined> {
+  sessionMode = sessionMode?.toLowerCase()
+  if (sessionMode === undefined) return sessionMode
+
+  const resolvedMode = sessionMode
+
+  const displayName = await SessionModeDisplayNameQueue.add(() => fetchSessionModeDisplayNames(resolvedMode)).catch(
+    (error: unknown) => {
+      SessionModeLogger.error('Failed to fetch session mode display names:', error)
+      return
+    }
+  )
+
+  return displayName ?? sessionMode
+}
+
+export function prefixSessionModeDisplayName(displayName: string | undefined): string | undefined {
+  if (displayName === undefined) return displayName
+
+  switch (displayName) {
+    case 'Backwater Bayou': {
+      return 'on Backwater Bayou'
+    }
+    case 'Crimson Isle': {
+      return 'on Crimson Isle'
+    }
+    case 'Crystal Hollows': {
+      return 'in Crystal Hollows'
+    }
+    case 'Deep Caverns': {
+      return 'in Deep Caverns'
+    }
+    case 'Dungeon': {
+      return 'in Dungeon'
+    }
+    case 'Dungeon Hub': {
+      return 'in Dungeon Hub'
+    }
+    case 'Dwarven Mines': {
+      return 'in Dwarven Mines'
+    }
+    case 'Galatea': {
+      return 'on Galatea'
+    }
+    case 'Glacite Mineshafts': {
+      return 'in Glacite Mineshafts'
+    }
+    case 'Gold Mine': {
+      return 'in Gold Mine'
+    }
+    case 'Hub': {
+      return 'in Hub'
+    }
+    case "Jerry's Workshop": {
+      return "in Jerry's Workshop"
+    }
+    case "Kuudra's Hollow": {
+      return "in Kuudra's Hollow"
+    }
+    case 'Lotus Atoll': {
+      return 'on Lotus Atoll'
+    }
+    case 'Private Island': {
+      return 'on Private Island'
+    }
+    case 'Rift': {
+      return 'in Rift'
+    }
+    case "Spider's Den": {
+      return "on Spider's Den"
+    }
+    case 'The End': {
+      return 'in The End'
+    }
+    case 'The Farming Islands': {
+      return 'on The Farming Islands'
+    }
+    case 'The Garden': {
+      return 'on The Garden'
+    }
+    case 'The Park': {
+      return 'in The Park'
+    }
+    // No default
+  }
+
+  return `in ${displayName}`
+}
+
+async function fetchSessionModeDisplayNames(sessionMode: string): Promise<string | undefined> {
+  if (sessionModeDisplayNameFetchedAt + SessionModeDisplayNameMaxLife.toMilliseconds() >= Date.now()) {
+    return sessionModeIslandData?.[AreaNamesKey][sessionMode]
+  }
+
+  const response = await DefaultAxios.get<NeuIslands>(SessionModeDisplayNameUrl).then((response) => response.data)
+  sessionModeIslandData = response
+  sessionModeDisplayNameFetchedAt = Date.now()
+
+  return response[AreaNamesKey][sessionMode]
+}
+
+type NeuIslands = Record<typeof AreaNamesKey, Partial<Record<string, string>>>
