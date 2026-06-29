@@ -79,6 +79,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom22to23(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom23to24(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -837,6 +840,21 @@ function migrateFrom21to22(database: Database): void {
 
 function migrateFrom22to23(database: Database): void {
   database.exec("UPDATE configurations SET category = 'admin' WHERE category = 'general' AND name = 'autoRestart';")
+}
+
+function migrateFrom23to24(database: Database): void {
+  database.exec(
+    'CREATE TABLE "minecraftGuildStayConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" INTEGER NOT NULL DEFAULT 1;')
+  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "canPurge" INTEGER NOT NULL DEFAULT 0;')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

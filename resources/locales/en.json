@@ -32,6 +32,7 @@
   "conditions.format.never-played-skyblock": "never played skyblock",
   "conditions.format.guild-disbanded": "Guild disbanded",
   "conditions.format.discord-server-deleted": "Discord server deleted?",
+  "conditions.format.discord-server-not-found": "Could not find the Discord server",
   "conditions.format.user-not-in-server": "User not in Discord server",
   "conditions.format.not-in-guild": "Not in guild",
   "conditions.format.in-guild-with-rank": "In guild with rank {{rank}}",
@@ -80,14 +81,16 @@
     "roles": "Roles Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
     "nicknames": "Nicknames Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
     "guild-join": "Guild Join Condition (page {{currentPage, number}} out of {{totalPages, number}}",
-    "guild-role": "Guild Role Condition (page {{currentPage, number}} out of {{totalPages, number}}"
+    "guild-role": "Guild Role Condition (page {{currentPage, number}} out of {{totalPages, number}}",
+    "guild-stay": "Guild Stay Condition (page {{currentPage, number}} out of {{totalPages, number}}"
   },
   "discord.conditions.list.empty": "__Empty list__",
   "discord.conditions.list.entry": {
     "roles": "- `{{condition.id}}`: {{display}} <@&{{condition.roleId}}>\n",
     "nicknames": "- `{{condition.id}}`: {{display}} `{{condition.nickname}}`\n",
     "guild-join": "- `{{condition.id}}`: {{display}}\n",
-    "guild-role": "- `{{condition.id}}`: {{display}} `{{condition.role}}`\n"
+    "guild-role": "- `{{condition.id}}`: {{display}} `{{condition.role}}`\n",
+    "guild-stay": "- `{{condition.id}}`: {{display}}\n"
   },
   "discord.conditions.list.entry-invalid": "- `{{condition.id}}`: __{{condition.typeId}}__\n",
 
@@ -100,7 +103,8 @@
     "roles": "Create role condition",
     "nicknames": "Create nickname condition",
     "guild-join": "Create Guild Join Condition",
-    "guild-role": "Create Guild Role Condition"
+    "guild-role": "Create Guild Role Condition",
+    "guild-stay": "Create Guild Stay Condition"
   },
 
   "discord.conditions.add.role.name": "Role to give",
@@ -125,7 +129,8 @@
     "roles": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the role <@&{{condition.roleId}}>.",
     "nicknames": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the have their nickname set as `{{condition.nickname}}`.",
     "guild-join": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be able to join the guild as long as there is no active punishment and joining is allowed.",
-    "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role."
+    "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role.",
+    "guild-stay": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be safe from the guild purge based on the guild settings."
   },
 
   "discord.conditions.handler.skyblock-api.title": "Skyblock API Enabled",
@@ -151,6 +156,10 @@
 
   "discord.conditions.handler.has-discord-role.title": "Has Discord Role",
   "discord.conditions.handler.has-discord-role.formatted": "Has Discord role <@&{{roleId}}>",
+
+  "discord.conditions.handler.in-discord-server.title": "In Discord Server",
+  "discord.conditions.handler.in-discord-server.formatted": "In the {{serverName}} Discord server",
+  "discord.conditions.handler.in-discord-server.formatted-invalid": "In Discord server (not possible to determine)",
 
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
   "commands.asian.correct": "Big brain!",

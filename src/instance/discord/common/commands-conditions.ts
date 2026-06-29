@@ -1,6 +1,11 @@
 import assert from 'node:assert'
 
-import type { AutocompleteInteraction, ChatInputCommandInteraction, ModalSubmitInteraction } from 'discord.js'
+import type {
+  AutocompleteInteraction,
+  ButtonInteraction,
+  ChatInputCommandInteraction,
+  ModalSubmitInteraction
+} from 'discord.js'
 import { escapeMarkdown, MessageFlags, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
@@ -25,7 +30,7 @@ export interface CommandConditionHandler {
   remove: (id: ConditionId['id']) => boolean
   createOptions: { top: ModalOption[]; bottom: ModalOption[] }
   add: (handlerId: string, data: ModalResult, conditionData: ConditionOption) => ConditionId
-  translationKey: 'roles' | 'nicknames' | 'guild-join' | 'guild-role'
+  translationKey: 'roles' | 'nicknames' | 'guild-join' | 'guild-role' | 'guild-stay'
 }
 
 export function listConditionCommand(
@@ -181,7 +186,10 @@ export async function handleConditionAdd(
   modalOptions.unshift(...manager.createOptions.top)
   modalOptions.push(...manager.createOptions.bottom)
 
-  let rawFetchedOptions: { result: ModalResult; modalResponse: ModalSubmitInteraction | ChatInputCommandInteraction }
+  let rawFetchedOptions: {
+    result: ModalResult
+    modalResponse: ModalSubmitInteraction | ChatInputCommandInteraction | ButtonInteraction
+  }
   try {
     if (modalOptions.length > 0) {
       const title = context.application.i18n.t(($) => $['discord.conditions.add.title'][manager.translationKey])

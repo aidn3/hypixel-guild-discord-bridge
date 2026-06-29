@@ -70,7 +70,7 @@ export class Database {
         `DELETE FROM minecraftGuildRoles WHERE guildId = ? AND name NOT IN (${roles.map(() => '?').join(',')})`
       )
       const selectRoles = database.prepare<[typeof id], MinecraftGuildRole>(
-        'SELECT name, priority, whitelisted, isDefault FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted, canPurge, isDefault FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       if (exists.all(id).length === 0) {
@@ -140,7 +140,7 @@ export class Database {
     const transaction = database.transaction(() => {
       const select = database.prepare<[], MinecraftGuild>('SELECT * FROM minecraftGuild')
       const selectRoles = database.prepare<[string], MinecraftGuildRole>(
-        'SELECT name, priority, whitelisted, isDefault FROM minecraftGuildRoles WHERE guildId = ?'
+        'SELECT name, priority, whitelisted, canPurge, isDefault FROM minecraftGuildRoles WHERE guildId = ?'
       )
 
       const guilds = select.all()
@@ -175,6 +175,7 @@ export class Database {
         'minecraftGuildMember',
         'minecraftGuildJoinConditions',
         'minecraftGuildRoleConditions',
+        'minecraftGuildStayConditions',
         'minecraftGuildWaitlist',
         'minecraftGuildRoles'
       ]
@@ -228,6 +229,7 @@ export class Database {
       role.isDefault = !!role.isDefault
       // noinspection PointlessBooleanExpressionJS
       role.whitelisted = !!role.whitelisted
+      role.canPurge = !!role.canPurge
     }
     /* eslint-enable @typescript-eslint/no-unnecessary-type-conversion */
   }
@@ -670,6 +672,123 @@ export class Database {
     return transaction()
   }
 
+  public addStayCondition(condition: GuildStayCondition): SavedGuildStayCondition {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const insert = database.prepare(
+        'INSERT INTO "minecraftGuildStayConditions" (guildId, typeId, options) VALUES (?, ?, ?)'
+      )
+      const select = database.prepare<[number | bigint], SavedGuildStayCondition>(
+        'SELECT * FROM "minecraftGuildStayConditions" WHERE id = ?'
+      )
+
+      const insertResult = insert.run(condition.guildId, condition.typeId, JSON.stringify(condition.options))
+      assert.strictEqual(insertResult.changes, 1)
+      const id = insertResult.lastInsertRowid
+
+      const selectResult = select.get(id)
+      assert.ok(selectResult !== undefined)
+
+      this.deserializeJoinCondition(selectResult)
+      return selectResult
+    })
+
+    return transaction()
+  }
+
+  public removeStayCondition(
+    guildId: GuildStayCondition['guildId'],
+    conditionId: SavedGuildStayCondition['id']
+  ): SavedGuildStayCondition | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const deleteEntry = database.prepare('DELETE FROM "minecraftGuildStayConditions" WHERE id = ? AND guildId = ?')
+      const select = database.prepare<[number | bigint, string], SavedGuildStayCondition>(
+        'SELECT * FROM "minecraftGuildStayConditions" WHERE id = ? AND guildId = ?'
+      )
+
+      const condition = select.get(conditionId, guildId)
+      if (condition === undefined) return
+
+      this.deserializeJoinCondition(condition)
+
+      assert.strictEqual(deleteEntry.run(conditionId, guildId).changes, 1)
+      return condition
+    })
+
+    return transaction()
+  }
+
+  public getStayConditions(guildId: GuildStayCondition['guildId']): SavedGuildStayCondition[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[typeof guildId], SavedGuildStayCondition>(
+        'SELECT * FROM "minecraftGuildStayConditions" WHERE guildId = ?'
+      )
+
+      const conditions = select.all(guildId)
+      for (const condition of conditions) {
+        this.deserializeJoinCondition(condition)
+      }
+
+      return conditions
+    })
+
+    return transaction()
+  }
+
+  public getNeededStayConditions(guildId: string): number {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare('SELECT stayConditionMode FROM "minecraftGuild" WHERE id = ?')
+      const value = select.pluck(true).get(guildId) as number | string | undefined
+      return value === undefined ? 1 : Number(value) || 1
+    })
+    return transaction()
+  }
+
+  public setNeededStayConditions(guildId: string, needed: number): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const update = database.prepare('UPDATE "minecraftGuild" SET stayConditionMode = ? WHERE id = ?')
+      update.run(needed, guildId)
+    })
+    transaction()
+  }
+
+  public getCanPurgeRanks(guildId: string): string[] {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const select = database.prepare<[string], { name: string }>(
+        'SELECT name FROM minecraftGuildRoles WHERE guildId = ? AND canPurge = 1'
+      )
+      return select.all(guildId).map((role) => role.name)
+    })
+    return transaction()
+  }
+
+  public setCanPurgeRanks(guildId: string, ranks: string[]): void {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      if (ranks.length === 0) {
+        const unPurgeAll = database.prepare('UPDATE minecraftGuildRoles SET canPurge = 0 WHERE guildId = ?')
+        unPurgeAll.run(guildId)
+        return
+      }
+
+      const unPurge = database.prepare(
+        `UPDATE minecraftGuildRoles SET canPurge = 0 WHERE guildId = ? AND name NOT IN (${ranks.map(() => '?').join(',')})`
+      )
+      const purge = database.prepare(
+        `UPDATE minecraftGuildRoles SET canPurge = 1 WHERE guildId = ? AND name IN (${ranks.map(() => '?').join(',')})`
+      )
+
+      unPurge.run(guildId, ...ranks)
+      purge.run(guildId, ...ranks)
+    })
+    transaction()
+  }
+
   public updatedGuildMember(
     guildId: MinecraftGuild['id'],
     member: HypixelGuildMember,
@@ -814,6 +933,9 @@ export type GuildCondition = Pick<ConditionId, 'typeId' | 'options' | 'guildId'>
 export type GuildJoinCondition = GuildCondition
 export type SavedGuildJoinCondition = GuildJoinCondition & ConditionId
 
+export type GuildStayCondition = GuildCondition
+export type SavedGuildStayCondition = GuildStayCondition & ConditionId
+
 export type GuildRoleCondition = GuildCondition & { role: string }
 export type SavedGuildRoleCondition = GuildRoleCondition & ConditionId
 
@@ -827,6 +949,7 @@ export interface MinecraftGuild {
   acceptJoinRequests: boolean
   autoUpdateRoles: boolean
   createdAt: number
+  neededStayConditions: number
 
   lastUpdateAt: number
   forceUpdate: boolean
@@ -837,6 +960,7 @@ export interface MinecraftGuildRole {
   isDefault: boolean
   priority: number
   whitelisted: boolean
+  canPurge?: boolean
 }
 
 export interface WaitlistEntry {
