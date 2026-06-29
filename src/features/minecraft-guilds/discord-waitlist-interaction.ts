@@ -594,7 +594,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       title: 'Guild Join Waitlist',
       description:
         `-# Last update: <t:${Math.floor(Date.now() / 1000)}:R>` +
-        '\n-# You can **Signup** up in the waiting list to join the guild.' +
+        '\n-# You can **Signup** in the waiting list to join the guild.' +
         '\n-# When it is your turn, you will receive a DM with 24 hours time to join the guild.',
       fields: [] as APIEmbedField[],
       color: Color.Good
