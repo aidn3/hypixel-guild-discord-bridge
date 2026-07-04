@@ -1,9 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Coinflip extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'coin-flip',
       triggers: ['coinflip', 'coinf'],
       description: 'Flip a coin',
       example: `coinflip %s`

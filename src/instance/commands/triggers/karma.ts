@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Karma extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'karma',
       triggers: ['karma'],
       description: "Returns a player's karma",
       example: `karma %s`

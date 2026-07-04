@@ -1,83 +1,69 @@
 import assert from 'node:assert'
 
 import type { ChannelType, UserId } from '../../common/application-event'
+import type { CommandId } from '../../common/commands'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import type { AnonymousUser } from '../../common/user'
-import type { Users } from '../users'
+import type { Users } from '../../core/users'
+
+import type { CommandsDatabase } from './commands-database'
 
 export class CommandsCooldown {
   constructor(
     private readonly sqliteManager: SqliteManager,
-    private readonly users: Users
+    private readonly users: Users,
+    private readonly database: CommandsDatabase
   ) {}
 
-  public getGlobalLastExecutionTime(triggers: string[]): number {
-    return this.getLastExecutionTime('chatCommandGlobalCooldown', triggers, undefined)
+  public getGlobalLastExecutionTime(id: CommandId): number {
+    return this.getLastExecutionTime('chatCommandGlobalCooldown', id, undefined)
   }
 
-  public resetGlobalLastExecutionTime(triggers: string[]): number {
-    return this.resetLastExecutionTime('chatCommandGlobalCooldown', triggers, undefined)
+  public resetGlobalLastExecutionTime(id: CommandId): number {
+    return this.resetLastExecutionTime('chatCommandGlobalCooldown', id, undefined)
   }
 
-  public updateGlobalLastExecutionTime(triggers: string[]): void {
-    this.updateLastExecutionTime('chatCommandGlobalCooldown', triggers, undefined)
+  public updateGlobalLastExecutionTime(id: CommandId): void {
+    this.updateLastExecutionTime('chatCommandGlobalCooldown', id, undefined)
   }
 
-  public getChannelLastExecutionTime(
-    triggers: string[],
-    channelType: ChannelType.Public | ChannelType.Officer
-  ): number {
-    return this.getLastExecutionTime('chatCommandChannelCooldown', triggers, { key: 'channelType', value: channelType })
+  public getChannelLastExecutionTime(id: CommandId, channelType: ChannelType.Public | ChannelType.Officer): number {
+    return this.getLastExecutionTime('chatCommandChannelCooldown', id, { key: 'channelType', value: channelType })
   }
 
-  public resetChannelLastExecutionTime(
-    triggers: string[],
-    channelType: ChannelType.Public | ChannelType.Officer
-  ): number {
-    return this.resetLastExecutionTime('chatCommandChannelCooldown', triggers, {
-      key: 'channelType',
-      value: channelType
-    })
+  public resetChannelLastExecutionTime(id: CommandId, channelType: ChannelType.Public | ChannelType.Officer): number {
+    return this.resetLastExecutionTime('chatCommandChannelCooldown', id, { key: 'channelType', value: channelType })
   }
 
-  public updateChannelLastExecutionTime(
-    triggers: string[],
-    channelType: ChannelType.Public | ChannelType.Officer
-  ): void {
-    this.updateLastExecutionTime('chatCommandChannelCooldown', triggers, { key: 'channelType', value: channelType })
+  public updateChannelLastExecutionTime(id: CommandId, channelType: ChannelType.Public | ChannelType.Officer): void {
+    this.updateLastExecutionTime('chatCommandChannelCooldown', id, { key: 'channelType', value: channelType })
   }
 
-  public getUserLastExecutionTime(triggers: string[], user: AnonymousUser): number {
-    if (triggers.length === 0) return 0
-
+  public getUserLastExecutionTime(id: CommandId, user: AnonymousUser): number {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const userIds = this.users.resolveAllUserId(user)
-      return this.getLastExecutionTime('chatCommandUserCooldown', triggers, { key: 'userId', value: userIds })
+      return this.getLastExecutionTime('chatCommandUserCooldown', id, { key: 'userId', value: userIds })
     })
 
     return transaction()
   }
 
-  public resetUserLastExecutionTime(triggers: string[], user: AnonymousUser): number {
-    if (triggers.length === 0) return 0
-
+  public resetUserLastExecutionTime(id: CommandId, user: AnonymousUser): number {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const userIds = this.users.resolveAllUserId(user)
-      return this.resetLastExecutionTime('chatCommandUserCooldown', triggers, { key: 'userId', value: userIds })
+      return this.resetLastExecutionTime('chatCommandUserCooldown', id, { key: 'userId', value: userIds })
     })
 
     return transaction()
   }
 
-  public updateUserLastExecutionTime(triggers: string[], user: AnonymousUser): void {
-    if (triggers.length === 0) return
-
+  public updateUserLastExecutionTime(id: CommandId, user: AnonymousUser): void {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const userIds = this.users.resolveAllUserId(user)
-      this.updateLastExecutionTime('chatCommandUserCooldown', triggers, { key: 'userId', value: userIds })
+      this.updateLastExecutionTime('chatCommandUserCooldown', id, { key: 'userId', value: userIds })
     })
 
     transaction()
@@ -85,26 +71,26 @@ export class CommandsCooldown {
 
   private getLastExecutionTime(
     table: string,
-    triggers: string[],
+    commandId: CommandId,
     condition: { key: string; value: string | UserId[] } | undefined
   ): number {
-    if (triggers.length === 0) return 0
-
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
+      this.database.initAndGet(commandId)
+
       const parameters: unknown[] = []
       let query = `SELECT lastExecutedAt FROM "${table}" WHERE`
 
-      query += ` trigger IN (${triggers.map(() => '?').join(', ')})`
-      parameters.push(...triggers)
+      query += ' commandId = ?'
+      parameters.push(commandId)
 
       if (condition !== undefined) {
         if (typeof condition.value === 'string') {
-          query += `AND ${condition.key} = ?`
+          query += ` AND ${condition.key} = ?`
           parameters.push(condition.value)
         } else {
           condition.value satisfies UserId[]
-          query += `AND ${condition.key} IN (${condition.value.map(() => '?').join(', ')})`
+          query += ` AND ${condition.key} IN (${condition.value.map(() => '?').join(', ')})`
           parameters.push(...condition.value)
         }
       }
@@ -122,26 +108,26 @@ export class CommandsCooldown {
 
   private resetLastExecutionTime(
     table: string,
-    triggers: string[],
+    commandId: CommandId,
     condition: { key: string; value: string | UserId[] } | undefined
   ): number {
-    if (triggers.length === 0) return 0
-
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
+      this.database.initAndGet(commandId)
+
       const parameters: unknown[] = []
       let query = `DELETE FROM "${table}" WHERE`
 
-      query += ` trigger IN (${triggers.map(() => '?').join(', ')})`
-      parameters.push(...triggers)
+      query += ` commandId = ?`
+      parameters.push(commandId)
 
       if (condition !== undefined) {
         if (typeof condition.value === 'string') {
-          query += `AND ${condition.key} = ?`
+          query += ` AND ${condition.key} = ?`
           parameters.push(condition.value)
         } else {
           condition.value satisfies UserId[]
-          query += `AND ${condition.key} IN (${condition.value.map(() => '?').join(', ')})`
+          query += ` AND ${condition.key} IN (${condition.value.map(() => '?').join(', ')})`
           parameters.push(...condition.value)
         }
       }
@@ -154,17 +140,17 @@ export class CommandsCooldown {
 
   private updateLastExecutionTime(
     table: string,
-    triggers: string[],
+    commandId: CommandId,
     condition: { key: string; value: string | UserId[] } | undefined
   ): void {
-    assert.notStrictEqual(triggers.length, 0)
-
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
+      this.database.initAndGet(commandId)
+
       const parameters: unknown[] = []
-      let keys = `(trigger`
+      let keys = `(commandId`
       let values = '(?'
-      parameters.push(triggers[0])
+      parameters.push(commandId)
 
       if (condition !== undefined) {
         if (typeof condition.value === 'string') {
@@ -182,7 +168,7 @@ export class CommandsCooldown {
       keys += `)`
       values += ')'
 
-      this.resetLastExecutionTime(table, triggers, condition)
+      this.resetLastExecutionTime(table, commandId, condition)
       const result = database.prepare(`INSERT INTO "${table}" ${keys} VALUES ${values}`).run(...parameters)
       assert.strictEqual(result.changes, 1)
     })

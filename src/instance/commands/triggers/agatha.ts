@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -10,6 +10,8 @@ import {
 export default class Agatha extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'agatha',
       triggers: ['agatha', 'agathabests', 'agathapbs', 'foragingpbs'],
       description: "Returns a player's Agatha and foraging personal bests",
       example: `agatha %s`

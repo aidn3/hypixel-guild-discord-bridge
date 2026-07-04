@@ -1,6 +1,6 @@
 import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import { usernameNotExists } from '../common/utility'
 
@@ -9,6 +9,8 @@ export default class Airstrike extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'airstrike',
       triggers: ['airstrike', 'as'],
       description: 'Mute a specific person to annoy them',
       example: `airstrike %s`

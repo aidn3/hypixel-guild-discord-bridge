@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class HypixelLevel extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'hypixel-level',
       triggers: ['hlevel', 'hypixellevel', 'hlvl'],
       description: "Returns a player's Hypixel common stats",
       example: `hlevel %s`

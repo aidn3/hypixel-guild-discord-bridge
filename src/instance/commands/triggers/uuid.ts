@@ -2,7 +2,7 @@ import DefaultAxios from 'axios'
 import NodeCache from 'node-cache'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import { usernameNotExists } from '../common/utility'
 
@@ -11,6 +11,8 @@ export default class Uuid extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'uuid',
       triggers: ['username', 'name', 'ign', 'uuid'],
       description: 'Show the Mojang UUID of a player',
       example: 'uuid %s'
@@ -48,7 +50,7 @@ export default class Uuid extends ChatCommandHandler {
   }
 
   private async getHistory(context: ChatCommandContext, uuid: string): Promise<HistorySuccess['history']> {
-    if (!context.app.core.commandsConfigurations.getUsernameHistoryEnabled()) return []
+    if (!context.app.commandsInstance.commandsConfigurations.getUsernameHistoryEnabled()) return []
 
     const cachedResult = this.cache.get<HistorySuccess['history']>(uuid)
     if (cachedResult !== undefined) return cachedResult

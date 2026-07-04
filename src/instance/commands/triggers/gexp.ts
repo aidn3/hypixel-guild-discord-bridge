@@ -1,12 +1,14 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Gexp extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'guild-gexp',
       triggers: ['gexp', 'guildxp', 'guildexp'],
       description: 'Shows weekly and monthly GEXP for a guild member in this guild',
       example: 'gexp %s'

@@ -1,11 +1,13 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Age extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'age',
       triggers: ['age', 'joined'],
       description: 'Returns the day someone first logged on to Hypixel',
       example: `age %s`

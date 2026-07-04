@@ -5,7 +5,7 @@ import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import {
   getSelectedSkyblockProfile,
@@ -26,6 +26,8 @@ export default class Bestiary extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'bestiary',
       triggers: ['be', 'bestiary'],
       description: "Returns a player's Bestiary stats",
       example: `be %s dreadlord`

@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -10,6 +10,8 @@ import {
 export default class Jacob extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'jacob',
       triggers: ['jacob', 'jacobs', 'jacobcontents', 'jacobcontest'],
       description: "Returns a player's SkyBlock Jacob contest stats",
       example: `jacob %s`

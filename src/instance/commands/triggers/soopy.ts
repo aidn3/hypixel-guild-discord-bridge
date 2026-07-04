@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios'
 import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 
 export default class Soopy extends ChatCommandHandler {
@@ -89,6 +89,8 @@ export default class Soopy extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'soopy',
       triggers: ['soopy', '-'],
       description: 'Use SoopyV2 API to execute commands',
       example: `- rtca`

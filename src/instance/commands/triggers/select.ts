@@ -1,10 +1,12 @@
 import { ChannelType } from '../../../common/application-event'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Select extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'select',
       triggers: ['select', 'ifl'],
       description: 'Randomly select an online guild member',
       example: `select great person!`

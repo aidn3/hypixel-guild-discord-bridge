@@ -44,8 +44,10 @@ function generateChatCommands(application: Application): string {
   table.push(['Command', 'Description'])
 
   // @ts-expect-error private property
-  const commands = application.commandsInstance.commands.toSorted((a, b) => a.triggers[0].localeCompare(b.triggers[0]))
-  for (const command of commands) {
+  const commands = application.commandsInstance.commands
+  const uniqueCommands = new Set(commands.values().toArray().flat()).values().toArray()
+  const sortedCommands = uniqueCommands.toSorted((a, b) => a.triggers[0].localeCompare(b.triggers[0]))
+  for (const command of sortedCommands) {
     table.push([`\`${command.triggers[0]}\``, command.description])
   }
 

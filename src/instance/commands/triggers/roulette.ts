@@ -1,6 +1,6 @@
 import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 
 export default class Roulette extends ChatCommandHandler {
@@ -26,6 +26,8 @@ export default class Roulette extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'roulette',
       triggers: ['roulette', 'rr'],
       description: 'Try your luck for a 15 minute mute',
       example: `rr`

@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import {
   getSelectedSkyblockProfile,
@@ -27,6 +27,8 @@ type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
 export default class RunsToClassAverage extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'rtca',
       triggers: ['rtca'],
       description: 'Returns the number of runs needed to reach the average class level specified',
       example: `rtca Steve m7 50`

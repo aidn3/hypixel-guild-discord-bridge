@@ -1,11 +1,13 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { PlaceholderContext } from '../../../core/placeholder/common'
 import Duration from '../../../utility/duration'
 
 export default class Placeholder extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'placeholder',
       triggers: ['placeholder', 'ph'],
       description: 'Resolve a placeholder',
       example: 'ph SKYBLOCK_LEVEL'

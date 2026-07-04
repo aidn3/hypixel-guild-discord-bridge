@@ -134,7 +134,6 @@ const ScrambleWords = [
   'Climb',
   'Taxi',
   'Honey',
-  'Goblin Shark',
   'Bull Shark',
   'Blue Marlin',
   'Fox',

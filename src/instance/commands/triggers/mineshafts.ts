@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -10,6 +10,8 @@ import {
 export default class Mineshafts extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'mineshafts',
       triggers: ['shafts', 'shaft', 'mineshaft', 'mineshafts', 'corpse', 'corpses'],
       description: 'Returns shaft enter count and corpses looted amount',
       example: `shafts %s`

@@ -4,7 +4,7 @@ import PromiseQueue from 'promise-queue'
 
 import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandHandler } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser } from '../../../common/user'
 import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
@@ -18,6 +18,8 @@ export default class SyncGuild extends ChatCommandHandler {
 
   constructor(private readonly database: Database) {
     super({
+      type: ChatCommandGroup.Management,
+      id: 'sync-guild',
       triggers: ['sync-guild', 'mass-sync', 'guild-sync'],
       description: 'Update ranks of all members in a guild',
       example: `sync-guild [GuildName]`

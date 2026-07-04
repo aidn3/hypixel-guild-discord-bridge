@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandHandler } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 import { Status } from '../../../common/connectable-instance'
 import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager'
 import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance'
@@ -12,6 +12,8 @@ import type { Database, MinecraftGuild } from '../database'
 export default class Invite extends ChatCommandHandler {
   constructor(private readonly database: Database) {
     super({
+      type: ChatCommandGroup.General,
+      id: 'invite',
       triggers: ['invite', 'guildinvite'],
       description: 'Send yourself a guild invite if you are officially invited',
       example: `invite`

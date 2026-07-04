@@ -1,6 +1,6 @@
 import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 
 export default class Mute extends ChatCommandHandler {
@@ -23,6 +23,8 @@ export default class Mute extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'mute',
       triggers: ['mute'],
       description: 'Mute a random online person for 5 minutes for no good reason',
       example: `mute`

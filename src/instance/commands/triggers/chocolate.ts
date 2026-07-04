@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { shortenNumber } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
@@ -11,6 +11,8 @@ import {
 export default class Chocolate extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'chocolate',
       triggers: ['chocolate', 'chocolates', 'cf'],
       description: "Returns a player's SkyBlock easter eggs chocolate stats",
       example: `chocolate %s`

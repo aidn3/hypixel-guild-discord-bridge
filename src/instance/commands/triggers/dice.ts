@@ -1,11 +1,13 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 type DiceType = 'normal' | 'highclass'
 
 export default class Dice extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'dice',
       triggers: ['dice'],
       description: 'Roll an Archfiend Dice',
       example: `dice highclass`

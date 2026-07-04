@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { search } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
@@ -40,6 +40,8 @@ export default class Collection extends ChatCommandHandler {
   }
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'collection',
       triggers: ['collection', 'collections'],
       description: "Returns a player's SkyBlock collection stats",
       example: `collection %s birch`

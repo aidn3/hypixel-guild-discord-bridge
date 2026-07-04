@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import Moment from 'moment'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock'
 import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import type { MojangApi } from '../../../core/users/mojang'
@@ -20,6 +20,8 @@ export default class CurrentDungeon extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'current-dungeon',
       triggers: ['currentdungeon', 'currdungeon', 'cd'],
       description: "Returns a player's last dungeon run",
       example: `cd %s`

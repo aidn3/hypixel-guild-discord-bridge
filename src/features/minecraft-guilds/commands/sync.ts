@@ -4,7 +4,7 @@ import { TTLCache } from '@isaacs/ttlcache'
 
 import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandHandler } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 import type { MinecraftUser, MojangProfile } from '../../../common/user'
 import { usernameNotExists } from '../../../instance/commands/common/utility'
 import Duration from '../../../utility/duration'
@@ -21,6 +21,8 @@ export default class Sync extends ChatCommandHandler {
 
   constructor(private readonly database: Database) {
     super({
+      type: ChatCommandGroup.Management,
+      id: 'sync',
       triggers: ['sync', 'rankup', 'guildrankup', 'grankup'],
       description: 'Update a user in-game guild rank',
       example: `sync [username]`

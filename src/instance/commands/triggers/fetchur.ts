@@ -1,4 +1,4 @@
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Fetchur extends ChatCommandHandler {
   private static readonly ItemsList = [
@@ -18,6 +18,8 @@ export default class Fetchur extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'fetchur',
       triggers: ['fetchur', 'fetcher'],
       description: 'Show what Fetchur NPC is requesting',
       example: `fetchur`

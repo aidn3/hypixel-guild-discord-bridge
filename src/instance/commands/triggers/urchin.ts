@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { usernameNotExists } from '../common/utility'
 
 export default class UrchinCommand extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'urchin',
       triggers: ['urchin'],
       description: "Returns a player's Urchin blacklist tags",
       example: `urchin %s`

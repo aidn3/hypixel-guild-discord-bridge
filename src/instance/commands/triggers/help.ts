@@ -1,11 +1,13 @@
 import StringComparison from 'string-comparison'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Help extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'help',
       triggers: ['help', 'command', 'commands', 'cmd', 'cmds'],
       description: 'Shows a command description and an example about its usage',
       example: `help <command/page>`
@@ -15,6 +17,7 @@ export default class Help extends ChatCommandHandler {
   handler(context: ChatCommandContext): string {
     const argument = context.args.length > 0 ? context.args[0] : undefined
     const allEnabledCommands = this.getAllEnabledCommands(context)
+    if (allEnabledCommands.length === 0) return 'All commands disabled :('
 
     if (argument === undefined) return this.showPage(allEnabledCommands, 0)
     if (/^\d+$/g.test(argument)) return this.showPage(allEnabledCommands, Number.parseInt(argument, 10))
@@ -91,9 +94,18 @@ export default class Help extends ChatCommandHandler {
   }
 
   private getAllEnabledCommands(context: ChatCommandContext): ChatCommandHandler[] {
-    const disabledCommands = context.app.core.commandsConfigurations.getDisabledCommands()
+    /*
+     * Not all commands have entries in the database
+     */
+    const disabledCommands = new Set(
+      context.app.commandsInstance.database
+        .allCommands()
+        .filter((command) => !command.enabled)
+        .map((command) => command.id)
+    )
+
     return context.allCommands
-      .filter((command) => !command.triggers.some((trigger) => disabledCommands.includes(trigger.toLowerCase())))
+      .filter((command) => !disabledCommands.has(command.id))
       .toSorted((command1, command2) => command1.triggers[0].localeCompare(command2.triggers[0]))
   }
 }

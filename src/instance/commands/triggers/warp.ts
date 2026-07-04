@@ -7,7 +7,7 @@ import {
   Platform
 } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
-import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
 import Duration from '../../../utility/duration'
 import { sleep } from '../../../utility/shared-utility'
@@ -20,6 +20,8 @@ import type { MinecraftManager } from '../../minecraft/minecraft-manager'
 export default class Warp extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'warp',
       triggers: ['warp', 'warpout'],
       description: 'Warp a player out of a lobby',
       example: `warp Steve`

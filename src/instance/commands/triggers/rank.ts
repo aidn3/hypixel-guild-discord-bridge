@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
 import { formatTime } from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
@@ -7,6 +7,8 @@ import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '..
 export default class Rank extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'rank',
       triggers: ['rank'],
       description: 'Shows the rank of a player',
       example: `rank %s`

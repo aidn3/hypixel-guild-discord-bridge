@@ -12,7 +12,7 @@ import axios from 'axios'
 import LilyWeight from 'lilyweight'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type {
   HypixelSkyblockSkill,
   HypixelSkyblockSkillsResponse,
@@ -221,6 +221,8 @@ const SlayerWeightMap: Record<SlayerName, { divider: number; modifier: number }>
 export default class Weight extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'weight',
       triggers: ['weight', 'w'],
       description: "Returns a player's Senither, Lily, and farming weight",
       example: `w %s`

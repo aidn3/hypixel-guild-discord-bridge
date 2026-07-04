@@ -1,9 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class DarkAuction extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'dark-auction',
       triggers: ['da', 'darkauction'],
       description: 'Show the remaining time till next Dark Auction',
       example: 'da'

@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -10,6 +10,8 @@ import {
 export default class Timecharms extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'timecharm',
       triggers: ['timecharm', 'timecharms', 'charm', 'charms', 'riftcharm', 'riftcharms'],
       description: "Returns a player's rift obtained time charms",
       example: `timecharms %s`

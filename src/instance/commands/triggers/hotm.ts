@@ -1,11 +1,13 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
 import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class HeartOfTheMountain extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'hotm',
       triggers: ['hotm', 'powder'],
       description: "Returns a player's HOTM and powder",
       example: `hotm %s`

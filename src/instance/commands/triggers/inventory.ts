@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises'
 import type { Content } from '../../../common/application-event'
 import { ContentType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import MinecraftRenderer from '../../../utility/minecraft-renderer'
 import {
   getSelectedSkyblockProfile,
@@ -16,6 +16,8 @@ import {
 export default class Inventory extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'render-inventory',
       triggers: ['inventory', 'inv', 'hotbar', 'renderinv', 'renderinventory'],
       description: "Render a player's SkyBlock inventory",
       example: `inventory %s 1`

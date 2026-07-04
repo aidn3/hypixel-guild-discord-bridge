@@ -1,5 +1,5 @@
 import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands'
-import { ChatCommandHandler, CooldownType } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands'
 import Duration from '../../../utility/duration'
 import { searchObjects } from '../../../utility/shared-utility'
 import type { Database, MinecraftGuild } from '../database'
@@ -7,6 +7,8 @@ import type { Database, MinecraftGuild } from '../database'
 export default class Ranks extends ChatCommandHandler {
   constructor(private readonly database: Database) {
     super({
+      type: ChatCommandGroup.Management,
+      id: 'ranks',
       triggers: ['ranks', 'guildranks', 'granks', 'gr'],
       description: 'List guild ranks requirements',
       example: `ranks [GuildName]`

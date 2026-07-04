@@ -1,7 +1,7 @@
 import type { Content } from '../../../common/application-event'
 import { ContentType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import MinecraftRenderer from '../../../utility/minecraft-renderer'
 import {
   getSelectedSkyblockProfile,
@@ -14,6 +14,8 @@ import {
 export default class Armor extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'render-armor',
       triggers: ['armor', 'armors', 'skyblockarmor', 'skyblockarmors'],
       description: "Returns a player's SkyBlock armor",
       example: `armor %s`

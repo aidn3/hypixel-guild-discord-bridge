@@ -1,7 +1,7 @@
 import type { Content } from '../../../common/application-event'
 import { ContentType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import MinecraftRenderer from '../../../utility/minecraft-renderer'
 import {
   getSelectedSkyblockProfile,
@@ -14,6 +14,8 @@ import {
 export default class Item extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'render-item',
       triggers: ['item', 'render', 'slot', 'renderslot', 'renderitem'],
       description: "Render a slot in a player's SkyBlock profile",
       example: `item 1 %s`
