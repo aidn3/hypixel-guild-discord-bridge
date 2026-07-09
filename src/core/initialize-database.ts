@@ -79,6 +79,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom22to23(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom23to24(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -837,6 +840,15 @@ function migrateFrom21to22(database: Database): void {
 
 function migrateFrom22to23(database: Database): void {
   database.exec("UPDATE configurations SET category = 'admin' WHERE category = 'general' AND name = 'autoRestart';")
+}
+
+function migrateFrom23to24(database: Database): void {
+  database.exec(
+    'CREATE TABLE "discordMessageSender" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id)' +
+      ' ) STRICT'
+  )
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
