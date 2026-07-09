@@ -61,6 +61,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
 
     const userProfile = this.clientInstance.profileByUser(event.author, event.member ?? undefined)
     const user = await this.application.core.initializeDiscordUser(userProfile)
+    this.application.core.discordUserMessage.add(event.id, user)
 
     if (!user.verified() && config.getEnforceVerification()) {
       const emoji = event.client.application.emojis.cache.find((emoji) => emoji.name === UnverifiedReaction.name)
@@ -171,6 +172,12 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
 
   private async getReplyUsername(messageEvent: Message): Promise<string | undefined> {
     if (messageEvent.reference?.messageId === undefined) return
+
+    const identifier = this.application.core.discordUserMessage.getUserIdentifier(messageEvent.reference.messageId)
+    if (identifier !== undefined) {
+      const user = await this.application.core.initializeUser(identifier, { guild: messageEvent.guild ?? undefined })
+      return user.displayName()
+    }
 
     const channel = messageEvent.channel
 
