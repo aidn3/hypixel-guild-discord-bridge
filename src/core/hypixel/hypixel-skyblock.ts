@@ -240,14 +240,7 @@ export interface RiftSecureTrophies {
 }
 
 export type RiftTrophyType =
-  | 'wyldly_supreme'
-  | 'mirrored'
-  | 'chicken_n_egg'
-  | 'citizen'
-  | 'lazy_living'
-  | 'slime'
-  | 'vampiric'
-  | 'mountain'
+  'wyldly_supreme' | 'mirrored' | 'chicken_n_egg' | 'citizen' | 'lazy_living' | 'slime' | 'vampiric' | 'mountain'
 
 export interface SlayerProfile {
   slayer_bosses: {

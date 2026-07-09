@@ -75,8 +75,7 @@ export class HypixelDatabase {
       if (responseId === undefined) return
 
       const rawResponse = selectResponse.get(responseId, Math.floor(since / 1000)) as
-        | { content: string; createdAt: number }
-        | undefined
+        { content: string; createdAt: number } | undefined
       if (rawResponse === undefined) return
 
       const updateResult = updateLastAccess.run(Math.floor(Date.now() / 1000), responseId)
