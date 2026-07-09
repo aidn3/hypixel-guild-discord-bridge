@@ -57,7 +57,7 @@ export default class Slayer extends ChatCommandHandler {
     super({
       triggers: ['slayer', 'slayers', 'sl', 'slyr'],
       description: "Returns a player's slayer level",
-      example: `slayer eman %s`
+      example: `slayer %s eman`
     })
   }
 
