@@ -130,7 +130,6 @@ export interface SkyblockMember {
   }
   foraging_core?: {
     forests_whispers?: number
-    forests_whispers_spent?: number
   }
   glacite_player_data?: {
     corpses_looted?: {
