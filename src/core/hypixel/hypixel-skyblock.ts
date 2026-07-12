@@ -36,11 +36,8 @@ export interface SkyblockMember {
   }
   mining_core?: {
     powder_mithril?: number
-    powder_spent_mithril?: number
     powder_gemstone?: number
-    powder_spent_gemstone?: number
     powder_glacite?: number
-    powder_spent_glacite?: number
     crystals?: {
       jade_crystal: MiningCrystal
       amber_crystal: MiningCrystal
