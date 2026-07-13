@@ -42,13 +42,10 @@ export enum OptionType {
 
   Action = 'action',
 
+  DiscordGuild = 'discord-guild',
   Channel = 'channel',
   Role = 'role',
-  User = 'user',
-
-  DiscordGuild = 'discord-guild',
-  DiscordChannel = 'discord-channel',
-  DiscordUser = 'discord-user'
+  User = 'user'
 }
 
 export type OptionItem =
@@ -98,6 +95,15 @@ export interface DiscordSelectOption extends BaseOption {
   setOption: (value: string[]) => void
   max: number
   min: number
+}
+
+export interface DiscordGuildOption extends BaseOption {
+  type: OptionType.DiscordGuild
+  getOption: () => string
+  /**
+   * @throws ValueRejected with the message being the reason why the value was rejected
+   */
+  setOption: (value: string) => void
 }
 
 export interface ListOption extends BaseOption {
@@ -629,7 +635,9 @@ class ViewBuilder {
           this.addAction(option)
           break
         }
-        // No default
+        default: {
+          option satisfies never
+        }
       }
     }
   }
