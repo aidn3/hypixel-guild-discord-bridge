@@ -102,7 +102,7 @@ export default class SyncGuild extends ChatCommandHandler {
       }
 
       if (resolvedRank === 'no-rank') {
-        const defaultRank = guild.ranks.find((rank) => rank.default)?.name
+        const defaultRank: string | undefined = guild.ranks.find((rank) => rank.default)?.name
         assert.ok(defaultRank !== undefined)
         if (guildMember.rank !== undefined && guildMember.rank === defaultRank) {
           already++

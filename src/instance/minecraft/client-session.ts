@@ -63,8 +63,7 @@ export default class ClientSession {
   private listenForSettings(client: Client): void {
     client.on('state', (newState: string) => {
       const supportFeature = (client as Client & Record<string, unknown>)._supportFeature as
-        | ((name: string) => boolean)
-        | undefined
+        ((name: string) => boolean) | undefined
       if (newState !== 'configuration' || supportFeature?.('hasConfigurationState') !== true) return
 
       client.write('settings', {

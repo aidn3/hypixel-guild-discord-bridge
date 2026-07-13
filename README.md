@@ -6,7 +6,7 @@
   <img alt="A badge displaying the number of total messages that have been processed via this project" src="https://shm.aidn5.com/badge/hypixel-guild-discord-bridge/metric/totalMessages?label=Total%20messages">
   <a href="https://discord.gg/ej7tQHPF8y"><img src="https://img.shields.io/discord/1002575659694043206?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 </p>
-  
+
 ## Introduction
 
 A two-way chat bridge between Hypixel guilds and Discord channels.  

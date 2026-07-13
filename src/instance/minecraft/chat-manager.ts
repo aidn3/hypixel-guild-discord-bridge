@@ -172,8 +172,7 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
     ) as Record<string, unknown>
 
     const clickEvent = normalized.click_event as
-      | { action?: unknown; command?: unknown; value?: { command?: { value?: unknown } } }
-      | undefined
+      { action?: unknown; command?: unknown; value?: { command?: { value?: unknown } } } | undefined
     const clickCommand =
       typeof clickEvent?.command === 'string'
         ? clickEvent.command
