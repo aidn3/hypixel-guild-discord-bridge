@@ -6,9 +6,11 @@
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
   - [Download and run](#download-and-run)
+    - [Windows Double-Click](#windows-double-click)
     - [from the source code](#from-the-source-code)
     - [as a container](#as-a-container)
   - [Setup Via Discord](#setup-via-discord)
+  <!-- TOC -->
 
 ## Prerequisites
 
@@ -23,10 +25,19 @@ Check [this document](PERMISSIONS.md) for a comprehensive list of all the permis
 
 ## Download and run
 
-There are two official ways to run the application.
+There are three official ways to run the application:
 
-- [from the source code](#from-the-source-code) (recommended for beginner users)
-- [as a container](#as-a-container)
+- [Windows Double-Click](#windows-double-click) (recommended for beginner users)
+- [From the source code](#from-the-source-code)
+- [As a container](#as-a-container)
+
+### Windows Double-Click
+
+For users who wish to run the application without installing or fine-tuning anything,
+download [this script](../setup-and-start.bat) in **an empty folder** and double click it.  
+The script will download everything, create configuration files, and run the application.  
+After the application started, follow the [final steps](#setup-via-discord) to finalize the application.  
+Nothing else is needed from this guide.
 
 ### from the source code
 
