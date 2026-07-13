@@ -27,9 +27,9 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     const hotm = this.getHotmLevel(selectedProfile?.skill_tree?.experience?.mining ?? 0)
     const core = selectedProfile?.skill_tree?.nodes.mining?.core_of_the_mountain ?? 0
     const runs = this.getTotalNucleusRuns(stats)
-    const mithril = (stats.powder_mithril ?? 0) + (stats.powder_spent_mithril ?? 0)
-    const gemstone = (stats.powder_gemstone ?? 0) + (stats.powder_spent_gemstone ?? 0)
-    const glacite = (stats.powder_glacite ?? 0) + (stats.powder_spent_glacite ?? 0)
+    const mithril = stats.powder_mithril ?? 0
+    const gemstone = stats.powder_gemstone ?? 0
+    const glacite = stats.powder_glacite ?? 0
 
     return context.app.i18n.t(($) => $['commands.hotm.response'], {
       username: givenUsername,

@@ -889,7 +889,9 @@ export class Database {
               .prepare<
                 [number | bigint, MinecraftGuildMemberGexp['date'], MinecraftGuildMemberGexp['date']],
                 MinecraftGuildMemberGexp
-              >('SELECT date, value FROM "minecraftGuildMemberGEXP" WHERE guildMemberId = ? AND date >= ? AND date <= ?')
+              >(
+                'SELECT date, value FROM "minecraftGuildMemberGEXP" WHERE guildMemberId = ? AND date >= ? AND date <= ?'
+              )
               .all(memberId, oldestDate, earliestDate)
 
       const result: MinecraftGuildMemberGexp[] = []

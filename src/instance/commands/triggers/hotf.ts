@@ -23,9 +23,7 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     if (foragingExperince === undefined) {
       return context.app.i18n.t(($) => $['commands.hotf.none'], { username: givenUsername })
     }
-    const whispers =
-      (selectedProfile?.foraging_core?.forests_whispers ?? 0) +
-      (selectedProfile?.foraging_core?.forests_whispers_spent ?? 0)
+    const whispers = selectedProfile?.foraging_core?.forests_whispers ?? 0
     const hotf = this.getHotfLevel(foragingExperince)
     const centerOfTheForest = selectedProfile?.skill_tree?.nodes.foraging?.center_of_the_forest ?? 0
 

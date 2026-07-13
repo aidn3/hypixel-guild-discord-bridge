@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "node --import tsx/esm index.ts",
+    "setup": "node --import tsx/esm setup.ts",
     "generate-code": "npx ts-interface-builder src/application-config.ts",
     "generate-docs": "node --import tsx/esm scripts/generate-documentation.ts && node --import tsx/esm scripts/generate-faq.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",

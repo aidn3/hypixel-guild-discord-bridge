@@ -82,6 +82,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom23to24(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom24to25(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -843,6 +846,15 @@ function migrateFrom22to23(database: Database): void {
 }
 
 function migrateFrom23to24(database: Database): void {
+  database.exec(
+    'CREATE TABLE "discordMessageSender" (' +
+    '  messageId TEXT PRIMARY KEY NOT NULL,' +
+    '  userId INTEGER NOT NULL REFERENCES users(id)' +
+    ' ) STRICT'
+  )
+}
+
+function migrateFrom24to25(database: Database): void {
   database.exec(
     'CREATE TABLE "minecraftGuildStayConditions" (' +
       '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +

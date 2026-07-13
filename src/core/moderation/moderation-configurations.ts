@@ -63,7 +63,8 @@ export class ModerationConfigurations {
       'god',
       'shit',
       'balls',
-      'retard'
+      'retard',
+      'cp'
     ])
   }
 
