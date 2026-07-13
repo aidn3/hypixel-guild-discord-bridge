@@ -153,7 +153,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       const guilds = result.result.guildIds as string[]
       const foundGuild = savedGuilds.find((savedGuild) => guilds.includes(savedGuild.id))
       assert.ok(foundGuild !== undefined)
-      return { guild: foundGuild, response: result.modalResponse }
+      return { guild: foundGuild, response: result.modalResponse as ButtonInteraction | ModalSubmitInteraction }
     }
   }
 
