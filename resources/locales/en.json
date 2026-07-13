@@ -159,7 +159,6 @@
 
   "discord.conditions.handler.in-discord-server.title": "In Discord Server",
   "discord.conditions.handler.in-discord-server.formatted": "In the {{serverName}} Discord server",
-  "discord.conditions.handler.in-discord-server.formatted-invalid": "In Discord server (not possible to determine)",
 
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
   "commands.asian.correct": "Big brain!",

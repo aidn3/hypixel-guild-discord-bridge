@@ -13,6 +13,7 @@ import type {
   HandlerUser
 } from '../common'
 import { ConditionHandler, ConditionResultType } from '../common'
+import { formatPrimitiveValue } from '../utilities'
 
 export class InDiscordServer extends ConditionHandler<InDiscordServerOptions, boolean> {
   override getId(): string {
@@ -26,12 +27,8 @@ export class InDiscordServer extends ConditionHandler<InDiscordServerOptions, bo
   override async displayCondition(context: HandlerDisplayContext, options: InDiscordServerOptions): Promise<string> {
     const client = context.application.discordInstance.getClient()
     const guild = await client.guilds.fetch(options.guildId).catch(() => undefined)
-    if (guild === undefined) {
-      return context.application.i18n.t(($) => $['discord.conditions.handler.in-discord-server.formatted-invalid'])
-    }
-
     return context.application.i18n.t(($) => $['discord.conditions.handler.in-discord-server.formatted'], {
-      serverName: guild.name
+      serverName: guild?.name ?? options.guildId
     })
   }
 
@@ -63,14 +60,14 @@ export class InDiscordServer extends ConditionHandler<InDiscordServerOptions, bo
       return {
         type: ConditionResultType.Pass,
         value: true,
-        valueFormatted: 'Yes'
+        valueFormatted: formatPrimitiveValue(context.application.i18n.t, true)
       }
     } catch (error: unknown) {
       if (error instanceof DiscordAPIError && error.code === 10_007) {
         return {
           type: ConditionResultType.Fail,
           value: false,
-          valueFormatted: 'No'
+          valueFormatted: formatPrimitiveValue(context.application.i18n.t, false)
         }
       }
 
