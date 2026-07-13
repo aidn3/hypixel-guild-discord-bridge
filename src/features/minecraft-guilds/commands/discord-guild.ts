@@ -1117,7 +1117,7 @@ async function handlePurge(
 
   let hypixelGuild: HypixelGuild | undefined
   try {
-    hypixelGuild = await context.application.hypixelApi.getGuildByPlayer(savedGuild.id)
+    hypixelGuild = await context.application.hypixelApi.getGuildById(savedGuild.id)
   } catch (error: unknown) {
     context.errorHandler.error('fetching hypixel guild', error)
     await interaction.editReply({
@@ -1193,8 +1193,8 @@ async function handlePurge(
   }
 
   const includedRanks = database.getCanPurgeRanks(hypixelGuild._id)
-  const neededStayConditions = database.getNeededStayConditions(hypixelGuild._id)
   const stayConditions = database.getStayConditions(hypixelGuild._id)
+  const neededStayConditions = Math.min(database.getNeededStayConditions(hypixelGuild._id), stayConditions.length)
 
   if (includedRanks.length === 0) {
     await interaction.editReply({
@@ -1261,6 +1261,8 @@ async function handlePurge(
     const handlerUser = {
       user: await context.application.core.initializeMinecraftUser(profile, {})
     }
+    const permission = await handlerUser.user.permission()
+    if (permission >= Permission.Helper) continue
 
     let metConditionsCount = 0
 
@@ -1326,63 +1328,69 @@ async function handlePurge(
     return
   }
 
-  const response = await interactivePaging(
-    interaction,
-    0,
-    Duration.minutes(30).toMilliseconds(),
-    context.errorHandler,
-    async (page) => {
-      const EntriesPerPage = 15
-      const entries = toKick.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
-      const totalPages = Math.ceil(toKick.length / EntriesPerPage)
-      const displayContext: HandlerDisplayContext = {
-        application: context.application,
-        startTime: conditionContext.startTime,
-        discordGuild: interaction.guild
-      }
+  const displayContext: HandlerDisplayContext = {
+    application: context.application,
+    startTime: conditionContext.startTime,
+    discordGuild: interaction.guild
+  }
 
-      let result = ''
+  await interactivePaging(interaction, 0, Duration.minutes(30).toMilliseconds(), context.errorHandler, async (page) => {
+    const EntriesPerPage = 15
+    const entries = toKick.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
+    const totalPages = Math.ceil(toKick.length / EntriesPerPage)
 
-      for (const entry of entries) {
-        let message = `- ${bold(formatUser(entry.profile))} [${escapeMarkdown(entry.rank)}]`
+    let result = ''
+    for (const entry of entries) {
+      let message = `- ${bold(formatUser(entry.profile))} [${escapeMarkdown(entry.rank)}]`
 
-        for (const conditionEntry of entry.conditions) {
-          const meetsCondition = conditionEntry.result
-          const condition = conditionEntry.condition
-          const handler = context.application.core.conditonsRegistry.get(condition.typeId)
+      for (const conditionEntry of entry.conditions) {
+        const meetsCondition = conditionEntry.result
+        const condition = conditionEntry.condition
+        const handler = context.application.core.conditonsRegistry.get(condition.typeId)
 
-          message += '\n  - '
-          message += meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'
-          message += ` `
+        message += '\n  - '
+        message += meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'
+        message += ` `
 
-          if (handler === undefined) {
-            message += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
-          } else {
-            const display = await handler.displayCondition(displayContext, condition.options)
-            message += escapeMarkdown(display)
-          }
-
-          if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
-            message += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
-          } else if (meetsCondition?.type === ConditionResultType.Error) {
-            message += `: ${escapeMarkdown(meetsCondition.reason)}`
-          }
+        if (handler === undefined) {
+          message += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
+        } else {
+          const display = await handler.displayCondition(displayContext, condition.options)
+          message += escapeMarkdown(display)
         }
 
-        result += '\n' + message.trim()
+        if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
+          message += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
+        } else if (meetsCondition?.type === ConditionResultType.Error) {
+          message += `: ${escapeMarkdown(meetsCondition.reason)}`
+        }
       }
 
-      return {
-        totalPages: totalPages,
-        embed: {
-          title: `Purge Confirmation - ${hypixelGuild.name} (Page ${page + 1} out of ${totalPages})`,
-          color: Color.Info,
-          description: result,
-          footer: { text: DefaultCommandFooter }
-        }
+      result += '\n' + message.trim()
+    }
+
+    return {
+      totalPages: totalPages,
+      embed: {
+        title: `Purge Confirmation - ${hypixelGuild.name} (Page ${page + 1} out of ${totalPages})`,
+        color: Color.Info,
+        description: result,
+        footer: { text: DefaultCommandFooter }
       }
     }
-  )
+  })
+
+  let conditionsText = ''
+  for (const condition of stayConditions) {
+    conditionsText += '\n- '
+    const handler = context.application.core.conditonsRegistry.get(condition.typeId)
+    if (handler === undefined) {
+      conditionsText += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
+    } else {
+      const display = await handler.displayCondition(displayContext, condition.options)
+      conditionsText += escapeMarkdown(display)
+    }
+  }
 
   const confirmationMessage = await interaction.followUp({
     embeds: [
@@ -1390,8 +1398,10 @@ async function handlePurge(
         title: `Purge Confirmation - ${hypixelGuild.name}`,
         color: Color.Bad,
         description:
-          `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${hypixelGuild.name}** will get purged.\n` +
-          `Are you sure you want to execute this purge?`,
+          `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${hypixelGuild.name}** will get purged.` +
+          `\n\nAny guild member meeting at least ${neededStayConditions} condition(s) can stay:\n` +
+          conditionsText.trim() +
+          `\n\nAre you sure you want to execute this purge?`,
         footer: { text: DefaultCommandFooter }
       }
     ],
@@ -1424,6 +1434,22 @@ async function handlePurge(
       })
       return
     }
+
+    await confirmation.update({
+      embeds: [
+        {
+          title: `Purge In Progress - ${hypixelGuild.name}`,
+          color: Color.Info,
+          description: `Starting to purge **${toKick.length}** members from guild **${hypixelGuild.name}**...\nQueuing commands...`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ],
+      components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder().setCustomId('stop_purge').setLabel('Stop').setStyle(ButtonStyle.Danger)
+        )
+      ]
+    })
   } catch {
     await confirmationMessage.edit({
       embeds: [
@@ -1442,30 +1468,17 @@ async function handlePurge(
   const abortController = new AbortController()
   const isAborted = () => abortController.signal.aborted
 
-  const cancelCollector = response.createMessageComponentCollector({
-    filter: (click) => click.customId === 'cancel_active_purge' && click.user.id === interaction.user.id,
-    time: 120_000 + toKick.length * 15_000,
+  const cancelCollector = confirmationMessage.createMessageComponentCollector({
+    filter: (click) => click.customId === 'stop_purge' && click.user.id === interaction.user.id,
+    time: Duration.minutes(30).toMilliseconds() + toKick.length * Duration.seconds(30).toMilliseconds(),
     max: 1
   })
 
-  cancelCollector.on('collect', () => {
+  cancelCollector.on('collect', (collectedInteraction) => {
     abortController.abort()
-  })
-
-  await confirmationMessage.edit({
-    embeds: [
-      {
-        title: `Purge In Progress - ${hypixelGuild.name}`,
-        color: Color.Info,
-        description: `Starting to purge **${toKick.length}** members from guild **${hypixelGuild.name}**...\nQueuing commands...`,
-        footer: { text: DefaultCommandFooter }
-      }
-    ],
-    components: [
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setCustomId('stop_purge').setLabel('Stop').setStyle(ButtonStyle.Danger)
-      )
-    ]
+    void collectedInteraction
+      .reply({ content: 'Purge is stopping...' })
+      .catch(context.errorHandler.promiseCatch('sending purge stopping message'))
   })
 
   const MaxLastResults = 5
@@ -1484,7 +1497,7 @@ async function handlePurge(
           {
             title: `Purge Aborted - ${hypixelGuild.name}`,
             color: Color.Info,
-            description: `The purge operation for guild **${hypixelGuild.name}** has timed out.`,
+            description: `The purge operation for guild **${hypixelGuild.name}** has been aborted.`,
             footer: { text: DefaultCommandFooter }
           }
         ],
@@ -1520,6 +1533,7 @@ async function handlePurge(
           color: Color.Info,
           description:
             `_Please wait for the process to complete._` +
+            (index < toKick.length - 1 ? `\n\n**Kicking next:** ${formatUser(toKick[index + 1].profile)}` : '') +
             `\n\n**Progress:**\n` +
             lastResults
               .map(
