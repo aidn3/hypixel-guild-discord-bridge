@@ -848,9 +848,9 @@ function migrateFrom22to23(database: Database): void {
 function migrateFrom23to24(database: Database): void {
   database.exec(
     'CREATE TABLE "discordMessageSender" (' +
-    '  messageId TEXT PRIMARY KEY NOT NULL,' +
-    '  userId INTEGER NOT NULL REFERENCES users(id)' +
-    ' ) STRICT'
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id)' +
+      ' ) STRICT'
   )
 }
 
