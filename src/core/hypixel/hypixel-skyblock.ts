@@ -36,11 +36,8 @@ export interface SkyblockMember {
   }
   mining_core?: {
     powder_mithril?: number
-    powder_spent_mithril?: number
     powder_gemstone?: number
-    powder_spent_gemstone?: number
     powder_glacite?: number
-    powder_spent_glacite?: number
     crystals?: {
       jade_crystal: MiningCrystal
       amber_crystal: MiningCrystal
@@ -130,7 +127,6 @@ export interface SkyblockMember {
   }
   foraging_core?: {
     forests_whispers?: number
-    forests_whispers_spent?: number
   }
   glacite_player_data?: {
     corpses_looted?: {
