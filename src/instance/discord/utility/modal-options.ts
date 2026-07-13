@@ -63,7 +63,8 @@ export async function showModal(
   const { components, values } = createComponents(interaction, options)
   Object.assign(result, values)
 
-  if (components.length === 0) {
+  let modalInteraction: ModalSubmitInteraction | ButtonInteraction | ChatInputCommandInteraction = interaction
+  if (components.length > 0) {
     const modalData: ModalComponentData = { title, components, customId: interaction.id }
     await interaction.showModal(modalData)
 
@@ -73,9 +74,10 @@ export async function showModal(
     })
     const modalResult = parseResponse(options, modalResponse)
     Object.assign(result, modalResult)
+    modalInteraction = modalResponse
   }
 
-  return { result: result, modalResponse: interaction }
+  return { result: result, modalResponse: modalInteraction }
 }
 
 function ensureUniqueness(options: ModalOption[]): void {

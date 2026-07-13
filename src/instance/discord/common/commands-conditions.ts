@@ -211,7 +211,7 @@ export async function handleConditionAdd(
     resolvedOptions[rawOption.key] = rawFetchedOptions.result[translatedKey]
   }
 
-  await rawFetchedOptions.modalResponse.deferReply()
+  if (!rawFetchedOptions.modalResponse.deferred) await rawFetchedOptions.modalResponse.deferReply()
   const conditionData = await handler.createCondition(handlerContext, resolvedOptions, rawOptions)
   if (typeof conditionData === 'string') {
     const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.condition-error'], {
