@@ -3,7 +3,6 @@ import type {
   ButtonInteraction,
   CommandInteraction,
   Message,
-  MessageActionRowComponentData,
   ModalSubmitInteraction,
   TextBasedChannel,
   TextChannel
@@ -44,8 +43,7 @@ export async function interactivePaging(
   currentPage = 0,
   duration = DefaultTimeout,
   errorHandler: UnexpectedErrorHandler,
-  fetch: (page: number) => Promise<FetchPageResult> | FetchPageResult,
-  abortSignal?: AbortSignal
+  fetch: (page: number) => Promise<FetchPageResult> | FetchPageResult
 ): Promise<Message> {
   const channel: TextBasedChannel = interaction.channel as TextChannel
   let lastUpdate = await fetch(currentPage)
@@ -66,29 +64,15 @@ export async function interactivePaging(
         index.customId === `${interaction.id}-${Button.Select}` && index.user.id === interaction.user.id
     })
     const timeoutId = setTimeout(() => {
-      nextInteraction.stop('time')
-      backInteraction.stop('time')
-      selectPage.stop('time')
+      nextInteraction.stop()
+      backInteraction.stop()
+      selectPage.stop()
     }, duration)
-
-    if (abortSignal) {
-      abortSignal.addEventListener('abort', () => {
-        clearTimeout(timeoutId)
-        nextInteraction.stop('abort')
-        backInteraction.stop('abort')
-        selectPage.stop('abort')
-      })
-    }
 
     nextInteraction.on('collect', (index: ButtonInteraction) => {
       timeoutId.refresh()
       void index
-        .update({
-          components: [
-            createButtons(interaction.id, currentPage, lastUpdate.totalPages, false),
-            ...(lastUpdate.components ?? [])
-          ]
-        })
+        .update({ components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)] })
         .then(async () => {
           lastUpdate = await fetch(++currentPage)
           if (lastUpdate.embed === undefined) {
@@ -98,11 +82,7 @@ export async function interactivePaging(
 
           await index.editReply({
             embeds: [lastUpdate.embed],
-
-            components: [
-              createButtons(interaction.id, currentPage, lastUpdate.totalPages, true),
-              ...(lastUpdate.components ?? [])
-            ]
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)]
           })
         })
         .catch(errorHandler.promiseCatch('pressing next button on discord-pager'))
@@ -110,12 +90,7 @@ export async function interactivePaging(
     backInteraction.on('collect', (index: ButtonInteraction) => {
       timeoutId.refresh()
       void index
-        .update({
-          components: [
-            createButtons(interaction.id, currentPage, lastUpdate.totalPages, false),
-            ...(lastUpdate.components ?? [])
-          ]
-        })
+        .update({ components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)] })
         .then(async () => {
           lastUpdate = await fetch(--currentPage)
           if (lastUpdate.embed === undefined) {
@@ -125,11 +100,7 @@ export async function interactivePaging(
 
           await index.editReply({
             embeds: [lastUpdate.embed],
-
-            components: [
-              createButtons(interaction.id, currentPage, lastUpdate.totalPages, true),
-              ...(lastUpdate.components ?? [])
-            ]
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)]
           })
         })
         .catch(errorHandler.promiseCatch('pressing back button on discord-pager'))
@@ -150,10 +121,7 @@ export async function interactivePaging(
           selectedPage = Math.floor(selectedPage)
           currentPage = selectedPage - 1 // to account for 0-index
           await index.editReply({
-            components: [
-              createButtons(interaction.id, currentPage, lastUpdate.totalPages, false),
-              ...(lastUpdate.components ?? [])
-            ]
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, false)]
           })
           lastUpdate = await fetch(currentPage)
           if (lastUpdate.embed === undefined) {
@@ -163,19 +131,13 @@ export async function interactivePaging(
 
           await index.editReply({
             embeds: [lastUpdate.embed],
-
-            components: [
-              createButtons(interaction.id, currentPage, lastUpdate.totalPages, true),
-              ...(lastUpdate.components ?? [])
-            ]
+            components: [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)]
           })
         })
         .catch(errorHandler.promiseCatch('pressing select button on discord-pager'))
     })
 
-    nextInteraction.on('end', (collected, reason) => {
-      if (reason === 'abort') return
-
+    nextInteraction.on('end', () => {
       if (lastUpdate.embed === undefined) {
         void interaction
           .editReply({ embeds: [NoEmbed] })
@@ -193,11 +155,8 @@ export async function interactivePaging(
 
   return await interaction.editReply({
     embeds: [lastUpdate.embed],
-
     components:
-      lastUpdate.totalPages > 1
-        ? [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true), ...(lastUpdate.components ?? [])]
-        : (lastUpdate.components ?? [])
+      lastUpdate.totalPages > 1 ? [createButtons(interaction.id, currentPage, lastUpdate.totalPages, true)] : []
   })
 }
 
@@ -238,6 +197,5 @@ function createButtons(interactionId: string, currentPage: number, totalPages: n
 
 export interface FetchPageResult {
   embed?: APIEmbed
-  components?: (ActionRowBuilder | MessageActionRowComponentData)[]
   totalPages: number
 }

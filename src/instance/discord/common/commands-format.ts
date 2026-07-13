@@ -2,7 +2,7 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown, userMention } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
-import type { User } from '../../../common/user'
+import type { AnonymousUser } from '../../../common/user'
 
 import { DefaultCommandFooter } from './discord-config.js'
 
@@ -31,7 +31,7 @@ export function formatInvalidUsername(givenUsername: string): APIEmbed {
   }
 }
 
-export function formatUser(user: User): string {
+export function formatUser(user: AnonymousUser): string {
   const mojangProfile = user.mojangProfile()
   const discordProfile = user.discordProfile()
 
