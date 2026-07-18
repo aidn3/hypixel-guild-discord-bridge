@@ -122,7 +122,27 @@ export interface SkyblockMember {
       }
       mining?: {
         core_of_the_mountain?: number
+        quick_forge?: number
       }
+      mining_2?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_3?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_4?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_5?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+    }
+    selected_skill_tree_slot?: {
+      mining?: number
     }
   }
   foraging_core?: {
@@ -289,6 +309,7 @@ export interface SkyblockForge {
 export interface SkyblockForgeEntry {
   id: string
   startTime: number
+  processTimeModifier: number
 }
 
 export interface MayorResponse extends HypixelSuccessResponse {

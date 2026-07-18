@@ -14,6 +14,8 @@ import {
   usernameNotExists
 } from '../common/utility'
 
+type SkillTree = 'mining' | 'mining_2' | 'mining_3' | 'mining_4' | 'mining_5'
+
 export default class Forge extends ChatCommandHandler {
   private static readonly Url =
     'https://raw.githubusercontent.com/NotEnoughUpdates/NotEnoughUpdates-REPO/refs/heads/master/items/%id%.json'
@@ -42,12 +44,34 @@ export default class Forge extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.forge.none'], { username: givenUsername })
     }
 
+    const selectedMiningSlot = selectedProfile.skill_tree?.selected_skill_tree_slot?.mining ?? 1
+    const skillTree: SkillTree =
+      selectedMiningSlot <= 1 ? 'mining' : (`mining_${Math.min(selectedMiningSlot, 5)}` as SkillTree)
+    const quickForgeLevel = selectedProfile.skill_tree?.nodes[skillTree]?.quick_forge ?? 0
+    const quickForgeReduction = quickForgeLevel === 0 ? 0 : quickForgeLevel === 20 ? 30 : quickForgeLevel * 0.5 + 10
+
     const currentTime = Date.now()
     const parts: string[] = []
     for (const slot of Object.values(forge)) {
       let cached = this.cache.get<ForgeItem>(slot.id)
       if (cached === undefined) {
-        cached = await DefaultAxios.get<ForgeItem>(Forge.Url.replace('%id%', slot.id)).then((response) => response.data)
+        let itemID = slot.id
+
+        switch (slot.id) {
+          case `MOLE`:
+          case `AMMONITE`:
+          case `TYRANNOSAURUS`:
+          case `PENGUIN`:
+          case `SPINOSAURUS`:
+          case `GOBLIN`:
+          case `ANKYLOSAURUS`:
+          case `MAMMOTH`: {
+            itemID += `;4`
+            break
+          }
+        }
+
+        cached = await DefaultAxios.get<ForgeItem>(Forge.Url.replace('%id%', itemID)).then((response) => response.data)
         assert.ok(cached !== undefined)
         this.cache.set(slot.id, cached)
       }
@@ -57,12 +81,13 @@ export default class Forge extends ChatCommandHandler {
       if (recipe === undefined) {
         parts.push(`${slot.id} UNKNOWN`)
       } else {
-        const name = cached.displayname.replaceAll(/§\w/g, '')
+        const name = cached.displayname.replaceAll(/§\w/g, '').replaceAll('[Lvl {LVL}] ', '')
         const time = Duration.seconds(recipe.duration)
-        const finishTime = slot.startTime + time.toMilliseconds()
+        const finishTime =
+          slot.startTime + time.toMilliseconds() * (1 - quickForgeReduction / 100) + slot.processTimeModifier
 
         if (finishTime > currentTime) {
-          parts.push(`${name} ${formatTime(finishTime)}`)
+          parts.push(`${name} ${formatTime(finishTime - currentTime)}`)
         } else {
           parts.push(`${name} completed`)
         }
