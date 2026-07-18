@@ -44,7 +44,7 @@ export default class Forge extends ChatCommandHandler {
       return context.app.i18n.t(($) => $['commands.forge.none'], { username: givenUsername })
     }
 
-    const selectedMiningSlot = selectedProfile.skill_tree?.selected_skill_tree_slot.mining ?? 1
+    const selectedMiningSlot = selectedProfile.skill_tree?.selected_skill_tree_slot?.mining ?? 1
     const skillTree: SkillTree =
       selectedMiningSlot <= 1 ? 'mining' : (`mining_${Math.min(selectedMiningSlot, 5)}` as SkillTree)
     const quickForgeLevel = selectedProfile.skill_tree?.nodes[skillTree]?.quick_forge ?? 0

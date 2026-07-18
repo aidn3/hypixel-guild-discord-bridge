@@ -141,7 +141,7 @@ export interface SkyblockMember {
         quick_forge?: number
       }
     }
-    selected_skill_tree_slot: {
+    selected_skill_tree_slot?: {
       mining?: number
     }
   }
