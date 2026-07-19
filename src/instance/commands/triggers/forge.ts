@@ -84,7 +84,7 @@ export default class Forge extends ChatCommandHandler {
         const name = cached.displayname.replaceAll(/§\w/g, '').replaceAll('[Lvl {LVL}] ', '')
         const time = Duration.seconds(recipe.duration)
         const finishTime =
-          slot.startTime + time.toMilliseconds() * (1 - quickForgeReduction / 100) + slot.processTimeModifier
+          slot.startTime + time.toMilliseconds() * (1 - quickForgeReduction / 100) + (slot.processTimeModifier ?? 0)
 
         if (finishTime > currentTime) {
           parts.push(`${name} ${formatTime(finishTime - currentTime)}`)

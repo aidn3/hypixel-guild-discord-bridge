@@ -309,7 +309,7 @@ export interface SkyblockForge {
 export interface SkyblockForgeEntry {
   id: string
   startTime: number
-  processTimeModifier: number
+  processTimeModifier?: number
 }
 
 export interface MayorResponse extends HypixelSuccessResponse {
