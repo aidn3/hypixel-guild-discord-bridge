@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "node --import tsx/esm index.ts",
+    "setup": "node --import tsx/esm setup.ts",
     "generate-code": "npx ts-interface-builder src/application-config.ts",
     "generate-docs": "node --import tsx/esm scripts/generate-documentation.ts && node --import tsx/esm scripts/generate-faq.ts",
     "lint:fix": "npx eslint . --fix && npx prettier . \"!**/*.ts\" --write",
@@ -36,10 +37,14 @@
   "typeCoverage": {
     "atLeast": 100
   },
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
   "dependencies": {
     "@hkh12/node-calc": "^4.2.1",
     "@isaacs/ttlcache": "^2.1.4",
     "@kolapsis/shm-sdk": "^1.1.0",
+    "async-cache-dedupe": "^3.4.0",
     "axios": "^1.16.1",
     "bad-words": "3.0.4",
     "better-sqlite3": "^12.2.0",
@@ -48,7 +53,7 @@
     "compare-versions": "^6.1.1",
     "deepcopy": "^2.1.0",
     "defaults": "^3.0.0",
-    "discord.js": "^14.15.3",
+    "discord.js": "^14.27.0",
     "emittery": "^1.2.0",
     "emoji-name-map": "^2.0.1",
     "esrever": "^0.2.0",

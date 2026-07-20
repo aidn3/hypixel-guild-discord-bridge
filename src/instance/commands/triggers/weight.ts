@@ -254,8 +254,7 @@ export default class Weight extends ChatCommandHandler {
     const experience = (profile.player_data.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
     const petTypesSacrificed = profile.pets_data?.pet_care?.pet_types_sacrificed ?? []
     const profileClasses = profile.dungeons?.player_classes as
-      | Partial<Record<DungeonClassName, { experience?: number }>>
-      | undefined
+      Partial<Record<DungeonClassName, { experience?: number }>> | undefined
     const slayerBosses = (profile.slayer?.slayer_bosses ?? {}) as Partial<Record<SlayerName, { xp?: number }>>
     const catacombsExperience = profile.dungeons?.dungeon_types.catacombs.experience
 

@@ -2,8 +2,8 @@ import { TTLCache } from '@isaacs/ttlcache'
 
 import Duration from '../../utility/duration'
 
-import type { ApiEntry } from './hypixel'
 import type { HypixelSuccessResponse } from './hypixel-api'
+import type { ApiEntry } from './hypixel-fetcher'
 
 export class HypixelCache {
   private static readonly LocalShortCache = Duration.minutes(5)

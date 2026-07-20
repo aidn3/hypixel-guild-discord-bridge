@@ -122,15 +122,11 @@ export interface ChatCommandContext {
 }
 
 export type DiscordCommandHandler =
-  | DiscordPrivateCommandHandler
-  | DiscordGuildCommandHandler
-  | DiscordBridgeCommandHandler<OptionMinecraftInstance>
+  DiscordPrivateCommandHandler | DiscordGuildCommandHandler | DiscordBridgeCommandHandler<OptionMinecraftInstance>
 
 interface BaseDiscordCommandHandler {
   readonly getCommandBuilder: () =>
-    | SlashCommandBuilder
-    | SlashCommandSubcommandsOnlyBuilder
-    | SlashCommandOptionsOnlyBuilder
+    SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder | SlashCommandOptionsOnlyBuilder
 }
 
 export interface DiscordPrivateCommandHandler extends BaseDiscordCommandHandler {
@@ -207,9 +203,8 @@ export interface DiscordCommandContext<
     ChatInputCommandInteraction,
     ChatInputCommandInteraction<'raw' | 'cached'>,
     MinecraftOption extends OptionMinecraftInstance.RequireOne
-      ?
-          | ChatInputCommandInteraction<'raw' | 'cached'>
-          | (ModalSubmitInteraction<'raw' | 'cached'> & { options: ChatInputCommandInteraction['options'] })
+      ? | ChatInputCommandInteraction<'raw' | 'cached'>
+        | (ModalSubmitInteraction<'raw' | 'cached'> & { options: ChatInputCommandInteraction['options'] })
       : ChatInputCommandInteraction<'raw' | 'cached'>
   >
   minecraftInstance: [MinecraftOption] extends [OptionMinecraftInstance.RequireOne]

@@ -1,14 +1,14 @@
-import assert from 'node:assert'
-
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import type { Logger } from 'log4js'
 
 import type { SqliteManager } from '../../common/sqlite-manager'
 import Duration from '../../utility/duration'
 
-import type { HypixelFailResponse, HypixelSuccessResponse } from './hypixel-api'
+import type { HypixelSuccessResponse } from './hypixel-api'
 import { HypixelCache } from './hypixel-cache'
 import { HypixelDatabase } from './hypixel-database'
+import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher'
+import { HypixelFetcher } from './hypixel-fetcher'
 import type { HypixelGuild, HypixelGuildResponse } from './hypixel-guild'
 import type { HypixelLeaderboards, HypixelLeaderboardsResponse } from './hypixel-leaderboards'
 import type { HypixelPlayer, HypixelPlayerResponse } from './hypixel-player'
@@ -52,14 +52,12 @@ export class Hypixel {
    */
   private static readonly DefaultCache = Duration.minutes(5)
 
+  private readonly fetcher: HypixelFetcher
   private readonly database: HypixelDatabase
   private readonly cache: HypixelCache = new HypixelCache()
 
-  constructor(
-    private readonly key: string,
-    sqliteManager: SqliteManager,
-    logger: Logger
-  ) {
+  constructor(key: string, sqliteManager: SqliteManager, logger: Logger) {
+    this.fetcher = new HypixelFetcher(Hypixel.ApiPath, key)
     this.database = new HypixelDatabase(sqliteManager, logger)
   }
 
@@ -206,53 +204,13 @@ export class Hypixel {
       return databaseCached.content
     }
 
-    const freshResponse = await this.fetch<T>(request)
+    const freshResponse = await this.fetcher.fetch<T>(request)
     const currentTime = Date.now()
     const requests = cacheRequests === undefined ? [request] : cacheRequests(freshResponse)
     this.database.add(requests, currentTime, freshResponse)
     this.cache.add(requests, currentTime, freshResponse)
 
     return freshResponse
-  }
-
-  private async fetch<T extends HypixelSuccessResponse>(request: ApiEntry): Promise<T> {
-    const parameters: Record<string, string> = {}
-    if ('key' in request) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      assert.ok(request.key !== undefined)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      assert.ok(request.value !== undefined)
-
-      parameters[request.key] = request.value
-    }
-
-    try {
-      const result = await axios.get<T>(request.path, {
-        baseURL: Hypixel.ApiPath,
-        params: parameters,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        headers: { 'API-Key': this.key }
-      })
-
-      assert.ok(result.status === 200)
-      assert.strictEqual(result.data.success, true)
-      return result.data
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        const hypixelError = (error as AxiosError<HypixelFailResponse>).response?.data
-        switch (error.status) {
-          case 429: {
-            throw new HypixelApiFail(
-              request,
-              hypixelError ?? { success: false, message: 'API is throttled.' },
-              HypixelFailType.Throttle
-            )
-          }
-        }
-      }
-
-      throw error
-    }
   }
 
   private createGuildCacheEntries(original: ApiEntryWithOption, response: HypixelGuildResponse): ApiEntryWithOption[] {
@@ -269,31 +227,4 @@ export class Hypixel {
 
     return entries
   }
-}
-
-export type ApiEntry = ApiEntryWithoutOption | ApiEntryWithOption
-
-export interface ApiEntryWithoutOption {
-  path: string
-}
-
-export interface ApiEntryWithOption {
-  path: string
-  key: string
-  value: string
-}
-
-export class HypixelApiFail extends Error {
-  constructor(
-    public readonly request: ApiEntry,
-    public readonly response: HypixelFailResponse,
-    public readonly type: HypixelFailType
-  ) {
-    super()
-  }
-}
-
-export enum HypixelFailType {
-  Throttle = 'throttle',
-  Other = 'other'
 }

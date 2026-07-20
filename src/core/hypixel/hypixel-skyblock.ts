@@ -36,11 +36,8 @@ export interface SkyblockMember {
   }
   mining_core?: {
     powder_mithril?: number
-    powder_spent_mithril?: number
     powder_gemstone?: number
-    powder_spent_gemstone?: number
     powder_glacite?: number
-    powder_spent_glacite?: number
     crystals?: {
       jade_crystal: MiningCrystal
       amber_crystal: MiningCrystal
@@ -125,12 +122,31 @@ export interface SkyblockMember {
       }
       mining?: {
         core_of_the_mountain?: number
+        quick_forge?: number
       }
+      mining_2?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_3?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_4?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_5?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+    }
+    selected_skill_tree_slot?: {
+      mining?: number
     }
   }
   foraging_core?: {
     forests_whispers?: number
-    forests_whispers_spent?: number
   }
   glacite_player_data?: {
     corpses_looted?: {
@@ -240,14 +256,7 @@ export interface RiftSecureTrophies {
 }
 
 export type RiftTrophyType =
-  | 'wyldly_supreme'
-  | 'mirrored'
-  | 'chicken_n_egg'
-  | 'citizen'
-  | 'lazy_living'
-  | 'slime'
-  | 'vampiric'
-  | 'mountain'
+  'wyldly_supreme' | 'mirrored' | 'chicken_n_egg' | 'citizen' | 'lazy_living' | 'slime' | 'vampiric' | 'mountain'
 
 export interface SlayerProfile {
   slayer_bosses: {
@@ -300,6 +309,7 @@ export interface SkyblockForge {
 export interface SkyblockForgeEntry {
   id: string
   startTime: number
+  processTimeModifier?: number
 }
 
 export interface MayorResponse extends HypixelSuccessResponse {

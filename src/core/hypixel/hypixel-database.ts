@@ -5,8 +5,8 @@ import type { Logger } from 'log4js'
 import type { SqliteManager } from '../../common/sqlite-manager'
 import Duration from '../../utility/duration'
 
-import type { ApiEntry, ApiEntryWithOption } from './hypixel'
 import type { HypixelSuccessResponse } from './hypixel-api'
+import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher'
 
 export class HypixelDatabase {
   private static readonly MaxLife = Duration.years(1)
@@ -75,8 +75,7 @@ export class HypixelDatabase {
       if (responseId === undefined) return
 
       const rawResponse = selectResponse.get(responseId, Math.floor(since / 1000)) as
-        | { content: string; createdAt: number }
-        | undefined
+        { content: string; createdAt: number } | undefined
       if (rawResponse === undefined) return
 
       const updateResult = updateLastAccess.run(Math.floor(Date.now() / 1000), responseId)

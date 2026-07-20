@@ -3,16 +3,20 @@ import assert from 'node:assert'
 import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
 import type { ButtonInteraction, ChatInputCommandInteraction, ModalSubmitInteraction } from 'discord.js'
 import {
+  ActionRowBuilder,
   bold,
+  ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  escapeInlineCode,
   escapeMarkdown,
   inlineCode,
   SlashCommandBuilder,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
-  TextChannel
+  TextChannel,
+  underline
 } from 'discord.js'
 
 import type Application from '../../../application'
@@ -23,7 +27,11 @@ import type {
   DiscordCommandContext
 } from '../../../common/commands'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands'
-import type { MojangProfile } from '../../../common/user'
+import { Status } from '../../../common/connectable-instance'
+import type { MinecraftAnonymousUser, MojangProfile } from '../../../common/user'
+import type { ConditionResult, ConditionValue, HandlerDisplayContext } from '../../../core/conditions/common'
+import { ConditionResultType } from '../../../core/conditions/common'
+import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild'
 import {
   addConditionCommand,
   type CommandConditionHandler,
@@ -35,15 +43,25 @@ import {
   listConditionCommand,
   removeConditionCommand
 } from '../../../instance/discord/common/commands-conditions'
-import { formatInvalidUsername } from '../../../instance/discord/common/commands-format'
+import { formatInvalidUsername, formatUser } from '../../../instance/discord/common/commands-format'
 import { DefaultCommandFooter } from '../../../instance/discord/common/discord-config'
+import { interactivePaging } from '../../../instance/discord/utility/discord-pager'
 import type { ModalResult } from '../../../instance/discord/utility/modal-options'
 import { showModal } from '../../../instance/discord/utility/modal-options'
 import type { CategoryOption, PresetListOption } from '../../../instance/discord/utility/options-handler'
 import { OptionsHandler, OptionType } from '../../../instance/discord/utility/options-handler'
+import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance'
+import { checkChatTriggers, KickChat } from '../../../utility/chat-triggers'
 import Duration from '../../../utility/duration'
-import { search, searchObjects } from '../../../utility/shared-utility'
-import type { Database, GuildJoinCondition, GuildRoleCondition, MinecraftGuild } from '../database'
+import { search, searchObjects, sleep } from '../../../utility/shared-utility'
+import type {
+  Database,
+  GuildJoinCondition,
+  GuildRoleCondition,
+  GuildStayCondition,
+  MinecraftGuild,
+  SavedGuildStayCondition
+} from '../database'
 import type { DiscordWaitlistInteraction } from '../discord-waitlist-interaction'
 
 export const DiscordGuildCommand = {
@@ -123,6 +141,20 @@ export const DiscordGuildCommand = {
               .setDescription('Create a sticky panel that auto updates')
           )
       )
+      .addSubcommandGroup(
+        new SlashCommandSubcommandGroupBuilder()
+          .setName('stay-conditions')
+          .setDescription('manage conditions to stay in a specific guild')
+          .addSubcommand(listConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+          .addSubcommand(addConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+          .addSubcommand(removeConditionCommand((c) => c.addStringOption(GuildNameOption().setAutocomplete(true))))
+      )
+      .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+          .setName('purge')
+          .setDescription('purge guild members who do not meet stay conditions')
+          .addStringOption(GuildNameOption().setAutocomplete(true))
+      )
   },
   origin: CommandOrigin.Bridge,
   permission: Permission.Officer,
@@ -164,6 +196,14 @@ export async function discordGuildCommandHandler(
     await handleWaitlistRemove(context, database, waitlistInteraction)
   } else if (groupCommand === 'waitlist' && subCommand === 'create-panel') {
     await handleWaitlistPanel(context, database, waitlistInteraction)
+  } else if (groupCommand === 'stay-conditions' && subCommand === 'list') {
+    await handleStayConditionList(context, database)
+  } else if (groupCommand === 'stay-conditions' && subCommand === 'add') {
+    await handleStayConditionAdd(context, database)
+  } else if (groupCommand === 'stay-conditions' && subCommand === 'remove') {
+    await handleStayConditionRemove(context, database)
+  } else if (groupCommand === undefined && subCommand === 'purge') {
+    await handlePurge(context, database)
   } else {
     throw new Error('No such command flow found')
   }
@@ -187,9 +227,13 @@ export async function discordGuildAutocomplete(
     (groupCommand === 'role-conditions' && subCommand === 'list' && option.name === 'name') ||
     (groupCommand === 'role-conditions' && subCommand === 'add' && option.name === 'name') ||
     (groupCommand === 'role-conditions' && subCommand === 'remove' && option.name === 'name') ||
+    (groupCommand === 'stay-conditions' && subCommand === 'list' && option.name === 'name') ||
+    (groupCommand === 'stay-conditions' && subCommand === 'add' && option.name === 'name') ||
+    (groupCommand === 'stay-conditions' && subCommand === 'remove' && option.name === 'name') ||
     (groupCommand === 'waitlist' && subCommand === 'list' && option.name === 'name') ||
     (groupCommand === 'waitlist' && subCommand === 'add' && option.name === 'name') ||
-    (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'name')
+    (groupCommand === 'waitlist' && subCommand === 'remove' && option.name === 'name') ||
+    (groupCommand === undefined && subCommand === 'purge' && option.name === 'name')
 
   if (suggestRegisteredGuilds) {
     const allGuilds = database.allGuilds()
@@ -217,7 +261,8 @@ export async function discordGuildAutocomplete(
 
   if (
     (groupCommand === 'join-conditions' && subCommand === 'add' && option.name === 'type') ||
-    (groupCommand === 'role-conditions' && subCommand === 'add' && option.name === 'type')
+    (groupCommand === 'role-conditions' && subCommand === 'add' && option.name === 'type') ||
+    (groupCommand === 'stay-conditions' && subCommand === 'add' && option.name === 'type')
   ) {
     assert.ok(interaction.inCachedGuild())
     const allHandlers = context.application.core.conditonsRegistry.allHandlers()
@@ -258,6 +303,23 @@ export async function discordGuildAutocomplete(
     await handleSuggestConditionsRemove(interaction, context, allHandlers, conditionManager)
     return
   }
+
+  if (groupCommand === 'stay-conditions' && subCommand === 'remove' && option.name === 'condition') {
+    assert.ok(interaction.inCachedGuild())
+
+    const guildId = context.interaction.options.getString('name') ?? undefined
+    if (!guildId) return
+
+    const savedGuild = database
+      .allGuilds()
+      .find((guild) => guild.id === guildId || guild.name.toLowerCase().trim() === guildId.toLowerCase().trim())
+    if (savedGuild === undefined) return
+
+    const allHandlers = context.application.core.conditonsRegistry.allHandlers()
+    const conditionManager = getStayConditionManager(savedGuild, database)
+    await handleSuggestConditionsRemove(interaction, context, allHandlers, conditionManager)
+    return
+  }
 }
 
 async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridge>, database: Database): Promise<void> {
@@ -271,7 +333,7 @@ async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridg
     await interaction.editReply({
       embeds: [
         {
-          title: 'Registering Guild',
+          title: `Registering Guild - ${name}`,
           description: `No such Hypixel guild found: ${inlineCode(name)}`,
           color: Color.Bad,
           footer: { text: DefaultCommandFooter }
@@ -286,7 +348,7 @@ async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridg
     await interaction.editReply({
       embeds: [
         {
-          title: 'Registering Guild',
+          title: `Registering Guild - ${guild.name}`,
           description: `Hypixel guild already registered: ${inlineCode(name)}`,
           color: Color.Bad,
           footer: { text: DefaultCommandFooter }
@@ -300,7 +362,7 @@ async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridg
   await interaction.editReply({
     embeds: [
       {
-        title: 'Registering Guild',
+        title: `Registering Guild - ${savedGuild.name}`,
         description: `Hypixel guild has been registered: ${bold(escapeMarkdown(savedGuild.name))}`,
         color: Color.Good,
         footer: { text: DefaultCommandFooter }
@@ -324,7 +386,7 @@ async function handleUnregister(
   const message = await interaction.editReply({
     embeds: [
       {
-        title: 'Unregistering Guild',
+        title: `Unregistering Guild - ${savedGuild.name}`,
         description:
           `Hypixel guild ${bold(escapeMarkdown(savedGuild.name))} will be completely unregistered from this application` +
           ` and any related information will be deleted as well.` +
@@ -367,7 +429,7 @@ async function handleUnregister(
     await message.edit({
       embeds: [
         {
-          title: 'Unregistering Guild',
+          title: `Unregistering Guild - ${savedGuild.name}`,
           description: `Unregistering Hypixel guild ${bold(escapeMarkdown(savedGuild.name))} has been cancelled.`,
           color: Color.Info,
           footer: { text: DefaultCommandFooter }
@@ -393,7 +455,7 @@ async function handleUnregister(
       await message.edit({
         embeds: [
           {
-            title: 'Unregistering Guild',
+            title: `Unregistering Guild - ${savedGuild.name}`,
             description: `Hypixel guild ${bold(escapeMarkdown(savedGuild.name))} has been already been unregistered??.`,
             color: Color.Bad,
             footer: { text: DefaultCommandFooter }
@@ -408,7 +470,7 @@ async function handleUnregister(
     await message.edit({
       embeds: [
         {
-          title: 'Unregistering Guild',
+          title: `Unregistering Guild - ${savedGuild.name}`,
           description:
             `Hypixel guild ${bold(escapeMarkdown(savedGuild.name))} has been successfully unregistered` +
             ` along with ${inlineCode(totalDeletions.toLocaleString('en-US'))} data entry.`,
@@ -518,6 +580,47 @@ async function handleSettings(
             setOption: (value) => {
               assert.ok(savedGuild !== undefined)
               manager.setNeededJoinConditions(savedGuild.id, value)
+            }
+          }
+        ]
+      },
+      {
+        type: OptionType.EmbedCategory,
+        name: 'Purge Settings',
+        description: 'Configure how guild purge evaluates members.',
+        options: [
+          {
+            type: OptionType.PresetList,
+            name: 'Included Ranks',
+            description: 'Which guild ranks are eligible for purge evaluation. Unselected ranks are protected.',
+            min: 0,
+            max: 25,
+            get options() {
+              assert.ok(savedGuild !== undefined)
+              return savedGuild.roles.map((r) => ({ label: r.name, value: r.name }))
+            },
+            getOption: () => {
+              assert.ok(savedGuild !== undefined)
+              return manager.getCanPurgeRanks(savedGuild.id)
+            },
+            setOption: (values) => {
+              assert.ok(savedGuild !== undefined)
+              manager.setCanPurgeRanks(savedGuild.id, values)
+            }
+          },
+          {
+            type: OptionType.Number,
+            name: 'Required stay conditions count',
+            description: 'How many stay conditions must a player meet before they are allowed to stay in the guild.',
+            min: 1,
+            max: 99,
+            getOption: () => {
+              assert.ok(savedGuild !== undefined)
+              return manager.getNeededStayConditions(savedGuild.id)
+            },
+            setOption: (value) => {
+              assert.ok(savedGuild !== undefined)
+              manager.setNeededStayConditions(savedGuild.id, value)
             }
           }
         ]
@@ -755,7 +858,7 @@ async function handleWaitlistAdd(
     await context.interaction.editReply({
       embeds: [
         {
-          title: 'Waitlist Add',
+          title: `Waitlist Add - ${savedGuild.name}`,
           description: `${bold(escapeMarkdown(mojangProfile.name))} has been added to the waitlist to join ${bold(escapeMarkdown(savedGuild.name))}.`,
           color: Color.Good,
           footer: { text: DefaultCommandFooter }
@@ -767,7 +870,7 @@ async function handleWaitlistAdd(
     await context.interaction.editReply({
       embeds: [
         {
-          title: 'Waitlist Add',
+          title: `Waitlist Add - ${savedGuild.name}`,
           description: `${bold(escapeMarkdown(mojangProfile.name))} already added to the waitlist to join ${bold(escapeMarkdown(savedGuild.name))}.`,
           color: Color.Info,
           footer: { text: DefaultCommandFooter }
@@ -806,7 +909,7 @@ async function handleWaitlistRemove(
     await context.interaction.editReply({
       embeds: [
         {
-          title: 'Waitlist Remove',
+          title: `Waitlist Remove - ${savedGuild.name}`,
           description: `${bold(escapeMarkdown(mojangProfile.name))} has been removed from the waitlist to join ${bold(escapeMarkdown(savedGuild.name))}.`,
           color: Color.Good,
           footer: { text: DefaultCommandFooter }
@@ -818,7 +921,7 @@ async function handleWaitlistRemove(
     await context.interaction.editReply({
       embeds: [
         {
-          title: 'Waitlist Remove',
+          title: `Waitlist Remove - ${savedGuild.name}`,
           description: `${bold(escapeMarkdown(mojangProfile.name))} not in the waitlist to join ${bold(escapeMarkdown(savedGuild.name))}.`,
           color: Color.Info,
           footer: { text: DefaultCommandFooter }
@@ -876,7 +979,7 @@ async function handleWaitlistPanel(
       options: savedGuilds.map((guild) => ({ label: guild.name, value: guild.id }))
     }
     const result = await showModal(interaction, 'Guild Join Waitlist', [option], Duration.minutes(10))
-    responseInteraction = result.modalResponse
+    responseInteraction = result.modalResponse as ChatInputCommandInteraction | ModalSubmitInteraction
     const guilds = result.result.guildIds as string[]
     selectedGuilds = savedGuilds.filter((savedGuild) => guilds.includes(savedGuild.id))
   }
@@ -909,7 +1012,7 @@ function getGuild(
     const payload = {
       embeds: [
         {
-          title: 'Waitlist',
+          title: `Guild - ${query}`,
           description: `No such a Hypixel guild registered: ${inlineCode(query)}`,
           color: Color.Info,
           footer: { text: DefaultCommandFooter }
@@ -922,4 +1025,553 @@ function getGuild(
   }
 
   return savedGuild
+}
+
+function getStayConditionManager(savedGuild: MinecraftGuild, database: Database): CommandConditionHandler {
+  return {
+    conditions: () => database.getStayConditions(savedGuild.id),
+    remove: (id) => database.removeStayCondition(savedGuild.id, id) !== undefined,
+    createOptions: {
+      top: [],
+      bottom: []
+    },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    add: (handlerId, _: ModalResult, conditionData) => {
+      const condition: GuildStayCondition = {
+        guildId: savedGuild.id,
+        typeId: handlerId,
+        options: conditionData
+      }
+
+      return database.addStayCondition(condition)
+    },
+    translationKey: 'guild-stay'
+  }
+}
+
+async function handleStayConditionList(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+): Promise<void> {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context, database)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getStayConditionManager(savedGuild, database)
+  await handleConditionList(interaction, context, manager)
+}
+
+async function handleStayConditionAdd(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+): Promise<void> {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context, database)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getStayConditionManager(savedGuild, database)
+  await handleConditionAdd(interaction, context, manager)
+}
+
+async function handleStayConditionRemove(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+): Promise<void> {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  const savedGuild = getGuild(context, database)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  const manager = getStayConditionManager(savedGuild, database)
+  await handleConditionRemove(interaction, context, manager)
+}
+
+async function handlePurge(
+  context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  database: Database
+): Promise<void> {
+  const interaction = context.interaction
+  assert.ok(interaction.inCachedGuild())
+
+  await interaction.deferReply()
+
+  const savedGuild = getGuild(context, database)
+  if (savedGuild instanceof Promise) {
+    await savedGuild
+    return
+  }
+
+  let hypixelGuild: HypixelGuild | undefined
+  try {
+    hypixelGuild = await context.application.hypixelApi.getGuildById(savedGuild.id)
+  } catch (error: unknown) {
+    context.errorHandler.error('fetching hypixel guild', error)
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Purge Failed - ${savedGuild.name}`,
+          color: Color.Bad,
+          description: `Failed to fetch guild data for guild **${savedGuild.name}** from Hypixel API due to a connection error.`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  if (hypixelGuild === undefined) {
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Purge Failed - ${savedGuild.name}`,
+          color: Color.Bad,
+          description: `Failed to fetch guild data for guild **${savedGuild.name}** from Hypixel API. The guild may have disbanded or does not exist.`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+  database.initGuild(hypixelGuild)
+
+  let minecraftInstance: MinecraftInstance | undefined
+  for (const instance of context.application.minecraftManager.getAllInstances()) {
+    if (instance.currentStatus() !== Status.Connected) continue
+    try {
+      const guildData = await instance.guildManager.list()
+      if (guildData.name.toLowerCase() === hypixelGuild.name.toLowerCase()) {
+        minecraftInstance = instance
+        break
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  if (minecraftInstance === undefined) {
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Purge Failed - ${hypixelGuild.name}`,
+          color: Color.Bad,
+          description: `Could not find a connected Minecraft instance for guild **${hypixelGuild.name}**.`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  const botUuid = minecraftInstance.uuid()
+  if (botUuid === undefined) {
+    const displayName = await minecraftInstance.displayName()
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Purge Failed - ${hypixelGuild.name}`,
+          color: Color.Bad,
+          description: `Could not determine the UUID for the instance **${displayName}** (Guild: **${hypixelGuild.name}**).`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  const includedRanks = database.getCanPurgeRanks(hypixelGuild._id)
+  const stayConditions = database.getStayConditions(hypixelGuild._id)
+  const neededStayConditions = Math.min(database.getNeededStayConditions(hypixelGuild._id), stayConditions.length)
+
+  if (includedRanks.length === 0) {
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Purge Failed - ${hypixelGuild.name}`,
+          color: Color.Bad,
+          description:
+            `No guild rank is whitelisted for purge in guild **${hypixelGuild.name}**.\n\n` +
+            '**Guidance:**\n' +
+            `1. Run </guild settings:${context.interaction.commandId}>.\n` +
+            '2. Navigate to **Purge Settings**.\n' +
+            '3. Select the ranks to include in **Included Ranks**.',
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  if (stayConditions.length === 0) {
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Purge Failed - ${hypixelGuild.name}`,
+          color: Color.Bad,
+          description:
+            `No stay conditions are currently configured for guild **${hypixelGuild.name}**. Running a purge now would evaluate everyone as failing and kick them.\n\n` +
+            '**Guidance:**\n' +
+            `1. Use </guild stay-conditions add:${context.interaction.commandId}> to configure at least one condition (e.g., minimum GEXP requirement).\n` +
+            `2. Run </guild stay-conditions list:${context.interaction.commandId}> to verify your active conditions.`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  const botUuids = new Set(context.application.minecraftManager.getMinecraftBots().map((bot) => bot.uuid))
+  const totalGuildMembers = hypixelGuild.members.length
+
+  const toKick: {
+    profile: MinecraftAnonymousUser
+    rank: string
+    discordId?: string
+    conditions: { condition: SavedGuildStayCondition; result: ConditionResult<ConditionValue> | undefined }[]
+  }[] = []
+  const conditionContext = {
+    application: context.application,
+    startTime: Date.now(),
+    abortSignal: new AbortController().signal
+  }
+
+  for (const member of hypixelGuild.members) {
+    if (botUuids.has(member.uuid)) continue
+
+    const memberRank = member.rank ?? hypixelGuild.ranks.find((rank) => rank.default)?.name
+    if (memberRank === undefined) continue
+    if (!includedRanks.includes(memberRank)) continue
+
+    const profile = await context.application.mojangApi.profileByUuid(member.uuid).catch(() => undefined)
+    if (profile === undefined) continue
+
+    const handlerUser = {
+      user: await context.application.core.initializeMinecraftUser(profile, {})
+    }
+    const permission = await handlerUser.user.permission()
+    if (permission >= Permission.Helper) continue
+
+    let metConditionsCount = 0
+
+    const conditionsResults: {
+      condition: SavedGuildStayCondition
+      result: ConditionResult<ConditionValue> | undefined
+    }[] = []
+    let isSafe = false
+    for (const condition of stayConditions) {
+      const handler = context.application.core.conditonsRegistry.get(condition.typeId)
+
+      let conditionMet = true
+      if (handler === undefined) {
+        // Assume true if handler is missing to prevent accidental purges
+        conditionMet = true
+        conditionsResults.push({ condition: condition, result: undefined })
+      } else {
+        try {
+          const result = await handler.meetsCondition(conditionContext, handlerUser, condition.options)
+          conditionsResults.push({ condition: condition, result: result })
+          conditionMet = result.type === ConditionResultType.Pass
+        } catch (error: unknown) {
+          conditionsResults.push({ condition: condition, result: undefined })
+          context.errorHandler.error(`Error evaluating stay-condition ${condition.typeId} for ${profile.name}`, error)
+          conditionMet = true
+        }
+      }
+
+      if (conditionMet) {
+        metConditionsCount++
+      }
+      if (metConditionsCount >= neededStayConditions) {
+        isSafe = true
+        break
+      }
+    }
+
+    if (!isSafe) {
+      toKick.push({
+        profile: handlerUser.user,
+        rank: memberRank,
+        discordId: handlerUser.user.discordProfile()?.id,
+        conditions: conditionsResults
+      })
+    }
+  }
+
+  if (toKick.length === 0) {
+    await interaction.editReply({
+      embeds: [
+        {
+          title: `Nothing To Purge - ${hypixelGuild.name}`,
+          color: Color.Good,
+          description:
+            `No members to purge in **${hypixelGuild.name}**.\n\n` +
+            '**Guidance:**\n' +
+            `1. Use </guild stay-conditions add:${context.interaction.commandId}> to configure at least one condition (e.g., minimum GEXP requirement).\n` +
+            `2. Run </guild stay-conditions list:${context.interaction.commandId}> to verify your active conditions.`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+    return
+  }
+
+  const displayContext: HandlerDisplayContext = {
+    application: context.application,
+    startTime: conditionContext.startTime,
+    discordGuild: interaction.guild
+  }
+
+  await interactivePaging(interaction, 0, Duration.minutes(30).toMilliseconds(), context.errorHandler, async (page) => {
+    const EntriesPerPage = 15
+    const entries = toKick.slice(page * EntriesPerPage, page * EntriesPerPage + EntriesPerPage)
+    const totalPages = Math.ceil(toKick.length / EntriesPerPage)
+
+    let result = ''
+    for (const entry of entries) {
+      let message = `- ${bold(formatUser(entry.profile))} [${escapeMarkdown(entry.rank)}]`
+
+      for (const conditionEntry of entry.conditions) {
+        const meetsCondition = conditionEntry.result
+        const condition = conditionEntry.condition
+        const handler = context.application.core.conditonsRegistry.get(condition.typeId)
+
+        message += '\n  - '
+        message += meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'
+        message += ` `
+
+        if (handler === undefined) {
+          message += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
+        } else {
+          const display = await handler.displayCondition(displayContext, condition.options)
+          message += escapeMarkdown(display)
+        }
+
+        if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
+          message += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
+        } else if (meetsCondition?.type === ConditionResultType.Error) {
+          message += `: ${escapeMarkdown(meetsCondition.reason)}`
+        }
+      }
+
+      result += '\n' + message.trim()
+    }
+
+    return {
+      totalPages: totalPages,
+      embed: {
+        title: `Purge Confirmation - ${hypixelGuild.name} (Page ${page + 1} out of ${totalPages})`,
+        color: Color.Info,
+        description: result,
+        footer: { text: DefaultCommandFooter }
+      }
+    }
+  })
+
+  let conditionsText = ''
+  for (const condition of stayConditions) {
+    conditionsText += '\n- '
+    const handler = context.application.core.conditonsRegistry.get(condition.typeId)
+    if (handler === undefined) {
+      conditionsText += `${inlineCode(escapeInlineCode(condition.typeId))}: ${inlineCode(JSON.stringify(condition.options))}`
+    } else {
+      const display = await handler.displayCondition(displayContext, condition.options)
+      conditionsText += escapeMarkdown(display)
+    }
+  }
+
+  const confirmationMessage = await interaction.followUp({
+    embeds: [
+      {
+        title: `Purge Confirmation - ${hypixelGuild.name}`,
+        color: Color.Bad,
+        description:
+          `**${toKick.length}** out of **${totalGuildMembers}** members in guild **${hypixelGuild.name}** will get purged.` +
+          `\n\nAny guild member meeting at least ${neededStayConditions} condition(s) can stay:\n` +
+          conditionsText.trim() +
+          `\n\nAre you sure you want to execute this purge?`,
+        footer: { text: DefaultCommandFooter }
+      }
+    ],
+    components: [
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId('confirm_purge').setLabel('Confirm Purge').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId('cancel_purge').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+      )
+    ]
+  })
+
+  try {
+    const confirmation = await confirmationMessage.awaitMessageComponent({
+      filter: (index) => index.user.id === interaction.user.id,
+      time: Duration.minutes(15).toMilliseconds(),
+      componentType: ComponentType.Button
+    })
+
+    if (confirmation.customId === 'cancel_purge') {
+      await confirmation.update({
+        embeds: [
+          {
+            title: `Purge Cancelled - ${hypixelGuild.name}`,
+            color: Color.Info,
+            description: `The purge operation for guild **${hypixelGuild.name}** is cancelled.`,
+            footer: { text: DefaultCommandFooter }
+          }
+        ],
+        components: []
+      })
+      return
+    }
+
+    await confirmation.update({
+      embeds: [
+        {
+          title: `Purge In Progress - ${hypixelGuild.name}`,
+          color: Color.Info,
+          description: `Starting to purge **${toKick.length}** members from guild **${hypixelGuild.name}**...\nQueuing commands...`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ],
+      components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder().setCustomId('stop_purge').setLabel('Stop').setStyle(ButtonStyle.Danger)
+        )
+      ]
+    })
+  } catch {
+    await confirmationMessage.edit({
+      embeds: [
+        {
+          title: `Purge Confirmation Timed Out - ${hypixelGuild.name}`,
+          color: Color.Info,
+          description: `The purge operation for guild **${hypixelGuild.name}** has timed out.`,
+          footer: { text: DefaultCommandFooter }
+        }
+      ],
+      components: []
+    })
+    return
+  }
+
+  const abortController = new AbortController()
+  const isAborted = () => abortController.signal.aborted
+
+  const cancelCollector = confirmationMessage.createMessageComponentCollector({
+    filter: (click) => click.customId === 'stop_purge' && click.user.id === interaction.user.id,
+    time: Duration.minutes(30).toMilliseconds() + toKick.length * Duration.seconds(30).toMilliseconds(),
+    max: 1
+  })
+
+  cancelCollector.on('collect', (collectedInteraction) => {
+    abortController.abort()
+    void collectedInteraction
+      .reply({ content: 'Purge is stopping...' })
+      .catch(context.errorHandler.promiseCatch('sending purge stopping message'))
+  })
+
+  const MaxLastResults = 5
+  const lastResults: { user: MinecraftAnonymousUser; status: string; success: boolean }[] = []
+  const successfulKicks: { user: MinecraftAnonymousUser; reason: string }[] = []
+  const failedKicks: { user: MinecraftAnonymousUser; reason: string }[] = []
+  const kickReason = `Failed stay requirements`
+
+  for (let index = 0; index < toKick.length; index++) {
+    const member = toKick[index]
+    await sleep(10_000)
+
+    if (isAborted()) {
+      await confirmationMessage.edit({
+        embeds: [
+          {
+            title: `Purge Aborted - ${hypixelGuild.name}`,
+            color: Color.Info,
+            description: `The purge operation for guild **${hypixelGuild.name}** has been aborted.`,
+            footer: { text: DefaultCommandFooter }
+          }
+        ],
+        components: []
+      })
+      return
+    }
+
+    const command = `/guild kick ${member.profile.mojangProfile().id} ${kickReason}`
+
+    const result = await checkChatTriggers(
+      context.application,
+      KickChat,
+      [minecraftInstance],
+      command,
+      member.profile.mojangProfile().name
+    )
+
+    if (result.status === 'success') {
+      successfulKicks.push({ user: member.profile, reason: result.message[0].content })
+      lastResults.unshift({ user: member.profile, status: result.message[0].content, success: true })
+    } else {
+      const errorReason = result.message.length > 0 ? result.message[0].content : 'Unknown error / Timeout'
+      lastResults.unshift({ user: member.profile, status: errorReason, success: false })
+      failedKicks.push({ user: member.profile, reason: errorReason })
+    }
+    if (lastResults.length > MaxLastResults) lastResults.pop()
+
+    await confirmationMessage.edit({
+      embeds: [
+        {
+          title: `Purge In Progress - ${hypixelGuild.name} (${index + 1} out of ${toKick.length})`,
+          color: Color.Info,
+          description:
+            `_Please wait for the process to complete._` +
+            (index < toKick.length - 1 ? `\n\n**Kicking next:** ${formatUser(toKick[index + 1].profile)}` : '') +
+            `\n\n**Progress:**\n` +
+            lastResults
+              .map(
+                (entry) =>
+                  `[${entry.success ? 'Success' : 'Failed'}] ${formatUser(entry.user)}: ${underline(escapeMarkdown(entry.status))}`
+              )
+              .join(`\n`),
+          footer: { text: DefaultCommandFooter }
+        }
+      ]
+    })
+  }
+
+  let color = Color.Good
+  if (failedKicks.length > 0 && successfulKicks.length > 0) color = Color.Info
+  if (successfulKicks.length === 0 && failedKicks.length > 0) color = Color.Bad
+
+  let summary = ''
+  if (failedKicks.length > 0) {
+    summary += `\n\n**Failed to kick ${failedKicks.length} out of ${toKick.length}:**\n`
+    summary += failedKicks
+      .map((entry) => `- ${formatUser(entry.user)}: ${underline(escapeMarkdown(entry.reason))}`)
+      .join(`\n`)
+  }
+  if (successfulKicks.length > 0) {
+    summary += `\n\n**Successfully kicked ${successfulKicks.length} out of ${toKick.length}:**\n`
+    summary += successfulKicks.map((entry) => `- ${formatUser(entry.user)}`).join(`\n`)
+  }
+
+  await confirmationMessage.edit({
+    embeds: [
+      {
+        title: `Purge Complete - ${hypixelGuild.name}`,
+        color: color,
+        description: summary,
+        footer: { text: DefaultCommandFooter }
+      }
+    ],
+    components: []
+  })
 }
