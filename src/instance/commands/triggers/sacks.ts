@@ -41,7 +41,6 @@ export default class Sacks extends ChatCommandHandler {
       for (const [name, count] of Object.entries(entries)) {
         if (count === 0) continue
         let bazaarPrice: number
-
         const npcPrice = npcProducts.items.find((item) => item.id === name)?.npc_sell_price ?? 0
 
         /*
