@@ -451,3 +451,12 @@ export function kuudraCollection(stats: Kuudra): number {
 
   return count
 }
+
+/* eslint-disable @typescript-eslint/naming-convention */
+
+export interface SkyblockItems extends HypixelSuccessResponse {
+  items: {
+    id?: string
+    npc_sell_price?: number
+  }[]
+}

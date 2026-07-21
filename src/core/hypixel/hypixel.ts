@@ -21,6 +21,7 @@ import type {
   NewsResponse,
   SkyblockBingoResourcesResponse,
   SkyblockBingoResponse,
+  SkyblockItems,
   SkyblockMuseumResponse,
   SkyblockProfile,
   SkyblockProfilesResponse
@@ -45,6 +46,7 @@ export class Hypixel {
   private static readonly SkyblockBingoResourcesPath = '/v2/resources/skyblock/bingo'
   private static readonly SkyblockNewsPath = '/v2/skyblock/news'
   private static readonly SkyblockSkillsPath = '/v2/resources/skyblock/skills'
+  private static readonly SkyblockItemsPath = 'v2/resources/skyblock/items'
 
   /**
    * How old data can be and still be considered fresh by default.
@@ -184,6 +186,12 @@ export class Hypixel {
         throw error
       }
     }
+    return response
+  }
+
+  public async getSkyblockItems(since?: number): Promise<SkyblockItems> {
+    const request = { path: Hypixel.SkyblockItemsPath } satisfies ApiEntry
+    const response = await this.resolveAndFetch<SkyblockItems>(request, since)
     return response
   }
 

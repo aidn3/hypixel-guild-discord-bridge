@@ -31,36 +31,44 @@ export default class Sacks extends ChatCommandHandler {
 
     const entries = selectedProfile.inventory?.sacks_counts ?? {}
 
-    let totalValue = 0
+    let bazaarTotalValue = 0
+    let npcTotalValue = 0
     if (Object.entries(entries).length > 0) {
-      const products = await context.app.hypixelApi.getSkyblockBazaar()
+      const npcProducts = await context.app.hypixelApi.getSkyblockItems()
+      const bazaarProducts = await context.app.hypixelApi.getSkyblockBazaar()
       const skyhelperPrices = await getPrices()
 
       for (const [name, count] of Object.entries(entries)) {
         if (count === 0) continue
-        let price: number
+        let bazaarPrice: number
+
+        const npcPrice = npcProducts.items.find((item) => item.id === name)?.npc_sell_price ?? 0
 
         /*
          * Prioritize official prices.
          * Skyhelper prices are fallback for items that can be not easily fetched.
          */
-        if (name in products) {
-          const product = products[name]
-          price =
-            product.sell_summary.length > 0 ? product.sell_summary[0].pricePerUnit : product.quick_status.sellPrice
+        if (name in bazaarProducts) {
+          const bazaarProduct = bazaarProducts[name]
+          bazaarPrice =
+            bazaarProduct.sell_summary.length > 0
+              ? bazaarProduct.sell_summary[0].pricePerUnit
+              : bazaarProduct.quick_status.sellPrice
         } else if (name in skyhelperPrices) {
-          price = skyhelperPrices[name]
+          bazaarPrice = skyhelperPrices[name]
         } else {
           continue
         }
 
-        totalValue += count * price
+        bazaarTotalValue += count * bazaarPrice
+        npcTotalValue += count * npcPrice
       }
     }
 
     return context.app.i18n.t(($) => $['commands.sacks.response'], {
       username: givenUsername,
-      value: shortenNumber(totalValue)
+      bazaarValue: shortenNumber(bazaarTotalValue),
+      npcValue: shortenNumber(npcTotalValue)
     })
   }
 }
