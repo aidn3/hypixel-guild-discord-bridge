@@ -52,7 +52,7 @@ export interface SkyblockMember {
     milestone?: { last_claimed_milestone?: number }
   }
   inventory?: {
-    bag_contents?: { talisman_bag: SkyblockInventory }
+    bag_contents?: { talisman_bag?: SkyblockInventory }
     inv_armor?: SkyblockInventory
     inv_contents?: SkyblockInventory
     equipment_contents?: SkyblockInventory

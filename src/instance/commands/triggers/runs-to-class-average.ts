@@ -118,7 +118,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     }
 
     let scarfAccessoryBoost = 0
-    const accessoriesRaw = selectedProfile.inventory?.bag_contents?.talisman_bag.data
+    const accessoriesRaw = selectedProfile.inventory?.bag_contents?.talisman_bag?.data
     if (accessoriesRaw !== undefined) {
       const accessories = await parseEncodedNbt<{ i: InventoryItem[] }>(accessoriesRaw)
 
