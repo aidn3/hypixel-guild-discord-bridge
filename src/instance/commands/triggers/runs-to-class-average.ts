@@ -118,7 +118,6 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     }
 
     let scarfAccessoryBoost = 0
-    let expertRingBoost = 0
     const accessoriesRaw = selectedProfile.inventory?.bag_contents?.talisman_bag.data
     if (accessoriesRaw !== undefined) {
       const accessories = await parseEncodedNbt<{ i: InventoryItem[] }>(accessoriesRaw)
@@ -131,8 +130,6 @@ export default class RunsToClassAverage extends ChatCommandHandler {
           if (name.includes("Scarf's Grimoire") && 0.06 > scarfAccessoryBoost) scarfAccessoryBoost = 0.06
           else if (name.includes("Scarf's Thesis") && 0.04 > scarfAccessoryBoost) scarfAccessoryBoost = 0.04
           else if (name.includes("Scarf's Studies") && 0.02 > scarfAccessoryBoost) scarfAccessoryBoost = 0.02
-
-          if (name.includes('Catacombs Expert Ring')) expertRingBoost = 0.1
         }
       }
     }
@@ -189,7 +186,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
      *  All stats are set to max assuming that the player who is using the command is already prepared to do hundreds of runs
      */
 
-    const GlobalBoost = scarfShardsBoost + scarfAccessoryBoost + floorCompletionsBoost + expertRingBoost + hecatombBoost
+    const GlobalBoost = scarfShardsBoost + scarfAccessoryBoost + floorCompletionsBoost + hecatombBoost
     const additionalBoost = await this.getAdditionalBoost(context)
 
     const classExpBoosts = {
