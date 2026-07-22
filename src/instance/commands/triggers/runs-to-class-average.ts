@@ -180,7 +180,6 @@ export default class RunsToClassAverage extends ChatCommandHandler {
      *     └ F1-F5 | 150% max XP buff | 76 max run cap
      *     └ F6    | 100% max XP buff | 51 max run cap
      *     └ F7/M7 | 50% max XP buff  | 26 max run cap
-     * - 10% Expert Ring
      * - 2% Maxed Hecatomb Enchantment
      *
      *  All stats are set to max assuming that the player who is using the command is already prepared to do hundreds of runs
