@@ -15,7 +15,7 @@ import {
 // Credit: https://adjectils.com/dungeon.html
 const FloorsBaseExp = {
   m7: 300_000,
-  m6: 110_000,
+  m6: 100_000,
   m5: 70_000,
   m4: 55_000,
   m3: 35_000,
