@@ -210,7 +210,7 @@ export interface SkyblockDungeons {
 
 export interface SkyblockDungeonsTypes {
   catacombs: SkyblockDungeonsCatacombs
-  master_catacombs: SkyblockDungeonsMasterCatacombs
+  master_catacombs?: SkyblockDungeonsMasterCatacombs
 }
 
 export type DungeonFloors = '1' | '2' | '3' | '4' | '5' | '6' | '7'
@@ -225,7 +225,7 @@ export interface SkyblockDungeonsCatacombs {
 }
 
 export interface SkyblockDungeonsMasterCatacombs {
-  tier_completions: Record<DungeonFloors | 'total', number | undefined> | undefined
+  tier_completions?: Record<DungeonFloors | 'total', number | undefined> | undefined
   fastest_time: Record<DungeonFloors | 'best', number | undefined> | undefined
   fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
   fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined

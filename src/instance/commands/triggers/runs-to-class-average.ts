@@ -168,7 +168,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     if (selectedFloor.toLowerCase() === 'm7') {
       floorCompletionsBoost =
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        0.02 * (Math.min(selectedProfile.dungeons.dungeon_types.master_catacombs.tier_completions?.[7] || 1, 26) - 1)
+        0.02 * (Math.min(selectedProfile.dungeons.dungeon_types.master_catacombs?.tier_completions?.[7] || 1, 26) - 1)
     }
 
     /*
