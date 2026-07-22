@@ -79,6 +79,10 @@ export interface SkyblockMember {
       | 'SKILL_COMBAT',
       number
     >
+    perks?: Record<string, number>
+  }
+  attributes?: {
+    stacks: Record<string, number>
   }
   nether_island_player_data?: {
     selected_faction?: string

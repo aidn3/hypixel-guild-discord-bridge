@@ -6,6 +6,7 @@ import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skybl
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  parseEncodedNbt,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -23,6 +24,16 @@ const FloorsBaseExp = {
 }
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
+
+/* eslint-disable @typescript-eslint/naming-convention */
+
+type InventoryItem = { id?: number; Count?: number; tag?: ItemData } | object
+
+/* eslint-disable @typescript-eslint/naming-convention */
+
+interface ItemData {
+  display?: { Name?: string; Lore?: string[] }
+}
 
 export default class RunsToClassAverage extends ChatCommandHandler {
   constructor() {
@@ -51,27 +62,134 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
-    // TODO: fix perks changed location into "leveling" section.
-    //  As it is right now, all the values here are 0.
-    //  however, the rtca is accurate as it is right now.
-    //  Further testing should be done later when volatile perks like Aura mayor are gone.
-    const heartOfGold = selectedProfile.essence?.perks?.heart_of_gold ?? 0
-    const unbridledRage = selectedProfile.essence?.perks?.unbridled_rage ?? 0
-    const coldEfficiency = selectedProfile.essence?.perks?.cold_efficiency ?? 0
-    const toxophilite = selectedProfile.essence?.perks?.toxophilite ?? 0
-    const diamondInTheRough = selectedProfile.essence?.perks?.diamond_in_the_rough ?? 0
+    const heartOfGold = selectedProfile.player_data.perks?.heart_of_gold ?? 0
+    const unbridledRage = selectedProfile.player_data.perks?.unbridled_rage ?? 0
+    const coldEfficiency = selectedProfile.player_data.perks?.cold_efficiency ?? 0
+    const toxophilite = selectedProfile.player_data.perks?.toxophilite ?? 0
+    const diamondInTheRough = selectedProfile.player_data.perks?.diamond_in_the_rough ?? 0
+
+    const scarfShards = selectedProfile.attributes?.stacks.catacombs_graduate ?? 0
+    let scarfShardsBoost = 0
+
+    switch (scarfShards) {
+      case 1: {
+        scarfShardsBoost = 0.02
+        break
+      }
+      case 2: {
+        scarfShardsBoost = 0.04
+        break
+      }
+      case 3: {
+        scarfShardsBoost = 0.06
+        break
+      }
+      case 5: {
+        scarfShardsBoost = 0.08
+        break
+      }
+      case 7: {
+        scarfShardsBoost = 0.1
+        break
+      }
+      case 9: {
+        scarfShardsBoost = 0.12
+        break
+      }
+      case 12: {
+        scarfShardsBoost = 0.14
+        break
+      }
+      case 15: {
+        scarfShardsBoost = 0.16
+        break
+      }
+      case 19: {
+        scarfShardsBoost = 0.18
+        break
+      }
+      case 24: {
+        {
+          scarfShardsBoost = 0.2
+          // No default
+        }
+        break
+      }
+    }
+
+    let scarfAccessoryBoost = 0
+    let expertRingBoost = 0
+    const accessoriesRaw = selectedProfile.inventory?.bag_contents?.talisman_bag.data
+    if (accessoriesRaw !== undefined) {
+      const accessories = await parseEncodedNbt<{ i: InventoryItem[] }>(accessoriesRaw)
+
+      for (const item of accessories.i) {
+        if ('tag' in item && item.tag?.display?.Name) {
+          let name = item.tag.display.Name
+          name = name.replaceAll(/§./g, '')
+
+          if (name.includes("Scarf's Grimoire") && 0.06 > scarfAccessoryBoost) scarfAccessoryBoost = 0.06
+          else if (name.includes("Scarf's Thesis") && 0.04 > scarfAccessoryBoost) scarfAccessoryBoost = 0.04
+          else if (name.includes("Scarf's Studies") && 0.02 > scarfAccessoryBoost) scarfAccessoryBoost = 0.02
+
+          if (name.includes('Catacombs Expert Ring')) expertRingBoost = 0.1
+        }
+      }
+    }
+
+    let hecatombBoost = 0
+    const armorRaw = selectedProfile.inventory?.inv_armor?.data
+    if (armorRaw !== undefined) {
+      const armor = await parseEncodedNbt<{ i: InventoryItem[] }>(armorRaw)
+
+      for (const item of armor.i) {
+        if ('tag' in item && item.tag?.display?.Lore) {
+          const lore = item.tag.display.Lore
+
+          for (const line of lore) {
+            const cleanLine = line.replaceAll(/§./g, '')
+
+            if (cleanLine.includes('Hecatomb X')) hecatombBoost = 0.02
+            else if (cleanLine.includes('Hecatomb IX')) hecatombBoost = 0.0184
+            else if (cleanLine.includes('Hecatomb VIII')) hecatombBoost = 0.0168
+            else if (cleanLine.includes('Hecatomb VII')) hecatombBoost = 0.0152
+            else if (cleanLine.includes('Hecatomb VI')) hecatombBoost = 0.0136
+            else if (cleanLine.includes('Hecatomb V')) hecatombBoost = 0.012
+            else if (cleanLine.includes('Hecatomb IV')) hecatombBoost = 0.0104
+            else if (cleanLine.includes('Hecatomb III')) hecatombBoost = 0.0088
+            else if (cleanLine.includes('Hecatomb II')) hecatombBoost = 0.0072
+            else if (cleanLine.includes('Hecatomb I')) hecatombBoost = 0.0056
+
+            if (0 < hecatombBoost) break
+          }
+          if (0 < hecatombBoost) break
+        }
+      }
+    }
+
+    let floorCompletionsBoost = 0
+    if (selectedFloor.toLowerCase() === 'm7') {
+      floorCompletionsBoost =
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        0.02 * (Math.min(selectedProfile.dungeons.dungeon_types.master_catacombs.tier_completions?.[7] || 1, 26) - 1)
+    }
 
     /*
      * Bonuses:
      * - Scarf Shards 20%
      * - Scarf accessory Grimoire 6%
-     * - 50% XP boost when did runs on selected floor maxed at 26 runs (50% on MM) (https://wiki.hypixel.net/Dungeoneering#Dungeoneering_XP_Gain)
+     * - Completing the same floor multiple times (https://wiki.hypixel.net/Dungeoneering#Maximizing_XP_Gains (wiki.hypixel.net was discontinued))
+     *   └ You gain bonus 2% * (total floor completions -1)
+     *     └ F1-F5 | 150% max XP buff | 76 max run cap
+     *     └ F6    | 100% max XP buff | 51 max run cap
+     *     └ F7/M7 | 50% max XP buff  | 26 max run cap
      * - 10% Expert Ring
      * - 2% Maxed Hecatomb Enchantment
      *
      *  All stats are set to max assuming that the player who is using the command is already prepared to do hundreds of runs
      */
-    const GlobalBoost = 0.2 + 0.06 + 0.5 + 0.1 + 0.02
+
+    const GlobalBoost = scarfShardsBoost + scarfAccessoryBoost + floorCompletionsBoost + expertRingBoost + hecatombBoost
     const additionalBoost = await this.getAdditionalBoost(context)
 
     const classExpBoosts = {
