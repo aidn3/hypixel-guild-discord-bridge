@@ -13,7 +13,7 @@ import type { Hypixel } from '../../../core/hypixel/hypixel'
 import type { HypixelPlayerStatus } from '../../../core/hypixel/hypixel-status'
 import type { MojangApi } from '../../../core/users/mojang'
 import type { Verification } from '../../../core/users/verification'
-import { capitalize } from '../../../utility/shared-utility'
+import { capitalize, getSessionModeDisplayName, prefixSessionModeDisplayName } from '../../../utility/shared-utility'
 // eslint-disable-next-line import/no-restricted-paths
 import type { GuildFetch } from '../../minecraft/guild-manager'
 import { DefaultCommandFooter } from '../common/discord-config.js'
@@ -186,7 +186,7 @@ async function listMembers(
 
         const link = await getUserLink(app.core.verification, mojangProfiles, member.username)
         const status = statuses.get(member.username.toLowerCase())
-        guildTemporarilyResult.push(`  - ${formatLocation(member.username, link, status)}`)
+        guildTemporarilyResult.push(`  - ${await formatLocation(member.username, link, status)}`)
       }
       if (!onlyOnline) {
         for (const member of sortedMembers) {
@@ -221,7 +221,7 @@ async function look(
   for (const [username, uuid] of mojangProfiles) {
     tasks.push(
       hypixelApi
-        .getPlayerStatus(uuid)
+        .getPlayerStatus(uuid, Date.now())
         .then((status) => result.set(username.toLowerCase(), status))
         .catch(errorHandler.promiseCatch(`fetching hypixel status of ${uuid} for command /list`))
     )
@@ -253,19 +253,22 @@ function formatUser(username: string, link: UserLink | undefined): string {
   return message
 }
 
-function formatLocation(
+async function formatLocation(
   username: string,
   link: UserLink | undefined,
   session: HypixelPlayerStatus | undefined
-): string {
+): Promise<string> {
   let message = `${formatUser(username, link)} `
 
-  if (session === undefined) return message + ' is *__unknown?__*'
-  if (!session.online) return message + ' is *__offline?__*'
+  if (session === undefined) return message + 'is *__unknown?__*'
+  if (!session.online) return message + 'is *__offline?__*'
 
   message += '*' // START discord markdown. italic
-  message += `playing __${escapeMarkdown(capitalize(session.gameType))}__`
-  if (session.mode !== undefined) message += ` in ${escapeMarkdown(session.mode.toLowerCase())}`
+  message += `is playing __${escapeMarkdown(capitalize(session.gameType))}__`
+  const sessionModeDisplayName = await getSessionModeDisplayName(session.mode) // Get the session mode display name (e.g. "mining_3" is now "Dwarden Mines")
+  const prefixedSessionModeDisplayName = prefixSessionModeDisplayName(sessionModeDisplayName) // Add a prefix to the session mode display name (e.g. "Dwarven Mines" is now "in Dwarven Mines")
+  if (sessionModeDisplayName !== undefined && prefixedSessionModeDisplayName !== undefined)
+    message += ` ${escapeMarkdown(prefixedSessionModeDisplayName)}`
   message += '*' // END discord markdown. italic
 
   return message
