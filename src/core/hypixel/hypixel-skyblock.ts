@@ -52,11 +52,36 @@ export interface SkyblockMember {
     milestone?: { last_claimed_milestone?: number }
   }
   inventory?: {
-    bag_contents?: { talisman_bag: SkyblockInventory }
+    bag_contents?: { talisman_bag?: SkyblockInventory }
     inv_armor?: SkyblockInventory
     inv_contents?: SkyblockInventory
     equipment_contents?: SkyblockInventory
     sacks_counts: Record<string, number>
+    backpack_contents?: {
+      0?: SkyblockInventory
+      1?: SkyblockInventory
+      2?: SkyblockInventory
+      3?: SkyblockInventory
+      4?: SkyblockInventory
+      5?: SkyblockInventory
+      6?: SkyblockInventory
+      7?: SkyblockInventory
+      8?: SkyblockInventory
+      9?: SkyblockInventory
+      10?: SkyblockInventory
+      11?: SkyblockInventory
+      12?: SkyblockInventory
+      13?: SkyblockInventory
+      14?: SkyblockInventory
+      15?: SkyblockInventory
+      16?: SkyblockInventory
+      17?: SkyblockInventory
+    }
+    personal_vault_contents?: SkyblockInventory
+    ender_chest_contents?: SkyblockInventory
+  }
+  loadout?: {
+    armor?: Record<string /* number as string */, ArmorLoadout> & { equipped_set: number }
   }
   profile: { bank_account?: number }
   player_stats?: {
@@ -79,6 +104,10 @@ export interface SkyblockMember {
       | 'SKILL_COMBAT',
       number
     >
+    perks?: Record<string, number>
+  }
+  attributes?: {
+    stacks: Record<string, number>
   }
   nether_island_player_data?: {
     selected_faction?: string
@@ -177,6 +206,14 @@ export interface SkyblockInventory {
   data: string
 }
 
+export interface ArmorLoadout {
+  id: number
+  HELMET?: SkyblockInventory
+  LEGGINGS?: SkyblockInventory
+  BOOTS?: SkyblockInventory
+  CHESTPLATE?: SkyblockInventory
+}
+
 export interface SkyblockEssence {
   perks?: SkyblockEssencePerks
 }
@@ -206,7 +243,7 @@ export interface SkyblockDungeons {
 
 export interface SkyblockDungeonsTypes {
   catacombs: SkyblockDungeonsCatacombs
-  master_catacombs: SkyblockDungeonsMasterCatacombs
+  master_catacombs?: SkyblockDungeonsMasterCatacombs
 }
 
 export type DungeonFloors = '1' | '2' | '3' | '4' | '5' | '6' | '7'
@@ -221,7 +258,7 @@ export interface SkyblockDungeonsCatacombs {
 }
 
 export interface SkyblockDungeonsMasterCatacombs {
-  tier_completions: Record<DungeonFloors | 'total', number | undefined> | undefined
+  tier_completions?: Record<DungeonFloors | 'total', number | undefined> | undefined
   fastest_time: Record<DungeonFloors | 'best', number | undefined> | undefined
   fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined
   fastest_time_s_plus: Record<DungeonFloors | 'best', number | undefined> | undefined
