@@ -57,6 +57,31 @@ export interface SkyblockMember {
     inv_contents?: SkyblockInventory
     equipment_contents?: SkyblockInventory
     sacks_counts: Record<string, number>
+    backpack_contents?: {
+      0?: SkyblockInventory
+      1?: SkyblockInventory
+      2?: SkyblockInventory
+      3?: SkyblockInventory
+      4?: SkyblockInventory
+      5?: SkyblockInventory
+      6?: SkyblockInventory
+      7?: SkyblockInventory
+      8?: SkyblockInventory
+      9?: SkyblockInventory
+      10?: SkyblockInventory
+      11?: SkyblockInventory
+      12?: SkyblockInventory
+      13?: SkyblockInventory
+      14?: SkyblockInventory
+      15?: SkyblockInventory
+      16?: SkyblockInventory
+      17?: SkyblockInventory
+    }
+    personal_vault_contents?: SkyblockInventory
+    ender_chest_contents?: SkyblockInventory
+  }
+  loadout?: {
+    armor?: Record<string /* number as string */, ArmorLoadout> & { equipped_set: number }
   }
   profile: { bank_account?: number }
   player_stats?: {
@@ -179,6 +204,14 @@ export interface SkyblockMember {
 export interface SkyblockInventory {
   type: 0
   data: string
+}
+
+export interface ArmorLoadout {
+  id: number
+  HELMET?: SkyblockInventory
+  LEGGINGS?: SkyblockInventory
+  BOOTS?: SkyblockInventory
+  CHESTPLATE?: SkyblockInventory
 }
 
 export interface SkyblockEssence {
