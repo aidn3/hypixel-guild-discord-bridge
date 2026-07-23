@@ -14,13 +14,13 @@ import {
 
 // Credit: https://adjectils.com/dungeon.html
 const FloorsBaseExp = {
-  m7: 300_000,
-  m6: 100_000,
-  m5: 70_000,
-  m4: 55_000,
-  m3: 35_000,
-  m2: 20_000,
-  m1: 15_000
+  m7: 200_000,
+  m6: 66_666.666_666_666_67,
+  m5: 46_666.666_666_666_67,
+  m4: 36_666.666_666_666_67,
+  m3: 23_333.333_333_333_33,
+  m2: 13_333.333_333_333_33,
+  m1: 10_000
 }
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
@@ -146,16 +146,16 @@ export default class RunsToClassAverage extends ChatCommandHandler {
           for (const line of lore) {
             const cleanLine = line.replaceAll(/§./g, '')
 
-            if (cleanLine.includes('Hecatomb X')) hecatombBoost = 0.02
-            else if (cleanLine.includes('Hecatomb IX')) hecatombBoost = 0.0184
-            else if (cleanLine.includes('Hecatomb VIII')) hecatombBoost = 0.0168
-            else if (cleanLine.includes('Hecatomb VII')) hecatombBoost = 0.0152
-            else if (cleanLine.includes('Hecatomb VI')) hecatombBoost = 0.0136
-            else if (cleanLine.includes('Hecatomb V')) hecatombBoost = 0.012
-            else if (cleanLine.includes('Hecatomb IV')) hecatombBoost = 0.0104
-            else if (cleanLine.includes('Hecatomb III')) hecatombBoost = 0.0088
-            else if (cleanLine.includes('Hecatomb II')) hecatombBoost = 0.0072
-            else if (cleanLine.includes('Hecatomb I')) hecatombBoost = 0.0056
+            if (cleanLine.includes('Hecatomb X')) hecatombBoost = 0.04
+            else if (cleanLine.includes('Hecatomb IX')) hecatombBoost = 0.0368
+            else if (cleanLine.includes('Hecatomb VIII')) hecatombBoost = 0.0336
+            else if (cleanLine.includes('Hecatomb VII')) hecatombBoost = 0.0304
+            else if (cleanLine.includes('Hecatomb VI')) hecatombBoost = 0.0272
+            else if (cleanLine.includes('Hecatomb V')) hecatombBoost = 0.024
+            else if (cleanLine.includes('Hecatomb IV')) hecatombBoost = 0.0208
+            else if (cleanLine.includes('Hecatomb III')) hecatombBoost = 0.0176
+            else if (cleanLine.includes('Hecatomb II')) hecatombBoost = 0.0144
+            else if (cleanLine.includes('Hecatomb I')) hecatombBoost = 0.0112
 
             if (0 < hecatombBoost) break
           }
@@ -185,15 +185,15 @@ export default class RunsToClassAverage extends ChatCommandHandler {
      *  All stats are set to max assuming that the player who is using the command is already prepared to do hundreds of runs
      */
 
-    const GlobalBoost = scarfShardsBoost + scarfAccessoryBoost + floorCompletionsBoost + hecatombBoost
+    const GlobalBoost = scarfShardsBoost + scarfAccessoryBoost + hecatombBoost
     const additionalBoost = await this.getAdditionalBoost(context)
 
     const classExpBoosts = {
-      healer: (heartOfGold * 2) / 100 + 1 + GlobalBoost + additionalBoost,
-      berserk: (unbridledRage * 2) / 100 + 1 + GlobalBoost + additionalBoost,
-      mage: (coldEfficiency * 2) / 100 + 1 + GlobalBoost + additionalBoost,
-      archer: (toxophilite * 2) / 100 + 1 + GlobalBoost + additionalBoost,
-      tank: (diamondInTheRough * 2) / 100 + 1 + GlobalBoost + additionalBoost
+      healer: (1 + floorCompletionsBoost) * ((heartOfGold * 2) / 100 + 1 + GlobalBoost + additionalBoost),
+      berserk: (1 + floorCompletionsBoost) * ((unbridledRage * 2) / 100 + 1 + GlobalBoost + additionalBoost),
+      mage: (1 + floorCompletionsBoost) * ((coldEfficiency * 2) / 100 + 1 + GlobalBoost + additionalBoost),
+      archer: (1 + floorCompletionsBoost) * ((toxophilite * 2) / 100 + 1 + GlobalBoost + additionalBoost),
+      tank: (1 + floorCompletionsBoost) * ((diamondInTheRough * 2) / 100 + 1 + GlobalBoost + additionalBoost)
     } satisfies Record<ClassName, number>
 
     let totalRuns = 0
