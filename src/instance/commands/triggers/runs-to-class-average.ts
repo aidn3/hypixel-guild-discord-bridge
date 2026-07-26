@@ -66,7 +66,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const scarfShardsBoost = this.getScarfShardBoot(selectedProfile)
+    const scarfShardsBoost = this.getScarfShardBoost(selectedProfile)
     const scarfAccessoryBoost = await this.getScarfAccessoryBoost(selectedProfile)
     const hecatombBoost = await this.getHecatacombBoost(selectedProfile)
     const classBoosts = this.getClassBoosts(selectedProfile)
@@ -148,7 +148,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     return totalBoost
   }
 
-  private getScarfShardBoot(profile: SkyblockMember): number {
+  private getScarfShardBoost(profile: SkyblockMember): number {
     const scarfShards = profile.attributes?.stacks.catacombs_graduate ?? 0
 
     if (scarfShards >= 24) return 0.2
@@ -201,7 +201,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     return {
       healer: (profile.player_data.perks?.heart_of_gold ?? 0) * 0.02,
       berserk: (profile.player_data.perks?.unbridled_rage ?? 0) * 0.02,
-      mage: (profile.player_data.perks?.coldEfficiency ?? 0) * 0.02,
+      mage: (profile.player_data.perks?.cold_efficiency ?? 0) * 0.02,
       archer: (profile.player_data.perks?.toxophilite ?? 0) * 0.02,
       tank: (profile.player_data.perks?.diamond_in_the_rough ?? 0) * 0.02
     }
