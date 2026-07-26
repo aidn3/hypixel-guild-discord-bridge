@@ -72,16 +72,17 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const classBoosts = this.getClassBoosts(selectedProfile)
     const profileBoosts = scarfShardsBoost + scarfAccessoryBoost + hecatombBoost
     const globalBoost = await this.getGlobalBoost(context)
+    let totalRuns = 0
+    const floorBoost = this.getFloorBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp, totalRuns)
 
     const classExpBoosts = {
-      healer: 1 + classBoosts.healer + profileBoosts + globalBoost,
-      berserk: 1 + classBoosts.berserk + profileBoosts + globalBoost,
-      mage: 1 + classBoosts.mage + profileBoosts + globalBoost,
-      archer: 1 + classBoosts.archer + profileBoosts + globalBoost,
-      tank: 1 + classBoosts.tank + profileBoosts + globalBoost
+      healer: (1 + floorBoost) * (1 + classBoosts.healer + profileBoosts + globalBoost),
+      berserk: (1 + floorBoost) * (1 + classBoosts.berserk + profileBoosts + globalBoost),
+      mage: (1 + floorBoost) * (1 + classBoosts.mage + profileBoosts + globalBoost),
+      archer: (1 + floorBoost) * (1 + classBoosts.archer + profileBoosts + globalBoost),
+      tank: (1 + floorBoost) * (1 + classBoosts.tank + profileBoosts + globalBoost)
     } satisfies Record<ClassName, number>
 
-    let totalRuns = 0
     const runsDone = { healer: 0, berserk: 0, mage: 0, archer: 0, tank: 0 } as Record<ClassName, number>
     const classesExperiences = { healer: 0, berserk: 0, mage: 0, archer: 0, tank: 0 } as Record<ClassName, number>
 
@@ -93,18 +94,16 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const classes = Object.keys(runsDone) as ClassName[]
 
     while (currentClassAverage < targetAverage) {
-      const floorBoost = this.getFloorBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp, totalRuns)
-
       let currentClassPlaying: undefined | ClassName = undefined
       for (const key of classes) {
-        classesExperiences[key] += xpPerRun * 0.25 * (classExpBoosts[key] + floorBoost)
+        classesExperiences[key] += xpPerRun * 0.25 * classExpBoosts[key]
         if (currentClassPlaying === undefined || classesExperiences[key] < classesExperiences[currentClassPlaying]) {
           currentClassPlaying = key
         }
       }
 
       assert.ok(currentClassPlaying)
-      classesExperiences[currentClassPlaying] += xpPerRun * 0.75 * (classExpBoosts[currentClassPlaying] + floorBoost)
+      classesExperiences[currentClassPlaying] += xpPerRun * 0.75 * classExpBoosts[currentClassPlaying]
       runsDone[currentClassPlaying]++
 
       currentClassAverage = this.getClassAverage(classesExperiences, targetAverage)
