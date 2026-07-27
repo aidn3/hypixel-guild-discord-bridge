@@ -131,6 +131,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
     this.cooldownHandler = new CommandsCooldownHandler(this.application)
 
     const commandsToAdd = [
+      new AccessoryPower(),
       new Agatha(),
       new Age(),
       new Airstrike(),
@@ -193,7 +194,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Kuudra(),
       new Level(),
       new List(),
-      new AccessoryPower(),
       new Mayor(),
       new Megawalls(),
       new Mineshafts(),
