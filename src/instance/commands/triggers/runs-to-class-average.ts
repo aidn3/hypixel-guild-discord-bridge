@@ -15,12 +15,12 @@ import {
 
 const FloorsBaseExp = {
   m7: 221_500, // calculated based on real world ~420k xp per run with all boosts applied
-  m6: 66_666,
-  m5: 46_666,
-  m4: 36_666,
-  m3: 23_333,
-  m2: 13_333,
-  m1: 10_000
+  m6: 73_684,
+  m5: 51_579,
+  m4: 40_526,
+  m3: 25_789,
+  m2: 14_737,
+  m1: 11_053
 }
 
 type ClassName = 'healer' | 'berserk' | 'mage' | 'archer' | 'tank'
