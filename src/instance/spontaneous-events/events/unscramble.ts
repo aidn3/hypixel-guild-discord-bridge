@@ -205,7 +205,7 @@ const scrambleEntries: ScrambleEntry[] = [
       'Magma Slug', 'Moogma', 'Lava Leech', 'Pyroclastic', 'Lava Flame', 'Fire Eel', 'Taurus', 'Plhlegblast', 'Thunder', 'Lord Jawbus', 'Fried Chicken',
       'Fireproof Witch', 'Fiery Scuttler', 'Ragnarok', 'Flaming Worm', 'Lava Blaze', 'Lava Pigman', 'Manta Ray', 'Volcanic Snail', 'Magma Pillar'
     ],
-    hint: 'SkyBlock Sea Creature'
+    hint: 'SkyBlock sea creature'
   },
   {
     unscramble: [
