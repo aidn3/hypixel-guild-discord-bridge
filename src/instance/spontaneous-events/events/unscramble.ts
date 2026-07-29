@@ -208,8 +208,11 @@ const scrambleEntries: ScrambleEntry[] = [
     hint: 'SkyBlock Sea Creature'
   },
   {
-    unscramble: ['Galatea'],
-    hint: 'SkyBlock island'
+    unscramble: [
+      'Private Island', 'The Barn', 'Mushroom Desert', 'The Park', 'The End', 'Crimson Isle', 'Gold Mine', 'Deep Caverns', 'Dwarven Mines',
+      'Crystal Hollows', 'Dungeon Hub', 'Rift Dimension', 'Backwater Bayou', 'Galatea'
+    ],
+    hint: 'SkyBlock island or area'
   },
   {
     unscramble: [
@@ -228,13 +231,6 @@ const scrambleEntries: ScrambleEntry[] = [
       'Fuel Gabagool', 'Very Crude Gabagool', 'Heavy Gabagool', 'Hypergolic Gabagool'
     ],
     hint: 'SkyBlock pet candy'
-  },
-  {
-    unscramble: [
-      'Private Island', 'The Barn', 'Mushroom Desert', 'The Park', 'The End', 'Crimson Isle', 'Gold Mine', 'Deep Caverns', 'Dwarven Mines',
-      'Crystal Hollows', 'Dungeon Hub', 'Rift Dimension', 'Backwater Bayou'
-    ],
-    hint: 'SkyBlock location'
   },
   {
     unscramble: ['Village', 'Castle', 'Kingdom', 'Tower', 'Dungeon', 'Fortress', 'Temple', 'Ruins', 'Palace'],
