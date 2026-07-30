@@ -198,11 +198,11 @@ export default class RunsToClassAverage extends ChatCommandHandler {
 
   private getClassBoosts(profile: SkyblockMember): Record<ClassName, number> {
     return {
-      healer: (profile.player_data.perks?.heart_of_gold ?? 0) * 0.02,
-      berserk: (profile.player_data.perks?.unbridled_rage ?? 0) * 0.02,
-      mage: (profile.player_data.perks?.cold_efficiency ?? 0) * 0.02,
-      archer: (profile.player_data.perks?.toxophilite ?? 0) * 0.02,
-      tank: (profile.player_data.perks?.diamond_in_the_rough ?? 0) * 0.02
+      healer: (profile.player_data?.perks?.heart_of_gold ?? 0) * 0.02,
+      berserk: (profile.player_data?.perks?.unbridled_rage ?? 0) * 0.02,
+      mage: (profile.player_data?.perks?.cold_efficiency ?? 0) * 0.02,
+      archer: (profile.player_data?.perks?.toxophilite ?? 0) * 0.02,
+      tank: (profile.player_data?.perks?.diamond_in_the_rough ?? 0) * 0.02
     }
   }
 
