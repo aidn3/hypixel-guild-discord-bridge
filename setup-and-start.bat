@@ -2,7 +2,7 @@
 
 :: configuration
 set APPLICATION_LINK=https://github.com/aidn3/hypixel-guild-discord-bridge.git
-set GIT_BRANCH=improve-setup
+set GIT_BRANCH=master
 set WORKDIR=%cd%\hypixel-bridge
 set NODEJS_VERSION=22.21.0
 set NODE_ENV=production
@@ -63,13 +63,19 @@ IF NOT EXIST "%WORKDIR%" (
 
 IF NOT EXIST "%git_downloaded%" call :install_git
 IF NOT EXIST "%nodejs_downloaded%" call :install_nodejs
-IF NOT EXIST "%application_downloaded%" call :install_application
+IF EXIST "%application_downloaded%" goto :skip_installing_application
+
+call :install_application
+IF ERRORLEVEL 1 goto end
+
+:skip_installing_application
+
 echo Switching to application mode:
 cd "%application_dir%"
 
 :restart_loop
 
-echo Git checking out improve-setup
+echo Git checking out %GIT_BRANCH%
 git --git-dir=%application_dir%\.git reset --hard
 git --git-dir=%application_dir%\.git checkout %GIT_BRANCH%
 

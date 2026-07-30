@@ -122,7 +122,27 @@ export interface SkyblockMember {
       }
       mining?: {
         core_of_the_mountain?: number
+        quick_forge?: number
       }
+      mining_2?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_3?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_4?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+      mining_5?: {
+        core_of_the_mountain?: number
+        quick_forge?: number
+      }
+    }
+    selected_skill_tree_slot?: {
+      mining?: number
     }
   }
   foraging_core?: {
@@ -289,6 +309,7 @@ export interface SkyblockForge {
 export interface SkyblockForgeEntry {
   id: string
   startTime: number
+  processTimeModifier?: number
 }
 
 export interface MayorResponse extends HypixelSuccessResponse {
@@ -429,6 +450,15 @@ export function kuudraCollection(stats: Kuudra): number {
   if (stats.infernal) count += stats.infernal * 5
 
   return count
+}
+
+/* eslint-disable @typescript-eslint/naming-convention */
+
+export interface SkyblockItems extends HypixelSuccessResponse {
+  items: {
+    id?: string
+    npc_sell_price?: number
+  }[]
 }
 
 const SlayerExpTable = {

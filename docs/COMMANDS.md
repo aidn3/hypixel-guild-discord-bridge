@@ -19,6 +19,7 @@ A shorter version can also be used: `!- rtca`
 | ---------------- | ---------------------------------------------------------------------------------- |
 | `67`             | It is 67!                                                                          |
 | `8ball`          | Returns a basic 8 ball response                                                    |
+| `accessorypower` | Returns a player's highest recorded SkyBlock Accessory Power                       |
 | `agatha`         | Returns a player's Agatha and foraging personal bests                              |
 | `age`            | Returns the day someone first logged on to Hypixel                                 |
 | `airstrike`      | Mute a specific person to annoy them                                               |
@@ -79,7 +80,6 @@ A shorter version can also be used: `!- rtca`
 | `kuudra`         | Returns a player's kuudra runs                                                     |
 | `level`          | Returns a player's SkyBlock level                                                  |
 | `list`           | List online members in a guild                                                     |
-| `magicalpower`   | Returns a player's highest recorded SkyBlock Magical Power                         |
 | `mayor`          | Show current Hypixel SkyBlock mayor and minister                                   |
 | `megawalls`      | Returns a player's Mega Walls stats                                                |
 | `mguild`         | Check multiple players' guilds, if any in one                                      |
