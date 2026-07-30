@@ -146,6 +146,9 @@
   "discord.conditions.handler.skyblock-networth.title": "Skyblock Networth",
   "discord.conditions.handler.skyblock-networth.formatted": "{{profileTypes}} Skyblock Networth {{fromValue, number}} to {{toValue, number}}",
 
+  "discord.conditions.handler.slayer-total-xp.title": "Total Slayer Experience",
+  "discord.conditions.handler.slayer-total-xp.formatted": "{{profileTypes}} Total Slayer Experience {{fromXp, number}} to {{toXp, number}}",
+
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
   "discord.conditions.handler.in-guild.formatted-invalid": "In guild (not possible to determine).",

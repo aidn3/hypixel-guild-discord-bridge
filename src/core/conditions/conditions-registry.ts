@@ -12,6 +12,7 @@ import { NotLinked } from './handlers/not-linked'
 import { SkyblockApi } from './handlers/skyblock-api'
 import { SkyblockLevel } from './handlers/skyblock-level'
 import { SkyblockNetworth } from './handlers/skyblock-networth'
+import { SkyblockTotalSlayerXp } from './handlers/skyblock-total-slayer-xp'
 
 export class ConditionsRegistry {
   private readonly handlers = new Map<string, ConditionHandler<ConditionOption, ConditionValue>>()
@@ -26,6 +27,7 @@ export class ConditionsRegistry {
     this.registerHandler(new KuudraCollection())
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())
+    this.registerHandler(new SkyblockTotalSlayerXp())
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
     this.registerHandler(new InGuildWithGexp())
