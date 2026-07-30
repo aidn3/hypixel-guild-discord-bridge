@@ -25,7 +25,7 @@ export default class Api extends ChatCommandHandler {
 
     const parts: string[] = []
     parts.push(
-      `Skills ${'experience' in member.player_data ? 'ON' : 'OFF'}`,
+      `Skills ${'experience' in (member.player_data ?? {}) ? 'ON' : 'OFF'}`,
       `Collection ${'collection' in member ? 'ON' : 'OFF'}`,
       `Inventory ${'inventory' in member ? 'ON' : 'OFF'}`
     )

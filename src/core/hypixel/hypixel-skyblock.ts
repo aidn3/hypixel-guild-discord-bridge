@@ -88,26 +88,21 @@ export interface SkyblockMember {
     rift?: { lifetime_motes_earned?: number }
     mythos?: { burrows_chains_complete?: { LEGENDARY?: number; MYTHIC?: number }; kills?: number }
   }
-  player_data: {
-    experience?: Record<
-      | 'SKILL_FISHING'
-      | 'SKILL_ALCHEMY'
-      | 'SKILL_RUNECRAFTING'
-      | 'SKILL_HUNTING'
-      | 'SKILL_MINING'
-      | 'SKILL_FARMING'
-      | 'SKILL_ENCHANTING'
-      | 'SKILL_TAMING'
-      | 'SKILL_FORAGING'
-      | 'SKILL_SOCIAL'
-      | 'SKILL_CARPENTRY'
-      | 'SKILL_COMBAT',
-      number
-    >
-    perks?: Record<string, number>
-  }
-  attributes?: {
-    stacks: Record<string, number>
+  player_data?: {
+    experience?: {
+      SKILL_FISHING?: number
+      SKILL_ALCHEMY?: number
+      SKILL_RUNECRAFTING?: number
+      SKILL_HUNTING?: number
+      SKILL_MINING?: number
+      SKILL_FARMING?: number
+      SKILL_ENCHANTING?: number
+      SKILL_TAMING?: number
+      SKILL_FORAGING?: number
+      SKILL_SOCIAL?: number
+      SKILL_CARPENTRY?: number
+      SKILL_COMBAT?: number
+    }
   }
   nether_island_player_data?: {
     selected_faction?: string
@@ -496,4 +491,68 @@ export interface SkyblockItems extends HypixelSuccessResponse {
     id?: string
     npc_sell_price?: number
   }[]
+}
+
+const SlayerExpTable = {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  1: 5,
+  2: 15,
+  3: 200,
+  4: 1000,
+  5: 5000,
+  6: 20_000,
+  7: 100_000,
+  8: 400_000,
+  9: 1_000_000
+  /* eslint-enable @typescript-eslint/naming-convention */
+}
+const VampExpTable = {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  1: 20,
+  2: 75,
+  3: 240,
+  4: 840,
+  5: 2400
+  /* eslint-enable @typescript-eslint/naming-convention */
+}
+
+export const SlayerHighestTierTable = {
+  // 1 less due to index starting at 0
+  zombie: 4,
+  spider: 4,
+  wolf: 3,
+  enderman: 3,
+  blaze: 3,
+  vampire: 4
+}
+
+export const SlayerHighestLevel: Record<keyof SlayerProfile['slayer_bosses'], number> = {
+  zombie: 9,
+  spider: 9,
+  wolf: 9,
+  enderman: 9,
+  blaze: 9,
+  vampire: 5
+}
+
+export function getSlayerLevel(
+  exp: number,
+  slayer: 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze' | 'vampire'
+): number {
+  let maxLevel: number
+  let expTable: Record<number, number>
+
+  if (slayer === 'vampire') {
+    maxLevel = 5 // vampire slayer only goes to level 5
+    expTable = VampExpTable
+  } else {
+    maxLevel = 9
+    expTable = SlayerExpTable
+  }
+
+  let level = 0
+  for (let x = 1; x <= maxLevel && expTable[x] <= exp; x++) {
+    level = x
+  }
+  return level
 }

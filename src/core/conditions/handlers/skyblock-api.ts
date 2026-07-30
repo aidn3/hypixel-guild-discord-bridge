@@ -43,7 +43,7 @@ export class SkyblockApi extends ConditionHandler<SkyblockLevelOptions, boolean>
 
     for (const profile of profiles) {
       const member = profile.members[uuid]
-      if (!('experience' in member.player_data)) {
+      if (!member.player_data || !('experience' in member.player_data)) {
         return {
           type: ConditionResultType.Error,
           reason: context.application.i18n.t(($) => $['conditions.format.skyblock-api-skills-disabled'], {
