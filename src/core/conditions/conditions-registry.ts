@@ -1,5 +1,6 @@
 import type { ConditionHandler, ConditionOption, ConditionValue } from './common'
 import { CatacombsLevel } from './handlers/catacombs-level'
+import { DungeonsClassAverage } from './handlers/dungeon-class-average'
 import { HasDiscordRole } from './handlers/has-discord-role'
 import { InDiscordServer } from './handlers/in-discord-server'
 import { InGuild } from './handlers/in-guild'
@@ -30,6 +31,7 @@ export class ConditionsRegistry {
     this.registerHandler(new InDiscordServer())
     this.registerHandler(new SkyblockLevel())
     this.registerHandler(new CatacombsLevel())
+    this.registerHandler(new DungeonsClassAverage())
     this.registerHandler(new KuudraCollection())
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())

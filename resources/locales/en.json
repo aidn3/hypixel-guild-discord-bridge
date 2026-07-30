@@ -145,6 +145,8 @@
   "discord.conditions.handler.skyblock-catacombs-level.formatted": "{{profileTypes}} Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-networth.title": "Skyblock Networth",
   "discord.conditions.handler.skyblock-networth.formatted": "{{profileTypes}} Skyblock Networth {{fromValue, number}} to {{toValue, number}}",
+  "discord.conditions.handler.class-average.title": "Dungeons Class Average",
+  "discord.conditions.handler.class-average.formatted": "{{profileTypes}} Dungeons Class Average {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.slayer-total-xp.title": "Total Slayer Experience",
   "discord.conditions.handler.slayer-total-xp.formatted": "{{profileTypes}} Total Slayer Experience {{fromXp, number}} to {{toXp, number}}",
