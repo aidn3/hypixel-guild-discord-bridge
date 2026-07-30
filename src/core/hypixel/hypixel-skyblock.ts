@@ -63,22 +63,21 @@ export interface SkyblockMember {
     rift?: { lifetime_motes_earned?: number }
     mythos?: { burrows_chains_complete?: { LEGENDARY?: number; MYTHIC?: number }; kills?: number }
   }
-  player_data: {
-    experience?: Record<
-      | 'SKILL_FISHING'
-      | 'SKILL_ALCHEMY'
-      | 'SKILL_RUNECRAFTING'
-      | 'SKILL_HUNTING'
-      | 'SKILL_MINING'
-      | 'SKILL_FARMING'
-      | 'SKILL_ENCHANTING'
-      | 'SKILL_TAMING'
-      | 'SKILL_FORAGING'
-      | 'SKILL_SOCIAL'
-      | 'SKILL_CARPENTRY'
-      | 'SKILL_COMBAT',
-      number
-    >
+  player_data?: {
+    experience?: {
+      SKILL_FISHING?: number
+      SKILL_ALCHEMY?: number
+      SKILL_RUNECRAFTING?: number
+      SKILL_HUNTING?: number
+      SKILL_MINING?: number
+      SKILL_FARMING?: number
+      SKILL_ENCHANTING?: number
+      SKILL_TAMING?: number
+      SKILL_FORAGING?: number
+      SKILL_SOCIAL?: number
+      SKILL_CARPENTRY?: number
+      SKILL_COMBAT?: number
+    }
   }
   nether_island_player_data?: {
     selected_faction?: string
