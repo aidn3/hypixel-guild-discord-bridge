@@ -10,9 +10,15 @@ import { KuudraCollection } from './handlers/kuudra-collection'
 import { Linked } from './handlers/linked'
 import { NotLinked } from './handlers/not-linked'
 import { SkyblockApi } from './handlers/skyblock-api'
+import { SkyblockBlazeLevel } from './handlers/skyblock-blaze-slayer-level'
+import { SkyblockEndermanLevel } from './handlers/skyblock-enderman-slayer-level'
 import { SkyblockLevel } from './handlers/skyblock-level'
 import { SkyblockNetworth } from './handlers/skyblock-networth'
+import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level'
 import { SkyblockTotalSlayerXp } from './handlers/skyblock-total-slayer-xp'
+import { SkyblockVampireLevel } from './handlers/skyblock-vampire-slayer-level'
+import { SkyblockSvenLevel } from './handlers/skyblock-wolf-slayer-level'
+import { SkyblockRevenantLevel } from './handlers/skyblock-zombie-slayer-level'
 
 export class ConditionsRegistry {
   private readonly handlers = new Map<string, ConditionHandler<ConditionOption, ConditionValue>>()
@@ -28,6 +34,12 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())
     this.registerHandler(new SkyblockTotalSlayerXp())
+    this.registerHandler(new SkyblockRevenantLevel())
+    this.registerHandler(new SkyblockTarantulaLevel())
+    this.registerHandler(new SkyblockSvenLevel())
+    this.registerHandler(new SkyblockEndermanLevel())
+    this.registerHandler(new SkyblockBlazeLevel())
+    this.registerHandler(new SkyblockVampireLevel())
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
     this.registerHandler(new InGuildWithGexp())
