@@ -271,7 +271,7 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
         value = modalResponse.fields.getTextInputValue(option.key)
         if (option.validate != undefined) {
           const response = option.validate(value)
-          if (response !== undefined) throw new Error(response)
+          if (response !== undefined) throw new ModalInputInvalid(modalResponse, response)
         }
         break
       }
@@ -289,14 +289,15 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
             throw new Error('dummy') // dummy caught locally
           }
         } catch {
-          throw new Error(
+          throw new ModalInputInvalid(
+            modalResponse,
             `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(rawValue)}`
           )
         }
 
         if (option.validate != undefined) {
           const response = option.validate(intValue)
-          if (response !== undefined) throw new Error(response)
+          if (response !== undefined) throw new ModalInputInvalid(modalResponse, response)
         }
         value = intValue
         break
@@ -330,4 +331,13 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
   }
 
   return result
+}
+
+export class ModalInputInvalid extends Error {
+  constructor(
+    public modalInteraction: ModalSubmitInteraction,
+    public readonly displayMessage: string
+  ) {
+    super()
+  }
 }
