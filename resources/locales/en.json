@@ -137,6 +137,8 @@
   "discord.conditions.handler.skyblock-api.formatted": "All Skyblock APIs enabled on all profiles",
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
+  "discord.conditions.handler.not-link.title": "NOT Linked",
+  "discord.conditions.handler.not-link.formatted": "User has NOT linked yet via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
   "discord.conditions.handler.skyblock-level.formatted": "{{profileTypes}} Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",

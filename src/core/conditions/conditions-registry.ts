@@ -8,6 +8,7 @@ import { InGuildWithGexp } from './handlers/in-guild-with-gexp'
 import { InGuildWithRank } from './handlers/in-guild-with-rank'
 import { KuudraCollection } from './handlers/kuudra-collection'
 import { Linked } from './handlers/linked'
+import { NotLinked } from './handlers/not-linked'
 import { SkyblockApi } from './handlers/skyblock-api'
 import { SkyblockLevel } from './handlers/skyblock-level'
 import { SkyblockNetworth } from './handlers/skyblock-networth'
@@ -17,6 +18,7 @@ export class ConditionsRegistry {
 
   constructor() {
     this.registerHandler(new Linked())
+    this.registerHandler(new NotLinked())
     this.registerHandler(new HasDiscordRole())
     this.registerHandler(new InDiscordServer())
     this.registerHandler(new SkyblockLevel())
