@@ -55,7 +55,7 @@ export default class Slayer extends ChatCommandHandler {
       if (name === chosenSlayer) {
         return (
           `${givenUsername}'s ${capitalize(chosenSlayer)} slayer: ` +
-          `Level ${getSlayerLevel(slayer.xp, typedName)} - ${slayer.xp.toLocaleString()} XP - ` +
+          `Level ${getSlayerLevel(slayer.xp ?? 0, typedName)} - ${(slayer.xp ?? 0).toLocaleString()} XP - ` +
           `Highest tier kills: ${this.getHighestTierKills(slayer, name).toLocaleString()}`
         )
       }
@@ -64,7 +64,7 @@ export default class Slayer extends ChatCommandHandler {
     const output: string[] = []
     for (const [name, slayer] of Object.entries(slayerBosses)) {
       const typedName = name as 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze' | 'vampire'
-      output.push(`${capitalize(name)} ${getSlayerLevel(slayer.xp, typedName)}`)
+      output.push(`${capitalize(name)} ${getSlayerLevel(slayer.xp ?? 0, typedName)}`)
     }
     return `${givenUsername}'s slayers: ${output.join(' - ')}`
   }
