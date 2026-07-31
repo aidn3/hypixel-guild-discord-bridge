@@ -109,27 +109,51 @@ async function displayMessage(
   guild: Guild,
   roles: ConditionUpdateResult<RoleCondition>[]
 ): Promise<string> {
+  const MaxShownConditions = 5
+
   const context: HandlerDisplayContext = {
     application: updateContext.application,
     startTime: updateContext.startTime,
     discordGuild: guild
   }
 
-  let result = ''
+  const result: string[] = []
   for (const role of roles) {
-    const meetsCondition = role.result
+    if (role.result?.type !== ConditionResultType.Pass) continue
 
-    result += `\n- ${meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'}`
-    result += ` ${roleMention(role.condition.roleId)} `
-    const display = await role.handler.displayCondition(context, role.condition.options)
-    result += bold(escapeMarkdown(display))
-
-    if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
-      result += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
-    } else if (meetsCondition?.type === ConditionResultType.Error) {
-      result += `: ${escapeMarkdown(meetsCondition.reason)}`
-    }
+    const roleResult = await formatRoleCondition(context, role)
+    result.push(roleResult)
   }
 
-  return result.trim()
+  for (const role of roles) {
+    if (result.length >= MaxShownConditions) continue
+    if (role.result?.type === ConditionResultType.Pass) continue
+
+    const roleResult = await formatRoleCondition(context, role)
+    result.push(roleResult)
+  }
+
+  return result.join('\n').trim()
+}
+
+async function formatRoleCondition(
+  context: HandlerDisplayContext,
+  role: ConditionUpdateResult<RoleCondition>
+): Promise<string> {
+  const conditionResult = role.result
+  const conditionMet = conditionResult?.type === ConditionResultType.Pass
+
+  let message = ''
+  message += `- ${conditionMet ? '✅' : '❌'}`
+  message += ` ${roleMention(role.condition.roleId)} `
+  const display = await role.handler.displayCondition(context, role.condition.options)
+  message += bold(escapeMarkdown(display))
+
+  if (conditionResult?.type === ConditionResultType.Pass || conditionResult?.type === ConditionResultType.Fail) {
+    message += `: ${escapeMarkdown(conditionResult.valueFormatted)}`
+  } else if (conditionResult?.type === ConditionResultType.Error) {
+    message += `: ${escapeMarkdown(conditionResult.reason)}`
+  }
+
+  return message
 }
