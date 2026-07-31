@@ -1,4 +1,4 @@
-import type { Client, Guild, GuildMember, GuildMemberEditOptions } from 'discord.js'
+import type { Client, Guild, GuildMemberEditOptions } from 'discord.js'
 import { DiscordAPIError, userMention } from 'discord.js'
 import type { Logger } from 'log4js'
 
@@ -31,12 +31,6 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
 
     client.on('guildMemberRemove', (member) => {
       this.application.core.discordUserConditions.purgeDeletedUsers(member.guild.id, [member.user.id])
-    })
-
-    client.on('guildMemberAdd', (member) => {
-      void this.onMemberJoin(member).catch(
-        this.errorHandler.promiseCatch('handling conditions for newly joined Discord member')
-      )
     })
   }
 
@@ -234,28 +228,5 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
         }
       }
     }
-  }
-
-  private async onMemberJoin(guildMember: GuildMember): Promise<void> {
-    const context: UpdateContext = {
-      application: this.application,
-      updateReason: 'Newly joined member',
-      startTime: guildMember.joinedTimestamp ?? Date.now(),
-      abortSignal: this.abortSignal,
-      progress: {
-        errors: [],
-        processedGuilds: 0,
-        processedNicknames: 0,
-        processedRoles: 0,
-        processedUsers: 0,
-        totalUsers: 0,
-        totalGuilds: 0
-      }
-    }
-
-    const profile = this.clientInstance.profileByUser(guildMember.user, guildMember)
-    const user = await this.application.core.initializeDiscordUser(profile)
-    const memberContext: UpdateMemberContext = { guildMember, user }
-    await this.updateMember(context, memberContext)
   }
 }
