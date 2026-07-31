@@ -52,7 +52,7 @@ export class SkyblockTotalSlayerXp extends ConditionHandler<SkyblockTotalSlayerX
     const highestLevel = profiles
       .map((profile) =>
         Object.values(profile.slayer?.slayer_bosses ?? {})
-          .map((slayer) => slayer.xp)
+          .map((slayer) => slayer.xp ?? 0)
           .reduce((a, b) => a + b, 0)
       )
       // eslint-disable-next-line unicorn/no-array-reduce
