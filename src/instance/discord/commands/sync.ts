@@ -1,13 +1,17 @@
 import assert from 'node:assert'
 
-import type { GuildMember } from 'discord.js'
-import { escapeMarkdown, SlashCommandBuilder, userMention } from 'discord.js'
+import type { Guild, GuildMember } from 'discord.js'
+import { bold, escapeMarkdown, roleMention, SlashCommandBuilder, userMention } from 'discord.js'
 
 import { Color, Permission } from '../../../common/application-event'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
+import type { HandlerDisplayContext } from '../../../core/conditions/common'
+import { ConditionResultType } from '../../../core/conditions/common'
+import type { RoleCondition } from '../../../core/discord/user-conditions'
 import { DefaultCommandFooter } from '../common/discord-config'
 import type { UpdateContext, UpdateProgress } from '../conditions/common'
+import type { ConditionUpdateResult } from '../conditions/conditions-manager'
 
 export default {
   getCommandBuilder: () =>
@@ -71,9 +75,16 @@ export default {
       progress: progress
     } satisfies UpdateContext
 
-    await context.application.discordInstance.conditionsManager.updateMember(updateContext, { guildMember, user })
+    const updateResult = await context.application.discordInstance.conditionsManager.updateMember(updateContext, {
+      guildMember,
+      user
+    })
 
     let result = `Synced ${userMention(guildMember.id)}`
+    if (updateResult.roles.length > 0) {
+      result += '\n\n'
+      result += await displayMessage(updateContext, interaction.guild, updateResult.roles)
+    }
     if (progress.errors.length > 0) {
       result += `\n\n**Failed syncing some conditions:**\n`
       result += progress.errors.map((error) => `- ${escapeMarkdown(error)}`).join('\n')
@@ -92,3 +103,33 @@ export default {
     await interaction.editReply({ embeds: [embed], allowedMentions: { parse: [] } })
   }
 } satisfies DiscordCommandHandler
+
+async function displayMessage(
+  updateContext: UpdateContext,
+  guild: Guild,
+  roles: ConditionUpdateResult<RoleCondition>[]
+): Promise<string> {
+  const context: HandlerDisplayContext = {
+    application: updateContext.application,
+    startTime: updateContext.startTime,
+    discordGuild: guild
+  }
+
+  let result = ''
+  for (const role of roles) {
+    const meetsCondition = role.result
+
+    result += `\n- ${meetsCondition?.type === ConditionResultType.Pass ? '✅' : '❌'}`
+    result += ` ${roleMention(role.condition.roleId)} `
+    const display = await role.handler.displayCondition(context, role.condition.options)
+    result += bold(escapeMarkdown(display))
+
+    if (meetsCondition?.type === ConditionResultType.Pass || meetsCondition?.type === ConditionResultType.Fail) {
+      result += `: ${escapeMarkdown(meetsCondition.valueFormatted)}`
+    } else if (meetsCondition?.type === ConditionResultType.Error) {
+      result += `: ${escapeMarkdown(meetsCondition.reason)}`
+    }
+  }
+
+  return result.trim()
+}
