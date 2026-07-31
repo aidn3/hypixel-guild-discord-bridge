@@ -44,7 +44,7 @@ export default class Runs extends ChatCommandHandler {
     }
 
     const runs = masterMode
-      ? this.getTotalRuns(dungeon.master_catacombs.tier_completions)
+      ? this.getTotalRuns(dungeon.master_catacombs?.tier_completions)
       : this.getTotalRuns(dungeon.catacombs.tier_completions)
     if (runs.length === 0) return `${givenUsername}: ${givenType} - never done runs in this type before?`
 

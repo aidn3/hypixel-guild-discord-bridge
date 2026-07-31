@@ -51,9 +51,9 @@ export default class PersonalBest extends ChatCommandHandler {
         return this.formatFloor(
           username,
           `master mode ${selectedFloorWithoutEntrance}`,
-          dungeon.master_catacombs.fastest_time?.[selectedFloorWithoutEntrance],
-          dungeon.master_catacombs.fastest_time_s?.[selectedFloorWithoutEntrance],
-          dungeon.master_catacombs.fastest_time_s_plus?.[selectedFloorWithoutEntrance]
+          dungeon.master_catacombs?.fastest_time?.[selectedFloorWithoutEntrance],
+          dungeon.master_catacombs?.fastest_time_s?.[selectedFloorWithoutEntrance],
+          dungeon.master_catacombs?.fastest_time_s_plus?.[selectedFloorWithoutEntrance]
         )
       } else if (selectedFloorWithEntrance === '0') {
         return this.formatFloor(
@@ -75,7 +75,7 @@ export default class PersonalBest extends ChatCommandHandler {
     }
 
     // check for highest S+ master mode
-    if (dungeon.master_catacombs.fastest_time_s_plus) {
+    if (dungeon.master_catacombs?.fastest_time_s_plus) {
       let selectedFloor: DungeonFloors | undefined = undefined
       for (const floorName of Object.keys(dungeon.master_catacombs.fastest_time_s_plus).toReversed()) {
         if (floorName === 'best') continue
