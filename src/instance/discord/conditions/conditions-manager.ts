@@ -6,7 +6,14 @@ import type Application from '../../../application'
 import type EventHelper from '../../../common/event-helper'
 import SubInstance from '../../../common/sub-instance'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
+import type {
+  ConditionHandler,
+  ConditionOption,
+  ConditionResult,
+  ConditionValue
+} from '../../../core/conditions/common'
 import { ConditionResultType, OnUnmet } from '../../../core/conditions/common'
+import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
 import { CanNotResolve } from '../../../core/placeholder/common'
 import type DiscordInstance from '../discord-instance'
 
@@ -56,8 +63,15 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
       const user = await this.application.core.initializeDiscordUser(
         this.clientInstance.profileByUser(guildMember.user, guildMember)
       )
+
+      const memberContext = { guildMember, user }
+      const result = await this.resolveMemberUpdate(guildContext, memberContext)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (context.abortSignal.aborted) return
+      if (result === undefined) continue
+
       try {
-        await this.updateMemberViaCache(guildContext, { guildMember, user })
+        if (result.payload) await this.updateMemberViaCache(guildContext, memberContext, result.payload)
       } catch (error: unknown) {
         if (error instanceof DiscordAPIError && error.code === 50_013) {
           context.progress.errors.push(`Failed updating user ${guildMember.id} due to missing permissions`)
@@ -68,8 +82,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
     context.progress.processedGuilds++
   }
 
-  public async updateMember(context: UpdateContext, member: UpdateMemberContext): Promise<void> {
-    if (context.abortSignal.aborted) return
+  public async updateMember(context: UpdateContext, member: UpdateMemberContext): Promise<UpdateResult> {
+    if (context.abortSignal.aborted) return { payload: undefined, roles: [], nicknames: [] }
 
     const conditions = context.application.core.discordUserConditions.getAllConditions(member.guildMember.guild.id)
     const guildContext = {
@@ -80,8 +94,12 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
       nicknameConditions: conditions.nicknames
     } satisfies UpdateGuildContext
 
+    const result = await this.resolveMemberUpdate(guildContext, member)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (context.abortSignal.aborted || result === undefined) return { payload: undefined, roles: [], nicknames: [] }
+
     try {
-      await this.updateMemberViaCache(guildContext, member)
+      if (result.payload) await this.updateMemberViaCache(guildContext, member, result.payload)
     } catch (error: unknown) {
       if (error instanceof DiscordAPIError && error.code === 50_013) {
         context.progress.errors.push(
@@ -91,32 +109,28 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
         throw error
       }
     }
+
+    return result
   }
 
   private async updateMemberViaCache(
     context: UpdateGuildContext,
-    memberContext: UpdateMemberContext
-  ): Promise<GuildMemberEditOptions | undefined> {
+    memberContext: UpdateMemberContext,
+    editOptions: GuildMemberEditOptions
+  ): Promise<void> {
     if (context.abortSignal.aborted) return
 
     const guildMember = memberContext.guildMember
     this.logger.debug(`Updating member ${guildMember.user.id} for guild ${guildMember.guild.id}`)
 
-    const editOptions = await this.resolveMemberUpdate(context, memberContext)
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (context.abortSignal.aborted) return undefined
-
-    if (editOptions !== undefined) {
-      editOptions.reason = context.updateReason
-      this.logger.debug(
-        `Updating member ${guildMember.user.id} for guild ${userMention(guildMember.guild.id)} with reason: ${editOptions.reason}`
-      )
-      await guildMember.edit(editOptions)
-      context.application.core.discordUserConditions.userUpdated(guildMember.guild.id, guildMember.user.id)
-    }
+    this.logger.debug(
+      `Updating member ${guildMember.user.id} for guild ${userMention(guildMember.guild.id)} with reason: ${editOptions.reason}`
+    )
+    await guildMember.edit(editOptions)
+    context.application.core.discordUserConditions.userUpdated(guildMember.guild.id, guildMember.user.id)
 
     context.progress.processedUsers++
-    return editOptions
+    return
   }
 
   /**
@@ -126,29 +140,38 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
   private async resolveMemberUpdate(
     context: UpdateGuildContext,
     memberContext: UpdateMemberContext
-  ): Promise<GuildMemberEditOptions | undefined> {
+  ): Promise<UpdateResult | undefined> {
     if (context.abortSignal.aborted) return undefined
 
     const editOptions: GuildMemberEditOptions = {}
-    await this.updateRoles(context, memberContext, editOptions)
-    await this.updateMemberNicknames(context, memberContext, editOptions)
+    const roles = await this.updateRoles(context, memberContext, editOptions)
+    const nicknames = await this.updateMemberNicknames(context, memberContext, editOptions)
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (context.abortSignal.aborted) return undefined
-    return Object.keys(editOptions).length > 0 ? editOptions : undefined
+
+    const payload = Object.keys(editOptions).length > 0 ? editOptions : undefined
+    if (payload !== undefined) editOptions.reason = context.updateReason
+
+    return {
+      payload: payload,
+      roles: roles,
+      nicknames: nicknames
+    }
   }
 
   private async updateRoles(
     context: Readonly<UpdateGuildContext>,
     memberContext: UpdateMemberContext,
     editPayload: GuildMemberEditOptions
-  ): Promise<void> {
+  ): Promise<ConditionUpdateResult<RoleCondition>[]> {
+    const result: ConditionUpdateResult<RoleCondition>[] = []
     const assignedRoles = new Set<string>(memberContext.guildMember.roles.cache.keys())
     const roleAlreadyGiven = new Set<string>()
     let changed = false
 
     for (const condition of context.rolesConditions) {
-      if (context.abortSignal.aborted) return undefined
+      if (context.abortSignal.aborted) return result
       context.progress.processedRoles++
 
       const handler = context.conditionsRegistry.get(condition.typeId)
@@ -157,6 +180,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
       let meetsCondition: boolean
       try {
         const conditionResult = await handler.meetsCondition(context, memberContext, condition.options)
+        result.push({ result: conditionResult, condition: condition, handler: handler })
         meetsCondition = conditionResult.type === ConditionResultType.Pass
       } catch {
         meetsCondition = false
@@ -184,17 +208,20 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
     }
 
     if (changed) editPayload.roles = [...assignedRoles]
+    return result
   }
 
   private async updateMemberNicknames(
     context: Readonly<UpdateGuildContext>,
     memberContext: UpdateMemberContext,
     editPayload: GuildMemberEditOptions
-  ): Promise<void> {
+  ): Promise<ConditionUpdateResult<NicknameCondition>[]> {
+    const result: ConditionUpdateResult<NicknameCondition>[] = []
+
     const cache = new Map<string, string>()
     const custom = {}
     for (const condition of context.nicknameConditions) {
-      if (context.abortSignal.aborted) return undefined
+      if (context.abortSignal.aborted) return result
       context.progress.processedNicknames++
 
       const handler = context.conditionsRegistry.get(condition.typeId)
@@ -203,6 +230,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
       let meetsCondition: boolean
       try {
         const conditionResult = await handler.meetsCondition(context, memberContext, condition.options)
+        result.push({ result: conditionResult, condition: condition, handler: handler })
         meetsCondition = conditionResult.type === ConditionResultType.Pass
       } catch {
         meetsCondition = false
@@ -228,5 +256,19 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
         }
       }
     }
+
+    return result
   }
+}
+
+export interface ConditionUpdateResult<T> {
+  condition: T
+  handler: ConditionHandler<ConditionOption, ConditionValue>
+  result: ConditionResult<ConditionValue> | undefined
+}
+
+export interface UpdateResult {
+  payload: GuildMemberEditOptions | undefined
+  roles: ConditionUpdateResult<RoleCondition>[]
+  nicknames: ConditionUpdateResult<NicknameCondition>[]
 }
