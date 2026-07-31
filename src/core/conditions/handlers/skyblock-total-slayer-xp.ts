@@ -22,8 +22,8 @@ export class SkyblockTotalSlayerXp extends ConditionHandler<SkyblockTotalSlayerX
 
   override displayCondition(context: HandlerContext, options: SkyblockTotalSlayerXpOptions): string {
     return context.application.i18n.t(($) => $['discord.conditions.handler.slayer-total-xp.formatted'], {
-      fromLevel: options.fromXp,
-      toLevel: options.toXp,
+      fromXp: options.fromXp,
+      toXp: options.toXp,
       profileTypes: translateSkyblockProfileTypes(options.profileTypes)
     })
   }
