@@ -11,8 +11,11 @@ import { InGuildAsGuildmaster } from '../../core/conditions/handlers/in-guild-as
 import { InGuildWithGexp } from '../../core/conditions/handlers/in-guild-with-gexp'
 import { InGuildWithRank } from '../../core/conditions/handlers/in-guild-with-rank'
 import type { UpdateContext, UpdateMemberContext } from '../../instance/discord/conditions/common'
+import Duration from '../../utility/duration'
+import { sleep } from '../../utility/shared-utility'
 
 export class DiscordRoles extends Instance implements DisplayableInstance {
+  private static readonly IngameWait = Duration.seconds(30)
   private readonly singleton = new PromiseQueue(1)
 
   public constructor(application: Application) {
@@ -75,12 +78,22 @@ export class DiscordRoles extends Instance implements DisplayableInstance {
       const guildObject = await guild.fetch()
       const guildMember = await guildObject.members.fetch(discordProfile.id).catch(() => undefined)
       if (guildMember === undefined) continue
+      this.logger.debug(`Preparing to update user ${user.displayName()} in guild id ${guild.id}`)
+
+      const currentTime = Date.now()
+      const timeToWait = event.createdAt - currentTime + DiscordRoles.IngameWait.toMilliseconds()
+      if (timeToWait > 0) {
+        this.logger.debug(
+          `Awaiting an additional ${timeToWait} for API changes to take effect before attempting any read`
+        )
+        await sleep(timeToWait)
+      }
 
       const memberContext: UpdateMemberContext = { guildMember, user }
       const context: UpdateContext = {
         application: this.application,
         updateReason: event.message,
-        startTime: guildMember.joinedTimestamp ?? Date.now(),
+        startTime: Date.now(), // we awaited additional time over currentTime to give the API a chance to update,
         abortSignal: this.abortController.signal,
         progress: {
           errors: [],
@@ -93,7 +106,9 @@ export class DiscordRoles extends Instance implements DisplayableInstance {
         }
       }
 
+      this.logger.debug(`Updating user ${user.displayName()} in guild id ${guild.id}`)
       await this.application.discordInstance.conditionsManager.updateMember(context, memberContext)
+      this.logger.debug(`Finished updating user ${user.displayName()} in guild id ${guild.id}`)
     }
   }
 
