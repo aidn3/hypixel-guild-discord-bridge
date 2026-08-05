@@ -191,7 +191,6 @@ class MojangDatabase {
       'SELECT uuid as id, username as name FROM "mojang" WHERE uuid = @uuid AND createdAt > @createdAt'
     )
     return select.get({ uuid: uuid, createdAt: Math.floor((Date.now() - MojangDatabase.MaxAge) / 1000) }) as
-      | MojangProfile
-      | undefined
+      MojangProfile | undefined
   }
 }

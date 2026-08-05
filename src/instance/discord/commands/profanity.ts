@@ -127,8 +127,7 @@ export default {
   },
   autoComplete: async function (context) {
     const groupCommand = context.interaction.options.getSubcommandGroup(true) as
-      | typeof IncludeCommand
-      | typeof ExcludeCommand
+      typeof IncludeCommand | typeof ExcludeCommand
     const subCommand = context.interaction.options.getSubcommand(true)
     if (subCommand === Remove) {
       const option = context.interaction.options.getFocused(true)

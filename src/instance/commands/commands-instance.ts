@@ -24,6 +24,7 @@ import { CommandsDatabase } from './commands-database'
 import { canOnlyUseIngame } from './common/utility'
 import Command67 from './triggers/67'
 import EightBallCommand from './triggers/8ball.js'
+import AccessoryPower from './triggers/accessorypower.js'
 import Agatha from './triggers/agatha.js'
 import Age from './triggers/age.js'
 import Airstrike from './triggers/airstrike'
@@ -83,7 +84,6 @@ import Karma from './triggers/karma.js'
 import Kuudra from './triggers/kuudra.js'
 import Level from './triggers/level.js'
 import List from './triggers/list.js'
-import MagicalPower from './triggers/magicalpower.js'
 import Mayor from './triggers/mayor.js'
 import Megawalls from './triggers/megawalls'
 import Mineshafts from './triggers/mineshafts.js'
@@ -153,6 +153,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
     }
 
     const commandsToAdd = [
+      new AccessoryPower(),
       new Agatha(),
       new Age(),
       new Airstrike(),
@@ -213,7 +214,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Kuudra(),
       new Level(),
       new List(),
-      new MagicalPower(),
       new Mayor(),
       new Megawalls(),
       new Mineshafts(),

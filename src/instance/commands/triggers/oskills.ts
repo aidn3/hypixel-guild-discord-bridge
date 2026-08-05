@@ -32,33 +32,33 @@ export default class OverflowSkills extends ChatCommandHandler {
     const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
     const skills = skillsResponse.skills
     const totalSocialExperience = Object.values(memberProfile.members) // Social level is the sum of all coop members
-      .map((profile) => profile.player_data.experience?.SKILL_SOCIAL ?? 0)
+      .map((profile) => profile.player_data?.experience?.SKILL_SOCIAL ?? 0)
       .reduce((a, b) => a + b, 0)
 
-    const farming = this.getLevel(skills.COMBAT, skills.FARMING, profile.player_data.experience?.SKILL_FARMING ?? 0)
-    const mining = this.getLevel(skills.COMBAT, skills.MINING, profile.player_data.experience?.SKILL_MINING ?? 0)
-    const combat = this.getLevel(skills.COMBAT, skills.COMBAT, profile.player_data.experience?.SKILL_COMBAT ?? 0)
-    const foraging = this.getLevel(skills.COMBAT, skills.FORAGING, profile.player_data.experience?.SKILL_FORAGING ?? 0)
-    const fishing = this.getLevel(skills.COMBAT, skills.FISHING, profile.player_data.experience?.SKILL_FISHING ?? 0)
+    const farming = this.getLevel(skills.COMBAT, skills.FARMING, profile.player_data?.experience?.SKILL_FARMING ?? 0)
+    const mining = this.getLevel(skills.COMBAT, skills.MINING, profile.player_data?.experience?.SKILL_MINING ?? 0)
+    const combat = this.getLevel(skills.COMBAT, skills.COMBAT, profile.player_data?.experience?.SKILL_COMBAT ?? 0)
+    const foraging = this.getLevel(skills.COMBAT, skills.FORAGING, profile.player_data?.experience?.SKILL_FORAGING ?? 0)
+    const fishing = this.getLevel(skills.COMBAT, skills.FISHING, profile.player_data?.experience?.SKILL_FISHING ?? 0)
     const enchanting = this.getLevel(
       skills.COMBAT,
       skills.ENCHANTING,
-      profile.player_data.experience?.SKILL_ENCHANTING ?? 0
+      profile.player_data?.experience?.SKILL_ENCHANTING ?? 0
     )
-    const alchemy = this.getLevel(skills.COMBAT, skills.ALCHEMY, profile.player_data.experience?.SKILL_ALCHEMY ?? 0)
+    const alchemy = this.getLevel(skills.COMBAT, skills.ALCHEMY, profile.player_data?.experience?.SKILL_ALCHEMY ?? 0)
     const carpentry = this.getLevel(
       skills.COMBAT,
       skills.CARPENTRY,
-      profile.player_data.experience?.SKILL_CARPENTRY ?? 0
+      profile.player_data?.experience?.SKILL_CARPENTRY ?? 0
     )
     const runecrafting = this.getLevel(
       skills.COMBAT,
       skills.RUNECRAFTING,
-      profile.player_data.experience?.SKILL_RUNECRAFTING ?? 0
+      profile.player_data?.experience?.SKILL_RUNECRAFTING ?? 0
     )
     const social = this.getLevel(skills.COMBAT, skills.SOCIAL, totalSocialExperience)
-    const taming = this.getLevel(skills.COMBAT, skills.TAMING, profile.player_data.experience?.SKILL_TAMING ?? 0)
-    const hunting = this.getLevel(skills.COMBAT, skills.HUNTING, profile.player_data.experience?.SKILL_HUNTING ?? 0)
+    const taming = this.getLevel(skills.COMBAT, skills.TAMING, profile.player_data?.experience?.SKILL_TAMING ?? 0)
+    const hunting = this.getLevel(skills.COMBAT, skills.HUNTING, profile.player_data?.experience?.SKILL_HUNTING ?? 0)
 
     const totalLevels =
       farming + mining + combat + foraging + fishing + enchanting + alchemy + carpentry + taming + hunting

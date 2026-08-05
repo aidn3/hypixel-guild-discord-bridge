@@ -1,6 +1,9 @@
+import assert from 'node:assert'
+
 import type {
   ButtonInteraction,
   ChatInputCommandInteraction,
+  Interaction,
   ModalComponentData,
   ModalSubmitInteraction
 } from 'discord.js'
@@ -9,7 +12,14 @@ import { ChannelType, ComponentType, escapeMarkdown, SelectMenuDefaultValueType,
 import type Duration from '../../../utility/duration'
 import { parseNumberWithSuffice } from '../../../utility/shared-utility'
 
-import type { BooleanOption, DiscordSelectOption, NumberOption, PresetListOption, TextOption } from './options-handler'
+import type {
+  BooleanOption,
+  DiscordGuildOption,
+  DiscordSelectOption,
+  NumberOption,
+  PresetListOption,
+  TextOption
+} from './options-handler'
 import { InputStyle, OptionType } from './options-handler'
 
 export type BaseModalOption =
@@ -26,6 +36,9 @@ export type BaseModalOption =
   | (Omit<DiscordSelectOption, 'getOption' | 'setOption'> & {
       defaultValue?: ReturnType<DiscordSelectOption['getOption']>
     })
+  | (Omit<DiscordGuildOption, 'getOption' | 'setOption'> & {
+      defaultValue?: ReturnType<DiscordGuildOption['getOption']>
+    })
 
 export type ModalOption = BaseModalOption & {
   key: string
@@ -39,22 +52,52 @@ export async function showModal(
   title: string,
   options: ModalOption[],
   timeout: Duration
-): Promise<{ result: ModalResult; modalResponse: ModalSubmitInteraction }> {
-  const components = createComponents(options)
-  const modalData: ModalComponentData = { title, components, customId: interaction.id }
+): Promise<{
+  result: ModalResult
+  modalResponse: ModalSubmitInteraction | ButtonInteraction | ChatInputCommandInteraction
+}> {
+  assert.ok(options.length > 0, 'Must at least 1 option defined')
+  ensureUniqueness(options)
 
-  await interaction.showModal(modalData)
+  const result: ModalResult = {}
+  const { components, values } = createComponents(interaction, options)
+  Object.assign(result, values)
 
-  const modalResponse = await interaction.awaitModalSubmit({
-    time: timeout.toMilliseconds(),
-    filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
-  })
+  let modalInteraction: ModalSubmitInteraction | ButtonInteraction | ChatInputCommandInteraction = interaction
+  if (components.length > 0) {
+    const modalData: ModalComponentData = { title, components, customId: interaction.id }
+    await interaction.showModal(modalData)
 
-  return { result: parseResponse(options, modalResponse), modalResponse }
+    const modalResponse = await interaction.awaitModalSubmit({
+      time: timeout.toMilliseconds(),
+      filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+    })
+    const modalResult = parseResponse(options, modalResponse)
+    Object.assign(result, modalResult)
+    modalInteraction = modalResponse
+  }
+
+  return { result: result, modalResponse: modalInteraction }
 }
 
-function createComponents(options: ModalOption[]): ModalComponentData['components'] {
+function ensureUniqueness(options: ModalOption[]): void {
+  const keys = new Set<string>()
+  for (const option of options) {
+    const key = option.key
+    assert.ok(!keys.has(key), `Key ${key} already defined`)
+    keys.add(key)
+  }
+}
+
+function createComponents(
+  interaction: Interaction,
+  options: ModalOption[]
+): {
+  components: ModalComponentData['components']
+  values: ModalResult
+} {
   const components: Writeable<ModalComponentData['components']> = []
+  const values: ModalResult = {}
 
   for (const option of options) {
     switch (option.type) {
@@ -197,10 +240,21 @@ function createComponents(options: ModalOption[]): ModalComponentData['component
         })
         break
       }
+      case OptionType.DiscordGuild: {
+        const rawValue = interaction.guildId ?? undefined
+        if (rawValue === undefined) throw new Error('This interaction can only be done inside a Discord server!')
+        values[option.key] = rawValue
+        break
+      }
+      default: {
+        option satisfies never
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        assert.fail(`unknown option ${option}`)
+      }
     }
   }
 
-  return components
+  return { components, values }
 }
 
 function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInteraction): ModalResult {
@@ -217,7 +271,7 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
         value = modalResponse.fields.getTextInputValue(option.key)
         if (option.validate != undefined) {
           const response = option.validate(value)
-          if (response !== undefined) throw new Error(response)
+          if (response !== undefined) throw new ModalInputInvalid(modalResponse, response)
         }
         break
       }
@@ -235,14 +289,15 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
             throw new Error('dummy') // dummy caught locally
           }
         } catch {
-          throw new Error(
+          throw new ModalInputInvalid(
+            modalResponse,
             `**${option.name}** must be a number between ${option.min} and ${option.max}.\nGiven: ${escapeMarkdown(rawValue)}`
           )
         }
 
         if (option.validate != undefined) {
           const response = option.validate(intValue)
-          if (response !== undefined) throw new Error(response)
+          if (response !== undefined) throw new ModalInputInvalid(modalResponse, response)
         }
         value = intValue
         break
@@ -262,6 +317,10 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
         value = modalResponse.fields.getSelectedUsers(option.key, true).map((o) => o.id)
         break
       }
+      case OptionType.DiscordGuild: {
+        assert.fail(`this option can not be processed via a modal: ${option.key}`)
+        break
+      }
       default: {
         option satisfies never
         throw new Error(`Unknown option: ${JSON.stringify(option)}`)
@@ -272,4 +331,13 @@ function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInterac
   }
 
   return result
+}
+
+export class ModalInputInvalid extends Error {
+  constructor(
+    public modalInteraction: ModalSubmitInteraction,
+    public readonly displayMessage: string
+  ) {
+    super()
+  }
 }

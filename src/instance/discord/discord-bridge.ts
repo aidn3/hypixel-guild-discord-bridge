@@ -114,7 +114,10 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           ) {
             const formattedMessage = this.removeGuildPrefix(event.rawMessage)
             const image = MinecraftRenderer.generateMessageImage(formattedMessage)
-            await this.sendImageToChannels(event.eventId, [channelId], [image])
+            const messages = await this.sendImageToChannels(event.eventId, [channelId], [image])
+            for (const message of messages) {
+              this.application.core.discordUserMessage.add(message.id, event.user)
+            }
           } else {
             // default fallback
             await this.sendAsWebhook(event, channelId, username)
@@ -185,6 +188,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       channelId: message.channelId,
       messageId: message.id
     })
+    this.application.core.discordUserMessage.add(message.id, event.user)
   }
 
   /**
@@ -222,6 +226,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
       channelId: message.channelId,
       messageId: message.id
     })
+    this.application.core.discordUserMessage.add(message.id, event.user)
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
@@ -306,6 +311,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         createdAt: currentTime
       }))
       await this.messageDeleter.add(entries)
+    }
+
+    if (event.user !== undefined) {
+      for (const message of messages) {
+        this.application.core.discordUserMessage.add(message.id, event.user)
+      }
     }
   }
 

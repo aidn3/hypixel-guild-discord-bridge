@@ -22,3 +22,5 @@ type DeepReadonlyObject<T> = {
 /* eslint-enable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-empty-object-type */
 
 type Exact<TExpected, TActual extends TExpected> = TExpected extends TActual ? TExpected : never
+
+type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T

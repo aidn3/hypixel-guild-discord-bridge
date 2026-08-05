@@ -29,6 +29,7 @@ import { DiscordConfigurations } from './discord/discord-configurations'
 import { DiscordEmojis } from './discord/discord-emojis'
 import { DiscordLeaderboards } from './discord/discord-leaderboards'
 import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-interactions'
+import { DiscordUserMessage } from './discord/discord-user-message'
 import { DiscordLinkButton } from './discord/link-button'
 import { UserConditions } from './discord/user-conditions'
 import { Hypixel } from './hypixel/hypixel'
@@ -71,6 +72,7 @@ export class Core extends Instance {
   public readonly discordLeaderboards: DiscordLeaderboards
   public readonly discordTemporarilyInteractions: DiscordTemporarilyInteractions
   public readonly discordLinkButton: DiscordLinkButton
+  public readonly discordUserMessage: DiscordUserMessage
   public readonly discordEmojis: DiscordEmojis
   public readonly discordUserConditions: UserConditions
 
@@ -128,6 +130,7 @@ export class Core extends Instance {
       this.discordConfigurations
     )
     this.discordLinkButton = new DiscordLinkButton(this.sqliteManager)
+    this.discordUserMessage = new DiscordUserMessage(this.sqliteManager, this.users)
     this.discordEmojis = new DiscordEmojis(this.sqliteManager)
     this.discordUserConditions = new UserConditions(this.sqliteManager)
 
@@ -297,6 +300,7 @@ export class Core extends Instance {
       this.discordLeaderboards.remove(messagesIds)
       this.discordTemporarilyInteractions.remove(messagesIds)
       this.discordLinkButton.remove(messagesIds)
+      this.discordUserMessage.remove(messagesIds)
     })
 
     transaction()

@@ -32,6 +32,7 @@
   "conditions.format.never-played-skyblock": "never played skyblock",
   "conditions.format.guild-disbanded": "Guild disbanded",
   "conditions.format.discord-server-deleted": "Discord server deleted?",
+  "conditions.format.discord-server-not-found": "Could not find the Discord server",
   "conditions.format.user-not-in-server": "User not in Discord server",
   "conditions.format.not-in-guild": "Not in guild",
   "conditions.format.in-guild-with-rank": "In guild with rank {{rank}}",
@@ -80,14 +81,16 @@
     "roles": "Roles Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
     "nicknames": "Nicknames Conditions (page {{currentPage, number}} out of {{totalPages, number}})",
     "guild-join": "Guild Join Condition (page {{currentPage, number}} out of {{totalPages, number}}",
-    "guild-role": "Guild Role Condition (page {{currentPage, number}} out of {{totalPages, number}}"
+    "guild-role": "Guild Role Condition (page {{currentPage, number}} out of {{totalPages, number}}",
+    "guild-stay": "Guild Stay Condition (page {{currentPage, number}} out of {{totalPages, number}}"
   },
   "discord.conditions.list.empty": "__Empty list__",
   "discord.conditions.list.entry": {
     "roles": "- `{{condition.id}}`: {{display}} <@&{{condition.roleId}}>\n",
     "nicknames": "- `{{condition.id}}`: {{display}} `{{condition.nickname}}`\n",
     "guild-join": "- `{{condition.id}}`: {{display}}\n",
-    "guild-role": "- `{{condition.id}}`: {{display}} `{{condition.role}}`\n"
+    "guild-role": "- `{{condition.id}}`: {{display}} `{{condition.role}}`\n",
+    "guild-stay": "- `{{condition.id}}`: {{display}}\n"
   },
   "discord.conditions.list.entry-invalid": "- `{{condition.id}}`: __{{condition.typeId}}__\n",
 
@@ -100,7 +103,8 @@
     "roles": "Create role condition",
     "nicknames": "Create nickname condition",
     "guild-join": "Create Guild Join Condition",
-    "guild-role": "Create Guild Role Condition"
+    "guild-role": "Create Guild Role Condition",
+    "guild-stay": "Create Guild Stay Condition"
   },
 
   "discord.conditions.add.role.name": "Role to give",
@@ -125,19 +129,40 @@
     "roles": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the role <@&{{condition.roleId}}>.",
     "nicknames": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will receive the have their nickname set as `{{condition.nickname}}`.",
     "guild-join": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be able to join the guild as long as there is no active punishment and joining is allowed.",
-    "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role."
+    "guild-role": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will have their in-game guild rank set as `{{condition.role}}` role.",
+    "guild-stay": "Saved condition with the id `{{condition.id}}`.\nWhen a user meets the requirement: {{conditionDisplay}}\nThe user will be safe from the guild purge based on the guild settings."
   },
 
   "discord.conditions.handler.skyblock-api.title": "Skyblock API Enabled",
   "discord.conditions.handler.skyblock-api.formatted": "All Skyblock APIs enabled on all profiles",
   "discord.conditions.handler.link.title": "Linked",
   "discord.conditions.handler.link.formatted": "User has linked via </link:{{commandId}}>",
+  "discord.conditions.handler.not-link.title": "NOT Linked",
+  "discord.conditions.handler.not-link.formatted": "User has NOT linked yet via </link:{{commandId}}>",
   "discord.conditions.handler.skyblock-level.title": "Skyblock Level",
   "discord.conditions.handler.skyblock-level.formatted": "{{profileTypes}} Skyblock level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-catacombs-level.title": "Catacombs Level",
   "discord.conditions.handler.skyblock-catacombs-level.formatted": "{{profileTypes}} Catacombs level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.skyblock-networth.title": "Skyblock Networth",
   "discord.conditions.handler.skyblock-networth.formatted": "{{profileTypes}} Skyblock Networth {{fromValue, number}} to {{toValue, number}}",
+  "discord.conditions.handler.class-average.title": "Dungeons Class Average",
+  "discord.conditions.handler.class-average.formatted": "{{profileTypes}} Dungeons Class Average {{fromLevel, number}} to {{toLevel, number}}",
+
+  "discord.conditions.handler.slayer-total-xp.title": "Total Slayer Experience",
+  "discord.conditions.handler.slayer-total-xp.formatted": "{{profileTypes}} Total Slayer Experience {{fromXp, number}} to {{toXp, number}}",
+
+  "discord.conditions.handler.zombie-level.title": "Revenant Level",
+  "discord.conditions.handler.zombie-level.formatted": "{{profileTypes}} Revenant Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.enderman-level.title": "Enderman Level",
+  "discord.conditions.handler.enderman-level.formatted": "{{profileTypes}} Enderman Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.spider-level.title": "Tarantula Level",
+  "discord.conditions.handler.spider-level.formatted": "{{profileTypes}} Tarantula Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.vampire-level.title": "Vampire Level",
+  "discord.conditions.handler.vampire-level.formatted": "{{profileTypes}} Vampire Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.wolf-level.title": "Sven Level",
+  "discord.conditions.handler.wolf-level.formatted": "{{profileTypes}} Sven Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.blaze-level.title": "Blaze Level",
+  "discord.conditions.handler.blaze-level.formatted": "{{profileTypes}} Blaze Level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
@@ -151,6 +176,9 @@
 
   "discord.conditions.handler.has-discord-role.title": "Has Discord Role",
   "discord.conditions.handler.has-discord-role.formatted": "Has Discord role <@&{{roleId}}>",
+
+  "discord.conditions.handler.in-discord-server.title": "In Discord Server",
+  "discord.conditions.handler.in-discord-server.formatted": "In the {{serverName}} Discord server",
 
   "commands.explain": "{{username}}, I am a robot that connects this chat to discord! I have many commands you can use, see them all with {{commandPrefix}}commands",
   "commands.asian.correct": "Big brain!",
@@ -214,7 +242,8 @@
   "commands.math.invalid": "{{username}}, invalid math expression.",
   "commands.math.response": "{{username}}, answer: {{result, number}}",
   "commands.math.response.easter": "{{username}} haiyaaaaaaaaa this is so easy, you're a disappointment *takes off slipper* (answer: {{result, number}})",
-  "commands.sacks.response": "{{username}} has {{value}} in sacks content.",
+  "commands.sacks.response": "{{username}} sacks content value: Bazaar {{bazaarValue}} - NPC {{npcValue}}",
+  "commands.skills.api-disabled": "{{username}} Skills API disabled.",
   "commands.skills.response": "{{username}} Skills: AVG {{average, number(maximumFractionDigits: 1)}}, combat {{combat, number(maximumFractionDigits: 1)}}, farm {{farming, number(maximumFractionDigits: 1)}}, fish {{fishing, number(maximumFractionDigits: 1)}}, mine {{mining, number(maximumFractionDigits: 1)}}, forage {{foraging, number(maximumFractionDigits: 1)}}, hunt {{hunting, number(maximumFractionDigits: 1)}}, enchant {{enchanting, number(maximumFractionDigits: 1)}}, alch {{alchemy, number(maximumFractionDigits: 1)}}, carp {{carpentry, number(maximumFractionDigits: 1)}}, rune {{runecrafting, number(maximumFractionDigits: 1)}}, tame {{taming, number(maximumFractionDigits: 1)}}, social {{social, number(maximumFractionDigits: 1)}}",
   "commands.oskills.response": "{{username}} Overflow skills: AVG {{average, number(maximumFractionDigits: 1; roundingMode: floor)}} - Combat {{combat, number(maximumFractionDigits: 1; roundingMode: floor)}} - Farming {{farming, number(maximumFractionDigits: 1; roundingMode: floor)}}, Fishing {{fishing, number(maximumFractionDigits: 1; roundingMode: floor)}} - Mining {{mining, number(maximumFractionDigits: 1; roundingMode: floor)}} - Forage {{foraging, number(maximumFractionDigits: 1; roundingMode: floor)}} - Hunting {{hunting, number(maximumFractionDigits: 1; roundingMode: floor)}} - Enchant {{enchanting, number(maximumFractionDigits: 1; roundingMode: floor)}} - Alchemy {{alchemy, number(maximumFractionDigits: 1; roundingMode: floor)}} - Carp {{carpentry, number(maximumFractionDigits: 1; roundingMode: floor)}} - Rune {{runecrafting, number(maximumFractionDigits: 1; roundingMode: floor)}} - Taming {{taming, number(maximumFractionDigits: 1; roundingMode: floor)}}, Social {{social, number(maximumFractionDigits: 1; roundingMode: floor)}}",
   "commands.error.minecraft-render-not-supported-on-host": "Rendering images is not supported on the host provider :(",

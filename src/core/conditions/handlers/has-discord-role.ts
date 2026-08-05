@@ -1,5 +1,3 @@
-import assert from 'node:assert'
-
 // eslint-disable-next-line import/no-restricted-paths
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
@@ -68,22 +66,18 @@ export class HasDiscordRole extends ConditionHandler<HasDiscordRoleOptions, bool
     }
   }
 
-  override async createCondition(context: HandlerContext, rawOptions: ConditionOption): Promise<HasDiscordRoleOptions> {
-    const client = context.application.discordInstance.getClient()
+  override createCondition(context: HandlerContext, rawOptions: ConditionOption): HasDiscordRoleOptions {
     const roleId = (rawOptions.roleId as string[])[0]
-
-    for (const guild of client.guilds.cache.values()) {
-      const role = await guild.roles.fetch(roleId)
-      if (!role) continue
-
-      return { guildId: guild.id, roleId: roleId }
-    }
-
-    assert.fail(`could not find the guild for the role ${roleId}`)
+    return { guildId: rawOptions.guildId as string, roleId }
   }
 
   public override createOptions(): ModalOption[] {
     return [
+      {
+        type: OptionType.DiscordGuild,
+        name: 'Discord Server',
+        key: 'guildId'
+      },
       {
         type: OptionType.Role,
         name: 'Role',

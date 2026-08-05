@@ -79,8 +79,14 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom22to23(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom23to24(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom24to25(database)
+  })
   sqliteManager.registerMigrator((database, logger) => {
-    migrateFrom23to24(database, logger)
+    migrateFrom25to26(database, logger)
   })
 
   sqliteManager.migrate(name)
@@ -842,7 +848,31 @@ function migrateFrom22to23(database: Database): void {
   database.exec("UPDATE configurations SET category = 'admin' WHERE category = 'general' AND name = 'autoRestart';")
 }
 
-function migrateFrom23to24(database: Database, logger: Logger4Js): void {
+function migrateFrom23to24(database: Database): void {
+  database.exec(
+    'CREATE TABLE "discordMessageSender" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id)' +
+      ' ) STRICT'
+  )
+}
+
+function migrateFrom24to25(database: Database): void {
+  database.exec(
+    'CREATE TABLE "minecraftGuildStayConditions" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  guildId TEXT NOT NULL REFERENCES minecraftGuild(id) ON DELETE CASCADE,' +
+      '  typeId TEXT NOT NULL,' +
+      '  options TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+
+  database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" INTEGER NOT NULL DEFAULT 1;')
+  database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "canPurge" INTEGER NOT NULL DEFAULT 0;')
+}
+
+function migrateFrom25to26(database: Database, logger: Logger4Js): void {
   database.exec(
     'CREATE TABLE "chatCommandGroups" (' +
       '  "group" TEXT PRIMARY KEY NOT NULL,' +

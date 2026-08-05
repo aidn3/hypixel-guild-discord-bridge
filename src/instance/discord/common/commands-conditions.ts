@@ -1,6 +1,11 @@
 import assert from 'node:assert'
 
-import type { AutocompleteInteraction, ChatInputCommandInteraction, ModalSubmitInteraction } from 'discord.js'
+import type {
+  AutocompleteInteraction,
+  ButtonInteraction,
+  ChatInputCommandInteraction,
+  ModalSubmitInteraction
+} from 'discord.js'
 import { escapeMarkdown, MessageFlags, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
@@ -16,7 +21,7 @@ import Duration from '../../../utility/duration'
 import { search, searchObjects } from '../../../utility/shared-utility'
 import { interactivePaging } from '../utility/discord-pager'
 import type { ModalOption, ModalResult } from '../utility/modal-options'
-import { showModal } from '../utility/modal-options'
+import { ModalInputInvalid, showModal } from '../utility/modal-options'
 
 import { DefaultCommandFooter } from './discord-config'
 
@@ -25,7 +30,7 @@ export interface CommandConditionHandler {
   remove: (id: ConditionId['id']) => boolean
   createOptions: { top: ModalOption[]; bottom: ModalOption[] }
   add: (handlerId: string, data: ModalResult, conditionData: ConditionOption) => ConditionId
-  translationKey: 'roles' | 'nicknames' | 'guild-join' | 'guild-role'
+  translationKey: 'roles' | 'nicknames' | 'guild-join' | 'guild-role' | 'guild-stay'
 }
 
 export function listConditionCommand(
@@ -181,7 +186,10 @@ export async function handleConditionAdd(
   modalOptions.unshift(...manager.createOptions.top)
   modalOptions.push(...manager.createOptions.bottom)
 
-  let rawFetchedOptions: { result: ModalResult; modalResponse: ModalSubmitInteraction | ChatInputCommandInteraction }
+  let rawFetchedOptions: {
+    result: ModalResult
+    modalResponse: ModalSubmitInteraction | ChatInputCommandInteraction | ButtonInteraction
+  }
   try {
     if (modalOptions.length > 0) {
       const title = context.application.i18n.t(($) => $['discord.conditions.add.title'][manager.translationKey])
@@ -190,9 +198,17 @@ export async function handleConditionAdd(
       rawFetchedOptions = { result: {}, modalResponse: interaction }
     }
   } catch (error: unknown) {
-    context.logger.error(error)
-    const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.modal-error'])
-    await interaction.followUp({ content: errorResponse, components: [], flags: MessageFlags.Ephemeral })
+    if (error instanceof ModalInputInvalid) {
+      await error.modalInteraction.reply({
+        content: error.displayMessage,
+        components: [],
+        flags: MessageFlags.Ephemeral
+      })
+    } else {
+      context.logger.error(error)
+      const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.modal-error'])
+      await interaction.followUp({ content: errorResponse, components: [], flags: MessageFlags.Ephemeral })
+    }
     return
   }
 
@@ -203,7 +219,7 @@ export async function handleConditionAdd(
     resolvedOptions[rawOption.key] = rawFetchedOptions.result[translatedKey]
   }
 
-  await rawFetchedOptions.modalResponse.deferReply()
+  if (!rawFetchedOptions.modalResponse.deferred) await rawFetchedOptions.modalResponse.deferReply()
   const conditionData = await handler.createCondition(handlerContext, resolvedOptions, rawOptions)
   if (typeof conditionData === 'string') {
     const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.condition-error'], {

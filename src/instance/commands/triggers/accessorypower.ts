@@ -8,15 +8,15 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
-export default class MagicalPower extends ChatCommandHandler {
+export default class AccessoryPower extends ChatCommandHandler {
   constructor() {
     super({
       type: ChatCommandGroup.General,
       id: 'magical-power',
-      triggers: ['magicalpower', 'mp', 'power', 'accessories', 'acc', 'talisman', 'talismans', 'talismen'],
-      description: "Returns a player's highest recorded SkyBlock Magical Power",
+      triggers: ['accessorypower', 'ap', 'power', 'accessories', 'acc', 'talisman', 'talismans', 'talismen', 'mp'],
+      description: "Returns a player's highest recorded SkyBlock Accessory Power",
       example: `mp %s`
     })
   }
@@ -30,13 +30,13 @@ export default class MagicalPower extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const magicalPower = selectedProfile.accessory_bag_storage?.highest_magical_power ?? 0
+    const highestAccessoryPower = selectedProfile.accessory_bag_storage?.highest_magical_power ?? 0
     const stone = selectedProfile.accessory_bag_storage?.selected_power ?? '(none)'
     const enrichments = await this.getEnrichments(selectedProfile)
     const tuning = selectedProfile.accessory_bag_storage?.tuning.slot_0
 
     let result = `${givenUsername}:`
-    result += ` MP ${magicalPower}`
+    result += ` Highest AP ${highestAccessoryPower}`
     result += ` | Stone: ${stone}`
 
     result += ` | Tuning: `
@@ -83,10 +83,7 @@ export default class MagicalPower extends ChatCommandHandler {
     for (const slot of slots) {
       if (!('tag' in slot)) continue
 
-      const attributes = slot.tag.value.ExtraAttributes?.value
-      if (!attributes) continue
-
-      const enrichment = attributes.talisman_enrichment?.value
+      const enrichment = slot.tag.ExtraAttributes?.talisman_enrichment
       if (!enrichment) continue
 
       let type = result.find((entry) => entry.name === enrichment)
@@ -107,17 +104,11 @@ export default class MagicalPower extends ChatCommandHandler {
 type InventorySlot = InventoryItemSlot | Record<never, never>
 
 interface InventoryItemSlot {
-  id: { value: number }
-  count: { value: number }
-  tag: { value: ItemData }
+  id: number
+  count: number
+  tag: {
+    ExtraAttributes?: {
+      talisman_enrichment?: string
+    }
+  }
 }
-
-interface ItemData {
-  ExtraAttributes?: { value: SkyblockItemAttributes }
-}
-
-interface SkyblockItemAttributes {
-  talisman_enrichment?: { value: string }
-}
-
-/* eslint-enable @typescript-eslint/naming-convention */

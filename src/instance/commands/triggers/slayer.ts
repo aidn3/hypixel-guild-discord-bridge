@@ -1,6 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock'
+import { getSlayerLevel, SlayerHighestTierTable } from '../../../core/hypixel/hypixel-skyblock'
 import { capitalize } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
@@ -19,38 +20,6 @@ const Slayers: Record<string, string[]> = {
   vampire: ['riftstalker', 'bloodfiend', 'vamp', 'vampire'],
   overview: ['all', 'summary']
 }
-const SlayerExpTable = {
-  /* eslint-disable @typescript-eslint/naming-convention */
-  1: 5,
-  2: 15,
-  3: 200,
-  4: 1000,
-  5: 5000,
-  6: 20_000,
-  7: 100_000,
-  8: 400_000,
-  9: 1_000_000
-  /* eslint-enable @typescript-eslint/naming-convention */
-}
-const VampExpTable = {
-  /* eslint-disable @typescript-eslint/naming-convention */
-  1: 20,
-  2: 75,
-  3: 240,
-  4: 840,
-  5: 2400
-  /* eslint-enable @typescript-eslint/naming-convention */
-}
-
-const HighestTierTable = {
-  // 1 less due to index starting at 0
-  zombie: 4,
-  spider: 4,
-  wolf: 3,
-  enderman: 3,
-  blaze: 3,
-  vampire: 4
-}
 
 export default class Slayer extends ChatCommandHandler {
   constructor() {
@@ -59,7 +28,7 @@ export default class Slayer extends ChatCommandHandler {
       id: 'slayer',
       triggers: ['slayer', 'slayers', 'sl', 'slyr'],
       description: "Returns a player's slayer level",
-      example: `slayer eman %s`
+      example: `slayer %s eman`
     })
   }
 
@@ -84,10 +53,11 @@ export default class Slayer extends ChatCommandHandler {
     }
 
     for (const [name, slayer] of Object.entries(slayerBosses)) {
+      const typedName = name as 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze' | 'vampire'
       if (name === chosenSlayer) {
         return (
           `${givenUsername}'s ${capitalize(chosenSlayer)} slayer: ` +
-          `Level ${this.getSlayerLevel(slayer.xp, name)} - ${slayer.xp.toLocaleString()} XP - ` +
+          `Level ${getSlayerLevel(slayer.xp ?? 0, typedName)} - ${(slayer.xp ?? 0).toLocaleString()} XP - ` +
           `Highest tier kills: ${this.getHighestTierKills(slayer, name).toLocaleString()}`
         )
       }
@@ -95,32 +65,14 @@ export default class Slayer extends ChatCommandHandler {
 
     const output: string[] = []
     for (const [name, slayer] of Object.entries(slayerBosses)) {
-      output.push(`${capitalize(name)} ${this.getSlayerLevel(slayer.xp, name)}`)
+      const typedName = name as 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze' | 'vampire'
+      output.push(`${capitalize(name)} ${getSlayerLevel(slayer.xp ?? 0, typedName)}`)
     }
     return `${givenUsername}'s slayers: ${output.join(' - ')}`
   }
 
-  private getSlayerLevel(exp: number, slayer: string): number {
-    let maxLevel: number
-    let expTable: Record<number, number>
-
-    if (slayer === 'vampire') {
-      maxLevel = 5 // vampire slayer only goes to level 5
-      expTable = VampExpTable
-    } else {
-      maxLevel = 9
-      expTable = SlayerExpTable
-    }
-
-    let level = 0
-    for (let x = 1; x <= maxLevel && expTable[x] <= exp; x++) {
-      level = x
-    }
-    return level
-  }
-
   private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
-    const highestTier = HighestTierTable[slayerName as keyof typeof HighestTierTable]
+    const highestTier = SlayerHighestTierTable[slayerName as keyof typeof SlayerHighestTierTable]
     const index = `boss_kills_tier_${highestTier}`
     return slayerData[index as keyof SlayerType] ?? 0
   }

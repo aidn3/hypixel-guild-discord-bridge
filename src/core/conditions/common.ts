@@ -50,8 +50,7 @@ export enum ConditionResultType {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type ConditionResult<ValueType extends ConditionValue> =
-  | ConditionSuccessfulResult<ValueType>
-  | ConditionFailureResult
+  ConditionSuccessfulResult<ValueType> | ConditionFailureResult
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ConditionSuccessfulResult<ValueType extends ConditionValue> {

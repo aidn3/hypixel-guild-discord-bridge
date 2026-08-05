@@ -113,19 +113,19 @@ export function shortenNumber(value: number): string {
   if (value === 0) return value.toFixed(0)
   let suffix = ''
 
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000
     suffix = 'k'
   }
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000
     suffix = 'm'
   }
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000
     suffix = 'b'
   }
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000
     suffix = 't'
   }
