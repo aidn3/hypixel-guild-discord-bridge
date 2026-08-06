@@ -276,7 +276,7 @@
   "commands.mcgo.none": "{{username}} has never played Cops and Crims",
   "commands.mcgo.response": "{{username}}'s Cops and Crims stats: Games: {{gamePlays, number}}, Wins: {{gameWins, number}}, Kills: {{kills, number}}, Shots: {{shotsFired, number}} ({{headshotKills, number}} Headshots), Bombs: {{bombsPlanted, number}} planted / {{bombsDefused, number}} defused",
   "commands.hotf.none": "{{username}} has not unlocked their HOTF tree yet.",
-  "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Whispers {{whispers, number}} - Center of the Forest {{cotf, number}}.",
+  "commands.hotf.response": "{{username}} is HOTF {{hotf, number}} - Center of the Forest {{cotf, number}} - Forest Whispers {{forest, number}} - Desert Whispers {{desert, number}}",
   "commands.mineshafts.response": "{{username}} has entered {{entered, number}} shafts and looted: {{lapis, number}} Lapis - {{umber, number}} Umber - {{tungsten, number}} Tungsten - {{vanguard, number}} Vanguards",
   "commands.mineshafts.none": "{{username}} has never entered a mineshaft before",
   "commands.news.response": "{{updatesTitle}} {{updatesDate}} Release: {{updatesLink}} - {{patchnotesTitle}}: https://hypixel.net/threads/.{{patchnotesGuid}}/",
