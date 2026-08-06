@@ -174,7 +174,10 @@ export interface SkyblockMember {
     }
   }
   foraging_core?: {
-    forests_whispers?: number
+    whispers?: {
+      forest?: { total?: number }
+      desert?: { total?: number }
+    }
   }
   glacite_player_data?: {
     corpses_looted?: {
