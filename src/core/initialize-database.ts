@@ -1090,13 +1090,13 @@ function migrateFrom25to26(database: Database, logger: Logger4Js): void {
     .get()
   if (rawDisabledTriggers !== undefined) {
     const disabledTriggers = JSON.parse(rawDisabledTriggers) as string[]
-    const insert = database.prepare('INSERT OR IGNORE INTO "chatCommands" (id, enabled) VALUES (?, 0)')
+    const insert = database.prepare<[string]>('INSERT OR IGNORE INTO "chatCommands" (id, enabled) VALUES (?, 0)')
     for (const disabledTrigger of disabledTriggers) {
-      const id = currentCommands.find((command) => command.triggers.includes(disabledTrigger))
-      if (id === undefined) {
+      const command = currentCommands.find((command) => command.triggers.includes(disabledTrigger))
+      if (command === undefined) {
         logger.warn(`Failed disabling chat command ${disabledTrigger}`)
       } else {
-        insert.run(id)
+        insert.run(command.id)
       }
     }
   }
