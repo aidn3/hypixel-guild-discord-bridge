@@ -86,11 +86,11 @@ async function handleAllHistory(
 
   await interactivePaging(
     context.interaction,
-    1,
+    0,
     Duration.minutes(15).toMilliseconds(),
     context.errorHandler,
     async (currentPage) => {
-      const history = database.allHistory(currentPage - 1) // 0-indexed
+      const history = database.allHistory(currentPage)
 
       let result = ''
       for (const entry of history.entries) {
@@ -122,11 +122,11 @@ async function handleDiscordHistory(
 
   await interactivePaging(
     context.interaction,
-    1,
+    0,
     Duration.minutes(15).toMilliseconds(),
     context.errorHandler,
     async (currentPage) => {
-      const history = database.userHistory(user, currentPage - 1) // 0-indexed
+      const history = database.userHistory(user, currentPage)
 
       let result = ''
       for (const entry of history.entries) {
@@ -166,11 +166,11 @@ async function handleMinecraftHistory(
 
   await interactivePaging(
     context.interaction,
-    1,
+    0,
     Duration.minutes(15).toMilliseconds(),
     context.errorHandler,
     async (currentPage) => {
-      const history = database.userHistory(user, currentPage - 1) // 0-indexed
+      const history = database.userHistory(user, currentPage)
 
       let result = ''
       for (const entry of history.entries) {
