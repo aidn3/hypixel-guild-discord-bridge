@@ -63,12 +63,31 @@ export enum CooldownType {
   Global = 'global'
 }
 
+export type CommandId = symbol //TODO: opaque: number | bigint
+
+export enum ChatCommandGroup {
+  General = 'general',
+  Management = 'management',
+  Economy = 'economy'
+}
+
 export abstract class ChatCommandHandler {
+  public readonly type: ChatCommandGroup
+  public readonly id: CommandId
   public readonly triggers: string[]
   public readonly description: string
   public readonly example: string
 
-  protected constructor(options: { triggers: string[]; description: string; example: string }) {
+  protected constructor(options: {
+    type?: ChatCommandGroup
+    id: string
+    triggers: string[]
+    description: string
+    example: string
+  }) {
+    this.type = options.type ?? ChatCommandGroup.General
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.id = (options.id ?? options.triggers[0]) as unknown as CommandId
     this.triggers = options.triggers
     this.description = options.description
     this.example = options.example
@@ -175,12 +194,12 @@ interface BaseDiscordContext<Origin extends CommandOrigin> {
 
   allCommands: DiscordCommandHandler[]
 }
-
 export enum CommandOrigin {
   Private = 'private',
   Guild = 'guild',
   Bridge = 'bridge'
 }
+
 type OriginDecider<
   Origin extends CommandOrigin,
   PrivateType,
@@ -214,7 +233,6 @@ export interface DiscordCommandContext<
       : undefined
   showPermissionDenied: (requiredPermission: Exclude<Permission, Permission.Anyone>) => Promise<void>
 }
-
 export interface DiscordAutoCompleteContext<Origin extends CommandOrigin> extends BaseDiscordContext<Origin> {
   interaction: OriginDecider<
     Origin,

@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class CopsAndCrims extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'cops-and-crims',
       triggers: ['cac', 'copsandcrims', 'copsandcriminals', 'mcgo'],
       description: "Returns a player's Cops and Crims stats",
       example: `mcgo %s`

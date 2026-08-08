@@ -1,6 +1,6 @@
 import { ChannelType } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import type { EventContext } from '../../spontaneous-events/common'
 import { startTrivia } from '../../spontaneous-events/events/trivia'
@@ -8,6 +8,8 @@ import { startTrivia } from '../../spontaneous-events/events/trivia'
 export default class Trivia extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'trivia',
       triggers: ['trivia', 'quiz', 'triviaquiz'],
       description: 'Start a trivia event',
       example: `trivia`

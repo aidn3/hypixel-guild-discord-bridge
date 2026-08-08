@@ -5,12 +5,14 @@
 */
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/utility.js'
 
 export default class Bingo extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'bingo',
       triggers: ['bingo', 'bingoevent'],
       description: "Returns a player's current bingo progress",
       example: `bingo %s`

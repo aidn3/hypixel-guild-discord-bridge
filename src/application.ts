@@ -24,6 +24,7 @@ import { ApplicationLanguages, LanguageConfigurations } from './core/language-co
 import type { Urchin } from './core/urchin/urchin'
 import type { MojangApi } from './core/users/mojang'
 import { DiscordRoles } from './features/discord-roles/discord-roles'
+import { Economy } from './features/economy/economy'
 import { MinecraftGuildsManager } from './features/minecraft-guilds/minecraft-guilds-manager'
 import { MinecraftStatus } from './features/minecraft-status/minecraft-status'
 import AutoRestart from './instance/auto-restart'
@@ -63,6 +64,7 @@ export default class Application extends Emittery<ApplicationEvents> {
   public readonly minecraftGuildsManager: MinecraftGuildsManager
   public readonly minecraftStatus: MinecraftStatus
   private readonly discordRoles: DiscordRoles
+  public readonly economy: Economy
   private readonly skyblockReminders: SkyblockReminders
   private readonly spontaneousEvents: SpontaneousEvents
   private readonly autoRestart: AutoRestart
@@ -116,6 +118,7 @@ export default class Application extends Emittery<ApplicationEvents> {
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
 
+    this.economy = new Economy(this)
     this.minecraftGuildsManager = new MinecraftGuildsManager(this, this.core.getSqliteManager())
     this.minecraftStatus = new MinecraftStatus(this, this.core.getSqliteManager())
     this.discordRoles = new DiscordRoles(this)
@@ -268,6 +271,7 @@ export default class Application extends Emittery<ApplicationEvents> {
 
       this.discordInstance, // discord second to send any notification about connecting
 
+      this.economy,
       this.minecraftGuildsManager,
       this.prometheusInstance,
       this.metricsInstance,

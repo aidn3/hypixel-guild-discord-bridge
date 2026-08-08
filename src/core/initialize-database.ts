@@ -85,6 +85,12 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom24to25(database)
   })
+  sqliteManager.registerMigrator((database, logger) => {
+    migrateFrom25to26(database, logger)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom26to27(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -867,6 +873,255 @@ function migrateFrom24to25(database: Database): void {
 
   database.exec('ALTER TABLE "minecraftGuild" ADD COLUMN "stayConditionMode" INTEGER NOT NULL DEFAULT 1;')
   database.exec('ALTER TABLE "minecraftGuildRoles" ADD COLUMN "canPurge" INTEGER NOT NULL DEFAULT 0;')
+}
+
+function migrateFrom25to26(database: Database, logger: Logger4Js): void {
+  database.exec(
+    'CREATE TABLE "chatCommandGroups" (' +
+      '  "group" TEXT PRIMARY KEY NOT NULL,' +
+      '  prefix TEXT UNIQUE NOT NULL' +
+      ' ) STRICT'
+  )
+
+  const alternatives = ['.', '@', '#', '>']
+  const generalDefaultPrefix = database
+    .prepare('SELECT value FROM configurations WHERE category = ? AND name = ?')
+    .pluck(true)
+    .get('commands', 'chatPrefix') as string | undefined
+  const entries: [string, string][] = [
+    ['general', generalDefaultPrefix ?? '!'],
+    ['economy', '$'],
+    ['management', ':']
+  ]
+
+  const typeInsert = database.prepare('INSERT INTO chatCommandGroups VALUES (?, ?)')
+  for (const entry of entries) {
+    try {
+      typeInsert.run(entry[0], entry[1])
+    } catch {
+      let success = false
+      for (const alternative of alternatives) {
+        try {
+          typeInsert.run(entry[0], alternative)
+          success = true
+          break
+        } catch {
+          // ignored
+        }
+      }
+
+      if (!success) assert.fail(`Failed to insert chat command group=${entry[0]}`)
+    }
+  }
+  database.exec("DELETE FROM configurations WHERE category = 'commands' AND name = 'chatPrefix';")
+
+  database.exec(
+    'CREATE TABLE "chatCommands" (' +
+      '  id TEXT PRIMARY KEY NOT NULL,' +
+      '  enabled INTEGER NOT NULL DEFAULT 1' +
+      ' ) STRICT'
+  )
+
+  database.exec('DROP TABLE chatCommandGlobalCooldown;')
+  database.exec('DROP TABLE chatCommandUserCooldown;')
+  database.exec('DROP TABLE chatCommandChannelCooldown;')
+
+  database.exec(
+    'CREATE TABLE "chatCommandGlobalCooldown" (' +
+      '  commandId TEXT NOT NULL REFERENCES chatCommands(id) ON DELETE CASCADE,' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(commandId)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "chatCommandChannelCooldown" (' +
+      '  commandId TEXT NOT NULL REFERENCES chatCommands(id) ON DELETE CASCADE,' +
+      '  channelType TEXT NOT NULL,' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(commandId, channelType)' +
+      ' ) STRICT'
+  )
+
+  database.exec(
+    'CREATE TABLE "chatCommandUserCooldown" (' +
+      '  commandId TEXT NOT NULL REFERENCES chatCommands(id) ON DELETE CASCADE,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  lastExecutedAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(commandId, userId)' +
+      ' ) STRICT'
+  )
+
+  // auto-generated with the help of scripts/generate-documentation.ts
+  const currentCommands = [
+    { id: '67-game', triggers: ['67'] },
+    { id: '8ball', triggers: ['8ball', '8balls', '8', 'ball', 'balls', '8b'] },
+    { id: 'agatha', triggers: ['agatha', 'agathabests', 'agathapbs', 'foragingpbs'] },
+    { id: 'age', triggers: ['age', 'joined'] },
+    { id: 'airstrike', triggers: ['airstrike', 'as'] },
+    { id: 'check-skyblock-api', triggers: ['api'] },
+    { id: 'render-armor', triggers: ['armor', 'armors', 'skyblockarmor', 'skyblockarmors'] },
+    { id: 'asian', triggers: ['asian', 'quickmath'] },
+    { id: 'bestiary', triggers: ['be', 'bestiary'] },
+    { id: 'bedwars', triggers: ['bedwars', 'bw'] },
+    { id: 'bingo', triggers: ['bingo', 'bingoevent'] },
+    { id: 'bits', triggers: ['bits', 'bit'] },
+    { id: 'boo', triggers: ['boo'] },
+    { id: 'boop', triggers: ['boop'] },
+    { id: 'bow-spleef', triggers: ['bowspleef', 'bs'] },
+    { id: 'build-battle', triggers: ['buildbattle', 'build', 'bb'] },
+    { id: 'cops-and-crims', triggers: ['cac', 'copsandcrims', 'copsandcriminals', 'mcgo'] },
+    { id: 'calculate', triggers: ['calculate', 'calc', 'c', 'math'] },
+    { id: 'catacombs', triggers: ['catacombs', 'catacomb', 'cata', 'dungeons', 'dungeon'] },
+    { id: 'chocolate', triggers: ['chocolate', 'chocolates', 'cf'] },
+    { id: 'class-average', triggers: ['classavg', 'ca', 'classaverage'] },
+    { id: 'coin-flip', triggers: ['coinflip', 'coinf'] },
+    { id: 'collection', triggers: ['collection', 'collections'] },
+    { id: 'contests', triggers: ['contests', 'jacobcontests'] },
+    { id: 'counting-chain', triggers: ['counting', 'countingchain', 'countchain'] },
+    { id: 'current-dungeon', triggers: ['currentdungeon', 'currdungeon', 'cd'] },
+    { id: 'current-kuudra', triggers: ['currentkuudra', 'currkuudra', 'ck'] },
+    { id: 'dark-auction', triggers: ['da', 'darkauction'] },
+    { id: 'dad-joke', triggers: ['dadjoke', 'joke', 'dad'] },
+    { id: 'dev-excuse', triggers: ['devexcuse', 'devexc', 'dev'] },
+    { id: 'diana', triggers: ['diana', 'mytho', 'mythos', 'mythical'] },
+    { id: 'dice', triggers: ['dice'] },
+    { id: 'discord', triggers: ['discord', 'dc'] },
+    { id: 'dojo', triggers: ['dojo'] },
+    { id: 'eggs', triggers: ['eggs', 'egg'] },
+    { id: 'skyblock-election', triggers: ['election'] },
+    { id: 'end-party', triggers: ['endparty', 'delparty'] },
+    { id: 'render-equipments', triggers: ['eq', 'equipments', 'equipment', 'equip'] },
+    { id: 'essence', triggers: ['essence', 'essences', 'ess'] },
+    { id: 'execute', triggers: ['execute', 'exec'] },
+    { id: 'explain', triggers: ['explain', 'e'] },
+    { id: 'fairy-souls', triggers: ['fairysouls', 'fairysoul', 'fairy', 'fs'] },
+    { id: 'fetchur', triggers: ['fetchur', 'fetcher'] },
+    { id: 'forge', triggers: ['forge', 'dwarven'] },
+    { id: 'garden', triggers: ['garden', 'ga'] },
+    { id: 'guild-gexp', triggers: ['gexp', 'guildxp', 'guildexp'] },
+    { id: 'ranks-gifted', triggers: ['gifted', 'ranksgifted'] },
+    { id: 'guild', triggers: ['guild', 'guildOf', 'g'] },
+    { id: 'help', triggers: ['help', 'command', 'commands', 'cmd', 'cmds'] },
+    { id: 'hypixel-level', triggers: ['hlevel', 'hypixellevel', 'hlvl'] },
+    { id: 'hotf', triggers: ['hotf', 'forest', 'whispers'] },
+    { id: 'hotm', triggers: ['hotm', 'powder'] },
+    { id: 'insult', triggers: ['insult'] },
+    { id: 'render-inventory', triggers: ['inventory', 'inv', 'hotbar', 'renderinv', 'renderinventory'] },
+    { id: 'invite', triggers: ['invite', 'guildinvite'] },
+    { id: 'iq', triggers: ['iq'] },
+    { id: 'render-item', triggers: ['item', 'render', 'slot', 'renderslot', 'renderitem'] },
+    { id: 'jacob', triggers: ['jacob', 'jacobs', 'jacobcontents', 'jacobcontest'] },
+    { id: 'karma', triggers: ['karma'] },
+    { id: 'kuudra', triggers: ['kuudra', 'k'] },
+    { id: 'level', triggers: ['level', 'lvl', 'l'] },
+    { id: 'list', triggers: ['list', 'ls'] },
+    {
+      id: 'magical-power',
+      triggers: ['magicalpower', 'mp', 'power', 'accessories', 'acc', 'talisman', 'talismans', 'talismen']
+    },
+    { id: 'skyblock-mayor', triggers: ['mayor', 'm'] },
+    { id: 'megawalls', triggers: ['megawalls', 'megawall', 'mw'] },
+    {
+      id: 'check-guild',
+      triggers: ['mguild', 'mguilds', 'massguilds', 'massguild', 'mg', 'guilds', 'guildscheck', 'guildcheck']
+    },
+    { id: 'motes', triggers: ['motes', 'mote'] },
+    { id: 'mute', triggers: ['mute'] },
+    { id: 'networth', triggers: ['networth', 'net', 'nw'] },
+    { id: 'skyblock-news', triggers: ['news', 'sbnews', 'patchnotes'] },
+    { id: 'oskills', triggers: ['oskills', 'oskill', 'osk', 'overflowskills'] },
+    { id: 'list-parties', triggers: ['parties', 'party', 'listparty', 'listpartys', 'listparties', 'plist'] },
+    { id: 'personal-best', triggers: ['pb', 'pbr', 'personalbest'] },
+    { id: 'placeholder', triggers: ['placeholder', 'ph'] },
+    { id: 'points-all', triggers: ['points', 'point', 'allpoints', 'allpoint', 'pointall', 'pointsall'] },
+    {
+      id: 'points-all-30-days',
+      triggers: ['points30', 'points30days', 'point30days', '30dayspoints', '30dayspoint', '30points']
+    },
+    { id: 'praise', triggers: ['praise'] },
+    { id: 'purse', triggers: ['purse', 'bank', 'coins', 'coin'] },
+    { id: 'rank', triggers: ['rank'] },
+    { id: 'ranks', triggers: ['ranks', 'guildranks', 'granks', 'gr'] },
+    {
+      id: 'reputation',
+      triggers: ['rep', 'reputation', 'factions', 'faction', 'crimson', 'crimsonisle', 'isle', 'nether']
+    },
+    { id: 'rng', triggers: ['rng'] },
+    { id: 'roulette', triggers: ['roulette', 'rr'] },
+    { id: 'rock-paper-scissors', triggers: ['rps'] },
+    { id: 'rtca', triggers: ['rtca'] },
+    { id: 'runs', triggers: ['runs', 'r'] },
+    { id: 'sacks', triggers: ['sacks', 'sack', 'sax'] },
+    { id: 'secrets', triggers: ['secrets', 's', 'sec'] },
+    { id: 'select', triggers: ['select', 'ifl'] },
+    { id: 'mineshafts', triggers: ['shafts', 'shaft', 'mineshaft', 'mineshafts', 'corpse', 'corpses'] },
+    { id: 'skills', triggers: ['skill', 'skills', 'sk', 'skillaverage', 'skillsaverage', 'sa'] },
+    { id: 'skywars', triggers: ['skywars', 'skywar', 'sw'] },
+    { id: 'slayer', triggers: ['slayer', 'slayers', 'sl', 'slyr'] },
+    { id: 'soopy', triggers: ['soopy', '-'] },
+    {
+      id: 'special-mayor',
+      triggers: ['specialmayors', 'specialmayor', 'smayor', 'smayors', 'derpy', 'jerry', 'scorpius']
+    },
+    { id: 'starfall', triggers: ['starfall', 'star', 'sf'] },
+    { id: 'start-party', triggers: ['startparty', 'createparty', 'sparty'] },
+    { id: 'status', triggers: ['status', 'stalk'] },
+    { id: 'sync', triggers: ['sync', 'rankup', 'guildrankup', 'grankup'] },
+    { id: 'sync-guild', triggers: ['sync-guild', 'mass-sync', 'guild-sync'] },
+    { id: 'timecharm', triggers: ['timecharm', 'timecharms', 'charm', 'charms', 'riftcharm', 'riftcharms'] },
+    { id: 'toggle', triggers: ['toggle', 'disable'] },
+    { id: 'toggled', triggers: ['toggled', 'disabled'] },
+    { id: 'trivia', triggers: ['trivia', 'quiz', 'triviaquiz'] },
+    { id: 'trophyfish', triggers: ['trophyfish', 'trophyfishing', 'trophy', 'tf'] },
+    { id: 'uhc', triggers: ['uhc'] },
+    { id: 'unlink', triggers: ['unlink'] },
+    { id: 'unscramble', triggers: ['unscramble', 'scramble'] },
+    { id: 'urchin', triggers: ['urchin'] },
+    { id: 'uuid', triggers: ['username', 'name', 'ign', 'uuid'] },
+    { id: 'vengeance', triggers: ['vengeance', 'v'] },
+    { id: 'warp', triggers: ['warp', 'warpout'] },
+    { id: 'weight', triggers: ['weight', 'w'] },
+    { id: 'woolwars', triggers: ['woolwars', 'woolwar', 'ww'] }
+  ]
+  const rawDisabledTriggers = database
+    .prepare<[], string>("SELECT value FROM configurations WHERE category = 'commands' AND name = 'disabledCommands'")
+    .pluck(true)
+    .get()
+  if (rawDisabledTriggers !== undefined) {
+    const disabledTriggers = JSON.parse(rawDisabledTriggers) as string[]
+    const insert = database.prepare<[string]>('INSERT OR IGNORE INTO "chatCommands" (id, enabled) VALUES (?, 0)')
+    for (const disabledTrigger of disabledTriggers) {
+      const command = currentCommands.find((command) => command.triggers.includes(disabledTrigger))
+      if (command === undefined) {
+        logger.warn(`Failed disabling chat command ${disabledTrigger}`)
+      } else {
+        insert.run(command.id)
+      }
+    }
+  }
+
+  database.exec("DELETE FROM configurations WHERE category = 'commands' AND name = 'disabledCommands';")
+}
+
+function migrateFrom26to27(database: Database): void {
+  database.exec(
+    'CREATE TABLE "economy" (' +
+      '  userId INTEGER PRIMARY KEY NOT NULL REFERENCES users(id),' +
+      '  totalChat INTEGER NOT NULL DEFAULT 0,' +
+      '  value INTEGER NOT NULL DEFAULT 0' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "economyHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  change INTEGER NOT NULL,' +
+      '  reason TEXT NOT NULL,' +
+      '  byUser INTEGER REFERENCES users(id) DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ') STRICT;'
+  )
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { capitalize, formatTime } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
@@ -16,6 +16,8 @@ export default class CurrentKuudra extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'current-kuudra',
       triggers: ['currentkuudra', 'currkuudra', 'ck'],
       description: "Returns a player's last kuudra run",
       example: `ck %s`

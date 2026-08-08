@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class PointsAll extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'points-all',
       triggers: ['points', 'point', 'allpoints', 'allpoint', 'pointall', 'pointsall'],
       description: "Returns user's all time activity points ",
       example: `points %s`

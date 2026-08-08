@@ -1,9 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Mayor extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'skyblock-mayor',
       triggers: ['mayor', 'm'],
       description: 'Show current Hypixel SkyBlock mayor and minister',
       example: `mayor`

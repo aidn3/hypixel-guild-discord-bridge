@@ -1,6 +1,6 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
-import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 import Duration from '../../../utility/duration'
 import { usernameNotExists } from '../common/utility'
 
@@ -38,6 +38,8 @@ export default class Vengeance extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'vengeance',
       triggers: ['vengeance', 'v'],
       description: 'Try your luck against another player for a 5 minute mute',
       example: `v %s`

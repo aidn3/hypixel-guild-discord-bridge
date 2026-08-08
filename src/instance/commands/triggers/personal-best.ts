@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type {
   DungeonFloors,
   DungeonFloorsWithEntrance,
@@ -17,6 +17,8 @@ import {
 export default class PersonalBest extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'personal-best',
       triggers: ['pb', 'pbr', 'personalbest'],
       description: 'Returns a players best dungeon run time',
       example: `pb %s m7`

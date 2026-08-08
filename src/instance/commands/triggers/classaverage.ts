@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import {
   getSelectedSkyblockProfile,
@@ -12,6 +12,8 @@ import {
 export default class ClassAverage extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'class-average',
       triggers: ['classavg', 'ca', 'classaverage'],
       description: "Returns a player's class average",
       example: `classavg %s`

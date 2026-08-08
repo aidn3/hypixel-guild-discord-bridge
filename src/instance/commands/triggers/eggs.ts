@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -24,6 +24,8 @@ export default class Eggs extends ChatCommandHandler {
   ]
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'eggs',
       triggers: ['eggs', 'egg'],
       description: "Returns a player's SkyBlock easter eggs stats",
       example: `eggs %s`

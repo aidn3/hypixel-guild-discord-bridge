@@ -1,6 +1,6 @@
 import { Platform } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
-import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
 import { checkChatTriggers, PrivateMessageChat } from '../../../utility/chat-triggers.js'
 import Duration from '../../../utility/duration'
@@ -13,6 +13,8 @@ import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
 export default class Boop extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'boop',
       triggers: ['boop'],
       description: '/boop a player in-game',
       example: `boop %s`

@@ -1,9 +1,8 @@
 import { TTLCache } from '@isaacs/ttlcache'
-import type { AxiosResponse } from 'axios'
 import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 
 export default class Soopy extends ChatCommandHandler {
@@ -89,6 +88,8 @@ export default class Soopy extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'soopy',
       triggers: ['soopy', '-'],
       description: 'Use SoopyV2 API to execute commands',
       example: `- rtca`
@@ -117,10 +118,10 @@ export default class Soopy extends ChatCommandHandler {
     }
 
     try {
-      const result = await DefaultAxios.get(Soopy.SoopyApiUrl, {
+      const result = await DefaultAxios.get<string>(Soopy.SoopyApiUrl, {
         timeout: 2 * 60 * 1000,
         data: { m: fullCommand, u: context.username }
-      }).then((response: AxiosResponse<string, unknown>) => response.data)
+      }).then((response) => response.data)
 
       this.cache.set(Soopy.createCacheKey(context.username, fullCommand), result)
       return Soopy.formatResponse(context.username, result)

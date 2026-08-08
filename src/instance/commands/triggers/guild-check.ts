@@ -1,9 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class GuildCheck extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'check-guild',
       triggers: ['mguild', 'mguilds', 'massguilds', 'massguild', 'mg', 'guilds', 'guildscheck', 'guildcheck'],
       description: "Check multiple players' guilds, if any in one",
       example: `mg %s ...`

@@ -22,7 +22,7 @@ import {
 import type Application from '../../../application.js'
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
-import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
+import { ChatCommandGroup, CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { DiscordChatFormat } from '../../../core/discord/discord-configurations'
 import { ApplicationLanguages } from '../../../core/language-configurations'
@@ -85,6 +85,7 @@ export default {
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
         fetchCommandsOptions(context.application),
+        fetchEconomyOptions(context.application),
         fetchLanguageOptions(context.application),
         fetchOtherOptions(context.interaction)
       ]
@@ -704,7 +705,8 @@ function fetchDiscordOptions(application: Application): CategoryOption {
 function fetchCommandsOptions(application: Application): CategoryOption {
   const discord = application.core.discordConfigurations
   const minecraft = application.core.minecraftConfigurations
-  const commands = application.core.commandsConfigurations
+  const commands = application.commandsInstance.commandsConfigurations
+  const commandsDatabase = application.commandsInstance.database
 
   return {
     type: OptionType.Category,
@@ -730,18 +732,6 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         }
       },
       {
-        type: OptionType.Text,
-        name: 'Chat Command Prefix',
-        description: 'Prefix to indicate it is a chat command.',
-        style: InputStyle.Tiny,
-        min: 1,
-        max: 2, // to allow "b!" prefix for example at most
-        getOption: () => commands.getChatPrefix(),
-        setOption: (newValue) => {
-          commands.setChatPrefix(newValue)
-        }
-      },
-      {
         type: OptionType.Boolean,
         name: `Allow Helper Staff ${Recommended}`,
         get description() {
@@ -754,6 +744,48 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         toggleOption: () => {
           commands.setAllowHelperToggle(!commands.getAllowHelperToggle())
         }
+      },
+      {
+        type: OptionType.EmbedCategory,
+        name: 'Command Prefix',
+        options: [
+          {
+            type: OptionType.Text,
+            name: 'General Chat Command Prefix',
+            description: 'Prefix to indicate it is a chat command.',
+            style: InputStyle.Tiny,
+            min: 1,
+            max: 2, // to allow "b!" prefix for example at most
+            getOption: () => commandsDatabase.commandGroups(ChatCommandGroup.General).prefix,
+            setOption: (newValue) => {
+              commandsDatabase.setPrefix(ChatCommandGroup.General, newValue)
+            }
+          },
+          {
+            type: OptionType.Text,
+            name: 'Management Chat Command Prefix',
+            description: 'Prefix to indicate it is a chat command.',
+            style: InputStyle.Tiny,
+            min: 1,
+            max: 2, // to allow "b!" prefix for example at most
+            getOption: () => commandsDatabase.commandGroups(ChatCommandGroup.Management).prefix,
+            setOption: (newValue) => {
+              commandsDatabase.setPrefix(ChatCommandGroup.Management, newValue)
+            }
+          },
+          {
+            type: OptionType.Text,
+            name: 'Economy Chat Command Prefix',
+            description: 'Prefix to indicate it is a chat command.',
+            style: InputStyle.Tiny,
+            min: 1,
+            max: 2, // to allow "b!" prefix for example at most
+            getOption: () => commandsDatabase.commandGroups(ChatCommandGroup.Economy).prefix,
+            setOption: (newValue) => {
+              commandsDatabase.setPrefix(ChatCommandGroup.Economy, newValue)
+            }
+          }
+        ]
       },
       {
         type: OptionType.Category,
@@ -781,10 +813,58 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Label,
         name: 'Disabled Chat Commands',
         description: 'This can only be changed via `!toggle`.',
-        getOption: () => {
-          const disabledCommands = commands.getDisabledCommands()
-          return disabledCommands.length === 0 ? 'none' : disabledCommands.join(', ')
+        getOption: undefined
+      }
+    ]
+  }
+}
+
+function fetchEconomyOptions(application: Application): CategoryOption {
+  const commandsDatabase = application.commandsInstance.database
+  const config = application.economy.configuration
+
+  return {
+    type: OptionType.Category,
+    name: 'Economy',
+    header: CategoryLabel,
+    options: [
+      {
+        type: OptionType.Text,
+        name: 'Economy Chat Command Prefix',
+        description: 'Prefix to indicate it is a chat command.',
+        style: InputStyle.Tiny,
+        min: 1,
+        max: 2, // to allow "b!" prefix for example at most
+        getOption: () => commandsDatabase.commandGroups(ChatCommandGroup.Economy).prefix,
+        setOption: (newValue) => {
+          commandsDatabase.setPrefix(ChatCommandGroup.Economy, newValue)
         }
+      },
+      {
+        type: OptionType.Boolean,
+        name: `Give Officer Full Control`,
+        description:
+          'Allow Officers to have full control over the economy including giving and taking arbitrarily from other users.',
+        getOption: () => config.getAllowModeratorsManagement(),
+        toggleOption: () => {
+          config.setAllowModeratorsManagement(!config.getAllowModeratorsManagement())
+        }
+      },
+      {
+        type: OptionType.Category,
+        name: 'Daily Rewards',
+        description: 'Let users gain points every day for being present.',
+        options: [
+          {
+            type: OptionType.Boolean,
+            name: `In-game Only`,
+            description: 'Force users to login in-game to collect the reward.',
+            getOption: () => config.getDailyIngameOnly(),
+            toggleOption: () => {
+              config.setDailyIngameOnly(!config.getDailyIngameOnly())
+            }
+          }
+        ]
       }
     ]
   }

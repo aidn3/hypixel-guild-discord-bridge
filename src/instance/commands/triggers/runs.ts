@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -13,6 +13,8 @@ import {
 export default class Runs extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'runs',
       triggers: ['runs', 'r'],
       description: 'Returns how many dungeon runs a player has done',
       example: `runs %s mm`

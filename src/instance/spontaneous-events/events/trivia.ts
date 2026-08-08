@@ -4,7 +4,7 @@ import type { User } from '../../../common/user'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import type Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout'
-import { type EventContext, shuffleArrayInPlace, SpontaneousEventHandler } from '../common'
+import { type EventContext, type EventResult, shuffleArrayInPlace, SpontaneousEventHandler } from '../common'
 
 export class Trivia extends SpontaneousEventHandler {
   override enabled(): boolean {
@@ -13,7 +13,7 @@ export class Trivia extends SpontaneousEventHandler {
       .includes(SpontaneousEventsNames.Trivia)
   }
 
-  override async startEvent(): Promise<void> {
+  override async startEvent(): Promise<EventResult> {
     const context: EventContext = {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -24,6 +24,8 @@ export class Trivia extends SpontaneousEventHandler {
     const duration = this.application.core.spontaneousEventsConfigurations.getTriviaDuration()
     const result = await startTrivia(context, duration)
     await context.broadcastMessage(result.message, result.color)
+
+    return result.eventResult
   }
 }
 
@@ -920,7 +922,10 @@ const TriviaEntries = [
   }
 ]
 
-export async function startTrivia(context: EventContext, time: Duration): Promise<{ message: string; color: Color }> {
+export async function startTrivia(
+  context: EventContext,
+  time: Duration
+): Promise<{ message: string; color: Color; eventResult: EventResult }> {
   const trivia = createQuiz()
 
   const timeout = new Timeout<User>(time.toMilliseconds())
@@ -957,10 +962,15 @@ export async function startTrivia(context: EventContext, time: Duration): Promis
   if (wonUser === undefined) {
     return {
       message: `The answer is: ${trivia.answerDisplay}. Remember you can only answer once and must be with the letter!`,
-      color: Color.Info
+      color: Color.Info,
+      eventResult: { type: 'ended' }
     }
   } else {
-    return { message: `Good job ${wonUser.displayName()}!`, color: Color.Good }
+    return {
+      message: `Good job ${wonUser.displayName()}!`,
+      color: Color.Good,
+      eventResult: { type: 'win', user: wonUser }
+    }
   }
 }
 

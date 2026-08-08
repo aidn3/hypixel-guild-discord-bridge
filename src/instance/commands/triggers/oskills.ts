@@ -1,13 +1,15 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class OverflowSkills extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'oskills',
       triggers: ['oskills', 'oskill', 'osk', 'overflowskills'],
       description: "Returns a player's skills levels without cap",
       example: `oskills %s`

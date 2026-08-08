@@ -4,7 +4,7 @@ import type { User } from '../../../common/user'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout'
-import type { EventContext } from '../common'
+import type { EventContext, EventResult } from '../common'
 import { SpontaneousEventHandler } from '../common'
 
 export class CountingChain extends SpontaneousEventHandler {
@@ -14,7 +14,7 @@ export class CountingChain extends SpontaneousEventHandler {
       .includes(SpontaneousEventsNames.CountingChain)
   }
 
-  override async startEvent(): Promise<void> {
+  override async startEvent(): Promise<EventResult> {
     const context: EventContext = {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -25,13 +25,15 @@ export class CountingChain extends SpontaneousEventHandler {
     const duration = this.application.core.spontaneousEventsConfigurations.getCountingChainDuration()
     const result = await startCountingChain(context, duration)
     await context.broadcastMessage(result.message, result.color)
+
+    return result.eventResult
   }
 }
 
 export async function startCountingChain(
   context: EventContext,
   time: Duration
-): Promise<{ message: string; color: Color }> {
+): Promise<{ message: string; color: Color; eventResult: EventResult }> {
   const timeout = new Timeout<ChatEvent>(time.toMilliseconds())
   let beforeLast: User | undefined
   let lastUser: User | undefined
@@ -72,8 +74,8 @@ export async function startCountingChain(
   await timeout.wait()
   context.application.off('chat', listener)
 
-  if (beforeLast === undefined) {
-    return { message: `Never mind the counting chain :(`, color: Color.Info }
+  if (beforeLast === undefined || lastUser === undefined) {
+    return { message: `Never mind the counting chain :(`, color: Color.Info, eventResult: { type: 'ended' } }
   } else {
     if ((await beforeLast.permission()) < Permission.Helper && !(await beforeLast.immune())) {
       const muteOnFail = context.application.core.spontaneousEventsConfigurations.getMuteOnFail()
@@ -89,7 +91,8 @@ export async function startCountingChain(
 
     return {
       message: `${beforeLast.displayName()} was the 2nd to last to stop counting. How dare you!`,
-      color: Color.Good
+      color: Color.Good,
+      eventResult: { type: 'win', user: lastUser }
     }
   }
 }

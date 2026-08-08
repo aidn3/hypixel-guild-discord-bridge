@@ -4,12 +4,14 @@
  Minecraft username: _aura
 */
 
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import type { ChatCommandContext } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 
 export default class Iq extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'iq',
       triggers: ['iq'],
       description: "Returns a player's IQ (0-200)",
       example: `iq %s`

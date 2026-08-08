@@ -1,10 +1,12 @@
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { capitalize, formatTime } from '../../../utility/shared-utility'
 import { SkyblockEvents } from '../../../utility/skyblock-instant'
 
 export default class SpecialMayors extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'special-mayor',
       triggers: ['specialmayors', 'specialmayor', 'smayor', 'smayors', 'derpy', 'jerry', 'scorpius'],
       description: 'Show when SkyBlock special mayors are coming',
       example: `smayors`

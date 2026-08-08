@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -11,6 +11,8 @@ import {
 export default class Kuudra extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'kuudra',
       triggers: ['kuudra', 'k'],
       description: "Returns a player's kuudra runs",
       example: `kuudra %s`

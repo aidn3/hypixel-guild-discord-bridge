@@ -1,11 +1,13 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
 import { searchObjects } from '../../../utility/shared-utility'
 
 export default class List extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'list',
       triggers: ['list', 'ls'],
       description: 'List online members in a guild',
       example: `list [GuildName] [page]`

@@ -8,7 +8,7 @@ import PromiseQueue from 'promise-queue'
 import Yaml from 'yaml'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 
 export default class DevelopmentExcuse extends ChatCommandHandler {
@@ -23,6 +23,8 @@ export default class DevelopmentExcuse extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'dev-excuse',
       triggers: ['devexcuse', 'devexc', 'dev'],
       description: "Show you a random excuse for why this bot isn't working",
       example: 'devexcuse'

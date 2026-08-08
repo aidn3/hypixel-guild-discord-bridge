@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, usernameNotExists } from '../common/utility'
 
 export default class Points30days extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'points-all-30-days',
       triggers: ['points30', 'points30days', 'point30days', '30dayspoints', '30dayspoint', '30points'],
       description: "Returns user's 30 days activity points ",
       example: `points30 %s`

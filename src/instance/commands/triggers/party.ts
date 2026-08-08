@@ -2,7 +2,7 @@ import Moment from 'moment'
 
 import { ChannelType, Platform } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration'
 import { getDuration } from '../../../utility/shared-utility'
 
@@ -40,6 +40,8 @@ class PartyList extends ChatCommandHandler {
 
   constructor(partyManager: PartyManager) {
     super({
+      type: ChatCommandGroup.General,
+      id: 'list-parties',
       triggers: ['parties', 'party', 'listparty', 'listpartys', 'listparties', 'plist'],
       description: 'List all active parties in guild',
       example: `parties`
@@ -79,6 +81,8 @@ class PartyStart extends ChatCommandHandler {
 
   constructor(partyManager: PartyManager) {
     super({
+      type: ChatCommandGroup.General,
+      id: 'start-party',
       triggers: ['startparty', 'createparty', 'sparty'],
       description: 'Create public !parties to be viewed by guild members with <count> <time> <purpose>',
       example: `startparty 5 4h m7`
@@ -145,6 +149,8 @@ class PartyEnd extends ChatCommandHandler {
 
   constructor(partyManager: PartyManager) {
     super({
+      type: ChatCommandGroup.General,
+      id: 'end-party',
       triggers: ['endparty', 'delparty'],
       description: 'Remove the party from the listing',
       example: `endparty`

@@ -6,13 +6,15 @@
 import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { shortenNumber } from '../../../utility/shared-utility'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Networth extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'networth',
       triggers: ['networth', 'net', 'nw'],
       description: "Returns a calculation of a player's networth",
       example: `nw %s`

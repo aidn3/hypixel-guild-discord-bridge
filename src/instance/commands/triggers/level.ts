@@ -1,12 +1,14 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
 
 export default class Level extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'level',
       triggers: ['level', 'lvl', 'l'],
       description: "Returns a player's SkyBlock level",
       example: `lvl %s`

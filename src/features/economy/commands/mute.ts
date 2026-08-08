@@ -1,7 +1,9 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
-import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler, CooldownType } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event'
+import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands'
+import type { MinecraftUser } from '../../../common/user'
+import { EconomyMute } from '../economy-constants'
+import { type EconomyDatabase, EconomyNotEnough, EconomyReason } from '../economy-database'
 
 export default class Mute extends ChatCommandHandler {
   public static readonly DefaultMessages = [
@@ -19,10 +21,11 @@ export default class Mute extends ChatCommandHandler {
     'I muted someone, but who? :)',
     'I am agent of chaos!'
   ]
-  private static readonly TimeLength = Duration.minutes(5)
 
-  constructor() {
+  constructor(private readonly database: EconomyDatabase) {
     super({
+      type: ChatCommandGroup.Economy,
+      id: 'mute',
       triggers: ['mute'],
       description: 'Mute a random online person for 5 minutes for no good reason',
       example: `mute`
@@ -34,36 +37,45 @@ export default class Mute extends ChatCommandHandler {
   }
 
   override cooldownOptions(): ChatCommandCooldown {
-    return { type: CooldownType.Community, duration: Mute.TimeLength }
+    return { type: CooldownType.Community, duration: EconomyMute.cooldown }
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
     await context.sendFeedback('Choosing a victim...')
     const usernames = await this.getUsernames(context)
-    if (usernames.length === 0) {
+    const targetUser = await this.selectUser(context, usernames)
+    if (targetUser === undefined) {
       context.resetCooldown()
       return 'No username to randomly mute??'
     }
 
-    const selectedUsername = usernames[Math.floor(Math.random() * usernames.length)]
-    const userProfile = await context.app.mojangApi.profileByUsername(selectedUsername)
-    const user = await context.app.core.initializeMinecraftUser(userProfile, {})
-    if ((await user.permission()) >= Permission.Helper || (await user.immune())) {
-      context.resetCooldown()
-      return `I tried to mute ${selectedUsername}, but then I remembered I'll die if I were to touch this person XD`
+    const responsibleUser = context.message.user
+    const targetId = context.app.core.users.resolveUserId(targetUser.getUserIdentifier())
+    try {
+      this.database.transaction((context) => {
+        context
+          .getAccount(responsibleUser)
+          .decrease(EconomyMute.amount, { reason: EconomyReason.MuteTarget, byUser: targetId })
+      })
+    } catch (error: unknown) {
+      if (error instanceof EconomyNotEnough) {
+        context.resetCooldown()
+        return `${context.message.user.displayName()}, need ${EconomyMute.amount} aura to use this!`
+      }
+      throw error
     }
 
-    await user.mute(
+    await targetUser.mute(
       context.eventHelper.fillBaseEvent(),
       PunishmentPurpose.Game,
-      Mute.TimeLength,
+      EconomyMute.mute,
       `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     )
 
     const messages = context.app.core.languageConfigurations.getCommandMuteGame()
     return messages[Math.floor(Math.random() * messages.length)]
       .replaceAll('{username}', context.username)
-      .replaceAll('{target}', selectedUsername)
+      .replaceAll('{target}', targetUser.mojangProfile().name)
   }
 
   private async getUsernames(context: ChatCommandContext): Promise<string[]> {
@@ -83,5 +95,24 @@ export default class Mute extends ChatCommandHandler {
 
     const resolvedChunks = await Promise.all(usernames)
     return resolvedChunks.flat()
+  }
+
+  private async selectUser(context: ChatCommandContext, usernames: string[]): Promise<MinecraftUser | undefined> {
+    while (usernames.length > 0) {
+      const index = Math.floor(Math.random() * usernames.length)
+      const username = usernames[index]
+      usernames.splice(index, 1)
+
+      const profile = await context.app.mojangApi.profileByUsername(username)
+      const user = await context.app.core.initializeMinecraftUser(profile, {})
+
+      if ((await user.permission()) >= Permission.Helper || (await user.immune())) {
+        continue
+      }
+
+      return user
+    }
+
+    return undefined
   }
 }

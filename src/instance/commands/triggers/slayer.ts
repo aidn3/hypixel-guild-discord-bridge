@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock'
 import { getSlayerLevel, SlayerHighestTierTable } from '../../../core/hypixel/hypixel-skyblock'
 import { capitalize } from '../../../utility/shared-utility'
@@ -24,6 +24,8 @@ const Slayers: Record<string, string[]> = {
 export default class Slayer extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'slayer',
       triggers: ['slayer', 'slayers', 'sl', 'slyr'],
       description: "Returns a player's slayer level",
       example: `slayer %s eman`

@@ -3,7 +3,8 @@ import { ChannelType, Color } from '../../../common/application-event'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import type Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout'
-import { type EventContext, SpontaneousEventHandler } from '../common'
+import type { EventContext, EventResult } from '../common'
+import { SpontaneousEventHandler } from '../common'
 
 export class QuickMath extends SpontaneousEventHandler {
   override enabled(): boolean {
@@ -12,7 +13,7 @@ export class QuickMath extends SpontaneousEventHandler {
       .includes(SpontaneousEventsNames.QuickMath)
   }
 
-  override async startEvent(): Promise<void> {
+  override async startEvent(): Promise<EventResult> {
     const context: EventContext = {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -23,13 +24,15 @@ export class QuickMath extends SpontaneousEventHandler {
     const duration = this.application.core.spontaneousEventsConfigurations.getQuickMathDuration()
     const result = await startQuickMath(context, duration)
     await context.broadcastMessage(result.message, result.color)
+
+    return result.eventResult
   }
 }
 
 export async function startQuickMath(
   context: EventContext,
   time: Duration
-): Promise<{ message: string; color: Color }> {
+): Promise<{ message: string; color: Color; eventResult: EventResult }> {
   const math = createMath()
 
   const timeout = new Timeout<ChatEvent>(time.toMilliseconds())
@@ -53,9 +56,13 @@ export async function startQuickMath(
 
   // eslint-disable-next-line unicorn/prefer-ternary
   if (result === undefined) {
-    return { message: `The answer is: ${math.answer} :(`, color: Color.Info }
+    return { message: `The answer is: ${math.answer} :(`, color: Color.Info, eventResult: { type: 'ended' } }
   } else {
-    return { message: `Good job ${result.user.displayName()}!`, color: Color.Good }
+    return {
+      message: `Good job ${result.user.displayName()}!`,
+      color: Color.Good,
+      eventResult: { type: 'win', user: result.user }
+    }
   }
 }
 

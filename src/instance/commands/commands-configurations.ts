@@ -1,8 +1,6 @@
-import type { Configuration, ConfigurationsManager } from '../configurations'
+import type { Configuration, ConfigurationsManager } from '../../core/configurations'
 
 export class CommandsConfigurations {
-  private static readonly DefaultCommandPrefix: string = '!'
-
   private readonly configuration: Configuration
 
   constructor(manager: ConfigurationsManager) {
@@ -15,22 +13,6 @@ export class CommandsConfigurations {
 
   public setCommandsEnabled(enabled: boolean): void {
     this.configuration.setBoolean('enabled', enabled)
-  }
-
-  public getChatPrefix(): string {
-    return this.configuration.getString('chatPrefix', CommandsConfigurations.DefaultCommandPrefix)
-  }
-
-  public setChatPrefix(prefix: string): void {
-    this.configuration.setString('chatPrefix', prefix)
-  }
-
-  public getDisabledCommands(): string[] {
-    return this.configuration.getStringArray('disabledCommands', [])
-  }
-
-  public setDisabledCommands(disabledCommands: string[]): void {
-    this.configuration.setStringArray('disabledCommands', disabledCommands)
   }
 
   public getAllowHelperToggle(): boolean {

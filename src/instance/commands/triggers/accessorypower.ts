@@ -1,8 +1,8 @@
 import { parse } from 'prismarine-nbt'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
-import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -13,6 +13,8 @@ import {
 export default class AccessoryPower extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'magical-power',
       triggers: ['accessorypower', 'ap', 'power', 'accessories', 'acc', 'talisman', 'talismans', 'talismen', 'mp'],
       description: "Returns a player's highest recorded SkyBlock Accessory Power",
       example: `mp %s`

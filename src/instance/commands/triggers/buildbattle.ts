@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Buildbattle extends ChatCommandHandler {
@@ -30,6 +30,8 @@ export default class Buildbattle extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'build-battle',
       triggers: ['buildbattle', 'build', 'bb'],
       description: "Returns a player's Build Battle common stats",
       example: `bb %s`

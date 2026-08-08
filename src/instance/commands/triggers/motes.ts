@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -10,6 +10,8 @@ import {
 export default class Motes extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'motes',
       triggers: ['motes', 'mote'], // did mote too bc purse has coins and coin :3
       description: "Returns a player's SkyBlock rift motes",
       example: `purse %s`

@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { capitalize } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
@@ -11,6 +11,8 @@ import {
 export default class Essence extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'essence',
       triggers: ['essence', 'essences', 'ess'],
       description: "Returns a player's SkyBlock essence",
       example: `essence %s`

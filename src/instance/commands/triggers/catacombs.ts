@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock'
 import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import {
@@ -15,6 +15,8 @@ import {
 export default class Catacombs extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'catacombs',
       triggers: ['catacombs', 'catacomb', 'cata', 'dungeons', 'dungeon'],
       description: "Returns a player's catacombs level",
       example: `cata %s`

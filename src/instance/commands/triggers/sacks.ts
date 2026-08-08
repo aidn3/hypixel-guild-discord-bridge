@@ -2,7 +2,7 @@ import { getPrices } from 'skyhelper-networth'
 
 import type { Content } from '../../../common/application-event'
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { shortenNumber } from '../../../utility/shared-utility'
 import {
   getSelectedSkyblockProfile,
@@ -14,6 +14,8 @@ import {
 export default class Sacks extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'sacks',
       triggers: ['sacks', 'sack', 'sax'],
       description: "Returns a player's SkyBlock sacks content value",
       example: `sacks %s`

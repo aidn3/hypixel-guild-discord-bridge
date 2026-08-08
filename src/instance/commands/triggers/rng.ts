@@ -1,5 +1,5 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Rng extends ChatCommandHandler {
   private readonly positiveMessages = [
@@ -32,6 +32,8 @@ export default class Rng extends ChatCommandHandler {
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'rng',
       triggers: ['rng'],
       description: 'Returns a random number between a range',
       example: `rng 1 5`

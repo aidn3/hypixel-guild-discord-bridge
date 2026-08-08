@@ -3,7 +3,7 @@ import { ChannelType, Color } from '../../../common/application-event'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
 import type Duration from '../../../utility/duration'
 import { Timeout } from '../../../utility/timeout'
-import { type EventContext, shuffleArrayInPlace, SpontaneousEventHandler } from '../common'
+import { type EventContext, type EventResult, shuffleArrayInPlace, SpontaneousEventHandler } from '../common'
 
 export class Unscramble extends SpontaneousEventHandler {
   override enabled(): boolean {
@@ -12,7 +12,7 @@ export class Unscramble extends SpontaneousEventHandler {
       .includes(SpontaneousEventsNames.Unscramble)
   }
 
-  override async startEvent(): Promise<void> {
+  override async startEvent(): Promise<EventResult> {
     const context: EventContext = {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -23,6 +23,8 @@ export class Unscramble extends SpontaneousEventHandler {
     const duration = this.application.core.spontaneousEventsConfigurations.getUnscrambleDuration()
     const result = await startUnscramble(context, duration)
     await context.broadcastMessage(result.message, result.color)
+
+    return result.eventResult
   }
 }
 
@@ -249,7 +251,7 @@ const scrambleEntries: ScrambleEntry[] = [
 export async function startUnscramble(
   context: EventContext,
   time: Duration
-): Promise<{ message: string; color: Color }> {
+): Promise<{ message: string; color: Color; eventResult: EventResult }> {
   const chosenWord = pickWord()
 
   const timeout = new Timeout<ChatEvent>(time.toMilliseconds())
@@ -272,9 +274,13 @@ export async function startUnscramble(
 
   // eslint-disable-next-line unicorn/prefer-ternary
   if (result === undefined) {
-    return { message: `The answer is: ${chosenWord.original} :(`, color: Color.Info }
+    return { message: `The answer is: ${chosenWord.original} :(`, color: Color.Info, eventResult: { type: 'ended' } }
   } else {
-    return { message: `Good job ${result.user.displayName()}!`, color: Color.Good }
+    return {
+      message: `Good job ${result.user.displayName()}!`,
+      color: Color.Good,
+      eventResult: { type: 'win', user: result.user }
+    }
   }
 }
 

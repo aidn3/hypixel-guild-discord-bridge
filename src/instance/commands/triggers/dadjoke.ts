@@ -2,11 +2,13 @@ import assert from 'node:assert'
 
 import DefaultAxios from 'axios'
 
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class DadJoke extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'dad-joke',
       triggers: ['dadjoke', 'joke', 'dad'],
       description: 'Show you a random dad joke',
       example: 'dadjoke'

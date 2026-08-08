@@ -5,13 +5,15 @@ import NodeCache from 'node-cache'
 
 import { Platform } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Unlink extends ChatCommandHandler {
   private readonly confirmationId = new NodeCache({ stdTTL: 60 })
 
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'unlink',
       triggers: ['unlink'],
       description: 'Unlink Minecraft account from Discord',
       example: 'unlink'

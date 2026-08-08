@@ -5,20 +5,33 @@ import StringComparison from 'string-comparison'
 import type Application from '../../application.js'
 import type { ChatEvent, CommandLike, CommandSuggestion, Content } from '../../common/application-event.js'
 import { ChannelType, ContentType, Permission, Platform } from '../../common/application-event.js'
-import type { ChatCommandContext, ChatCommandHandler, ChatCommandRequirements } from '../../common/commands.js'
+import type {
+  ChatCommandContext,
+  ChatCommandHandler,
+  ChatCommandRequirements,
+  CommandId
+} from '../../common/commands.js'
+import { ChatCommandGroup } from '../../common/commands.js'
 import type { DisplayableInstance } from '../../common/instance.js'
 import { Instance } from '../../common/instance.js'
 import { HypixelApiFail, HypixelFailType } from '../../core/hypixel/hypixel-fetcher'
 import { capitalize } from '../../utility/shared-utility'
 
+import { CommandsConfigurations } from './commands-configurations'
+import { CommandsCooldown } from './commands-cooldown'
 import { CommandsCooldownHandler } from './commands-cooldown-handler'
+import { CommandsDatabase } from './commands-database'
 import { canOnlyUseIngame } from './common/utility'
-import Command67 from './triggers/67'
-import EightBallCommand from './triggers/8ball.js'
+import Command67 from './fun-and-games/67'
+import EightBallCommand from './fun-and-games/8ball'
+import Coinflip from './fun-and-games/coinflip'
+import Dice from './fun-and-games/dice'
+import Iq from './fun-and-games/iq'
+import RockPaperScissors from './fun-and-games/rock-paper-scissors'
+import Vengeance from './fun-and-games/vengeance'
 import AccessoryPower from './triggers/accessorypower.js'
 import Agatha from './triggers/agatha.js'
 import Age from './triggers/age.js'
-import Airstrike from './triggers/airstrike'
 import Api from './triggers/api.js'
 import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
@@ -34,7 +47,6 @@ import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import ClassAverage from './triggers/classaverage.js'
-import Coinflip from './triggers/coinflip.js'
 import Collection from './triggers/collection'
 import Contests from './triggers/contests'
 import CopsAndCrims from './triggers/cops-and-crims.js'
@@ -45,7 +57,6 @@ import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
 import Diana from './triggers/diana'
-import Dice from './triggers/dice.js'
 import Discord from './triggers/discord'
 import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
@@ -66,9 +77,7 @@ import Help from './triggers/help.js'
 import HeartOfTheForest from './triggers/hotf.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
-import Insult from './triggers/insult.js'
 import Inventory from './triggers/inventory'
-import Iq from './triggers/iq.js'
 import Item from './triggers/item'
 import Jacob from './triggers/jacob'
 import Karma from './triggers/karma.js'
@@ -79,7 +88,6 @@ import Mayor from './triggers/mayor.js'
 import Megawalls from './triggers/megawalls'
 import Mineshafts from './triggers/mineshafts.js'
 import Motes from './triggers/motes.js'
-import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import News from './triggers/news.js'
 import OverflowSkills from './triggers/oskills'
@@ -88,13 +96,10 @@ import PersonalBest from './triggers/personal-best.js'
 import Placeholder from './triggers/placeholder'
 import Points30days from './triggers/points-30days'
 import PointsAll from './triggers/points-all'
-import Praise from './triggers/praise'
 import Purse from './triggers/purse.js'
 import Rank from './triggers/rank.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
-import RockPaperScissors from './triggers/rock-paper-scissors.js'
-import Roulette from './triggers/roulette.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Sacks from './triggers/sacks'
@@ -117,24 +122,35 @@ import Unlink from './triggers/unlink.js'
 import Unscramble from './triggers/unscramble'
 import UrchinCommand from './triggers/urchin'
 import Uuid from './triggers/uuid'
-import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 import Woolwars from './triggers/woolwars'
 
 export class CommandsInstance extends Instance implements DisplayableInstance {
-  private readonly commands: ChatCommandHandler[] = []
+  public readonly commandsConfigurations: CommandsConfigurations
+  public readonly commandsCooldown: CommandsCooldown
+  public readonly database: CommandsDatabase
+
+  private readonly commands = new Map<ChatCommandGroup, ChatCommandHandler[]>()
   private readonly cooldownHandler: CommandsCooldownHandler
 
   constructor(app: Application) {
     super(app, 'chat-commands')
-    this.cooldownHandler = new CommandsCooldownHandler(this.application)
+
+    const core = this.application.core
+    this.commandsConfigurations = new CommandsConfigurations(core.getConfigurationsManager())
+    this.database = new CommandsDatabase(core.getSqliteManager())
+    this.commandsCooldown = new CommandsCooldown(core.getSqliteManager(), core.users, this.database)
+    this.cooldownHandler = new CommandsCooldownHandler(this.application.core.users, this.commandsCooldown)
+
+    for (const group of Object.values(ChatCommandGroup)) {
+      this.commands.set(group, [])
+    }
 
     const commandsToAdd = [
       new AccessoryPower(),
       new Agatha(),
       new Age(),
-      new Airstrike(),
       new Api(),
       new Armor(),
       new Asian(),
@@ -172,7 +188,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new EightBallCommand(),
       new Essence(),
       new Execute(),
-      new Explain(),
       new Fairysouls(),
       new Fetchur(),
       new Forge(),
@@ -181,11 +196,9 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Gifted(),
       new Guild(),
       new GuildCheck(),
-      new Help(),
       new HeartOfTheForest(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
-      new Insult(),
       new Inventory(),
       new Iq(),
       new Item(),
@@ -198,7 +211,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Megawalls(),
       new Mineshafts(),
       new Motes(),
-      new Mute(),
       new Networth(),
       new OverflowSkills(),
       ...new PartyManager().resolveCommands(),
@@ -206,13 +218,11 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Placeholder(),
       new Points30days(),
       new PointsAll(),
-      new Praise(),
       new Purse(),
       new Rank(),
       new Reputation(),
       new Rng(),
       new RockPaperScissors(),
-      new Roulette(),
       new Runs(),
       new RunsToClassAverage(),
       new Sacks(),
@@ -226,8 +236,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Starfall(),
       new StatusCommand(),
       new Timecharms(),
-      new Toggle(),
-      new Toggled(),
       new Trivia(),
       new TrophyFish(),
       new Uhc(),
@@ -241,8 +249,14 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Woolwars()
     ]
 
+    const globalCommands = [new Explain(), new Help(), new Toggle(), new Toggled()]
+
     for (const commandToAdd of commandsToAdd) {
       this.addCommand(commandToAdd)
+    }
+
+    for (const globalCommand of globalCommands) {
+      this.addGlobalCommand(globalCommand)
     }
 
     this.application.on('chat', async (event) => {
@@ -251,8 +265,30 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
   }
 
   public addCommand(commandToAdd: ChatCommandHandler): void {
+    const list = this.commands.get(commandToAdd.type)
+    assert.ok(list !== undefined, `unknown command type=${commandToAdd.type}`)
+
+    CommandsInstance.assertTriggerUniqueness(list, commandToAdd)
+    for (const commands of this.commands.values().toArray()) CommandsInstance.assertIdUniqueness(commands, commandToAdd)
+
+    list.push(commandToAdd)
+  }
+
+  public addGlobalCommand(commandToAdd: ChatCommandHandler): void {
+    const allGroups = this.commands.values().toArray()
+    for (const group of allGroups) {
+      CommandsInstance.assertIdUniqueness(group, commandToAdd)
+      CommandsInstance.assertTriggerUniqueness(group, commandToAdd)
+    }
+
+    for (const group of allGroups) {
+      group.push(commandToAdd)
+    }
+  }
+
+  private static assertTriggerUniqueness(groupCommands: ChatCommandHandler[], commandToAdd: ChatCommandHandler): void {
     const allTriggers = new Map<string, string>()
-    for (const command of this.commands) {
+    for (const command of groupCommands) {
       for (const trigger of command.triggers) {
         if (allTriggers.has(trigger)) {
           const alreadyDefinedCommandName = allTriggers.get(trigger)
@@ -273,42 +309,85 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
         )
       }
     }
+  }
 
-    this.commands.push(commandToAdd)
+  private static assertIdUniqueness(registeredCommands: ChatCommandHandler[], commandToAdd: ChatCommandHandler): void {
+    const mapped = new Map<CommandId, ChatCommandHandler>()
+
+    for (const registeredCommand of registeredCommands) {
+      const mappedCommand = mapped.get(registeredCommand.id)
+      if (mappedCommand !== undefined) {
+        assert.fail(
+          `Found a conflict between chat commands with the id=${registeredCommand.id.toString()}.` +
+            ` Command1=${registeredCommand.triggers.join('/')}, Command2=${mappedCommand.triggers.join('/')}`
+        )
+      }
+      mapped.set(registeredCommand.id, registeredCommand)
+    }
+
+    const mappedCommand = mapped.get(commandToAdd.id)
+    if (mappedCommand !== undefined) {
+      assert.fail(
+        `Can not register a new command. Command has a conflict between in id=${commandToAdd.id.toString()}.` +
+          ` existing=${mappedCommand.triggers.join('/')}, new=${commandToAdd.triggers.join('/')}`
+      )
+    }
   }
 
   public displayName(): string {
     return 'Commands'
   }
 
-  async handle(event: ChatEvent): Promise<void> {
-    const config = this.application.core.commandsConfigurations
-    if (!config.getCommandsEnabled()) return
+  private parseAndFindCommand(message: string):
+    | {
+        commands: ChatCommandHandler[]
+        prefix: string
+        name: string
+        command: ChatCommandHandler | undefined
+        parameters: string[]
+      }
+    | undefined {
+    for (const group of Object.values(ChatCommandGroup)) {
+      const groupStatus = this.database.commandGroups(group)
+      const prefix = groupStatus.prefix
+      if (!message.startsWith(prefix)) continue
 
-    const chatPrefix = config.getChatPrefix()
-    if (!event.message.startsWith(chatPrefix)) return
+      const name = message.slice(prefix.length).split(' ')[0].toLowerCase()
+      const parameters = message.split(' ').slice(1)
 
-    const commandName = event.message.slice(chatPrefix.length).split(' ')[0].toLowerCase()
-    const commandsArguments = event.message.split(' ').slice(1)
+      if (name.length === 0 || name.startsWith(prefix)) return undefined
 
-    if (commandName.length === 0 || commandName.startsWith(chatPrefix)) {
-      return
+      const commands = this.commands.get(group)
+      assert.ok(commands !== undefined)
+
+      const command = commands.find((c) => c.triggers.includes(name))
+      return { commands, prefix, name, command, parameters }
     }
 
-    const command = this.commands.find((c) => c.triggers.includes(commandName))
+    return undefined
+  }
+
+  async handle(event: ChatEvent): Promise<void> {
+    if (!this.commandsConfigurations.getCommandsEnabled()) return
+
+    const commandData = this.parseAndFindCommand(event.message)
+    if (commandData === undefined) return
+    const { commands, prefix, name, command, parameters } = commandData
+
     if (command == undefined) {
-      await this.trySuggest(event, commandName)
+      await this.trySuggest(event, commands, prefix, name)
       return
     } else if (!command.enabled(this.application)) {
       return
     }
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
-    const commandDisabled = config.getDisabledCommands().includes(command.triggers[0].toLowerCase())
+    const commandEnabled = this.database.initAndGet(command.id).enabled
     const userPermission = await event.user.permission()
     if (
-      commandDisabled &&
-      (userPermission === Permission.Anyone || (userPermission === Permission.Helper && !config.getAllowHelperToggle()))
+      !commandEnabled &&
+      (userPermission === Permission.Anyone ||
+        (userPermission === Permission.Helper && !this.commandsConfigurations.getAllowHelperToggle()))
     ) {
       return
     }
@@ -323,12 +402,12 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
         logger: this.logger,
         errorHandler: this.errorHandler,
 
-        allCommands: this.commands,
-        commandPrefix: chatPrefix,
+        allCommands: commands,
+        commandPrefix: prefix,
 
         message: event,
         username: event.user.mojangProfile()?.name ?? event.user.displayName(),
-        args: commandsArguments,
+        args: parameters,
 
         sendFeedback: async (feedbackResponse) => {
           await this.feedback(event, command.triggers[0], this.formatContent(feedbackResponse))
@@ -508,15 +587,18 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
     }
   }
 
-  private async trySuggest(event: ChatEvent, query: string): Promise<void> {
-    const config = this.application.core.commandsConfigurations
-    if (!config.getSuggestionsEnabled()) return
+  private async trySuggest(
+    event: ChatEvent,
+    commands: ChatCommandHandler[],
+    prefix: string,
+    query: string
+  ): Promise<void> {
+    if (!this.commandsConfigurations.getSuggestionsEnabled()) return
 
-    const prefix = config.getChatPrefix()
     query = query.toLowerCase()
     let result: { trigger: string; command: ChatCommandHandler; similarity: number } | undefined = undefined
 
-    for (const command of this.commands) {
+    for (const command of commands) {
       for (const trigger of command.triggers) {
         const similarity = StringComparison.levenshtein.similarity(query, trigger)
         if (result !== undefined && result.similarity > similarity) continue

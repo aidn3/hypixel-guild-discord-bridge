@@ -1,10 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandHandler } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
 
 export default class Gifted extends ChatCommandHandler {
   constructor() {
     super({
+      type: ChatCommandGroup.General,
+      id: 'ranks-gifted',
       triggers: ['gifted', 'ranksgifted'],
       description: 'Returns how many times a player has gifted a rank',
       example: `gifted %s`
