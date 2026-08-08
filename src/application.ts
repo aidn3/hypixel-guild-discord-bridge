@@ -23,6 +23,7 @@ import type { Hypixel } from './core/hypixel/hypixel'
 import { ApplicationLanguages, LanguageConfigurations } from './core/language-configurations'
 import type { Urchin } from './core/urchin/urchin'
 import type { MojangApi } from './core/users/mojang'
+import { DiscordRoles } from './features/discord-roles/discord-roles'
 import { MinecraftGuildsManager } from './features/minecraft-guilds/minecraft-guilds-manager'
 import { MinecraftStatus } from './features/minecraft-status/minecraft-status'
 import AutoRestart from './instance/auto-restart'
@@ -61,6 +62,7 @@ export default class Application extends Emittery<ApplicationEvents> {
 
   public readonly minecraftGuildsManager: MinecraftGuildsManager
   public readonly minecraftStatus: MinecraftStatus
+  private readonly discordRoles: DiscordRoles
   private readonly skyblockReminders: SkyblockReminders
   private readonly spontaneousEvents: SpontaneousEvents
   private readonly autoRestart: AutoRestart
@@ -116,6 +118,7 @@ export default class Application extends Emittery<ApplicationEvents> {
 
     this.minecraftGuildsManager = new MinecraftGuildsManager(this, this.core.getSqliteManager())
     this.minecraftStatus = new MinecraftStatus(this, this.core.getSqliteManager())
+    this.discordRoles = new DiscordRoles(this)
     this.skyblockReminders = new SkyblockReminders(this)
     this.spontaneousEvents = new SpontaneousEvents(this)
     this.autoRestart = new AutoRestart(this)
@@ -270,6 +273,7 @@ export default class Application extends Emittery<ApplicationEvents> {
       this.metricsInstance,
       this.commandsInstance,
       ...this.minecraftManager.getAllInstances(),
+      this.discordRoles,
       this.skyblockReminders,
       this.spontaneousEvents,
       this.autoRestart

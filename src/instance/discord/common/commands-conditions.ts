@@ -21,7 +21,7 @@ import Duration from '../../../utility/duration'
 import { search, searchObjects } from '../../../utility/shared-utility'
 import { interactivePaging } from '../utility/discord-pager'
 import type { ModalOption, ModalResult } from '../utility/modal-options'
-import { showModal } from '../utility/modal-options'
+import { ModalInputInvalid, showModal } from '../utility/modal-options'
 
 import { DefaultCommandFooter } from './discord-config'
 
@@ -198,9 +198,17 @@ export async function handleConditionAdd(
       rawFetchedOptions = { result: {}, modalResponse: interaction }
     }
   } catch (error: unknown) {
-    context.logger.error(error)
-    const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.modal-error'])
-    await interaction.followUp({ content: errorResponse, components: [], flags: MessageFlags.Ephemeral })
+    if (error instanceof ModalInputInvalid) {
+      await error.modalInteraction.reply({
+        content: error.displayMessage,
+        components: [],
+        flags: MessageFlags.Ephemeral
+      })
+    } else {
+      context.logger.error(error)
+      const errorResponse = context.application.i18n.t(($) => $['discord.conditions.add.modal-error'])
+      await interaction.followUp({ content: errorResponse, components: [], flags: MessageFlags.Ephemeral })
+    }
     return
   }
 

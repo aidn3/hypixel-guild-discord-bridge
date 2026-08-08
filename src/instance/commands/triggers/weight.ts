@@ -251,7 +251,7 @@ export default class Weight extends ChatCommandHandler {
 
   private createWeightProfile(profile: SkyblockMember, skillsResponse: HypixelSkyblockSkillsResponse): WeightProfile {
     const skills = skillsResponse.skills
-    const experience = (profile.player_data.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
+    const experience = (profile.player_data?.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
     const petTypesSacrificed = profile.pets_data?.pet_care?.pet_types_sacrificed ?? []
     const profileClasses = profile.dungeons?.player_classes as
       Partial<Record<DungeonClassName, { experience?: number }>> | undefined
@@ -377,7 +377,7 @@ export default class Weight extends ChatCommandHandler {
   }
 
   private calculateLilyWeight(profile: SkyblockMember) {
-    const experience = (profile.player_data.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
+    const experience = (profile.player_data?.experience ?? {}) as Partial<Record<SkillExperienceKey, number>>
     const skillLevels = LilySkillOrder.map((skillName) =>
       this.sanitizeFiniteNumber(this.getLilySkillLevel(skillName, experience))
     )

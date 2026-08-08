@@ -30,7 +30,7 @@ export default class Secrets extends ChatCommandHandler {
     if (!dungeon) return playerNeverPlayedDungeons(givenUsername)
 
     const catacombRuns = dungeon.catacombs.tier_completions
-    const mastermodeRuns = dungeon.master_catacombs.tier_completions
+    const mastermodeRuns = dungeon.master_catacombs?.tier_completions
 
     const totalRuns = this.getTotalRuns(catacombRuns) + this.getTotalRuns(mastermodeRuns)
 
