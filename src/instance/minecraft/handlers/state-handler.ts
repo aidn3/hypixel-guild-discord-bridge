@@ -162,7 +162,10 @@ export default class StateHandler extends SubInstance<MinecraftInstance, ClientS
     if (error.code === 'EAI_AGAIN') {
       this.logger.error('Minecraft bot disconnected due to internet problems. Restarting client in 30 seconds...')
       await this.tryRestarting()
-    } else if (error.message.includes('socket disconnected before secure TLS connection')) {
+    } else if (
+      error.message.includes('socket disconnected before secure TLS connection') ||
+      error.code === 'UND_ERR_CONNECT_TIMEOUT'
+    ) {
       await this.clientInstance.setAndBroadcastNewStatusWithMessage(Status.Disconnected, {
         type: InstanceMessageType.MinecraftInternetProblems,
         value: error.message
