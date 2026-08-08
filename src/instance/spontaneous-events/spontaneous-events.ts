@@ -7,6 +7,8 @@ import { ChannelType, type ChatEvent } from '../../common/application-event'
 import type { DisplayableInstance } from '../../common/instance'
 import { Instance } from '../../common/instance'
 import type { User } from '../../common/user'
+import { EconomyEvenWin } from '../../features/economy/economy-constants'
+import { EconomyReason } from '../../features/economy/economy-database'
 
 import type { SpontaneousEventHandler } from './common'
 import { shuffleArrayInPlace } from './common'
@@ -112,10 +114,20 @@ export class SpontaneousEvents extends Instance implements DisplayableInstance {
     const spontaneousEventHandler = this.pickRandomEvent()
     if (spontaneousEventHandler === undefined) return
 
-    await spontaneousEventHandler.startEvent().finally(() => {
+    try {
+      const result = await spontaneousEventHandler.startEvent()
+
+      if (result.type === 'win') {
+        this.application.economy.database.transaction((context) => {
+          context
+            .getAccount(result.user)
+            .increase(EconomyEvenWin.amount, { reason: EconomyReason.WonSpontaneousEvent, byUser: undefined })
+        })
+      }
+    } finally {
       this.lastEventAt = Date.now()
       this.lastEventType = spontaneousEventHandler
-    })
+    }
   }
 
   private pickRandomEvent(): SpontaneousEventHandler | undefined {

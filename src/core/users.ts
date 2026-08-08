@@ -7,6 +7,10 @@ import type { AnonymousUser, UserIdentifier } from '../common/user'
 export class Users {
   constructor(private readonly sqliteManager: SqliteManager) {}
 
+  /**
+   * @returns same order as AnonymousUser#allIdentifiers
+   * @param user
+   */
   public resolveAllUserId(user: AnonymousUser): UserId[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {

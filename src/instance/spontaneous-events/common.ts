@@ -6,6 +6,7 @@ import { ChannelType } from '../../common/application-event'
 import type EventHelper from '../../common/event-helper'
 import type { Instance } from '../../common/instance'
 import SubInstance from '../../common/sub-instance'
+import type { User } from '../../common/user'
 
 import type { SpontaneousEvents } from './spontaneous-events'
 
@@ -28,8 +29,10 @@ export abstract class SpontaneousEventHandler extends SubInstance<SpontaneousEve
     })
   }
 
-  abstract startEvent(): Promise<void>
+  abstract startEvent(): Promise<EventResult>
 }
+
+export type EventResult = { type: 'win'; user: User } | { type: 'ended' }
 
 export interface EventContext {
   logger: Logger

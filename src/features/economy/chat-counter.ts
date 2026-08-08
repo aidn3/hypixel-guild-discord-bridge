@@ -1,0 +1,103 @@
+import type { Logger } from 'log4js'
+
+import type Application from '../../application'
+import type { ChatEvent } from '../../common/application-event'
+import { ChannelType } from '../../common/application-event'
+import type EventHelper from '../../common/event-helper'
+import SubInstance from '../../common/sub-instance'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
+import type { AnonymousUser } from '../../common/user'
+import Duration from '../../utility/duration'
+
+import type { Economy } from './economy'
+import type { EconomyDatabase } from './economy-database'
+
+export class ChatCounter extends SubInstance<Economy, void> {
+  private static readonly RewardEvery = Duration.minutes(15)
+  private static readonly RewardAmount = 1
+  private static readonly UsersCountRestriction = 1
+
+  private readonly lastRewards = new Map<AnonymousUser, number>()
+  private readonly lastTalked = new Map<AnonymousUser, number>()
+
+  constructor(
+    application: Application,
+    instance: Economy,
+    eventHelper: EventHelper<Economy>,
+    logger: Logger,
+    errorHandler: UnexpectedErrorHandler,
+    abortSignal: AbortSignal,
+    private readonly database: EconomyDatabase
+  ) {
+    super(application, instance, eventHelper, logger, errorHandler, abortSignal)
+
+    this.application.on('chat', (event) => {
+      this.onChat(event)
+    })
+
+    const cleaningInterval = setInterval(() => {
+      this.clean()
+    }, Duration.minutes(5).toMilliseconds())
+    cleaningInterval.unref()
+    this.abortSignal.addEventListener('abort', () => {
+      cleaningInterval.close()
+    })
+  }
+
+  private clean(): void {
+    const currentTime = Date.now()
+    const earliestDate = currentTime - ChatCounter.RewardEvery.toMilliseconds()
+
+    for (const [user, createdAt] of this.lastRewards.entries().toArray()) {
+      if (createdAt < earliestDate) this.lastRewards.delete(user)
+    }
+    for (const [user, createdAt] of this.lastTalked.entries().toArray()) {
+      if (createdAt < earliestDate) this.lastTalked.delete(user)
+    }
+  }
+
+  private onChat(event: ChatEvent): void {
+    if (event.channelType !== ChannelType.Public) return
+
+    const currentTime = Date.now()
+    const oldestTime = currentTime - ChatCounter.RewardEvery.toMilliseconds()
+    this.lastTalked.set(event.user, currentTime)
+
+    const otherUsers = this.someoneElseTalked(oldestTime, event.user)
+    if (otherUsers.length < ChatCounter.UsersCountRestriction) return
+
+    const alreadyRewardedUsers = this.lastRewards
+      .entries()
+      .toArray()
+      .filter(([, rewardedAt]) => rewardedAt >= oldestTime)
+      .map(([user]) => user)
+
+    for (const { user: userToReward, sentAt } of [...otherUsers, { user: event.user, sentAt: event.createdAt }]) {
+      if (alreadyRewardedUsers.some((alreadyRewardedUser) => alreadyRewardedUser.equalsUser(userToReward))) continue
+      this.database.increaseChat(userToReward, ChatCounter.RewardAmount)
+      this.lastRewards.set(userToReward, sentAt)
+    }
+  }
+
+  private someoneElseTalked(oldestTime: number, currentUser: AnonymousUser): { user: AnonymousUser; sentAt: number }[] {
+    const result: { user: AnonymousUser; sentAt: number }[] = []
+
+    const entries = this.lastTalked
+      .entries()
+      .toArray()
+      .toSorted(([, sentAt1], [, sentAt2]) => sentAt2 - sentAt1) // earliest to oldest
+
+    for (const [user, sentAt] of entries) {
+      if (sentAt < oldestTime) {
+        this.lastTalked.delete(user)
+        continue
+      }
+
+      if (result.some((userEntry) => userEntry.user.equalsUser(user) || userEntry.user === user)) continue
+      if (user === currentUser || user.equalsUser(currentUser)) continue
+      result.push({ user, sentAt })
+    }
+
+    return result
+  }
+}

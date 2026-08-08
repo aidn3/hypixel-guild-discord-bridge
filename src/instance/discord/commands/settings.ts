@@ -85,6 +85,7 @@ export default {
         fetchModerationOptions(context.application),
         fetchQualityOptions(context.application),
         fetchCommandsOptions(context.application),
+        fetchEconomyOptions(context.application),
         fetchLanguageOptions(context.application),
         fetchOtherOptions(context.interaction)
       ]
@@ -813,6 +814,57 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         name: 'Disabled Chat Commands',
         description: 'This can only be changed via `!toggle`.',
         getOption: undefined
+      }
+    ]
+  }
+}
+
+function fetchEconomyOptions(application: Application): CategoryOption {
+  const commandsDatabase = application.commandsInstance.database
+  const config = application.economy.configuration
+
+  return {
+    type: OptionType.Category,
+    name: 'Economy',
+    header: CategoryLabel,
+    options: [
+      {
+        type: OptionType.Text,
+        name: 'Economy Chat Command Prefix',
+        description: 'Prefix to indicate it is a chat command.',
+        style: InputStyle.Tiny,
+        min: 1,
+        max: 2, // to allow "b!" prefix for example at most
+        getOption: () => commandsDatabase.commandGroups(ChatCommandGroup.Economy).prefix,
+        setOption: (newValue) => {
+          commandsDatabase.setPrefix(ChatCommandGroup.Economy, newValue)
+        }
+      },
+      {
+        type: OptionType.Boolean,
+        name: `Give Officer Full Control`,
+        description:
+          'Allow Officers to have full control over the economy including giving and taking arbitrarily from other users.',
+        getOption: () => config.getAllowModeratorsManagement(),
+        toggleOption: () => {
+          config.setAllowModeratorsManagement(!config.getAllowModeratorsManagement())
+        }
+      },
+      {
+        type: OptionType.Category,
+        name: 'Daily Rewards',
+        description: 'Let users gain points every day for being present.',
+        options: [
+          {
+            type: OptionType.Boolean,
+            name: `In-game Only`,
+            description: 'Force users to login in-game to collect the reward.',
+            getOption: () => config.getDailyIngameOnly(),
+            toggleOption: () => {
+              config.setDailyIngameOnly(!config.getDailyIngameOnly())
+            }
+          }
+        ]
       }
     ]
   }

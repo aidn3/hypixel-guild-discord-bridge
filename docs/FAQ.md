@@ -207,6 +207,20 @@ After `12` consecutive failures to `win`, be it by reaching `lose` or `neutral` 
 the pity will start kicking in gradually upping the chances till `24th` try which is guaranteed to succeed.
 The pity is counted globally across all users.
 
+## How Economy Work
+
+Economy is meant to encourage user activity within the community.
+
+Economy is mainly controlled using the chat commands with the default prefix `$` such as `$daily`.  
+Administrators can view the history of all transactions via the Discord slash command `/economy history`.
+Administrators can control the behavior of the Economy system from the Discord slash command `/settings`.
+
+By default, users who talk with other in public chat will earn the currency.  
+The currency can then be spent on various activities using the chat command with the default prefix `$` such as `$airstrike`.
+
+Administrators and Officers may control the wallet of individual using the chat commands `$give` and `$take`.  
+Administrators may disable the permission for Officers to control other users wallets from the Discord slash command `/settings`.
+
 ## How to enable and manage in-game guild system
 
 To manage a guild, it must be registered first using the Discord slash command `/guild register`.

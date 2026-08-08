@@ -1,6 +1,6 @@
 import { Permission, PunishmentPurpose } from '../../../common/application-event'
-import type { ChatCommandContext } from '../../../common/commands.js'
-import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { ChatCommandContext } from '../../../common/commands'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 import Duration from '../../../utility/duration'
 
 export default class Command67 extends ChatCommandHandler {

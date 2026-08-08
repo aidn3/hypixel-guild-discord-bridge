@@ -88,6 +88,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database, logger) => {
     migrateFrom25to26(database, logger)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom26to27(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1099,6 +1102,26 @@ function migrateFrom25to26(database: Database, logger: Logger4Js): void {
   }
 
   database.exec("DELETE FROM configurations WHERE category = 'commands' AND name = 'disabledCommands';")
+}
+
+function migrateFrom26to27(database: Database): void {
+  database.exec(
+    'CREATE TABLE "economy" (' +
+      '  userId INTEGER PRIMARY KEY NOT NULL REFERENCES users(id),' +
+      '  totalChat INTEGER NOT NULL DEFAULT 0,' +
+      '  value INTEGER NOT NULL DEFAULT 0' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "economyHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  change INTEGER NOT NULL,' +
+      '  reason TEXT NOT NULL,' +
+      '  byUser INTEGER REFERENCES users(id) DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ') STRICT;'
+  )
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

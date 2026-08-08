@@ -22,12 +22,16 @@ import { CommandsCooldown } from './commands-cooldown'
 import { CommandsCooldownHandler } from './commands-cooldown-handler'
 import { CommandsDatabase } from './commands-database'
 import { canOnlyUseIngame } from './common/utility'
-import Command67 from './triggers/67'
-import EightBallCommand from './triggers/8ball.js'
+import Command67 from './fun-and-games/67'
+import EightBallCommand from './fun-and-games/8ball'
+import Coinflip from './fun-and-games/coinflip'
+import Dice from './fun-and-games/dice'
+import Iq from './fun-and-games/iq'
+import RockPaperScissors from './fun-and-games/rock-paper-scissors'
+import Vengeance from './fun-and-games/vengeance'
 import AccessoryPower from './triggers/accessorypower.js'
 import Agatha from './triggers/agatha.js'
 import Age from './triggers/age.js'
-import Airstrike from './triggers/airstrike'
 import Api from './triggers/api.js'
 import Armor from './triggers/armor'
 import Asian from './triggers/asian.js'
@@ -43,7 +47,6 @@ import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs'
 import Chocolate from './triggers/chocolate'
 import ClassAverage from './triggers/classaverage.js'
-import Coinflip from './triggers/coinflip.js'
 import Collection from './triggers/collection'
 import Contests from './triggers/contests'
 import CopsAndCrims from './triggers/cops-and-crims.js'
@@ -54,7 +57,6 @@ import DadJoke from './triggers/dadjoke.js'
 import DarkAuction from './triggers/darkauction.js'
 import DevelopmentExcuse from './triggers/devexcuse.js'
 import Diana from './triggers/diana'
-import Dice from './triggers/dice.js'
 import Discord from './triggers/discord'
 import Dojo from './triggers/dojo'
 import Eggs from './triggers/eggs'
@@ -75,9 +77,7 @@ import Help from './triggers/help.js'
 import HeartOfTheForest from './triggers/hotf.js'
 import HeartOfTheMountain from './triggers/hotm.js'
 import HypixelLevel from './triggers/hypixel-level'
-import Insult from './triggers/insult.js'
 import Inventory from './triggers/inventory'
-import Iq from './triggers/iq.js'
 import Item from './triggers/item'
 import Jacob from './triggers/jacob'
 import Karma from './triggers/karma.js'
@@ -88,7 +88,6 @@ import Mayor from './triggers/mayor.js'
 import Megawalls from './triggers/megawalls'
 import Mineshafts from './triggers/mineshafts.js'
 import Motes from './triggers/motes.js'
-import Mute from './triggers/mute.js'
 import Networth from './triggers/networth.js'
 import News from './triggers/news.js'
 import OverflowSkills from './triggers/oskills'
@@ -97,13 +96,10 @@ import PersonalBest from './triggers/personal-best.js'
 import Placeholder from './triggers/placeholder'
 import Points30days from './triggers/points-30days'
 import PointsAll from './triggers/points-all'
-import Praise from './triggers/praise'
 import Purse from './triggers/purse.js'
 import Rank from './triggers/rank.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
-import RockPaperScissors from './triggers/rock-paper-scissors.js'
-import Roulette from './triggers/roulette.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Sacks from './triggers/sacks'
@@ -126,7 +122,6 @@ import Unlink from './triggers/unlink.js'
 import Unscramble from './triggers/unscramble'
 import UrchinCommand from './triggers/urchin'
 import Uuid from './triggers/uuid'
-import Vengeance from './triggers/vengeance.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
 import Woolwars from './triggers/woolwars'
@@ -156,7 +151,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new AccessoryPower(),
       new Agatha(),
       new Age(),
-      new Airstrike(),
       new Api(),
       new Armor(),
       new Asian(),
@@ -205,7 +199,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new HeartOfTheForest(),
       new HeartOfTheMountain(),
       new HypixelLevel(),
-      new Insult(),
       new Inventory(),
       new Iq(),
       new Item(),
@@ -218,7 +211,6 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Megawalls(),
       new Mineshafts(),
       new Motes(),
-      new Mute(),
       new Networth(),
       new OverflowSkills(),
       ...new PartyManager().resolveCommands(),
@@ -226,13 +218,11 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Placeholder(),
       new Points30days(),
       new PointsAll(),
-      new Praise(),
       new Purse(),
       new Rank(),
       new Reputation(),
       new Rng(),
       new RockPaperScissors(),
-      new Roulette(),
       new Runs(),
       new RunsToClassAverage(),
       new Sacks(),

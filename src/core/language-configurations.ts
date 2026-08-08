@@ -1,8 +1,8 @@
 /* eslint-disable import/no-restricted-paths */
 
-import Mute from '../instance/commands/triggers/mute'
-import Roulette from '../instance/commands/triggers/roulette'
-import Vengeance from '../instance/commands/triggers/vengeance'
+import Mute from '../features/economy/commands/mute'
+import Roulette from '../features/economy/commands/roulette'
+import Vengeance from '../instance/commands/fun-and-games/vengeance'
 import PlayerMuted from '../instance/minecraft/handlers/player-muted'
 import Reaction from '../instance/minecraft/handlers/reaction'
 import { SkyblockReminders } from '../instance/skyblock-reminders'

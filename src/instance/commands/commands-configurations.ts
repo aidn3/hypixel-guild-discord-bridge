@@ -1,8 +1,6 @@
 import type { Configuration, ConfigurationsManager } from '../../core/configurations'
 
 export class CommandsConfigurations {
-  private static readonly DefaultCommandPrefix: string = '!'
-
   private readonly configuration: Configuration
 
   constructor(manager: ConfigurationsManager) {

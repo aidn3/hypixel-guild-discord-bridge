@@ -172,7 +172,25 @@ export class AnonymousUser {
     return false
   }
 
-  public equalsUser(other: User): boolean {
+  public isBot(): boolean {
+    const mojangProfile = this.mojangProfile()
+    if (mojangProfile !== undefined && this.application.minecraftManager.isMinecraftBot(mojangProfile.name)) {
+      return true
+    }
+
+    const discordProfile = this.discordProfile()
+    if (discordProfile !== undefined) {
+      const client = this.application.discordInstance.getClient()
+      if (client.application?.id === discordProfile.id) return true
+
+      const user = client.users.resolve(discordProfile.id)
+      if (user?.bot) return true
+    }
+
+    return false
+  }
+
+  public equalsUser(other: AnonymousUser): boolean {
     const discordProfile = this.discordProfile()
     if (discordProfile !== undefined && other.discordProfile()?.id === discordProfile.id) {
       return true
@@ -204,6 +222,10 @@ export class AnonymousUser {
     return this.userIdentifier
   }
 
+  /**
+   * Shallow copy of all identifiers with the first being the primary one
+   * @returns a list of all identifiers associated with this user with the primary one being at index 0
+   */
   public allIdentifiers(): UserIdentifier[] {
     const result: UserIdentifier[] = []
 
