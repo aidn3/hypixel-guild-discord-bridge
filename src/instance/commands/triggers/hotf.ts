@@ -2,12 +2,12 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/utility.js'
 
-export default class HeartOfTheMountain extends ChatCommandHandler {
+export default class HeartOfTheForest extends ChatCommandHandler {
   constructor() {
     super({
+      triggers: ['hotf', 'forest', 'whispers', 'desert'],
       type: ChatCommandGroup.General,
       id: 'hotf',
-      triggers: ['hotf', 'forest', 'whispers'],
       description: "Returns a player's HOTF and whispers",
       example: `hotf %s`
     })
@@ -25,14 +25,17 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     if (foragingExperince === undefined) {
       return context.app.i18n.t(($) => $['commands.hotf.none'], { username: givenUsername })
     }
-    const whispers = selectedProfile?.foraging_core?.forests_whispers ?? 0
+
+    const forestWhispers = selectedProfile?.foraging_core?.whispers?.forest?.total ?? 0
+    const desertWhispers = selectedProfile?.foraging_core?.whispers?.desert?.total ?? 0
     const hotf = this.getHotfLevel(foragingExperince)
     const centerOfTheForest = selectedProfile?.skill_tree?.nodes.foraging?.center_of_the_forest ?? 0
 
     return context.app.i18n.t(($) => $['commands.hotf.response'], {
       username: givenUsername,
       hotf: hotf,
-      whispers: whispers,
+      forest: forestWhispers,
+      desert: desertWhispers,
       cotf: centerOfTheForest
     })
   }
@@ -45,7 +48,8 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
       25_000, // lvl 4
       60_000, // lvl 5
       100_000, // lvl 6
-      150_000 // lvl 7
+      150_000, // lvl 7
+      200_000 // lvl 8
     ]
 
     const cumulative: number[] = []
