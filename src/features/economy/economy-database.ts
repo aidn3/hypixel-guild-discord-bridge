@@ -422,7 +422,8 @@ export interface SavedHistory extends BaseEconomyHistory {
   byUser: UserId | undefined
 }
 
-type SoloTypes = EconomyReason.RussianRoulette | EconomyReason.DailyReward | EconomyReason.WonSpontaneousEvent
+type SoloTypes =
+  EconomyReason.RussianRoulette | EconomyReason.DailyReward | EconomyReason.Nuke | EconomyReason.WonSpontaneousEvent
 export type UserEconomyHistoryChange =
   { reason: SoloTypes } | { reason: Exclude<EconomyReason, SoloTypes>; byUser: UserId }
 
@@ -440,6 +441,8 @@ export enum EconomyReason {
 
   AirstrikeTarget = 'airstrikeTarget',
   MuteTarget = 'muteTarget',
+  Nuke = 'nuke',
+
   DailyReward = 'dailyReward'
 }
 
