@@ -7,7 +7,7 @@ import { ChannelType, type ChatEvent } from '../../common/application-event'
 import type { DisplayableInstance } from '../../common/instance'
 import { Instance } from '../../common/instance'
 import type { User } from '../../common/user'
-import { EconomyEvenWin } from '../../features/economy/economy-constants'
+import { EconomyEventWin } from '../../features/economy/economy-constants'
 import { EconomyReason } from '../../features/economy/economy-database'
 
 import type { SpontaneousEventHandler } from './common'
@@ -119,7 +119,9 @@ export class SpontaneousEvents extends Instance implements DisplayableInstance {
 
       if (result.type === 'win') {
         this.application.economy.database.transaction((context) => {
-          context.getAccount(result.user).increase(EconomyEvenWin.amount, { reason: EconomyReason.WonSpontaneousEvent })
+          context
+            .getAccount(result.user)
+            .increase(EconomyEventWin.amount, { reason: EconomyReason.WonSpontaneousEvent })
         })
       }
     } finally {

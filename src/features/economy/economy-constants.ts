@@ -10,9 +10,10 @@ export const EconomyDaily: EconomyChange = { cooldown: Duration.hours(22), amoun
 
 export const EconomyDiss: EconomyChange = { cooldown: Duration.hours(1), amount: 1 }
 export const EconomyGlaze: EconomyChange = { cooldown: Duration.minutes(5), amount: 1 }
+
 export const EconomyAirstrike: EconomyChange & { mute: Duration } = {
   cooldown: Duration.minutes(30),
-  amount: 200,
+  amount: 50,
   mute: Duration.minutes(3)
 }
 
@@ -32,6 +33,12 @@ export const EconomyNuke: EconomyChange & { mute: Duration; maxTargets: number; 
 
 export const EconomyRussianRoulette = { mute: Duration.minutes(15), win: 1, lose: 10 }
 
-export const EconomyEvenWin = { amount: 10 }
+export const EconomyEventWin = { amount: 10 }
 
-export const EconomySacrifice = { tax: 90 }
+export const EconomySacrifice = { tax: 50 }
+
+export const EconomyChat: EconomyChange & { usersCountRestriction: number } = {
+  cooldown: Duration.minutes(15),
+  amount: 1,
+  usersCountRestriction: 1
+}

@@ -10,13 +10,10 @@ import type { AnonymousUser } from '../../common/user'
 import Duration from '../../utility/duration'
 
 import type { Economy } from './economy'
+import { EconomyChat } from './economy-constants'
 import type { EconomyDatabase } from './economy-database'
 
 export class ChatCounter extends SubInstance<Economy, void> {
-  private static readonly RewardEvery = Duration.minutes(15)
-  private static readonly RewardAmount = 1
-  private static readonly UsersCountRestriction = 1
-
   private readonly lastRewards = new Map<AnonymousUser, number>()
   private readonly lastTalked = new Map<AnonymousUser, number>()
 
@@ -46,7 +43,7 @@ export class ChatCounter extends SubInstance<Economy, void> {
 
   private clean(): void {
     const currentTime = Date.now()
-    const earliestDate = currentTime - ChatCounter.RewardEvery.toMilliseconds()
+    const earliestDate = currentTime - EconomyChat.cooldown.toMilliseconds()
 
     for (const [user, createdAt] of this.lastRewards.entries().toArray()) {
       if (createdAt < earliestDate) this.lastRewards.delete(user)
@@ -60,11 +57,11 @@ export class ChatCounter extends SubInstance<Economy, void> {
     if (event.channelType !== ChannelType.Public) return
 
     const currentTime = Date.now()
-    const oldestTime = currentTime - ChatCounter.RewardEvery.toMilliseconds()
+    const oldestTime = currentTime - EconomyChat.cooldown.toMilliseconds()
     this.lastTalked.set(event.user, currentTime)
 
     const otherUsers = this.someoneElseTalked(oldestTime, event.user)
-    if (otherUsers.length < ChatCounter.UsersCountRestriction) return
+    if (otherUsers.length < EconomyChat.usersCountRestriction) return
 
     const alreadyRewardedUsers = this.lastRewards
       .entries()
@@ -74,7 +71,7 @@ export class ChatCounter extends SubInstance<Economy, void> {
 
     for (const { user: userToReward, sentAt } of [...otherUsers, { user: event.user, sentAt: event.createdAt }]) {
       if (alreadyRewardedUsers.some((alreadyRewardedUser) => alreadyRewardedUser.equalsUser(userToReward))) continue
-      this.database.increaseChat(userToReward, ChatCounter.RewardAmount)
+      this.database.increaseChat(userToReward, EconomyChat.amount)
       this.lastRewards.set(userToReward, sentAt)
     }
   }
