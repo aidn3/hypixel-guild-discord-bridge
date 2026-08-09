@@ -16,7 +16,7 @@ export class EconomyConfigurations {
   }
 
   public getDailyIngameOnly(): boolean {
-    return this.configuration.getBoolean('dailyIngameOnly', true)
+    return this.configuration.getBoolean('dailyIngameOnly', false)
   }
 
   public setDailyIngameOnly(enabled: boolean): void {
