@@ -119,9 +119,7 @@ export class SpontaneousEvents extends Instance implements DisplayableInstance {
 
       if (result.type === 'win') {
         this.application.economy.database.transaction((context) => {
-          context
-            .getAccount(result.user)
-            .increase(EconomyEvenWin.amount, { reason: EconomyReason.WonSpontaneousEvent, byUser: undefined })
+          context.getAccount(result.user).increase(EconomyEvenWin.amount, { reason: EconomyReason.WonSpontaneousEvent })
         })
       }
     } finally {

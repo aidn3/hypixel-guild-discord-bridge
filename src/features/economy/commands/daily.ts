@@ -37,7 +37,7 @@ export default class Daily extends ChatCommandHandler {
 
     this.database.transaction((context) => {
       const account = context.getAccount(user)
-      account.increase(EconomyDaily.amount, { reason: EconomyReason.DailyReward, byUser: undefined })
+      account.increase(EconomyDaily.amount, { reason: EconomyReason.DailyReward })
     })
 
     return `${user.displayName()} claimed +${EconomyDaily.amount} daily aura!`

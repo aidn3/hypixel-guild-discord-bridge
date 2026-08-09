@@ -396,7 +396,7 @@ export class UserEconomy<T extends AnonymousUser> {
       change: amount,
       userId: this.primaryAccount,
       byUser: 'byUser' in reason ? reason.byUser : undefined,
-      reason: reason.reason as EconomyReason
+      reason: reason.reason
     })
   }
 
@@ -422,9 +422,9 @@ export interface SavedHistory extends BaseEconomyHistory {
   byUser: UserId | undefined
 }
 
-type SoloTypes = EconomyReason.RussianRoulette | EconomyReason.DailyReward
+type SoloTypes = EconomyReason.RussianRoulette | EconomyReason.DailyReward | EconomyReason.WonSpontaneousEvent
 export type UserEconomyHistoryChange =
-  { reason: Omit<EconomyReason, SoloTypes> } | { reason: SoloTypes; byUser: UserId }
+  { reason: SoloTypes } | { reason: Exclude<EconomyReason, SoloTypes>; byUser: UserId }
 
 export enum EconomyReason {
   SacrificeFrom = 'sacrificeFrom',
