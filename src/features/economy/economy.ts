@@ -11,6 +11,7 @@ import Diss from './commands/diss'
 import Give from './commands/give'
 import Glaze from './commands/glaze'
 import Mute from './commands/mute'
+import { Nuke } from './commands/nuke'
 import Roulette from './commands/roulette'
 import Sacrifice from './commands/sacrifice'
 import Take from './commands/take'
@@ -43,6 +44,7 @@ export class Economy extends Instance {
     this.application.registerChatCommand(new Mute(this.database))
     this.application.registerChatCommand(new Diss(this.database, this.configuration))
     this.application.registerChatCommand(new Roulette(this.database))
+    this.application.registerChatCommand(new Nuke(this.database))
     this.application.registerDiscordCommand({
       ...DiscordGuildCommand,
       handler: (context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>) =>

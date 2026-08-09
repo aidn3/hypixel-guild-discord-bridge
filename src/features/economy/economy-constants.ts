@@ -22,6 +22,14 @@ export const EconomyMute: EconomyChange & { mute: Duration } = {
   mute: Duration.minutes(5)
 }
 
+export const EconomyNuke: EconomyChange & { mute: Duration; maxTargets: number; minTargets: number } = {
+  cooldown: Duration.hours(1),
+  amount: 200,
+  mute: Duration.minutes(3),
+  maxTargets: 8,
+  minTargets: 4
+}
+
 export const EconomyRussianRoulette = { mute: Duration.minutes(15), win: 1, lose: 10 }
 
 export const EconomyEvenWin = { amount: 10 }

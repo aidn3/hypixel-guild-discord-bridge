@@ -260,6 +260,11 @@ async function formatReason(
       const byUser = await formatUserId(context, entry.byUser)
       return `${amount} ${user} airstriked ${byUser}`
     }
+    case EconomyReason.Nuke: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      return `${amount} ${user} mute nuked a guild`
+    }
     default: {
       entry.reason satisfies never
       assert.fail(`unknown entry reason: ${JSON.stringify(entry)}`)
