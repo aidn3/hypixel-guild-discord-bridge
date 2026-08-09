@@ -136,17 +136,18 @@ A shorter version can also be used: `!- rtca`
 
 ### Economy Chat Commands
 
-| Command      | Description                                |
-| ------------ | ------------------------------------------ |
-| `$airstrike` | Mute a specific person to annoy them       |
-| `$aura`      | Returns a player's total aura              |
-| `$daily`     | daily increase your aura                   |
-| `$diss`      | diss a player                              |
-| `$give`      | give a player aura                         |
-| `$glaze`     | Praise a player to increase their aura     |
-| `$roulette`  | Try your luck for aura or a 15 minute mute |
-| `$take`      | take a player's aura                       |
-| `$troll`     | troll another user by reducing their aura  |
+| Command      | Description                                                  |
+| ------------ | ------------------------------------------------------------ |
+| `$airstrike` | Mute a specific person to annoy them                         |
+| `$aura`      | Returns a player's total aura                                |
+| `$daily`     | daily increase your aura                                     |
+| `$diss`      | diss a player                                                |
+| `$give`      | give a player aura                                           |
+| `$glaze`     | Praise a player to increase their aura                       |
+| `$mute`      | Mute a random online person for 5 minutes for no good reason |
+| `$roulette`  | Try your luck for aura or a 15 minute mute                   |
+| `$take`      | take a player's aura                                         |
+| `$troll`     | troll another user by reducing their aura                    |
 
 ## Discord Commands
 
