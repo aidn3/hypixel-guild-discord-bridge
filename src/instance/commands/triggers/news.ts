@@ -34,7 +34,7 @@ export default class News extends ChatCommandHandler {
     const cached = this.cache.get<RssData['rss']['channel']['item']>('patchnotes')
     if (cached) return cached
 
-    const response = await fetch('https://hypixel.net/forums/skyblock-patch-notes.158/index.rss')
+    const response = await fetch('https://hypixel.net/forums/skyblock-patch-notes.158/index.rss?order=post_date')
     const xml = await response.text()
 
     const parser = new XMLParser({ ignoreAttributes: false })
@@ -60,7 +60,7 @@ export default class News extends ChatCommandHandler {
       updatesDate: update.title,
       updatesLink: update.link,
       patchnotesTitle: patchnotes.title,
-      patchnotesGuid: patchnotes.guid['#text']
+      patchnotesGuid: patchnotes.guid['#text'].split(':').at(-1)
     })
   }
 }
