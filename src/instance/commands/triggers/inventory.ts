@@ -64,7 +64,7 @@ export default class Inventory extends ChatCommandHandler {
     return {
       type: ContentType.ImageBased,
       content: images,
-      unsupported: context.app.i18n.t(($) => $['commands.inventory.render-not-supported']),
+      unsupported: context.app.i18n.t(($) => $['commands.inventory.render-not-supported'], { bar: parsedBar }),
       extra: context.app.i18n.t(($) => $['commands.inventory.render-extra'], {
         username: givenUsername,
         bar: parsedBar

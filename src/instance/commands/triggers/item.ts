@@ -65,7 +65,10 @@ export default class Item extends ChatCommandHandler {
     return {
       type: ContentType.ImageBased,
       content: [image],
-      unsupported: context.app.i18n.t(($) => $['commands.item.render-not-supported'], { itemName }),
+      unsupported: context.app.i18n.t(($) => $['commands.item.render-not-supported'], {
+        itemName,
+        slot: parsedBar
+      }),
       extra: context.app.i18n.t(($) => $['commands.item.render-extra'], {
         username: givenUsername,
         slot: parsedBar
