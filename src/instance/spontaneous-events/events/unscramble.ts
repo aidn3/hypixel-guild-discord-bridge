@@ -77,18 +77,24 @@ const scrambleEntries: ScrambleEntry[] = [
     hint: 'Container'
   },
   {
-    unscramble: ['Bread', 'Cheese', 'Butter', 'Egg', 'Honey', 'Burger', 'Pizza', 'Pasta', 'Cookie', 'Donut', 'Muffin', 'Sandwich'],
+    unscramble: [
+      'Baguette', 'Blue Cheese', 'Butter', 'Egg', 'Honey', 'Burger', 'Pizza', 'Spaghetti', 'Cookie', 'Donut', 'Muffin', 'Sandwich', 'Lasagna',
+      'Schnitzel', 'French Fries', 'Maple Syrup'
+    ],
     hint: 'Food'
   },
   {
     unscramble: [
       'Dog', 'Cat', 'Bird', 'Horse', 'Rabbit', 'Mouse', 'Snake', 'Fox', 'Wolf', 'Deer', 'Falcon', 'Eagle', 'Hawk', 'Pig', 'Cow', 'Sheep',
-      'Chicken'
+      'Chicken', 'Parrot', 'Owl', 'Polar Bear'
     ],
     hint: 'Land animal'
   },
   {
-    unscramble: ['Fish', 'Frog', 'Turtle', 'Goblin Shark', 'Bull Shark', 'Blue Marlin', 'Otter', 'Seal', 'Whale', 'Dolphin'],
+    unscramble: [
+      'Fish', 'Frog', 'Turtle', 'Goblin Shark', 'Bull Shark', 'Blue Marlin', 'Otter', 'Seal', 'Whale', 'Dolphin', 'Orca', 'Stingray', 'Lanternfish',
+      'Anglerfish'
+    ],
     hint: 'Aquatic animal'
   },
   {
@@ -202,17 +208,48 @@ const scrambleEntries: ScrambleEntry[] = [
       'Sea Walker', 'Squid', 'Inkling', "Jumpin' Jack", 'Sea Witch', 'Sea Archer', 'Rider of the Deep', 'Catfish', 'Carrot King',
       'Agarimoo', 'Sea Leech', 'Guardian Defender', 'Deep Sea Protector', 'Water Hydra', 'The Loch Emperor', 'Frog Man', 'Snapping Turtle',
       'Wiki Tiki', 'Oasis Rabbit', 'Oasis Sheep', 'Water Worm', 'Poisoned Water Worm', 'Abyssal Miner', 'Mithril Grubber', 'Dumpster Diver',
-      'Trash Gobbler', 'Banshee', 'Bayou Sludge', 'Alligator', 'Titanoboa', 'Scarecrow', 'Nightmare', 'Werewolf', 'Phantom Fisher', 'Grim Reaper',
+      'Trash Gobbler', 'Bayou Sludge', 'Alligator', 'Titanoboa', 'Scarecrow', 'Nightmare', 'Werewolf', 'Phantom Fisher', 'Grim Reaper',
       'Frozen Steve', 'Frosty', 'Grinch', 'Yeti', 'Nutcracker', 'Reindrake', 'Nurse Shark', 'Blue Shark', 'Tiger Shark', 'Great White Shark',
       'Magma Slug', 'Moogma', 'Lava Leech', 'Pyroclastic', 'Lava Flame', 'Fire Eel', 'Taurus', 'Plhlegblast', 'Thunder', 'Lord Jawbus', 'Fried Chicken',
-      'Fireproof Witch', 'Fiery Scuttler', 'Ragnarok', 'Flaming Worm', 'Lava Blaze', 'Lava Pigman', 'Manta Ray', 'Volcanic Snail', 'Magma Pillar'
+      'Fireproof Witch', 'Fiery Scuttler', 'Ragnarok', 'Flaming Worm', 'Lava Blaze', 'Lava Pigman', 'Manta Ray', 'Volcanic Snail', 'Magma Pillar',
+      'Haggard', 'Brineling', 'Sprawl', 'Torrid', 'Silkbreeze', 'Giant Isopod'
     ],
     hint: 'SkyBlock sea creature'
   },
   {
     unscramble: [
+      'Bezal', 'Flare', 'Smoldering Blaze', 'Dive Ghast', 'Hellwisp', 'Mushroom Bull', 'Flaming Spider', 'Kada Knight', 'Vanquisher', 'Ashfang',
+      'The Matriarch', 'Bladesoul', 'Mage Outlaw', 'Matcho', 'Wither Spectre', 'Wai', 'Zee'
+    ],
+    hint: 'Crimson Isle mob'
+  },
+  {
+    unscramble: [
+      'Cavernfish', 'Flitter', 'Shyworm', 'Driftling', 'Chuckwalla', 'Rockmite', 'Scrappy', 'Snoozle', 'Gemzie', 'Foxtrot', 'Bluebird', 'Honeybug',
+      'Treefrog', 'Woodchucker', 'Fluffling', 'Hideonfloor', 'Parakeet', 'Macaw', 'Areita', 'Bloodbat', 'Duplico', 'Gazer', 'Litterbug', 'Gimmiegold',
+      'Hideonwall', 'Hideyho', 'Doomspiral', 'Strongarm', 'Tepid', 'Polaris', 'Shuddersquid', 'Billygoat', 'Mantis Shrimp', 'Nozzlenose', 'Troodon',
+      'Wumpa'
+    ],
+    hint: 'Critter Safari critter'
+  },
+  {
+    unscramble: [
+      'Smartphone', 'Laptop', 'Computer', 'Television', 'Headphones', 'Earbuds', 'Keyboard', 'Tablet', 'Calculator', 'Camera', 'Microphone', 'Speaker',
+      'Projector', 'Printer', 'Controller', 'Modem', 'Router', 'Drone', 'Walkie Talkie', 'Smartwatch'
+    ],
+    hint: 'Electronic device'
+  },
+  {
+    unscramble: [
+      'Italy', 'United States', 'Mexico', 'United Kingdom', 'Canada', 'Japan', 'Germany', 'France', 'Spain', 'Costa Rica', 'Thailand', 'China', 'India',
+      'Russia', 'Brazil', 'Switzerland', 'Australia', 'Greece', 'Portugal', 'South Korea'
+    ],
+    hint: 'Country'
+  },
+  {
+    unscramble: [
       'Private Island', 'The Barn', 'Mushroom Desert', 'The Park', 'The End', 'Crimson Isle', 'Gold Mine', 'Deep Caverns', 'Dwarven Mines',
-      'Crystal Hollows', 'Dungeon Hub', 'Rift Dimension', 'Backwater Bayou', 'Galatea'
+      'Crystal Hollows', 'Dungeon Hub', 'Rift Dimension', 'Backwater Bayou', 'Moonglade Marsh', 'Torrhus Canyon', 'Critter Safari'
     ],
     hint: 'SkyBlock island or area'
   },
@@ -233,6 +270,10 @@ const scrambleEntries: ScrambleEntry[] = [
       'Fuel Gabagool', 'Very Crude Gabagool', 'Heavy Gabagool', 'Hypergolic Gabagool'
     ],
     hint: 'SkyBlock pet candy'
+  },
+  {
+    unscramble: ['Goryō', 'Obake', 'Onryō', 'Raijū', 'Shiryō', 'Yūrei', 'Aswang', 'Banshee', 'Myling', 'Shade', 'Poltergeist', 'Kormos'],
+    hint: 'Ghost'
   },
   {
     unscramble: ['Village', 'Castle', 'Kingdom', 'Tower', 'Dungeon', 'Fortress', 'Temple', 'Ruins', 'Palace'],
