@@ -83,7 +83,7 @@ export default class AccessoryPower extends ChatCommandHandler {
     for (const slot of slots) {
       if (!('tag' in slot)) continue
 
-      const enrichment = slot.tag.ExtraAttributes?.talisman_enrichment
+      const enrichment = slot.tag.value.ExtraAttributes?.value.talisman_enrichment?.value
       if (!enrichment) continue
 
       let type = result.find((entry) => entry.name === enrichment)
@@ -104,11 +104,15 @@ export default class AccessoryPower extends ChatCommandHandler {
 type InventorySlot = InventoryItemSlot | Record<never, never>
 
 interface InventoryItemSlot {
-  id: number
-  count: number
+  id: { value: number }
+  count: { value: number }
   tag: {
-    ExtraAttributes?: {
-      talisman_enrichment?: string
+    value: {
+      ExtraAttributes?: {
+        value: {
+          talisman_enrichment?: { value: string }
+        }
+      }
     }
   }
 }
