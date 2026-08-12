@@ -241,6 +241,7 @@ export interface SkyblockDungeons {
   player_classes?: Record<'healer' | 'mage' | 'berserk' | 'archer' | 'tank', SkyblockDungeonsClass | undefined>
   treasures?: { runs?: (SkyblockDungeonRun | SkyblockKuudraRun)[] }
   secrets?: number
+  daily_runs?: { completed_runs_count?: number }
 }
 
 export interface SkyblockDungeonsTypes {

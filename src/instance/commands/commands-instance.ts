@@ -100,6 +100,7 @@ import Purse from './triggers/purse.js'
 import Rank from './triggers/rank.js'
 import Reputation from './triggers/reputation.js'
 import Rng from './triggers/rng.js'
+import RunsTillCatacombs from './triggers/runs-till-catacombs.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Sacks from './triggers/sacks'
@@ -224,6 +225,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Rng(),
       new RockPaperScissors(),
       new Runs(),
+      new RunsTillCatacombs(),
       new RunsToClassAverage(),
       new Sacks(),
       new Secrets(),
