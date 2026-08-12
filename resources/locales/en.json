@@ -198,7 +198,6 @@
   "commands.jacob.response": "{{username}}'s Jacob: Platinum {{platinum, number}} - Diamond {{diamond, number}} - Gold {{gold, number}} - Farming Cap {{farmingCap, number}}/10 - Double Drops {{doubleDrops, number}}/15",
   "commands.uhc.none": "{{username}} has never played UHC before.",
   "commands.item.invalid-slot": "{{username}}, Can only select between 1 and 36.",
-  "commands.item.no-api": "{{username}} maybe has their API disabled?",
   "commands.item.nothing-to-render": "{{username}} does not have anything on slot {{slot, number}} to render.",
   "commands.item.render-extra": "Rendering {{username}} inventory slot {{slot, number}}",
 
@@ -226,7 +225,7 @@
   "commands.inventory.none": "{{username}} does not have any items in inventory row {{parsedBar}}.",
   "commands.inventory.render-not-supported": "Inventory row {{parsedBar}} has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
   "commands.item.none": "{{username}} does not have an item in inventory slot {{parsedBar}}.",
-  "commands.item.render-not-supported": "Item in inventory slot {{parsedBar}} has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
+  "commands.item.render-not-supported": "{{itemName}} in inventory slot {{parsedBar}} has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
   "commands.inventory.api-disabled": "{{username}}'s inventory API is disabled.",
   "commands.bedwars.none": "{{username}} has never played Bedwars before.",
   "commands.bedwars.response": "{{username}}'s Bedwars: level {{level, number(maximumFractionDigits: 0)}}✫ - FKDR {{fkdr, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}} - Final kills {{kills, number}}.",
