@@ -60,11 +60,12 @@ export default class Item extends ChatCommandHandler {
     }
 
     const image = MinecraftRenderer.renderLore(slot.tag.display.Name, slot.tag.display.Lore)
+    const itemName = slot.tag.display.Name.replaceAll(/§./g, '')
 
     return {
       type: ContentType.ImageBased,
       content: [image],
-      unsupported: context.app.i18n.t(($) => $['commands.item.render-not-supported']),
+      unsupported: context.app.i18n.t(($) => $['commands.item.render-not-supported'], { itemName }),
       extra: context.app.i18n.t(($) => $['commands.item.render-extra'], {
         username: givenUsername,
         slot: parsedBar
