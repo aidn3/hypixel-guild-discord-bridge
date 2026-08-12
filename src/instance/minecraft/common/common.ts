@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-export const HypixelLink = /^https:\/\/[\w.]*hypixel\.net/g
+export const HypixelLink = /^https:\/\/[\w.]*hypixel\.net/
 
 export function getUuidFromGuildChat(message: unknown): string {
   // this is minecraft protocol for chat message
