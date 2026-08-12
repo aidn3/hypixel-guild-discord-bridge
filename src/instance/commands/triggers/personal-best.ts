@@ -138,7 +138,10 @@ export default class PersonalBest extends ChatCommandHandler {
     }
 
     if (s !== undefined) result += `an S ${formatTime(s, timePrecision)}`
-    if (sPlus !== undefined) result += ` and an S+ ${formatTime(sPlus, timePrecision)}`
+    if (sPlus !== undefined) {
+      if (s !== undefined) result += ' and '
+      result += `an S+ ${formatTime(sPlus, timePrecision)}`
+    }
 
     return result
   }
