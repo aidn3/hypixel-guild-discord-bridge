@@ -198,7 +198,6 @@
   "commands.jacob.response": "{{username}}'s Jacob: Platinum {{platinum, number}} - Diamond {{diamond, number}} - Gold {{gold, number}} - Farming Cap {{farmingCap, number}}/10 - Double Drops {{doubleDrops, number}}/15",
   "commands.uhc.none": "{{username}} has never played UHC before.",
   "commands.item.invalid-slot": "{{username}}, Can only select between 1 and 36.",
-  "commands.item.no-api": "{{username}} maybe has their API disabled?",
   "commands.item.nothing-to-render": "{{username}} does not have anything on slot {{slot, number}} to render.",
   "commands.item.render-extra": "Rendering {{username}} inventory slot {{slot, number}}",
 

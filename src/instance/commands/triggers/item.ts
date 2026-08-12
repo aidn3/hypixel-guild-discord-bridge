@@ -48,7 +48,6 @@ export default class Item extends ChatCommandHandler {
     const inventoryRaw = selectedProfile.inventory?.inv_contents?.data
     if (inventoryRaw === undefined) {
       return context.app.i18n.t(($) => $['commands.inventory.api-disabled'], { username: givenUsername })
-      return context.app.i18n.t(($) => $['commands.item.no-api'], { username: givenUsername })
     }
 
     const inventory = await parseEncodedNbt<{ i: InventoryItem[] }>(inventoryRaw)
