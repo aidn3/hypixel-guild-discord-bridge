@@ -11,13 +11,13 @@ import {
 } from '../common/utility'
 
 const FloorsBaseExp = {
-  m7: 1,
-  m6: 71_370,
-  m5: 49_959,
-  m4: 39_253,
-  m3: 24_979,
-  m2: 14_274,
-  m1: 10_705
+  m7: 150_000,
+  m6: 75_000,
+  m5: 52_500,
+  m4: 41_250,
+  m3: 26_250,
+  m2: 15_000,
+  m1: 11_250
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
