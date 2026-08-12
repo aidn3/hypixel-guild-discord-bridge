@@ -1,7 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
-import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -94,7 +93,6 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     xpPerRun = xpPerRun * ((1 + floorBoost) * (1 + profileBoosts + globalBoost))
 
     const remainingRuns = Math.ceil(remainingXP / xpPerRun)
-    return `Profile: ${profileBoosts * 100}% (Bonzo Shard: ${bonzoShardsBoost * 100}% - Expert Ring: ${expertRingBoost * 100}% - Hecatomb: ${hecatombBoost * 100}% - Daily: ${dailyBoost * 100}%)\n Global: ${globalBoost * 100}%\n Floor: ${floorBoost * 100}%\n Base Boost: ${BaseXPBoost}x`
     return `${givenUsername} is ${remainingRuns} ${selectedFloor} away from catacombs ${targetLevel}`
   }
 
@@ -261,15 +259,5 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     }
 
     return totalBoost
-  }
-
-  private getTotalCatacombsXP(classData: Record<string, number>, targetAverage: number): number {
-    const classesXp = Object.values(classData)
-    return (
-      classesXp
-        .map((xp) => getDungeonLevelWithOverflow(xp))
-        .map((level) => Math.min(level, targetAverage))
-        .reduce((a, b) => a + b, 0) / classesXp.length
-    )
   }
 }
