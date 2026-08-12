@@ -152,14 +152,14 @@ export default class RunsToClassAverage extends ChatCommandHandler {
   private getScarfShardBoost(profile: SkyblockMember): number {
     const scarfShards = profile.attributes?.stacks.catacombs_graduate ?? 0
 
-    if (scarfShards >= 24) return 0.2
-    else if (scarfShards >= 19) return 0.18
-    else if (scarfShards >= 15) return 0.16
-    else if (scarfShards >= 12) return 0.14
-    else if (scarfShards >= 9) return 0.12
-    else if (scarfShards >= 7) return 0.1
-    else if (scarfShards >= 5) return 0.08
-    else if (scarfShards >= 3) return 0.06
+    if (scarfShards >= 32) return 0.2
+    else if (scarfShards >= 25) return 0.18
+    else if (scarfShards >= 20) return 0.16
+    else if (scarfShards >= 16) return 0.14
+    else if (scarfShards >= 12) return 0.12
+    else if (scarfShards >= 9) return 0.1
+    else if (scarfShards >= 6) return 0.08
+    else if (scarfShards >= 4) return 0.06
     else if (scarfShards >= 2) return 0.04
     else if (scarfShards >= 1) return 0.02
     else return 0
