@@ -272,7 +272,7 @@ const scrambleEntries: ScrambleEntry[] = [
     hint: 'SkyBlock pet candy'
   },
   {
-    unscramble: ['Goryō', 'Obake', 'Onryō', 'Raijū', 'Shiryō', 'Yūrei', 'Aswang', 'Banshee', 'Myling', 'Shade', 'Poltergeist', 'Kormos'],
+    unscramble: ['Goryo', 'Obake', 'Onryo', 'Raiju', 'Shiryo', 'Yurei', 'Aswang', 'Banshee', 'Myling', 'Shade', 'Poltergeist', 'Kormos'],
     hint: 'Ghost'
   },
   {
