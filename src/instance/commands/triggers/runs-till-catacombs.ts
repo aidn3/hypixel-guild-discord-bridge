@@ -64,7 +64,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     const currentXP = selectedProfile.dungeons.dungeon_types.catacombs.experience
 
     // XP required for each catacombs level
-    const DungeonXP = [
+    const catacombsLevelXP = [
       50, 75, 110, 160, 230, 330, 470, 670, 950, 1340, 1890, 2665, 3760, 5260, 7380, 10_300, 14_400, 20_000, 27_600,
       38_000, 52_500, 71_500, 97_000, 132_000, 180_000, 243_000, 328_000, 445_000, 600_000, 800_000, 1_065_000,
       1_410_000, 1_900_000, 2_500_000, 3_300_000, 4_300_000, 5_600_000, 7_200_000, 9_200_000, 12_000_000, 15_000_000,
@@ -72,7 +72,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     ]
     const targetXP =
       targetLevel <= 50
-        ? DungeonXP.slice(0, targetLevel).reduce((total, xp) => total + xp, 0)
+        ? catacombsLevelXP.slice(0, targetLevel).reduce((total, xp) => total + xp, 0)
         : 569_809_640 + (targetLevel - 50) * 200_000_000
     const remainingXP = targetXP - currentXP
 
@@ -87,9 +87,9 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     const profileBoosts = bonzoShardsBoost + expertRingBoost + hecatombBoost + dailyBoost
     const globalBoost = await this.getGlobalBoost(context)
     const floorBoost = this.getFloorBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp)
-    const BaseXPBoost = this.getBaseXPBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp)
+    const baseXPBoost = this.getBaseXPBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp)
 
-    let xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp] * BaseXPBoost
+    let xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp] * baseXPBoost
     xpPerRun = xpPerRun * ((1 + floorBoost) * (1 + profileBoosts + globalBoost))
 
     const remainingRuns = Math.ceil(remainingXP / xpPerRun)
@@ -252,9 +252,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     let totalBoost = 0
 
     const government = await context.app.hypixelApi.getSkyblockElection()
-    if (government.mayor.key === 'aura') {
-      totalBoost += 0.5
-    } else if (government.mayor.key === 'derpy') {
+    if (government.mayor.key === 'aura' || government.mayor.key === 'derpy') {
       totalBoost += 0.5
     }
 
