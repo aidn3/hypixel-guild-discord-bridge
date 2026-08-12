@@ -1,4 +1,4 @@
-import { ChannelType, PunishmentPurpose } from '../../../common/application-event'
+import { ChannelType, Permission, PunishmentPurpose } from '../../../common/application-event'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { EconomyAirstrike } from '../economy-constants'
@@ -56,12 +56,14 @@ export default class Airstrike extends ChatCommandHandler {
       throw error
     }
 
-    await targetUser.mute(
-      context.eventHelper.fillBaseEvent(),
-      PunishmentPurpose.Game,
-      EconomyAirstrike.mute,
-      `${context.commandPrefix}${this.triggers[0]} by ${responsibleUser.displayName()}`
-    )
+    if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+      await targetUser.mute(
+        context.eventHelper.fillBaseEvent(),
+        PunishmentPurpose.Game,
+        EconomyAirstrike.mute,
+        `${context.commandPrefix}${this.triggers[0]} by ${responsibleUser.displayName()}`
+      )
+    }
 
     const profile = targetUser.mojangProfile()
     return `${profile.name} ${profile.name}! ${responsibleUser.displayName()} has a surprise for you :D`
