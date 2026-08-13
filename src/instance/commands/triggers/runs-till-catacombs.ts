@@ -121,14 +121,14 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
   private getBonzoShardBoost(profile: SkyblockMember): number {
     const bonzoShards = profile.attributes?.stacks.catacombs_explorer ?? 0
 
-    if (bonzoShards >= 24) return 0.1
-    else if (bonzoShards >= 19) return 0.09
-    else if (bonzoShards >= 15) return 0.08
-    else if (bonzoShards >= 12) return 0.07
-    else if (bonzoShards >= 9) return 0.06
-    else if (bonzoShards >= 7) return 0.05
-    else if (bonzoShards >= 5) return 0.04
-    else if (bonzoShards >= 3) return 0.03
+    if (bonzoShards >= 32) return 0.1
+    else if (bonzoShards >= 25) return 0.09
+    else if (bonzoShards >= 20) return 0.08
+    else if (bonzoShards >= 16) return 0.07
+    else if (bonzoShards >= 12) return 0.06
+    else if (bonzoShards >= 9) return 0.05
+    else if (bonzoShards >= 6) return 0.04
+    else if (bonzoShards >= 4) return 0.03
     else if (bonzoShards >= 2) return 0.02
     else if (bonzoShards >= 1) return 0.01
     else return 0
