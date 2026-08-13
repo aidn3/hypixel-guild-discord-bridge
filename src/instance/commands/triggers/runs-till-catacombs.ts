@@ -109,6 +109,10 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
 
       totalXP += xpPerRun
       remainingRuns++
+
+      if (runNumber > 30_000) {
+        return `${givenUsername} needs more than 30,000 runs to reach catacombs ${targetLevel}.`
+      }
     }
 
     return `${givenUsername} is ${remainingRuns} ${selectedFloor} away from catacombs ${targetLevel}`
