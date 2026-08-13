@@ -100,6 +100,10 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     while (totalXP < targetXP) {
       const runNumber = currentRuns + remainingRuns + 1
 
+      if (runNumber > 30_000) {
+        return `${givenUsername} needs more than 30,000 runs to reach catacombs ${targetLevel}.`
+      }
+
       const baseXPBoost = runNumber > 5 ? 2 : 1
       const dailyBoost = remainingRuns < dailyRemainingRuns ? 0.4 : 0
       const profileBoosts = bonzoShardsBoost + expertRingBoost + hecatombBoost + dailyBoost
@@ -109,10 +113,6 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
 
       totalXP += xpPerRun
       remainingRuns++
-
-      if (runNumber > 30_000) {
-        return `${givenUsername} needs more than 30,000 runs to reach catacombs ${targetLevel}.`
-      }
     }
 
     return `${givenUsername} is ${remainingRuns} ${selectedFloor} away from catacombs ${targetLevel}`
