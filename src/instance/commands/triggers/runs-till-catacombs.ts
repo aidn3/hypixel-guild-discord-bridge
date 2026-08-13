@@ -115,7 +115,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
       remainingRuns++
     }
 
-    return `${givenUsername} is ${remainingRuns} ${selectedFloor} away from catacombs ${targetLevel}`
+    return `${givenUsername} is ${remainingRuns} ${selectedFloor.toUpperCase()} away from catacombs ${targetLevel}`
   }
 
   private getBonzoShardBoost(profile: SkyblockMember): number {
