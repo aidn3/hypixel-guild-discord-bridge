@@ -61,7 +61,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const currentXP = selectedProfile.dungeons.dungeon_types.catacombs.experience
+    const currentXP = selectedProfile.dungeons.dungeon_types.catacombs.experience ?? 0
 
     // XP required for each catacombs level
     const catacombsLevelXP = [

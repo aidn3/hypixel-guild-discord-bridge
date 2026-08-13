@@ -253,7 +253,7 @@ export type DungeonFloors = '1' | '2' | '3' | '4' | '5' | '6' | '7'
 export type DungeonFloorsWithEntrance = '0' | DungeonFloors
 
 export interface SkyblockDungeonsCatacombs {
-  experience: number
+  experience?: number
   tier_completions: Record<DungeonFloorsWithEntrance | 'total', number | undefined> | undefined
   fastest_time: Record<DungeonFloorsWithEntrance | 'best', number | undefined> | undefined
   fastest_time_s: Record<DungeonFloors | 'best', number | undefined> | undefined

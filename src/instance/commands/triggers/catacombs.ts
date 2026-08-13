@@ -40,7 +40,7 @@ export default class Catacombs extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience)
+    const skillLevel = getDungeonLevelWithOverflow(dungeons.dungeon_types.catacombs.experience ?? 0)
     const secrets = selectedProfile.dungeons?.secrets ?? 0
 
     const healer = getDungeonLevelWithOverflow(dungeons.player_classes?.healer?.experience ?? 0)
