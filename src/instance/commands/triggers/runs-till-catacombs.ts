@@ -74,7 +74,6 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
       targetLevel <= 50
         ? catacombsLevelXP.slice(0, targetLevel).reduce((total, xp) => total + xp, 0)
         : 569_809_640 + (targetLevel - 50) * 200_000_000
-    const remainingXP = targetXP - currentXP
 
     if (targetXP <= currentXP) {
       return `${givenUsername} has reached catacombs ${targetLevel} already!`
@@ -83,16 +82,36 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     const bonzoShardsBoost = this.getBonzoShardBoost(selectedProfile)
     const expertRingBoost = await this.getExpertRingBoost(selectedProfile)
     const hecatombBoost = await this.getHecatacombBoost(selectedProfile)
-    const dailyBoost = this.getDailyBoost(selectedProfile)
-    const profileBoosts = bonzoShardsBoost + expertRingBoost + hecatombBoost + dailyBoost
+
+    // Daily runs can be inaccurate on the Hypixel API. If you have not done a run today, your last daily run count will be returned rather than 0.
+    const dailyCompletedRuns = selectedProfile.dungeons.daily_runs?.completed_runs_count ?? 0
+    const dailyRemainingRuns = Math.max(5 - dailyCompletedRuns, 0)
+
     const globalBoost = await this.getGlobalBoost(context)
-    const floorBoost = this.getFloorBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp)
-    const baseXPBoost = this.getBaseXPBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp)
 
-    let xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp] * baseXPBoost
-    xpPerRun = xpPerRun * ((1 + floorBoost) * (1 + profileBoosts + globalBoost))
+    const floorNumber = Number(selectedFloor.replace('m', '')) as 1 | 2 | 3 | 4 | 5 | 6 | 7
+    const currentRuns = selectedProfile.dungeons.dungeon_types.master_catacombs?.tier_completions?.[floorNumber] ?? 0
 
-    const remainingRuns = Math.ceil(remainingXP / xpPerRun)
+    const floorBoost = this.getFloorBoost(selectedFloor as keyof typeof FloorsBaseExp, currentRuns)
+
+    const baseXP = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
+
+    let totalXP = currentXP
+    let remainingRuns = 0
+
+    while (totalXP < targetXP) {
+      const runNumber = currentRuns + remainingRuns + 1
+
+      const baseXPBoost = runNumber > 5 ? 2 : 1
+      const dailyBoost = remainingRuns < dailyRemainingRuns ? 0.4 : 0
+      const profileBoosts = bonzoShardsBoost + expertRingBoost + hecatombBoost + dailyBoost
+      const xpMultiplier = (1 + floorBoost) * (1 + profileBoosts + globalBoost)
+      const xpPerRun = baseXP * baseXPBoost * xpMultiplier
+
+      totalXP += xpPerRun
+      remainingRuns++
+    }
+
     return `${givenUsername} is ${remainingRuns} ${selectedFloor} away from catacombs ${targetLevel}`
   }
 
@@ -207,17 +226,6 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     return highestBoost * 2 // the calculation assumes S+ score which doubles this value
   }
 
-  // Daily runs can be inaccurate on the Hypixel API. If you have not done a run today, your last daily run count will be returned rather than 0.
-  private getDailyBoost(profile: SkyblockMember): number {
-    let totalBoost = 0
-
-    const dailyRuns = profile.dungeons?.daily_runs?.completed_runs_count ?? 0
-    if (dailyRuns < 5) {
-      totalBoost = 0.4
-    }
-    return totalBoost
-  }
-
   /**
    * Completing the same floor multiple times
    *   └ You gain bonus 2% * (total floor completions -1)
@@ -229,23 +237,14 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
    * @see https://web.archive.org/web/20260305134813/https://wiki.hypixel.net/Dungeoneering#Maximizing_XP_Gains
    * @see https://wiki.hypixel.net/Dungeoneering#Maximizing_XP_Gains
    */
-  private getFloorBoost(profile: SkyblockMember, floor: keyof typeof FloorsBaseExp): number {
+  private getFloorBoost(floor: keyof typeof FloorsBaseExp, currentRuns: number): number {
     const FloorBoost = 0.02
-    const floorNumber = Number(floor.replace('m', '')) as 1 | 2 | 3 | 4 | 5 | 6 | 7
-    const runs = profile.dungeons?.dungeon_types.master_catacombs?.tier_completions?.[floorNumber] ?? 0 // Uses floorNumber so if we ever want to add support for F1-F7 later, we don't need to define the runs variable multiple times
     if (floor === 'm7') {
-      if (runs === 0) return 0
-      return FloorBoost * (Math.min(runs, 26) - 1)
+      if (currentRuns === 0) return 0
+      return FloorBoost * (Math.min(currentRuns, 26) - 1)
     }
 
     return 0
-  }
-
-  private getBaseXPBoost(profile: SkyblockMember, floor: keyof typeof FloorsBaseExp): number {
-    const floorNumber = Number(floor.replace('m', '')) as 1 | 2 | 3 | 4 | 5 | 6 | 7
-    const runs = profile.dungeons?.dungeon_types.master_catacombs?.tier_completions?.[floorNumber] ?? 0
-
-    return runs >= 5 ? 2 : 1
   }
 
   private async getGlobalBoost(context: ChatCommandContext): Promise<number> {
