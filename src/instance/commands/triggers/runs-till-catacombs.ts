@@ -92,8 +92,6 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     const floorNumber = Number(selectedFloor.replace('m', '')) as 1 | 2 | 3 | 4 | 5 | 6 | 7
     const currentRuns = selectedProfile.dungeons.dungeon_types.master_catacombs?.tier_completions?.[floorNumber] ?? 0
 
-    const floorBoost = this.getFloorBoost(selectedFloor as keyof typeof FloorsBaseExp, currentRuns)
-
     const baseXP = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
     let totalXP = currentXP
@@ -105,6 +103,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
       const baseXPBoost = runNumber > 5 ? 2 : 1
       const dailyBoost = remainingRuns < dailyRemainingRuns ? 0.4 : 0
       const profileBoosts = bonzoShardsBoost + expertRingBoost + hecatombBoost + dailyBoost
+      const floorBoost = this.getFloorBoost(selectedFloor as keyof typeof FloorsBaseExp, runNumber)
       const xpMultiplier = (1 + floorBoost) * (1 + profileBoosts + globalBoost)
       const xpPerRun = baseXP * baseXPBoost * xpMultiplier
 
