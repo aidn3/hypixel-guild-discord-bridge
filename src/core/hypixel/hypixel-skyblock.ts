@@ -561,5 +561,14 @@ export function getSlayerLevel(
   for (let x = 1; x <= maxLevel && expTable[x] <= exp; x++) {
     level = x
   }
+
+  // Overflow level calculations
+  if (slayer === 'vampire' && exp > 2400) {
+    const overflowExperience = exp - 2400
+    level += Math.floor(overflowExperience / 2400)
+  } else if (exp > 1_000_000) {
+    const overflowExperience = exp - 1_000_000
+    level += Math.floor(overflowExperience / 1_000_000)
+  }
   return level
 }

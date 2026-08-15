@@ -2,7 +2,7 @@
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import { getSlayerLevel, SlayerHighestLevel } from '../../hypixel/hypixel-skyblock'
+import { getSlayerLevel } from '../../hypixel/hypixel-skyblock'
 import type {
   ConditionResult,
   HandlerContext,
@@ -74,7 +74,7 @@ export class SkyblockVampireLevel extends ConditionHandler<SkyblockVampireLevelO
         type: OptionType.Number,
         name: 'From Vampire Level',
         key: 'fromLevel',
-        max: SlayerHighestLevel.vampire,
+        max: Number.MAX_SAFE_INTEGER,
         min: 0,
         defaultValue: 0
       },
@@ -82,7 +82,7 @@ export class SkyblockVampireLevel extends ConditionHandler<SkyblockVampireLevelO
         type: OptionType.Number,
         name: 'To Vampire Level',
         key: 'toLevel',
-        max: SlayerHighestLevel.vampire,
+        max: Number.MAX_SAFE_INTEGER,
         min: 1
       }
     ]

@@ -55,20 +55,24 @@ export default class Slayer extends ChatCommandHandler {
     for (const [name, slayer] of Object.entries(slayerBosses)) {
       const typedName = name as 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze' | 'vampire'
       if (name === chosenSlayer) {
+        const slayerXP = slayer.xp ?? 0
         return (
           `${givenUsername}'s ${capitalize(chosenSlayer)} slayer: ` +
-          `Level ${getSlayerLevel(slayer.xp ?? 0, typedName)} - ${(slayer.xp ?? 0).toLocaleString()} XP - ` +
+          `Level ${getSlayerLevel(slayerXP, typedName)} - ${slayerXP.toLocaleString()} XP - ` +
           `Highest tier kills: ${this.getHighestTierKills(slayer, name).toLocaleString()}`
         )
       }
     }
 
+    let totalXP = 0
     const output: string[] = []
     for (const [name, slayer] of Object.entries(slayerBosses)) {
       const typedName = name as 'zombie' | 'spider' | 'wolf' | 'enderman' | 'blaze' | 'vampire'
-      output.push(`${capitalize(name)} ${getSlayerLevel(slayer.xp ?? 0, typedName)}`)
+      const slayerXP = slayer.xp ?? 0
+      totalXP += slayerXP
+      output.push(`${capitalize(name)} ${getSlayerLevel(slayerXP, typedName)}`)
     }
-    return `${givenUsername}'s slayers: ${output.join(' - ')}`
+    return `${givenUsername}'s slayers: ${totalXP.toLocaleString()} XP - ${output.join(' - ')}`
   }
 
   private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
