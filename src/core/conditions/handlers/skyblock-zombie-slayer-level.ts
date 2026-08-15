@@ -2,7 +2,7 @@
 import type { ModalOption } from '../../../instance/discord/utility/modal-options'
 // eslint-disable-next-line import/no-restricted-paths
 import { OptionType } from '../../../instance/discord/utility/options-handler'
-import { getSlayerLevel, SlayerHighestLevel } from '../../hypixel/hypixel-skyblock'
+import { getSlayerLevel } from '../../hypixel/hypixel-skyblock'
 import type {
   ConditionResult,
   HandlerContext,
@@ -74,7 +74,7 @@ export class SkyblockRevenantLevel extends ConditionHandler<SkyblockRevenantLeve
         type: OptionType.Number,
         name: 'From Revenant Level',
         key: 'fromLevel',
-        max: SlayerHighestLevel.zombie,
+        max: Number.MAX_SAFE_INTEGER,
         min: 0,
         defaultValue: 0
       },
@@ -82,7 +82,7 @@ export class SkyblockRevenantLevel extends ConditionHandler<SkyblockRevenantLeve
         type: OptionType.Number,
         name: 'To Revenant Level',
         key: 'toLevel',
-        max: SlayerHighestLevel.zombie,
+        max: Number.MAX_SAFE_INTEGER,
         min: 1
       }
     ]
