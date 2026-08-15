@@ -72,7 +72,7 @@ export default class Slayer extends ChatCommandHandler {
       totalXP += slayerXP
       output.push(`${capitalize(name)} ${getSlayerLevel(slayerXP, typedName)}`)
     }
-    return `${givenUsername}'s slayers: Total XP ${totalXP.toLocaleString()} - ${output.join(' - ')}`
+    return `${givenUsername}'s slayers: ${totalXP.toLocaleString()} XP - ${output.join(' - ')}`
   }
 
   private getHighestTierKills(slayerData: SlayerType, slayerName: string): number {
