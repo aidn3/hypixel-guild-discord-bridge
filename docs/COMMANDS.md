@@ -96,6 +96,7 @@ A shorter version can also be used: `!- rtca`
 | `!rep`            | Returns a player's Crimson Isle's faction reputation                               |
 | `!rng`            | Returns a random number between a range                                            |
 | `!rps`            | Play rock, paper, scissors against the bot                                         |
+| `!rtc`            | Returns the number of runs needed to reach the catacombs level specified           |
 | `!rtca`           | Returns the number of runs needed to reach the average class level specified       |
 | `!runs`           | Returns how many dungeon runs a player has done                                    |
 | `!sacks`          | Returns a player's SkyBlock sacks content value                                    |

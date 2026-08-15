@@ -258,7 +258,7 @@ export default class Weight extends ChatCommandHandler {
     const profileClasses = profile.dungeons?.player_classes as
       Partial<Record<DungeonClassName, { experience?: number }>> | undefined
     const slayerBosses = (profile.slayer?.slayer_bosses ?? {}) as Partial<Record<SlayerName, { xp?: number }>>
-    const catacombsExperience = profile.dungeons?.dungeon_types.catacombs.experience
+    const catacombsExperience = profile.dungeons?.dungeon_types.catacombs.experience ?? 0
 
     const levels: WeightProfile['levels'] = {
       mining: this.createSkillData(skills.MINING, experience.SKILL_MINING ?? 0),
@@ -298,13 +298,10 @@ export default class Weight extends ChatCommandHandler {
     return {
       levels,
       dungeons: {
-        catacombs:
-          catacombsExperience === undefined
-            ? undefined
-            : {
-                visited: true,
-                level: this.createDungeonData(catacombsExperience)
-              },
+        catacombs: {
+          visited: true,
+          level: this.createDungeonData(catacombsExperience)
+        },
         classes
       },
       slayers: {
@@ -391,7 +388,7 @@ export default class Weight extends ChatCommandHandler {
     const masterCatacombs = profile.dungeons?.dungeon_types.master_catacombs
     const cataCompletions = this.mapCatacombsCompletions(catacombs?.tier_completions)
     const masterCataCompletions = this.mapMasterCatacombsCompletions(masterCatacombs?.tier_completions)
-    const cataXp = this.sanitizeFiniteNumber(catacombs === undefined ? 0 : catacombs.experience)
+    const cataXp = this.sanitizeFiniteNumber(catacombs === undefined ? 0 : (catacombs.experience ?? 0))
 
     const slayerBosses = (profile.slayer?.slayer_bosses ?? {}) as Partial<Record<LilySlayerName, { xp?: number }>>
     const slayerXp = LilySlayerOrder.map((slayerName) => this.sanitizeFiniteNumber(slayerBosses[slayerName]?.xp ?? 0))
