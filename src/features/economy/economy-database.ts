@@ -389,6 +389,31 @@ export class UserEconomy<T extends AnonymousUser> {
     }
   }
 
+  public set(value: number, reason: UserEconomyHistoryChange | undefined): void {
+    try {
+      this.transaction.assertViability()
+      assert.ok(value >= 0, 'value must be equal or greater than 0')
+      this.assertValue(value)
+
+      const originalTotal = this.total()
+      if (originalTotal === value) {
+        this.tryAddHistory(value, reason)
+        return
+      } else if (originalTotal < value) {
+        this.tryAddHistory(value, reason)
+        this.increase(value - originalTotal, reason)
+      } else if (originalTotal > value) {
+        this.tryAddHistory(value, reason)
+        this.decrease(originalTotal - value, reason)
+      } else {
+        assert.fail()
+      }
+    } catch (error: unknown) {
+      if (!(error instanceof EconomyNotEnough)) this.transaction.destroy()
+      throw error
+    }
+  }
+
   private tryAddHistory(amount: number, reason: UserEconomyHistoryChange | undefined): void {
     if (reason === undefined) return
 
@@ -433,6 +458,7 @@ export enum EconomyReason {
 
   UserGive = 'userGive',
   UserTake = 'userTake',
+  UserSet = 'userSet',
 
   Praise = 'praise',
   Insult = 'insult',
