@@ -14,6 +14,7 @@ import Mute from './commands/mute'
 import { Nuke } from './commands/nuke'
 import Roulette from './commands/roulette'
 import Sacrifice from './commands/sacrifice'
+import Set from './commands/set'
 import Take from './commands/take'
 import { EconomyConfigurations } from './economy-configurations'
 import { EconomyDatabase } from './economy-database'
@@ -37,6 +38,7 @@ export class Economy extends Instance {
     this.application.registerChatCommand(new Current(this.database))
     this.application.registerChatCommand(new Give(this.database, this.configuration))
     this.application.registerChatCommand(new Take(this.database, this.configuration))
+    this.application.registerChatCommand(new Set(this.database, this.configuration))
     this.application.registerChatCommand(new Airstrike(this.database))
     this.application.registerChatCommand(new Daily(this.database, this.configuration))
     this.application.registerChatCommand(new Sacrifice(this.database, this.configuration))
