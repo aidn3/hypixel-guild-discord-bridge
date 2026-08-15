@@ -342,7 +342,7 @@ export class UserEconomy<T extends AnonymousUser> {
   /**
    * @throws EconomyNotEnough if not enough funds in the account
    */
-  public decrease(value: number, reason: UserEconomyHistoryChange | undefined): void {
+  public decrease(value: number, reason: UserEconomyHistoryChange): void {
     this.transaction.assertViability()
     assert.ok(value > 0, 'value must be greater than 0')
     this.assertValue(value)
@@ -370,7 +370,7 @@ export class UserEconomy<T extends AnonymousUser> {
     }
   }
 
-  public increase(value: number, reason: UserEconomyHistoryChange | undefined): void {
+  public increase(value: number, reason: UserEconomyHistoryChange): void {
     try {
       this.transaction.assertViability()
       assert.ok(value > 0, 'value must be greater than 0')
@@ -389,7 +389,7 @@ export class UserEconomy<T extends AnonymousUser> {
     }
   }
 
-  public set(value: number, reason: UserEconomyHistoryChange | undefined): void {
+  public set(value: number, reason: UserEconomyHistoryChange): void {
     try {
       this.transaction.assertViability()
       assert.ok(value >= 0, 'value must be equal or greater than 0')
@@ -414,8 +414,9 @@ export class UserEconomy<T extends AnonymousUser> {
     }
   }
 
-  private tryAddHistory(amount: number, reason: UserEconomyHistoryChange | undefined): void {
-    if (reason === undefined) return
+  private tryAddHistory(amount: number, reason: UserEconomyHistoryChange): void {
+    assert.notStrictEqual(reason, undefined)
+    this.assertValue(amount)
 
     this.newHistory.push({
       change: amount,
