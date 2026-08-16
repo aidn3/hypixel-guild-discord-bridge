@@ -40,7 +40,7 @@ export default class MinecraftInstance extends ConnectableInstance implements Di
 
     host: 'mc.hypixel.net',
     port: 25_565,
-    version: '1.21.11'
+    version: '26.1'
   }
 
   public readonly guildManager: GuildManager
