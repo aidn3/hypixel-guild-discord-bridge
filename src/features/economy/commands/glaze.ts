@@ -3,7 +3,7 @@ import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements }
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands'
 import type { EconomyConfigurations } from '../economy-configurations'
 import { EconomyGlaze } from '../economy-constants'
-import { type EconomyDatabase, EconomyReason } from '../economy-database'
+import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy-database'
 
 import { resolveDifferentTarget } from './common/common'
 
@@ -38,11 +38,19 @@ export default class Glaze extends ChatCommandHandler {
     }
 
     const responsibleId = context.app.core.users.resolveUserId(context.message.user.getUserIdentifier())
-    this.database.transaction((context) => {
-      const account = context.getAccount(targetUser)
-      account.increase(EconomyGlaze.amount, { reason: EconomyReason.Praise, byUser: responsibleId })
-      return account.total()
-    })
+    try {
+      this.database.transaction((context) => {
+        const account = context.getAccount(targetUser)
+        account.increase(EconomyGlaze.amount, { reason: EconomyReason.Praise, byUser: responsibleId })
+        return account.total()
+      })
+    } catch (error: unknown) {
+      if (error instanceof EconomyOverflow) {
+        // ignore
+      } else {
+        throw error
+      }
+    }
 
     // easter egg
     const messages =

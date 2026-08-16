@@ -3,9 +3,9 @@ import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements }
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { EconomyAirstrike } from '../economy-constants'
 import type { EconomyDatabase } from '../economy-database'
-import { EconomyNotEnough, EconomyReason } from '../economy-database'
+import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database'
 
-import { inSameGuild, resolveDifferentTarget } from './common/common'
+import { economyOverflow, inSameGuild, resolveDifferentTarget } from './common/common'
 
 export default class Airstrike extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
@@ -52,7 +52,10 @@ export default class Airstrike extends ChatCommandHandler {
       if (error instanceof EconomyNotEnough) {
         context.resetCooldown()
         return `${context.message.user.displayName()}, need ${EconomyAirstrike.amount} aura to use this!`
+      } else if (error instanceof EconomyOverflow) {
+        return economyOverflow(error)
       }
+
       throw error
     }
 

@@ -3,9 +3,9 @@ import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.j
 import type { EconomyConfigurations } from '../economy-configurations'
 import { EconomySacrifice } from '../economy-constants'
 import type { EconomyDatabase } from '../economy-database'
-import { EconomyNotEnough, EconomyReason } from '../economy-database'
+import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database'
 
-import { resolveAmount, resolveDifferentTarget } from './common/common'
+import { economyOverflow, resolveAmount, resolveDifferentTarget } from './common/common'
 
 export default class Sacrifice extends ChatCommandHandler {
   constructor(
@@ -64,6 +64,9 @@ export default class Sacrifice extends ChatCommandHandler {
       if (error instanceof EconomyNotEnough) {
         context.resetCooldown()
         return `${responsibleUser.displayName()}, not enough funds to sacrifice that much!`
+      } else if (error instanceof EconomyOverflow) {
+        context.resetCooldown()
+        return economyOverflow(error)
       } else if (error instanceof NothingGiven) {
         context.resetCooldown()
         return `${responsibleUser.displayName()}, you need to use more funds due to the high tax percentage!`

@@ -2,7 +2,9 @@ import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../c
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
 import { EconomyRussianRoulette } from '../economy-constants'
-import { type EconomyDatabase, EconomyReason } from '../economy-database'
+import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy-database'
+
+import { economyOverflow } from './common/common'
 
 export default class Roulette extends ChatCommandHandler {
   public static readonly LossMessages = [
@@ -64,6 +66,7 @@ export default class Roulette extends ChatCommandHandler {
     } catch (error: unknown) {
       context.resetCooldown()
       if (error instanceof NotEnoughFunds) return `${context.username}, not enough funds to use this command!`
+      if (error instanceof EconomyOverflow) return economyOverflow(error)
       throw error
     }
 

@@ -2,6 +2,7 @@ import type { ChatCommandContext } from '../../../../common/commands'
 import type { MinecraftUser } from '../../../../common/user'
 import { usernameNotExists } from '../../../../instance/commands/common/utility'
 import { parseNumberWithSuffice } from '../../../../utility/shared-utility'
+import type { EconomyOverflow } from '../../economy-database'
 
 export async function resolveDifferentTarget(
   context: ChatCommandContext,
@@ -65,4 +66,8 @@ export async function inSameGuild(context: ChatCommandContext, user: MinecraftUs
     context.resetCooldown()
     return `${profile.name} is not in any shared guild.`
   }
+}
+
+export function economyOverflow(error: EconomyOverflow): string {
+  return `Can not give ${error.user.displayName()} ${error.totalChange} since it will exceeds the max allowed funds limit ${error.maxAllowed}!`
 }
