@@ -47,7 +47,7 @@
     "async-cache-dedupe": "^3.4.0",
     "axios": "^1.16.1",
     "bad-words": "3.0.4",
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^13.0.3",
     "bufferutil": "^4.0.1",
     "canvas": "^3.1.0",
     "compare-versions": "^6.1.1",
@@ -79,7 +79,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
-    "@types/better-sqlite3": "^7.6.13",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/esrever": "^0.2.3",
     "@types/promise-queue": "^2.2.3",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
