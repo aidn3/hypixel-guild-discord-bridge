@@ -9,6 +9,7 @@ import type { Configuration } from 'log4js'
 import Logger4js from 'log4js'
 
 import PackageJson from './package.json' with { type: 'json' }
+import { startCreateConfigurations } from './setup.js'
 import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next.js'
@@ -29,6 +30,8 @@ if (!satisfies(ActualNodeVersion, RequiredNodeVersion)) {
   process.exit(1)
 }
 
+const IsTestRun = process.argv.includes('test-run')
+
 const RootDirectory = import.meta.dirname
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
 fs.mkdirSync(ConfigsDirectory, { recursive: true })
@@ -47,6 +50,26 @@ process.on('uncaughtException', function (error) {
   Logger.fatal(error)
   process.exitCode = 1
 })
+
+const File = process.argv[2] ?? './config.yaml'
+if (!fs.existsSync(File) && !IsTestRun) {
+  Logger.warn(`File ${File} does not exist.`)
+  Logger.warn(`You can rename config_example.yaml to config.yaml and use it as the configuration file.`)
+  Logger.warn(`If this is the first time running the application, please read README.md before proceeding.`)
+  Logger.warn('A wizard guide will be started to create the configuration file...')
+
+  //await setImmediate() // wait for logs flush
+  try {
+    await startCreateConfigurations(Logger)
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') Logger.error(error.message)
+    else Logger.error(error)
+
+    await gracefullyExitProcess(1)
+  }
+
+  Logger.info('Wizard guide has finished. Back to starting up the application...')
+}
 
 const MaxShutdownSignals = 5
 let shutdownSignals = 0
@@ -89,19 +112,11 @@ process.title = PackageJson.name
 Logger.debug('Loading up languages...')
 const I18n = await loadI18()
 
-if (process.argv.includes('test-run')) {
+if (IsTestRun) {
   Logger.warn('Argument passed to run in testing mode')
   Logger.warn('Test Loading finished.')
   Logger.warn('Returning from program with exit code 0')
   await gracefullyExitProcess(0)
-}
-
-const File = process.argv[2] ?? './config.yaml'
-if (!fs.existsSync(File)) {
-  Logger.fatal(`File ${File} does not exist.`)
-  Logger.fatal(`You can rename config_example.yaml to config.yaml and use it as the configuration file.`)
-  Logger.fatal(`If this is the first time running the application, please read README.md before proceeding.`)
-  await gracefullyExitProcess(1)
 }
 
 let applicationLoaded = false

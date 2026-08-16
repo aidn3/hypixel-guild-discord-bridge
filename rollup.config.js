@@ -50,8 +50,16 @@ function generateHeader() {
     .join('')
 
   message += '\n\n'
+  message += '\n// ===== Start Global Options ====='
+  message += `\n${generateGlobalOptions()}`
+  message += '\n// ===== End Global Options ===='
+  message += '\n'.repeat(3)
 
   return message
 }
 
-
+function generateGlobalOptions() {
+  let code = ''
+  code += '\nconst RollupUsed = true;'
+  return code
+}
