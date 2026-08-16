@@ -3,9 +3,9 @@ import type { ChatCommandContext, ChatCommandRequirements } from '../../../commo
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { EconomyConfigurations } from '../economy-configurations'
 import type { EconomyDatabase } from '../economy-database'
-import { EconomyNotEnough, EconomyReason } from '../economy-database'
+import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database'
 
-import { resolveAmount, resolveTarget } from './common/common'
+import { economyOverflow, resolveAmount, resolveTarget } from './common/common'
 
 export default class Take extends ChatCommandHandler {
   constructor(
@@ -55,7 +55,10 @@ export default class Take extends ChatCommandHandler {
     } catch (error: unknown) {
       if (error instanceof EconomyNotEnough) {
         return `${targetUser.displayName()} only has ${error.current.toLocaleString('en-US')}.`
+      } else if (error instanceof EconomyOverflow) {
+        return economyOverflow(error)
       }
+
       throw error
     }
   }

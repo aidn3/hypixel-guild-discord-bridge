@@ -4,7 +4,9 @@ import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../com
 import type { EconomyConfigurations } from '../economy-configurations'
 import { EconomyDaily } from '../economy-constants'
 import type { EconomyDatabase } from '../economy-database'
-import { EconomyReason } from '../economy-database'
+import { EconomyOverflow, EconomyReason } from '../economy-database'
+
+import { economyOverflow } from './common/common'
 
 export default class Daily extends ChatCommandHandler {
   constructor(
@@ -34,11 +36,15 @@ export default class Daily extends ChatCommandHandler {
 
   handler(context: ChatCommandContext): string {
     const user = context.message.user
-
-    this.database.transaction((context) => {
-      const account = context.getAccount(user)
-      account.increase(EconomyDaily.amount, { reason: EconomyReason.DailyReward })
-    })
+    try {
+      this.database.transaction((context) => {
+        const account = context.getAccount(user)
+        account.increase(EconomyDaily.amount, { reason: EconomyReason.DailyReward })
+      })
+    } catch (error: unknown) {
+      if (error instanceof EconomyOverflow) return economyOverflow(error)
+      else throw error
+    }
 
     return `${user.displayName()} claimed +${EconomyDaily.amount} daily aura!`
   }

@@ -269,6 +269,8 @@ export class EconomyTransaction {
  * Transient class represents a user with all linked accounts
  */
 export class UserEconomy<T extends AnonymousUser> {
+  private static readonly MaxFunds = Number.MAX_SAFE_INTEGER
+
   private changes = new Set<UserId>()
   private newHistory: Omit<SavedHistory, 'id' | 'createdAt'>[] = []
 
@@ -278,7 +280,9 @@ export class UserEconomy<T extends AnonymousUser> {
     private readonly user: T,
     private primaryAccount: UserId,
     private accounts = new Map<UserId, number>()
-  ) {}
+  ) {
+    this.normalizeNumbers()
+  }
 
   public appleChanges(): number {
     this.transaction.assertViability()
@@ -333,25 +337,36 @@ export class UserEconomy<T extends AnonymousUser> {
 
   public total(): number {
     this.transaction.assertViability()
-    return this.accounts
+    const total = this.accounts
       .values()
       .toArray()
       .reduce((a, b) => a + b, 0)
+
+    if (total > UserEconomy.MaxFunds) {
+      this.transaction.destroy()
+      assert.fail(`too much funds in account that did not get normalized in advance: ${total}`)
+    }
+
+    return total
   }
 
   /**
    * @throws EconomyNotEnough if not enough funds in the account
    */
-  public decrease(value: number, reason: UserEconomyHistoryChange | undefined): void {
+  public decrease(value: number, reason: UserEconomyHistoryChange): void {
+    this.decreaseUnsafe(value)
+    this.tryAddHistory(-value, reason)
+  }
+
+  private decreaseUnsafe(value: number): void {
     this.transaction.assertViability()
     assert.ok(value > 0, 'value must be greater than 0')
     this.assertValue(value)
 
-    try {
-      const total = this.total()
-      if (value > total) throw new EconomyNotEnough(this.user, total, value)
-      this.tryAddHistory(-value, reason)
+    const total = this.total()
+    if (value > total) throw new EconomyNotEnough(this.user, total, value)
 
+    try {
       for (const [userId, accountValue] of this.accounts.entries()) {
         if (value <= 0) break
         if (accountValue <= 0) continue
@@ -365,57 +380,88 @@ export class UserEconomy<T extends AnonymousUser> {
 
       assert.strictEqual(value, 0)
     } catch (error: unknown) {
-      if (!(error instanceof EconomyNotEnough)) this.transaction.destroy()
+      if (!(error instanceof EconomyNotEnough) && !(error instanceof EconomyOverflow)) this.transaction.destroy()
       throw error
     }
   }
 
-  public increase(value: number, reason: UserEconomyHistoryChange | undefined): void {
-    try {
-      this.transaction.assertViability()
-      assert.ok(value > 0, 'value must be greater than 0')
-      this.assertValue(value)
-      this.tryAddHistory(value, reason)
+  /**
+   * @throws EconomyOverflow if too much funds is being added beyond the allowed limit
+   */
+  public increase(value: number, reason: UserEconomyHistoryChange): void {
+    this.increaseUnsafe(value)
+    this.tryAddHistory(value, reason)
+  }
 
-      const primaryAccount = this.accounts.get(this.primaryAccount)
-      assert.ok(primaryAccount !== undefined)
+  /**
+   * @throws EconomyOverflow if too much funds is being added beyond the allowed limit
+   */
+  private increaseUnsafe(value: number): void {
+    this.transaction.assertViability()
+    assert.ok(value > 0, 'value must be greater than 0')
+    this.assertValue(value)
 
-      const newValue = primaryAccount + value
-      this.accounts.set(this.primaryAccount, newValue)
+    const currentTotal = this.total()
+    if (currentTotal + value > UserEconomy.MaxFunds) {
+      throw new EconomyOverflow(this.user, currentTotal, value, UserEconomy.MaxFunds)
+    }
+
+    const primaryAccount = this.accounts.get(this.primaryAccount)
+    assert.ok(primaryAccount !== undefined)
+
+    let remainingFunds = value
+    if (primaryAccount < UserEconomy.MaxFunds) {
+      const newAmount = Math.min(primaryAccount + remainingFunds, UserEconomy.MaxFunds)
+      this.accounts.set(this.primaryAccount, newAmount)
       this.changes.add(this.primaryAccount)
-    } catch (error: unknown) {
-      if (!(error instanceof EconomyNotEnough)) this.transaction.destroy()
-      throw error
+      const addedFunds = newAmount - primaryAccount
+      remainingFunds -= addedFunds
     }
+
+    for (const [account, wallet] of this.accounts.entries().toArray()) {
+      if (remainingFunds <= 0) break
+
+      const newAmount = Math.min(wallet + remainingFunds, UserEconomy.MaxFunds)
+      if (newAmount !== wallet) {
+        this.accounts.set(account, newAmount)
+        this.changes.add(account)
+
+        const addedFunds = newAmount - wallet
+        remainingFunds -= addedFunds
+      }
+    }
+
+    assert.strictEqual(remainingFunds, 0)
   }
 
-  public set(value: number, reason: UserEconomyHistoryChange | undefined): void {
-    try {
-      this.transaction.assertViability()
-      assert.ok(value >= 0, 'value must be equal or greater than 0')
-      this.assertValue(value)
+  public set(value: number, reason: UserEconomyHistoryChange): void {
+    this.transaction.assertViability()
+    assert.ok(value >= 0, 'value must be equal or greater than 0')
+    this.assertValue(value)
+    if (value > UserEconomy.MaxFunds) throw new EconomyOverflow(this.user, this.total(), value, UserEconomy.MaxFunds)
 
+    try {
       const originalTotal = this.total()
       if (originalTotal === value) {
         this.tryAddHistory(value, reason)
-        return
       } else if (originalTotal < value) {
+        this.increaseUnsafe(value - originalTotal)
         this.tryAddHistory(value, reason)
-        this.increase(value - originalTotal, reason)
       } else if (originalTotal > value) {
+        this.decreaseUnsafe(originalTotal - value)
         this.tryAddHistory(value, reason)
-        this.decrease(originalTotal - value, reason)
       } else {
         assert.fail()
       }
     } catch (error: unknown) {
-      if (!(error instanceof EconomyNotEnough)) this.transaction.destroy()
+      if (!(error instanceof EconomyNotEnough) && !(error instanceof EconomyOverflow)) this.transaction.destroy()
       throw error
     }
   }
 
-  private tryAddHistory(amount: number, reason: UserEconomyHistoryChange | undefined): void {
-    if (reason === undefined) return
+  private tryAddHistory(amount: number, reason: UserEconomyHistoryChange): void {
+    assert.notStrictEqual(reason, undefined)
+    this.assertValue(amount)
 
     this.newHistory.push({
       change: amount,
@@ -427,6 +473,48 @@ export class UserEconomy<T extends AnonymousUser> {
 
   private assertValue(value: number): void {
     assert.strictEqual(Math.floor(value), value, '"value" must be a whole number')
+  }
+
+  private normalizeNumbers(): void {
+    let total = 0
+    for (const account of this.accounts.values()) {
+      const accountNormalized = Math.floor(Math.min(Math.max(account, 0), UserEconomy.MaxFunds))
+      if (account !== accountNormalized) {
+        this.accounts.set(account, accountNormalized)
+        this.changes.add(account)
+      }
+
+      total += accountNormalized
+    }
+
+    if (total > UserEconomy.MaxFunds) {
+      const factor = UserEconomy.MaxFunds / total
+
+      let newTotal = 0
+      for (const account of this.accounts.values()) {
+        const reducedAccount = Math.floor(factor * account)
+        newTotal += reducedAccount
+
+        this.accounts.set(account, reducedAccount)
+        this.changes.add(account)
+      }
+
+      // due to Math.floor() and other inaccuracies when working with numbers higher than MAX_SAFE_INTEGER
+      if (newTotal < UserEconomy.MaxFunds) {
+        const leftOut = UserEconomy.MaxFunds - newTotal
+        const largestAccount = this.accounts
+          .entries()
+          .toArray()
+          .toSorted(([, a], [, b]) => b - a)
+          .at(0)
+        assert.ok(largestAccount !== undefined)
+
+        const [largestAccountId, largestAccountWallet] = largestAccount
+        const newAmount = largestAccountWallet + leftOut
+        this.accounts.set(largestAccountId, newAmount)
+        this.changes.add(newAmount)
+      }
+    }
   }
 }
 
@@ -477,6 +565,17 @@ export class EconomyNotEnough<T extends AnonymousUser> extends Error {
     public readonly user: T,
     public readonly current: number,
     public readonly totalChange: number
+  ) {
+    super()
+  }
+}
+
+export class EconomyOverflow extends Error {
+  constructor(
+    public readonly user: AnonymousUser,
+    public readonly current: number,
+    public readonly totalChange: number,
+    public readonly maxAllowed: number
   ) {
     super()
   }
