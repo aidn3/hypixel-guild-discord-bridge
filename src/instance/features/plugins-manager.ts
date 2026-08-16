@@ -17,6 +17,9 @@ export class PluginsManager extends Instance {
     const plugins: PluginInstance[] = []
 
     const pluginsDirectory = path.join(rootDirectory, 'plugins')
+    if (!fs.existsSync(pluginsDirectory)) return
+    if (!fs.statSync(pluginsDirectory).isDirectory()) return
+
     for (const pluginPath of fs.readdirSync(pluginsDirectory)) {
       let newPath: string = path.resolve(pluginsDirectory, pluginPath)
 
