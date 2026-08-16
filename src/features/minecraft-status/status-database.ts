@@ -2,12 +2,12 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 
-import type { InstanceMessage } from '../../common/application-event'
-import type { Status } from '../../common/connectable-instance'
-import type { SqliteManager } from '../../common/sqlite-manager'
-import Duration from '../../utility/duration'
+import type { InstanceMessage } from '../../common/application-event.js'
+import type { Status } from '../../common/connectable-instance.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import Duration from '../../utility/duration.js'
 
-import type { MinecraftStatusEntry } from './minecraft-status'
+import type { MinecraftStatusEntry } from './minecraft-status.js'
 
 export class StatusDatabase {
   private static readonly MaxLife = Duration.years(5)

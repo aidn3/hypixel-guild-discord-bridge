@@ -1,7 +1,7 @@
 import DefaultAxios from 'axios'
 
-import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
-import { HypixelLink } from '../common/common'
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations.js'
+import { HypixelLink } from '../common/common.js'
 import { stufEncode } from '../common/stuf.js'
 
 export class LinksSanitizer {

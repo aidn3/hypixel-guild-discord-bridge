@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Permission } from '../../../common/application-event'
+import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
 

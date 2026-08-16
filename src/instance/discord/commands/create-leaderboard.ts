@@ -6,7 +6,7 @@ import { ComponentType, MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import type { LeaderboardResult } from '../features/leaderboard'
+import type { LeaderboardResult } from '../features/leaderboard.js'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
 export const Online30Days = { name: 'Top Online Member (30 days)', value: 'online30Days' }

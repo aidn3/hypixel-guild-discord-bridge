@@ -9,7 +9,7 @@ import Yaml from 'yaml'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
+import Duration from '../../../utility/duration.js'
 
 export default class DevelopmentExcuse extends ChatCommandHandler {
   private static readonly MaxLife = Duration.hours(6)

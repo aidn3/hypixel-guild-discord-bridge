@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
+import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,

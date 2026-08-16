@@ -1,6 +1,6 @@
-import type { PlaceholderContext } from '../common'
-import { CanNotResolve, PlaceholderResolver } from '../common'
-import { formatNumber } from '../utility'
+import type { PlaceholderContext } from '../common.js'
+import { CanNotResolve, PlaceholderResolver } from '../common.js'
+import { formatNumber } from '../utility.js'
 
 export class SkyblockLevelResolver extends PlaceholderResolver {
   override keyword(): string {

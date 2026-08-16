@@ -1,11 +1,11 @@
-import { ChannelType, Permission, PunishmentPurpose } from '../../../common/application-event'
+import { ChannelType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
-import { EconomyAirstrike } from '../economy-constants'
-import type { EconomyDatabase } from '../economy-database'
-import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database'
+import { EconomyAirstrike } from '../economy-constants.js'
+import type { EconomyDatabase } from '../economy-database.js'
+import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, inSameGuild, resolveDifferentTarget } from './common/common'
+import { economyOverflow, inSameGuild, resolveDifferentTarget } from './common/common.js'
 
 export default class Airstrike extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {

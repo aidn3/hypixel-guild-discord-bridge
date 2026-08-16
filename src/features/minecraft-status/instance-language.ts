@@ -1,8 +1,8 @@
 import type { i18n } from 'i18next'
 
-import type { StatusChange } from '../../common/application-event'
-import { InstanceMessageType } from '../../common/application-event'
-import { Status } from '../../common/connectable-instance'
+import type { StatusChange } from '../../common/application-event.js'
+import { InstanceMessageType } from '../../common/application-event.js'
+import { Status } from '../../common/connectable-instance.js'
 
 export function translateInstanceMessage(i18n: i18n, key: InstanceMessageType): string {
   switch (key) {

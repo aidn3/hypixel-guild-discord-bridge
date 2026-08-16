@@ -2,8 +2,8 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import Duration from '../../utility/duration'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import Duration from '../../utility/duration.js'
 
 export class ButtonDatabase {
   private static readonly MaxLife = Duration.years(2)

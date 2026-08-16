@@ -1,7 +1,7 @@
-import type Application from '../../../application'
-import Duration from '../../../utility/duration'
+import type Application from '../../../application.js'
+import Duration from '../../../utility/duration.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type { GuildFetch, GuildMember } from '../../minecraft/guild-manager'
+import type { GuildFetch, GuildMember } from '../../minecraft/guild-manager.js'
 
 export async function autocompleteAllMembers(application: Application): Promise<GuildMember[]> {
   const instances = application.minecraftManager.getAllInstances()

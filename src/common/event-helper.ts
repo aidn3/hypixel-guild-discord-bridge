@@ -1,5 +1,5 @@
 import type { BaseEvent } from './application-event.js'
-import type { Instance } from './instance'
+import type { Instance } from './instance.js'
 
 export default class EventHelper<T extends Instance> {
   constructor(

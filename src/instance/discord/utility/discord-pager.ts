@@ -13,8 +13,8 @@ import { Color } from '../../../common/application-event.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
-import type { NumberOption } from './options-handler'
-import { getNumber, OptionType } from './options-handler'
+import type { NumberOption } from './options-handler.js'
+import { getNumber, OptionType } from './options-handler.js'
 
 enum Button {
   Next = 'next',

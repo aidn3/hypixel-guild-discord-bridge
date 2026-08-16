@@ -1,12 +1,12 @@
-import { Platform } from '../../../common/application-event'
+import { Platform } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
-import type { EconomyConfigurations } from '../economy-configurations'
-import { EconomyDaily } from '../economy-constants'
-import type { EconomyDatabase } from '../economy-database'
-import { EconomyOverflow, EconomyReason } from '../economy-database'
+import type { EconomyConfigurations } from '../economy-configurations.js'
+import { EconomyDaily } from '../economy-constants.js'
+import type { EconomyDatabase } from '../economy-database.js'
+import { EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow } from './common/common'
+import { economyOverflow } from './common/common.js'
 
 export default class Daily extends ChatCommandHandler {
   constructor(

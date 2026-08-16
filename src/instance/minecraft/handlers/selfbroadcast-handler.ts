@@ -1,4 +1,4 @@
-import SubInstance from '../../../common/sub-instance'
+import SubInstance from '../../../common/sub-instance.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 

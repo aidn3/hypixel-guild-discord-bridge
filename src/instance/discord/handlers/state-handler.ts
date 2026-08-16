@@ -1,7 +1,7 @@
 import type { Client } from 'discord.js'
 
 import { Status } from '../../../common/connectable-instance.js'
-import SubInstance from '../../../common/sub-instance'
+import SubInstance from '../../../common/sub-instance.js'
 import type DiscordInstance from '../discord-instance.js'
 
 export default class StateHandler extends SubInstance<DiscordInstance, Client> {

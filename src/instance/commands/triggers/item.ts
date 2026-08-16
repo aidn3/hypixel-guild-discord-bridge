@@ -1,15 +1,15 @@
-import type { Content } from '../../../common/application-event'
-import { ContentType } from '../../../common/application-event'
+import type { Content } from '../../../common/application-event.js'
+import { ContentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import MinecraftRenderer from '../../../utility/minecraft-renderer'
+import MinecraftRenderer from '../../../utility/minecraft-renderer.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   parseEncodedNbt,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Item extends ChatCommandHandler {
   constructor() {

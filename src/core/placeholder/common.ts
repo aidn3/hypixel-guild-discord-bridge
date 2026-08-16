@@ -1,5 +1,5 @@
-import type Application from '../../application'
-import type { AnonymousUser, User } from '../../common/user'
+import type Application from '../../application.js'
+import type { AnonymousUser, User } from '../../common/user.js'
 
 export interface PlaceholderContext {
   application: Application

@@ -1,7 +1,7 @@
-import type Application from 'src/application'
-import type { PluginInfo } from 'src/common/plugin-instance'
-import PluginInstance from 'src/common/plugin-instance'
-import type { PluginsManager } from 'src/instance/features/plugins-manager'
+import type Application from 'src/application.js'
+import type { PluginInfo } from 'src/common/plugin-instance.js'
+import PluginInstance from 'src/common/plugin-instance.js'
+import type { PluginsManager } from 'src/instance/features/plugins-manager.js'
 
 /* NOTICE
 THIS PLUGIN DOES NOTHING. ITS PURPOSE IS TO PROVIDE AN EXAMPLE SYNTAX.

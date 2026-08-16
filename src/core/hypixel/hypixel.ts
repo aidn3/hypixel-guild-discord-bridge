@@ -1,17 +1,17 @@
 import { AxiosError } from 'axios'
 import type { Logger } from 'log4js'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import Duration from '../../utility/duration'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import Duration from '../../utility/duration.js'
 
-import type { HypixelSuccessResponse } from './hypixel-api'
-import { HypixelCache } from './hypixel-cache'
-import { HypixelDatabase } from './hypixel-database'
-import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher'
-import { HypixelFetcher } from './hypixel-fetcher'
-import type { HypixelGuild, HypixelGuildResponse } from './hypixel-guild'
-import type { HypixelLeaderboards, HypixelLeaderboardsResponse } from './hypixel-leaderboards'
-import type { HypixelPlayer, HypixelPlayerResponse } from './hypixel-player'
+import type { HypixelSuccessResponse } from './hypixel-api.js'
+import { HypixelCache } from './hypixel-cache.js'
+import { HypixelDatabase } from './hypixel-database.js'
+import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher.js'
+import { HypixelFetcher } from './hypixel-fetcher.js'
+import type { HypixelGuild, HypixelGuildResponse } from './hypixel-guild.js'
+import type { HypixelLeaderboards, HypixelLeaderboardsResponse } from './hypixel-leaderboards.js'
+import type { HypixelPlayer, HypixelPlayerResponse } from './hypixel-player.js'
 import type {
   Bazaar,
   Garden,
@@ -25,8 +25,8 @@ import type {
   SkyblockMuseumResponse,
   SkyblockProfile,
   SkyblockProfilesResponse
-} from './hypixel-skyblock'
-import type { HypixelPlayerStatus, HypixelPlayerStatusResponse } from './hypixel-status'
+} from './hypixel-skyblock.js'
+import type { HypixelPlayerStatus, HypixelPlayerStatusResponse } from './hypixel-status.js'
 
 export class Hypixel {
   private static readonly ApiPath = 'https://api.hypixel.net'

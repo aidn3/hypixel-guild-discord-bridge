@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { ConditionId, ConditionOption, OnUnmet } from '../conditions/common'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { ConditionId, ConditionOption, OnUnmet } from '../conditions/common.js'
 
 export class UserConditions {
   constructor(private readonly sqliteManager: SqliteManager) {}

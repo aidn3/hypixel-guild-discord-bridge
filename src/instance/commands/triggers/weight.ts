@@ -17,14 +17,14 @@ import type {
   HypixelSkyblockSkill,
   HypixelSkyblockSkillsResponse,
   SkyblockMember
-} from '../../../core/hypixel/hypixel-skyblock'
-import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
+} from '../../../core/hypixel/hypixel-skyblock.js'
+import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 type SkillName =
   | 'mining'

@@ -19,19 +19,19 @@ import {
   underline
 } from 'discord.js'
 
-import type Application from '../../../application'
-import { Color, Permission } from '../../../common/application-event'
+import type Application from '../../../application.js'
+import { Color, Permission } from '../../../common/application-event.js'
 import type {
   DiscordAutoCompleteContext,
   DiscordBridgeCommandHandler,
   DiscordCommandContext
-} from '../../../common/commands'
-import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands'
-import { Status } from '../../../common/connectable-instance'
-import type { MinecraftAnonymousUser, MojangProfile } from '../../../common/user'
-import type { ConditionResult, ConditionValue, HandlerDisplayContext } from '../../../core/conditions/common'
-import { ConditionResultType } from '../../../core/conditions/common'
-import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild'
+} from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
+import { Status } from '../../../common/connectable-instance.js'
+import type { MinecraftAnonymousUser, MojangProfile } from '../../../common/user.js'
+import type { ConditionResult, ConditionValue, HandlerDisplayContext } from '../../../core/conditions/common.js'
+import { ConditionResultType } from '../../../core/conditions/common.js'
+import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild.js'
 import {
   addConditionCommand,
   type CommandConditionHandler,
@@ -42,18 +42,18 @@ import {
   handleSuggestConditionsRemove,
   listConditionCommand,
   removeConditionCommand
-} from '../../../instance/discord/common/commands-conditions'
-import { formatInvalidUsername, formatUser } from '../../../instance/discord/common/commands-format'
-import { DefaultCommandFooter } from '../../../instance/discord/common/discord-config'
-import { interactivePaging } from '../../../instance/discord/utility/discord-pager'
-import type { ModalResult } from '../../../instance/discord/utility/modal-options'
-import { showModal } from '../../../instance/discord/utility/modal-options'
-import type { CategoryOption, PresetListOption } from '../../../instance/discord/utility/options-handler'
-import { OptionsHandler, OptionType } from '../../../instance/discord/utility/options-handler'
-import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance'
-import { checkChatTriggers, KickChat } from '../../../utility/chat-triggers'
-import Duration from '../../../utility/duration'
-import { search, searchObjects, sleep } from '../../../utility/shared-utility'
+} from '../../../instance/discord/common/commands-conditions.js'
+import { formatInvalidUsername, formatUser } from '../../../instance/discord/common/commands-format.js'
+import { DefaultCommandFooter } from '../../../instance/discord/common/discord-config.js'
+import { interactivePaging } from '../../../instance/discord/utility/discord-pager.js'
+import type { ModalResult } from '../../../instance/discord/utility/modal-options.js'
+import { showModal } from '../../../instance/discord/utility/modal-options.js'
+import type { CategoryOption, PresetListOption } from '../../../instance/discord/utility/options-handler.js'
+import { OptionsHandler, OptionType } from '../../../instance/discord/utility/options-handler.js'
+import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
+import { checkChatTriggers, KickChat } from '../../../utility/chat-triggers.js'
+import Duration from '../../../utility/duration.js'
+import { search, searchObjects, sleep } from '../../../utility/shared-utility.js'
 import type {
   Database,
   GuildJoinCondition,
@@ -61,8 +61,8 @@ import type {
   GuildStayCondition,
   MinecraftGuild,
   SavedGuildStayCondition
-} from '../database'
-import type { DiscordWaitlistInteraction } from '../discord-waitlist-interaction'
+} from '../database.js'
+import type { DiscordWaitlistInteraction } from '../discord-waitlist-interaction.js'
 
 export const DiscordGuildCommand = {
   getCommandBuilder: function () {

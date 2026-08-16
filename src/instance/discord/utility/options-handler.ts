@@ -26,7 +26,7 @@ import {
 } from 'discord.js'
 
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import Duration from '../../../utility/duration'
+import Duration from '../../../utility/duration.js'
 
 export enum OptionType {
   Category = 'category',

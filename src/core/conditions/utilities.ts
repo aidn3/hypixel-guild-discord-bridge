@@ -2,11 +2,11 @@ import assert from 'node:assert'
 
 import type { TFunction } from 'i18next'
 
-import type { MojangProfile } from '../../common/user'
-import type { HypixelPlayer } from '../hypixel/hypixel-player'
-import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock'
+import type { MojangProfile } from '../../common/user.js'
+import type { HypixelPlayer } from '../hypixel/hypixel-player.js'
+import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock.js'
 
-import type { ConditionValue, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common'
+import type { ConditionValue, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common.js'
 
 export async function checkSkyblockEntireProfiles(
   context: HandlerOperationContext,

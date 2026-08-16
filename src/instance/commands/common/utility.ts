@@ -2,11 +2,10 @@ import assert from 'node:assert'
 
 import nbt from 'prismarine-nbt'
 
-import type { Hypixel } from '../../../core/hypixel/hypixel'
-import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
-import type { MojangApi } from '../../../core/users/mojang'
-
-import type { ChatCommandContext } from 'src/common/commands'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
+import type { MojangApi } from '../../../core/users/mojang.js'
 
 export async function getUuidIfExists(mojangApi: MojangApi, username: string): Promise<string | undefined> {
   return await mojangApi

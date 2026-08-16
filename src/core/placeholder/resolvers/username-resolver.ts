@@ -1,6 +1,6 @@
-import type { PlaceholderContext } from '../common'
-import { CanNotResolve, PlaceholderResolver } from '../common'
-import { formatString } from '../utility'
+import type { PlaceholderContext } from '../common.js'
+import { CanNotResolve, PlaceholderResolver } from '../common.js'
+import { formatString } from '../utility.js'
 
 export class UsernameResolver extends PlaceholderResolver {
   override keyword(): string {

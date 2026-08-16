@@ -14,7 +14,9 @@
     "outDir": "build",
     "resolveJsonModule": true,
     "lib": ["esnext"],
-    "baseUrl": "./",
+    "paths": {
+      "*": ["./*"]
+    },
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "skipLibCheck": true
   },

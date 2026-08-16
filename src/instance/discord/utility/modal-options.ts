@@ -9,8 +9,8 @@ import type {
 } from 'discord.js'
 import { ChannelType, ComponentType, escapeMarkdown, SelectMenuDefaultValueType, TextInputStyle } from 'discord.js'
 
-import type Duration from '../../../utility/duration'
-import { parseNumberWithSuffice } from '../../../utility/shared-utility'
+import type Duration from '../../../utility/duration.js'
+import { parseNumberWithSuffice } from '../../../utility/shared-utility.js'
 
 import type {
   BooleanOption,
@@ -19,8 +19,8 @@ import type {
   NumberOption,
   PresetListOption,
   TextOption
-} from './options-handler'
-import { InputStyle, OptionType } from './options-handler'
+} from './options-handler.js'
+import { InputStyle, OptionType } from './options-handler.js'
 
 export type BaseModalOption =
   | (Omit<TextOption, 'getOption' | 'setOption'> & {

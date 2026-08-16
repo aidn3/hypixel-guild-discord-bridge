@@ -1,7 +1,7 @@
 import type Application from '../application.js'
 import { type MinecraftRawChatEvent, MinecraftSendChatPriority } from '../common/application-event.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../instance/minecraft/minecraft-instance'
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 import { Timeout } from './timeout.js'
 

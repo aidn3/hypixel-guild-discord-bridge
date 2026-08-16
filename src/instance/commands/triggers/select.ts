@@ -1,4 +1,4 @@
-import { ChannelType } from '../../../common/application-event'
+import { ChannelType } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 

@@ -1,10 +1,10 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event'
-import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
-import { EconomyRussianRoulette } from '../economy-constants'
-import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy-database'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import { EconomyRussianRoulette } from '../economy-constants.js'
+import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow } from './common/common'
+import { economyOverflow } from './common/common.js'
 
 export default class Roulette extends ChatCommandHandler {
   public static readonly LossMessages = [

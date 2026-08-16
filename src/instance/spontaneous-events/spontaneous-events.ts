@@ -2,20 +2,20 @@ import assert from 'node:assert'
 
 import PromiseQueue from 'promise-queue'
 
-import type Application from '../../application'
-import { ChannelType, type ChatEvent } from '../../common/application-event'
-import type { DisplayableInstance } from '../../common/instance'
-import { Instance } from '../../common/instance'
-import type { User } from '../../common/user'
-import { EconomyEventWin } from '../../features/economy/economy-constants'
-import { EconomyReason } from '../../features/economy/economy-database'
+import type Application from '../../application.js'
+import { ChannelType, type ChatEvent } from '../../common/application-event.js'
+import type { DisplayableInstance } from '../../common/instance.js'
+import { Instance } from '../../common/instance.js'
+import type { User } from '../../common/user.js'
+import { EconomyEventWin } from '../../features/economy/economy-constants.js'
+import { EconomyReason } from '../../features/economy/economy-database.js'
 
-import type { SpontaneousEventHandler } from './common'
-import { shuffleArrayInPlace } from './common'
-import { CountingChain } from './events/counting-chain'
-import { QuickMath } from './events/quick-math'
-import { Trivia } from './events/trivia'
-import { Unscramble } from './events/unscramble'
+import type { SpontaneousEventHandler } from './common.js'
+import { shuffleArrayInPlace } from './common.js'
+import { CountingChain } from './events/counting-chain.js'
+import { QuickMath } from './events/quick-math.js'
+import { Trivia } from './events/trivia.js'
+import { Unscramble } from './events/unscramble.js'
 
 export class SpontaneousEvents extends Instance implements DisplayableInstance {
   private readonly registeredEventHandlers: SpontaneousEventHandler[] = []

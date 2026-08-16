@@ -1,14 +1,14 @@
 import type { Logger } from 'log4js'
 
-import type Application from '../../application'
-import type { Color } from '../../common/application-event'
-import { ChannelType } from '../../common/application-event'
-import type EventHelper from '../../common/event-helper'
-import type { Instance } from '../../common/instance'
-import SubInstance from '../../common/sub-instance'
-import type { User } from '../../common/user'
+import type Application from '../../application.js'
+import type { Color } from '../../common/application-event.js'
+import { ChannelType } from '../../common/application-event.js'
+import type EventHelper from '../../common/event-helper.js'
+import type { Instance } from '../../common/instance.js'
+import SubInstance from '../../common/sub-instance.js'
+import type { User } from '../../common/user.js'
 
-import type { SpontaneousEvents } from './spontaneous-events'
+import type { SpontaneousEvents } from './spontaneous-events.js'
 
 export abstract class SpontaneousEventHandler extends SubInstance<SpontaneousEvents, void> {
   override registerEvents() {

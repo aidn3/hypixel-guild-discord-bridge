@@ -1,11 +1,11 @@
 // eslint-disable-next-line import/no-restricted-paths
-import type DiscordInstance from '../instance/discord/discord-instance'
+import type DiscordInstance from '../instance/discord/discord-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../instance/minecraft/minecraft-instance'
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 
 import type { Status } from './connectable-instance.js'
-import type { DisplayableInstance, Instance } from './instance'
-import type { AnonymousUser, DiscordUser, MinecraftUser, User } from './user'
+import type { DisplayableInstance, Instance } from './instance.js'
+import type { AnonymousUser, DiscordUser, MinecraftUser, User } from './user.js'
 
 /*
  All events must be immutable.

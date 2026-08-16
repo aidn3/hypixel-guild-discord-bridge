@@ -1,6 +1,6 @@
 import type { Identity } from '@kolapsis/shm-sdk'
 
-import type { Configuration, ConfigurationsManager } from '../../core/configurations'
+import type { Configuration, ConfigurationsManager } from '../../core/configurations.js'
 
 export class MetricsConfigurations {
   private readonly configuration: Configuration

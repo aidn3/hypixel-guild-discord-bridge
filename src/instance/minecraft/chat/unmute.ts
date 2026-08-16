@@ -1,5 +1,5 @@
 import { ChannelType, Color, GuildPlayerEventType, Platform } from '../../../common/application-event.js'
-import type { MinecraftUser, MojangProfile } from '../../../common/user'
+import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {

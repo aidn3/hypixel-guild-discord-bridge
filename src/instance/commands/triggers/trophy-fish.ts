@@ -5,7 +5,7 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 enum Rarities {
   Bronze = '_bronze',

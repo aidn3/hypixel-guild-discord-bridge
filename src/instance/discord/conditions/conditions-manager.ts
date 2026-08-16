@@ -2,22 +2,22 @@ import type { Client, Guild, GuildMemberEditOptions } from 'discord.js'
 import { DiscordAPIError, userMention } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type Application from '../../../application'
-import type EventHelper from '../../../common/event-helper'
-import SubInstance from '../../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler'
+import type Application from '../../../application.js'
+import type EventHelper from '../../../common/event-helper.js'
+import SubInstance from '../../../common/sub-instance.js'
+import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
 import type {
   ConditionHandler,
   ConditionOption,
   ConditionResult,
   ConditionValue
-} from '../../../core/conditions/common'
-import { ConditionResultType, OnUnmet } from '../../../core/conditions/common'
-import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
-import { CanNotResolve } from '../../../core/placeholder/common'
-import type DiscordInstance from '../discord-instance'
+} from '../../../core/conditions/common.js'
+import { ConditionResultType, OnUnmet } from '../../../core/conditions/common.js'
+import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions.js'
+import { CanNotResolve } from '../../../core/placeholder/common.js'
+import type DiscordInstance from '../discord-instance.js'
 
-import type { UpdateContext, UpdateGuildContext, UpdateMemberContext } from './common'
+import type { UpdateContext, UpdateGuildContext, UpdateMemberContext } from './common.js'
 
 export default class ConditionsManager extends SubInstance<DiscordInstance, Client> {
   constructor(

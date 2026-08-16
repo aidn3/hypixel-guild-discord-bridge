@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
+import { playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
 
 export default class Discord extends ChatCommandHandler {
   constructor() {

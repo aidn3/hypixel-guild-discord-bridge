@@ -1,8 +1,8 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event'
-import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
-import Duration from '../../../utility/duration'
-import { usernameNotExists } from '../common/utility'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import Duration from '../../../utility/duration.js'
+import { usernameNotExists } from '../common/utility.js'
 
 export default class Vengeance extends ChatCommandHandler {
   public static readonly LossMessages = [

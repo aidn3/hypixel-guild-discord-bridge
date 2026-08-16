@@ -3,7 +3,7 @@ import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
+import Duration from '../../../utility/duration.js'
 
 export default class Soopy extends ChatCommandHandler {
   private static readonly SoopyApiUrl = 'https://soopy.dev/api/soopyv2/botcommand'

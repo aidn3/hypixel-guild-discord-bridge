@@ -2,9 +2,9 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { ConditionId } from '../../core/conditions/common'
-import type { HypixelGuild, HypixelGuildMember } from '../../core/hypixel/hypixel-guild'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { ConditionId } from '../../core/conditions/common.js'
+import type { HypixelGuild, HypixelGuildMember } from '../../core/hypixel/hypixel-guild.js'
 
 export class Database {
   constructor(

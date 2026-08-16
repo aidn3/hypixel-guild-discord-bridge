@@ -9,13 +9,13 @@ import {
 import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
-import Duration from '../../../utility/duration'
-import { sleep } from '../../../utility/shared-utility'
+import Duration from '../../../utility/duration.js'
+import { sleep } from '../../../utility/shared-utility.js'
 import { Timeout } from '../../../utility/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type { MinecraftManager } from '../../minecraft/minecraft-manager'
+import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
 
 export default class Warp extends ChatCommandHandler {
   constructor() {

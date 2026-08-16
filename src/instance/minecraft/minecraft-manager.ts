@@ -3,10 +3,10 @@ import assert from 'node:assert'
 import type Application from '../../application.js'
 import { type MinecraftSelfBroadcast } from '../../common/application-event.js'
 import { Instance } from '../../common/instance.js'
-import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager'
+import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager.js'
 
 import MinecraftInstance from './minecraft-instance.js'
-import PunishmentsEnforcer from './punishments-enforcer'
+import PunishmentsEnforcer from './punishments-enforcer.js'
 import { Sanitizer } from './utility/sanitizer.js'
 
 export class MinecraftManager extends Instance {

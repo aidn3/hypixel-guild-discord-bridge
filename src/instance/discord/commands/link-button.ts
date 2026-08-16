@@ -3,10 +3,10 @@ import assert from 'node:assert'
 import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
 import { ButtonStyle, ComponentType, SlashCommandBuilder, TextChannel } from 'discord.js'
 
-import { Color } from '../../../common/application-event'
+import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import LinkButtonsManager from '../features/link-buttons-manager'
+import LinkButtonsManager from '../features/link-buttons-manager.js'
 
 export default {
   getCommandBuilder: () =>

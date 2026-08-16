@@ -3,8 +3,8 @@ import fs from 'node:fs/promises'
 
 import type { ApplicationEmojiManager, Client } from 'discord.js'
 
-import SubInstance from '../../../common/sub-instance'
-import type { EmojiConfig } from '../../../core/discord/discord-emojis'
+import SubInstance from '../../../common/sub-instance.js'
+import type { EmojiConfig } from '../../../core/discord/discord-emojis.js'
 import { AllEmojis } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 

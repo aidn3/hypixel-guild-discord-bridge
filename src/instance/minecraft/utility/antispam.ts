@@ -1,7 +1,7 @@
 import StringComparison from 'string-comparison'
 
-import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
-import type MinecraftInstance from '../minecraft-instance'
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations.js'
+import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class Antispam {
   static readonly MaxHistory = 3

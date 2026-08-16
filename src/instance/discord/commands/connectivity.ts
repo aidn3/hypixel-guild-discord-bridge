@@ -6,9 +6,9 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
-import { antiSpamString } from '../../../utility/shared-utility'
+import { antiSpamString } from '../../../utility/shared-utility.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../../minecraft/minecraft-instance'
+import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 
 async function createEmbed(instances: Map<MinecraftInstance, string[]>): Promise<APIEmbed> {

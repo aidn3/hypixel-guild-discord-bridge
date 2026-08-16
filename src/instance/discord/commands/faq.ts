@@ -1,14 +1,13 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Permission } from '../../../common/application-event'
+import FAQ from '../../../../resources/faq.json'
+import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
-import { DefaultCommandFooter } from '../common/discord-config'
-import { pageMessage } from '../utility/discord-pager'
-
-import FAQ from 'resources/faq.json'
+import Duration from '../../../utility/duration.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
+import { pageMessage } from '../utility/discord-pager.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('faq').setDescription('Show frequently asked questions'),

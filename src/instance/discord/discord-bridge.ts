@@ -33,11 +33,11 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { AnonymousUser } from '../../common/user'
-import { DiscordChatFormat } from '../../core/discord/discord-configurations'
-import MinecraftRenderer from '../../utility/minecraft-renderer'
+import type { AnonymousUser } from '../../common/user.js'
+import { DiscordChatFormat } from '../../core/discord/discord-configurations.js'
+import MinecraftRenderer from '../../utility/minecraft-renderer.js'
 // eslint-disable-next-line import/no-restricted-paths
-import MinecraftInstance from '../minecraft/minecraft-instance'
+import MinecraftInstance from '../minecraft/minecraft-instance.js'
 
 import { BlockReaction, GuildMutedReaction, RepeatReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'

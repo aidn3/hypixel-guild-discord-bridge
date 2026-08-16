@@ -3,9 +3,9 @@ import assert from 'node:assert'
 import DefaultAxios, { AxiosError, HttpStatusCode } from 'axios'
 import PromiseQueue from 'promise-queue'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { MojangProfile } from '../../common/user'
-import RateLimiter from '../../utility/rate-limiter'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { MojangProfile } from '../../common/user.js'
+import RateLimiter from '../../utility/rate-limiter.js'
 
 export class MojangApi {
   private static readonly RetryCount = 3

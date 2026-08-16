@@ -2,14 +2,14 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { capitalize, formatTime } from '../../../utility/shared-utility'
+import { capitalize, formatTime } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class CurrentKuudra extends ChatCommandHandler {
   private static readonly ShowTimeAfter = 30 * 60 * 1000

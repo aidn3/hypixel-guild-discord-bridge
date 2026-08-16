@@ -1,13 +1,13 @@
 import { Routes } from 'discord.js'
 import PromiseQueue from 'promise-queue'
 
-import type Application from '../../../application'
-import { Status } from '../../../common/connectable-instance'
+import type Application from '../../../application.js'
+import { Status } from '../../../common/connectable-instance.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import type { DiscordMessage } from '../../../core/discord/discord-temporarily-interactions'
-import Duration from '../../../utility/duration'
-import { setIntervalAsync } from '../../../utility/scheduling'
-import type DiscordInstance from '../discord-instance'
+import type { DiscordMessage } from '../../../core/discord/discord-temporarily-interactions.js'
+import Duration from '../../../utility/duration.js'
+import { setIntervalAsync } from '../../../utility/scheduling.js'
+import type DiscordInstance from '../discord-instance.js'
 
 export default class MessageDeleter {
   private static readonly CheckEvery = Duration.seconds(5)

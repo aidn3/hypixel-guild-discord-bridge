@@ -1,13 +1,13 @@
 import assert from 'node:assert'
 
-import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
-import { Status } from '../../../common/connectable-instance'
-import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager'
-import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance'
-import type { MinecraftManager } from '../../../instance/minecraft/minecraft-manager'
-import Duration from '../../../utility/duration'
-import type { Database, MinecraftGuild } from '../database'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import { Status } from '../../../common/connectable-instance.js'
+import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager.js'
+import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
+import type { MinecraftManager } from '../../../instance/minecraft/minecraft-manager.js'
+import Duration from '../../../utility/duration.js'
+import type { Database, MinecraftGuild } from '../database.js'
 
 export default class Invite extends ChatCommandHandler {
   constructor(private readonly database: Database) {

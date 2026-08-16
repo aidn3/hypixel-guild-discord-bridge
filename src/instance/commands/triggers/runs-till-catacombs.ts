@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock'
+import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -8,7 +8,7 @@ import {
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 const FloorsBaseExp = {
   m7: 150_000,

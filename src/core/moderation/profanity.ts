@@ -2,9 +2,9 @@ import assert from 'node:assert'
 
 import BadWords from 'bad-words'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
-import type { ModerationConfigurations } from './moderation-configurations'
+import type { ModerationConfigurations } from './moderation-configurations.js'
 
 export class Profanity {
   private profanityFilter: BadWords.BadWords

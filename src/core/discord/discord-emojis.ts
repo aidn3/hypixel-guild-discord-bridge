@@ -1,4 +1,4 @@
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
 export class DiscordEmojis {
   constructor(private readonly sqliteManager: SqliteManager) {}

@@ -5,13 +5,13 @@ import PromiseQueue from 'promise-queue'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
+import Duration from '../../../utility/duration.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Fairysouls extends ChatCommandHandler {
   private static readonly MaxLife = Duration.hours(6)

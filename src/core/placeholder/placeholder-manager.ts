@@ -1,7 +1,7 @@
-import type { PlaceholderContext, PlaceholderResolver } from './common'
-import { CanNotResolve } from './common'
-import { SkyblockLevelResolver } from './resolvers/skyblock-level'
-import { UsernameResolver } from './resolvers/username-resolver'
+import type { PlaceholderContext, PlaceholderResolver } from './common.js'
+import { CanNotResolve } from './common.js'
+import { SkyblockLevelResolver } from './resolvers/skyblock-level.js'
+import { UsernameResolver } from './resolvers/username-resolver.js'
 
 export class PlaceholderManager {
   private readonly resolver = new Map<string, PlaceholderResolver>()

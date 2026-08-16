@@ -3,11 +3,11 @@ import assert from 'node:assert'
 import type { Database } from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
-import type { UserId } from '../../common/application-event'
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { AnonymousUser } from '../../common/user'
-import type { Users } from '../../core/users'
-import Duration from '../../utility/duration'
+import type { UserId } from '../../common/application-event.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { AnonymousUser } from '../../common/user.js'
+import type { Users } from '../../core/users.js'
+import Duration from '../../utility/duration.js'
 
 export class EconomyDatabase {
   private static readonly EntriesPerPage = 10

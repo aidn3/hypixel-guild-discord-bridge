@@ -4,9 +4,9 @@ import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { checkChatTriggers, RankChat } from '../../../utility/chat-triggers.js'
-import { search } from '../../../utility/shared-utility'
+import { search } from '../../../utility/shared-utility.js'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
-import { autocompleteAllMembers } from '../common/commands-utility'
+import { autocompleteAllMembers } from '../common/commands-utility.js'
 
 export default {
   getCommandBuilder: () =>

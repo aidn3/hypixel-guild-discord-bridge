@@ -2,11 +2,11 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import Duration from '../../utility/duration'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import Duration from '../../utility/duration.js'
 
-import type { HypixelSuccessResponse } from './hypixel-api'
-import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher'
+import type { HypixelSuccessResponse } from './hypixel-api.js'
+import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher.js'
 
 export class HypixelDatabase {
   private static readonly MaxLife = Duration.years(1)

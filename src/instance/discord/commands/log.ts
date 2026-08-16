@@ -6,9 +6,9 @@ import type { MinecraftRawChatEvent } from '../../../common/application-event.js
 import { Color, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
 import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
-import { Timeout } from '../../../utility/timeout'
+import { Timeout } from '../../../utility/timeout.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../../minecraft/minecraft-instance'
+import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 

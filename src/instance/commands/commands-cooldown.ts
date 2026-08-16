@@ -1,12 +1,12 @@
 import assert from 'node:assert'
 
-import type { ChannelType, UserId } from '../../common/application-event'
-import type { CommandId } from '../../common/commands'
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { AnonymousUser } from '../../common/user'
-import type { Users } from '../../core/users'
+import type { ChannelType, UserId } from '../../common/application-event.js'
+import type { CommandId } from '../../common/commands.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { AnonymousUser } from '../../common/user.js'
+import type { Users } from '../../core/users.js'
 
-import type { CommandsDatabase } from './commands-database'
+import type { CommandsDatabase } from './commands-database.js'
 
 export class CommandsCooldown {
   constructor(

@@ -1,11 +1,11 @@
 import { uptime } from 'node:process'
 
-import type Application from '../application'
-import { ChannelType, Color, InstanceSignalType } from '../common/application-event'
-import type { DisplayableInstance } from '../common/instance'
-import { Instance } from '../common/instance'
-import Duration from '../utility/duration'
-import { setIntervalAsync } from '../utility/scheduling'
+import type Application from '../application.js'
+import { ChannelType, Color, InstanceSignalType } from '../common/application-event.js'
+import type { DisplayableInstance } from '../common/instance.js'
+import { Instance } from '../common/instance.js'
+import Duration from '../utility/duration.js'
+import { setIntervalAsync } from '../utility/scheduling.js'
 
 export default class AutoRestart extends Instance implements DisplayableInstance {
   private static readonly MaxLifeTillRestart = Duration.hours(24)

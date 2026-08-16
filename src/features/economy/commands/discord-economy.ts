@@ -2,15 +2,15 @@ import assert from 'node:assert'
 
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
-import type { UserId } from '../../../common/application-event'
-import { Permission, Platform } from '../../../common/application-event'
-import type { DiscordBridgeCommandHandler, DiscordCommandContext } from '../../../common/commands'
-import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands'
-import { formatInvalidUsername, formatUser } from '../../../instance/discord/common/commands-format'
-import { interactivePaging } from '../../../instance/discord/utility/discord-pager'
-import Duration from '../../../utility/duration'
-import type { EconomyDatabase, SavedHistory } from '../economy-database'
-import { EconomyReason } from '../economy-database'
+import type { UserId } from '../../../common/application-event.js'
+import { Permission, Platform } from '../../../common/application-event.js'
+import type { DiscordBridgeCommandHandler, DiscordCommandContext } from '../../../common/commands.js'
+import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
+import { formatInvalidUsername, formatUser } from '../../../instance/discord/common/commands-format.js'
+import { interactivePaging } from '../../../instance/discord/utility/discord-pager.js'
+import Duration from '../../../utility/duration.js'
+import type { EconomyDatabase, SavedHistory } from '../economy-database.js'
+import { EconomyReason } from '../economy-database.js'
 
 export const DiscordGuildCommand = {
   getCommandBuilder: function () {

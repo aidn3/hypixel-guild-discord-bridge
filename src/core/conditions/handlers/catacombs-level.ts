@@ -1,17 +1,22 @@
 // eslint-disable-next-line import/no-restricted-paths
-import type { ModalOption } from '../../../instance/discord/utility/modal-options'
+import type { ModalOption } from '../../../instance/discord/utility/modal-options.js'
 // eslint-disable-next-line import/no-restricted-paths
-import { OptionType } from '../../../instance/discord/utility/options-handler'
-import { getDungeonLevelWithOverflow } from '../../hypixel/hypixel-skyblock'
+import { OptionType } from '../../../instance/discord/utility/options-handler.js'
+import { getDungeonLevelWithOverflow } from '../../hypixel/hypixel-skyblock.js'
 import type {
   ConditionResult,
   HandlerContext,
   HandlerOperationContext,
   HandlerUser,
   SkyblockProfileOptionType
-} from '../common'
-import { ConditionHandler, ConditionResultType, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
-import { formatPrimitiveValue, getSkyblockUserProfiles } from '../utilities'
+} from '../common.js'
+import {
+  ConditionHandler,
+  ConditionResultType,
+  SkyblockProfileOption,
+  translateSkyblockProfileTypes
+} from '../common.js'
+import { formatPrimitiveValue, getSkyblockUserProfiles } from '../utilities.js'
 
 export class CatacombsLevel extends ConditionHandler<SkyblockCatacombsOptions, number> {
   override getId(): string {

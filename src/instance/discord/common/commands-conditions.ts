@@ -9,21 +9,21 @@ import type {
 import { escapeMarkdown, MessageFlags, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
-import type { CommandOrigin, DiscordAutoCompleteContext, DiscordCommandContext } from '../../../common/commands'
+import type { CommandOrigin, DiscordAutoCompleteContext, DiscordCommandContext } from '../../../common/commands.js'
 import type {
   ConditionHandler,
   ConditionId,
   ConditionOption,
   ConditionValue,
   HandlerDisplayContext
-} from '../../../core/conditions/common'
-import Duration from '../../../utility/duration'
-import { search, searchObjects } from '../../../utility/shared-utility'
-import { interactivePaging } from '../utility/discord-pager'
-import type { ModalOption, ModalResult } from '../utility/modal-options'
-import { ModalInputInvalid, showModal } from '../utility/modal-options'
+} from '../../../core/conditions/common.js'
+import Duration from '../../../utility/duration.js'
+import { search, searchObjects } from '../../../utility/shared-utility.js'
+import { interactivePaging } from '../utility/discord-pager.js'
+import type { ModalOption, ModalResult } from '../utility/modal-options.js'
+import { ModalInputInvalid, showModal } from '../utility/modal-options.js'
 
-import { DefaultCommandFooter } from './discord-config'
+import { DefaultCommandFooter } from './discord-config.js'
 
 export interface CommandConditionHandler {
   conditions: () => ConditionId[]

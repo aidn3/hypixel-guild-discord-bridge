@@ -1,8 +1,8 @@
-import type { ChatCommandContext } from '../../../../common/commands'
-import type { MinecraftUser } from '../../../../common/user'
-import { usernameNotExists } from '../../../../instance/commands/common/utility'
-import { parseNumberWithSuffice } from '../../../../utility/shared-utility'
-import type { EconomyOverflow } from '../../economy-database'
+import type { ChatCommandContext } from '../../../../common/commands.js'
+import type { MinecraftUser } from '../../../../common/user.js'
+import { usernameNotExists } from '../../../../instance/commands/common/utility.js'
+import { parseNumberWithSuffice } from '../../../../utility/shared-utility.js'
+import type { EconomyOverflow } from '../../economy-database.js'
 
 export async function resolveDifferentTarget(
   context: ChatCommandContext,

@@ -1,10 +1,10 @@
 import { ProfileNetworthCalculator } from 'skyhelper-networth'
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ModalOption } from '../../../instance/discord/utility/modal-options'
+import type { ModalOption } from '../../../instance/discord/utility/modal-options.js'
 // eslint-disable-next-line import/no-restricted-paths
-import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler'
-import { shortenNumber } from '../../../utility/shared-utility'
+import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler.js'
+import { shortenNumber } from '../../../utility/shared-utility.js'
 import type {
   ConditionOption,
   ConditionResult,
@@ -12,8 +12,13 @@ import type {
   HandlerOperationContext,
   HandlerUser,
   SkyblockProfileOptionType
-} from '../common'
-import { ConditionHandler, ConditionResultType, SkyblockProfileOption, translateSkyblockProfileTypes } from '../common'
+} from '../common.js'
+import {
+  ConditionHandler,
+  ConditionResultType,
+  SkyblockProfileOption,
+  translateSkyblockProfileTypes
+} from '../common.js'
 
 export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions, number> {
   override getId(): string {

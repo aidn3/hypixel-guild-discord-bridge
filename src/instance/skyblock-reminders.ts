@@ -1,11 +1,11 @@
 import assert from 'node:assert'
 
-import type Application from '../application'
-import { ChannelType, Color } from '../common/application-event'
-import type { DisplayableInstance } from '../common/instance'
-import { Instance } from '../common/instance'
-import Duration from '../utility/duration'
-import { setIntervalAsync } from '../utility/scheduling'
+import type Application from '../application.js'
+import { ChannelType, Color } from '../common/application-event.js'
+import type { DisplayableInstance } from '../common/instance.js'
+import { Instance } from '../common/instance.js'
+import Duration from '../utility/duration.js'
+import { setIntervalAsync } from '../utility/scheduling.js'
 
 export class SkyblockReminders extends Instance implements DisplayableInstance {
   public static readonly DefaultDarkAuctionMessage = 'Dark Auction in {minutes} minute(s)!'

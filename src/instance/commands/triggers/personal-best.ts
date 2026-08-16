@@ -4,15 +4,15 @@ import type {
   DungeonFloors,
   DungeonFloorsWithEntrance,
   SkyblockDungeonsTypes
-} from '../../../core/hypixel/hypixel-skyblock'
-import { formatTime } from '../../../utility/shared-utility'
+} from '../../../core/hypixel/hypixel-skyblock.js'
+import { formatTime } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class PersonalBest extends ChatCommandHandler {
   constructor() {

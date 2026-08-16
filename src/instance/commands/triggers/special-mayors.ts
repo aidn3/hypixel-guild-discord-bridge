@@ -1,6 +1,6 @@
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { capitalize, formatTime } from '../../../utility/shared-utility'
-import { SkyblockEvents } from '../../../utility/skyblock-instant'
+import { capitalize, formatTime } from '../../../utility/shared-utility.js'
+import { SkyblockEvents } from '../../../utility/skyblock-instant.js'
 
 export default class SpecialMayors extends ChatCommandHandler {
   constructor() {

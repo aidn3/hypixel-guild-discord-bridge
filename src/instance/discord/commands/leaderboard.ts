@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import { SlashCommandBuilder } from 'discord.js'
 
-import { Permission } from '../../../common/application-event'
+import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'

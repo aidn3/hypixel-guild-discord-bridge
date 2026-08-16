@@ -1,5 +1,5 @@
-import type { UserLink } from '../../common/application-event'
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { UserLink } from '../../common/application-event.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
 export class Verification {
   private readonly database: VerificationDatabase

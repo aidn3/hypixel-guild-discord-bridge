@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { usernameNotExists } from '../common/utility'
+import { usernameNotExists } from '../common/utility.js'
 
 export default class UrchinCommand extends ChatCommandHandler {
   constructor() {

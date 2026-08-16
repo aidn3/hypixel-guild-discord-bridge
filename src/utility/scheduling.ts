@@ -1,8 +1,8 @@
 import PromiseQueue from 'promise-queue'
 
-import type { PromiseCatchHandler } from '../common/unexpected-error-handler'
+import type { PromiseCatchHandler } from '../common/unexpected-error-handler.js'
 
-import type Duration from './duration'
+import type Duration from './duration.js'
 
 export interface ScheduleOptions {
   errorHandler: PromiseCatchHandler

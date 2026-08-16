@@ -3,8 +3,8 @@ import Moment from 'moment'
 import { ChannelType, Platform } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
-import { getDuration } from '../../../utility/shared-utility'
+import Duration from '../../../utility/duration.js'
+import { getDuration } from '../../../utility/shared-utility.js'
 
 interface Party {
   username: string

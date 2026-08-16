@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 import type { Cache, CacheFactory } from 'prismarine-auth'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
 export class SessionsManager {
   constructor(

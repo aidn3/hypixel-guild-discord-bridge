@@ -2,7 +2,7 @@ import type { APIEmbed } from 'discord.js'
 import { escapeMarkdown, userMention } from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
-import type { AnonymousUser } from '../../../common/user'
+import type { AnonymousUser } from '../../../common/user.js'
 
 import { DefaultCommandFooter } from './discord-config.js'
 

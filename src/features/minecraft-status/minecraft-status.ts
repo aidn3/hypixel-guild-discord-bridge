@@ -1,15 +1,15 @@
 import type { Client } from 'discord.js'
 
-import type Application from '../../application'
-import type { InstanceStatus } from '../../common/application-event'
-import { Instance } from '../../common/instance'
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type MessageAssociation from '../../instance/discord/common/message-association'
-import type MinecraftInstance from '../../instance/minecraft/minecraft-instance'
+import type Application from '../../application.js'
+import type { InstanceStatus } from '../../common/application-event.js'
+import { Instance } from '../../common/instance.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type MessageAssociation from '../../instance/discord/common/message-association.js'
+import type MinecraftInstance from '../../instance/minecraft/minecraft-instance.js'
 
-import { ButtonDatabase } from './button-database'
-import { DiscordHandler } from './discord-handler'
-import { StatusDatabase } from './status-database'
+import { ButtonDatabase } from './button-database.js'
+import { DiscordHandler } from './discord-handler.js'
+import { StatusDatabase } from './status-database.js'
 
 export type MinecraftStatusEntry = InstanceStatus & { instance: MinecraftInstance }
 

@@ -2,16 +2,16 @@ import { PermissionFlagsBits } from 'discord-api-types/v10'
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js'
 
-import type Application from '../../../application'
+import type Application from '../../../application.js'
 import type {
   DiscordAutoCompleteContext,
   DiscordCommandContext,
   DiscordCommandHandler
 } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import { OnUnmet } from '../../../core/conditions/common'
-import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
-import type { CommandConditionHandler } from '../common/commands-conditions'
+import { OnUnmet } from '../../../core/conditions/common.js'
+import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions.js'
+import type { CommandConditionHandler } from '../common/commands-conditions.js'
 import {
   addConditionCommand,
   handleConditionAdd,
@@ -21,9 +21,9 @@ import {
   handleSuggestConditionsRemove,
   listConditionCommand,
   removeConditionCommand
-} from '../common/commands-conditions'
-import type { ModalResult } from '../utility/modal-options'
-import { InputStyle, OptionType } from '../utility/options-handler'
+} from '../common/commands-conditions.js'
+import type { ModalResult } from '../utility/modal-options.js'
+import { InputStyle, OptionType } from '../utility/options-handler.js'
 
 export default {
   getCommandBuilder: () => {

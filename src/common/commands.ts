@@ -12,18 +12,18 @@ import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type { CommandsInstance } from '../instance/commands/commands-instance'
+import type { CommandsInstance } from '../instance/commands/commands-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type DiscordInstance from '../instance/discord/discord-instance'
+import type DiscordInstance from '../instance/discord/discord-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../instance/minecraft/minecraft-instance'
+import type MinecraftInstance from '../instance/minecraft/minecraft-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type Duration from '../utility/duration'
+import type Duration from '../utility/duration.js'
 
 import type { ChannelType, ChatEvent, Content, Permission, Platform } from './application-event.js'
 import type EventHelper from './event-helper.js'
 import type UnexpectedErrorHandler from './unexpected-error-handler.js'
-import type { AnonymousUser, DiscordUser } from './user'
+import type { AnonymousUser, DiscordUser } from './user.js'
 
 export interface ChatCommandRequirements {
   permission?: Permission

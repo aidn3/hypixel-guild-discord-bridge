@@ -1,7 +1,7 @@
 import PromiseQueue from 'promise-queue'
 
 import { MinecraftSendChatPriority } from '../../../common/application-event.js'
-import SubInstance from '../../../common/sub-instance'
+import SubInstance from '../../../common/sub-instance.js'
 import { Timeout } from '../../../utility/timeout.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'

@@ -2,8 +2,8 @@ import assert from 'node:assert'
 
 import NodeCache from 'node-cache'
 
-import type { SqliteManager } from '../common/sqlite-manager'
-import Duration from '../utility/duration'
+import type { SqliteManager } from '../common/sqlite-manager.js'
+import Duration from '../utility/duration.js'
 
 export class ConfigurationsManager {
   private static readonly Tablename = 'configurations'

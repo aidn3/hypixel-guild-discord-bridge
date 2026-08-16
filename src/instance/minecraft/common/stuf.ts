@@ -1,4 +1,4 @@
-import { HypixelLink } from './common'
+import { HypixelLink } from './common.js'
 
 export function stufEncode(message: string): string {
   return message
