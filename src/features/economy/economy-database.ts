@@ -477,25 +477,25 @@ export class UserEconomy<T extends AnonymousUser> {
 
   private normalizeNumbers(): void {
     let total = 0
-    for (const account of this.accounts.values()) {
-      const accountNormalized = Math.floor(Math.min(Math.max(account, 0), UserEconomy.MaxFunds))
-      if (account !== accountNormalized) {
-        this.accounts.set(account, accountNormalized)
+    for (const [account, wallet] of this.accounts.entries().toArray()) {
+      const walletNormalized = Math.floor(Math.min(Math.max(wallet, 0), UserEconomy.MaxFunds))
+      if (wallet !== walletNormalized) {
+        this.accounts.set(account, walletNormalized)
         this.changes.add(account)
       }
 
-      total += accountNormalized
+      total += walletNormalized
     }
 
     if (total > UserEconomy.MaxFunds) {
       const factor = UserEconomy.MaxFunds / total
 
       let newTotal = 0
-      for (const account of this.accounts.values()) {
-        const reducedAccount = Math.floor(factor * account)
-        newTotal += reducedAccount
+      for (const [account, wallet] of this.accounts.entries().toArray()) {
+        const reducedWallet = Math.floor(factor * wallet)
+        newTotal += reducedWallet
 
-        this.accounts.set(account, reducedAccount)
+        this.accounts.set(account, reducedWallet)
         this.changes.add(account)
       }
 
@@ -512,7 +512,7 @@ export class UserEconomy<T extends AnonymousUser> {
         const [largestAccountId, largestAccountWallet] = largestAccount
         const newAmount = largestAccountWallet + leftOut
         this.accounts.set(largestAccountId, newAmount)
-        this.changes.add(newAmount)
+        this.changes.add(largestAccountId)
       }
     }
   }
