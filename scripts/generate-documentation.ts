@@ -81,8 +81,8 @@ function generateDiscordCommands(application: Application): string {
 
   const commands = application.discordInstance.commandsManager.commands
     .values()
-    .toArray()
     .map((command) => command.getCommandBuilder())
+    .toArray()
     .toSorted((a, b) => a.name.localeCompare(b.name))
   for (const command of commands) {
     table.push([`\`/${command.name}\``, command.description])

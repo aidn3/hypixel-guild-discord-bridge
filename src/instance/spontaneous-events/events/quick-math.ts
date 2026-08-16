@@ -68,11 +68,11 @@ export async function startQuickMath(
 
 function createMath(): { expression: string; answer: number } {
   const possibilities = [
-    ...Array.from({ length: 5 }).fill('multiplication'),
-    ...Array.from({ length: 10 }).fill('addition'),
-    ...Array.from({ length: 5 }).fill('trickyAddition'),
-    ...Array.from({ length: 5 }).fill('division'),
-    ...Array.from({ length: 2 }).fill('hard')
+    ...Array.from({ length: 5 }, () => 'multiplication'),
+    ...Array.from({ length: 10 }, () => 'addition'),
+    ...Array.from({ length: 5 }, () => 'trickyAddition'),
+    ...Array.from({ length: 5 }, () => 'division'),
+    ...Array.from({ length: 2 }, () => 'hard')
   ] as ('multiplication' | 'addition' | 'trickyAddition' | 'division' | 'hard')[]
 
   const selected = possibilities[Math.floor(Math.random() * possibilities.length)]

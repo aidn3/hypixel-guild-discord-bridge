@@ -60,7 +60,7 @@ export class LinksSanitizer {
         continue
       }
 
-      const type = contentType.split('/')[0]
+      const type = contentType.split('/', 1)[0]
       if (type === 'image') newMessage.push('(image)')
       else if (type === 'video') newMessage.push('(video)')
       else if (contentType.includes('application/pdf')) newMessage.push('(pdf)')

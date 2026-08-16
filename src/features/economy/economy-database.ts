@@ -337,10 +337,7 @@ export class UserEconomy<T extends AnonymousUser> {
 
   public total(): number {
     this.transaction.assertViability()
-    const total = this.accounts
-      .values()
-      .toArray()
-      .reduce((a, b) => a + b, 0)
+    const total = this.accounts.values().reduce((a, b) => a + b, 0)
 
     if (total > UserEconomy.MaxFunds) {
       this.transaction.destroy()
@@ -418,7 +415,7 @@ export class UserEconomy<T extends AnonymousUser> {
       remainingFunds -= addedFunds
     }
 
-    for (const [account, wallet] of this.accounts.entries().toArray()) {
+    for (const [account, wallet] of this.accounts.entries()) {
       if (remainingFunds <= 0) break
 
       const newAmount = Math.min(wallet + remainingFunds, UserEconomy.MaxFunds)
@@ -477,7 +474,7 @@ export class UserEconomy<T extends AnonymousUser> {
 
   private normalizeNumbers(): void {
     let total = 0
-    for (const [account, wallet] of this.accounts.entries().toArray()) {
+    for (const [account, wallet] of this.accounts.entries()) {
       const walletNormalized = Math.floor(Math.min(Math.max(wallet, 0), UserEconomy.MaxFunds))
       if (wallet !== walletNormalized) {
         this.accounts.set(account, walletNormalized)
@@ -491,7 +488,7 @@ export class UserEconomy<T extends AnonymousUser> {
       const factor = UserEconomy.MaxFunds / total
 
       let newTotal = 0
-      for (const [account, wallet] of this.accounts.entries().toArray()) {
+      for (const [account, wallet] of this.accounts.entries()) {
         const reducedWallet = Math.floor(factor * wallet)
         newTotal += reducedWallet
 

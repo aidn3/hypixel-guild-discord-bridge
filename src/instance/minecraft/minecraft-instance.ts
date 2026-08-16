@@ -297,7 +297,7 @@ export default class MinecraftInstance extends ConnectableInstance implements Di
 
   uuid(): string | undefined {
     const uuid = this.clientSession?.client.uuid
-    return uuid == undefined ? undefined : uuid.split('-').join('')
+    return uuid == undefined ? undefined : uuid.replaceAll('-', '')
   }
 
   notifyChatEvent(channel: ChannelType, message: string): void {

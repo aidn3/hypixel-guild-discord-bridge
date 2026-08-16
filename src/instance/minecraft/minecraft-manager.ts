@@ -49,9 +49,9 @@ export class MinecraftManager extends Instance {
   public getMinecraftBots(): MinecraftSelfBroadcast[] {
     return this.instances
       .values()
-      .toArray()
       .map((instance) => this.minecraftBots.get(instance))
       .filter((entry) => entry !== undefined)
+      .toArray()
   }
 
   public loadInstances(): void {

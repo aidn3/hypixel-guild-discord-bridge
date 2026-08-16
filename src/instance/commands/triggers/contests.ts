@@ -44,6 +44,7 @@ export default class Contests extends ChatCommandHandler {
       (contest) => contest.time > currentTime && contest !== firstNextContest && contest !== secondNextContest
     )
 
+    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     if (firstNextContest === undefined || secondNextContest === undefined || thirdNextContest === undefined) {
       return context.app.i18n.t(($) => $['commands.contests.unknown'])
     }

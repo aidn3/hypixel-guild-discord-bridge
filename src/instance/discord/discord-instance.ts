@@ -190,7 +190,7 @@ export default class DiscordInstance extends ConnectableInstance implements Disp
     username = username.trim().slice(0, 16)
 
     if (/^\w+$/.test(username)) return username
-    if (username.includes(' ')) return username.split(' ')[0]
+    if (username.includes(' ')) return username.split(' ', 1)[0]
     return undefined
   }
 

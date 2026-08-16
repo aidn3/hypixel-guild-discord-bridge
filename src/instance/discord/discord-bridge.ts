@@ -551,7 +551,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     const result = await channel.send({
       content: typeof content === 'string' ? content : undefined,
-      embeds: typeof content === 'string' ? undefined : content === undefined ? undefined : [content],
+      embeds: typeof content === 'string' || content === undefined ? undefined : [content],
       files: attachments,
       reply: { messageReference: replyId.messageId },
       allowedMentions: { parse: [] }

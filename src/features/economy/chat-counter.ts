@@ -45,10 +45,10 @@ export class ChatCounter extends SubInstance<Economy, void> {
     const currentTime = Date.now()
     const earliestDate = currentTime - EconomyChat.cooldown.toMilliseconds()
 
-    for (const [user, createdAt] of this.lastRewards.entries().toArray()) {
+    for (const [user, createdAt] of this.lastRewards.entries()) {
       if (createdAt < earliestDate) this.lastRewards.delete(user)
     }
-    for (const [user, createdAt] of this.lastTalked.entries().toArray()) {
+    for (const [user, createdAt] of this.lastTalked.entries()) {
       if (createdAt < earliestDate) this.lastTalked.delete(user)
     }
   }
@@ -65,9 +65,9 @@ export class ChatCounter extends SubInstance<Economy, void> {
 
     const alreadyRewardedUsers = this.lastRewards
       .entries()
-      .toArray()
       .filter(([, rewardedAt]) => rewardedAt >= oldestTime)
       .map(([user]) => user)
+      .toArray()
 
     for (const { user: userToReward, sentAt } of [...otherUsers, { user: event.user, sentAt: event.createdAt }]) {
       if (alreadyRewardedUsers.some((alreadyRewardedUser) => alreadyRewardedUser.equalsUser(userToReward))) continue

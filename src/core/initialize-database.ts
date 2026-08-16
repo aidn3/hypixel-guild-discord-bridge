@@ -1824,7 +1824,7 @@ function migrateMinecraftAccountsSettings(
 
   const insert = database.prepare('INSERT OR REPLACE INTO "mojangProfileSettings" VALUES (?, ?, ?, ?, ?)')
   for (const sessionFile of allFiles) {
-    const uuid = sessionFile.split('.')[0] // remove .json extension
+    const uuid = sessionFile.split('.', 1)[0] // remove .json extension
     const fullPath = path.join(directory, sessionFile)
     logger.debug(`Migrating Minecraft account file: ${fullPath}`)
 

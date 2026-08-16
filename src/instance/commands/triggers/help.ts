@@ -63,8 +63,8 @@ export default class Help extends ChatCommandHandler {
 
     return similarityMap
       .entries()
-      .toArray()
       .filter(([, similarity]) => similarity > 0)
+      .toArray()
       .toSorted(([, a], [, b]) => b - a)
       .map(([command]) => command)
       .slice(0, 5)

@@ -86,7 +86,7 @@ export default class Skills extends ChatCommandHandler {
 
   private getLevel(skill: HypixelSkyblockSkill, experience: number): number {
     const xpRequired = skill.levels.map((level) => level.totalExpRequired)
-    const index = xpRequired.toReversed().findIndex((level) => level <= experience)
+    const index = xpRequired.findLastIndex((level) => level <= experience)
 
     if (index === -1) {
       return experience / xpRequired[0]

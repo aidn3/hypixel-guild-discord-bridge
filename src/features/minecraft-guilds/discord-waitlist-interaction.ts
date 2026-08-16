@@ -244,7 +244,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
 
     const alreadyRegistered = this.database
       .getWaitlistStatus(selectedGuild.id)
-      .find((entry) => entry.mojangId === mojangProfile.id)
+      .some((entry) => entry.mojangId === mojangProfile.id)
     if (alreadyRegistered) {
       await this.handleUnregisteringWaitlist(responseInteraction, selectedGuild, mojangProfile)
       return

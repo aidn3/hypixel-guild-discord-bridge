@@ -271,7 +271,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
     assert.ok(list !== undefined, `unknown command type=${commandToAdd.type}`)
 
     CommandsInstance.assertTriggerUniqueness(list, commandToAdd)
-    for (const commands of this.commands.values().toArray()) CommandsInstance.assertIdUniqueness(commands, commandToAdd)
+    for (const commands of this.commands.values()) CommandsInstance.assertIdUniqueness(commands, commandToAdd)
 
     list.push(commandToAdd)
   }
@@ -354,7 +354,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       const prefix = groupStatus.prefix
       if (!message.startsWith(prefix)) continue
 
-      const name = message.slice(prefix.length).split(' ')[0].toLowerCase()
+      const name = message.slice(prefix.length).split(' ', 1)[0].toLowerCase()
       const parameters = message.split(' ').slice(1)
 
       if (name.length === 0 || name.startsWith(prefix)) return undefined
