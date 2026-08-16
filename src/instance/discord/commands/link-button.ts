@@ -1,7 +1,13 @@
 import assert from 'node:assert'
 
-import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
-import { ButtonStyle, ComponentType, SlashCommandBuilder, TextChannel } from 'discord.js'
+import {
+  ButtonStyle,
+  ComponentType,
+  MessageFlags,
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+  TextChannel
+} from 'discord.js'
 
 import { Color } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'

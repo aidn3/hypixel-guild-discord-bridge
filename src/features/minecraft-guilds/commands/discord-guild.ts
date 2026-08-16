@@ -1,6 +1,5 @@
 import assert from 'node:assert'
 
-import { MessageFlags, PermissionFlagsBits } from 'discord-api-types/v10'
 import type { ButtonInteraction, ChatInputCommandInteraction, ModalSubmitInteraction } from 'discord.js'
 import {
   ActionRowBuilder,
@@ -11,6 +10,8 @@ import {
   escapeInlineCode,
   escapeMarkdown,
   inlineCode,
+  MessageFlags,
+  PermissionFlagsBits,
   SlashCommandBuilder,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,

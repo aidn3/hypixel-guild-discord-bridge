@@ -12,6 +12,7 @@ import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next.js'
+import DefaultLogConfigurations from './src/log4js-config.json' with { type: 'json' }
 import { gracefullyExitProcess } from './src/utility/shared-utility.js'
 
 const RequiredNodeVersion = PackageJson.engines.node
@@ -35,7 +36,7 @@ fs.mkdirSync(ConfigsDirectory, { recursive: true })
 const LoggerConfigName = 'log4js-config.json'
 const LoggerPath = path.join(ConfigsDirectory, LoggerConfigName)
 if (!fs.existsSync(LoggerPath)) {
-  fs.copyFileSync(path.join(RootDirectory, 'src', LoggerConfigName), LoggerPath)
+  fs.writeFileSync(LoggerPath, JSON.stringify(DefaultLogConfigurations, undefined, 2))
 }
 const LoggerConfig = JSON.parse(fs.readFileSync(LoggerPath, 'utf8')) as Configuration
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')

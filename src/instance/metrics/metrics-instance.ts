@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto'
 import type { Config, Identity } from '@kolapsis/shm-sdk'
 import { generateKeypair, SHMClient } from '@kolapsis/shm-sdk'
 
-import PackageJson from '../../../package.json'
+import PackageJson from '../../../package.json' with { type: 'json' }
 import type Application from '../../application.js'
 import { ChannelType } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'

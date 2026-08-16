@@ -1,13 +1,21 @@
 import assert from 'node:assert'
 
-import { ComponentType, InteractionContextType, PermissionFlagsBits } from 'discord-api-types/v10'
 import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
-import { Collection, escapeMarkdown, MessageFlags, REST, Routes } from 'discord.js'
+import {
+  Collection,
+  ComponentType,
+  escapeMarkdown,
+  InteractionContextType,
+  MessageFlags,
+  PermissionFlagsBits,
+  REST,
+  Routes
+} from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'

@@ -13,7 +13,16 @@ import esmImport from 'eslint-plugin-esm-import'
  */
 export default [
   {
-    ignores: ['**/node_modules', '.idea', './logs', './config', '**/*-ti.ts', 'package-lock.json', 'eslint.config.mjs']
+    ignores: [
+      '**/node_modules',
+      '.idea',
+      './logs',
+      './config',
+      './build',
+      '**/*-ti.ts',
+      'package-lock.json',
+      'eslint.config.mjs'
+    ]
   },
   { plugins: { 'esm-import': esmImport } },
   eslint.configs.recommended,
