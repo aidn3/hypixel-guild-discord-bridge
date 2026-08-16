@@ -1,6 +1,6 @@
-import Duration from '../utility/duration'
+import Duration from '../utility/duration.js'
 
-import type { Configuration, ConfigurationsManager } from './configurations'
+import type { Configuration, ConfigurationsManager } from './configurations.js'
 
 export enum SpontaneousEventsNames {
   QuickMath = 'quickMath',

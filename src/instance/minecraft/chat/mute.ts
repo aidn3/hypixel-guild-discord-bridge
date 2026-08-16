@@ -5,9 +5,9 @@ import {
   Platform,
   PunishmentPurpose
 } from '../../../common/application-event.js'
-import type { MinecraftUser, MojangProfile } from '../../../common/user'
-import Duration from '../../../utility/duration'
-import { sufficeToTime } from '../../../utility/shared-utility'
+import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
+import Duration from '../../../utility/duration.js'
+import { sufficeToTime } from '../../../utility/shared-utility.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
 
 export default {

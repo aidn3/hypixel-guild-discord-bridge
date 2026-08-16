@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 
-import type { CommandId } from '../../common/commands'
-import { ChatCommandGroup } from '../../common/commands'
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { CommandId } from '../../common/commands.js'
+import { ChatCommandGroup } from '../../common/commands.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
 export interface ChatCommandStatus {
   id: CommandId

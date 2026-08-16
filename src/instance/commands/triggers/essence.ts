@@ -1,12 +1,12 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { capitalize } from '../../../utility/shared-utility'
+import { capitalize } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Essence extends ChatCommandHandler {
   constructor() {

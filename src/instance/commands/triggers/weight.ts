@@ -17,14 +17,14 @@ import type {
   HypixelSkyblockSkill,
   HypixelSkyblockSkillsResponse,
   SkyblockMember
-} from '../../../core/hypixel/hypixel-skyblock'
-import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock'
+} from '../../../core/hypixel/hypixel-skyblock.js'
+import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 type SkillName =
   | 'mining'
@@ -140,32 +140,32 @@ const Level60Xp = 111_672_425
 
 const SkillWeightMap: Record<SkillName, SkillGroup> = {
   mining: {
-    exponent: 1.182_074_48,
+    exponent: 1.18207448,
     divider: 259_634,
     maxLevel: 60
   },
   foraging: {
-    exponent: 1.232_826,
+    exponent: 1.232826,
     divider: 259_634,
     maxLevel: 50
   },
   enchanting: {
-    exponent: 0.969_765_83,
+    exponent: 0.96976583,
     divider: 882_758,
     maxLevel: 60
   },
   farming: {
-    exponent: 1.217_848_139,
+    exponent: 1.217848139,
     divider: 220_689,
     maxLevel: 60
   },
   combat: {
-    exponent: 1.157_976_872_65,
+    exponent: 1.15797687265,
     divider: 275_862,
     maxLevel: 60
   },
   fishing: {
-    exponent: 1.406_418,
+    exponent: 1.406418,
     divider: 88_274,
     maxLevel: 50
   },
@@ -175,7 +175,7 @@ const SkillWeightMap: Record<SkillName, SkillGroup> = {
     maxLevel: 50
   },
   taming: {
-    exponent: 1.147_44,
+    exponent: 1.14744,
     divider: 441_379,
     maxLevel: 50
   },
@@ -191,12 +191,12 @@ const SkillWeightMap: Record<SkillName, SkillGroup> = {
 }
 
 const DungeonWeightMap: Record<DungeonWeightName, number> = {
-  catacombs: 0.000_214_960_461_5,
-  healer: 0.000_004_525_483_4,
-  mage: 0.000_004_525_483_4,
-  berserk: 0.000_004_525_483_4,
-  archer: 0.000_004_525_483_4,
-  tank: 0.000_004_525_483_4
+  catacombs: 0.0002149604615,
+  healer: 0.0000045254834,
+  mage: 0.0000045254834,
+  berserk: 0.0000045254834,
+  archer: 0.0000045254834,
+  tank: 0.0000045254834
 }
 
 const SlayerWeightMap: Record<SlayerName, { divider: number; modifier: number }> = {
@@ -488,6 +488,7 @@ export default class Weight extends ChatCommandHandler {
   }
 
   private calcSkillWeight(skillGroup: SkillGroup, level: number | undefined, experience: number): WeightResult {
+    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     if (skillGroup.exponent === undefined || skillGroup.divider === undefined || level === undefined) {
       return {
         weight: 0,

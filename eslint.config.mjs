@@ -5,8 +5,7 @@ import prettier from 'eslint-plugin-prettier/recommended'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
 import { jsdoc } from 'eslint-plugin-jsdoc'
-//TODO: add functionality one day when it is supported
-// requireExtensions from 'eslint-plugin-require-extensions'
+import esmImport from 'eslint-plugin-esm-import'
 
 /**
  * Credit: https://github.com/Callanplays (Discord: callanftw)
@@ -16,6 +15,7 @@ export default [
   {
     ignores: ['**/node_modules', '.idea', './logs', './config', '**/*-ti.ts', 'package-lock.json', 'eslint.config.mjs']
   },
+  { plugins: { 'esm-import': esmImport } },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
@@ -42,6 +42,7 @@ export default [
       }
     },
     rules: {
+      ...esmImport.configs.recommended.rules,
       'no-restricted-syntax': [
         'error',
         {

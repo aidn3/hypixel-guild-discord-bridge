@@ -1,5 +1,5 @@
 import type Application from '../../../application.js'
-import type MinecraftInstance from '../minecraft-instance'
+import type MinecraftInstance from '../minecraft-instance.js'
 
 import Antispam from './antispam.js'
 import ArabicFixer from './arabic-fixer.js'

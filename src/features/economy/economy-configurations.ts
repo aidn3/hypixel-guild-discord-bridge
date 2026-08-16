@@ -1,4 +1,4 @@
-import type { Configuration, ConfigurationsManager } from '../../core/configurations'
+import type { Configuration, ConfigurationsManager } from '../../core/configurations.js'
 
 export class EconomyConfigurations {
   private readonly configuration: Configuration

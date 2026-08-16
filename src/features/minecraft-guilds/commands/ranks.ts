@@ -1,8 +1,8 @@
-import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands'
-import Duration from '../../../utility/duration'
-import { searchObjects } from '../../../utility/shared-utility'
-import type { Database, MinecraftGuild } from '../database'
+import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import Duration from '../../../utility/duration.js'
+import { searchObjects } from '../../../utility/shared-utility.js'
+import type { Database, MinecraftGuild } from '../database.js'
 
 export default class Ranks extends ChatCommandHandler {
   constructor(private readonly database: Database) {

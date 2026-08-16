@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import Logger4js from 'log4js'
 
-import Duration from './duration'
+import Duration from './duration.js'
 
 export function sufficeToTime(suffice: string): number {
   suffice = suffice.toLowerCase().trim()

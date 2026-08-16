@@ -2,15 +2,15 @@ import assert from 'node:assert'
 
 import type { Logger } from 'log4js'
 
-import type Application from '../../application'
-import { Status } from '../../common/connectable-instance'
-import type EventHelper from '../../common/event-helper'
-import type { SqliteManager } from '../../common/sqlite-manager'
-import SubInstance from '../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
-import Duration from '../../utility/duration'
-import { setIntervalAsync } from '../../utility/scheduling'
-import type { Core } from '../core'
+import type Application from '../../application.js'
+import { Status } from '../../common/connectable-instance.js'
+import type EventHelper from '../../common/event-helper.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import SubInstance from '../../common/sub-instance.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import Duration from '../../utility/duration.js'
+import { setIntervalAsync } from '../../utility/scheduling.js'
+import type { Core } from '../core.js'
 
 export default class Autocomplete extends SubInstance<Core, void> {
   private static readonly MaxLife = Duration.years(1)

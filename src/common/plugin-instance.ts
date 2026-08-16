@@ -2,7 +2,7 @@ import type Application from '../application.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { PluginsManager } from '../instance/features/plugins-manager.js'
 // eslint-disable-next-line import/no-restricted-paths
-import { beautifyInstanceName } from '../utility/shared-utility'
+import { beautifyInstanceName } from '../utility/shared-utility.js'
 
 import type { ChatCommandHandler, DiscordCommandHandler } from './commands.js'
 import type { DisplayableInstance } from './instance.js'

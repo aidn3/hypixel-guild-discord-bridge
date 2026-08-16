@@ -28,9 +28,9 @@ import {
 } from '../../common/application-event.js'
 import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
-import type { AnonymousUser } from '../../common/user'
-import type { PlaceholderContext } from '../../core/placeholder/common'
-import Duration from '../../utility/duration'
+import type { AnonymousUser } from '../../common/user.js'
+import type { PlaceholderContext } from '../../core/placeholder/common.js'
+import Duration from '../../utility/duration.js'
 
 import type MessageAssociation from './common/message-association.js'
 import type MinecraftInstance from './minecraft-instance.js'

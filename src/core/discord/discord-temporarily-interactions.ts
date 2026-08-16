@@ -1,6 +1,6 @@
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
-import type { DiscordConfigurations } from './discord-configurations'
+import type { DiscordConfigurations } from './discord-configurations.js'
 
 export class DiscordTemporarilyInteractions {
   constructor(

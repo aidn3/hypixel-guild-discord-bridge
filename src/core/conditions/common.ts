@@ -1,11 +1,11 @@
 import type { Guild } from 'discord.js'
 
-import type Application from '../../application'
-import type { User } from '../../common/user'
+import type Application from '../../application.js'
+import type { User } from '../../common/user.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type { ModalOption } from '../../instance/discord/utility/modal-options'
+import type { ModalOption } from '../../instance/discord/utility/modal-options.js'
 // eslint-disable-next-line import/no-restricted-paths
-import { OptionType, type PresetListOption } from '../../instance/discord/utility/options-handler'
+import { OptionType, type PresetListOption } from '../../instance/discord/utility/options-handler.js'
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export abstract class ConditionHandler<T extends ConditionOption, ValueType extends ConditionValue> {

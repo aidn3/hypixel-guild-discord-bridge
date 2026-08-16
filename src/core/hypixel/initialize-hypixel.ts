@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
 export function initializeHypixelDatabase(sqliteManager: SqliteManager, name: string): void {
   sqliteManager.registerMigrator((database) => {

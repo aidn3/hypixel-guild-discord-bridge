@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import esrever from 'esrever'
 
-import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations.js'
 
 export default class ArabicFixer {
   constructor(private readonly config: MinecraftConfigurations) {}

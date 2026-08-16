@@ -9,7 +9,7 @@ export function getUuidFromGuildChat(message: unknown): string {
   const clickCommand = message.extra[0].clickEvent.value as string
 
   // clickCommand: "/viewprofile <UUID>"
-  const uuidWithDashes = clickCommand.split(' ')[1].trim()
+  const uuidWithDashes = clickCommand.split(' ', 2)[1].trim()
   const uuid = uuidWithDashes.replaceAll('-', '')
   assert.ok(uuid.length === 32, `Invalid uuid. given: ${uuid}`)
 

@@ -14,10 +14,10 @@ import type {
   DiscordCommandHandler
 } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
-import type { ProfanityReplace } from '../../../core/moderation/profanity'
-import Duration from '../../../utility/duration'
-import { search } from '../../../utility/shared-utility'
-import { DefaultCommandFooter } from '../common/discord-config'
+import type { ProfanityReplace } from '../../../core/moderation/profanity.js'
+import Duration from '../../../utility/duration.js'
+import { search } from '../../../utility/shared-utility.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 const ReplaceCommand = 'replace'

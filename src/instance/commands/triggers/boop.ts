@@ -3,10 +3,10 @@ import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/co
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
 import { checkChatTriggers, PrivateMessageChat } from '../../../utility/chat-triggers.js'
-import Duration from '../../../utility/duration'
-import { antiSpamString } from '../../../utility/shared-utility'
+import Duration from '../../../utility/duration.js'
+import { antiSpamString } from '../../../utility/shared-utility.js'
 // eslint-disable-next-line import/no-restricted-paths
-import type MinecraftInstance from '../../minecraft/minecraft-instance'
+import type MinecraftInstance from '../../minecraft/minecraft-instance.js'
 // eslint-disable-next-line import/no-restricted-paths
 import type { MinecraftManager } from '../../minecraft/minecraft-manager.js'
 

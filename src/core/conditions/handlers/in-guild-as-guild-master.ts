@@ -1,9 +1,9 @@
 import assert from 'node:assert'
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ModalOption } from '../../../instance/discord/utility/modal-options'
+import type { ModalOption } from '../../../instance/discord/utility/modal-options.js'
 // eslint-disable-next-line import/no-restricted-paths
-import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler'
+import { InputStyle, OptionType } from '../../../instance/discord/utility/options-handler.js'
 import type {
   ConditionOption,
   ConditionResult,
@@ -11,8 +11,8 @@ import type {
   HandlerDisplayContext,
   HandlerOperationContext,
   HandlerUser
-} from '../common'
-import { ConditionHandler, ConditionResultType } from '../common'
+} from '../common.js'
+import { ConditionHandler, ConditionResultType } from '../common.js'
 
 export class InGuildAsGuildmaster extends ConditionHandler<InGuildOptions, string> {
   override getId(): string {

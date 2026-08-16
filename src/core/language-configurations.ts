@@ -1,13 +1,13 @@
 /* eslint-disable import/no-restricted-paths */
 
-import Mute from '../features/economy/commands/mute'
-import Roulette from '../features/economy/commands/roulette'
-import Vengeance from '../instance/commands/fun-and-games/vengeance'
-import PlayerMuted from '../instance/minecraft/handlers/player-muted'
-import Reaction from '../instance/minecraft/handlers/reaction'
-import { SkyblockReminders } from '../instance/skyblock-reminders'
+import Mute from '../features/economy/commands/mute.js'
+import Roulette from '../features/economy/commands/roulette.js'
+import Vengeance from '../instance/commands/fun-and-games/vengeance.js'
+import PlayerMuted from '../instance/minecraft/handlers/player-muted.js'
+import Reaction from '../instance/minecraft/handlers/reaction.js'
+import { SkyblockReminders } from '../instance/skyblock-reminders.js'
 
-import type { Configuration, ConfigurationsManager } from './configurations'
+import type { Configuration, ConfigurationsManager } from './configurations.js'
 
 export enum ApplicationLanguages {
   English = 'en',

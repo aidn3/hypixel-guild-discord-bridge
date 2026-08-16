@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { usernameNotExists } from '../../../instance/commands/common/utility'
-import type { EconomyDatabase } from '../economy-database'
+import { usernameNotExists } from '../../../instance/commands/common/utility.js'
+import type { EconomyDatabase } from '../economy-database.js'
 
 export default class Current extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {

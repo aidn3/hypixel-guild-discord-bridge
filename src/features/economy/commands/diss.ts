@@ -1,12 +1,12 @@
-import { ChannelType } from '../../../common/application-event'
-import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands'
-import type { EconomyConfigurations } from '../economy-configurations'
-import { EconomyDiss } from '../economy-constants'
-import type { EconomyDatabase } from '../economy-database'
-import { EconomyReason } from '../economy-database'
+import { ChannelType } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import type { EconomyConfigurations } from '../economy-configurations.js'
+import { EconomyDiss } from '../economy-constants.js'
+import type { EconomyDatabase } from '../economy-database.js'
+import { EconomyReason } from '../economy-database.js'
 
-import { resolveDifferentTarget } from './common/common'
+import { resolveDifferentTarget } from './common/common.js'
 
 export default class Diss extends ChatCommandHandler {
   constructor(

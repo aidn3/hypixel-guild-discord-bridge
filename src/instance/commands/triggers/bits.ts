@@ -3,7 +3,6 @@
  Discord: callanftw
  Minecraft username: Callanplays
 */
-import type { AxiosResponse } from 'axios'
 import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
@@ -101,9 +100,9 @@ export default class Bits extends ChatCommandHandler {
   }
 
   private async updatePrices(): Promise<void> {
-    const response = await DefaultAxios.get(`https://api.eliteskyblock.com/resources/auctions/neu`).then(
-      (response: AxiosResponse<Record<string, number>, unknown>) => response.data
-    )
+    const response = await DefaultAxios.get<Record<string, number>>(
+      `https://api.eliteskyblock.com/resources/auctions/neu`
+    ).then((response) => response.data)
 
     this.prices = Object.entries(response)
       .filter(([itemId]) => Object.hasOwn(BitItem, itemId))

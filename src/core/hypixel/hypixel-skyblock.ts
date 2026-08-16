@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { HypixelSuccessResponse } from './hypixel-api'
+import type { HypixelSuccessResponse } from './hypixel-api.js'
 
 export interface SkyblockProfilesResponse extends HypixelSuccessResponse {
   profiles: SkyblockProfile[] | null

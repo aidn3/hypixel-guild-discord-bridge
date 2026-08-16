@@ -1,6 +1,6 @@
 import { ChannelType, Platform } from '../../../common/application-event.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
-import { getUuidFromGuildChat } from '../common/common'
+import { getUuidFromGuildChat } from '../common/common.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {

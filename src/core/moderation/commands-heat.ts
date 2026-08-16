@@ -1,11 +1,11 @@
 import type Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { User, UserIdentifier } from '../../common/user'
-import Duration from '../../utility/duration'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { User, UserIdentifier } from '../../common/user.js'
+import Duration from '../../utility/duration.js'
 
-import type { ModerationConfigurations } from './moderation-configurations'
+import type { ModerationConfigurations } from './moderation-configurations.js'
 
 export class CommandsHeat {
   private static readonly ActionExpiresAfter = Duration.days(1)

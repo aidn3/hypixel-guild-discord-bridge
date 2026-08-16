@@ -6,9 +6,9 @@ import PromiseQueue from 'promise-queue'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
-import { setIntervalAsync } from '../../../utility/scheduling'
-import type { UpdateContext, UpdateProgress } from '../conditions/common'
+import Duration from '../../../utility/duration.js'
+import { setIntervalAsync } from '../../../utility/scheduling.js'
+import type { UpdateContext, UpdateProgress } from '../conditions/common.js'
 
 export default {
   getCommandBuilder: () =>

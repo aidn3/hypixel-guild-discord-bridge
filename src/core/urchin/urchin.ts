@@ -3,10 +3,10 @@ import DefaultAxios, { AxiosError, HttpStatusCode } from 'axios'
 import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
-import Duration from '../../utility/duration'
-import RateLimiter from '../../utility/rate-limiter'
+import Duration from '../../utility/duration.js'
+import RateLimiter from '../../utility/rate-limiter.js'
 
-import type { UrchinPlayerResponse } from './urchin-api'
+import type { UrchinPlayerResponse } from './urchin-api.js'
 
 export class Urchin {
   private static readonly ApiPath = 'https://urchin.ws'

@@ -5,7 +5,7 @@ import type { UserLink } from '../../../common/application-event.js'
 import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import type { MojangApi } from '../../../core/users/mojang'
+import type { MojangApi } from '../../../core/users/mojang.js'
 import { formatInvalidUsername } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 

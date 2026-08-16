@@ -1,11 +1,11 @@
-import type { ChatEvent } from '../../../common/application-event'
-import { ChannelType, Color, Permission, PunishmentPurpose } from '../../../common/application-event'
-import type { User } from '../../../common/user'
-import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
-import Duration from '../../../utility/duration'
-import { Timeout } from '../../../utility/timeout'
-import type { EventContext, EventResult } from '../common'
-import { SpontaneousEventHandler } from '../common'
+import type { ChatEvent } from '../../../common/application-event.js'
+import { ChannelType, Color, Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import type { User } from '../../../common/user.js'
+import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations.js'
+import Duration from '../../../utility/duration.js'
+import { Timeout } from '../../../utility/timeout.js'
+import type { EventContext, EventResult } from '../common.js'
+import { SpontaneousEventHandler } from '../common.js'
 
 export class CountingChain extends SpontaneousEventHandler {
   override enabled(): boolean {

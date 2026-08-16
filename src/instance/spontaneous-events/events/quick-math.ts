@@ -1,10 +1,10 @@
-import type { ChatEvent } from '../../../common/application-event'
-import { ChannelType, Color } from '../../../common/application-event'
-import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
-import type Duration from '../../../utility/duration'
-import { Timeout } from '../../../utility/timeout'
-import type { EventContext, EventResult } from '../common'
-import { SpontaneousEventHandler } from '../common'
+import type { ChatEvent } from '../../../common/application-event.js'
+import { ChannelType, Color } from '../../../common/application-event.js'
+import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations.js'
+import type Duration from '../../../utility/duration.js'
+import { Timeout } from '../../../utility/timeout.js'
+import type { EventContext, EventResult } from '../common.js'
+import { SpontaneousEventHandler } from '../common.js'
 
 export class QuickMath extends SpontaneousEventHandler {
   override enabled(): boolean {
@@ -68,11 +68,11 @@ export async function startQuickMath(
 
 function createMath(): { expression: string; answer: number } {
   const possibilities = [
-    ...Array.from({ length: 5 }).fill('multiplication'),
-    ...Array.from({ length: 10 }).fill('addition'),
-    ...Array.from({ length: 5 }).fill('trickyAddition'),
-    ...Array.from({ length: 5 }).fill('division'),
-    ...Array.from({ length: 2 }).fill('hard')
+    ...Array.from({ length: 5 }, () => 'multiplication'),
+    ...Array.from({ length: 10 }, () => 'addition'),
+    ...Array.from({ length: 5 }, () => 'trickyAddition'),
+    ...Array.from({ length: 5 }, () => 'division'),
+    ...Array.from({ length: 2 }, () => 'hard')
   ] as ('multiplication' | 'addition' | 'trickyAddition' | 'division' | 'hard')[]
 
   const selected = possibilities[Math.floor(Math.random() * possibilities.length)]

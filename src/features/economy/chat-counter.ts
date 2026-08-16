@@ -1,17 +1,17 @@
 import type { Logger } from 'log4js'
 
-import type Application from '../../application'
-import type { ChatEvent } from '../../common/application-event'
-import { ChannelType } from '../../common/application-event'
-import type EventHelper from '../../common/event-helper'
-import SubInstance from '../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
-import type { AnonymousUser } from '../../common/user'
-import Duration from '../../utility/duration'
+import type Application from '../../application.js'
+import type { ChatEvent } from '../../common/application-event.js'
+import { ChannelType } from '../../common/application-event.js'
+import type EventHelper from '../../common/event-helper.js'
+import SubInstance from '../../common/sub-instance.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type { AnonymousUser } from '../../common/user.js'
+import Duration from '../../utility/duration.js'
 
-import type { Economy } from './economy'
-import { EconomyChat } from './economy-constants'
-import type { EconomyDatabase } from './economy-database'
+import { EconomyChat } from './economy-constants.js'
+import type { EconomyDatabase } from './economy-database.js'
+import type { Economy } from './economy.js'
 
 export class ChatCounter extends SubInstance<Economy, void> {
   private readonly lastRewards = new Map<AnonymousUser, number>()
@@ -45,10 +45,10 @@ export class ChatCounter extends SubInstance<Economy, void> {
     const currentTime = Date.now()
     const earliestDate = currentTime - EconomyChat.cooldown.toMilliseconds()
 
-    for (const [user, createdAt] of this.lastRewards.entries().toArray()) {
+    for (const [user, createdAt] of this.lastRewards.entries()) {
       if (createdAt < earliestDate) this.lastRewards.delete(user)
     }
-    for (const [user, createdAt] of this.lastTalked.entries().toArray()) {
+    for (const [user, createdAt] of this.lastTalked.entries()) {
       if (createdAt < earliestDate) this.lastTalked.delete(user)
     }
   }
@@ -65,9 +65,9 @@ export class ChatCounter extends SubInstance<Economy, void> {
 
     const alreadyRewardedUsers = this.lastRewards
       .entries()
-      .toArray()
       .filter(([, rewardedAt]) => rewardedAt >= oldestTime)
       .map(([user]) => user)
+      .toArray()
 
     for (const { user: userToReward, sentAt } of [...otherUsers, { user: event.user, sentAt: event.createdAt }]) {
       if (alreadyRewardedUsers.some((alreadyRewardedUser) => alreadyRewardedUser.equalsUser(userToReward))) continue

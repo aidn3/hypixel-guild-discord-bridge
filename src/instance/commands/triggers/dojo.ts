@@ -6,7 +6,7 @@ import {
   playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Dojo extends ChatCommandHandler {
   constructor() {

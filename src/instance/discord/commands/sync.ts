@@ -3,15 +3,15 @@ import assert from 'node:assert'
 import type { Guild, GuildMember } from 'discord.js'
 import { bold, escapeMarkdown, roleMention, SlashCommandBuilder, userMention } from 'discord.js'
 
-import { Color, Permission } from '../../../common/application-event'
+import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import type { HandlerDisplayContext } from '../../../core/conditions/common'
-import { ConditionResultType } from '../../../core/conditions/common'
-import type { RoleCondition } from '../../../core/discord/user-conditions'
-import { DefaultCommandFooter } from '../common/discord-config'
-import type { UpdateContext, UpdateProgress } from '../conditions/common'
-import type { ConditionUpdateResult } from '../conditions/conditions-manager'
+import type { HandlerDisplayContext } from '../../../core/conditions/common.js'
+import { ConditionResultType } from '../../../core/conditions/common.js'
+import type { RoleCondition } from '../../../core/discord/user-conditions.js'
+import { DefaultCommandFooter } from '../common/discord-config.js'
+import type { UpdateContext, UpdateProgress } from '../conditions/common.js'
+import type { ConditionUpdateResult } from '../conditions/conditions-manager.js'
 
 export default {
   getCommandBuilder: () =>

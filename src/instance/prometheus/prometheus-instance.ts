@@ -56,7 +56,7 @@ export default class PrometheusInstance extends Instance {
         return
       }
 
-      const route = request.url.split('?')[0]
+      const route = request.url.split('?', 1)[0]
       if (route === '/metrics') {
         this.logger.debug('Prometheus scrap is called on /metrics')
         response.setHeader('Content-Type', this.register.contentType)

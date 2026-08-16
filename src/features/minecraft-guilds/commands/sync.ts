@@ -2,16 +2,16 @@ import assert from 'node:assert'
 
 import { TTLCache } from '@isaacs/ttlcache'
 
-import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
-import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
-import type { MinecraftUser, MojangProfile } from '../../../common/user'
-import { usernameNotExists } from '../../../instance/commands/common/utility'
-import Duration from '../../../utility/duration'
-import { formatTime } from '../../../utility/shared-utility'
-import type { Database } from '../database'
+import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
+import { usernameNotExists } from '../../../instance/commands/common/utility.js'
+import Duration from '../../../utility/duration.js'
+import { formatTime } from '../../../utility/shared-utility.js'
+import type { Database } from '../database.js'
 
-import { resolveGuildRank } from './utlity'
+import { resolveGuildRank } from './utlity.js'
 
 export default class Sync extends ChatCommandHandler {
   private readonly cooldowns = new TTLCache<MojangProfile['id'], { createdAt: number }>({

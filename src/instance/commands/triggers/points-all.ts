@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, usernameNotExists } from '../common/utility'
+import { getUuidIfExists, usernameNotExists } from '../common/utility.js'
 
 export default class PointsAll extends ChatCommandHandler {
   constructor() {

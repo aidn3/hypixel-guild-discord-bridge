@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { PlaceholderContext } from '../../../core/placeholder/common'
-import Duration from '../../../utility/duration'
+import type { PlaceholderContext } from '../../../core/placeholder/common.js'
+import Duration from '../../../utility/duration.js'
 
 export default class Placeholder extends ChatCommandHandler {
   constructor() {

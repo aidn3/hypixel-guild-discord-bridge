@@ -1,4 +1,4 @@
-import Duration from '../../utility/duration'
+import Duration from '../../utility/duration.js'
 
 export interface EconomyChange {
   cooldown: Duration

@@ -12,8 +12,8 @@ import { ApplicationCommandOptionType, MessageFlags, SlashCommandBuilder } from 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
-import { pageMessage } from '../utility/discord-pager'
+import Duration from '../../../utility/duration.js'
+import { pageMessage } from '../utility/discord-pager.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('help').setDescription('Show available commands.'),

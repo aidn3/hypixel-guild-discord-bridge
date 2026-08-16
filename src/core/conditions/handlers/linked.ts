@@ -5,9 +5,9 @@ import type {
   HandlerDisplayContext,
   HandlerOperationContext,
   HandlerUser
-} from '../common'
-import { ConditionHandler, ConditionResultType } from '../common'
-import { formatPrimitiveValue } from '../utilities'
+} from '../common.js'
+import { ConditionHandler, ConditionResultType } from '../common.js'
+import { formatPrimitiveValue } from '../utilities.js'
 
 export class Linked extends ConditionHandler<LinkedBindingCondition, boolean> {
   override getId(): string {

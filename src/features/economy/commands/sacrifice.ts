@@ -1,11 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { EconomyConfigurations } from '../economy-configurations'
-import { EconomySacrifice } from '../economy-constants'
-import type { EconomyDatabase } from '../economy-database'
-import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database'
+import type { EconomyConfigurations } from '../economy-configurations.js'
+import { EconomySacrifice } from '../economy-constants.js'
+import type { EconomyDatabase } from '../economy-database.js'
+import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, resolveAmount, resolveDifferentTarget } from './common/common'
+import { economyOverflow, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
 export default class Sacrifice extends ChatCommandHandler {
   constructor(

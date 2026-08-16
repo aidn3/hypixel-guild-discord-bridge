@@ -1,11 +1,11 @@
-import { Permission } from '../../../common/application-event'
+import { Permission } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { EconomyConfigurations } from '../economy-configurations'
-import type { EconomyDatabase } from '../economy-database'
-import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database'
+import type { EconomyConfigurations } from '../economy-configurations.js'
+import type { EconomyDatabase } from '../economy-database.js'
+import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, resolveAmount, resolveTarget } from './common/common'
+import { economyOverflow, resolveAmount, resolveTarget } from './common/common.js'
 
 export default class Take extends ChatCommandHandler {
   constructor(

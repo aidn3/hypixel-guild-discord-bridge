@@ -1,9 +1,9 @@
 import type { GuildMember } from 'discord.js'
 
-import type { HandlerOperationContext, HandlerUser } from '../../../core/conditions/common'
-import type { ConditionsRegistry } from '../../../core/conditions/conditions-registry'
-import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions'
-import type { PlaceholderManager } from '../../../core/placeholder/placeholder-manager'
+import type { HandlerOperationContext, HandlerUser } from '../../../core/conditions/common.js'
+import type { ConditionsRegistry } from '../../../core/conditions/conditions-registry.js'
+import type { NicknameCondition, RoleCondition } from '../../../core/discord/user-conditions.js'
+import type { PlaceholderManager } from '../../../core/placeholder/placeholder-manager.js'
 
 export interface UpdateMemberContext extends HandlerUser {
   guildMember: GuildMember

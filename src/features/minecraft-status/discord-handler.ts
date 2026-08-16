@@ -9,28 +9,28 @@ import type {
 import { ButtonStyle, ComponentType, escapeMarkdown, MessageFlags } from 'discord.js'
 import type { Logger } from 'log4js'
 
-import type Application from '../../application'
-import type { InstanceStatus } from '../../common/application-event'
-import { Color, InstanceMessageType, Permission } from '../../common/application-event'
-import { Status } from '../../common/connectable-instance'
-import type EventHelper from '../../common/event-helper'
-import SubInstance from '../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
-import { translateNoPermission } from '../../instance/discord/common/discord-language'
-import type MessageAssociation from '../../instance/discord/common/message-association'
-import { DefaultTimeout, interactivePaging } from '../../instance/discord/utility/discord-pager'
-import { beautifyInstanceName } from '../../utility/shared-utility'
+import type Application from '../../application.js'
+import type { InstanceStatus } from '../../common/application-event.js'
+import { Color, InstanceMessageType, Permission } from '../../common/application-event.js'
+import { Status } from '../../common/connectable-instance.js'
+import type EventHelper from '../../common/event-helper.js'
+import SubInstance from '../../common/sub-instance.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import { translateNoPermission } from '../../instance/discord/common/discord-language.js'
+import type MessageAssociation from '../../instance/discord/common/message-association.js'
+import { DefaultTimeout, interactivePaging } from '../../instance/discord/utility/discord-pager.js'
+import { beautifyInstanceName } from '../../utility/shared-utility.js'
 
-import type { ButtonDatabase } from './button-database'
-import { DiscordInstanceHistoryButtonType } from './button-database'
+import type { ButtonDatabase } from './button-database.js'
+import { DiscordInstanceHistoryButtonType } from './button-database.js'
 import {
   translateAuthenticationCodeExpired,
   translateInstanceMessage,
   translateInstanceStatus
-} from './instance-language'
-import type { MinecraftStatus, MinecraftStatusEntry } from './minecraft-status'
-import type { StatusDatabase } from './status-database'
-import { StatusHistoryEntryType } from './status-database'
+} from './instance-language.js'
+import type { MinecraftStatus, MinecraftStatusEntry } from './minecraft-status.js'
+import type { StatusDatabase } from './status-database.js'
+import { StatusHistoryEntryType } from './status-database.js'
 
 export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
   private static readonly PermissionToView = Permission.Helper

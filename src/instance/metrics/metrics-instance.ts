@@ -8,10 +8,10 @@ import PackageJson from '../../../package.json'
 import type Application from '../../application.js'
 import { ChannelType } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
-import Duration from '../../utility/duration'
+import Duration from '../../utility/duration.js'
 
 // eslint-disable-next-line import/no-restricted-paths
-import { MetricsConfigurations } from './metrics-configurations'
+import { MetricsConfigurations } from './metrics-configurations.js'
 
 // @ts-expect-error properties private
 declare class ExtendedSHMClient extends SHMClient {

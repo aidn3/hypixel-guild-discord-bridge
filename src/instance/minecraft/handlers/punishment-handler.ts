@@ -9,9 +9,9 @@ import {
   MinecraftSendChatPriority
 } from '../../../common/application-event.js'
 import type EventHelper from '../../../common/event-helper.js'
-import SubInstance from '../../../common/sub-instance'
+import SubInstance from '../../../common/sub-instance.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
-import { HeatResult, HeatType } from '../../../core/moderation/commands-heat'
+import { HeatResult, HeatType } from '../../../core/moderation/commands-heat.js'
 import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 

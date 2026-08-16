@@ -7,16 +7,16 @@ import type { StaticDiscordConfig } from '../../application-config.js'
 import type Application from '../../application.js'
 import { Permission, Platform } from '../../common/application-event.js'
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
-import type { DisplayableInstance } from '../../common/instance'
-import type { DiscordProfile } from '../../common/user'
+import type { DisplayableInstance } from '../../common/instance.js'
+import type { DiscordProfile } from '../../common/user.js'
 
 import ChatManager from './chat-manager.js'
 import { CommandManager } from './command-manager.js'
 import MessageAssociation from './common/message-association.js'
-import ConditionsManager from './conditions/conditions-manager'
+import ConditionsManager from './conditions/conditions-manager.js'
 import DiscordBridge from './discord-bridge.js'
 import Leaderboard from './features/leaderboard.js'
-import LinkButtonsManager from './features/link-buttons-manager'
+import LinkButtonsManager from './features/link-buttons-manager.js'
 import EmojiHandler from './handlers/emoji-handler.js'
 import StateHandler from './handlers/state-handler.js'
 import StatusHandler from './handlers/status-handler.js'
@@ -190,7 +190,7 @@ export default class DiscordInstance extends ConnectableInstance implements Disp
     username = username.trim().slice(0, 16)
 
     if (/^\w+$/.test(username)) return username
-    if (username.includes(' ')) return username.split(' ')[0]
+    if (username.includes(' ')) return username.split(' ', 1)[0]
     return undefined
   }
 

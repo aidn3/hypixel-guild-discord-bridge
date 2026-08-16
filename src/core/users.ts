@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 
-import type { UserId } from '../common/application-event'
-import type { SqliteManager } from '../common/sqlite-manager'
-import type { AnonymousUser, UserIdentifier } from '../common/user'
+import type { UserId } from '../common/application-event.js'
+import type { SqliteManager } from '../common/sqlite-manager.js'
+import type { AnonymousUser, UserIdentifier } from '../common/user.js'
 
 export class Users {
   constructor(private readonly sqliteManager: SqliteManager) {}

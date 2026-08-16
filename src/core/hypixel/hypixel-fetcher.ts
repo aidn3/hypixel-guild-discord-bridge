@@ -3,10 +3,10 @@ import assert from 'node:assert'
 import { createCache } from 'async-cache-dedupe'
 import axios, { AxiosError } from 'axios'
 
-import Duration from '../../utility/duration'
-import { sleep } from '../../utility/shared-utility'
+import Duration from '../../utility/duration.js'
+import { sleep } from '../../utility/shared-utility.js'
 
-import type { HypixelFailResponse, HypixelSuccessResponse } from './hypixel-api'
+import type { HypixelFailResponse, HypixelSuccessResponse } from './hypixel-api.js'
 
 export class HypixelFetcher {
   private static readonly MaxRetries = 3

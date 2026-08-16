@@ -2,13 +2,13 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { search } from '../../../utility/shared-utility'
+import { search } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Collection extends ChatCommandHandler {
   private static readonly Translator: Record<string, string> = {

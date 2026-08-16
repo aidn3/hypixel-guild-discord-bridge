@@ -1,10 +1,10 @@
-import type { ChatEvent } from '../../../common/application-event'
-import { ChannelType, Color } from '../../../common/application-event'
-import type { User } from '../../../common/user'
-import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations'
-import type Duration from '../../../utility/duration'
-import { Timeout } from '../../../utility/timeout'
-import { type EventContext, type EventResult, shuffleArrayInPlace, SpontaneousEventHandler } from '../common'
+import type { ChatEvent } from '../../../common/application-event.js'
+import { ChannelType, Color } from '../../../common/application-event.js'
+import type { User } from '../../../common/user.js'
+import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations.js'
+import type Duration from '../../../utility/duration.js'
+import { Timeout } from '../../../utility/timeout.js'
+import { type EventContext, type EventResult, shuffleArrayInPlace, SpontaneousEventHandler } from '../common.js'
 
 export class Trivia extends SpontaneousEventHandler {
   override enabled(): boolean {

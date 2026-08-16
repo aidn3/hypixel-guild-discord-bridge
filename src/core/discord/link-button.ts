@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import type { SqliteManager } from '../../common/sqlite-manager'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
 
 export class DiscordLinkButton {
   constructor(private readonly sqliteManager: SqliteManager) {}

@@ -2,8 +2,8 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility'
+import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock.js'
+import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class Skills extends ChatCommandHandler {
   constructor() {
@@ -86,7 +86,7 @@ export default class Skills extends ChatCommandHandler {
 
   private getLevel(skill: HypixelSkyblockSkill, experience: number): number {
     const xpRequired = skill.levels.map((level) => level.totalExpRequired)
-    const index = xpRequired.toReversed().findIndex((level) => level <= experience)
+    const index = xpRequired.findLastIndex((level) => level <= experience)
 
     if (index === -1) {
       return experience / xpRequired[0]

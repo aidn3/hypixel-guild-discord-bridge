@@ -3,8 +3,8 @@ import PromiseQueue from 'promise-queue'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
-import { formatTime } from '../../../utility/shared-utility'
+import Duration from '../../../utility/duration.js'
+import { formatTime } from '../../../utility/shared-utility.js'
 
 export default class Contests extends ChatCommandHandler {
   private static readonly ContestDuration = Duration.minutes(20)
@@ -44,6 +44,7 @@ export default class Contests extends ChatCommandHandler {
       (contest) => contest.time > currentTime && contest !== firstNextContest && contest !== secondNextContest
     )
 
+    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     if (firstNextContest === undefined || secondNextContest === undefined || thirdNextContest === undefined) {
       return context.app.i18n.t(($) => $['commands.contests.unknown'])
     }

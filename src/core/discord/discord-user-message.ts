@@ -1,9 +1,9 @@
 import assert from 'node:assert'
 
-import type { UserId } from '../../common/application-event'
-import type { SqliteManager } from '../../common/sqlite-manager'
-import type { AnonymousUser, UserIdentifier } from '../../common/user'
-import type { Users } from '../users'
+import type { UserId } from '../../common/application-event.js'
+import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { AnonymousUser, UserIdentifier } from '../../common/user.js'
+import type { Users } from '../users.js'
 
 export class DiscordUserMessage {
   constructor(

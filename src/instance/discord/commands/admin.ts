@@ -1,11 +1,11 @@
 import { bold, ButtonStyle, escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import type Application from '../../../application'
+import type Application from '../../../application.js'
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
-import Duration from '../../../utility/duration'
-import { interactivePaging } from '../utility/discord-pager'
+import Duration from '../../../utility/duration.js'
+import { interactivePaging } from '../utility/discord-pager.js'
 import type { ActionOption, CategoryOption } from '../utility/options-handler.js'
 import { OptionsHandler, OptionType } from '../utility/options-handler.js'
 

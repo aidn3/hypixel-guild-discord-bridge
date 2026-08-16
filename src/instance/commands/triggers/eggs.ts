@@ -5,7 +5,7 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Eggs extends ChatCommandHandler {
   private static readonly DivineEggs = ['vega', 'starfire', 'orion', 'aurora', 'celestia']

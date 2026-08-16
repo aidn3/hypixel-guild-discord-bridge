@@ -1,7 +1,7 @@
 import { ChannelType, MinecraftSendChatPriority, Platform, PunishmentType } from '../../../common/application-event.js'
-import { durationToMinecraftDuration } from '../../../utility/shared-utility'
+import { durationToMinecraftDuration } from '../../../utility/shared-utility.js'
 import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-interface.js'
-import { getUuidFromGuildChat } from '../common/common'
+import { getUuidFromGuildChat } from '../common/common.js'
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {

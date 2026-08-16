@@ -6,7 +6,7 @@ import {
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Secrets extends ChatCommandHandler {
   constructor() {

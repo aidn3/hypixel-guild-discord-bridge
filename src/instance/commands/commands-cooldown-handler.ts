@@ -2,14 +2,14 @@ import assert from 'node:assert'
 
 import PromiseQueue from 'promise-queue'
 
-import type { ChatEvent, Content, UserId } from '../../common/application-event'
-import { ChannelType } from '../../common/application-event'
-import type { ChatCommandContext, ChatCommandCooldown, ChatCommandHandler } from '../../common/commands'
-import { CooldownType } from '../../common/commands'
-import type { Users } from '../../core/users'
-import { formatTime } from '../../utility/shared-utility'
+import type { ChatEvent, Content, UserId } from '../../common/application-event.js'
+import { ChannelType } from '../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandCooldown, ChatCommandHandler } from '../../common/commands.js'
+import { CooldownType } from '../../common/commands.js'
+import type { Users } from '../../core/users.js'
+import { formatTime } from '../../utility/shared-utility.js'
 
-import type { CommandsCooldown } from './commands-cooldown'
+import type { CommandsCooldown } from './commands-cooldown.js'
 
 export class CommandsCooldownHandler {
   private readonly globalCooldown = new Map<ChatCommandHandler, PromiseQueue>()

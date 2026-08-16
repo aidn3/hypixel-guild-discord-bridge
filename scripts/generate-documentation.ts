@@ -5,10 +5,10 @@ import process from 'node:process'
 
 import { markdownTable } from 'markdown-table'
 
-import Application from '../src/application'
-import type { ChatCommandHandler } from '../src/common/commands'
-import { ChatCommandGroup } from '../src/common/commands'
-import { loadI18 } from '../src/i18next'
+import Application from '../src/application.js'
+import type { ChatCommandHandler } from '../src/common/commands.js'
+import { ChatCommandGroup } from '../src/common/commands.js'
+import { loadI18 } from '../src/i18next.js'
 
 await generateCommands()
 process.exit(0)
@@ -81,8 +81,8 @@ function generateDiscordCommands(application: Application): string {
 
   const commands = application.discordInstance.commandsManager.commands
     .values()
-    .toArray()
     .map((command) => command.getCommandBuilder())
+    .toArray()
     .toSorted((a, b) => a.name.localeCompare(b.name))
   for (const command of commands) {
     table.push([`\`/${command.name}\``, command.description])

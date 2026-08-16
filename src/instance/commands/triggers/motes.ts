@@ -5,7 +5,7 @@ import {
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 export default class Motes extends ChatCommandHandler {
   constructor() {

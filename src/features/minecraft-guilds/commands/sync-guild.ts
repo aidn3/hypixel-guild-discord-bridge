@@ -2,15 +2,15 @@ import assert from 'node:assert'
 
 import PromiseQueue from 'promise-queue'
 
-import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event'
-import type { ChatCommandContext } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands'
-import type { MinecraftUser } from '../../../common/user'
-import Duration from '../../../utility/duration'
-import { searchObjects } from '../../../utility/shared-utility'
-import type { Database, MinecraftGuild } from '../database'
+import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
+import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { MinecraftUser } from '../../../common/user.js'
+import Duration from '../../../utility/duration.js'
+import { searchObjects } from '../../../utility/shared-utility.js'
+import type { Database, MinecraftGuild } from '../database.js'
 
-import { resolveGuildRank } from './utlity'
+import { resolveGuildRank } from './utlity.js'
 
 export default class SyncGuild extends ChatCommandHandler {
   private static readonly FeedbackEvery = Duration.seconds(30)

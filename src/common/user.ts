@@ -3,15 +3,15 @@ import assert from 'node:assert'
 
 import type { Guild } from 'discord.js'
 
-import type Application from '../application'
-import type { CommandsHeat, HeatResult, HeatType } from '../core/moderation/commands-heat'
-import type { ModerationConfigurations } from '../core/moderation/moderation-configurations'
-import type Punishments from '../core/moderation/punishments'
-import type { SavedPunishment } from '../core/moderation/punishments'
-import type Duration from '../utility/duration'
+import type Application from '../application.js'
+import type { CommandsHeat, HeatResult, HeatType } from '../core/moderation/commands-heat.js'
+import type { ModerationConfigurations } from '../core/moderation/moderation-configurations.js'
+import type Punishments from '../core/moderation/punishments.js'
+import type { SavedPunishment } from '../core/moderation/punishments.js'
+import type Duration from '../utility/duration.js'
 
-import type { BasePunishment, InformEvent, PunishmentPurpose, UserLink } from './application-event'
-import { Permission, Platform, PunishmentType } from './application-event'
+import type { BasePunishment, InformEvent, PunishmentPurpose, UserLink } from './application-event.js'
+import { Permission, Platform, PunishmentType } from './application-event.js'
 
 export interface InitializeOptions {
   guild?: Guild

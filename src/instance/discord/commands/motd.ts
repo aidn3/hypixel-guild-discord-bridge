@@ -3,9 +3,9 @@ import { AttachmentBuilder, SlashCommandBuilder } from 'discord.js'
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
-import MinecraftRenderer from '../../../utility/minecraft-renderer'
+import MinecraftRenderer from '../../../utility/minecraft-renderer.js'
 // eslint-disable-next-line import/no-restricted-paths
-import { GuildManagerError } from '../../minecraft/guild-manager'
+import { GuildManagerError } from '../../minecraft/guild-manager.js'
 
 export default {
   getCommandBuilder: () => new SlashCommandBuilder().setName('motd').setDescription('Show a guild MOTD'),

@@ -1,7 +1,7 @@
 import DefaultAxios from 'axios'
 
-import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations'
-import { HypixelLink } from '../common/common'
+import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations.js'
+import { HypixelLink } from '../common/common.js'
 import { stufEncode } from '../common/stuf.js'
 
 export class LinksSanitizer {
@@ -60,7 +60,7 @@ export class LinksSanitizer {
         continue
       }
 
-      const type = contentType.split('/')[0]
+      const type = contentType.split('/', 1)[0]
       if (type === 'image') newMessage.push('(image)')
       else if (type === 'video') newMessage.push('(video)')
       else if (contentType.includes('application/pdf')) newMessage.push('(pdf)')

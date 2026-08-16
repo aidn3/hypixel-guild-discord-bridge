@@ -1,15 +1,15 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock'
-import { getSlayerLevel, SlayerHighestTierTable } from '../../../core/hypixel/hypixel-skyblock'
-import { capitalize } from '../../../utility/shared-utility'
+import type { Slayer as SlayerType } from '../../../core/hypixel/hypixel-skyblock.js'
+import { getSlayerLevel, SlayerHighestTierTable } from '../../../core/hypixel/hypixel-skyblock.js'
+import { capitalize } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
   playerNeverPlayedSkyblock,
   playerNeverPlayedSlayers,
   usernameNotExists
-} from '../common/utility'
+} from '../common/utility.js'
 
 const Slayers: Record<string, string[]> = {
   zombie: ['revenant', 'rev', 'zombie'],

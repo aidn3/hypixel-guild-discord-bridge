@@ -1,4 +1,4 @@
-import { capitalize, formatTime, shortenNumber } from '../../utility/shared-utility'
+import { capitalize, formatTime, shortenNumber } from '../../utility/shared-utility.js'
 
 export function formatNumberOptions(): { key: string; apply: (value: number) => string; description: string }[] {
   return [

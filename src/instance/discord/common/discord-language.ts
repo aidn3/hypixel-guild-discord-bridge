@@ -1,7 +1,7 @@
 import { roleMention, userMention } from 'discord.js'
 
-import type Application from '../../../application'
-import { Permission } from '../../../common/application-event'
+import type Application from '../../../application.js'
+import { Permission } from '../../../common/application-event.js'
 
 export function translateNoPermission(
   application: Application,

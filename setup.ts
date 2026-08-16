@@ -7,7 +7,7 @@ import { createInterface } from 'node:readline/promises'
 import { DiscordAPIError, REST, Routes } from 'discord.js'
 import Yaml from 'yaml'
 
-import type { ApplicationConfig } from './src/application-config'
+import type { ApplicationConfig } from './src/application-config.js'
 
 try {
   await startCreateConfigurations()

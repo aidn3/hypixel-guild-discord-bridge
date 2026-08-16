@@ -4,8 +4,8 @@ import type {
   HandlerOperationContext,
   HandlerUser,
   SkyblockProfileOptionType
-} from '../common'
-import { ConditionHandler, ConditionResultType } from '../common'
+} from '../common.js'
+import { ConditionHandler, ConditionResultType } from '../common.js'
 
 export class SkyblockApi extends ConditionHandler<SkyblockLevelOptions, boolean> {
   override getId(): string {

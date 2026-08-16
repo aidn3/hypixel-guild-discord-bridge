@@ -1,4 +1,4 @@
-import type { HypixelSuccessResponse } from './hypixel-api'
+import type { HypixelSuccessResponse } from './hypixel-api.js'
 
 export interface HypixelPlayerStatusResponse extends HypixelSuccessResponse {
   session: HypixelPlayerStatus

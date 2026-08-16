@@ -1,9 +1,9 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event'
-import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands'
-import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands'
-import type { MinecraftUser } from '../../../common/user'
-import { EconomyMute } from '../economy-constants'
-import { type EconomyDatabase, EconomyNotEnough, EconomyReason } from '../economy-database'
+import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
+import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import type { MinecraftUser } from '../../../common/user.js'
+import { EconomyMute } from '../economy-constants.js'
+import { type EconomyDatabase, EconomyNotEnough, EconomyReason } from '../economy-database.js'
 
 export default class Mute extends ChatCommandHandler {
   public static readonly DefaultMessages = [

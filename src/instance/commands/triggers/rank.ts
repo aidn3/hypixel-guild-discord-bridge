@@ -1,8 +1,8 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player'
-import { formatTime } from '../../../utility/shared-utility'
-import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility'
+import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player.js'
+import { formatTime } from '../../../utility/shared-utility.js'
+import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
 
 export default class Rank extends ChatCommandHandler {
   constructor() {

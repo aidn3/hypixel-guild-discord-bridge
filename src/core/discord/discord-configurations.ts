@@ -1,5 +1,5 @@
-import Duration from '../../utility/duration'
-import type { Configuration, ConfigurationsManager } from '../configurations'
+import Duration from '../../utility/duration.js'
+import type { Configuration, ConfigurationsManager } from '../configurations.js'
 
 export enum DiscordChatFormat {
   MinecraftRender = 'minecraftRender',

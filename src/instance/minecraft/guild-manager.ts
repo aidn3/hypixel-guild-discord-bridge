@@ -3,16 +3,16 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 import PromiseQueue from 'promise-queue'
 
-import type Application from '../../application'
-import type { MinecraftRawChatEvent } from '../../common/application-event'
-import { GuildPlayerEventType, MinecraftSendChatPriority } from '../../common/application-event'
-import type EventHelper from '../../common/event-helper'
-import SubInstance from '../../common/sub-instance'
-import type UnexpectedErrorHandler from '../../common/unexpected-error-handler'
-import Duration from '../../utility/duration'
-import { Timeout } from '../../utility/timeout'
+import type Application from '../../application.js'
+import type { MinecraftRawChatEvent } from '../../common/application-event.js'
+import { GuildPlayerEventType, MinecraftSendChatPriority } from '../../common/application-event.js'
+import type EventHelper from '../../common/event-helper.js'
+import SubInstance from '../../common/sub-instance.js'
+import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import Duration from '../../utility/duration.js'
+import { Timeout } from '../../utility/timeout.js'
 
-import type MinecraftInstance from './minecraft-instance'
+import type MinecraftInstance from './minecraft-instance.js'
 
 /*
  * All operations on guild object must be atomic.

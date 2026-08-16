@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 
-import type Application from '../../../application'
-import type { MinecraftUser } from '../../../common/user'
-import { ConditionResultType } from '../../../core/conditions/common'
-import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hypixel-guild'
-import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database'
+import type Application from '../../../application.js'
+import type { MinecraftUser } from '../../../common/user.js'
+import { ConditionResultType } from '../../../core/conditions/common.js'
+import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hypixel-guild.js'
+import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database.js'
 
 export async function resolveGuildRank(
   application: Application,

@@ -11,8 +11,8 @@ import Logger4js from 'log4js'
 import PackageJson from './package.json' with { type: 'json' }
 import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
-import { loadI18 } from './src/i18next'
-import { gracefullyExitProcess } from './src/utility/shared-utility'
+import { loadI18 } from './src/i18next.js'
+import { gracefullyExitProcess } from './src/utility/shared-utility.js'
 
 const RequiredNodeVersion = PackageJson.engines.node
 const ActualNodeVersion = process.versions.node
