@@ -42,3 +42,9 @@ jobs:
 
       - name: Test Run Project
         run: npm run test:run
+
+      - name: Build Bundle
+        run: npm run bundle:build
+
+      - name: Test Bundle
+        run: npm run bundle:test-run
