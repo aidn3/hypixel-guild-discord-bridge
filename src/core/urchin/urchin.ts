@@ -9,11 +9,9 @@ import RateLimiter from '../../utility/rate-limiter.js'
 import type { UrchinPlayerResponse } from './urchin-api.js'
 
 export class Urchin {
-  private static readonly ApiPath = 'https://urchin.ws'
-  private static readonly PlayerPath = '/player'
+  private static readonly ApiPath = 'https://api.urchin.gg/v3'
 
   private static readonly RetryCount = 3
-  private static readonly DefaultSources = 'GAME,PARTY,PARTY_INVITES,CHAT,CHAT_MENTIONS,MANUAL,ME'
 
   private readonly queue = new PromiseQueue(1)
   private readonly rateLimit = new RateLimiter(1, 500)
@@ -27,7 +25,7 @@ export class Urchin {
     private readonly logger: Logger
   ) {}
 
-  async getPlayer(username: string, sources?: string): Promise<UrchinPlayerResponse | undefined> {
+  async getTags(username: string): Promise<UrchinPlayerResponse | undefined> {
     const cacheKey = username.toLowerCase()
     const cached = this.cache.get(cacheKey)
     if (cached !== undefined) return cached
@@ -38,15 +36,12 @@ export class Urchin {
         await this.rateLimit.wait()
 
         try {
-          return await DefaultAxios.get<UrchinPlayerResponse>(
-            `${Urchin.ApiPath}${Urchin.PlayerPath}/${encodeURIComponent(username)}`,
-            {
-              params: {
-                key: this.key,
-                sources: sources ?? Urchin.DefaultSources
-              }
+          return await DefaultAxios.get<UrchinPlayerResponse>(`${Urchin.ApiPath}/player/tags`, {
+            params: {
+              player: username,
+              key: this.key
             }
-          ).then((response) => response.data)
+          }).then((response) => response.data)
         } catch (error: unknown) {
           if (error instanceof Error) lastError = error
 
