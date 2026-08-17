@@ -15,3 +15,26 @@ export interface UrchinPlayerResponse {
   displayname?: string | null
   tags: UrchinTag[]
 }
+
+export interface UrchinWinstreakMode {
+  approximate: boolean
+  readable: string
+  timestamp: number
+  value: number
+}
+
+export interface UrchinWinstreakModes {
+  overall: UrchinWinstreakMode[]
+  core: UrchinWinstreakMode[]
+  solos: UrchinWinstreakMode[]
+  doubles: UrchinWinstreakMode[]
+  threes: UrchinWinstreakMode[]
+  fours: UrchinWinstreakMode[]
+  '4v4': UrchinWinstreakMode[]
+}
+
+export interface UrchinWinstreakResopnse {
+  uuid: string
+  displayname?: string | null
+  modes: UrchinWinstreakModes
+}
