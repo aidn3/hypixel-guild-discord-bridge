@@ -20,11 +20,11 @@ export default class UrchinCommand extends ChatCommandHandler {
     const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (profile === undefined) return usernameNotExists(context, givenUsername)
 
-    const response = await context.app.urchinApi.getPlayer(profile.name)
+    const response = await context.app.urchinApi.getTags(profile.name)
     if (response === undefined) return `${profile.name}, player not found on Urchin.`
     if (response.tags.length === 0) return `${profile.name} has no Urchin tags.`
 
-    const lines = response.tags.map((tag) => `${tag.type}: ${tag.reason}`)
+    const lines = response.tags.map((tag) => `${tag.tag_type}: ${tag.reason}`)
     return `${profile.name} has the following Urchin tags:\n${lines.join('\n')}`
   }
 }
