@@ -25,7 +25,11 @@ export default {
         { src: 'resources/*', dest: 'build/resources/' },
         { src: 'config_example.yaml', dest: 'build/' },
         { src: 'LICENSE', dest: 'build/' },
-        { src: 'package*', dest: 'build/' }
+        { src: 'package*', dest: 'build/' },
+        { src: '*.md', dest: 'build/' },
+        { src: 'docs', dest: 'build/' },
+        { src: 'start.sh', dest: 'build/' },
+        { src: 'setup-and-start.bat', dest: 'build/' }
       ]
     })
   ]
