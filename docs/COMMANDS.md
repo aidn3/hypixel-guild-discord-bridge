@@ -130,10 +130,10 @@ A shorter version can also be used: `!- rtca`
 
 | Command       | Description                            |
 | ------------- | -------------------------------------- |
-| `:execute`    | Runs a command directly                |
-| `:ranks`      | List guild ranks requirements          |
-| `:sync`       | Update a user in-game guild rank       |
-| `:sync-guild` | Update ranks of all members in a guild |
+| `-execute`    | Runs a command directly                |
+| `-ranks`      | List guild ranks requirements          |
+| `-sync`       | Update a user in-game guild rank       |
+| `-sync-guild` | Update ranks of all members in a guild |
 
 ### Economy Chat Commands
 

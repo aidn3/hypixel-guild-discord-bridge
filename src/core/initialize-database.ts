@@ -91,6 +91,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom26to27(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom27to28(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1122,6 +1125,36 @@ function migrateFrom26to27(database: Database): void {
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ') STRICT;'
   )
+}
+
+function migrateFrom27to28(database: Database): void {
+  const alternatives = ['-', '!', '.', ';']
+
+  const ManagementKey = 'management'
+  const ManagementPrefix = ':'
+  const currentPrefix = database
+    .prepare<[string], string>(`SELECT prefix FROM chatCommandGroups WHERE "group" = ?`)
+    .pluck(true)
+    .get(ManagementKey)
+
+  assert.ok(currentPrefix !== undefined)
+
+  if (ManagementPrefix === currentPrefix) {
+    const typeInsert = database.prepare(`UPDATE chatCommandGroups SET prefix = ? WHERE "group" = ?`)
+    let success = false
+    for (const alternative of alternatives) {
+      try {
+        const result = typeInsert.run(alternative, ManagementKey)
+        if (result.changes === 0) continue
+        success = true
+        break
+      } catch {
+        // ignored
+      }
+    }
+
+    if (!success) assert.fail(`Failed to insert chat command group=${ManagementKey}`)
+  }
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
