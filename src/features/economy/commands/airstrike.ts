@@ -59,7 +59,7 @@ export default class Airstrike extends ChatCommandHandler {
       throw error
     }
 
-    if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+    if ((await targetUser.permission()) < Permission.Helper && !(await targetUser.immune())) {
       await targetUser.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,
