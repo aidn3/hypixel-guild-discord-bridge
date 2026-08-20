@@ -1,9 +1,9 @@
 import type { i18n } from 'i18next'
 import { createInstance } from 'i18next'
 
-import Arabic from '../resources/locales/ar.json'
-import German from '../resources/locales/de.json'
-import English from '../resources/locales/en.json'
+import Arabic from '../resources/locales/ar.json' with { type: 'json' }
+import German from '../resources/locales/de.json' with { type: 'json' }
+import English from '../resources/locales/en.json' with { type: 'json' }
 
 import { ApplicationLanguages } from './core/language-configurations.js'
 
