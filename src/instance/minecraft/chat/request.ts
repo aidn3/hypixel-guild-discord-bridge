@@ -19,6 +19,7 @@ export default {
         channels: [ChannelType.Public, ChannelType.Officer],
 
         type: GuildPlayerEventType.Request,
+        command: `/guild accept ${uuid}`,
         user: user,
         message: `${username} has requested to join the guild!`,
         rawMessage: context.rawMessage
