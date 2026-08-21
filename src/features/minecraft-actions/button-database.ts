@@ -15,9 +15,9 @@ export class ButtonDatabase {
       const result = insert.run(
         entry.messageId,
         entry.channelId,
+        entry.type,
         entry.botUuid,
         entry.userUuid,
-        entry.type,
         entry.command,
         Math.floor(entry.expiresAt / 1000),
         Math.floor(entry.createdAt / 1000)
