@@ -6,13 +6,18 @@ import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
     /* Example message:
-    "-----------------------------------------------------
-  You have been invited to these guilds while offline: Melon Grass (/guild accept MelonGrassBot), Lemon Grass (/guild accept DracTheFurry)-----------------------------------------------------"
-     */
-    const regex = /^-{53}\nYou have been invited to these guilds while offline:(.+)-{53}/g
+ "-----------------------------------------------------
+[MVP++] aidn5 has invited you to join their guild, Censured!
+Click here to accept or type /guild accept aidn5!
+-----------------------------------------------------
+"
+         */
+    const regex = /^-{53}\n(?:\[[A-Z+]+\] )?(\w{2,26}) has invited you to join their guild/g
 
     const match = regex.exec(context.message)
     if (match == undefined) return
+
+    const username = match[1]
 
     const name = context.clientInstance.username()
     const uuid = context.clientInstance.uuid()
@@ -20,24 +25,21 @@ export default {
     assert.ok(uuid !== undefined)
     const botUser = await context.application.core.initializeMinecraftUser({ id: uuid, name: name }, {})
 
-    const invites = match[1].trim().split(',')
-    for (const invite of invites) {
-      const guildName = invite.split('(', 1)[0].trim()
-      const actionCommand = invite.split('(', 2)[1].split(')', 1)[0].trim()
+    const actionCommand = /(\/guild accept \w{2,16})/g.exec(context.message)?.at(1)
+    assert.ok(actionCommand != undefined)
 
-      await context.application.emit('guildPlayer', {
-        ...context.eventHelper.fillBaseEvent(),
-        platform: Platform.Minecraft,
+    await context.application.emit('guildPlayer', {
+      ...context.eventHelper.fillBaseEvent(),
+      platform: Platform.Minecraft,
 
-        color: Color.Info,
-        channels: [ChannelType.Public, ChannelType.Officer],
+      color: Color.Info,
+      channels: [ChannelType.Public, ChannelType.Officer],
 
-        type: GuildPlayerEventType.Invited,
-        user: botUser,
-        message: `Account has been invited to join ${guildName}!`,
-        command: actionCommand,
-        rawMessage: context.rawMessage
-      })
-    }
+      type: GuildPlayerEventType.Invited,
+      user: botUser,
+      message: `Account has been invited by ${username} to join their guild!`,
+      command: actionCommand,
+      rawMessage: context.rawMessage
+    })
   }
 } satisfies MinecraftChatMessage
