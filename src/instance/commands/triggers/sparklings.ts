@@ -34,9 +34,6 @@ export default class Sparklings extends ChatCommandHandler {
     const uniques = safari.discovered_sparkling_critters?.length ?? 0
     const dupes = (safari.total_captured_sparkling_critters ?? 0) - uniques
 
-    return context.app.i18n.t(($) => $['commands.sparklings.response'], {
-      uniques,
-      dupes
-    })
+    return context.app.i18n.t(($) => $['commands.sparklings.response'], { username: givenUsername, uniques, dupes })
   }
 }

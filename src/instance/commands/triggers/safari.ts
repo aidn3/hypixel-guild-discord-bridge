@@ -40,6 +40,7 @@ export default class Safari extends ChatCommandHandler {
     const total = icy + cavern + forest + haunted
 
     return context.app.i18n.t(($) => $['commands.safari.response'], {
+      username: givenUsername,
       icy,
       cavern,
       forest,
