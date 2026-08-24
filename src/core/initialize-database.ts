@@ -94,6 +94,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom27to28(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom28to29(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1155,6 +1158,21 @@ function migrateFrom27to28(database: Database): void {
 
     if (!success) assert.fail(`Failed to insert chat command group=${ManagementKey}`)
   }
+}
+
+function migrateFrom28to29(database: Database): void {
+  database.exec(
+    'CREATE TABLE "discordMinecraftActionButtons" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  botUuid TEXT NOT NULL,' +
+      '  userUuid TEXT DEFAULT NULL,' +
+      '  command TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  expiresAt  INTEGER NOT NULL' +
+      ') STRICT;'
+  )
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

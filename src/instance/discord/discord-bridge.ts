@@ -1,6 +1,13 @@
 import assert from 'node:assert'
 
-import type { APIEmbed, ApplicationEmoji, Message, TextBasedChannelFields, Webhook } from 'discord.js'
+import type {
+  APIEmbed,
+  APIMessageComponent,
+  ApplicationEmoji,
+  Message,
+  TextBasedChannelFields,
+  Webhook
+} from 'discord.js'
 import { AttachmentBuilder, ChannelType as DiscordChannelType, escapeMarkdown, hyperlink } from 'discord.js'
 import type { Logger } from 'log4js'
 
@@ -35,6 +42,8 @@ import Bridge from '../../common/bridge.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { AnonymousUser } from '../../common/user.js'
 import { DiscordChatFormat } from '../../core/discord/discord-configurations.js'
+import { DiscordInstanceHistoryButtonType } from '../../features/minecraft-actions/button-database.js'
+import Duration from '../../utility/duration.js'
 import MinecraftRenderer from '../../utility/minecraft-renderer.js'
 // eslint-disable-next-line import/no-restricted-paths
 import MinecraftInstance from '../minecraft/minecraft-instance.js'
@@ -230,6 +239,11 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   }
 
   async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {
+    const ActionableEvents = {
+      [GuildPlayerEventType.Invited]: DiscordInstanceHistoryButtonType.InvitedToGuild,
+      [GuildPlayerEventType.Request]: DiscordInstanceHistoryButtonType.RequestToJoinGuild
+    }
+
     const config = this.application.core.discordConfigurations
     if (event.type === GuildPlayerEventType.Online && !config.getGuildOnline()) return
     if (event.type === GuildPlayerEventType.Offline && !config.getGuildOffline()) return
@@ -276,20 +290,34 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     }
 
     const embed = await formatEmbed()
+    const components =
+      event.type in ActionableEvents
+        ? [
+            this.application.minecraftActionButtons.generateButtons(
+              ActionableEvents[event.type as keyof typeof ActionableEvents],
+              true
+            )
+          ]
+        : []
 
     const messages: Message[] = []
     if (this.minecraftRenderImageEnabled() && MinecraftRenderer.renderSupported()) {
       const formattedMessage = this.removeGuildPrefix(event.rawMessage)
 
-      const sentMessages = await this.sendImageToChannels(event.eventId, this.resolveChannels(event.channels), [
-        MinecraftRenderer.generateMessageImage(formattedMessage)
-      ])
+      const sentMessages = await this.sendImageToChannels(
+        event.eventId,
+        this.resolveChannels(event.channels),
+        [MinecraftRenderer.generateMessageImage(formattedMessage)],
+        undefined,
+        components
+      )
       messages.push(...sentMessages)
     } else {
       const sentMessages = await this.sendEmbedToChannels(
         { ...event, type: undefined, instanceDisplayName: await event.instance.displayName() },
         this.resolveChannels(event.channels),
-        embed
+        embed,
+        components
       )
       messages.push(...sentMessages)
     }
@@ -316,6 +344,24 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     if (event.user !== undefined) {
       for (const message of messages) {
         this.application.core.discordUserMessage.add(message.id, event.user)
+      }
+    }
+
+    if (GuildPlayerEventType.Invited === event.type || GuildPlayerEventType.Request === event.type) {
+      event.type satisfies keyof typeof ActionableEvents
+
+      for (const message of messages) {
+        this.application.minecraftActionButtons.add({
+          createdAt: event.createdAt,
+          expiresAt: event.createdAt + Duration.minutes(10).toMilliseconds(),
+          messageId: message.id,
+          channelId: message.channelId,
+
+          type: DiscordInstanceHistoryButtonType.InvitedToGuild,
+          command: event.command,
+          botUuid: event.user.mojangProfile().id,
+          userUuid: GuildPlayerEventType.Request === event.type ? event.user.mojangProfile().id : undefined
+        })
       }
     }
   }
@@ -566,7 +612,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
   private async sendEmbedToChannels(
     event: GenerateEmbedType,
     channels: string[],
-    preGeneratedEmbed: APIEmbed | undefined
+    preGeneratedEmbed: APIEmbed | undefined,
+    components: APIMessageComponent[] = []
   ): Promise<Message<true>[]> {
     const messages: Message<true>[] = []
 
@@ -581,7 +628,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
           preGeneratedEmbed ??
           // commands always have a preGenerated embed
           this.generateEmbed(event, channel.guildId)
-        const message = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } })
+        const message = await channel.send({ embeds: [embed], components: components, allowedMentions: { parse: [] } })
 
         messages.push(message)
         this.messageAssociation.addMessageId(event.eventId, {
@@ -601,7 +648,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     eventId: string,
     channels: string[],
     images: Buffer[],
-    text?: string
+    text?: string,
+    components: APIMessageComponent[] = []
   ): Promise<Message<true>[]> {
     const messages: Message<true>[] = []
 
@@ -612,7 +660,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         assert.ok(channel.isSendable())
         assert.ok(channel.type === DiscordChannelType.GuildText)
 
-        const message = await channel.send({ content: text, files: images })
+        const message = await channel.send({ content: text, files: images, components: components })
 
         messages.push(message)
         this.messageAssociation.addMessageId(eventId, {

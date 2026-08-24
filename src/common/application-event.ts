@@ -438,7 +438,11 @@ export enum GuildPlayerEventType {
    * When the account itself is kicked from the guild
    * @see {@link #Kick}
    */
-  Kicked = 'kicked'
+  Kicked = 'kicked',
+  /**
+   * When the account itself is invited to join a guild
+   */
+  Invited = 'invited'
 }
 
 export interface BaseInGameEvent<K extends string> extends InformEvent, MinecraftRawMessage {
@@ -486,8 +490,11 @@ export type GuildPlayerResponsibleTypes =
 export type GuildPlayerResponsibleNoTargetTypes = GuildPlayerEventType.Mute | GuildPlayerEventType.Unmute
 
 export type GuildPlayerSoloTypes = Exclude<GuildPlayerEventType, GuildPlayerResponsibleTypes>
+export type GuildPlayerSoloActionableTypes = GuildPlayerEventType.Invited | GuildPlayerEventType.Request
 
-export type GuildPlayerSolo = BaseGuildPlayerEvent & BaseInGameEvent<GuildPlayerSoloTypes>
+export type GuildPlayerSolo = GuildPlayerSoloReadOnly | GuildPlayerSoloActionable
+export type GuildPlayerSoloReadOnly = BaseGuildPlayerEvent &
+  BaseInGameEvent<Exclude<GuildPlayerSoloTypes, GuildPlayerSoloActionableTypes>>
 
 export type GuildPlayerResponsible = GuildPlayerResponsibleOther | GuildPlayerResponsibleMute
 
@@ -512,6 +519,14 @@ export interface GuildPlayerResponsibleMute
    * <code>undefined</code> if the target is everyone
    */
   readonly user: MinecraftUser | undefined
+}
+
+export interface GuildPlayerSoloActionable
+  extends BaseGuildPlayerEvent, BaseInGameEvent<GuildPlayerSoloActionableTypes> {
+  /**
+   * Executable Minecraft command to take the action
+   */
+  command: string
 }
 
 export enum GuildGeneralEventType {

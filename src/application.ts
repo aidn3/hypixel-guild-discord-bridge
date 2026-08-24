@@ -25,6 +25,7 @@ import type { Urchin } from './core/urchin/urchin.js'
 import type { MojangApi } from './core/users/mojang.js'
 import { DiscordRoles } from './features/discord-roles/discord-roles.js'
 import { Economy } from './features/economy/economy.js'
+import { MinecraftActionButtons } from './features/minecraft-actions/minecraft-action-buttons.js'
 import { MinecraftGuildsManager } from './features/minecraft-guilds/minecraft-guilds-manager.js'
 import { MinecraftStatus } from './features/minecraft-status/minecraft-status.js'
 import AutoRestart from './instance/auto-restart.js'
@@ -62,6 +63,7 @@ export default class Application extends Emittery<ApplicationEvents> {
   private readonly metricsInstance: MetricsInstance
 
   public readonly minecraftGuildsManager: MinecraftGuildsManager
+  public readonly minecraftActionButtons: MinecraftActionButtons
   public readonly minecraftStatus: MinecraftStatus
   private readonly discordRoles: DiscordRoles
   public readonly economy: Economy
@@ -120,6 +122,7 @@ export default class Application extends Emittery<ApplicationEvents> {
 
     this.economy = new Economy(this)
     this.minecraftGuildsManager = new MinecraftGuildsManager(this, this.core.getSqliteManager())
+    this.minecraftActionButtons = new MinecraftActionButtons(this, this.core.getSqliteManager())
     this.minecraftStatus = new MinecraftStatus(this, this.core.getSqliteManager())
     this.discordRoles = new DiscordRoles(this)
     this.skyblockReminders = new SkyblockReminders(this)
@@ -273,6 +276,7 @@ export default class Application extends Emittery<ApplicationEvents> {
 
       this.economy,
       this.minecraftGuildsManager,
+      this.minecraftActionButtons,
       this.prometheusInstance,
       this.metricsInstance,
       this.commandsInstance,
