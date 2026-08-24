@@ -44,9 +44,9 @@ export default class Guild extends ChatCommandHandler {
     result += ` for the last `
     result += days > 0 ? `${days} days` : formatTime(duration)
 
-    result += ` with GEXP this week ${Object.values(member.expHistory)
+    result += ` with ${Object.values(member.expHistory)
       .reduce((a, b) => a + b, 0)
-      .toLocaleString('en-US')}`
+      .toLocaleString('en-US')} GEXP in the last 7 days`
     return result
   }
 }
