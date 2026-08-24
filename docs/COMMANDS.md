@@ -147,6 +147,7 @@ A shorter version can also be used: `!- rtca`
 | `$diss`        | diss a player                                                           |
 | `$give`        | give a player aura                                                      |
 | `$glaze`       | Praise a player to increase their aura                                  |
+| `$hitman`      | order a hit on a person to mute them                                    |
 | `$leaderboard` | Returns aura leaderboard                                                |
 | `$mute`        | Mute a random online person for 5 minutes for no good reason            |
 | `$nuke`        | Mute a random maximum of 4 to 8 online guild members for 3 minutes each |
