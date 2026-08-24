@@ -100,6 +100,7 @@ A shorter version can also be used: `!- rtca`
 | `!rtca`           | Returns the number of runs needed to reach the average class level specified       |
 | `!runs`           | Returns how many dungeon runs a player has done                                    |
 | `!sacks`          | Returns a player's SkyBlock sacks content value                                    |
+| `!safari`         | Returns caught critters per zone                                                   |
 | `!secrets`        | Returns how many secrets a player has done                                         |
 | `!select`         | Randomly select an online guild member                                             |
 | `!shafts`         | Returns shaft enter count and corpses looted amount                                |
@@ -107,6 +108,7 @@ A shorter version can also be used: `!- rtca`
 | `!skywars`        | Returns a player's Skywars common stats                                            |
 | `!slayer`         | Returns a player's slayer level                                                    |
 | `!soopy`          | Use SoopyV2 API to execute commands                                                |
+| `!sparkling`      | Returns caught sparkling critters                                                  |
 | `!specialmayors`  | Show when SkyBlock special mayors are coming                                       |
 | `!starfall`       | When is the next SkyBlock Cult of the Fallen Star event                            |
 | `!startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |

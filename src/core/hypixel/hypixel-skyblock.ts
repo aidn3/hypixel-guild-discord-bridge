@@ -197,6 +197,16 @@ export interface SkyblockMember {
       }
     }
   }
+  safari?: {
+    biome_captures?: {
+      icy?: number
+      cavern?: number
+      forest?: number
+      haunted?: number
+    }
+    discovered_sparkling_critters?: string[]
+    total_captured_sparkling_critters?: number
+  }
   events?: SkyblockPlayerEvents
   pets_data?: Partial<{ pet_care: { pet_types_sacrificed?: string[] } }>
   essence?: SkyblockEssence
