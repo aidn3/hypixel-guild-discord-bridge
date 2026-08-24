@@ -67,7 +67,10 @@ export class Verification {
 
           const discordId = this.users.resolveUserId({ originInstance: Platform.Discord, userId: link.discordId })
           const discordValue = entries.get(discordId)
-          if (discordValue !== undefined) addOrMerge(userId, discordValue)
+          if (discordValue !== undefined) {
+            checkedUser.add(discordId)
+            addOrMerge(userId, discordValue)
+          }
           break
         }
 
@@ -77,7 +80,10 @@ export class Verification {
 
           const mojangId = this.users.resolveUserId({ originInstance: Platform.Minecraft, userId: link.uuid })
           const mojangValue = entries.get(mojangId)
-          if (mojangValue !== undefined) addOrMerge(userId, mojangValue)
+          if (mojangValue !== undefined) {
+            checkedUser.add(mojangId)
+            addOrMerge(userId, mojangValue)
+          }
           break
         }
 
