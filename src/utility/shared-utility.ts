@@ -130,6 +130,8 @@ export function shortenNumber(value: number): string {
     suffix = 't'
   }
 
+  if (suffix.length === 0 && Math.floor(value) === value) return value.toFixed(0)
+
   const digits = Math.floor(Math.log10(Math.abs(value))) + 1
   const digitsCount = 3
 

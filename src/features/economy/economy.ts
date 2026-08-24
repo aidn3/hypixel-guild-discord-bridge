@@ -10,6 +10,7 @@ import { discordEconomyCommandHandler, DiscordGuildCommand } from './commands/di
 import Diss from './commands/diss.js'
 import Give from './commands/give.js'
 import Glaze from './commands/glaze.js'
+import Leaderboard from './commands/leaderboard.js'
 import Mute from './commands/mute.js'
 import { Nuke } from './commands/nuke.js'
 import Roulette from './commands/roulette.js'
@@ -32,6 +33,7 @@ export class Economy extends Instance {
     this.database = new EconomyDatabase(
       this.application.core.getSqliteManager(),
       this.application.core.users,
+      this.application.core.verification,
       this.logger
     )
 
@@ -47,6 +49,7 @@ export class Economy extends Instance {
     this.application.registerChatCommand(new Diss(this.database, this.configuration))
     this.application.registerChatCommand(new Roulette(this.database))
     this.application.registerChatCommand(new Nuke(this.database))
+    this.application.registerChatCommand(new Leaderboard(this.database))
     this.application.registerDiscordCommand({
       ...DiscordGuildCommand,
       handler: (context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>) =>

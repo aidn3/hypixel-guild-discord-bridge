@@ -164,7 +164,7 @@ export class Core extends Instance {
       this.abortController.signal
     )
 
-    this.verification = new Verification(this.sqliteManager)
+    this.verification = new Verification(this.sqliteManager, this.users)
     this.scoresManager = new ScoresManager(
       application,
       this,
