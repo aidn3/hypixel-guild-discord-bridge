@@ -1,7 +1,7 @@
 import type { APIEmbed } from 'discord.js'
 import { SlashCommandBuilder } from 'discord.js'
 
-import FAQ from '../../../../resources/faq.json'
+import FAQ from '../../../../resources/faq.json' with { type: 'json' }
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'

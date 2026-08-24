@@ -1,8 +1,7 @@
 import assert from 'node:assert'
 
-import { PermissionFlagsBits } from 'discord-api-types/v10'
 import type { APIEmbed, CommandInteraction, MessageActionRowComponentData, SendableChannels } from 'discord.js'
-import { ComponentType, MessageFlags, SlashCommandBuilder } from 'discord.js'
+import { ComponentType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'

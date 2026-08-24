@@ -1,6 +1,5 @@
-import { PermissionFlagsBits } from 'discord-api-types/v10'
 import type { ChatInputCommandInteraction } from 'discord.js'
-import { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js'
+import { PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js'
 
 import type Application from '../../../application.js'
 import type {
