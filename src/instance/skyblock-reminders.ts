@@ -4,6 +4,7 @@ import type Application from '../application.js'
 import { ChannelType, Color } from '../common/application-event.js'
 import type { DisplayableInstance } from '../common/instance.js'
 import { Instance } from '../common/instance.js'
+import { DarkAuctionReminderCondition } from '../core/application-configurations.js'
 import Duration from '../utility/duration.js'
 import { setIntervalAsync } from '../utility/scheduling.js'
 
@@ -28,7 +29,8 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
 
     setIntervalAsync(
       async () => {
-        if (!this.application.core.applicationConfigurations.getDarkAuctionReminder()) return
+        const darkAuctionType = this.application.core.applicationConfigurations.getDarkAuctionReminder()
+        if (darkAuctionType === DarkAuctionReminderCondition.Disabled) return
 
         const date = new Date()
         const currentHour = date.getHours()
@@ -39,6 +41,14 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
         lastMinuteCheck = currentMinute
 
         if ([50, 54].includes(currentMinute)) {
+          if (darkAuctionType === DarkAuctionReminderCondition.Scorpius) {
+            const election = await this.application.hypixelApi.getSkyblockElection()
+            const isScorpius = election.mayor.key === 'scorpius'
+            if (!isScorpius) return
+          } else {
+            darkAuctionType satisfies DarkAuctionReminderCondition.Always
+          }
+
           const remainingMinutes = 55 - currentMinute
           assert.ok(remainingMinutes > 0)
 
