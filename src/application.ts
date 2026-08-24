@@ -25,6 +25,7 @@ import type { Urchin } from './core/urchin/urchin.js'
 import type { MojangApi } from './core/users/mojang.js'
 import { DiscordRoles } from './features/discord-roles/discord-roles.js'
 import { Economy } from './features/economy/economy.js'
+import { History } from './features/history/history.js'
 import { MinecraftActionButtons } from './features/minecraft-actions/minecraft-action-buttons.js'
 import { MinecraftGuildsManager } from './features/minecraft-guilds/minecraft-guilds-manager.js'
 import { MinecraftStatus } from './features/minecraft-status/minecraft-status.js'
@@ -62,6 +63,7 @@ export default class Application extends Emittery<ApplicationEvents> {
   private readonly prometheusInstance: PrometheusInstance | undefined
   private readonly metricsInstance: MetricsInstance
 
+  public readonly history: History
   public readonly minecraftGuildsManager: MinecraftGuildsManager
   public readonly minecraftActionButtons: MinecraftActionButtons
   public readonly minecraftStatus: MinecraftStatus
@@ -120,6 +122,7 @@ export default class Application extends Emittery<ApplicationEvents> {
     this.metricsInstance = new MetricsInstance(this)
     this.commandsInstance = new CommandsInstance(this)
 
+    this.history = new History(this)
     this.economy = new Economy(this)
     this.minecraftGuildsManager = new MinecraftGuildsManager(this, this.core.getSqliteManager())
     this.minecraftActionButtons = new MinecraftActionButtons(this, this.core.getSqliteManager())
@@ -274,6 +277,7 @@ export default class Application extends Emittery<ApplicationEvents> {
 
       this.discordInstance, // discord second to send any notification about connecting
 
+      this.history,
       this.economy,
       this.minecraftGuildsManager,
       this.minecraftActionButtons,
