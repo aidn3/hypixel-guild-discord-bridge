@@ -100,6 +100,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom29to30(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom30to31(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1227,6 +1230,20 @@ function migrateFrom29to30(database: Database): void {
       '  createdAt INTEGER NOT NULL' +
       ') STRICT;'
   )
+}
+
+function migrateFrom30to31(database: Database): void {
+  const selectedOption = database
+    .prepare('SELECT value FROM "configurations" WHERE category = ? AND name = ?')
+    .pluck(true)
+    .get('general', 'darkAuctionReminder') as string | undefined
+  if (selectedOption !== undefined) {
+    const result = database
+      .prepare('UPDATE "configurations" SET value = ? WHERE category = ? AND name = ?')
+      .run(selectedOption === '1' ? 'always' : 'disabled', 'general', 'darkAuctionReminder')
+
+    assert.strictEqual(result.changes, 1)
+  }
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
