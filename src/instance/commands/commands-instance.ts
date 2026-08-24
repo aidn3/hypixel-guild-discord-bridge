@@ -104,12 +104,14 @@ import RunsTillCatacombs from './triggers/runs-till-catacombs.js'
 import RunsToClassAverage from './triggers/runs-to-class-average.js'
 import Runs from './triggers/runs.js'
 import Sacks from './triggers/sacks.js'
+import Safari from './triggers/safari.js'
 import Secrets from './triggers/secrets.js'
 import Select from './triggers/select.js'
 import Skills from './triggers/skills.js'
 import Skywars from './triggers/skywars.js'
 import Slayer from './triggers/slayer.js'
 import Soopy from './triggers/soopy.js'
+import Sparklings from './triggers/sparklings.js'
 import SpecialMayors from './triggers/special-mayors.js'
 import Starfall from './triggers/starfall.js'
 import StatusCommand from './triggers/status.js'
@@ -228,12 +230,14 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new RunsTillCatacombs(),
       new RunsToClassAverage(),
       new Sacks(),
+      new Sparklings(),
       new Secrets(),
       new Select(),
       new Skills(),
       new Skywars(),
       new Slayer(),
       new Soopy(),
+      new Safari(),
       new SpecialMayors(),
       new Starfall(),
       new StatusCommand(),
