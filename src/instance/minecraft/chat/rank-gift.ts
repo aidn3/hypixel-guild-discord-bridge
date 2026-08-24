@@ -3,7 +3,7 @@ import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
-    const regex = /^Guild > (?:|\[[\w+]+\] )(\w{2,16}) gifted the [\w+]+ rank to (\w{2,16})/g
+    const regex = /^Guild > (?:|\[[\w+]+\] )(\w{2,16}) gifted (?:the [\w+]+ rank to|\d+ Days of [\w+]+ to) (\w{2,16})/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
@@ -27,7 +27,7 @@ export default {
         platform: Platform.Minecraft,
 
         color: Color.Good,
-        channels: [ChannelType.Officer],
+        channels: [ChannelType.Public, ChannelType.Officer],
 
         type: GuildPlayerEventType.Gifted,
         user: targetUser,
