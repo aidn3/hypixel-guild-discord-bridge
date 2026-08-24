@@ -566,6 +566,10 @@ export enum EconomyReason {
   SacrificeFrom = 'sacrificeFrom',
   SacrificeTo = 'sacrificeTo',
 
+  RobberSuccess = 'robberSuccess',
+  RobberFail = 'robberFail',
+  Robbed = 'robbed',
+
   UserGive = 'userGive',
   UserTake = 'userTake',
   UserSet = 'userSet',

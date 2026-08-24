@@ -37,6 +37,8 @@ export const EconomyEventWin = { amount: 10 }
 
 export const EconomySacrifice = { tax: 50 }
 
+export const EconomyRob = { risk: 2, cooldown: Duration.minutes(10), winChance: 0.35 }
+
 export const EconomyChat: EconomyChange & { usersCountRestriction: number } = {
   cooldown: Duration.minutes(15),
   amount: 1,
