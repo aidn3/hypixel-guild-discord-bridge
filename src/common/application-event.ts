@@ -106,7 +106,8 @@ export interface ApplicationEvents {
  */
 export enum Platform {
   Discord = 'discord',
-  Minecraft = 'minecraft'
+  Minecraft = 'minecraft',
+  Unknown = 'unknown'
 }
 
 /**
@@ -723,7 +724,7 @@ export interface MinecraftCommandEvent extends BaseCommandEvent {
 
 export interface GenericCommandEvent extends BaseCommandEvent {
   readonly instance: Instance
-  readonly platform: undefined
+  readonly platform: Platform.Unknown
   /**
    * The user who executed the command
    */

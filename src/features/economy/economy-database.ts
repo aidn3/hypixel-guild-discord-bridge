@@ -6,6 +6,7 @@ import type { Logger } from 'log4js'
 import type { UserId } from '../../common/application-event.js'
 import type { SqliteManager } from '../../common/sqlite-manager.js'
 import type { AnonymousUser } from '../../common/user.js'
+import type { Verification } from '../../core/users/verification.js'
 import type { Users } from '../../core/users.js'
 import Duration from '../../utility/duration.js'
 
@@ -16,6 +17,7 @@ export class EconomyDatabase {
   public constructor(
     private readonly sqlManager: SqliteManager,
     private readonly users: Users,
+    private readonly verification: Verification,
     logger: Logger
   ) {
     this.sqlManager.registerCleaner(() => {
@@ -182,6 +184,29 @@ export class EconomyDatabase {
     })
 
     return transaction()
+  }
+
+  /**
+   * @returns merged accounts into one primary {@link UserId}
+   */
+  public async getLeaderboard(): Promise<Map<UserId, number>> {
+    const database = this.sqlManager.getDatabase()
+
+    const transaction = database.transaction(() => {
+      const allAccounts = database
+        .prepare<[], { userId: UserId; value: number }>('SELECT userId, value FROM "economy"')
+        .all()
+
+      const mappedAccounts = new Map<UserId, number>()
+      for (const account of allAccounts) {
+        mappedAccounts.set(account.userId, account.value)
+      }
+
+      return mappedAccounts
+    })
+
+    const accounts = transaction()
+    return await this.verification.linkEntries(accounts, (accounts) => accounts.reduce((a, b) => a + b, 0))
   }
 
   private deserialize(entries: SavedHistory[]): SavedHistory[] {
