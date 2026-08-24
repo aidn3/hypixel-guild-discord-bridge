@@ -23,7 +23,7 @@ export default class Rob extends ChatCommandHandler {
   }
 
   override cooldownOptions(): ChatCommandCooldown {
-    return { type: CooldownType.Community, duration: EconomyRob.cooldown }
+    return { type: CooldownType.User, duration: EconomyRob.cooldown }
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
