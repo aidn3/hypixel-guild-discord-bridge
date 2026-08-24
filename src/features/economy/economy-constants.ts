@@ -39,6 +39,9 @@ export const EconomySacrifice = { tax: 50 }
 
 export const EconomyRob = { risk: 2, cooldown: Duration.minutes(10), winChance: 0.35 }
 
+// min=1minute, max=30minutes, conversionRate=slightly worse than airstrike
+export const EconomyHitman = { cooldown: Duration.minutes(30), max: 900, min: 30, conversionRate: 2 }
+
 export const EconomyChat: EconomyChange & { usersCountRestriction: number } = {
   cooldown: Duration.minutes(15),
   amount: 1,

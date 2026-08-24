@@ -582,6 +582,7 @@ export enum EconomyReason {
   AirstrikeTarget = 'airstrikeTarget',
   MuteTarget = 'muteTarget',
   Nuke = 'nuke',
+  Hitman = 'hitman',
 
   DailyReward = 'dailyReward'
 }
