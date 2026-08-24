@@ -97,6 +97,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom28to29(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom29to30(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1171,6 +1174,57 @@ function migrateFrom28to29(database: Database): void {
       '  command TEXT NOT NULL,' +
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
       '  expiresAt  INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+}
+
+function migrateFrom29to30(database: Database): void {
+  database.exec(
+    'CREATE TABLE "historyChat" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  message TEXT NOT NULL,' +
+      '  channelType TEXT NOT NULL,' +
+      '  platform TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyGuildPlayerActivity" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER REFERENCES users(id),' +
+      '  responsibleUserId INTEGER REFERENCES users(id),' +
+      '  type TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyGuildGeneralActivity" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyCommandResponse" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  channelType TEXT NOT NULL,' +
+      '  platform TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyCommandFeedback" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  channelType TEXT NOT NULL,' +
+      '  platform TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
       ') STRICT;'
   )
 }

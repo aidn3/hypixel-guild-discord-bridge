@@ -174,6 +174,7 @@ A shorter version can also be used: `!- rtca`
 | `/faq`                | Show frequently asked questions                                  |
 | `/guild`              | Manage in-game guilds                                            |
 | `/help`               | Show available commands.                                         |
+| `/history`            | Read history of users activities                                 |
 | `/invite`             | Invite player to the guild in-game                               |
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | Display a leaderboard message in this channel                    |
