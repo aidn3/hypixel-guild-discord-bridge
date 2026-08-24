@@ -271,6 +271,24 @@ async function formatReason(
       const user = await formatUserId(context, entry.userId)
       return `${amount} ${user} mute nuked a guild`
     }
+    case EconomyReason.RobberSuccess: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `${amount} ${user} successfully robbed ${byUser}`
+    }
+    case EconomyReason.RobberFail: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `${amount} ${user} failed robbing ${byUser}`
+    }
+    case EconomyReason.Robbed: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `${amount} ${user} was robbed by ${byUser}`
+    }
     default: {
       entry.reason satisfies never
       assert.fail(`unknown entry reason: ${JSON.stringify(entry)}`)
