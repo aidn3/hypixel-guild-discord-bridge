@@ -1,7 +1,8 @@
-import { UrchinWinstreakMode, UrchinWinstreakModes } from 'src/core/urchin/urchin-api.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { usernameNotExists } from '../common/utility.js'
+
+import type { UrchinWinstreakMode, UrchinWinstreakModes } from 'src/core/urchin/urchin-api.js'
 
 interface ParsedUrchinWinstreaks {
   overall: number
@@ -10,6 +11,7 @@ interface ParsedUrchinWinstreaks {
   doubles: number
   threes: number
   fours: number
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '4v4': number
 }
 
@@ -53,11 +55,12 @@ export default class WinstreakCommand extends ChatCommandHandler {
       doubles: this.getCurrentWinstreak(doubles),
       threes: this.getCurrentWinstreak(threes),
       fours: this.getCurrentWinstreak(fours),
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       '4v4': this.getCurrentWinstreak(fourVfour)
     }
   }
 
   getCurrentWinstreak(winstreaks: UrchinWinstreakMode[]): number {
-    return winstreaks.sort((a, b) => b.timestamp - a.timestamp)[0]?.value ?? 0
+    return winstreaks.toSorted((a, b) => b.timestamp - a.timestamp)[0]?.value ?? 0
   }
 }

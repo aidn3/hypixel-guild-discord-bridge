@@ -15,7 +15,7 @@ export class Urchin {
 
   private readonly queue = new PromiseQueue(1)
   private readonly rateLimit = new RateLimiter(1, 500)
-  private readonly cache = new TTLCache<string, UrchinPlayerResponse>({
+  private readonly cache = new TTLCache<string, unknown>({
     max: 1000,
     ttl: Duration.minutes(5).toMilliseconds()
   })
@@ -27,7 +27,7 @@ export class Urchin {
 
   async getWinstreaks(username: string): Promise<UrchinWinstreakResopnse | undefined> {
     const cacheKey = username.toLowerCase()
-    const cached = this.cache.get(cacheKey)
+    const cached = this.cache.get(cacheKey) as UrchinWinstreakResopnse | undefined
     if (cached !== undefined) return cached
 
     const result = await this.queue.add(async () => {
@@ -70,7 +70,7 @@ export class Urchin {
 
   async getTags(username: string): Promise<UrchinPlayerResponse | undefined> {
     const cacheKey = username.toLowerCase()
-    const cached = this.cache.get(cacheKey)
+    const cached = this.cache.get(cacheKey) as UrchinPlayerResponse | undefined
     if (cached !== undefined) return cached
 
     const result = await this.queue.add(async () => {
