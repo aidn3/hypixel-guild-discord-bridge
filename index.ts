@@ -53,6 +53,8 @@ process.on('uncaughtException', function (error) {
   process.exitCode = 1
 })
 
+DefaultAxios.defaults.headers.common['User-Agent'] =
+  `${PackageJson.name}/${PackageJson.version} (${PackageJson.repository.url})`
 DefaultAxios.defaults.timeout = Duration.seconds(30).toMilliseconds()
 DefaultAxios.defaults.maxRedirects = 10
 
