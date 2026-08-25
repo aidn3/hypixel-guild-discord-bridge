@@ -58,9 +58,10 @@ export default class CurrentKuudra extends ChatCommandHandler {
     }
     assert.ok(foundPlayer)
 
+    const currentTime = Date.now()
     message +=
-      lastRun.completion_ts + CurrentKuudra.ShowTimeAfter < Date.now()
-        ? ` was last seen ${formatTime(Date.now() - lastRun.completion_ts)} ago`
+      lastRun.completion_ts + CurrentKuudra.ShowTimeAfter < currentTime
+        ? ` was last seen ${formatTime(currentTime - lastRun.completion_ts)} ago`
         : ` is`
 
     message += ` playing ${floorDisplayName} `
