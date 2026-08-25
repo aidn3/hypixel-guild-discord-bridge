@@ -104,7 +104,7 @@ export class MojangApi {
           }
         })
         .catch(() => {
-          for (const username of usernames) {
+          for (const username of usernamesChunk) {
             result.set(username, undefined)
           }
         })
