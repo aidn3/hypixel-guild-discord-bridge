@@ -1,6 +1,6 @@
 {
   "name": "hypixel-guild-discord-bridge",
-  "version": "5.6.0",
+  "version": "5.6.1",
   "description": "A Hypixel guild chat and Discord chat bridge",
   "type": "module",
   "main": "index.ts",
@@ -20,7 +20,9 @@
     "lint:coverage": "npx type-coverage --detail true --update true",
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --import tsx/esm index.ts test-run",
-    "validate": "npm install && npm run generate-code && npm run generate-docs && npm run lint:fix && npm run test:compile && npm run lint:coverage && npm run test:run"
+    "bundle:build": "npx rollup --config rollup.config.js",
+    "bundle:test-run": "node -C ./build ./build/bundle.js test-run",
+    "validate": "npm install && npm run generate-code && npm run generate-docs && npm run lint:fix && npm run test:compile && npm run lint:coverage && npm run test:run && npm run bundle:build && npm run bundle:test-run"
   },
   "license": "MIT",
   "repository": {
@@ -79,6 +81,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/esrever": "^0.2.3",
     "@types/promise-queue": "^2.2.3",
@@ -98,6 +104,7 @@
     "markdown-table": "^3.0.4",
     "prettier": "^3.3.3",
     "prismarine-nbt": "^2.7.0",
+    "rollup": "^4.62.4",
     "ts-interface-builder": "^0.3.3",
     "type-coverage": "^2.29.7",
     "typescript": "^5.8.3",

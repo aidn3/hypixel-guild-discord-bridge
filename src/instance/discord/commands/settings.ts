@@ -24,6 +24,7 @@ import { Color, Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { ChatCommandGroup, CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import type UnexpectedErrorHandler from '../../../common/unexpected-error-handler.js'
+import { DarkAuctionReminderCondition } from '../../../core/application-configurations.js'
 import { DiscordChatFormat } from '../../../core/discord/discord-configurations.js'
 import { ApplicationLanguages } from '../../../core/language-configurations.js'
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager.js'
@@ -493,13 +494,34 @@ function fetchQualityOptions(application: Application): CategoryOption {
         ]
       },
       {
-        type: OptionType.Boolean,
-        name: 'Darkauction Reminder',
+        type: OptionType.PresetList,
+        name: 'Dark Auction Reminder',
         description: 'Send a reminder when a skyblock dark auction is starting.',
-        getOption: () => plugins.getDarkAuctionReminder(),
-        toggleOption: () => {
-          plugins.setDarkAuctionReminder(!plugins.getDarkAuctionReminder())
-        }
+        options: [
+          {
+            label: 'Always',
+            description: 'Always send Dark Auction reminder',
+            value: DarkAuctionReminderCondition.Always
+          },
+          {
+            label: 'During Scorpius',
+            description: 'Only send Dark Auction reminder when Scorpius is the mayor',
+            value: DarkAuctionReminderCondition.Scorpius
+          },
+          {
+            label: 'Disabled',
+            description: 'Never send any Dark Auction reminder',
+            value: DarkAuctionReminderCondition.Disabled
+          }
+        ],
+        getOption: () => [plugins.getDarkAuctionReminder()],
+        setOption: (values) => {
+          const value = values[0] as DarkAuctionReminderCondition
+          assert.ok(Object.values(DarkAuctionReminderCondition).includes(value))
+          plugins.setDarkAuctionReminder(value)
+        },
+        min: 1,
+        max: 1
       },
       {
         type: OptionType.Boolean,

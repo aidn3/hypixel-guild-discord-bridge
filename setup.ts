@@ -1,27 +1,30 @@
-/* eslint-disable no-restricted-syntax */
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Interface } from 'node:readline/promises'
 import { createInterface } from 'node:readline/promises'
 
 import { DiscordAPIError, REST, Routes } from 'discord.js'
+import type { Logger } from 'log4js'
 import Yaml from 'yaml'
 
 import type { ApplicationConfig } from './src/application-config.js'
 
-try {
-  await startCreateConfigurations()
-} catch (error) {
-  if (error instanceof Error && error.name === 'AbortError') {
-    console.error()
-    console.error(error.message)
-    process.exit(1)
+if (import.meta.main && !RollupUsed) {
+  const logger = console
+  try {
+    await startCreateConfigurations(logger)
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      logger.error()
+      logger.error(error.message)
+      process.exit(1)
+    }
   }
+
+  process.exit(0)
 }
 
-process.exit(0)
-
-async function startCreateConfigurations(): Promise<void> {
+export async function startCreateConfigurations(logger: Console | Logger): Promise<void> {
   const rootDirectory = import.meta.dirname
 
   const configurationsPath = path.join(rootDirectory, 'config.yaml')
@@ -36,18 +39,18 @@ async function startCreateConfigurations(): Promise<void> {
   const newPath = path.join(rootDirectory, 'config.yaml')
   const newRaw = Yaml.stringify(newConfigurations)
 
-  await displayImportantInformation(newConfigurations)
+  await displayImportantInformation(logger, newConfigurations)
 
-  console.log('Writing new configurations:', newPath)
+  logger.log('Writing new configurations:', newPath)
   fs.writeFileSync(newPath, newRaw)
 }
 
-async function displayImportantInformation(config: ApplicationConfig): Promise<void> {
+async function displayImportantInformation(logger: Console | Logger, config: ApplicationConfig): Promise<void> {
   const result = (await new REST().setToken(config.discord.key).get(Routes.currentApplication())) as {
     id: string
   }
   const discordBotJoin = `https://discord.com/oauth2/authorize?client_id=${result.id}&permissions=8&integration_type=0&scope=bot`
-  console.log(`> Invite the Discord bot to you server using this link: ${discordBotJoin}`)
+  logger.log(`> Invite the Discord bot to you server using this link: ${discordBotJoin}`)
 }
 
 async function createConfig(

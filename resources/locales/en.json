@@ -302,6 +302,9 @@
   "commands.boop.no-account": "No active connected Minecraft account exists to use.",
   "commands.weight.response": "{{username}} Senither weight: {{senitherWeight, number(maximumFractionDigits: 0)}} - Lily weight: {{lilyWeight, number(maximumFractionDigits: 0)}} - Farming weight: {{farmingWeight, number(maximumFractionDigits: 0)}}",
   "commands.secrets.response": "{{username}}'s lifetime secrets {{lifetimeSecrets, number}} - current profiles's secrets {{profileSecrets, number}} - average {{averageSecrets, number}}",
+  "commands.safari.none": "{{username}} has never entered the safari.",
+  "commands.safari.response": "{{username}}'s critters caught - {{total, number}} Total - {{icy, number}} Icy - {{forest, number}} Forest - {{cavern, number}} Cavern - {{haunted, number}} Haunted",
+  "commands.sparklings.response": "{{username}}'s sparklings - {{uniques, number}} Unique - {{dupes, number}} Dupes",
 
   "commands.8ball": [
     "{{username}}, as I see it, yes.",
@@ -331,7 +334,6 @@
     "{{name}} deserves a treat :D",
     "{{name}} is the cutest person here!",
     "{{name}} looks kinda thicc today...",
-    "{{name}} needs to chill before everyone online gets wet and hard",
     "{{name}} is so hot they are single handedly raising the temperature in here by 10% :)",
     "{{name}}'s hair looks nice today!",
     "{{name}} is very cute :3",

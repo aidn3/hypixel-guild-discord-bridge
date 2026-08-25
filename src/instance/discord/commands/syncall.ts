@@ -1,7 +1,6 @@
 import assert from 'node:assert'
 
-import { PermissionFlagsBits } from 'discord-api-types/v10'
-import { SlashCommandBuilder } from 'discord.js'
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 import PromiseQueue from 'promise-queue'
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'

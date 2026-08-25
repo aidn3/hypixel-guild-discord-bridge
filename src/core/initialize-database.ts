@@ -91,6 +91,18 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom26to27(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom27to28(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom28to29(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom29to30(database)
+  })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom30to31(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1122,6 +1134,116 @@ function migrateFrom26to27(database: Database): void {
       '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
       ') STRICT;'
   )
+}
+
+function migrateFrom27to28(database: Database): void {
+  const alternatives = ['-', '!', '.', ';']
+
+  const ManagementKey = 'management'
+  const ManagementPrefix = ':'
+  const currentPrefix = database
+    .prepare<[string], string>(`SELECT prefix FROM chatCommandGroups WHERE "group" = ?`)
+    .pluck(true)
+    .get(ManagementKey)
+
+  assert.ok(currentPrefix !== undefined)
+
+  if (ManagementPrefix === currentPrefix) {
+    const typeInsert = database.prepare(`UPDATE chatCommandGroups SET prefix = ? WHERE "group" = ?`)
+    let success = false
+    for (const alternative of alternatives) {
+      try {
+        const result = typeInsert.run(alternative, ManagementKey)
+        if (result.changes === 0) continue
+        success = true
+        break
+      } catch {
+        // ignored
+      }
+    }
+
+    if (!success) assert.fail(`Failed to insert chat command group=${ManagementKey}`)
+  }
+}
+
+function migrateFrom28to29(database: Database): void {
+  database.exec(
+    'CREATE TABLE "discordMinecraftActionButtons" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  botUuid TEXT NOT NULL,' +
+      '  userUuid TEXT DEFAULT NULL,' +
+      '  command TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  expiresAt  INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+}
+
+function migrateFrom29to30(database: Database): void {
+  database.exec(
+    'CREATE TABLE "historyChat" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  message TEXT NOT NULL,' +
+      '  channelType TEXT NOT NULL,' +
+      '  platform TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyGuildPlayerActivity" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER REFERENCES users(id),' +
+      '  responsibleUserId INTEGER REFERENCES users(id),' +
+      '  type TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyGuildGeneralActivity" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  type TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyCommandResponse" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  channelType TEXT NOT NULL,' +
+      '  platform TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+  database.exec(
+    'CREATE TABLE "historyCommandFeedback" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  userId INTEGER NOT NULL REFERENCES users(id),' +
+      '  channelType TEXT NOT NULL,' +
+      '  platform TEXT NOT NULL,' +
+      '  message TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL' +
+      ') STRICT;'
+  )
+}
+
+function migrateFrom30to31(database: Database): void {
+  const selectedOption = database
+    .prepare('SELECT value FROM "configurations" WHERE category = ? AND name = ?')
+    .pluck(true)
+    .get('general', 'darkAuctionReminder') as string | undefined
+  if (selectedOption !== undefined) {
+    const result = database
+      .prepare('UPDATE "configurations" SET value = ? WHERE category = ? AND name = ?')
+      .run(selectedOption === '1' ? 'always' : 'disabled', 'general', 'darkAuctionReminder')
+
+    assert.strictEqual(result.changes, 1)
+  }
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

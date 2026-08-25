@@ -1,5 +1,11 @@
 import type { Configuration, ConfigurationsManager } from './configurations.js'
 
+export enum DarkAuctionReminderCondition {
+  Disabled = 'disabled',
+  Always = 'always',
+  Scorpius = 'scorpius'
+}
+
 export class ApplicationConfigurations {
   private readonly configuration: Configuration
 
@@ -23,11 +29,14 @@ export class ApplicationConfigurations {
     this.configuration.setBoolean('starfallCultReminder', enabled)
   }
 
-  public getDarkAuctionReminder(): boolean {
-    return this.configuration.getBoolean('darkAuctionReminder', true)
+  public getDarkAuctionReminder(): DarkAuctionReminderCondition {
+    return this.configuration.getString(
+      'darkAuctionReminder',
+      DarkAuctionReminderCondition.Always
+    ) as DarkAuctionReminderCondition
   }
 
-  public setDarkAuctionReminder(enabled: boolean): void {
-    this.configuration.setBoolean('darkAuctionReminder', enabled)
+  public setDarkAuctionReminder(option: DarkAuctionReminderCondition): void {
+    this.configuration.setString('darkAuctionReminder', option)
   }
 }

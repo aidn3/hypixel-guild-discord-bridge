@@ -1,5 +1,4 @@
-import { PermissionFlagsBits } from 'discord-api-types/v10'
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import { PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 
 import type { DiscordCommandContext, DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'

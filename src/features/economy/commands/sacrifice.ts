@@ -55,7 +55,7 @@ export default class Sacrifice extends ChatCommandHandler {
         if (taxedAmount <= 0) throw new NothingGiven()
 
         responsibleAccount.decrease(amountBeforeTax, { reason: EconomyReason.SacrificeFrom, byUser: targetId })
-        targetAmount.increase(taxedAmount, { reason: EconomyReason.SacrificeTo, byUser: responsibleId })
+        targetAmount.decrease(taxedAmount, { reason: EconomyReason.SacrificeTo, byUser: responsibleId })
         return { taxedAmount, amountBeforeTax }
       })
 

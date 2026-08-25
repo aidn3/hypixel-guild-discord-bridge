@@ -100,6 +100,7 @@ A shorter version can also be used: `!- rtca`
 | `!rtca`           | Returns the number of runs needed to reach the average class level specified       |
 | `!runs`           | Returns how many dungeon runs a player has done                                    |
 | `!sacks`          | Returns a player's SkyBlock sacks content value                                    |
+| `!safari`         | Returns caught critters per zone                                                   |
 | `!secrets`        | Returns how many secrets a player has done                                         |
 | `!select`         | Randomly select an online guild member                                             |
 | `!shafts`         | Returns shaft enter count and corpses looted amount                                |
@@ -107,6 +108,7 @@ A shorter version can also be used: `!- rtca`
 | `!skywars`        | Returns a player's Skywars common stats                                            |
 | `!slayer`         | Returns a player's slayer level                                                    |
 | `!soopy`          | Use SoopyV2 API to execute commands                                                |
+| `!sparkling`      | Returns caught sparkling critters                                                  |
 | `!specialmayors`  | Show when SkyBlock special mayors are coming                                       |
 | `!starfall`       | When is the next SkyBlock Cult of the Fallen Star event                            |
 | `!startparty`     | Create public !parties to be viewed by guild members with <count> <time> <purpose> |
@@ -130,27 +132,30 @@ A shorter version can also be used: `!- rtca`
 
 | Command       | Description                            |
 | ------------- | -------------------------------------- |
-| `:execute`    | Runs a command directly                |
-| `:ranks`      | List guild ranks requirements          |
-| `:sync`       | Update a user in-game guild rank       |
-| `:sync-guild` | Update ranks of all members in a guild |
+| `-execute`    | Runs a command directly                |
+| `-ranks`      | List guild ranks requirements          |
+| `-sync`       | Update a user in-game guild rank       |
+| `-sync-guild` | Update ranks of all members in a guild |
 
 ### Economy Chat Commands
 
-| Command      | Description                                                             |
-| ------------ | ----------------------------------------------------------------------- |
-| `$airstrike` | Mute a specific person to annoy them                                    |
-| `$aura`      | Returns a player's total aura                                           |
-| `$daily`     | daily increase your aura                                                |
-| `$diss`      | diss a player                                                           |
-| `$give`      | give a player aura                                                      |
-| `$glaze`     | Praise a player to increase their aura                                  |
-| `$mute`      | Mute a random online person for 5 minutes for no good reason            |
-| `$nuke`      | Mute a random maximum of 4 to 8 online guild members for 3 minutes each |
-| `$roulette`  | Try your luck for aura or a 15 minute mute                              |
-| `$set`       | set a player aura                                                       |
-| `$take`      | take a player's aura                                                    |
-| `$troll`     | troll another user by reducing their aura                               |
+| Command        | Description                                                             |
+| -------------- | ----------------------------------------------------------------------- |
+| `$airstrike`   | Mute a specific person to annoy them                                    |
+| `$aura`        | Returns a player's total aura                                           |
+| `$daily`       | daily increase your aura                                                |
+| `$diss`        | diss a player                                                           |
+| `$give`        | give a player aura                                                      |
+| `$glaze`       | Praise a player to increase their aura                                  |
+| `$hitman`      | order a hit on a person to mute them                                    |
+| `$leaderboard` | Returns aura leaderboard                                                |
+| `$mute`        | Mute a random online person for 5 minutes for no good reason            |
+| `$nuke`        | Mute a random maximum of 4 to 8 online guild members for 3 minutes each |
+| `$rob`         | rob another user's aura with high chance of backfiring                  |
+| `$roulette`    | Try your luck for aura or a 15 minute mute                              |
+| `$set`         | set a player aura                                                       |
+| `$take`        | take a player's aura                                                    |
+| `$troll`       | troll another user by reducing their aura                               |
 
 ## Discord Commands
 
@@ -169,6 +174,7 @@ A shorter version can also be used: `!- rtca`
 | `/faq`                | Show frequently asked questions                                  |
 | `/guild`              | Manage in-game guilds                                            |
 | `/help`               | Show available commands.                                         |
+| `/history`            | Read history of users activities                                 |
 | `/invite`             | Invite player to the guild in-game                               |
 | `/join`               | Instruct the Minecraft account to join a guild.                  |
 | `/leaderboard`        | Display a leaderboard message in this channel                    |
