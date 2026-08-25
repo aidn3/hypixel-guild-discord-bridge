@@ -3,6 +3,7 @@ import assert from 'node:assert'
 import type { Logger } from 'log4js'
 import GetMinecraftData from 'minecraft-data'
 import type { ChatMessage } from 'prismarine-chat'
+import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application.js'
 import type EventHelper from '../../common/event-helper.js'
@@ -47,6 +48,7 @@ import { stufDecode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class ChatManager extends SubInstance<MinecraftInstance, ClientSession> {
+  private readonly singleton = new PromiseQueue(1)
   private readonly chatModules: MinecraftChatMessage[]
   private readonly minecraftData
 
@@ -101,17 +103,17 @@ export default class ChatManager extends SubInstance<MinecraftInstance, ClientSe
   override registerEvents(clientSession: ClientSession): void {
     clientSession.client.on('systemChat', (data) => {
       const chatMessage = clientSession.prismChat.fromNotch(data.formattedMessage)
-      void this.onMessage(
-        chatMessage.toString(),
-        chatMessage.toMotd(),
-        this.normalizeJsonMessage(chatMessage.json)
-      ).catch(this.errorHandler.promiseCatch('processing minecraft raw chat'))
+      void this.singleton
+        .add(() =>
+          this.onMessage(chatMessage.toString(), chatMessage.toMotd(), this.normalizeJsonMessage(chatMessage.json))
+        )
+        .catch(this.errorHandler.promiseCatch('processing minecraft raw chat'))
     })
 
     clientSession.client.on('playerChat', (data: object) => {
-      void this.onFormattedMessage(clientSession, data).catch(
-        this.errorHandler.promiseCatch('processing minecraft raw chat')
-      )
+      void this.singleton
+        .add(() => this.onFormattedMessage(clientSession, data))
+        .catch(this.errorHandler.promiseCatch('processing minecraft raw chat'))
     })
   }
 
