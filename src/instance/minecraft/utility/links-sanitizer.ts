@@ -63,7 +63,7 @@ export class LinksSanitizer {
       }
 
       const response = await DefaultAxios.head(part, {
-        timeout: Duration.seconds(10).toSeconds(),
+        timeout: Duration.seconds(10).toMilliseconds(),
         maxRedirects: 5
       }).catch(() => undefined)
       if (response === undefined) {

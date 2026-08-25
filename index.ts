@@ -53,7 +53,7 @@ process.on('uncaughtException', function (error) {
   process.exitCode = 1
 })
 
-DefaultAxios.defaults.timeout = Duration.seconds(30).toSeconds()
+DefaultAxios.defaults.timeout = Duration.seconds(30).toMilliseconds()
 DefaultAxios.defaults.maxRedirects = 10
 
 const File = process.argv[2] ?? './config.yaml'
