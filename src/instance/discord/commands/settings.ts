@@ -813,22 +813,6 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         ]
       },
       {
-        type: OptionType.Category,
-        name: 'Specific Commands Options',
-        description: 'Finetune specific chat commands',
-        options: [
-          {
-            type: OptionType.Boolean,
-            name: `Enable Usernames History`,
-            description: 'Show usernames history in `!uuid`',
-            getOption: () => commands.getUsernameHistoryEnabled(),
-            toggleOption: () => {
-              commands.setUsernameHistoryEnabled(!commands.getUsernameHistoryEnabled())
-            }
-          }
-        ]
-      },
-      {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Moderation** category.',
