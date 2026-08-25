@@ -103,6 +103,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom30to31(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom31to32(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1244,6 +1247,10 @@ function migrateFrom30to31(database: Database): void {
 
     assert.strictEqual(result.changes, 1)
   }
+}
+
+function migrateFrom31to32(database: Database): void {
+  database.exec("DELETE FROM configurations WHERE category = 'commands' AND name = 'usernameHistory';")
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
