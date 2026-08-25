@@ -36,12 +36,13 @@ const IsTestRun = process.argv.includes('test-run')
 
 const RootDirectory = import.meta.dirname
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
-fs.mkdirSync(ConfigsDirectory, { recursive: true })
+fs.mkdirSync(ConfigsDirectory, { recursive: true, mode: 0o700 })
+fs.chmodSync(ConfigsDirectory, 0o700)
 
 const LoggerConfigName = 'log4js-config.json'
 const LoggerPath = path.join(ConfigsDirectory, LoggerConfigName)
 if (!fs.existsSync(LoggerPath)) {
-  fs.writeFileSync(LoggerPath, JSON.stringify(DefaultLogConfigurations, undefined, 2))
+  fs.writeFileSync(LoggerPath, JSON.stringify(DefaultLogConfigurations, undefined, 2), { flush: true, mode: 0o600 })
 }
 const LoggerConfig = JSON.parse(fs.readFileSync(LoggerPath, 'utf8')) as Configuration
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
