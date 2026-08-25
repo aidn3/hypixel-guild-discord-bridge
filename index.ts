@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+import DefaultAxios from 'axios'
 import { satisfies } from 'compare-versions'
 import { DiscordjsError, DiscordjsErrorCodes } from 'discord.js'
 import type { Configuration } from 'log4js'
@@ -14,6 +15,7 @@ import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next.js'
 import DefaultLogConfigurations from './src/log4js-config.json' with { type: 'json' }
+import Duration from './src/utility/duration.js'
 import { gracefullyExitProcess } from './src/utility/shared-utility.js'
 
 const RequiredNodeVersion = PackageJson.engines.node
@@ -50,6 +52,9 @@ process.on('uncaughtException', function (error) {
   Logger.fatal(error)
   process.exitCode = 1
 })
+
+DefaultAxios.defaults.timeout = Duration.seconds(30).toSeconds()
+DefaultAxios.defaults.maxRedirects = 10
 
 const File = process.argv[2] ?? './config.yaml'
 if (!fs.existsSync(File) && !IsTestRun) {
