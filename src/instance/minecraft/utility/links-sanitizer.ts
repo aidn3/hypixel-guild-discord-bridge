@@ -1,6 +1,7 @@
 import DefaultAxios from 'axios'
 
 import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations.js'
+import Duration from '../../../utility/duration.js'
 import { HypixelLink } from '../common/common.js'
 import { stufEncode } from '../common/stuf.js'
 
@@ -48,7 +49,10 @@ export class LinksSanitizer {
         continue
       }
 
-      const response = await DefaultAxios.head(part).catch(() => undefined)
+      const response = await DefaultAxios.head(part, {
+        timeout: Duration.seconds(10).toSeconds(),
+        maxRedirects: 5
+      }).catch(() => undefined)
       if (response === undefined) {
         newMessage.push('(link)')
         continue
