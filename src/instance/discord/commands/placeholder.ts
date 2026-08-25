@@ -180,24 +180,27 @@ async function format(context: DiscordCommandContext<CommandOrigin.Private>) {
       embeds: [{ description: `\`${escapeMarkdown(query)}\`\n${result}`, footer: { text: DefaultCommandFooter } }]
     })
   } catch (error: unknown) {
-    await (error instanceof CanNotResolve
-      ? context.interaction.editReply({
-          embeds: [
-            {
-              description: 'Can not fully resolve this. Adding fallback values can help.',
-              color: Color.Info,
-              footer: { text: DefaultCommandFooter }
-            }
-          ]
-        })
-      : context.interaction.editReply({
-          embeds: [
-            {
-              description: `Something went terribly wrong while trying to resolve this. Details: \`\`\`json\n${JSON.stringify(error, undefined, 2)}\`\`\``,
-              color: Color.Info,
-              footer: { text: DefaultCommandFooter }
-            }
-          ]
-        }))
+    if (error instanceof CanNotResolve) {
+      await context.interaction.editReply({
+        embeds: [
+          {
+            description: 'Can not fully resolve this. Adding fallback values can help.',
+            color: Color.Info,
+            footer: { text: DefaultCommandFooter }
+          }
+        ]
+      })
+    } else {
+      context.logger.error(error)
+      await context.interaction.editReply({
+        embeds: [
+          {
+            description: `Something went terribly wrong while trying to resolve this.`,
+            color: Color.Info,
+            footer: { text: DefaultCommandFooter }
+          }
+        ]
+      })
+    }
   }
 }
