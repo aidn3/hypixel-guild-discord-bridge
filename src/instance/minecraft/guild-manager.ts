@@ -41,6 +41,17 @@ export class GuildManager extends SubInstance<MinecraftInstance, void> {
         case GuildPlayerEventType.Joined: {
           this.guildData = undefined
           this.motdData = undefined
+          break
+        }
+
+        case GuildPlayerEventType.Kick:
+        case GuildPlayerEventType.Leave:
+        case GuildPlayerEventType.Join:
+        case GuildPlayerEventType.Promote:
+        case GuildPlayerEventType.Demote:
+        case GuildPlayerEventType.Online:
+        case GuildPlayerEventType.Offline: {
+          this.guildData = undefined
         }
       }
     })
