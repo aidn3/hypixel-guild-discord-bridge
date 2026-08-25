@@ -1,6 +1,7 @@
 import DefaultAxios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 import NodeCache from 'node-cache'
+import PromiseQueue from 'promise-queue'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
@@ -19,6 +20,7 @@ interface RssData {
 }
 
 export default class News extends ChatCommandHandler {
+  private readonly singleton = new PromiseQueue(1)
   private readonly cache = new NodeCache({ stdTTL: Duration.minutes(5).toMilliseconds() })
 
   constructor() {
@@ -53,7 +55,7 @@ export default class News extends ChatCommandHandler {
     const news = await context.app.hypixelApi.getSkyblockNews()
     if (news.items.length === 0) return context.app.i18n.t(($) => $['commands.news.none'])
 
-    const items = await this.getPatchnotes()
+    const items = await this.singleton.add(() => this.getPatchnotes())
     const patchnotes = items[0]
 
     const update = news.items[0]
