@@ -35,10 +35,14 @@ if (!satisfies(ActualNodeVersion, RequiredNodeVersion)) {
 const IsTestRun = process.argv.includes('test-run')
 
 const RootDirectory = import.meta.dirname
+
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
 fs.mkdirSync(ConfigsDirectory, { recursive: true, mode: 0o700 })
 fs.chmodSync(ConfigsDirectory, 0o700)
-fs.chmodSync(path.resolve(RootDirectory, 'logs'), 0o700)
+
+const LogsDirectory = path.resolve(RootDirectory, 'logs')
+fs.mkdirSync(LogsDirectory, { recursive: true, mode: 0o700 })
+fs.chmodSync(LogsDirectory, 0o700)
 
 const LoggerConfigName = 'log4js-config.json'
 const LoggerPath = path.join(ConfigsDirectory, LoggerConfigName)
