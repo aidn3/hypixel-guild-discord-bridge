@@ -47,7 +47,7 @@ export default {
     const minecraftOption = () =>
       new SlashCommandSubcommandBuilder()
         .setName('minecraft')
-        .setDescription('Ban a Minecraft player')
+        .setDescription('punish a Minecraft player')
         .addStringOption((option) =>
           option
             .setName('username')
@@ -58,7 +58,7 @@ export default {
     const discordOption = () =>
       new SlashCommandSubcommandBuilder()
         .setName('discord')
-        .setDescription('Ban a Discord user')
+        .setDescription('punish a Discord user')
         .addUserOption((option) => option.setName('user').setDescription('user to ban').setRequired(true))
 
     return new SlashCommandBuilder()
