@@ -258,6 +258,15 @@ async function handleBan(
   duration: Duration,
   reason: string
 ): Promise<void> {
+  const responsiblePermission = await responsible.permission()
+  const targetPermission = await target.permission()
+  if (targetPermission >= responsiblePermission) {
+    await context.interaction.editReply(
+      `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`
+    )
+    return
+  }
+
   const header =
     `## Ban ${formatUser(target)}\n\n` +
     'User has been added to internal ban-list.\n' +
@@ -284,6 +293,15 @@ async function handleMute(
   duration: Duration,
   reason: string
 ): Promise<void> {
+  const responsiblePermission = await responsible.permission()
+  const targetPermission = await target.permission()
+  if (targetPermission >= responsiblePermission) {
+    await context.interaction.editReply(
+      `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`
+    )
+    return
+  }
+
   const header =
     `## Mute ${formatUser(target)}\n\n` +
     'User has been added to internal mute-list.\n' +
@@ -314,6 +332,15 @@ async function handleKick(
   target: User,
   reason: string
 ): Promise<void> {
+  const responsiblePermission = await responsible.permission()
+  const targetPermission = await target.permission()
+  if (targetPermission >= responsiblePermission) {
+    await context.interaction.editReply(
+      `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`
+    )
+    return
+  }
+
   const header = `## Kick ${formatUser(target)}\n\n` + 'Kick action will be taken. Make sure the action is successful!'
 
   const mojangProfile = target.mojangProfile()
