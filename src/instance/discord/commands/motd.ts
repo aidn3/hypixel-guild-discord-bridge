@@ -37,7 +37,8 @@ export default {
       const image = MinecraftRenderer.renderSupported() ? MinecraftRenderer.renderLore(undefined, raw) : undefined
       await context.interaction.editReply({
         content: lines.map((line) => `> ${line}`).join('\n'),
-        files: image === undefined ? undefined : [new AttachmentBuilder(image).setName('motd.png')]
+        files: image === undefined ? undefined : [new AttachmentBuilder(image).setName('motd.png')],
+        allowedMentions: { parse: [] }
       })
     } catch (error: unknown) {
       if (error instanceof GuildManagerError) {

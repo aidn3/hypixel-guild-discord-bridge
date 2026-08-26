@@ -117,7 +117,8 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
       if (emoji !== undefined) await event.react(emoji)
       if (emoji === undefined || config.getAlwaysReplyReaction()) {
         await event.reply({
-          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
+          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage),
+          allowedMentions: { parse: [] }
         })
       }
     }

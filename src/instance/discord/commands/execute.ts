@@ -23,6 +23,6 @@ export default {
     const instance = context.minecraftInstance
 
     await context.application.sendMinecraft([instance], MinecraftSendChatPriority.High, undefined, command)
-    await context.interaction.editReply(`Command executed: ${command}`)
+    await context.interaction.editReply({ content: `Command executed: ${command}`, allowedMentions: { parse: [] } })
   }
 } satisfies DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>

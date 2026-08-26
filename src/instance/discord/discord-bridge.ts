@@ -190,7 +190,8 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             icon_url: event.user.avatar()
           }
         }
-      ]
+      ],
+      allowedMentions: { parse: [] }
     })
     this.messageAssociation.addMessageId(event.eventId, {
       guildId: message.guildId ?? undefined,
@@ -660,7 +661,12 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
         assert.ok(channel.isSendable())
         assert.ok(channel.type === DiscordChannelType.GuildText)
 
-        const message = await channel.send({ content: text, files: images, components: components })
+        const message = await channel.send({
+          content: text,
+          files: images,
+          components: components,
+          allowedMentions: { parse: [] }
+        })
 
         messages.push(message)
         this.messageAssociation.addMessageId(eventId, {

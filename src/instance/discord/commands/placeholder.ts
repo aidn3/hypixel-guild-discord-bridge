@@ -177,7 +177,8 @@ async function format(context: DiscordCommandContext<CommandOrigin.Private>) {
   try {
     const result = await context.application.core.placeHolder.resolvePlaceholder(placeholderContext, query)
     await context.interaction.editReply({
-      embeds: [{ description: `\`${escapeMarkdown(query)}\`\n${result}`, footer: { text: DefaultCommandFooter } }]
+      embeds: [{ description: `\`${escapeMarkdown(query)}\`\n${result}`, footer: { text: DefaultCommandFooter } }],
+      allowedMentions: { parse: [] }
     })
   } catch (error: unknown) {
     if (error instanceof CanNotResolve) {
@@ -188,7 +189,8 @@ async function format(context: DiscordCommandContext<CommandOrigin.Private>) {
             color: Color.Info,
             footer: { text: DefaultCommandFooter }
           }
-        ]
+        ],
+        allowedMentions: { parse: [] }
       })
     } else {
       context.logger.error(error)
@@ -199,7 +201,8 @@ async function format(context: DiscordCommandContext<CommandOrigin.Private>) {
             color: Color.Info,
             footer: { text: DefaultCommandFooter }
           }
-        ]
+        ],
+        allowedMentions: { parse: [] }
       })
     }
   }
