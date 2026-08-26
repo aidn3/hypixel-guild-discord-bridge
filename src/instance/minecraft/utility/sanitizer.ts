@@ -3,6 +3,7 @@ import type MinecraftInstance from '../minecraft-instance.js'
 
 import Antispam from './antispam.js'
 import ArabicFixer from './arabic-fixer.js'
+import CharacterSanitizer from './character-sanitizer.js'
 import { CodecSanitizer } from './codec-sanitizer.js'
 import DiscordSanitizer from './discord-sanitizer.js'
 import EmojiSanitizer from './emoji-sanitizer.js'
@@ -13,6 +14,7 @@ import { LinksSanitizer } from './links-sanitizer.js'
 export class Sanitizer {
   private readonly line: LineSanitizer
   private readonly codec: CodecSanitizer
+  private readonly character: CharacterSanitizer
   private readonly link: LinksSanitizer
   private readonly emoji: EmojiSanitizer
   private readonly ez: EzSanitizer
@@ -23,6 +25,7 @@ export class Sanitizer {
   constructor(application: Application) {
     this.line = new LineSanitizer()
     this.codec = new CodecSanitizer()
+    this.character = new CharacterSanitizer()
     this.link = new LinksSanitizer(application.core.minecraftConfigurations)
     this.emoji = new EmojiSanitizer()
     this.ez = new EzSanitizer()
@@ -34,6 +37,7 @@ export class Sanitizer {
   public async sanitizeChatMessage(instanceName: MinecraftInstance, message: string): Promise<string> {
     message = this.line.process(message)
     message = this.codec.process(message)
+    message = this.character.process(message)
     message = await this.link.process(message)
     message = this.emoji.process(message)
     message = this.ez.process(message)
@@ -47,6 +51,7 @@ export class Sanitizer {
   public sanitizeGenericCommand(message: string): string {
     message = this.line.process(message)
     message = this.codec.process(message)
+    message = this.character.process(message)
 
     return message
   }
