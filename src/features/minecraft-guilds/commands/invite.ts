@@ -1,5 +1,6 @@
 import assert from 'node:assert'
 
+import { PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { Status } from '../../../common/connectable-instance.js'
@@ -7,6 +8,7 @@ import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager.js'
 import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
 import type { MinecraftManager } from '../../../instance/minecraft/minecraft-manager.js'
 import Duration from '../../../utility/duration.js'
+import { formatTime } from '../../../utility/shared-utility.js'
 import type { Database, MinecraftGuild } from '../database.js'
 
 export default class Invite extends ChatCommandHandler {
@@ -29,6 +31,11 @@ export default class Invite extends ChatCommandHandler {
 
     const savedGuild = this.database.allGuilds().find((guild) => guild.id === waitlistEntry.guildId)
     assert.ok(savedGuild !== undefined)
+
+    const punishments = context.message.user.activePunishments().longestPunishment(PunishmentType.Ban)
+    if (punishments !== undefined) {
+      return `You are banned till ${formatTime(punishments.till - Date.now())}.`
+    }
 
     const instance = await this.findInstance(savedGuild, context.app.minecraftManager)
     if (instance === undefined) return 'Can not process this request right now due to inability to connect to Hypixel'

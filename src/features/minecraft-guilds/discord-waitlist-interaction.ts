@@ -342,6 +342,18 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
 
     const profile = await this.application.mojangApi.profileByUuid(sentWaitlist.mojangId)
 
+    const user = await this.application.core.initializeMinecraftUser(profile, { guild: interaction.guild ?? undefined })
+
+    const punishments = user.activePunishments().longestPunishment(PunishmentType.Ban)
+    if (punishments !== undefined) {
+      await interaction.editReply(
+        `${formatUser(user)} is banned.` +
+          `\n**Expires:** <t:${Math.floor(punishments.till / 1000)}:R>` +
+          `\n**Reason:** ${escapeMarkdown(punishments.reason)}`
+      )
+      return
+    }
+
     let instance: MinecraftInstance | undefined = undefined
     for (const potentialInstance of this.application.minecraftManager.getAllInstances()) {
       if (potentialInstance.currentStatus() !== Status.Connected) continue
