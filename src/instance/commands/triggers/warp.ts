@@ -61,45 +61,47 @@ export default class Warp extends ChatCommandHandler {
 
   async warpPlayer(instance: MinecraftInstance, context: ChatCommandContext, username: string): Promise<string> {
     await context.sendFeedback(`Preparing to warp ${username}`)
+
     const lock = await instance.acquireLimbo()
-
-    // leave any existing party
-    await instance.send('/party leave', MinecraftSendChatPriority.High, undefined)
-
-    // exit limbo and go to main lobby. Can't warp from limbo
-    await instance.send('/lobby', MinecraftSendChatPriority.High, undefined)
-
-    // Go to Skyblock first before warping.
-    // Person can rejoin if warped to the main lobby
-    await sleep(2000)
-    await instance.send('/skyblock', MinecraftSendChatPriority.High, undefined)
-
-    // ensure the account is in the hub and not on private island
-    // to prevent being banned for "profile boosting"
-    await sleep(12_000) // need higher cooldown to change between lobbies
-    await instance.send('/hub', MinecraftSendChatPriority.High, undefined)
-
-    await sleep(2000)
-
-    const errorMessage = await this.awaitPartyStatus(context.app, instance, context, username)
-    if (errorMessage != undefined) {
-      await instance.send('/party disband', MinecraftSendChatPriority.High, undefined)
+    try {
+      // leave any existing party
       await instance.send('/party leave', MinecraftSendChatPriority.High, undefined)
 
-      lock.resolve() // free lock
+      // exit limbo and go to main lobby. Can't warp from limbo
+      await instance.send('/lobby', MinecraftSendChatPriority.High, undefined)
 
-      return errorMessage
+      // Go to Skyblock first before warping.
+      // Person can rejoin if warped to the main lobby
+      await sleep(2000)
+      await instance.send('/skyblock', MinecraftSendChatPriority.High, undefined)
+
+      // ensure the account is in the hub and not on private island
+      // to prevent being banned for "profile boosting"
+      await sleep(12_000) // need higher cooldown to change between lobbies
+      await instance.send('/hub', MinecraftSendChatPriority.High, undefined)
+
+      await sleep(2000)
+
+      const errorMessage = await this.awaitPartyStatus(context.app, instance, context, username)
+      if (errorMessage != undefined) {
+        await instance.send('/party disband', MinecraftSendChatPriority.High, undefined)
+        await instance.send('/party leave', MinecraftSendChatPriority.High, undefined)
+
+        return errorMessage
+      }
+
+      await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
+      // Second needed to warp out of mini-games
+      await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
+
+      await sleep(2000)
+      await instance.send('/party disband', MinecraftSendChatPriority.High, undefined)
+      await instance.send('/party leave', MinecraftSendChatPriority.High, undefined)
+    } finally {
+      // Wait for the server to receive and process commands before releasing lock
+      await sleep(5000)
+      lock.resolve()
     }
-
-    await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
-    // Second needed to warp out of mini-games
-    await instance.send('/party warp', MinecraftSendChatPriority.High, undefined)
-
-    await sleep(2000)
-    await instance.send('/party disband', MinecraftSendChatPriority.High, undefined)
-    await instance.send('/party leave', MinecraftSendChatPriority.High, undefined)
-
-    lock.resolve() // free lock
 
     return 'Player has been warped out!'
   }
