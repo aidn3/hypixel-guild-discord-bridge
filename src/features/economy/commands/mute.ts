@@ -6,22 +6,6 @@ import { EconomyMute } from '../economy-constants.js'
 import { type EconomyDatabase, EconomyNotEnough, EconomyReason } from '../economy-database.js'
 
 export default class Mute extends ChatCommandHandler {
-  public static readonly DefaultMessages = [
-    `Muting {target} cause why not!`,
-    `{target} was randomly selected to win the ultimate prize: a mute :D`,
-    'Oh no. Guess we did it this time by getting {target} muted',
-    '{target}, go bite {username} for getting you muted!',
-    `What a wonderful gift. from {username} to {target}, a random mute for absolutely no reason!`,
-    '{target} seems down lately. Imma mute them :>',
-    `{username} did you seriously just execute this command? Fine. {target}, you are muted!`,
-    '{username} -> {target} attack!',
-    '{username}, would you dare using the command again? :>',
-    '{username}, this is russian roulette but with mandatory participating. Also {target} just died.',
-    '{target} has nothing to say any time soon... :3',
-    'I muted someone, but who? :)',
-    'I am agent of chaos!'
-  ]
-
   constructor(private readonly database: EconomyDatabase) {
     super({
       type: ChatCommandGroup.Economy,
@@ -72,10 +56,12 @@ export default class Mute extends ChatCommandHandler {
       `randomly selected by ${context.commandPrefix}${this.triggers[0]}`
     )
 
-    const messages = context.app.core.languageConfigurations.getCommandMuteGame()
+    const messages = context.app.i18n.t(($) => $['economy.mute'], {
+      returnObjects: true,
+      username: context.username,
+      target: targetUser.mojangProfile().name
+    })
     return messages[Math.floor(Math.random() * messages.length)]
-      .replaceAll('{username}', context.username)
-      .replaceAll('{target}', targetUser.mojangProfile().name)
   }
 
   private async getUsernames(context: ChatCommandContext): Promise<string[]> {

@@ -9,9 +9,6 @@ import Duration from '../utility/duration.js'
 import { setIntervalAsync } from '../utility/scheduling.js'
 
 export class SkyblockReminders extends Instance implements DisplayableInstance {
-  public static readonly DefaultDarkAuctionMessage = 'Dark Auction in {minutes} minute(s)!'
-  public static readonly DefaultStarfallMessage = `Reminder: Star Cult is here. Get that free x200 starfall!`
-
   constructor(application: Application) {
     super(application, 'skyblock-reminders')
 
@@ -40,7 +37,7 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
         lastHourCheck = currentHour
         lastMinuteCheck = currentMinute
 
-        if ([50, 54].includes(currentMinute)) {
+        if ([2, 3].includes(currentMinute)) {
           if (darkAuctionType === DarkAuctionReminderCondition.Scorpius) {
             const election = await this.application.hypixelApi.getSkyblockElection()
             const isScorpius = election.mayor.key === 'scorpius'
@@ -49,12 +46,13 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
             darkAuctionType satisfies DarkAuctionReminderCondition.Always
           }
 
-          const remainingMinutes = 55 - currentMinute
+          const remainingMinutes = 4 - currentMinute
           assert.ok(remainingMinutes > 0)
 
-          const message = this.application.core.languageConfigurations
-            .getDarkAuctionReminder()
-            .replaceAll('{minutes}', remainingMinutes.toString(10))
+          const message = this.application.i18n.t(($) => $['skyblock-reminders.dark-auction'], {
+            minutes: remainingMinutes,
+            count: remainingMinutes
+          })
 
           await this.application.emit('broadcast', {
             ...this.eventHelper.fillBaseEvent(),
@@ -92,7 +90,7 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
             channels: [ChannelType.Public],
 
             user: undefined,
-            message: this.application.core.languageConfigurations.getStarfallReminder()
+            message: this.application.i18n.t(($) => $['skyblock-reminders.starfall'])
           })
         }
       },

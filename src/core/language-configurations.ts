@@ -1,11 +1,5 @@
-/* eslint-disable import/no-restricted-paths */
-
-import Mute from '../features/economy/commands/mute.js'
-import Roulette from '../features/economy/commands/roulette.js'
-import Vengeance from '../instance/commands/fun-and-games/vengeance.js'
-import PlayerMuted from '../instance/minecraft/handlers/player-muted.js'
+// eslint-disable-next-line import/no-restricted-paths
 import Reaction from '../instance/minecraft/handlers/reaction.js'
-import { SkyblockReminders } from '../instance/skyblock-reminders.js'
 
 import type { Configuration, ConfigurationsManager } from './configurations.js'
 
@@ -29,73 +23,6 @@ export class LanguageConfigurations {
 
   public setLanguage(language: ApplicationLanguages): void {
     this.configuration.setString('language', language)
-  }
-
-  public getDarkAuctionReminder(): string {
-    return this.configuration.getString('darkAuctionReminder', SkyblockReminders.DefaultDarkAuctionMessage)
-  }
-
-  public setDarkAuctionReminder(darkAuctionReminder: string): void {
-    this.configuration.setString('darkAuctionReminder', darkAuctionReminder)
-  }
-
-  public getStarfallReminder(): string {
-    return this.configuration.getString('starfallReminder', SkyblockReminders.DefaultStarfallMessage)
-  }
-
-  public setStarfallReminder(starfallReminder: string): void {
-    this.configuration.setString('starfallReminder', starfallReminder)
-  }
-
-  public getCommandMuteGame(): string[] {
-    return this.configuration.getStringArray('commandMuteGame', Mute.DefaultMessages)
-  }
-
-  public setCommandMuteGame(values: string[]): void {
-    this.configuration.setStringArray('commandMuteGame', values)
-  }
-
-  public getCommandRouletteWin(): string[] {
-    return this.configuration.getStringArray('commandRouletteWin', Roulette.WinMessages)
-  }
-  public setCommandRouletteWin(values: string[]): void {
-    this.configuration.setStringArray('commandRouletteWin', values)
-  }
-  public getCommandRouletteLose(): string[] {
-    return this.configuration.getStringArray('commandRouletteLose', Roulette.LossMessages)
-  }
-  public setCommandRouletteLose(values: string[]): void {
-    this.configuration.setStringArray('commandRouletteLose', values)
-  }
-
-  public getCommandVengeanceWin(): string[] {
-    return this.configuration.getStringArray('commandVengeanceWin', Vengeance.WinMessages)
-  }
-  public setCommandVengeanceWin(values: string[]): void {
-    this.configuration.setStringArray('commandVengeanceWin', values)
-  }
-
-  public getCommandVengeanceDraw(): string[] {
-    return this.configuration.getStringArray('commandVengeanceDraw', Vengeance.DrawMessages)
-  }
-  public setCommandVengeanceDraw(values: string[]): void {
-    this.configuration.setStringArray('commandVengeanceDraw', values)
-  }
-
-  public getCommandVengeanceLose(): string[] {
-    return this.configuration.getStringArray('commandVengeanceLose', Vengeance.LossMessages)
-  }
-
-  public setCommandVengeanceLose(values: string[]): void {
-    this.configuration.setStringArray('commandVengeanceLose', values)
-  }
-
-  public getAnnounceMutedPlayer(): string {
-    return this.configuration.getString('announceMutedPlayer', PlayerMuted.DefaultMessage)
-  }
-
-  public setAnnounceMutedPlayer(value: string): void {
-    this.configuration.setString('announceMutedPlayer', value)
   }
 
   public getGuildJoinReaction(): string[] {

@@ -435,5 +435,66 @@
     "{{name}} leans in as the coin lands firmly on tails.",
     "The coin {{name}} tossed rattles across the surface - tails.",
     "With a clean flip of a coin, {{name}} gets tails."
+  ],
+  "commands.vengeance.lose": [
+    "{{username}} tried to blast {{target}} but failed epically and ended up blasting themself!",
+    "{{username}} unlucky, wrong choice.",
+    "{{username}}, this is what you get for trying to blast {{target}}!",
+    "{{username}} died",
+    "{{username}} tried to mute {{target}} but got muted instead, haha!",
+    "{{username}} better luck next time. Or not...",
+    "{{username}} was punished for trying to mute {{target}}",
+    "{{username}}, aya, are you still trying to mute {{target}}? How petty."
+  ],
+  "commands.vengeance.draw": [
+    "{{username}} Click. Click. Click. It is empty!",
+    "{{username}}, remind me what the plan was again?",
+    "{{username}}, I forgot to take vengeance.",
+    "{{username}}, I was supposed to take vengeance against {{target}} but I changed my mind :P",
+    "{{username}} tried to kill {{target}} but they dodged every bullet like Neo!"
+  ],
+  "commands.vengeance.win": [
+    "{{username}} is Batman!",
+    "{{target}} survival was never an option",
+    "{{username}}, I am Agent 47. The job is done.",
+    "{{target}}? Dead? That was the only possible outcome."
+  ],
+
+  "skyblock-reminders.dark-auction_one": "Dark Auction in {{minutes, number}} minute!",
+  "skyblock-reminders.dark-auction_other": "Dark Auction in {{minutes, number}} minutes!",
+  "skyblock-reminders.starfall": "Reminder: Star Cult is here. Get that free x200 starfall!",
+
+  "minecraft.player-muted": "{{username}} is currently muted and is unable to message right now.",
+
+  "economy.mute": [
+    "Muting {{target}} cause why not!",
+    "{{target}} was randomly selected to win the ultimate prize: a mute :D",
+    "Oh no. Guess we did it this time by getting {{target}} muted",
+    "{{target}}, go bite {{username}} for getting you muted!",
+    "What a wonderful gift. from {{username}} to {{target}}, a random mute for absolutely no reason!",
+    "{{target}} seems down lately. Imma mute them :>",
+    "{{username}} did you seriously just execute this command? Fine. {{target}}, you are muted!",
+    "{{username}} -> {{target}} attack!",
+    "{{username}}, would you dare using the command again? :>",
+    "{{username}}, this is russian roulette but with mandatory participating. Also {{target}} just died.",
+    "{{target}} has nothing to say any time soon... :3",
+    "I muted someone, but who? :)",
+    "I am agent of chaos!"
+  ],
+  "economy.roulette.win": [
+    "{{username}} you survived?! +{{aura, number}} aura",
+    "{{username}}, lucky. Do it again! +{{aura, number}} aura",
+    "{{username}}? Alive? shame. +{{aura, number}} aura",
+    "{{username}}, I'll get you next time +{{aura, number}} aura",
+    "{{username}}, perhaps I forgot to load it? +{{aura, number}} aura",
+    "{{username}} you're crazy. Again again again! +{{aura, number}} aura"
+  ],
+  "economy.roulette.lose": [
+    "{{username}} you got blasted! -{{aura, number}} aura",
+    "{{username}} unlucky, wrong choice. -{{aura, number}}",
+    "{{username}} it's not rigged, I promise! -{{aura, number}} aura",
+    "{{username}} you got capped. -{{aura, number}} aura",
+    "{{username}} enjoy the mute, haha! -{{aura, number}} aura",
+    "{{username}} better luck next time. Or not... -{{aura, number}} aura"
   ]
 }

@@ -7,24 +7,6 @@ import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy
 import { economyOverflow } from './common/common.js'
 
 export default class Roulette extends ChatCommandHandler {
-  public static readonly LossMessages = [
-    '{username} you got blasted! -{aura} aura',
-    '{username} unlucky, wrong choice. -{aura}',
-    "{username} it's not rigged, I promise! -{aura} aura",
-    '{username} you got capped. -{aura} aura',
-    '{username} enjoy the mute, haha! -{aura} aura',
-    '{username} better luck next time. Or not... -{aura} aura'
-  ]
-
-  public static readonly WinMessages = [
-    '{username} you survived?! +{aura} aura',
-    '{username}, lucky. Do it again! +{aura} aura',
-    '{username}? Alive? shame. +{aura} aura',
-    "{username}, I'll get you next time +{aura} aura",
-    '{username}, perhaps I forgot to load it? +{aura} aura',
-    "{username} you're crazy. Again again again! +{aura} aura"
-  ]
-
   private countSinceLastLose = 0
 
   constructor(private readonly database: EconomyDatabase) {
@@ -83,11 +65,17 @@ export default class Roulette extends ChatCommandHandler {
     }
 
     const messages = gameResult.survived
-      ? context.app.core.languageConfigurations.getCommandRouletteWin()
-      : context.app.core.languageConfigurations.getCommandRouletteLose()
+      ? context.app.i18n.t(($) => $['economy.roulette.win'], {
+          returnObjects: true,
+          username: context.username,
+          aura: gameResult.aura
+        })
+      : context.app.i18n.t(($) => $['economy.roulette.lose'], {
+          returnObjects: true,
+          username: context.username,
+          aura: gameResult.aura
+        })
     return messages[Math.floor(Math.random() * messages.length)]
-      .replaceAll('{username}', context.username)
-      .replaceAll('{aura}', gameResult.aura.toString(10))
   }
 
   private survived(): boolean {
