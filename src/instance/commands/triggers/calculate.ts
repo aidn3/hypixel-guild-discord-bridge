@@ -59,7 +59,7 @@ export default class Calculate extends ChatCommandHandler {
   private assertValidCharacters(expression: string): boolean {
     // Only ascii
     // eslint-disable-next-line no-control-regex
-    return /[\u0000-\u007F]/g.test(expression)
+    return /^[\u0000-\u007F]$/g.test(expression)
   }
 
   private assertValidDecimal(expression: string): boolean {
