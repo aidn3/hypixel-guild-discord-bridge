@@ -166,18 +166,37 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     const user = await this.application.core.initializeDiscordUser(identifier)
 
     switch (command.origin) {
-      case CommandOrigin.Bridge:
+      case CommandOrigin.Bridge: {
+        if (!interaction.inGuild()) {
+          this.logger.warn('A guild-bound command was executed outside a guild somehow??')
+          return
+        }
+
+        const userPermission = await user.permission()
+        if (userPermission < command.permission) return
+
+        const context = this.fillContext(interaction, user, await user.permission())
+        await command.autoComplete(context)
+        break
+      }
+
       case CommandOrigin.Guild: {
         if (!interaction.inGuild()) {
           this.logger.warn('A guild-bound command was executed outside a guild somehow??')
           return
         }
 
+        // permission managed by discord-side's integration
+
         const context = this.fillContext(interaction, user, await user.permission())
         await command.autoComplete(context)
         break
       }
+
       case CommandOrigin.Private: {
+        const userPermission = await user.permission()
+        if (userPermission < command.permission) return
+
         const context = this.fillContext(interaction, user, await user.permission())
         await command.autoComplete(context)
         break
