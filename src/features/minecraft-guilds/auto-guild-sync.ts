@@ -21,6 +21,7 @@ import type { MinecraftGuildsManager } from './minecraft-guilds-manager.js'
 export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
   private static readonly CheckGuildEvery = Duration.hours(2)
   private static readonly AutoUpdateRoleEvery = Duration.days(3)
+  private static readonly CheckGuildRanksEvery = Duration.minutes(1)
 
   constructor(
     application: Application,
@@ -39,6 +40,57 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
       delay: Duration.minutes(5),
       abortSignal: this.abortSignal
     })
+
+    setIntervalAsync(() => this.queue.add(() => this.checkAllGuildRanks()), {
+      abortSignal: this.abortSignal,
+      delay: AutoGuildSync.CheckGuildRanksEvery,
+      errorHandler: this.errorHandler.promiseCatch('checking in-game ranks against database')
+    })
+  }
+
+  private async checkAllGuildRanks(): Promise<void> {
+    const savedGuilds = this.database.allGuilds()
+
+    for (const savedGuild of savedGuilds) {
+      try {
+        await this.checkGuildRanks(savedGuild)
+      } catch (error: unknown) {
+        this.errorHandler.error(`Checking guild rank for id=${savedGuild.id},name=${savedGuild.name}`, error)
+      }
+    }
+  }
+
+  private async checkGuildRanks(savedGuild: MinecraftGuild): Promise<void> {
+    const savedRanks = new Set(savedGuild.roles.map((role) => role.name))
+
+    const instance = await this.findInstance(savedGuild)
+    if (instance === undefined) {
+      this.logger.debug('No instance connected found to check existing ranks. returning...')
+      return
+    }
+
+    const guildList = await instance.guildManager.list(AutoGuildSync.CheckGuildRanksEvery)
+    const guildListRanks = new Set(guildList.members.map((member) => member.rank))
+
+    const difference = savedRanks.symmetricDifference(guildListRanks)
+    if (difference.size > 0) {
+      this.logger.debug(
+        `Found discrepancies between saved guild ranks in the database and existing ranks.` +
+          ` saved: ${savedRanks.values().toArray().join(', ')} / real: ${guildListRanks.values().toArray().join(', ')}`
+      )
+      this.logger.debug(`Updating name=${savedGuild.name},id=${savedGuild.id} guild`)
+
+      const guild = await this.application.hypixelApi.getGuildById(savedGuild.id)
+      if (guild === undefined) {
+        this.logger.error(
+          `Tried fetching guild name=${savedGuild.name},id=${savedGuild.id} but returned empty. guild disbanded??`
+        )
+        return
+      }
+
+      const updatedSavedGuild = this.database.initGuild(guild)
+      await this.syncGuild(updatedSavedGuild, guild)
+    }
   }
 
   private async updateGuild(): Promise<void> {
