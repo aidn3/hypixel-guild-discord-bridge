@@ -1294,7 +1294,7 @@ async function minecraftInstanceAdd(
       .getAllInstances()
       .some((instance) => instance.getConfigName().toLowerCase() === instanceName.toLowerCase())
   ) {
-    await interaction.reply({
+    await modalInteraction.reply({
       content: `Minecraft instance name already exists: **${escapeMarkdown(instanceName)}**`,
       flags: MessageFlags.Ephemeral
     })
