@@ -1286,6 +1286,7 @@ async function minecraftInstanceAdd(
         } satisfies APIEmbed
       ]
     })
+    return true
   }
 
   if (
