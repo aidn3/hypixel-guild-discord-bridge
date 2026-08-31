@@ -127,6 +127,7 @@ import UrchinCommand from './triggers/urchin.js'
 import Uuid from './triggers/uuid.js'
 import Warp from './triggers/warp.js'
 import Weight from './triggers/weight.js'
+import Winstreak from './triggers/winstreak.js'
 import Woolwars from './triggers/woolwars.js'
 
 export class CommandsInstance extends Instance implements DisplayableInstance {
@@ -252,6 +253,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Vengeance(),
       new Warp(),
       new Weight(),
+      new Winstreak(),
       new Woolwars()
     ]
 
