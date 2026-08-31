@@ -4,6 +4,7 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
+  ModalSubmitInteraction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
 import {
@@ -399,12 +400,11 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
           modifiedInteraction = Object.assign(modalResult, { options: interaction.options })
         }
 
-        const baseContext = this.fillContext(interaction, user, permission)
+        const baseContext = this.fillContext(modifiedInteraction, user, permission)
         const context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.RequireOne> = {
           ...baseContext,
           minecraftInstance: targetInstance
         }
-        context.interaction = modifiedInteraction
 
         await (command as DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>).handler(context)
         break
@@ -424,11 +424,10 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     }
   }
 
-  private fillContext<I extends ChatInputCommandInteraction | AutocompleteInteraction, U extends User>(
-    interaction: I,
-    user: U,
-    userPermission: Permission
-  ) {
+  private fillContext<
+    I extends ChatInputCommandInteraction | AutocompleteInteraction | ModalSubmitInteraction,
+    U extends User
+  >(interaction: I, user: U, userPermission: Permission) {
     return {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -443,7 +442,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
       allCommands: [...this.commands.values()],
 
       showPermissionDenied: async (requiredPermission: Exclude<Permission, Permission.Anyone>) => {
-        if (!interaction.isChatInputCommand()) return
+        if (!interaction.isChatInputCommand() && !interaction.isModalSubmit()) return
 
         if (interaction.deferred || interaction.replied) {
           await interaction.editReply({
