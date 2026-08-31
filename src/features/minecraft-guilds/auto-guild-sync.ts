@@ -14,7 +14,7 @@ import type MinecraftInstance from '../../instance/minecraft/minecraft-instance.
 import Duration from '../../utility/duration.js'
 import { setIntervalAsync } from '../../utility/scheduling.js'
 
-import { resolveGuildRank } from './commands/utlity.js'
+import { findInstanceByGuild, resolveGuildRank } from './commands/utlity.js'
 import type { Database, MinecraftGuild } from './database.js'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager.js'
 
@@ -63,7 +63,7 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
   private async checkGuildRanks(savedGuild: MinecraftGuild): Promise<void> {
     const savedRanks = new Set(savedGuild.roles.map((role) => role.name))
 
-    const instance = await this.findInstance(savedGuild)
+    const instance = await findInstanceByGuild(this.application, savedGuild)
     if (instance === undefined) {
       this.logger.debug('No instance connected found to check existing ranks. returning...')
       return
@@ -118,18 +118,6 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
     }
   }
 
-  private async findInstance(savedGuild: MinecraftGuild): Promise<MinecraftInstance | undefined> {
-    const instances = this.application.minecraftManager.getAllInstances()
-    for (const instance of instances) {
-      const guildListResult = await instance.guildManager.list()
-      if (guildListResult.name.toLowerCase().trim() === savedGuild.name.toLowerCase().trim()) {
-        return instance
-      }
-    }
-
-    return undefined
-  }
-
   private async syncGuild(savedGuild: MinecraftGuild, guild: HypixelGuild): Promise<void> {
     const currentTime = Date.now()
 
@@ -137,20 +125,17 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
       savedGuild.id,
       currentTime - AutoGuildSync.AutoUpdateRoleEvery.toMilliseconds()
     )
-    let instanceFound = false
+    let instance: MinecraftInstance | undefined
 
     for (const guildMember of guild.members) {
       if (skippedMembers.includes(guildMember.uuid)) continue
 
-      if (!instanceFound) {
-        const instance = await this.findInstance(savedGuild)
-        if (instance === undefined) {
-          this.logger.warn(
-            'Can not proceed with updating this guild members since no active Minecraft instance is avilable to execute any commands'
-          )
-          break
-        }
-        instanceFound = true
+      instance ??= await findInstanceByGuild(this.application, savedGuild)
+      if (instance === undefined) {
+        this.logger.warn(
+          'Can not proceed with updating this guild members since no active Minecraft instance is avilable to execute any commands'
+        )
+        break
       }
 
       this.logger.trace(`fetching Mojang profile for ${guildMember.uuid} to auto update guild member status`)

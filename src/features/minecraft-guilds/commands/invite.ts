@@ -3,13 +3,11 @@ import assert from 'node:assert'
 import { PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { Status } from '../../../common/connectable-instance.js'
 import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager.js'
-import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
-import type { MinecraftManager } from '../../../instance/minecraft/minecraft-manager.js'
-import Duration from '../../../utility/duration.js'
 import { formatTime } from '../../../utility/shared-utility.js'
-import type { Database, MinecraftGuild } from '../database.js'
+import type { Database } from '../database.js'
+
+import { findInstanceByGuild } from './utlity.js'
 
 export default class Invite extends ChatCommandHandler {
   constructor(private readonly database: Database) {
@@ -37,7 +35,7 @@ export default class Invite extends ChatCommandHandler {
       return `You are banned till ${formatTime(punishments.till - Date.now())}.`
     }
 
-    const instance = await this.findInstance(savedGuild, context.app.minecraftManager)
+    const instance = await findInstanceByGuild(context.app, savedGuild)
     if (instance === undefined) return 'Can not process this request right now due to inability to connect to Hypixel'
 
     const result = await instance.guildManager.invite(mojangProfile.name).catch(() => undefined)
@@ -81,23 +79,5 @@ export default class Invite extends ChatCommandHandler {
         return 'Something went wrong. Ask guild admin for help.'
       }
     }
-  }
-
-  async findInstance(
-    savedGuild: MinecraftGuild,
-    minecraftManager: MinecraftManager
-  ): Promise<MinecraftInstance | undefined> {
-    for (const potentialInstance of minecraftManager.getAllInstances()) {
-      if (potentialInstance.currentStatus() !== Status.Connected) continue
-
-      const guildListResult = await potentialInstance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
-      if (guildListResult === undefined) continue
-
-      if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {
-        return potentialInstance
-      }
-    }
-
-    return undefined
   }
 }
