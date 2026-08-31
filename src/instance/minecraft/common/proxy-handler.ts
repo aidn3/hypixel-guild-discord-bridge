@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import Http from 'node:http'
 
 import type { Logger } from 'log4js'
@@ -17,7 +18,9 @@ export function resolveProxyIfExist(
   }
 ): Partial<ClientProxyOptions> {
   if (!proxyConfig) return {}
-  logger.debug(`Proxy enabled with params: ${JSON.stringify(proxyConfig)}`)
+  const serializedProxy = serializeRedactedProxy(proxyConfig)
+  logger.debug(`Proxy enabled with params: ${serializedProxy.redacted}`)
+  logger.debug(`Proxy hash: ${serializedProxy.hashed}`)
 
   const proxyHost = proxyConfig.host
   const proxyPort = proxyConfig.port
@@ -117,6 +120,30 @@ function createSocksConnectFunction(
         logger.warn('ending minecraft session if any exist')
         client.end()
       })
+  }
+}
+
+function serializeRedactedProxy(config: ProxyConfig) {
+  return {
+    redacted: JSON.stringify({
+      id: config.id,
+      protocol: config.protocol,
+      host: '<REDACTED>',
+      port: config.port,
+      user: '<REDACTED>',
+      password: '<REDACTED>'
+    } satisfies ProxyConfig),
+
+    hashed: crypto.hash(
+      'sha256',
+      JSON.stringify({
+        protocol: config.protocol,
+        host: config.host,
+        port: config.port,
+        user: config.user,
+        password: config.password
+      } satisfies Omit<ProxyConfig, 'id'>)
+    )
   }
 }
 
