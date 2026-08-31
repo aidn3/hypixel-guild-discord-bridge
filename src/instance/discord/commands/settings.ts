@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import punycode from 'punycode'
 
 import type {
   APIEmbed,
@@ -18,6 +19,7 @@ import {
   SlashCommandBuilder,
   TextInputStyle
 } from 'discord.js'
+import isLocalhost from 'is-localhost-ip'
 
 import type Application from '../../../application.js'
 import { Color, Permission } from '../../../common/application-event.js'
@@ -1305,6 +1307,21 @@ async function minecraftInstanceAdd(
   if (proxyOptions.length > 0) {
     try {
       proxy = parseSocks5(proxyOptions)
+      const punyHost = punycode.toASCII(proxy.host)
+      const isLocal = await isLocalhost(punyHost)
+      if (isLocal) {
+        await modalInteraction.reply({
+          embeds: [
+            {
+              title: EmbedTitle,
+              description: 'Proxy host can not be a local IP.',
+              color: Color.Error,
+              footer: { text: DefaultCommandFooter }
+            } satisfies APIEmbed
+          ]
+        })
+        return true
+      }
     } catch (error: unknown) {
       errorHandler.error('parsing socks5', error)
 
@@ -1312,7 +1329,8 @@ async function minecraftInstanceAdd(
         embeds: [
           {
             title: EmbedTitle,
-            description: errorMessage(error),
+            description:
+              error instanceof ProxyParseError ? error.displayMessage : 'Encountered an error while parsing proxy.',
             color: Color.Error,
             footer: {
               text: DefaultCommandFooter
@@ -1521,8 +1539,9 @@ function parseSocks5(url: string): ProxyConfig {
   const regex = /^(?<type>socks5):\/\/(?:(?<username>\w+):(?<password>[^@]+)@)?(?<host>[^:]+)(?::(?<port>\d+))?$/gm
   const match = regex.exec(url)
 
-  if (match === null)
-    throw new Error('Invalid proxy format. e.g. valid proxy: socks5://username:password@server.com:1080')
+  if (match === null) {
+    throw new ProxyParseError('Invalid proxy format. e.g. valid proxy: socks5://username:password@server.com:1080')
+  }
 
   const groups = match.groups as {
     type: ProxyProtocol
@@ -1540,10 +1559,16 @@ function parseSocks5(url: string): ProxyConfig {
   const port: number = groups.port === undefined ? 1080 : Number.parseInt(groups.port)
 
   if (type.toLowerCase() !== ProxyProtocol.Socks5.toLowerCase()) {
-    throw new Error('invalid proxy type. Only "socks5" is supported.')
+    throw new ProxyParseError('invalid proxy type. Only "socks5" is supported.')
   }
 
   return { id: 0, host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
+}
+
+class ProxyParseError extends Error {
+  constructor(readonly displayMessage: string) {
+    super()
+  }
 }
 
 function errorMessage(error: unknown): string {
