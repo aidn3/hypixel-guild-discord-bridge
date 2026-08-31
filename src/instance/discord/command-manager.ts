@@ -389,7 +389,10 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
             ]
           })
 
-          const modalResult = await interaction.awaitModalSubmit({ time: Duration.minutes(15).toMilliseconds() })
+          const modalResult = await interaction.awaitModalSubmit({
+            filter: (modal) => modal.customId === interaction.id && modal.user.id === interaction.user.id,
+            time: Duration.minutes(15).toMilliseconds()
+          })
           const instanceName = modalResult.fields.getRadioGroup('instance', true)
           targetInstance = instances.find((instance) => instance.getConfigName() === instanceName)
           assert.ok(targetInstance !== undefined)
