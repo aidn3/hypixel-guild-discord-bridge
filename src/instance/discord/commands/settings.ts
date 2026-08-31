@@ -239,7 +239,8 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.Number,
             name: 'Kicks Per Day',
-            description: 'Allowed kicks per Day for staff before they are blocked from doing any more.',
+            description:
+              'Allowed kicks per Day for staff before they are blocked from doing any more. Set to **0** to remove the cap.',
 
             min: 0,
             max: 100,
@@ -251,7 +252,8 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.Number,
             name: 'Mutes Per Day',
-            description: 'Allowed mutes per Day for staff before they are blocked from doing any more.',
+            description:
+              'Allowed mutes per Day for staff before they are blocked from doing any more. Set to **0** to remove the cap.',
 
             min: 0,
             max: 100,
