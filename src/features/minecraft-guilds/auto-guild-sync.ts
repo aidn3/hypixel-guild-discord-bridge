@@ -165,19 +165,14 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
           continue
         }
 
-        await this.setRank(this.application, target.mojangProfile().id, defaultRank)
+        await this.setRank(instance, target.mojangProfile().id, defaultRank)
       } else if (guildMember.rank === undefined || guildMember.rank !== resolvedRank.rank) {
-        await this.setRank(this.application, target.mojangProfile().id, resolvedRank.rank)
+        await this.setRank(instance, target.mojangProfile().id, resolvedRank.rank)
       }
     }
   }
 
-  private async setRank(application: Application, uuid: string, rank: string): Promise<void> {
-    await application.sendMinecraft(
-      application.minecraftManager.getAllInstances(),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/guild setrank ${uuid} ${rank}`
-    )
+  private async setRank(instance: MinecraftInstance, uuid: string, rank: string): Promise<void> {
+    await instance.send(`/guild setrank ${uuid} ${rank}`, MinecraftSendChatPriority.High, undefined)
   }
 }

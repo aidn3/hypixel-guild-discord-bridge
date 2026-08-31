@@ -6,11 +6,12 @@ import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../com
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser } from '../../../common/user.js'
+import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
 import Duration from '../../../utility/duration.js'
 import { searchObjects } from '../../../utility/shared-utility.js'
 import type { Database, MinecraftGuild } from '../database.js'
 
-import { resolveGuildRank } from './utlity.js'
+import { findInstanceByGuild, resolveGuildRank } from './utlity.js'
 
 export default class SyncGuild extends ChatCommandHandler {
   private static readonly FeedbackEvery = Duration.seconds(30)
@@ -69,6 +70,10 @@ export default class SyncGuild extends ChatCommandHandler {
 
     const guild = await context.app.hypixelApi.getGuildById(savedGuild.id, currentTime)
     if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
+
+    const instance = await findInstanceByGuild(context.app, savedGuild)
+    if (instance === undefined) return 'No Minecraft instance connected with this guild to sync.'
+
     await context.sendFeedback(`Syncing ${savedGuild.name}`)
 
     let lastFeedback = currentTime
@@ -108,13 +113,13 @@ export default class SyncGuild extends ChatCommandHandler {
           continue
         }
 
-        await this.setRank(context, target.mojangProfile().id, defaultRank)
+        await this.setRank(instance, target.mojangProfile().id, defaultRank)
         changed++
         continue
       }
 
       if (guildMember.rank === undefined || guildMember.rank !== resolvedRank.rank) {
-        await this.setRank(context, target.mojangProfile().id, resolvedRank.rank)
+        await this.setRank(instance, target.mojangProfile().id, resolvedRank.rank)
         changed++
       } else {
         already++
@@ -124,13 +129,8 @@ export default class SyncGuild extends ChatCommandHandler {
     return `Synced ${savedGuild.name}: Changed ${changed} - Already ${already} - Skipped ${skipped}`
   }
 
-  private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
-    await context.app.sendMinecraft(
-      context.app.minecraftManager.getAllInstances(),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/guild setrank ${uuid} ${rank}`
-    )
+  private async setRank(instance: MinecraftInstance, uuid: string, rank: string): Promise<void> {
+    await instance.send(`/guild setrank ${uuid} ${rank}`, MinecraftSendChatPriority.High, undefined)
   }
 
   private async resolveUser(context: ChatCommandContext, uuid: string): Promise<MinecraftUser | string> {
