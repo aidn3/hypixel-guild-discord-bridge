@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import PromiseQueue from 'promise-queue'
 
 import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser } from '../../../common/user.js'
 import Duration from '../../../utility/duration.js'
@@ -26,14 +26,11 @@ export default class SyncGuild extends ChatCommandHandler {
     })
   }
 
+  override requirements(): ChatCommandRequirements | string {
+    return { sources: [ChannelType.Public, ChannelType.Officer], permission: Permission.Officer }
+  }
+
   async handler(context: ChatCommandContext): Promise<string> {
-    if (context.message.channelType !== ChannelType.Public && context.message.channelType !== ChannelType.Officer) {
-      return 'Command can only be used in public and officer channels.'
-    }
-
-    const permission = await context.message.user.permission()
-    if (permission < Permission.Officer) return 'Only staff can use this command!'
-
     const savedGuilds = this.database.allGuilds()
     if (savedGuilds.length === 0) return `${context.username}, no guild registered.`
 

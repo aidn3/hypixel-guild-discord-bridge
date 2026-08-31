@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { TTLCache } from '@isaacs/ttlcache'
 
 import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
 import { usernameNotExists } from '../../../instance/commands/common/utility.js'
@@ -29,11 +29,11 @@ export default class Sync extends ChatCommandHandler {
     })
   }
 
-  async handler(context: ChatCommandContext): Promise<string> {
-    if (context.message.channelType !== ChannelType.Public && context.message.channelType !== ChannelType.Officer) {
-      return 'Command can only be used in public and officer channels.'
-    }
+  override requirements(): ChatCommandRequirements | string {
+    return { sources: [ChannelType.Public, ChannelType.Officer] }
+  }
 
+  async handler(context: ChatCommandContext): Promise<string> {
     const currentTime = Date.now()
     const target = await this.resolveUser(context)
     if (typeof target === 'string') return target
