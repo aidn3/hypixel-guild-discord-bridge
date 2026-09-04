@@ -217,6 +217,7 @@
   "commands.buildbattle.response": "{{title}} {{username}}'s Build Battle score is {{score}} with {{wins}} wins.",
   "commands.chocolate.none": "{{username}} does not have a chocolate factory.",
   "commands.chocolate.response": "{{username}} has produced {{totalChocolate}} chocolate and spent {{chocolateSpent}}.",
+  "commands.chocolate.faction": "{{username}} has produced {{totalChocolate}} chocolate and spent {{chocolateSpent}} and is in the {{faction}} faction.",
   "commands.diana.response": "{{username}}: Legendary chain {{legendaryChain, number}} - Mythic chain {{mythicChain, number}} - Total kills {{totalKills, number}} - Inquisitors {{inquisitorKills, number}} - Kings {{kingKills, number}} - Manticore {{manticoreKills, number}}.",
   "commands.armor.none": "{{username}} does not have any armor.",
   "commands.armor.render-not-supported": "Armor has been rendered. $t(commands.error.minecraft-render-not-supported-on-platform)",
@@ -305,6 +306,9 @@
   "commands.safari.none": "{{username}} has never entered the safari.",
   "commands.safari.response": "{{username}}'s critters caught - {{total, number}} Total - {{icy, number}} Icy - {{forest, number}} Forest - {{cavern, number}} Cavern - {{haunted, number}} Haunted",
   "commands.sparklings.response": "{{username}}'s sparklings - {{uniques, number}} Unique - {{dupes, number}} Dupes",
+  "commands.chocobits.response": "{{username}}'s chocobits - {{current, number}} currently owned - {{total, number}} found total - ids: {{ids}}",
+  "commands.chocobits.none": "{{username}}'s chocobits does not have any chocobits",
+  "commands.chocobits.no-current": "{{username}}'s chocobits - 0 currently owned - {{total, number}} found total",
 
   "commands.8ball": [
     "{{username}}, as I see it, yes.",
