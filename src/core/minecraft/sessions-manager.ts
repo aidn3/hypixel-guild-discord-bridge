@@ -235,7 +235,7 @@ class Session implements Cache {
 
     const transaction = this.sqliteManager.getDatabase().transaction(() => {
       const partial = this.getCacheSync()
-      this.setCachedSync({ partial, ...value })
+      this.setCachedSync({ ...partial, ...value })
     })
 
     transaction()
