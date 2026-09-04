@@ -38,7 +38,7 @@ export default {
     const durationOption = () =>
       new SlashCommandStringOption()
         .setName('duration')
-        .setDescription('duration of the ban. Can use 1s, 1m, 1h, 1d')
+        .setDescription('duration of the punishment. Can use 1s, 1m, 1h, 1d')
         .setRequired(true)
     // eslint-disable-next-line unicorn/consistent-function-scoping
     const reasonOption = () =>
