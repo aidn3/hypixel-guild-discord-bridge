@@ -261,9 +261,10 @@ async function handleBan(
   const responsiblePermission = await responsible.permission()
   const targetPermission = await target.permission()
   if (targetPermission >= responsiblePermission) {
-    await context.interaction.editReply(
-      `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`
-    )
+    await context.interaction.editReply({
+      content: `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`,
+      allowedMentions: { parse: [] }
+    })
     return
   }
 
@@ -296,9 +297,10 @@ async function handleMute(
   const responsiblePermission = await responsible.permission()
   const targetPermission = await target.permission()
   if (targetPermission >= responsiblePermission) {
-    await context.interaction.editReply(
-      `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`
-    )
+    await context.interaction.editReply({
+      content: `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`,
+      allowedMentions: { parse: [] }
+    })
     return
   }
 
@@ -335,9 +337,10 @@ async function handleKick(
   const responsiblePermission = await responsible.permission()
   const targetPermission = await target.permission()
   if (targetPermission >= responsiblePermission) {
-    await context.interaction.editReply(
-      `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`
-    )
+    await context.interaction.editReply({
+      content: `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`,
+      allowedMentions: { parse: [] }
+    })
     return
   }
 
