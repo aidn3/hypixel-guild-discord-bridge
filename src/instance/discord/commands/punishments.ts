@@ -47,19 +47,21 @@ export default {
     const minecraftOption = () =>
       new SlashCommandSubcommandBuilder()
         .setName('minecraft')
-        .setDescription('punish a Minecraft player')
+        .setDescription('Minecraft player to perform the action on')
         .addStringOption((option) =>
           option
             .setName('username')
-            .setDescription('username of the player to ban')
+            .setDescription('username of the Minecraft player to perform the action on')
             .setRequired(true)
             .setAutocomplete(true)
         )
     const discordOption = () =>
       new SlashCommandSubcommandBuilder()
         .setName('discord')
-        .setDescription('punish a Discord user')
-        .addUserOption((option) => option.setName('user').setDescription('user to ban').setRequired(true))
+        .setDescription('Discord user to perform the action on')
+        .addUserOption((option) =>
+          option.setName('user').setDescription('user to perform the action on').setRequired(true)
+        )
 
     return new SlashCommandBuilder()
       .setName('punishments')
@@ -74,6 +76,13 @@ export default {
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
+          .setName('unban')
+          .setDescription('Forgive a member in the ban list')
+          .addSubcommand(minecraftOption())
+          .addSubcommand(discordOption())
+      )
+      .addSubcommandGroup(
+        new SlashCommandSubcommandGroupBuilder()
           .setName('mute')
           .setDescription('Add a member to the mute list')
           .addSubcommand(minecraftOption().addStringOption(durationOption()).addStringOption(reasonOption()))
@@ -81,17 +90,17 @@ export default {
       )
       .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
+          .setName('unmute')
+          .setDescription('Forgive a member in the mute list')
+          .addSubcommand(minecraftOption())
+          .addSubcommand(discordOption())
+      )
+      .addSubcommandGroup(
+        new SlashCommandSubcommandGroupBuilder()
           .setName('kick')
           .setDescription('kick a member from all Minecraft instances')
           .addSubcommand(minecraftOption().addStringOption(reasonOption()))
           .addSubcommand(discordOption().addStringOption(reasonOption()))
-      )
-      .addSubcommandGroup(
-        new SlashCommandSubcommandGroupBuilder()
-          .setName('forgive')
-          .setDescription('forgive a member by removing all active punishments on them')
-          .addSubcommand(minecraftOption())
-          .addSubcommand(discordOption())
       )
       .addSubcommand(
         new SlashCommandSubcommandBuilder()
@@ -204,11 +213,23 @@ export default {
         await handleBan(context, responsible, target, getDuration(durationRaw), reasonRaw)
         return
       }
+      case 'unban': {
+        if (context.permission < Permission.Officer) {
+          await context.showPermissionDenied(Permission.Officer)
+          return
+        }
+        await handleForgiveBan(context, responsible, target)
+        return
+      }
       case 'mute': {
         assert.ok(durationRaw !== undefined)
         assert.ok(reasonRaw !== undefined)
 
         await handleMute(context, responsible, target, getDuration(durationRaw), reasonRaw)
+        return
+      }
+      case 'unmute': {
+        await handleForgiveMute(context, responsible, target)
         return
       }
       case 'kick': {
@@ -220,15 +241,6 @@ export default {
         assert.ok(reasonRaw !== undefined)
 
         await handleKick(context, responsible, target, reasonRaw)
-        return
-      }
-      case 'forgive': {
-        if (context.permission < Permission.Officer) {
-          await context.showPermissionDenied(Permission.Officer)
-          return
-        }
-
-        await handleForgive(context, responsible, target)
         return
       }
       case 'check': {
@@ -356,23 +368,23 @@ async function handleKick(
   await takeAction(context, responsible, target, header, HeatType.Kick, command, KickChat, post)
 }
 
-async function handleForgive(
+async function handleForgiveMute(
   context: DiscordCommandContext<CommandOrigin.Bridge>,
   responsible: DiscordUser,
   target: User
 ): Promise<void> {
   const header =
-    `## Forgive ${formatUser(target)}\n\n` +
+    `## Forgive Mute ${formatUser(target)}\n\n` +
     'User has been removed from all internal punishments list.\n' +
     'User will be treated as if never punished before.'
 
-  const forgivenPunishments = await target.forgive(context.eventHelper.fillBaseEvent())
+  const forgivenPunishments = await target.forgiveMute(context.eventHelper.fillBaseEvent())
 
   const post = () => {
-    let result = '## Forgiven punishment(s)\n'
+    let result = '## Forgiven mute punishment(s)\n'
 
     if (forgivenPunishments.length === 0) {
-      result += 'No saved punishment found to forgive. All good!'
+      result += 'No saved mute punishment found to forgive. All good!'
     } else {
       result += '\n'
       for (const forgivenPunishment of forgivenPunishments) {
@@ -384,6 +396,36 @@ async function handleForgive(
   }
 
   await takeAction(context, responsible, target, header, HeatType.Mute, undefined, UnmuteChat, post)
+}
+
+async function handleForgiveBan(
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
+  responsible: DiscordUser,
+  target: User
+): Promise<void> {
+  const header =
+    `## Forgive Ban ${formatUser(target)}\n\n` +
+    'User has been removed from all internal punishments list.\n' +
+    'User will be treated as if never punished before.'
+
+  const forgivenPunishments = await target.forgiveBan(context.eventHelper.fillBaseEvent())
+
+  const post = () => {
+    let result = '## Forgiven ban punishment(s)\n'
+
+    if (forgivenPunishments.length === 0) {
+      result += 'No saved mute punishment found to forgive. All good!'
+    } else {
+      result += '\n'
+      for (const forgivenPunishment of forgivenPunishments) {
+        result += formatPunishment(forgivenPunishment, undefined) + '\n\n'
+      }
+    }
+
+    return result.trimEnd()
+  }
+
+  await takeAction(context, responsible, target, header, HeatType.Kick, undefined, UnmuteChat, post)
 }
 
 async function handleEdit(

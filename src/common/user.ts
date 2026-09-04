@@ -282,10 +282,18 @@ export class User extends AnonymousUser {
     return this.context.punishments.findByUser(this, false, offset, limit)
   }
 
-  public async forgive(executor: InformEvent): Promise<SavedPunishment[]> {
-    const savedPunishments = this.context.punishments.forgive(this)
+  public async forgiveMute(executor: InformEvent): Promise<SavedPunishment[]> {
+    const savedPunishments = this.context.punishments.forgiveByUser(this, PunishmentType.Mute)
 
-    await this.application.emit('punishmentForgive', { ...executor, user: this })
+    await this.application.emit('punishmentForgive', { ...executor, user: this, type: PunishmentType.Mute })
+
+    return savedPunishments
+  }
+
+  public async forgiveBan(executor: InformEvent): Promise<SavedPunishment[]> {
+    const savedPunishments = this.context.punishments.forgiveByUser(this, PunishmentType.Ban)
+
+    await this.application.emit('punishmentForgive', { ...executor, user: this, type: PunishmentType.Ban })
 
     return savedPunishments
   }

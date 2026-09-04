@@ -32,7 +32,7 @@ export default {
       )
 
       if (responsible !== context.clientInstance.username() && targetUser !== undefined) {
-        await targetUser.forgive(context.eventHelper.fillBaseEvent())
+        await targetUser.forgiveMute(context.eventHelper.fillBaseEvent())
       }
 
       await context.application.emit('guildPlayer', {
