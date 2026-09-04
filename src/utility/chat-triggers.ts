@@ -103,7 +103,7 @@ export const InviteAcceptChat: RegexChat = {
 }
 
 export const PrivateMessageChat: RegexChat = {
-  success: [...GeneralChat.success, /^To (?:\[[+A-Z]{3,10}] ){0,3}(\w{2,32}): (.{1,128})/g],
+  success: [...GeneralChat.success, /^To (?:\[[+A-Z]{3,10}] ){0,3}(\w{2,32}): (.{1,128})/],
   failure: [
     ...GeneralChat.failure,
     /^You cannot message this player./,
