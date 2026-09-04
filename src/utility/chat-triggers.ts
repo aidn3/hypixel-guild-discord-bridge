@@ -163,10 +163,13 @@ export async function checkChatTriggers(
     }
   }
 
-  app.on('minecraftChat', chatListener)
-  await app.sendMinecraft(targetInstance, MinecraftSendChatPriority.High, undefined, command)
-  await timeout.wait()
-  app.off('minecraftChat', chatListener)
+  try {
+    app.on('minecraftChat', chatListener)
+    await app.sendMinecraft(targetInstance, MinecraftSendChatPriority.High, undefined, command)
+    await timeout.wait()
+  } finally {
+    app.off('minecraftChat', chatListener)
+  }
 
   return result
 }
