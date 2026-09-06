@@ -1451,7 +1451,7 @@ async function minecraftInstanceRemove(
   }
 
   await interaction.showModal({
-    customId: 'minecraft-instance-remove',
+    customId: interaction.id,
     title: `Remove Minecraft Instance`,
     components: [
       {
@@ -1472,7 +1472,8 @@ async function minecraftInstanceRemove(
 
   const modalInteraction = await interaction.awaitModalSubmit({
     time: 300_000,
-    filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+    filter: (modalInteraction) =>
+      modalInteraction.user.id === interaction.user.id && modalInteraction.customId === interaction.id
   })
 
   const instanceName = modalInteraction.fields.getStringSelectValues('instance-name')[0]
