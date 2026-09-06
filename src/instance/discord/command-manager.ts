@@ -76,6 +76,8 @@ import { translateNoPermission } from './common/discord-language.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends SubInstance<DiscordInstance, Client> {
+  private static readonly CommandReplyLife = Duration.seconds(3)
+
   readonly commands = new Collection<string, DiscordCommandHandler>()
 
   constructor(
@@ -264,6 +266,12 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
         await interaction.editReply({
           content: 'There was an error while executing command'
         })
+        return
+      } else if (
+        interaction.isChatInputCommand() &&
+        interaction.createdTimestamp + CommandManager.CommandReplyLife.toMilliseconds() < Date.now()
+      ) {
+        this.logger.error('Interaction has already expired. can not reply with an error anymore.')
         return
       } else {
         await interaction.reply({
