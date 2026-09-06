@@ -1334,6 +1334,28 @@ function migrateFrom32to33(database: Database): void {
   )
   database.exec('INSERT INTO "links" SELECT * FROM "links_old"')
   database.exec('DROP TABLE "links_old"')
+
+  database.exec('ALTER TABLE "discordUserUpdate" RENAME TO "discordUserUpdate_old"')
+  database.exec(
+    'CREATE TABLE "discordUserUpdate" (' +
+      '  guildId TEXT NOT NULL,' +
+      '  userId TEXT NOT NULL,' +
+      '  lastUpdateAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, userId)' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "discordUserUpdate" SELECT * FROM "discordUserUpdate_old"')
+  database.exec('DROP TABLE "discordUserUpdate_old"')
+
+  database.exec('ALTER TABLE "discordLinkButton" RENAME TO "discordLinkButton_old"')
+  database.exec(
+    'CREATE TABLE "discordLinkButton" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "discordLinkButton" SELECT * FROM "discordLinkButton_old"')
+  database.exec('DROP TABLE "discordLinkButton_old"')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
