@@ -84,10 +84,6 @@ export class MinecraftManager extends Instance {
       deletedSessionFiles: 0
     }
 
-    const config = this.application.core.minecraftSessions
-    result.deletedSessionFiles = config.deleteSession(instanceName)
-    result.deletedConfig = config.deleteInstance(instanceName)
-
     const instances = this.getAllInstances().filter(
       (instance) => instance.getConfigName().toLowerCase() === instanceName.toLowerCase()
     )
@@ -101,6 +97,10 @@ export class MinecraftManager extends Instance {
       instance.destroy()
     }
     result.instanceRemoved += instances.length
+
+    const config = this.application.core.minecraftSessions
+    result.deletedSessionFiles = config.deleteSession(instanceName)
+    result.deletedConfig = config.deleteInstance(instanceName)
 
     return result
   }
