@@ -1322,6 +1322,18 @@ function migrateFrom32to33(database: Database): void {
   )
   database.exec('INSERT INTO "discordMinecraftStatusLastButton" SELECT * FROM "discordMinecraftStatusLastButton_old"')
   database.exec('DROP TABLE "discordMinecraftStatusLastButton_old"')
+
+  database.exec('ALTER TABLE "links" RENAME TO "links_old"')
+  database.exec(
+    'CREATE TABLE IF NOT EXISTS "links" (' +
+      '  uuid TEXT UNIQUE NOT NULL,' +
+      '  discordId TEXT UNIQUE NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(uuid, discordId)' +
+      ' )'
+  )
+  database.exec('INSERT INTO "links" SELECT * FROM "links_old"')
+  database.exec('DROP TABLE "links_old"')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {
