@@ -347,9 +347,15 @@ export interface SkyblockPlayerEvents {
 export interface SkyblockPlayerEaster {
   total_chocolate?: number
   shop?: { chocolate_spent?: number }
-  // eggs names and collected amount. not set if not collected.
-  // There are other objects inside not related to rabbits, but ignored here since not required YET.
-  rabbits: Record<string, number | object>
+  chocobits?: {
+    total_found?: number
+    owned?: {
+      id: number
+    }[]
+  }
+  rabbits: Record<string, number | object> & {
+    selected_faction?: string
+  }
 }
 
 export interface SkyblockForge {
