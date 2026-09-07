@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { PlaceholderContext, PlaceholderResolver } from './common.js'
 import { CanNotResolve } from './common.js'
 import { SkyblockLevelResolver } from './resolvers/skyblock-level.js'
@@ -84,12 +86,16 @@ export class PlaceholderManager {
     if (cachedResult !== undefined) return cachedResult
 
     if (Object.hasOwn(context.customPlaceholders, id)) {
-      return context.customPlaceholders[id]
+      const result = context.customPlaceholders[id]
+      assert.strictEqual(typeof result, 'string')
+      return result
     }
 
     const resolver = this.resolver.get(id)
     if (resolver === undefined) return word
 
-    return resolver.resolve(context, options)
+    const result = await resolver.resolve(context, options)
+    assert.strictEqual(typeof result, 'string')
+    return result
   }
 }
