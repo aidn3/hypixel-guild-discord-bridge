@@ -1,5 +1,5 @@
 import { entries as scrambleEntries } from '../../../../resources/events/unscramble.json' with { type: 'json' }
-import type { ChatEvent } from '../../../common/application-event.js'
+import type { ChatEvent, ChatLike } from '../../../common/application-event.js'
 import { ChannelType, Color } from '../../../common/application-event.js'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations.js'
 import type Duration from '../../../utility/duration.js'
@@ -44,14 +44,18 @@ export async function startUnscramble(
     if (match.toLowerCase() === chosenWord.original.toLowerCase()) timeout.resolve(event)
   }
 
-  context.application.on('chat', listener)
-  timeout.refresh()
-  let response = `Unscramble: ${chosenWord.scrambled}`
-  if (chosenWord.hint !== undefined) response += ` - Hint: ${chosenWord.hint}`
-  await context.broadcastMessage(response, Color.Good)
+  let result: ChatLike | undefined = undefined
+  try {
+    context.application.on('chat', listener)
+    timeout.refresh()
+    let response = `Unscramble: ${chosenWord.scrambled}`
+    if (chosenWord.hint !== undefined) response += ` - Hint: ${chosenWord.hint}`
+    await context.broadcastMessage(response, Color.Good)
 
-  const result = await timeout.wait()
-  context.application.off('chat', listener)
+    result = await timeout.wait()
+  } finally {
+    context.application.off('chat', listener)
+  }
 
   // eslint-disable-next-line unicorn/prefer-ternary
   if (result === undefined) {

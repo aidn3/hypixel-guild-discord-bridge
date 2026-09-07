@@ -62,12 +62,16 @@ export async function startTrivia(
     }
   }
 
-  context.application.on('chat', listener)
-  await context.broadcastMessage(`Quick Trivia: ${trivia.question}`, Color.Good)
-  timeout.refresh()
+  let wonUser: User | undefined = undefined
+  try {
+    context.application.on('chat', listener)
+    await context.broadcastMessage(`Quick Trivia: ${trivia.question}`, Color.Good)
+    timeout.refresh()
 
-  const wonUser = await timeout.wait()
-  context.application.off('chat', listener)
+    wonUser = await timeout.wait()
+  } finally {
+    context.application.off('chat', listener)
+  }
 
   // eslint-disable-next-line unicorn/prefer-ternary
   if (wonUser === undefined) {
