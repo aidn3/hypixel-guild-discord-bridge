@@ -32,9 +32,9 @@ export class Sanitizer {
   }
 
   public async sanitizeChatMessage(instanceName: MinecraftInstance, message: string): Promise<string> {
+    message = await this.link.process(message)
     message = this.line.process(message)
     message = this.space.process(message)
-    message = await this.link.process(message)
     message = this.emoji.process(message)
     message = this.ez.process(message)
     message = this.discordSanitizer.process(message)
