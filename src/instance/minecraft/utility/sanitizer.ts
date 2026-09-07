@@ -10,9 +10,11 @@ import EmojiSanitizer from './emoji-sanitizer.js'
 import EzSanitizer from './ez-sanitizer.js'
 import LineSanitizer from './line-sanitizer.js'
 import { LinksSanitizer } from './links-sanitizer.js'
+import SpaceSanitizer from './space-sanitizer.js'
 
 export class Sanitizer {
   private readonly line: LineSanitizer
+  private readonly space: SpaceSanitizer
   private readonly codec: CodecSanitizer
   private readonly character: CharacterSanitizer
   private readonly link: LinksSanitizer
@@ -32,13 +34,15 @@ export class Sanitizer {
     this.discordSanitizer = new DiscordSanitizer()
     this.arabicFixer = new ArabicFixer(application.core.minecraftConfigurations)
     this.antispam = new Antispam(application.core.minecraftConfigurations)
+    this.space = new SpaceSanitizer()
   }
 
   public async sanitizeChatMessage(instanceName: MinecraftInstance, message: string): Promise<string> {
+    message = await this.link.process(message)
     message = this.line.process(message)
     message = this.codec.process(message)
     message = this.character.process(message)
-    message = await this.link.process(message)
+    message = this.space.process(message)
     message = this.emoji.process(message)
     message = this.ez.process(message)
     message = this.discordSanitizer.process(message)
@@ -52,6 +56,7 @@ export class Sanitizer {
     message = this.line.process(message)
     message = this.codec.process(message)
     message = this.character.process(message)
+    message = this.space.process(message)
 
     return message
   }

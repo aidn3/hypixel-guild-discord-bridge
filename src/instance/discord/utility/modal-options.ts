@@ -60,7 +60,8 @@ export async function showModal(
   ensureUniqueness(options)
 
   const result: ModalResult = {}
-  const { components, values } = createComponents(interaction, options)
+  const { components, componentOptions, values } = createComponents(interaction, options)
+  assert.strictEqual(components.length, componentOptions.length)
   Object.assign(result, values)
 
   let modalInteraction: ModalSubmitInteraction | ButtonInteraction | ChatInputCommandInteraction = interaction
@@ -72,7 +73,7 @@ export async function showModal(
       time: timeout.toMilliseconds(),
       filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
     })
-    const modalResult = parseResponse(options, modalResponse)
+    const modalResult = parseResponse(componentOptions, modalResponse)
     Object.assign(result, modalResult)
     modalInteraction = modalResponse
   }
@@ -94,10 +95,12 @@ function createComponents(
   options: ModalOption[]
 ): {
   components: ModalComponentData['components']
+  componentOptions: ModalOption[]
   values: ModalResult
 } {
   const components: Writeable<ModalComponentData['components']> = []
   const values: ModalResult = {}
+  const componentOptions: ModalOption[] = []
 
   for (const option of options) {
     switch (option.type) {
@@ -107,6 +110,7 @@ function createComponents(
           { label: 'No', value: 'false' }
         ]
 
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -123,6 +127,7 @@ function createComponents(
         break
       }
       case OptionType.Text: {
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -149,6 +154,7 @@ function createComponents(
           default: option.defaultValue?.includes(opt.value) ?? false
         }))
 
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -165,6 +171,7 @@ function createComponents(
         break
       }
       case OptionType.Number: {
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -182,6 +189,7 @@ function createComponents(
         break
       }
       case OptionType.Channel: {
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -203,6 +211,7 @@ function createComponents(
         break
       }
       case OptionType.Role: {
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -222,6 +231,7 @@ function createComponents(
         break
       }
       case OptionType.User: {
+        componentOptions.push(option)
         components.push({
           type: ComponentType.Label,
           label: option.name,
@@ -254,7 +264,7 @@ function createComponents(
     }
   }
 
-  return { components, values }
+  return { components, componentOptions, values }
 }
 
 function parseResponse(options: ModalOption[], modalResponse: ModalSubmitInteraction): ModalResult {
