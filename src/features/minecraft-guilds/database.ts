@@ -188,7 +188,7 @@ export class Database {
       const deletePanel = database.prepare('DELETE FROM "discordGuildWaitlistPanel" WHERE messageId = ?')
       const updatePanel = database.prepare('UPDATE "discordGuildWaitlistPanel" SET guildIds = ? WHERE messageId = ?')
       for (const panel of panels) {
-        const guildIds = panel.guildIds.filter((guildId) => guildId === id)
+        const guildIds = panel.guildIds.filter((guildId) => guildId !== id)
         if (guildIds.length === 0) {
           const deleteResult = deletePanel.run(panel.messageId).changes
           assert.strictEqual(deleteResult, 1)
