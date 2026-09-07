@@ -1,7 +1,7 @@
 # Metrics
 
 hypixel-guild-discord-bridge supports [Prometheus](https://github.com/prometheus/prometheus) metrics, and it is
-**enabled by default** on port `9095`.
+**disabled by default** on port `9095`.
 Many metrics are automatically collected in memory and await prometheus to scrap them.
 
 ## Available Metrics
