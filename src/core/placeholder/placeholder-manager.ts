@@ -42,7 +42,7 @@ export class PlaceholderManager {
     }
 
     for (const [original, replaceWith] of changes.entries()) {
-      query = query.replace(original, () => replaceWith) // using function to escape special replacement patterns
+      query = query.replaceAll(original, () => replaceWith) // using function to escape special replacement patterns
     }
 
     return query
