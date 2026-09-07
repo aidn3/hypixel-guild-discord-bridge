@@ -42,7 +42,7 @@ export class PlaceholderManager {
     }
 
     for (const [original, replaceWith] of changes.entries()) {
-      query = query.replace(original, replaceWith)
+      query = query.replace(original, () => replaceWith) // using function to escape special replacement patterns
     }
 
     return query
@@ -83,7 +83,7 @@ export class PlaceholderManager {
     const cachedResult = context.cachedPlaceholders.get(id)
     if (cachedResult !== undefined) return cachedResult
 
-    if (id in context.customPlaceholders) {
+    if (Object.hasOwn(context.customPlaceholders, id)) {
       return context.customPlaceholders[id]
     }
 
