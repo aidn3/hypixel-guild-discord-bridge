@@ -200,100 +200,100 @@ async function formatReason(
     case EconomyReason.DailyReward: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
-      return `${amount} ${user} claimed daily reward`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} claimed daily reward`
     }
     case EconomyReason.RussianRoulette: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
-      return `${amount} ${user} played Russian Roulette`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} played Russian Roulette`
     }
     case EconomyReason.Insult: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} insulted by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} insulted by ${byUser}`
     }
     case EconomyReason.Praise: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} praised by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} praised by ${byUser}`
     }
     case EconomyReason.UserGive: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} given by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} given by ${byUser}`
     }
     case EconomyReason.UserTake: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} taken by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} taken by ${byUser}`
     }
     case EconomyReason.UserSet: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} set by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} set by ${byUser}`
     }
     case EconomyReason.WonSpontaneousEvent: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
-      return `${amount} ${user} won an event`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} won an event`
     }
     case EconomyReason.SacrificeFrom: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} lost to sacrifice by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} lost to sacrifice by ${byUser}`
     }
     case EconomyReason.SacrificeTo: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} sacrificed to bully ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} sacrificed to bully ${byUser}`
     }
     case EconomyReason.MuteTarget: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} randomly muted ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} randomly muted ${byUser}`
     }
     case EconomyReason.AirstrikeTarget: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} airstriked ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} airstriked ${byUser}`
     }
     case EconomyReason.Nuke: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
-      return `${amount} ${user} mute nuked a guild`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} mute nuked a guild`
     }
     case EconomyReason.Hitman: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} ordered a hit on ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} ordered a hit on ${byUser}`
     }
     case EconomyReason.RobberSuccess: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} successfully robbed ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} successfully robbed ${byUser}`
     }
     case EconomyReason.RobberFail: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} failed robbing ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} failed robbing ${byUser}`
     }
     case EconomyReason.Robbed: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} was robbed by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} was robbed by ${byUser}`
     }
     default: {
       entry.reason satisfies never
