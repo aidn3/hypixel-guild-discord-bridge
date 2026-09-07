@@ -131,6 +131,8 @@ export class EconomyDatabase {
    * @param page 0-indexed
    */
   public userHistory(user: AnonymousUser, page: number): HistoryResult {
+    assert.ok(page >= 0, 'page must be 0 or greater')
+
     const database = this.sqlManager.getDatabase()
     const transaction = database.transaction(() => {
       const userIds = this.users.resolveAllUserId(user)
@@ -166,6 +168,8 @@ export class EconomyDatabase {
   }
 
   public allHistory(page: number): HistoryResult {
+    assert.ok(page >= 0, 'page must be 0 or greater')
+
     const database = this.sqlManager.getDatabase()
     const transaction = database.transaction(() => {
       const limit = EconomyDatabase.EntriesPerPage
