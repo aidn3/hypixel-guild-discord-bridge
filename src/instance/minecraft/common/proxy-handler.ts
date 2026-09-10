@@ -77,10 +77,12 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
     })
 
     request.once('error', (error) => {
-      client.emit('error', new Error('proxy encountered a problem', { cause: error }))
+      client.emit('error', new Error(QuitProxyError, { cause: error }))
+      logger.warn('ending minecraft session if any exist')
+      client.end()
 
       logger.error('destroying proxy socket')
-      request.destroy(error)
+      request.destroy()
     })
   }
 }
