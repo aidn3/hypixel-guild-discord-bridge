@@ -37,8 +37,8 @@ export default class AccessoryPower extends ChatCommandHandler {
 
     let result = `${givenUsername}:`
     result += ` Highest AP ${highestAccessoryPower}`
-    result += ` | Stone: ${stone}`
-    result += ` | Tuning: `
+    result += ` - Stone: ${stone}`
+    result += ` - Tuning: `
 
     const noTunings = '(none)'
     if (tuning) {
@@ -56,7 +56,7 @@ export default class AccessoryPower extends ChatCommandHandler {
       result += noTunings
     }
 
-    result += ` | Enrich: `
+    result += ` - Enrich: `
     if (enrichments.length === 0) result += `(none)`
     else {
       const formatted: string[] = []
