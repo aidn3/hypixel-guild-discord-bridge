@@ -38,16 +38,22 @@ export default class AccessoryPower extends ChatCommandHandler {
     let result = `${givenUsername}:`
     result += ` Highest AP ${highestAccessoryPower}`
     result += ` | Stone: ${stone}`
-
     result += ` | Tuning: `
+
+    const noTunings = '(none)'
     if (tuning) {
       const entries = Object.entries(tuning).filter(([, value]) => value > 0)
-      entries.sort(([, a], [, b]) => b - a)
-      for (const [key, value] of entries) {
-        result += `${value.toLocaleString('en-US')}${this.translatePower(key)}`
+
+      if (entries.length === 0) {
+        result += noTunings
+      } else {
+        entries.sort(([, a], [, b]) => b - a)
+        for (const [key, value] of entries) {
+          result += `${value.toLocaleString('en-US')}${this.translatePower(key)}`
+        }
       }
     } else {
-      result += '(none)'
+      result += noTunings
     }
 
     result += ` | Enrich: `
