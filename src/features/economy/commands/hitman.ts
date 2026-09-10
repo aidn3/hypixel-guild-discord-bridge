@@ -44,7 +44,7 @@ export default class Hitman extends ChatCommandHandler {
 
     if (amount < EconomyHitman.min || amount > EconomyHitman.max) {
       context.resetCooldown()
-      return `${context.username}, amount must be between ${EconomyHitman.min} and ${EconomyHitman.max}.`
+      return `${context.username}, amount must be between ${EconomyHitman.min} and ${EconomyHitman.max} aura.`
     }
 
     const sameGuildError = await inSameGuild(context, targetUser)
@@ -56,20 +56,17 @@ export default class Hitman extends ChatCommandHandler {
     const responsibleUser = context.message.user
     const targetId = context.app.core.users.resolveUserId(targetUser.getUserIdentifier())
 
-    this.database.transaction((transaction) => {
+    const result = this.database.transaction((transaction) => {
       const account = transaction.getAccount(responsibleUser)
       const total = account.total()
-      if (total <= 0) {
-        context.resetCooldown()
-        return `${responsibleUser.displayName()}, no aura to use anything at all.`
-      }
       if (total < amount) {
         context.resetCooldown()
-        return `${responsibleUser.displayName()} only has ${total}.`
+        return `${responsibleUser.displayName()}, you need ${amount - total} more aura to use this!`
       }
 
       account.decrease(amount, { reason: EconomyReason.Hitman, byUser: targetId })
     })
+    if (result !== undefined) return result
 
     const seconds = amount * EconomyHitman.conversionRate
     assert.ok(seconds >= 60) // Hypixel minimum time
