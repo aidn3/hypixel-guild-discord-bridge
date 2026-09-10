@@ -7,7 +7,10 @@ import { SocksClient } from 'socks'
 
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager.js'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager.js'
+import Duration from '../../../utility/duration.js'
 import { QuitProxyError } from '../handlers/state-handler.js'
+
+const DefaultProxyTimeout = Duration.seconds(60)
 
 export function resolveProxyIfExist(
   logger: Logger,
@@ -57,7 +60,8 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
       host: proxyHost,
       port: proxyPort,
       method: 'CONNECT',
-      path: host + ':' + String(port)
+      path: host + ':' + String(port),
+      timeout: DefaultProxyTimeout.toMilliseconds()
     })
     request.end()
 
@@ -94,6 +98,8 @@ function createSocksConnectFunction(
         userId: proxyOptions.user,
         password: proxyOptions.password
       },
+
+      timeout: DefaultProxyTimeout.toMilliseconds(),
       command: 'connect',
       destination: {
         host,
