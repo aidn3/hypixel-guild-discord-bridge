@@ -350,19 +350,21 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
 
     if (GuildPlayerEventType.Invited === event.type || GuildPlayerEventType.Request === event.type) {
       event.type satisfies keyof typeof ActionableEvents
+      const botUuid = event.instance.uuid()
+      if (botUuid !== undefined) {
+        for (const message of messages) {
+          this.application.minecraftActionButtons.add({
+            createdAt: event.createdAt,
+            expiresAt: event.createdAt + Duration.minutes(10).toMilliseconds(),
+            messageId: message.id,
+            channelId: message.channelId,
 
-      for (const message of messages) {
-        this.application.minecraftActionButtons.add({
-          createdAt: event.createdAt,
-          expiresAt: event.createdAt + Duration.minutes(10).toMilliseconds(),
-          messageId: message.id,
-          channelId: message.channelId,
-
-          type: DiscordInstanceHistoryButtonType.InvitedToGuild,
-          command: event.command,
-          botUuid: event.user.mojangProfile().id,
-          userUuid: GuildPlayerEventType.Request === event.type ? event.user.mojangProfile().id : undefined
-        })
+            type: DiscordInstanceHistoryButtonType.InvitedToGuild,
+            command: event.command,
+            botUuid: botUuid,
+            userUuid: GuildPlayerEventType.Request === event.type ? event.user.mojangProfile().id : undefined
+          })
+        }
       }
     }
   }
