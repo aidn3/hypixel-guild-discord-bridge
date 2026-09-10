@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import crypto from 'node:crypto'
 import Http from 'node:http'
 
@@ -53,6 +54,9 @@ export function resolveProxyIfExist(
 }
 
 function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+  // code has not been tested yet
+  assert.fail('Not supported')
+
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
