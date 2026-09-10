@@ -40,12 +40,12 @@ export default class AccessoryPower extends ChatCommandHandler {
     result += ` - Stone: ${stone}`
     result += ` - Tuning: `
 
-    const noTunings = '(none)'
+    const noValue = '(none)'
     if (tuning) {
       const entries = Object.entries(tuning).filter(([, value]) => value > 0)
 
       if (entries.length === 0) {
-        result += noTunings
+        result += noValue
       } else {
         entries.sort(([, a], [, b]) => b - a)
         for (const [key, value] of entries) {
@@ -53,11 +53,11 @@ export default class AccessoryPower extends ChatCommandHandler {
         }
       }
     } else {
-      result += noTunings
+      result += noValue
     }
 
     result += ` - Enrich: `
-    if (enrichments.length === 0) result += `(none)`
+    if (enrichments.length === 0) result += noValue
     else {
       const formatted: string[] = []
       for (const enrichment of enrichments) {
