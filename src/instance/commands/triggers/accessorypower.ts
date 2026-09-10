@@ -30,8 +30,10 @@ export default class AccessoryPower extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
+    const noValue = '(none)'
+
     const highestAccessoryPower = selectedProfile.accessory_bag_storage?.highest_magical_power ?? 0
-    const stone = selectedProfile.accessory_bag_storage?.selected_power ?? '(none)'
+    const stone = selectedProfile.accessory_bag_storage?.selected_power ?? noValue
     const enrichments = await this.getEnrichments(selectedProfile)
     const tuning = selectedProfile.accessory_bag_storage?.tuning.slot_0
 
@@ -40,7 +42,6 @@ export default class AccessoryPower extends ChatCommandHandler {
     result += ` - Stone: ${stone}`
     result += ` - Tuning: `
 
-    const noValue = '(none)'
     if (tuning) {
       const entries = Object.entries(tuning).filter(([, value]) => value > 0)
 
