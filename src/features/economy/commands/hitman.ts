@@ -56,7 +56,7 @@ export default class Hitman extends ChatCommandHandler {
     const responsibleUser = context.message.user
     const targetId = context.app.core.users.resolveUserId(targetUser.getUserIdentifier())
 
-    this.database.transaction((transaction) => {
+    const result = this.database.transaction((transaction) => {
       const account = transaction.getAccount(responsibleUser)
       const total = account.total()
       if (total < amount) {
@@ -66,6 +66,7 @@ export default class Hitman extends ChatCommandHandler {
 
       account.decrease(amount, { reason: EconomyReason.Hitman, byUser: targetId })
     })
+    if (result !== undefined) return result
 
     const seconds = amount * EconomyHitman.conversionRate
     assert.ok(seconds >= 60) // Hypixel minimum time
