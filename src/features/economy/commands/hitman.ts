@@ -59,10 +59,6 @@ export default class Hitman extends ChatCommandHandler {
     this.database.transaction((transaction) => {
       const account = transaction.getAccount(responsibleUser)
       const total = account.total()
-      if (total <= 0) {
-        context.resetCooldown()
-        return `${responsibleUser.displayName()}, no aura to use anything at all.`
-      }
       if (total < amount) {
         context.resetCooldown()
         return `${responsibleUser.displayName()} only has ${total}.`
