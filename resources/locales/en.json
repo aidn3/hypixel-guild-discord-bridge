@@ -305,6 +305,8 @@
   "commands.safari.none": "{{username}} has never entered the safari.",
   "commands.safari.response": "{{username}}'s critters caught - {{total, number}} Total - {{icy, number}} Icy - {{forest, number}} Forest - {{cavern, number}} Cavern - {{haunted, number}} Haunted",
   "commands.sparklings.response": "{{username}}'s sparklings - {{uniques, number}} Unique - {{dupes, number}} Dupes",
+  "commands.runs.response-normal": "{{username}}: Catacombs - E {{f0, number}} - F1 {{f1, number}} - F2 {{f2, number}} - F3 {{f3, number}} - F4 {{f4, number}} - F5 {{f5, number}} - F6 {{f6, number}} - F7 {{f7, number}}",
+  "commands.runs.response-mastermode": "{{username}}: Mastermode - M1 {{m1, number}} - M2 {{m2, number}} - M3 {{m3, number}} - M4 {{m4, number}} - M5 {{m5, number}} - M6 {{m6, number}} - M7 {{m7, number}}",
 
   "commands.8ball": [
     "{{username}}, as I see it, yes.",
