@@ -359,7 +359,7 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
             messageId: message.id,
             channelId: message.channelId,
 
-            type: DiscordInstanceHistoryButtonType.InvitedToGuild,
+            type: ActionableEvents[event.type],
             command: event.command,
             botUuid: botUuid,
             userUuid: GuildPlayerEventType.Request === event.type ? event.user.mojangProfile().id : undefined
