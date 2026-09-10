@@ -65,7 +65,12 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
     })
     request.end()
 
-    request.on('connect', (response, stream) => {
+    request.once('connect', (response, stream) => {
+      if (response.statusCode !== 200) {
+        request.destroy(new Error(`Status code not 200. Actual=${response.statusCode}`))
+        return
+      }
+
       logger.debug('connection to proxy established. forwarding proxied connection to minecraft')
       client.setSocket(stream)
       client.emit('connect')
