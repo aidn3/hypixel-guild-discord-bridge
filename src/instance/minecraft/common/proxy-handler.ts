@@ -26,8 +26,6 @@ export function resolveProxyIfExist(
   logger.debug(`Proxy enabled with params: ${serializedProxy.redacted}`)
   logger.debug(`Proxy hash: ${serializedProxy.hashed}`)
 
-  const proxyHost = proxyConfig.host
-  const proxyPort = proxyConfig.port
   const protocol = proxyConfig.protocol
   const host = defaultBotOptions.host
   const port = defaultBotOptions.port
@@ -35,7 +33,7 @@ export function resolveProxyIfExist(
   let connect: (client: Client) => void
   switch (protocol) {
     case ProxyProtocol.Http: {
-      connect = createHttpConnectFunction(logger, proxyHost, proxyPort, host, port)
+      connect = createHttpConnectFunction(logger, proxyConfig, host, port)
       break
     }
 
@@ -53,7 +51,12 @@ export function resolveProxyIfExist(
   return { connect }
 }
 
-function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+function createHttpConnectFunction(
+  logger: Logger,
+  proxyOptions: Omit<ProxyConfig, 'protocol'>,
+  host: string,
+  port: number
+) {
   // code has not been tested yet
   assert.fail('Not supported')
 
@@ -61,8 +64,10 @@ function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort:
     logger.debug('connecting to proxy...')
 
     const request = Http.request({
-      host: proxyHost,
-      port: proxyPort,
+      host: proxyOptions.host,
+      port: proxyOptions.port,
+      username: proxyOptions.user,
+      password: proxyOptions.password,
       method: 'CONNECT',
       path: host + ':' + String(port),
       timeout: DefaultProxyTimeout.toMilliseconds()
