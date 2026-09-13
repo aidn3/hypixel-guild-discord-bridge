@@ -52,7 +52,7 @@ export default class Pay extends ChatCommandHandler {
       return `${responsibleUser.displayName()}, amount must be at least 1!`
     }
 
-    const responsibleId = context.app.core.users.resolveUserId(context.message.user.getUserIdentifier())
+    const responsibleId = context.app.core.users.resolveUserId(responsibleUser.getUserIdentifier())
     const targetId = context.app.core.users.resolveUserId(targetUser.getUserIdentifier())
     const taxedAmount = Math.floor((tax / 100) * amount)
     const totalAmount = amount + taxedAmount
