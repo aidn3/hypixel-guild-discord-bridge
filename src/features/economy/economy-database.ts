@@ -573,6 +573,8 @@ export enum EconomyReason {
   UserGive = 'userGive',
   UserTake = 'userTake',
   UserSet = 'userSet',
+  UserPayTo = 'userPayTo',
+  UserPayFrom = 'userPayFrom',
 
   Praise = 'praise',
   Insult = 'insult',
