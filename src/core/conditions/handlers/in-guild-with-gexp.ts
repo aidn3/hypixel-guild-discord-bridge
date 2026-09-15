@@ -70,7 +70,7 @@ export class InGuildWithGexp extends ConditionHandler<InGuildGexpOptions, number
 
     let gexp = 0
     if (options.days <= officialGexpHistory.length) {
-      gexp += officialGexpHistory.slice(-1, -options.days).reduce((a, b) => a + b, 0)
+      gexp += officialGexpHistory.slice(0, options.days).reduce((a, b) => a + b, 0)
     } else {
       const savedGexp = context.application.minecraftGuildsManager.getAndSupplementedMemberGexp(
         guild,
