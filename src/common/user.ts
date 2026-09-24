@@ -85,7 +85,8 @@ export class AnonymousUser {
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
       const configurations = this.application.core.minecraftConfigurations
-      if (mojangProfile.name.toLowerCase() === configurations.getAdminUsername().toLowerCase()) {
+      const adminUuid = configurations.getAdminMojangUuid()
+      if (adminUuid.length > 0 && mojangProfile.id.toLowerCase() === adminUuid.toLowerCase()) {
         const minecraftPermission = Permission.BridgeAdmin
         if (minecraftPermission > permission) permission = minecraftPermission
       }
@@ -148,16 +149,14 @@ export class AnonymousUser {
       if (this.application.minecraftManager.isMinecraftBot(mojangProfile.name)) {
         return true
       }
-      if (
-        mojangProfile.name.toLowerCase() ===
-        this.application.core.minecraftConfigurations.getAdminUsername().toLowerCase()
-      ) {
+      const adminUuid = this.application.core.minecraftConfigurations.getAdminMojangUuid()
+      if (adminUuid.length > 0 && mojangProfile.id.toLowerCase() === adminUuid.toLowerCase()) {
         return true
       }
       if (
         this.context.moderation
           .getImmuneMojangPlayers()
-          .some((entry) => entry.toLowerCase() === mojangProfile.name.toLowerCase())
+          .some((entry) => entry.toLowerCase() === mojangProfile.id.toLowerCase())
       ) {
         return true
       }

@@ -23,6 +23,7 @@ import { User } from '../common/user.js'
 
 import { AdminConfigurations } from './admin-configurations.js'
 import { ApplicationConfigurations } from './application-configurations.js'
+import { AsyncMigrator } from './async-migrator.js'
 import { ConditionsRegistry } from './conditions/conditions-registry.js'
 import { ConfigurationsManager } from './configurations.js'
 import { DiscordConfigurations } from './discord/discord-configurations.js'
@@ -98,6 +99,9 @@ export class Core extends Instance {
   private readonly hypixelManager: SqliteManager
   private readonly configurationsManager: ConfigurationsManager
 
+  // tasks
+  private readonly asyncMigrator: AsyncMigrator
+
   public constructor(application: Application, hypixelApiKey: string, urchinApiKey: string | undefined) {
     super(application, 'core')
 
@@ -172,6 +176,15 @@ export class Core extends Instance {
       this.logger,
       this.errorHandler,
       this.sqliteManager,
+      this.abortController.signal
+    )
+
+    this.asyncMigrator = new AsyncMigrator(
+      this.application,
+      this,
+      this.eventHelper,
+      this.logger,
+      this.errorHandler,
       this.abortController.signal
     )
   }

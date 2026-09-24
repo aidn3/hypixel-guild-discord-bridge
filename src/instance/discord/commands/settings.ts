@@ -12,6 +12,7 @@ import type {
 import {
   ButtonStyle,
   ComponentType,
+  escapeInlineCode,
   escapeMarkdown,
   italic,
   MessageFlags,
@@ -42,7 +43,7 @@ import { Timeout } from '../../../utility/timeout.js'
 import MinecraftInstance from '../../minecraft/minecraft-instance.js'
 import { DefaultCommandFooter, MaxMinecraftInstances } from '../common/discord-config.js'
 import type { CategoryOption, EmbedCategoryOption, LabelOption } from '../utility/options-handler.js'
-import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
+import { InputStyle, OptionsHandler, OptionType, ValueRejected } from '../utility/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'
@@ -143,15 +144,35 @@ function fetchModerationOptions(application: Application): CategoryOption {
             type: OptionType.Text,
 
             name: 'Admin Username',
-            description: 'In-game username of the person who has full permission over the application.',
+            description:
+              'In-game username of the person who has full permission over the application. Set to empty to remove existing value.',
 
             style: InputStyle.Tiny,
             max: 16,
-            min: 2,
+            min: 0,
 
-            getOption: () => minecraft.getAdminUsername(),
-            setOption: (username) => {
-              minecraft.setAdminUsername(username)
+            getOption: async () => {
+              const uuid = minecraft.getAdminMojangUuid()
+              if (uuid.length === 0) return '(none)'
+
+              return await application.mojangApi
+                .profileByUuid(uuid)
+                .then((profile) => profile.name)
+                .catch(() => uuid)
+            },
+            setOption: async (username) => {
+              username = username.trim()
+              if (username.length === 0) {
+                minecraft.setAdminMojangUuid(username)
+                return
+              }
+
+              const profile = await application.mojangApi.profileByUsername(username).catch(() => undefined)
+              if (profile === undefined) {
+                throw new ValueRejected(`Invalid Mojang username. Given: ${escapeInlineCode(username)}`)
+              }
+
+              minecraft.setAdminMojangUuid(profile.id)
             }
           },
           {
@@ -820,7 +841,7 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Moderation** category.',
-        getOption: () => minecraft.getAdminUsername()
+        getOption: () => minecraft.getAdminMojangUuid()
       },
       {
         type: OptionType.Label,
