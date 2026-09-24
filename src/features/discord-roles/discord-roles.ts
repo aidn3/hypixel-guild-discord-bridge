@@ -78,6 +78,7 @@ export class DiscordRoles extends Instance implements DisplayableInstance {
       const guildObject = await guild.fetch()
       const guildMember = await guildObject.members.fetch(discordProfile.id).catch(() => undefined)
       if (guildMember === undefined) continue
+      if (guildMember.user.bot) continue
       this.logger.debug(`Preparing to update user ${user.displayName()} in guild id ${guild.id}`)
 
       const currentTime = Date.now()
@@ -132,6 +133,8 @@ export class DiscordRoles extends Instance implements DisplayableInstance {
   }
 
   private async onDiscordMemberJoin(guildMember: GuildMember): Promise<void> {
+    if (guildMember.user.bot) return
+
     const context: UpdateContext = {
       application: this.application,
       updateReason: 'Newly joined member',

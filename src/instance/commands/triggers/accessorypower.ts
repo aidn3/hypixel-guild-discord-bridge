@@ -30,28 +30,35 @@ export default class AccessoryPower extends ChatCommandHandler {
     const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
+    const noValue = '(none)'
+
     const highestAccessoryPower = selectedProfile.accessory_bag_storage?.highest_magical_power ?? 0
-    const stone = selectedProfile.accessory_bag_storage?.selected_power ?? '(none)'
+    const stone = selectedProfile.accessory_bag_storage?.selected_power ?? noValue
     const enrichments = await this.getEnrichments(selectedProfile)
     const tuning = selectedProfile.accessory_bag_storage?.tuning.slot_0
 
     let result = `${givenUsername}:`
     result += ` Highest AP ${highestAccessoryPower}`
-    result += ` | Stone: ${stone}`
+    result += ` - Stone: ${stone}`
+    result += ` - Tuning: `
 
-    result += ` | Tuning: `
     if (tuning) {
       const entries = Object.entries(tuning).filter(([, value]) => value > 0)
-      entries.sort(([, a], [, b]) => b - a)
-      for (const [key, value] of entries) {
-        result += `${value.toLocaleString('en-US')}${this.translatePower(key)}`
+
+      if (entries.length === 0) {
+        result += noValue
+      } else {
+        entries.sort(([, a], [, b]) => b - a)
+        for (const [key, value] of entries) {
+          result += `${value.toLocaleString('en-US')}${this.translatePower(key)}`
+        }
       }
     } else {
-      result += '(none)'
+      result += noValue
     }
 
-    result += ` | Enrich: `
-    if (enrichments.length === 0) result += `(none)`
+    result += ` - Enrich: `
+    if (enrichments.length === 0) result += noValue
     else {
       const formatted: string[] = []
       for (const enrichment of enrichments) {

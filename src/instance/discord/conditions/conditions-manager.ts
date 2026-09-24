@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import type { Client, Guild, GuildMemberEditOptions } from 'discord.js'
 import { DiscordAPIError, userMention } from 'discord.js'
 import type { Logger } from 'log4js'
@@ -60,6 +62,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (context.abortSignal.aborted) return
 
+      if (guildMember.user.bot) continue
+
       const user = await this.application.core.initializeDiscordUser(
         this.clientInstance.profileByUser(guildMember.user, guildMember)
       )
@@ -83,6 +87,8 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
   }
 
   public async updateMember(context: UpdateContext, member: UpdateMemberContext): Promise<UpdateResult> {
+    assert.ok(member.guildMember.user.bot)
+
     if (context.abortSignal.aborted) return { payload: undefined, roles: [], nicknames: [] }
 
     const conditions = context.application.core.discordUserConditions.getAllConditions(member.guildMember.guild.id)

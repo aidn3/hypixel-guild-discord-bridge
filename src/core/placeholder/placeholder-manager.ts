@@ -3,6 +3,7 @@ import assert from 'node:assert'
 import type { PlaceholderContext, PlaceholderResolver } from './common.js'
 import { CanNotResolve } from './common.js'
 import { SkyblockLevelResolver } from './resolvers/skyblock-level.js'
+import { SkyblockTypeResolver } from './resolvers/skyblock-type.js'
 import { UsernameResolver } from './resolvers/username-resolver.js'
 
 export class PlaceholderManager {
@@ -11,6 +12,7 @@ export class PlaceholderManager {
   constructor() {
     this.registerResolver(new UsernameResolver())
     this.registerResolver(new SkyblockLevelResolver())
+    this.registerResolver(new SkyblockTypeResolver())
   }
 
   public allResolvers(): PlaceholderResolver[] {

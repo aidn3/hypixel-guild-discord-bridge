@@ -205,6 +205,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
     } satisfies UpdateContext
 
     const guildMember = await interaction.member.fetch()
+    if (guildMember.user.bot) return false
 
     const user = await this.application.core.initializeDiscordUser(
       this.application.discordInstance.profileByUser(guildMember.user, guildMember)

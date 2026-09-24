@@ -40,6 +40,9 @@ export default class Take extends ChatCommandHandler {
     if (typeof amount === 'string') {
       context.resetCooldown()
       return amount
+    } else if (amount <= 0) {
+      context.resetCooldown()
+      return `${context.message.user.displayName()}, amount must be at least 1!`
     }
 
     const responsibleId = context.app.core.users.resolveUserId(context.message.user.getUserIdentifier())

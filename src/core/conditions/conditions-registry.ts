@@ -17,6 +17,7 @@ import { SkyblockLevel } from './handlers/skyblock-level.js'
 import { SkyblockNetworth } from './handlers/skyblock-networth.js'
 import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level.js'
 import { SkyblockTotalSlayerXp } from './handlers/skyblock-total-slayer-xp.js'
+import { SkyblockType } from './handlers/skyblock-type.js'
 import { SkyblockVampireLevel } from './handlers/skyblock-vampire-slayer-level.js'
 import { SkyblockSvenLevel } from './handlers/skyblock-wolf-slayer-level.js'
 import { SkyblockRevenantLevel } from './handlers/skyblock-zombie-slayer-level.js'
@@ -30,6 +31,7 @@ export class ConditionsRegistry {
     this.registerHandler(new HasDiscordRole())
     this.registerHandler(new InDiscordServer())
     this.registerHandler(new SkyblockLevel())
+    this.registerHandler(new SkyblockType())
     this.registerHandler(new CatacombsLevel())
     this.registerHandler(new DungeonsClassAverage())
     this.registerHandler(new KuudraCollection())
