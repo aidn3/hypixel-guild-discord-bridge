@@ -19,6 +19,7 @@ discord:
 
 prometheus:
   enabled: false
+  address: '127.0.0.1'
   port: 9095
   # Prefix for prometheus metrics database
   prefix: 'guild_bridge_'

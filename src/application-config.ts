@@ -13,6 +13,7 @@ export interface StaticDiscordConfig {
 
 export interface PrometheusConfig {
   enabled: boolean
+  address?: string
   port: number
   prefix: string
 }

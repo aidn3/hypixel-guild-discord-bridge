@@ -17,6 +17,7 @@ export const StaticDiscordConfig = t.iface([], {
 
 export const PrometheusConfig = t.iface([], {
   "enabled": "boolean",
+  "address": t.opt("string"),
   "port": "number",
   "prefix": "string",
 });
