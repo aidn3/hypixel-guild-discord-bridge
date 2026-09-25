@@ -87,7 +87,7 @@ export default class ConditionsManager extends SubInstance<DiscordInstance, Clie
   }
 
   public async updateMember(context: UpdateContext, member: UpdateMemberContext): Promise<UpdateResult> {
-    assert.ok(member.guildMember.user.bot)
+    assert.ok(!member.guildMember.user.bot)
 
     if (context.abortSignal.aborted) return { payload: undefined, roles: [], nicknames: [] }
 
