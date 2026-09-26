@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import type { Client, Message } from 'discord.js'
-import { escapeMarkdown } from 'discord.js'
+import { escapeMarkdown, MessageType } from 'discord.js'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
@@ -171,7 +171,7 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
   }
 
   private async getReplyUsername(messageEvent: Message): Promise<string | undefined> {
-    if (messageEvent.reference?.messageId === undefined) return
+    if (messageEvent.reference?.messageId === undefined || messageEvent.type !== MessageType.Reply) return
 
     const identifier = this.application.core.discordUserMessage.getUserIdentifier(messageEvent.reference.messageId)
     if (identifier !== undefined) {
@@ -197,8 +197,10 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
   }
 
   private cleanMessage(messageEvent: Message): string {
-    let content = messageEvent.cleanContent
+    const referenceMessage = messageEvent.messageSnapshots.at(0)
+    const targetMessage = referenceMessage ?? messageEvent
 
+    let content = targetMessage.cleanContent ?? ''
     content = this.cleanGuildEmoji(content).trim()
 
     if (messageEvent.attachments.size > 0) {
