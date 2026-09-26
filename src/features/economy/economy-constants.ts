@@ -35,7 +35,7 @@ export const EconomyRussianRoulette = { mute: Duration.minutes(15), win: 1, lose
 
 export const EconomyEventWin = { amount: 10 }
 
-export const EconomySacrifice = { tax: 50 }
+export const EconomySacrifice = { tax: 2 }
 
 export const EconomyRob = { risk: 2, cooldown: Duration.minutes(1), winChance: 0.35 }
 
