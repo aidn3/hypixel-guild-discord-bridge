@@ -124,6 +124,6 @@ export default class CurrentDungeon extends ChatCommandHandler {
       .profileByUuid(uuid)
       .then((profile) => profile.name)
       .catch(() => oldUsername)
-    return `${updatedUsername} (${className} ${parsedLevel.toFixed(0)})`
+    return `${updatedUsername} (${className} ${Math.floor(parsedLevel)})`
   }
 }
