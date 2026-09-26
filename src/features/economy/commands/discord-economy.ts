@@ -237,6 +237,18 @@ async function formatReason(
       const byUser = await formatUserId(context, entry.byUser)
       return `${amount} ${user} set by ${byUser}`
     }
+    case EconomyReason.UserPayTo: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `${amount} ${user} paid ${byUser}`
+    }
+    case EconomyReason.UserPayFrom: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `${amount} ${user} was paid by ${byUser}`
+    }
     case EconomyReason.WonSpontaneousEvent: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
