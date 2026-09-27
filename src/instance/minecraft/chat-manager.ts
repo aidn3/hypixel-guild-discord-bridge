@@ -48,7 +48,17 @@ import { stufDecode } from './common/stuf.js'
 import type MinecraftInstance from './minecraft-instance.js'
 
 export default class ChatManager extends SubInstance<MinecraftInstance, ClientSession> {
-  private readonly singleton = new PromiseQueue(1)
+  /*
+   * It is well known race condition may happen
+   * letting some messages arrive earlier than others if they take longer to process.
+   *
+   * However, forcing them to run in row will create a deadlock
+   * if an event expects more messages to be received
+   * while holding the older message from finishing its execution.
+   *
+   * For that reason, the bug is kept as is accepting the problem IF it ever happens.
+   */
+  private readonly singleton = new PromiseQueue(/* 1 */)
   private readonly chatModules: MinecraftChatMessage[]
   private readonly minecraftData
 
