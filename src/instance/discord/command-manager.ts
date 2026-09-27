@@ -4,6 +4,7 @@ import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
   Client,
+  ModalSubmitInteraction,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js'
 import {
@@ -75,6 +76,8 @@ import { translateNoPermission } from './common/discord-language.js'
 import type DiscordInstance from './discord-instance.js'
 
 export class CommandManager extends SubInstance<DiscordInstance, Client> {
+  private static readonly CommandReplyLife = Duration.seconds(3)
+
   readonly commands = new Collection<string, DiscordCommandHandler>()
 
   constructor(
@@ -166,18 +169,37 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     const user = await this.application.core.initializeDiscordUser(identifier)
 
     switch (command.origin) {
-      case CommandOrigin.Bridge:
+      case CommandOrigin.Bridge: {
+        if (!interaction.inGuild()) {
+          this.logger.warn('A guild-bound command was executed outside a guild somehow??')
+          return
+        }
+
+        const userPermission = await user.permission()
+        if (userPermission < command.permission) return
+
+        const context = this.fillContext(interaction, user, await user.permission())
+        await command.autoComplete(context)
+        break
+      }
+
       case CommandOrigin.Guild: {
         if (!interaction.inGuild()) {
           this.logger.warn('A guild-bound command was executed outside a guild somehow??')
           return
         }
 
+        // permission managed by discord-side's integration
+
         const context = this.fillContext(interaction, user, await user.permission())
         await command.autoComplete(context)
         break
       }
+
       case CommandOrigin.Private: {
+        const userPermission = await user.permission()
+        if (userPermission < command.permission) return
+
         const context = this.fillContext(interaction, user, await user.permission())
         await command.autoComplete(context)
         break
@@ -244,6 +266,12 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
         await interaction.editReply({
           content: 'There was an error while executing command'
         })
+        return
+      } else if (
+        interaction.isChatInputCommand() &&
+        interaction.createdTimestamp + CommandManager.CommandReplyLife.toMilliseconds() < Date.now()
+      ) {
+        this.logger.error('Interaction has already expired. can not reply with an error anymore.')
         return
       } else {
         await interaction.reply({
@@ -370,19 +398,21 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
             ]
           })
 
-          const modalResult = await interaction.awaitModalSubmit({ time: Duration.minutes(15).toMilliseconds() })
+          const modalResult = await interaction.awaitModalSubmit({
+            filter: (modal) => modal.customId === interaction.id && modal.user.id === interaction.user.id,
+            time: Duration.minutes(15).toMilliseconds()
+          })
           const instanceName = modalResult.fields.getRadioGroup('instance', true)
           targetInstance = instances.find((instance) => instance.getConfigName() === instanceName)
           assert.ok(targetInstance !== undefined)
           modifiedInteraction = Object.assign(modalResult, { options: interaction.options })
         }
 
-        const baseContext = this.fillContext(interaction, user, permission)
+        const baseContext = this.fillContext(modifiedInteraction, user, permission)
         const context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.RequireOne> = {
           ...baseContext,
           minecraftInstance: targetInstance
         }
-        context.interaction = modifiedInteraction
 
         await (command as DiscordBridgeCommandHandler<OptionMinecraftInstance.RequireOne>).handler(context)
         break
@@ -402,11 +432,10 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     }
   }
 
-  private fillContext<I extends ChatInputCommandInteraction | AutocompleteInteraction, U extends User>(
-    interaction: I,
-    user: U,
-    userPermission: Permission
-  ) {
+  private fillContext<
+    I extends ChatInputCommandInteraction | AutocompleteInteraction | ModalSubmitInteraction,
+    U extends User
+  >(interaction: I, user: U, userPermission: Permission) {
     return {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -421,7 +450,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
       allCommands: [...this.commands.values()],
 
       showPermissionDenied: async (requiredPermission: Exclude<Permission, Permission.Anyone>) => {
-        if (!interaction.isChatInputCommand()) return
+        if (!interaction.isChatInputCommand() && !interaction.isModalSubmit()) return
 
         if (interaction.deferred || interaction.replied) {
           await interaction.editReply({

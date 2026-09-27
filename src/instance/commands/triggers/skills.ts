@@ -93,10 +93,11 @@ export default class Skills extends ChatCommandHandler {
     } else if (index === xpRequired.length - 1) {
       return xpRequired.length
     } else {
-      const level = index + 1
+      let level = index + 1
       const remainingExperience = experience - xpRequired[index]
       const experienceRequiredNextLevel = xpRequired[index + 1] - xpRequired[index]
-      return level + remainingExperience / experienceRequiredNextLevel
+      level += remainingExperience / experienceRequiredNextLevel
+      return level
     }
   }
 }

@@ -134,11 +134,11 @@ export interface TextOption extends BaseOption {
   type: OptionType.Text
   style: InputStyle
   placeholder?: string
-  getOption: () => string
+  getOption: () => string | Promise<string>
   /**
    * @throws ValueRejected with the message being the reason why the value was rejected
    */
-  setOption: (value: string) => void
+  setOption: (value: string) => Promise<void> | void
   max: number
   min: number
 }
@@ -197,7 +197,7 @@ export class OptionsHandler {
     let messageDeleted = false
     const alreadySent = interaction.replied || interaction.deferred
     const payload = {
-      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+      components: [await new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       allowedMentions: { parse: [] }
     }
     const originalReply = alreadySent
@@ -246,7 +246,7 @@ export class OptionsHandler {
   ): Promise<void> {
     if (interaction !== undefined) {
       await interaction.update({
-        components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+        components: [await new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [] }
       })
@@ -255,7 +255,7 @@ export class OptionsHandler {
 
     assert.ok(this.interaction)
     await this.interaction.editReply({
-      components: [new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
+      components: [await new ViewBuilder(this.mainCategory, this.ids, this.path, this.enabled).create()],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] }
     })
@@ -352,6 +352,7 @@ export class OptionsHandler {
     option: TextOption
   ): Promise<boolean> {
     assert.ok(interaction.isButton())
+    const resolvedOptions = await option.getOption()
     await interaction.showModal({
       customId: interaction.customId,
       title: `Setting ${option.name}`,
@@ -366,10 +367,10 @@ export class OptionsHandler {
               label: option.name,
               placeholder: option.placeholder,
 
-              required: true,
+              required: option.min > 0,
               minLength: option.min,
               maxLength: option.max,
-              value: option.getOption()
+              value: resolvedOptions
             }
           ]
         }
@@ -386,11 +387,20 @@ export class OptionsHandler {
 
         const value = modalInteraction.fields.getTextInputValue(interaction.customId)
         try {
-          option.setOption(value)
-          await this.updateView(modalInteraction)
+          const setTask = option.setOption(value)
+          if (setTask instanceof Promise) {
+            await modalInteraction.deferReply({ flags: MessageFlags.Ephemeral })
+            await setTask
+            await modalInteraction.editReply('Successfully changed.')
+            await this.updateView()
+          } else {
+            await this.updateView(modalInteraction)
+          }
         } catch (error: unknown) {
           if (error instanceof ValueRejected) {
-            await modalInteraction.reply({ content: error.reason, flags: MessageFlags.Ephemeral })
+            await (modalInteraction.replied
+              ? modalInteraction.editReply({ content: error.reason })
+              : modalInteraction.reply({ content: error.reason, flags: MessageFlags.Ephemeral }))
           } else {
             throw error
           }
@@ -571,15 +581,15 @@ class ViewBuilder {
     private readonly enabled: boolean
   ) {}
 
-  public create(): ContainerComponentData {
+  public async create(): Promise<ContainerComponentData> {
     if (this.hasCreated) throw new Error('This instance has already been used to create a view.')
     this.hasCreated = true
 
-    this.createCategoryView(this.getOption())
+    await this.createCategoryView(this.getOption())
     return { type: ComponentType.Container, components: this.components } satisfies ContainerComponentData
   }
 
-  private createCategoryView(categoryOption: CategoryOption | EmbedCategoryOption): void {
+  private async createCategoryView(categoryOption: CategoryOption | EmbedCategoryOption): Promise<void> {
     this.addTitleIfPossible(categoryOption)
 
     for (const option of categoryOption.options) {
@@ -591,7 +601,7 @@ class ViewBuilder {
           break
         }
         case OptionType.EmbedCategory: {
-          this.addEmbedCategory(option)
+          await this.addEmbedCategory(option)
           break
         }
         case OptionType.Label: {
@@ -624,7 +634,7 @@ class ViewBuilder {
           break
         }
         case OptionType.Text: {
-          this.addText(option)
+          await this.addText(option)
           break
         }
         case OptionType.Number: {
@@ -691,7 +701,7 @@ class ViewBuilder {
     } satisfies SectionComponentData)
   }
 
-  private addEmbedCategory(option: EmbedCategoryOption): void {
+  private async addEmbedCategory(option: EmbedCategoryOption): Promise<void> {
     this.tryApplySeperator(SeparatorSpacingSize.Small)
 
     let label = `## ${option.name}`
@@ -699,7 +709,7 @@ class ViewBuilder {
 
     this.append({ type: ComponentType.TextDisplay, content: label })
 
-    this.createCategoryView(option)
+    await this.createCategoryView(option)
     this.categoryEnded = true
   }
 
@@ -896,20 +906,21 @@ class ViewBuilder {
     })
   }
 
-  private addText(option: TextOption): void {
+  private async addText(option: TextOption): Promise<void> {
     let label = bold(option.name)
     if (option.description !== undefined) label += `\n-# ${option.description}`
     let buttonLabel: string
 
     switch (option.style) {
       case InputStyle.Tiny: {
-        buttonLabel = option.getOption()
+        buttonLabel = await option.getOption()
         break
       }
       case InputStyle.Short:
       case InputStyle.Long: {
+        const resolvedOption = await option.getOption()
         buttonLabel = 'Edit'
-        label += `\n> -# ${escapeMarkdown(this.shortenString(option.getOption(), 200))}`
+        label += `\n> -# ${escapeMarkdown(this.shortenString(resolvedOption, 200))}`
       }
     }
 

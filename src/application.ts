@@ -3,6 +3,7 @@
 
 import assert from 'node:assert'
 import fs from 'node:fs'
+import fsAsync from 'node:fs/promises'
 import path from 'node:path'
 import { setImmediate } from 'node:timers/promises'
 
@@ -29,6 +30,7 @@ import { History } from './features/history/history.js'
 import { MinecraftActionButtons } from './features/minecraft-actions/minecraft-action-buttons.js'
 import { MinecraftGuildsManager } from './features/minecraft-guilds/minecraft-guilds-manager.js'
 import { MinecraftStatus } from './features/minecraft-status/minecraft-status.js'
+import { SpontaneousEvents } from './features/spontaneous-events/spontaneous-events.js'
 import AutoRestart from './instance/auto-restart.js'
 import { CommandsInstance } from './instance/commands/commands-instance.js'
 import DiscordInstance from './instance/discord/discord-instance.js'
@@ -38,10 +40,13 @@ import MinecraftInstance from './instance/minecraft/minecraft-instance.js'
 import { MinecraftManager } from './instance/minecraft/minecraft-manager.js'
 import PrometheusInstance from './instance/prometheus/prometheus-instance.js'
 import { SkyblockReminders } from './instance/skyblock-reminders.js'
-import { SpontaneousEvents } from './instance/spontaneous-events/spontaneous-events.js'
+import Duration from './utility/duration.js'
+import { setIntervalAsync } from './utility/scheduling.js'
 import { gracefullyExitProcess, sleep } from './utility/shared-utility.js'
 
 export default class Application extends Emittery<ApplicationEvents> {
+  private static readonly BackupMaxLife = Duration.days(60)
+
   public readonly hypixelApi: Hypixel
   public readonly mojangApi: MojangApi
   public readonly urchinApi: Urchin | undefined
@@ -131,6 +136,28 @@ export default class Application extends Emittery<ApplicationEvents> {
     this.skyblockReminders = new SkyblockReminders(this)
     this.spontaneousEvents = new SpontaneousEvents(this)
     this.autoRestart = new AutoRestart(this)
+
+    void this.cleanBackup().catch(this.errorHandler.promiseCatch('cleaning old backups'))
+    setIntervalAsync(() => this.cleanBackup(), {
+      errorHandler: this.errorHandler.promiseCatch('cleaning old backups'),
+      delay: Duration.days(1),
+      abortSignal: undefined
+    })
+  }
+
+  private async cleanBackup(): Promise<void> {
+    const files = await fsAsync.readdir(this.backupDirectory, { withFileTypes: true })
+    const oldestTime = Date.now() - Application.BackupMaxLife.toMilliseconds()
+
+    for (const file of files) {
+      if (!file.isFile()) continue
+      const filePath = path.join(this.backupDirectory, file.name)
+      const fileStats = await fsAsync.stat(filePath)
+      if (fileStats.mtimeMs < oldestTime) {
+        this.logger.debug(`Deleting old backup file: ${filePath}`)
+        await fsAsync.rm(filePath)
+      }
+    }
   }
 
   public getConfigFilePath(filename: string): string {

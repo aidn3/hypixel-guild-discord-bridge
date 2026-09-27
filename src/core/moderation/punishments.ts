@@ -4,7 +4,7 @@ import type Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
-import type { BasePunishment } from '../../common/application-event.js'
+import type { BasePunishment, PunishmentType } from '../../common/application-event.js'
 import type { SqliteManager } from '../../common/sqlite-manager.js'
 import type { User, UserIdentifier } from '../../common/user.js'
 
@@ -64,19 +64,19 @@ export default class Punishments {
     return transaction()
   }
 
-  public forgive(user: User): SavedPunishment[] {
+  public forgiveByUser(user: User, type: PunishmentType): SavedPunishment[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
       const foundEntries = this.getPunishments(database, user.allIdentifiers(), true, -1, -1).page
       if (foundEntries.length === 0) return []
 
-      let forgivenQuery = `UPDATE "punishments" SET forgiven = (unixepoch()) WHERE id IN (`
+      let forgivenQuery = `UPDATE "punishments" SET forgiven = (unixepoch()) WHERE type = ? AND id IN (`
       forgivenQuery += foundEntries.map(() => '?').join(', ')
       forgivenQuery += ')'
 
       const parameters = foundEntries.map((entry) => entry.id)
 
-      const updateResult = database.prepare(forgivenQuery).run(...parameters).changes
+      const updateResult = database.prepare(forgivenQuery).run(type, ...parameters).changes
       assert.strictEqual(foundEntries.length, updateResult)
 
       return this.convertDatabaseFields(foundEntries)

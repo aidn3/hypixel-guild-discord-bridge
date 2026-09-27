@@ -3,14 +3,20 @@ import type MinecraftInstance from '../minecraft-instance.js'
 
 import Antispam from './antispam.js'
 import ArabicFixer from './arabic-fixer.js'
+import CharacterSanitizer from './character-sanitizer.js'
+import { CodecSanitizer } from './codec-sanitizer.js'
 import DiscordSanitizer from './discord-sanitizer.js'
 import EmojiSanitizer from './emoji-sanitizer.js'
 import EzSanitizer from './ez-sanitizer.js'
 import LineSanitizer from './line-sanitizer.js'
 import { LinksSanitizer } from './links-sanitizer.js'
+import SpaceSanitizer from './space-sanitizer.js'
 
 export class Sanitizer {
   private readonly line: LineSanitizer
+  private readonly space: SpaceSanitizer
+  private readonly codec: CodecSanitizer
+  private readonly character: CharacterSanitizer
   private readonly link: LinksSanitizer
   private readonly emoji: EmojiSanitizer
   private readonly ez: EzSanitizer
@@ -20,17 +26,23 @@ export class Sanitizer {
 
   constructor(application: Application) {
     this.line = new LineSanitizer()
+    this.codec = new CodecSanitizer()
+    this.character = new CharacterSanitizer()
     this.link = new LinksSanitizer(application.core.minecraftConfigurations)
     this.emoji = new EmojiSanitizer()
     this.ez = new EzSanitizer()
     this.discordSanitizer = new DiscordSanitizer()
     this.arabicFixer = new ArabicFixer(application.core.minecraftConfigurations)
     this.antispam = new Antispam(application.core.minecraftConfigurations)
+    this.space = new SpaceSanitizer()
   }
 
   public async sanitizeChatMessage(instanceName: MinecraftInstance, message: string): Promise<string> {
-    message = this.line.process(message)
     message = await this.link.process(message)
+    message = this.line.process(message)
+    message = this.codec.process(message)
+    message = this.character.process(message)
+    message = this.space.process(message)
     message = this.emoji.process(message)
     message = this.ez.process(message)
     message = this.discordSanitizer.process(message)
@@ -41,6 +53,11 @@ export class Sanitizer {
   }
 
   public sanitizeGenericCommand(message: string): string {
-    return this.line.process(message)
+    message = this.line.process(message)
+    message = this.codec.process(message)
+    message = this.character.process(message)
+    message = this.space.process(message)
+
+    return message
   }
 }

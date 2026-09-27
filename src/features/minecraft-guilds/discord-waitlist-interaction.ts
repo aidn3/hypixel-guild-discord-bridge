@@ -335,12 +335,36 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     const sentWaitlist = this.database.getWaitlistByMessageId(interaction.message.id)
     if (sentWaitlist === undefined) return
 
+    assert.ok(sentWaitlist.discord !== undefined)
+    if (
+      sentWaitlist.discord.channelId !== interaction.channelId ||
+      sentWaitlist.discord.messageId !== interaction.message.id
+    ) {
+      await interaction.reply({
+        content: `This can only be done on the original channel/message!`,
+        flags: MessageFlags.Ephemeral
+      })
+      return
+    }
+
     const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === sentWaitlist.guildId)
     assert.ok(savedGuild !== undefined)
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const profile = await this.application.mojangApi.profileByUuid(sentWaitlist.mojangId)
+
+    const user = await this.application.core.initializeMinecraftUser(profile, { guild: interaction.guild ?? undefined })
+
+    const punishments = user.activePunishments().longestPunishment(PunishmentType.Ban)
+    if (punishments !== undefined) {
+      await interaction.editReply(
+        `${formatUser(user)} is banned.` +
+          `\n**Expires:** <t:${Math.floor(punishments.till / 1000)}:R>` +
+          `\n**Reason:** ${escapeMarkdown(punishments.reason)}`
+      )
+      return
+    }
 
     let instance: MinecraftInstance | undefined = undefined
     for (const potentialInstance of this.application.minecraftManager.getAllInstances()) {
@@ -372,6 +396,18 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     const sentWaitlist = this.database.getWaitlistByMessageId(interaction.message.id)
     if (sentWaitlist === undefined) return
 
+    assert.ok(sentWaitlist.discord !== undefined)
+    if (
+      sentWaitlist.discord.channelId !== interaction.channelId ||
+      sentWaitlist.discord.messageId !== interaction.message.id
+    ) {
+      await interaction.reply({
+        content: `This can only be done on the original channel/message!`,
+        flags: MessageFlags.Ephemeral
+      })
+      return
+    }
+
     const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === sentWaitlist.guildId)
     assert.ok(savedGuild !== undefined)
 
@@ -392,6 +428,18 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
   private async handleReschedule(interaction: ButtonInteraction): Promise<void> {
     const waitlistEntry = this.database.getWaitlistByMessageId(interaction.message.id)
     if (waitlistEntry === undefined) return
+
+    assert.ok(waitlistEntry.discord !== undefined)
+    if (
+      waitlistEntry.discord.channelId !== interaction.channelId ||
+      waitlistEntry.discord.messageId !== interaction.message.id
+    ) {
+      await interaction.reply({
+        content: `This can only be done on the original channel/message!`,
+        flags: MessageFlags.Ephemeral
+      })
+      return
+    }
 
     const savedGuild = this.database.allGuilds().find((savedEntry) => savedEntry.id === waitlistEntry.guildId)
     assert.ok(savedGuild !== undefined)

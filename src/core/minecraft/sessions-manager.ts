@@ -13,7 +13,8 @@ export class SessionsManager {
 
   public getSessionsFactory(instanceName: string): CacheFactory {
     return (options: { username: string; cacheName: string }): Cache => {
-      return new Session(this, this.sqliteManager, this.logger, instanceName, options.username, options.cacheName)
+      assert.strictEqual(instanceName, options.username)
+      return new Session(this, this.sqliteManager, this.logger, options.username, options.cacheName)
     }
   }
 
@@ -49,7 +50,7 @@ export class SessionsManager {
     return transaction()
   }
 
-  public setSession(instanceName: string, name: string, cacheName: string, value: Record<string, unknown>): void {
+  public setSession(name: string, cacheName: string, value: Record<string, unknown>): void {
     const database = this.sqliteManager.getDatabase()
     const statement = database.prepare(
       'INSERT OR REPLACE INTO "mojangSessions" (name, cacheName, value, createdAt) VALUES (?, ?, ?, ?)'
@@ -193,7 +194,6 @@ class Session implements Cache {
     private readonly sessionsManager: SessionsManager,
     private readonly sqliteManager: SqliteManager,
     private readonly logger: Logger,
-    readonly instanceName: string,
     readonly name: string,
     readonly cacheName: string
   ) {}
@@ -227,7 +227,7 @@ class Session implements Cache {
   }
 
   private setCachedSync(value: Record<string, unknown>): void {
-    this.sessionsManager.setSession(this.instanceName, this.name, this.cacheName, value)
+    this.sessionsManager.setSession(this.name, this.cacheName, value)
   }
 
   async setCachedPartial(value: Record<string, unknown>): Promise<void> {
@@ -235,7 +235,7 @@ class Session implements Cache {
 
     const transaction = this.sqliteManager.getDatabase().transaction(() => {
       const partial = this.getCacheSync()
-      this.setCachedSync({ partial, ...value })
+      this.setCachedSync({ ...partial, ...value })
     })
 
     transaction()

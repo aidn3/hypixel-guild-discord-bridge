@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+import crypto from 'node:crypto'
 import Http from 'node:http'
 
 import type { Logger } from 'log4js'
@@ -6,7 +8,10 @@ import { SocksClient } from 'socks'
 
 import type { ProxyConfig } from '../../../core/minecraft/sessions-manager.js'
 import { ProxyProtocol } from '../../../core/minecraft/sessions-manager.js'
+import Duration from '../../../utility/duration.js'
 import { QuitProxyError } from '../handlers/state-handler.js'
+
+const DefaultProxyTimeout = Duration.seconds(60)
 
 export function resolveProxyIfExist(
   logger: Logger,
@@ -17,10 +22,10 @@ export function resolveProxyIfExist(
   }
 ): Partial<ClientProxyOptions> {
   if (!proxyConfig) return {}
-  logger.debug(`Proxy enabled with params: ${JSON.stringify(proxyConfig)}`)
+  const serializedProxy = serializeRedactedProxy(proxyConfig)
+  logger.debug(`Proxy enabled with params: ${serializedProxy.redacted}`)
+  logger.debug(`Proxy hash: ${serializedProxy.hashed}`)
 
-  const proxyHost = proxyConfig.host
-  const proxyPort = proxyConfig.port
   const protocol = proxyConfig.protocol
   const host = defaultBotOptions.host
   const port = defaultBotOptions.port
@@ -28,7 +33,7 @@ export function resolveProxyIfExist(
   let connect: (client: Client) => void
   switch (protocol) {
     case ProxyProtocol.Http: {
-      connect = createHttpConnectFunction(logger, proxyHost, proxyPort, host, port)
+      connect = createHttpConnectFunction(logger, proxyConfig, host, port)
       break
     }
 
@@ -46,29 +51,47 @@ export function resolveProxyIfExist(
   return { connect }
 }
 
-function createHttpConnectFunction(logger: Logger, proxyHost: string, proxyPort: number, host: string, port: number) {
+function createHttpConnectFunction(
+  logger: Logger,
+  proxyOptions: Omit<ProxyConfig, 'protocol'>,
+  host: string,
+  port: number
+) {
+  // code has not been tested yet
+  assert.fail('Not supported')
+
   return function (client: Client): void {
     logger.debug('connecting to proxy...')
 
     const request = Http.request({
-      host: proxyHost,
-      port: proxyPort,
+      host: proxyOptions.host,
+      port: proxyOptions.port,
+      username: proxyOptions.user,
+      password: proxyOptions.password,
       method: 'CONNECT',
-      path: host + ':' + String(port)
+      path: host + ':' + String(port),
+      timeout: DefaultProxyTimeout.toMilliseconds()
     })
     request.end()
 
-    request.on('connect', (response, stream) => {
+    request.once('connect', (response, stream) => {
+      if (response.statusCode !== 200) {
+        request.destroy(new Error(`Status code not 200. Actual=${response.statusCode}`))
+        return
+      }
+
       logger.debug('connection to proxy established. forwarding proxied connection to minecraft')
       client.setSocket(stream)
       client.emit('connect')
     })
 
     request.once('error', (error) => {
-      client.emit('error', new Error('proxy encountered a problem', { cause: error }))
+      client.emit('error', new Error(QuitProxyError, { cause: error }))
+      logger.warn('ending minecraft session if any exist')
+      client.end()
 
       logger.error('destroying proxy socket')
-      request.destroy(error)
+      request.destroy()
     })
   }
 }
@@ -91,6 +114,8 @@ function createSocksConnectFunction(
         userId: proxyOptions.user,
         password: proxyOptions.password
       },
+
+      timeout: DefaultProxyTimeout.toMilliseconds(),
       command: 'connect',
       destination: {
         host,
@@ -117,6 +142,30 @@ function createSocksConnectFunction(
         logger.warn('ending minecraft session if any exist')
         client.end()
       })
+  }
+}
+
+function serializeRedactedProxy(config: ProxyConfig) {
+  return {
+    redacted: JSON.stringify({
+      id: config.id,
+      protocol: config.protocol,
+      host: '<REDACTED>',
+      port: config.port,
+      user: '<REDACTED>',
+      password: '<REDACTED>'
+    } satisfies ProxyConfig),
+
+    hashed: crypto.hash(
+      'sha256',
+      JSON.stringify({
+        protocol: config.protocol,
+        host: config.host,
+        port: config.port,
+        user: config.user,
+        password: config.password
+      } satisfies Omit<ProxyConfig, 'id'>)
+    )
   }
 }
 

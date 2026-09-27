@@ -18,7 +18,9 @@ export default {
   handler: async function (context) {
     assert.ok(context.interaction.inGuild())
 
-    const entries = context.application.core.discordLeaderboards.getAll()
+    const entries = context.application.core.discordLeaderboards
+      .getAll()
+      .filter((leaderboard) => leaderboard.guildId === undefined || leaderboard.guildId === context.interaction.guildId)
 
     let result = ''
     result +=

@@ -1,13 +1,14 @@
 import assert from 'node:assert'
 
+import { PunishmentType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { Status } from '../../../common/connectable-instance.js'
+import type { MojangProfile } from '../../../common/user.js'
 import { GuildInviteStatus } from '../../../instance/minecraft/guild-manager.js'
-import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
-import type { MinecraftManager } from '../../../instance/minecraft/minecraft-manager.js'
-import Duration from '../../../utility/duration.js'
-import type { Database, MinecraftGuild } from '../database.js'
+import { formatTime, searchObjects } from '../../../utility/shared-utility.js'
+import type { Database, MinecraftGuild, WaitlistEntry } from '../database.js'
+
+import { findInstanceByGuild } from './utlity.js'
 
 export default class Invite extends ChatCommandHandler {
   constructor(private readonly database: Database) {
@@ -24,13 +25,15 @@ export default class Invite extends ChatCommandHandler {
     const mojangProfile = context.message.user.mojangProfile()
     if (mojangProfile === undefined) return 'You can only this command in-game or when you are linked'
 
-    const waitlistEntry = this.database.getWaitlistByMojangId(mojangProfile.id)
-    if (waitlistEntry === undefined) return 'You are not in the guild join waitlist'
+    const savedGuild = this.selectGuild(context, mojangProfile)
+    if (typeof savedGuild === 'string') return savedGuild
 
-    const savedGuild = this.database.allGuilds().find((guild) => guild.id === waitlistEntry.guildId)
-    assert.ok(savedGuild !== undefined)
+    const punishments = context.message.user.activePunishments().longestPunishment(PunishmentType.Ban)
+    if (punishments !== undefined) {
+      return `You are banned till ${formatTime(punishments.till - Date.now())}.`
+    }
 
-    const instance = await this.findInstance(savedGuild, context.app.minecraftManager)
+    const instance = await findInstanceByGuild(context.app, savedGuild)
     if (instance === undefined) return 'Can not process this request right now due to inability to connect to Hypixel'
 
     const result = await instance.guildManager.invite(mojangProfile.name).catch(() => undefined)
@@ -76,21 +79,54 @@ export default class Invite extends ChatCommandHandler {
     }
   }
 
-  async findInstance(
-    savedGuild: MinecraftGuild,
-    minecraftManager: MinecraftManager
-  ): Promise<MinecraftInstance | undefined> {
-    for (const potentialInstance of minecraftManager.getAllInstances()) {
-      if (potentialInstance.currentStatus() !== Status.Connected) continue
+  private selectGuild(context: ChatCommandContext, mojangProfile: MojangProfile): MinecraftGuild | string {
+    const waitlistEntries = this.database.getWaitlistByMojangUuid(mojangProfile.id)
+    if (waitlistEntries.length === 0) return 'You are not in the guild join waitlist'
 
-      const guildListResult = await potentialInstance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
-      if (guildListResult === undefined) continue
+    if (waitlistEntries.length === 1) {
+      const waitlistEntry = waitlistEntries[0]
+      const confirmStatus = this.confirmWaitlist(waitlistEntry)
+      if (confirmStatus !== undefined) return confirmStatus
 
-      if (guildListResult.name.trim().toLowerCase() === savedGuild.name.trim().toLowerCase()) {
-        return potentialInstance
-      }
+      const savedGuild = this.database.allGuilds().find((guild) => guild.id === waitlistEntry.guildId)
+      assert.ok(savedGuild !== undefined)
+      return savedGuild
     }
 
+    const savedGuilds = this.database.allGuilds()
+    const searchQuery = context.args
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+      .join(' ')
+    if (searchQuery.length === 0) {
+      return `Must select a guild: ${savedGuilds.map((guild) => guild.name).join(', ')}`
+    }
+    const chosenGuild = searchObjects(searchQuery, savedGuilds, (guild) => guild.name).at(0)
+    if (chosenGuild === undefined) {
+      return `Must select a guild: ${savedGuilds.map((guild) => guild.name).join(', ')}`
+    }
+
+    return chosenGuild
+  }
+
+  private confirmWaitlist(waitlist: WaitlistEntry): string | undefined {
+    const currentTime = Date.now()
+    if (waitlist.noInviteTill > currentTime) {
+      return (
+        `You have rescheduled your invite.` +
+        `\nYou will might get reconsidered again in ${formatTime(waitlist.noInviteTill - currentTime)}`
+      )
+    }
+
+    if (waitlist.invitedTill === 0) {
+      return `You are already on the waitlist but it is not your turn yet.`
+    }
+
+    if (waitlist.invitedTill < currentTime) {
+      return 'You were invited but it expired. You need to join the waitlist again :('
+    }
+
+    // accepted
     return undefined
   }
 }

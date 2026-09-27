@@ -6,12 +6,14 @@ import * as Client from 'prom-client'
 
 import type { PrometheusConfig } from '../../application-config.js'
 import type Application from '../../application.js'
-import { Instance } from '../../common/instance.js'
+import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
+import Duration from '../../utility/duration.js'
+import { Timeout } from '../../utility/timeout.js'
 
 import ApplicationMetrics from './application-metrics.js'
 import GuildOnlineMetrics from './guild-online-metrics.js'
 
-export default class PrometheusInstance extends Instance {
+export default class PrometheusInstance extends ConnectableInstance {
   private readonly httpServer
   private readonly register
 
@@ -74,15 +76,61 @@ export default class PrometheusInstance extends Instance {
         response.end()
       }
     })
-
-    this.logger.debug(`Listening on port ${this.config.port}`)
-    this.httpServer.listen(this.config.port)
-
-    this.logger.debug('prometheus is enabled')
+    this.httpServer.unref()
   }
 
   private async collectMetrics(): Promise<void> {
     this.logger.debug('Collecting metrics')
     await this.guildOnlineMetrics.collectMetrics(this.application)
+  }
+
+  public override async connect(): Promise<void> {
+    if (this.currentStatus() === Status.Connected) {
+      this.logger.warn('Received connect() signal while already connected. ignoring this signal.')
+      return
+    } else if (this.currentStatus() === Status.Connecting) {
+      this.logger.warn('Received connect() signal while already connecting. ignoring this signal.')
+      return
+    }
+
+    await this.setAndBroadcastNewStatus(Status.Connecting)
+    const listeningTimeout = new Timeout<Error | undefined>(
+      Duration.seconds(30).toMilliseconds(),
+      new Error('Timed out waiting to start listening')
+    )
+    const listeningCallback = () => {
+      this.logger.debug(`Listening on ${this.config.address}:${this.config.port}`)
+      listeningTimeout.resolve(undefined)
+    }
+    this.httpServer.once('listening', listeningCallback)
+    const errorCallback = (error: Error) => {
+      listeningTimeout.resolve(error)
+    }
+    this.httpServer.once('error', errorCallback)
+
+    this.httpServer.listen(this.config.port, this.config.address ?? '0.0.0.0') // 0.0.0.0 address is used by default for backward compatibility
+    const listeningResult = await listeningTimeout.wait()
+    this.httpServer.removeListener('listening', listeningCallback)
+    this.httpServer.removeListener('error', errorCallback)
+
+    if (listeningResult instanceof Error) {
+      await this.setAndBroadcastNewStatus(Status.Failed)
+      throw listeningResult
+    }
+
+    await this.setAndBroadcastNewStatus(Status.Connected)
+    this.logger.debug('Prometheus is enabled')
+  }
+
+  public override async disconnect(): Promise<void> {
+    const currentStatus = this.currentStatus()
+    if (currentStatus !== Status.Connected) {
+      this.logger.warn(
+        `Received signal to disconnect() while not connected. current status=${currentStatus}. ignoring this signal.`
+      )
+    }
+
+    this.httpServer.close()
+    await this.setAndBroadcastNewStatus(Status.Disconnected)
   }
 }

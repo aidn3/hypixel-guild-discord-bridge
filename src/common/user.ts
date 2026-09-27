@@ -85,7 +85,8 @@ export class AnonymousUser {
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
       const configurations = this.application.core.minecraftConfigurations
-      if (mojangProfile.name.toLowerCase() === configurations.getAdminUsername().toLowerCase()) {
+      const adminUuid = configurations.getAdminMojangUuid()
+      if (adminUuid.length > 0 && mojangProfile.id.toLowerCase() === adminUuid.toLowerCase()) {
         const minecraftPermission = Permission.BridgeAdmin
         if (minecraftPermission > permission) permission = minecraftPermission
       }
@@ -148,16 +149,14 @@ export class AnonymousUser {
       if (this.application.minecraftManager.isMinecraftBot(mojangProfile.name)) {
         return true
       }
-      if (
-        mojangProfile.name.toLowerCase() ===
-        this.application.core.minecraftConfigurations.getAdminUsername().toLowerCase()
-      ) {
+      const adminUuid = this.application.core.minecraftConfigurations.getAdminMojangUuid()
+      if (adminUuid.length > 0 && mojangProfile.id.toLowerCase() === adminUuid.toLowerCase()) {
         return true
       }
       if (
         this.context.moderation
           .getImmuneMojangPlayers()
-          .some((entry) => entry.toLowerCase() === mojangProfile.name.toLowerCase())
+          .some((entry) => entry.toLowerCase() === mojangProfile.id.toLowerCase())
       ) {
         return true
       }
@@ -282,10 +281,18 @@ export class User extends AnonymousUser {
     return this.context.punishments.findByUser(this, false, offset, limit)
   }
 
-  public async forgive(executor: InformEvent): Promise<SavedPunishment[]> {
-    const savedPunishments = this.context.punishments.forgive(this)
+  public async forgiveMute(executor: InformEvent): Promise<SavedPunishment[]> {
+    const savedPunishments = this.context.punishments.forgiveByUser(this, PunishmentType.Mute)
 
-    await this.application.emit('punishmentForgive', { ...executor, user: this })
+    await this.application.emit('punishmentForgive', { ...executor, user: this, type: PunishmentType.Mute })
+
+    return savedPunishments
+  }
+
+  public async forgiveBan(executor: InformEvent): Promise<SavedPunishment[]> {
+    const savedPunishments = this.context.punishments.forgiveByUser(this, PunishmentType.Ban)
+
+    await this.application.emit('punishmentForgive', { ...executor, user: this, type: PunishmentType.Ban })
 
     return savedPunishments
   }

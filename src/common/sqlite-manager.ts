@@ -1,5 +1,6 @@
 import assert from 'node:assert'
 import fs from 'node:fs'
+import path from 'node:path'
 
 import Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
@@ -67,9 +68,25 @@ export class SqliteManager {
     const database = this.getDatabase()
     const postCleanupActions: (() => void)[] = []
 
+    const logger = this.logger
+    /**
+     * Perform integrity checks between destructive actions
+     * @param type Whether to do a full or a quick check
+     */
+    function integrityCheck(type: 'quick' | 'full') {
+      logger.trace(`Performing ${type} database integrity check`)
+
+      const integrityCheck = database.pragma(type === 'quick' ? 'quick_check' : 'integrity_check', { simple: true })
+      assert.strictEqual(integrityCheck, 'ok', 'Database integrity has been violated?')
+
+      const foreignKeyCheck = database.pragma('foreign_key') as unknown[]
+      if (foreignKeyCheck.length > 0) throw new ForeignKeyViolation(foreignKeyCheck)
+    }
+
     const transaction = database.transaction(() => {
       const newlyCreated = this.isNewlyCreated()
       let currentVersion = database.pragma('user_version', { simple: true }) as number
+      if (!newlyCreated) integrityCheck('full')
 
       let finished = false
       let changed = false
@@ -81,6 +98,7 @@ export class SqliteManager {
           this.logger.debug(`Migrating database from version ${currentVersion} to ${newVersion}`)
           migrator(database, this.logger, postCleanupActions, newlyCreated)
 
+          integrityCheck('quick')
           database.pragma(`user_version = ${newVersion}`)
           currentVersion = newVersion
           changed = true
@@ -92,6 +110,8 @@ export class SqliteManager {
           this.migrators.length,
           `migration process failed to reach the target version somehow?? current=${currentVersion},target=${this.migrators.length}`
         )
+
+        integrityCheck('full')
         if (changed && !newlyCreated) {
           const backupPath = this.application.getBackupPath(sqliteName)
           this.logger.debug(`Backing up old database before committing changes. backup path: ${backupPath}`)
@@ -132,7 +152,12 @@ export class SqliteManager {
 
   public backup(destination: string): void {
     assert.ok(this.configFilePath !== undefined, 'Can not backup since the database in memory only')
-    fs.copyFileSync(this.configFilePath, destination)
+
+    const snapshot = new Database(this.configFilePath, { readonly: true, fileMustExist: true })
+    snapshot.prepare(`VACUUM INTO ?`).run(path.normalize(destination))
+    snapshot.close()
+
+    assert.ok(fs.statSync(destination).isFile(), 'database backup file has not been written??')
   }
 
   public clean(): void {
@@ -165,3 +190,9 @@ export type Migrator = (
   postCleanupActions: (() => void)[],
   newlyCreated: boolean
 ) => void
+
+export class ForeignKeyViolation extends Error {
+  constructor(public readonly violations: unknown[]) {
+    super('Database foreign key integrity check failed')
+  }
+}

@@ -9,8 +9,6 @@ import type ClientSession from '../client-session.js'
 import type MinecraftInstance from '../minecraft-instance.js'
 
 export default class PlayerMuted extends SubInstance<MinecraftInstance, ClientSession> {
-  public static readonly DefaultMessage = '{username} is currently muted and is unable to message right now.'
-
   constructor(
     application: Application,
     clientInstance: MinecraftInstance,
@@ -30,9 +28,9 @@ export default class PlayerMuted extends SubInstance<MinecraftInstance, ClientSe
         if (!event.message.startsWith("Hey! I'm currently muted")) return
         if (!event.rawMessage.includes('§eHey!')) return
 
-        let message = this.application.core.languageConfigurations.getAnnounceMutedPlayer()
-        message = message.replaceAll('{username}', event.user.displayName())
-
+        const message = this.application.i18n.t(($) => $['minecraft.player-muted'], {
+          username: event.user.displayName()
+        })
         await this.application.emit('broadcast', {
           ...this.eventHelper.fillBaseEvent(),
 

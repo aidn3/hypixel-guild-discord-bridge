@@ -60,7 +60,7 @@ export class HypixelFetcher {
           baseURL: this.baseUrl,
           params: parameters,
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          headers: { 'API-Key': this.key }
+          headers: { 'API-Key': this.key, 'User-Agent': 'Axios' } // generic user-agent since this is controlled by key
         })
 
         assert.ok(result.status === 200)

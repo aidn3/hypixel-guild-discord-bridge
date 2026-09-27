@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import punycode from 'punycode'
 
 import type {
   APIEmbed,
@@ -11,6 +12,7 @@ import type {
 import {
   ButtonStyle,
   ComponentType,
+  escapeInlineCode,
   escapeMarkdown,
   italic,
   MessageFlags,
@@ -18,6 +20,7 @@ import {
   SlashCommandBuilder,
   TextInputStyle
 } from 'discord.js'
+import isLocalhost from 'is-localhost-ip'
 
 import type Application from '../../../application.js'
 import { Color, Permission } from '../../../common/application-event.js'
@@ -40,7 +43,7 @@ import { Timeout } from '../../../utility/timeout.js'
 import MinecraftInstance from '../../minecraft/minecraft-instance.js'
 import { DefaultCommandFooter, MaxMinecraftInstances } from '../common/discord-config.js'
 import type { CategoryOption, EmbedCategoryOption, LabelOption } from '../utility/options-handler.js'
-import { InputStyle, OptionsHandler, OptionType } from '../utility/options-handler.js'
+import { InputStyle, OptionsHandler, OptionType, ValueRejected } from '../utility/options-handler.js'
 
 const Essential = ':shield:'
 const Recommended = ':beginner:'
@@ -141,15 +144,35 @@ function fetchModerationOptions(application: Application): CategoryOption {
             type: OptionType.Text,
 
             name: 'Admin Username',
-            description: 'In-game username of the person who has full permission over the application.',
+            description:
+              'In-game username of the person who has full permission over the application. Set to empty to remove existing value.',
 
             style: InputStyle.Tiny,
             max: 16,
-            min: 2,
+            min: 0,
 
-            getOption: () => minecraft.getAdminUsername(),
-            setOption: (username) => {
-              minecraft.setAdminUsername(username)
+            getOption: async () => {
+              const uuid = minecraft.getAdminMojangUuid()
+              if (uuid.length === 0) return '(none)'
+
+              return await application.mojangApi
+                .profileByUuid(uuid)
+                .then((profile) => profile.name)
+                .catch(() => uuid)
+            },
+            setOption: async (username) => {
+              username = username.trim()
+              if (username.length === 0) {
+                minecraft.setAdminMojangUuid(username)
+                return
+              }
+
+              const profile = await application.mojangApi.profileByUsername(username).catch(() => undefined)
+              if (profile === undefined) {
+                throw new ValueRejected(`Invalid Mojang username. Given: ${escapeInlineCode(username)}`)
+              }
+
+              minecraft.setAdminMojangUuid(profile.id)
             }
           },
           {
@@ -237,7 +260,8 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.Number,
             name: 'Kicks Per Day',
-            description: 'Allowed kicks per Day for staff before they are blocked from doing any more.',
+            description:
+              'Allowed kicks per Day for staff before they are blocked from doing any more. Set to **0** to remove the cap.',
 
             min: 0,
             max: 100,
@@ -249,7 +273,8 @@ function fetchModerationOptions(application: Application): CategoryOption {
           {
             type: OptionType.Number,
             name: 'Mutes Per Day',
-            description: 'Allowed mutes per Day for staff before they are blocked from doing any more.',
+            description:
+              'Allowed mutes per Day for staff before they are blocked from doing any more. Set to **0** to remove the cap.',
 
             min: 0,
             max: 100,
@@ -816,7 +841,7 @@ function fetchCommandsOptions(application: Application): CategoryOption {
         type: OptionType.Label,
         name: 'Admin Username',
         description: 'You can change admin username from **Moderation** category.',
-        getOption: () => minecraft.getAdminUsername()
+        getOption: () => minecraft.getAdminMojangUuid()
       },
       {
         type: OptionType.Label,
@@ -911,142 +936,6 @@ function fetchLanguageOptions(application: Application): CategoryOption {
         name: 'Change Text',
         description: 'Fine tune application by manually changing various texts23.- and messages.',
         options: [
-          {
-            type: OptionType.Text,
-            name: 'Announce Player Muted',
-            description:
-              'Announce to the guild about a player being muted when they send `/immuted` to the application in-game.',
-            style: InputStyle.Long,
-            min: 2,
-            max: 150,
-            getOption: () => language.getAnnounceMutedPlayer(),
-            setOption: (value) => {
-              language.setAnnounceMutedPlayer(value)
-            }
-          },
-          {
-            type: OptionType.Category,
-            name: 'Automated Messages',
-            options: [
-              {
-                type: OptionType.Text,
-                name: 'Dark Auction Reminder',
-                description: 'Send a reminder when a skyblock dark auction is starting.',
-                style: InputStyle.Long,
-                min: 2,
-                max: 150,
-                getOption: () => language.getDarkAuctionReminder(),
-                setOption: (value) => {
-                  language.setDarkAuctionReminder(value)
-                }
-              },
-              {
-                type: OptionType.Text,
-                name: 'Starfall Cult Reminder',
-                description: 'Send a reminder when the skyblock starfall cult gathers.',
-                style: InputStyle.Long,
-                min: 2,
-                max: 150,
-                getOption: () => language.getStarfallReminder(),
-                setOption: (value) => {
-                  language.setStarfallReminder(value)
-                }
-              }
-            ]
-          },
-          {
-            type: OptionType.Category,
-            name: 'Chat Commands',
-            description: 'Chat commands such as `!cata` and `!iq`.',
-            options: [
-              {
-                type: OptionType.List,
-                name: 'Mute',
-                description: 'Message to show when `!mute`.',
-                style: InputStyle.Short,
-                min: 0,
-                max: 100,
-                getOption: () => language.getCommandMuteGame(),
-                setOption: (values) => {
-                  language.setCommandMuteGame(values)
-                }
-              },
-              {
-                type: OptionType.EmbedCategory,
-                name: 'Russian Roulette',
-                description: 'Chat Command `!rr`',
-                options: [
-                  {
-                    type: OptionType.List,
-                    name: 'Russian Roulette Win',
-                    description: 'Message when winning chat command `!rr`.',
-                    style: InputStyle.Short,
-                    min: 0,
-                    max: 100,
-                    getOption: () => language.getCommandRouletteWin(),
-                    setOption: (values) => {
-                      language.setCommandRouletteWin(values)
-                    }
-                  },
-                  {
-                    type: OptionType.List,
-                    name: 'Russian Roulette Lose',
-                    description: 'Message when losing chat command `!rr`.',
-                    style: InputStyle.Short,
-                    min: 0,
-                    max: 100,
-                    getOption: () => language.getCommandRouletteLose(),
-                    setOption: (values) => {
-                      language.setCommandRouletteLose(values)
-                    }
-                  }
-                ]
-              },
-              {
-                type: OptionType.EmbedCategory,
-                name: 'Vengeance',
-                description: 'Chat Command `!v`',
-                options: [
-                  {
-                    type: OptionType.List,
-                    name: 'Vengeance Win',
-                    description: 'Message when winning chat command `!v`.',
-                    style: InputStyle.Short,
-                    min: 0,
-                    max: 100,
-                    getOption: () => language.getCommandVengeanceWin(),
-                    setOption: (values) => {
-                      language.setCommandVengeanceWin(values)
-                    }
-                  },
-                  {
-                    type: OptionType.List,
-                    name: 'Vengeance Draw',
-                    description: 'Message when drawing chat command `!v`.',
-                    style: InputStyle.Short,
-                    min: 0,
-                    max: 100,
-                    getOption: () => language.getCommandVengeanceDraw(),
-                    setOption: (values) => {
-                      language.setCommandVengeanceDraw(values)
-                    }
-                  },
-                  {
-                    type: OptionType.List,
-                    name: 'Vengeance Lose',
-                    description: 'Message when losing chat command `!v`.',
-                    style: InputStyle.Short,
-                    min: 0,
-                    max: 100,
-                    getOption: () => language.getCommandVengeanceLose(),
-                    setOption: (values) => {
-                      language.setCommandVengeanceLose(values)
-                    }
-                  }
-                ]
-              }
-            ]
-          },
           {
             type: OptionType.Category,
             name: 'Guild Reaction',
@@ -1422,6 +1311,7 @@ async function minecraftInstanceAdd(
         } satisfies APIEmbed
       ]
     })
+    return true
   }
 
   if (
@@ -1429,7 +1319,7 @@ async function minecraftInstanceAdd(
       .getAllInstances()
       .some((instance) => instance.getConfigName().toLowerCase() === instanceName.toLowerCase())
   ) {
-    await interaction.reply({
+    await modalInteraction.reply({
       content: `Minecraft instance name already exists: **${escapeMarkdown(instanceName)}**`,
       flags: MessageFlags.Ephemeral
     })
@@ -1440,6 +1330,21 @@ async function minecraftInstanceAdd(
   if (proxyOptions.length > 0) {
     try {
       proxy = parseSocks5(proxyOptions)
+      const punyHost = punycode.toASCII(proxy.host)
+      const isLocal = await isLocalhost(punyHost)
+      if (isLocal) {
+        await modalInteraction.reply({
+          embeds: [
+            {
+              title: EmbedTitle,
+              description: 'Proxy host can not be a local IP.',
+              color: Color.Error,
+              footer: { text: DefaultCommandFooter }
+            } satisfies APIEmbed
+          ]
+        })
+        return true
+      }
     } catch (error: unknown) {
       errorHandler.error('parsing socks5', error)
 
@@ -1447,7 +1352,8 @@ async function minecraftInstanceAdd(
         embeds: [
           {
             title: EmbedTitle,
-            description: errorMessage(error),
+            description:
+              error instanceof ProxyParseError ? error.displayMessage : 'Encountered an error while parsing proxy.',
             color: Color.Error,
             footer: {
               text: DefaultCommandFooter
@@ -1566,7 +1472,7 @@ async function minecraftInstanceRemove(
   }
 
   await interaction.showModal({
-    customId: 'minecraft-instance-remove',
+    customId: interaction.id,
     title: `Remove Minecraft Instance`,
     components: [
       {
@@ -1587,7 +1493,8 @@ async function minecraftInstanceRemove(
 
   const modalInteraction = await interaction.awaitModalSubmit({
     time: 300_000,
-    filter: (modalInteraction) => modalInteraction.user.id === interaction.user.id
+    filter: (modalInteraction) =>
+      modalInteraction.user.id === interaction.user.id && modalInteraction.customId === interaction.id
   })
 
   const instanceName = modalInteraction.fields.getStringSelectValues('instance-name')[0]
@@ -1656,8 +1563,9 @@ function parseSocks5(url: string): ProxyConfig {
   const regex = /^(?<type>socks5):\/\/(?:(?<username>\w+):(?<password>[^@]+)@)?(?<host>[^:]+)(?::(?<port>\d+))?$/gm
   const match = regex.exec(url)
 
-  if (match === null)
-    throw new Error('Invalid proxy format. e.g. valid proxy: socks5://username:password@server.com:1080')
+  if (match === null) {
+    throw new ProxyParseError('Invalid proxy format. e.g. valid proxy: socks5://username:password@server.com:1080')
+  }
 
   const groups = match.groups as {
     type: ProxyProtocol
@@ -1675,10 +1583,16 @@ function parseSocks5(url: string): ProxyConfig {
   const port: number = groups.port === undefined ? 1080 : Number.parseInt(groups.port)
 
   if (type.toLowerCase() !== ProxyProtocol.Socks5.toLowerCase()) {
-    throw new Error('invalid proxy type. Only "socks5" is supported.')
+    throw new ProxyParseError('invalid proxy type. Only "socks5" is supported.')
   }
 
   return { id: 0, host: host, port: port, user: username, password: password, protocol: type } satisfies ProxyConfig
+}
+
+class ProxyParseError extends Error {
+  constructor(readonly displayMessage: string) {
+    super()
+  }
 }
 
 function errorMessage(error: unknown): string {

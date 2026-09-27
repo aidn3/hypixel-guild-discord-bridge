@@ -14,13 +14,14 @@ import type MinecraftInstance from '../../instance/minecraft/minecraft-instance.
 import Duration from '../../utility/duration.js'
 import { setIntervalAsync } from '../../utility/scheduling.js'
 
-import { resolveGuildRank } from './commands/utlity.js'
+import { findInstanceByGuild, resolveGuildRank } from './commands/utlity.js'
 import type { Database, MinecraftGuild } from './database.js'
 import type { MinecraftGuildsManager } from './minecraft-guilds-manager.js'
 
 export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
   private static readonly CheckGuildEvery = Duration.hours(2)
   private static readonly AutoUpdateRoleEvery = Duration.days(3)
+  private static readonly CheckGuildRanksEvery = Duration.minutes(1)
 
   constructor(
     application: Application,
@@ -39,6 +40,57 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
       delay: Duration.minutes(5),
       abortSignal: this.abortSignal
     })
+
+    setIntervalAsync(() => this.queue.add(() => this.checkAllGuildRanks()), {
+      abortSignal: this.abortSignal,
+      delay: AutoGuildSync.CheckGuildRanksEvery,
+      errorHandler: this.errorHandler.promiseCatch('checking in-game ranks against database')
+    })
+  }
+
+  private async checkAllGuildRanks(): Promise<void> {
+    const savedGuilds = this.database.allGuilds()
+
+    for (const savedGuild of savedGuilds) {
+      try {
+        await this.checkGuildRanks(savedGuild)
+      } catch (error: unknown) {
+        this.errorHandler.error(`Checking guild rank for id=${savedGuild.id},name=${savedGuild.name}`, error)
+      }
+    }
+  }
+
+  private async checkGuildRanks(savedGuild: MinecraftGuild): Promise<void> {
+    const savedRanks = new Set(savedGuild.roles.map((role) => role.name))
+
+    const instance = await findInstanceByGuild(this.application, savedGuild)
+    if (instance === undefined) {
+      this.logger.debug('No instance connected found to check existing ranks. returning...')
+      return
+    }
+
+    const guildList = await instance.guildManager.list(AutoGuildSync.CheckGuildRanksEvery)
+    const guildListRanks = new Set(guildList.members.map((member) => member.rank))
+
+    const difference = savedRanks.symmetricDifference(guildListRanks)
+    if (difference.size > 0) {
+      this.logger.debug(
+        `Found discrepancies between saved guild ranks in the database and existing ranks.` +
+          ` saved: ${savedRanks.values().toArray().join(', ')} / real: ${guildListRanks.values().toArray().join(', ')}`
+      )
+      this.logger.debug(`Updating name=${savedGuild.name},id=${savedGuild.id} guild`)
+
+      const guild = await this.application.hypixelApi.getGuildById(savedGuild.id)
+      if (guild === undefined) {
+        this.logger.error(
+          `Tried fetching guild name=${savedGuild.name},id=${savedGuild.id} but returned empty. guild disbanded??`
+        )
+        return
+      }
+
+      const updatedSavedGuild = this.database.initGuild(guild)
+      await this.syncGuild(updatedSavedGuild, guild)
+    }
   }
 
   private async updateGuild(): Promise<void> {
@@ -66,18 +118,6 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
     }
   }
 
-  private async findInstance(savedGuild: MinecraftGuild): Promise<MinecraftInstance | undefined> {
-    const instances = this.application.minecraftManager.getAllInstances()
-    for (const instance of instances) {
-      const guildListResult = await instance.guildManager.list()
-      if (guildListResult.name.toLowerCase().trim() === savedGuild.name.toLowerCase().trim()) {
-        return instance
-      }
-    }
-
-    return undefined
-  }
-
   private async syncGuild(savedGuild: MinecraftGuild, guild: HypixelGuild): Promise<void> {
     const currentTime = Date.now()
 
@@ -85,20 +125,17 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
       savedGuild.id,
       currentTime - AutoGuildSync.AutoUpdateRoleEvery.toMilliseconds()
     )
-    let instanceFound = false
+    let instance: MinecraftInstance | undefined
 
     for (const guildMember of guild.members) {
       if (skippedMembers.includes(guildMember.uuid)) continue
 
-      if (!instanceFound) {
-        const instance = await this.findInstance(savedGuild)
-        if (instance === undefined) {
-          this.logger.warn(
-            'Can not proceed with updating this guild members since no active Minecraft instance is avilable to execute any commands'
-          )
-          break
-        }
-        instanceFound = true
+      instance ??= await findInstanceByGuild(this.application, savedGuild)
+      if (instance === undefined) {
+        this.logger.warn(
+          'Can not proceed with updating this guild members since no active Minecraft instance is avilable to execute any commands'
+        )
+        break
       }
 
       this.logger.trace(`fetching Mojang profile for ${guildMember.uuid} to auto update guild member status`)
@@ -128,19 +165,14 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
           continue
         }
 
-        await this.setRank(this.application, target.mojangProfile().id, defaultRank)
+        await this.setRank(instance, target.mojangProfile().id, defaultRank)
       } else if (guildMember.rank === undefined || guildMember.rank !== resolvedRank.rank) {
-        await this.setRank(this.application, target.mojangProfile().id, resolvedRank.rank)
+        await this.setRank(instance, target.mojangProfile().id, resolvedRank.rank)
       }
     }
   }
 
-  private async setRank(application: Application, uuid: string, rank: string): Promise<void> {
-    await application.sendMinecraft(
-      application.minecraftManager.getAllInstances(),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/guild setrank ${uuid} ${rank}`
-    )
+  private async setRank(instance: MinecraftInstance, uuid: string, rank: string): Promise<void> {
+    await instance.send(`/guild setrank ${uuid} ${rank}`, MinecraftSendChatPriority.High, undefined)
   }
 }

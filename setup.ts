@@ -42,7 +42,7 @@ export async function startCreateConfigurations(logger: Console | Logger): Promi
   await displayImportantInformation(logger, newConfigurations)
 
   logger.log('Writing new configurations:', newPath)
-  fs.writeFileSync(newPath, newRaw)
+  fs.writeFileSync(newPath, newRaw, { flush: true, mode: 0o600 })
 }
 
 async function displayImportantInformation(logger: Console | Logger, config: ApplicationConfig): Promise<void> {

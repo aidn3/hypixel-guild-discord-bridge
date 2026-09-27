@@ -30,7 +30,7 @@ export default class Bedwars extends ChatCommandHandler {
     return context.app.i18n.t(($) => $['commands.bedwars.response'], {
       username: givenUsername,
       level: this.getLevel(stat.Experience ?? 0),
-      kills: stat.final_deaths_bedwars ?? 0,
+      kills: stat.final_kills_bedwars ?? 0,
       fkdr:
         (stat.final_deaths_bedwars ?? 0) > 0 ? (stat.final_kills_bedwars ?? 0) / (stat.final_deaths_bedwars ?? 0) : 0
     })

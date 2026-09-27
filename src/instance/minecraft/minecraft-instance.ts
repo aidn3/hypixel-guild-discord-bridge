@@ -330,10 +330,7 @@ export default class MinecraftInstance extends ConnectableInstance implements Di
    * @param originEventId {@link BaseEvent#eventId} that resulted in this send. <code>undefined</code> if none.
    */
   async send(message: string, priority: MinecraftSendChatPriority, originEventId: string | undefined): Promise<void> {
-    message = message
-      .split('\n')
-      .map((chunk) => chunk.trim())
-      .join(' ')
+    message = this.application.minecraftManager.sanitizer.sanitizeGenericCommand(message)
 
     if (Buffer.byteLength(message, 'utf8') > 256) {
       let truncated = ''

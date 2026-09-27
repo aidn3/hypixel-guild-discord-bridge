@@ -188,7 +188,7 @@ export class Database {
       const deletePanel = database.prepare('DELETE FROM "discordGuildWaitlistPanel" WHERE messageId = ?')
       const updatePanel = database.prepare('UPDATE "discordGuildWaitlistPanel" SET guildIds = ? WHERE messageId = ?')
       for (const panel of panels) {
-        const guildIds = panel.guildIds.filter((guildId) => guildId === id)
+        const guildIds = panel.guildIds.filter((guildId) => guildId !== id)
         if (guildIds.length === 0) {
           const deleteResult = deletePanel.run(panel.messageId).changes
           assert.strictEqual(deleteResult, 1)
@@ -355,46 +355,64 @@ export class Database {
   public getWaitlistByMessageId(messageId: string): WaitlistEntry | undefined {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const selectDiscord = database.prepare<[typeof messageId], WaitlistRequestEntry>(
-        'SELECT * FROM discordGuildWaitlistRequest WHERE messageId = ?'
-      )
-      const selectWaitlist = database.prepare<[WaitlistEntry['id']], WaitlistEntry>(
-        'SELECT * FROM minecraftGuildWaitlist WHERE id = ?'
-      )
+      const selectId = database
+        .prepare<[typeof messageId], WaitlistRequestEntry['reference']>(
+          'SELECT reference FROM discordGuildWaitlistRequest WHERE messageId = ?'
+        )
+        .pluck(true)
 
-      const discordEntry = selectDiscord.get(messageId)
-      if (discordEntry === undefined) return
+      const id = selectId.get(messageId)
+      if (id === undefined) return
 
-      const waitlist = selectWaitlist.get(discordEntry.reference)
+      const waitlist = this.getWaitlistById(id)
       assert.ok(waitlist !== undefined)
-      assert.strictEqual(discordEntry.reference, waitlist.id)
-
-      waitlist.createdAt = waitlist.createdAt * 1000
-      waitlist.invitedTill = waitlist.invitedTill * 1000
-      waitlist.noInviteTill = waitlist.noInviteTill * 1000
-      waitlist.discord = discordEntry
-
       return waitlist
     })
 
     return transaction()
   }
 
-  public getWaitlistByMojangId(mojangId: string): WaitlistEntry | undefined {
+  public getWaitlistByMojangUuid(mojangId: string): WaitlistEntry[] {
     const database = this.sqliteManager.getDatabase()
     const transaction = database.transaction(() => {
-      const selectWaitlist = database.prepare<[WaitlistEntry['mojangId']], WaitlistEntry>(
-        'SELECT * FROM minecraftGuildWaitlist WHERE mojangId = ?'
-      )
-      const selectDiscord = database.prepare<[WaitlistRequestEntry['reference']], WaitlistRequestEntry>(
+      const selectWaitlist = database
+        .prepare<[WaitlistEntry['mojangId']], WaitlistEntry['id']>(
+          'SELECT id FROM minecraftGuildWaitlist WHERE mojangId = ?'
+        )
+        .pluck(true)
+
+      const entries = selectWaitlist.all(mojangId)
+      const result: WaitlistEntry[] = []
+      for (const entryId of entries) {
+        const resultEntry = this.getWaitlistById(entryId)
+        assert.ok(resultEntry !== undefined)
+        assert.strictEqual(resultEntry.id, entryId)
+
+        result.push(resultEntry)
+      }
+
+      return result
+    })
+
+    return transaction()
+  }
+
+  private getWaitlistById(id: WaitlistEntry['id']): WaitlistEntry | undefined {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const selectDiscord = database.prepare<[typeof id], WaitlistRequestEntry>(
         'SELECT * FROM discordGuildWaitlistRequest WHERE reference = ?'
       )
+      const selectWaitlist = database.prepare<[WaitlistEntry['id']], WaitlistEntry>(
+        'SELECT * FROM minecraftGuildWaitlist WHERE id = ?'
+      )
 
-      const waitlist = selectWaitlist.get(mojangId)
+      const waitlist = selectWaitlist.get(id)
       if (waitlist === undefined) return
-
-      const discordEntry = selectDiscord.get(waitlist.id)
-      if (discordEntry !== undefined) assert.strictEqual(discordEntry.reference, waitlist.id)
+      const discordEntry = selectDiscord.get(id)
+      if (discordEntry !== undefined) {
+        assert.strictEqual(discordEntry.reference, waitlist.id)
+      }
 
       waitlist.createdAt = waitlist.createdAt * 1000
       waitlist.invitedTill = waitlist.invitedTill * 1000

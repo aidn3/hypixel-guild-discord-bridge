@@ -11,17 +11,17 @@ import SubInstance from '../../common/sub-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { DiscordUser } from '../../common/user.js'
 
-import { FilteredReaction, MutedReaction, UnverifiedReaction } from './common/discord-config.js'
+import { BannedReaction, FilteredReaction, MutedReaction, UnverifiedReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
 import type DiscordInstance from './discord-instance.js'
 
 export default class ChatManager extends SubInstance<DiscordInstance, Client> {
-  private static readonly WarnMuteEvery = 10 * 60 * 1000
+  private static readonly WarnPunishEvery = 10 * 60 * 1000
   private static readonly WarnVerificationEvery = 10 * 60 * 1000
   private readonly lastVerificationWarn = new Map<string, number>()
 
   private readonly messageAssociation: MessageAssociation
-  private readonly lastMuteWarn = new Map<string, number>()
+  private readonly lastPunishWarn = new Map<string, number>()
 
   constructor(
     application: Application,
@@ -117,7 +117,8 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
       if (emoji !== undefined) await event.react(emoji)
       if (emoji === undefined || config.getAlwaysReplyReaction()) {
         await event.reply({
-          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage)
+          content: '**Profanity warning, Your message has been edited:**\n' + escapeMarkdown(filteredMessage),
+          allowedMentions: { parse: [] }
         })
       }
     }
@@ -143,8 +144,8 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
       if (emoji !== undefined) await message.react(emoji)
 
       const currentTimestamp = Date.now()
-      if ((this.lastMuteWarn.get(message.author.id) ?? 0) + ChatManager.WarnMuteEvery < currentTimestamp) {
-        this.lastMuteWarn.set(message.author.id, currentTimestamp)
+      if ((this.lastPunishWarn.get(message.author.id) ?? 0) + ChatManager.WarnPunishEvery < currentTimestamp) {
+        this.lastPunishWarn.set(message.author.id, currentTimestamp)
         await message.reply({
           content:
             '*Looks like you are muted on the chat-bridge.*\n' +
@@ -158,12 +159,20 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
 
     const bannedTill = punishments.punishedTill(PunishmentType.Ban)
     if (bannedTill != undefined) {
-      await message.reply({
-        content:
-          '*Looks like you are banned on the chat-bridge.*\n' +
-          "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
-          `*Your ban expires <t:${Math.floor(bannedTill / 1000)}:R>!*`
-      })
+      const emoji = message.client.application.emojis.cache.find((emoji) => emoji.name === BannedReaction.name)
+      if (emoji !== undefined) await message.react(emoji)
+
+      const currentTimestamp = Date.now()
+      if ((this.lastPunishWarn.get(message.author.id) ?? 0) + ChatManager.WarnPunishEvery < currentTimestamp) {
+        this.lastPunishWarn.set(message.author.id, currentTimestamp)
+        await message.reply({
+          content:
+            '*Looks like you are banned on the chat-bridge.*\n' +
+            "*All messages you send won't reach any guild in-game or any other discord server.*\n" +
+            `*Your ban expires <t:${Math.floor(bannedTill / 1000)}:R>!*`
+        })
+      }
+
       return true
     }
 
@@ -182,7 +191,12 @@ export default class ChatManager extends SubInstance<DiscordInstance, Client> {
     const channel = messageEvent.channel
 
     const replyMessage = await channel.messages.fetch(messageEvent.reference.messageId)
-    if (replyMessage.webhookId != undefined) return replyMessage.author.username
+    if (replyMessage.webhookId != undefined) {
+      const webhook = await replyMessage.fetchWebhook()
+      // legacy webhooks
+      if (webhook.applicationId === messageEvent.client.application.id) return replyMessage.author.username
+      return undefined
+    }
 
     const resolvedProfile = this.clientInstance.profileByUser(replyMessage.author, replyMessage.member ?? undefined)
     const replyUser = await this.application.core.initializeDiscordUser(resolvedProfile)

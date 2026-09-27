@@ -1,5 +1,3 @@
-import assert from 'node:assert'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import {
@@ -45,25 +43,29 @@ export default class Runs extends ChatCommandHandler {
       return playerNeverPlayedDungeons(givenUsername)
     }
 
-    const runs = masterMode
-      ? this.getTotalRuns(dungeon.master_catacombs?.tier_completions)
-      : this.getTotalRuns(dungeon.catacombs.tier_completions)
-    if (runs.length === 0) return `${givenUsername}: ${givenType} - never done runs in this type before?`
-
-    const entries: string[] = []
-    for (const [floor, run] of runs.entries()) {
-      entries.push(`${masterMode ? `M${floor + 1}` : floor === 0 ? 'E' : `F${floor}`} ${run.toLocaleString('en-US')}`)
+    if (masterMode) {
+      return context.app.i18n.t(($) => $['commands.runs.response-mastermode'], {
+        username: givenUsername,
+        m1: dungeon.master_catacombs?.tier_completions?.['1'] ?? 0,
+        m2: dungeon.master_catacombs?.tier_completions?.['2'] ?? 0,
+        m3: dungeon.master_catacombs?.tier_completions?.['3'] ?? 0,
+        m4: dungeon.master_catacombs?.tier_completions?.['4'] ?? 0,
+        m5: dungeon.master_catacombs?.tier_completions?.['5'] ?? 0,
+        m6: dungeon.master_catacombs?.tier_completions?.['6'] ?? 0,
+        m7: dungeon.master_catacombs?.tier_completions?.['7'] ?? 0
+      })
     }
-    assert.notStrictEqual(entries.length, 0)
 
-    return `${givenUsername}: ${masterMode ? 'Mastermode' : 'Catacombs'} - ${entries.join(' - ')}`
-  }
-
-  private getTotalRuns(runs: Record<string, number | undefined> | undefined): number[] {
-    if (runs === undefined) return []
-    return Object.entries(runs)
-      .filter(([key]) => key !== 'total')
-      .map(([, value]) => value)
-      .filter((value) => value !== undefined)
+    return context.app.i18n.t(($) => $['commands.runs.response-normal'], {
+      username: givenUsername,
+      f0: dungeon.catacombs.tier_completions?.['0'] ?? 0,
+      f1: dungeon.catacombs.tier_completions?.['1'] ?? 0,
+      f2: dungeon.catacombs.tier_completions?.['2'] ?? 0,
+      f3: dungeon.catacombs.tier_completions?.['3'] ?? 0,
+      f4: dungeon.catacombs.tier_completions?.['4'] ?? 0,
+      f5: dungeon.catacombs.tier_completions?.['5'] ?? 0,
+      f6: dungeon.catacombs.tier_completions?.['6'] ?? 0,
+      f7: dungeon.catacombs.tier_completions?.['7'] ?? 0
+    })
   }
 }

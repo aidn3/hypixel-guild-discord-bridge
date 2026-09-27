@@ -33,12 +33,12 @@ export class MinecraftConfigurations {
     this.configuration.setString('chatPlaceholder', placeholder)
   }
 
-  public getAdminUsername(): string {
-    return this.configuration.getString('adminUsername', 'Steve')
+  public getAdminMojangUuid(): string {
+    return this.configuration.getString('adminUsername', '')
   }
 
-  public setAdminUsername(username: string): void {
-    this.configuration.setString('adminUsername', username)
+  public setAdminMojangUuid(uuid: string): void {
+    this.configuration.setString('adminUsername', uuid)
   }
 
   public getAnnounceMutedPlayer(): boolean {

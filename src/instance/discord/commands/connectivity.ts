@@ -52,7 +52,7 @@ export default {
 
   origin: CommandOrigin.Bridge,
   addMinecraftInstancesToOptions: OptionMinecraftInstance.RequireAll,
-  permission: Permission.Anyone,
+  permission: Permission.Helper,
 
   handler: async function (context) {
     await context.interaction.deferReply()

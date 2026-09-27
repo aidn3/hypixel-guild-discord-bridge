@@ -1,12 +1,11 @@
 import assert from 'node:assert'
 
-import Moment from 'moment'
-
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockDungeons } from '../../../core/hypixel/hypixel-skyblock.js'
 import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock.js'
 import type { MojangApi } from '../../../core/users/mojang.js'
+import { formatTime } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -66,9 +65,10 @@ export default class CurrentDungeon extends ChatCommandHandler {
     }
     assert.ok(foundPlayer)
 
+    const currentTime = Date.now()
     message +=
-      lastRun.completion_ts + CurrentDungeon.ShowTimeAfter < Date.now()
-        ? ` was last seen ${Moment(lastRun.completion_ts).fromNow()}`
+      lastRun.completion_ts + CurrentDungeon.ShowTimeAfter < currentTime
+        ? ` was last seen ${formatTime(currentTime - lastRun.completion_ts)}`
         : ` is`
 
     message += ` playing ${floorDisplayName} `

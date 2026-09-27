@@ -24,7 +24,7 @@ import { InputStyle, OptionType } from './options-handler.js'
 
 export type BaseModalOption =
   | (Omit<TextOption, 'getOption' | 'setOption'> & {
-      defaultValue?: ReturnType<TextOption['getOption']>
+      defaultValue?: Awaited<ReturnType<TextOption['getOption']>>
       validate?: (value: string) => string | undefined
     })
   | (Omit<NumberOption, 'getOption' | 'setOption'> & {

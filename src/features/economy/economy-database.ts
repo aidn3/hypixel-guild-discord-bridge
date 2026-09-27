@@ -131,6 +131,8 @@ export class EconomyDatabase {
    * @param page 0-indexed
    */
   public userHistory(user: AnonymousUser, page: number): HistoryResult {
+    assert.ok(page >= 0, 'page must be 0 or greater')
+
     const database = this.sqlManager.getDatabase()
     const transaction = database.transaction(() => {
       const userIds = this.users.resolveAllUserId(user)
@@ -139,10 +141,11 @@ export class EconomyDatabase {
       let query = 'SELECT * FROM "EconomyHistory" WHERE userId IN '
 
       query += '(' + userIds.map(() => '?').join(',') + ')'
+      query += ' ORDER BY createdAt DESC'
 
       const limit = EconomyDatabase.EntriesPerPage
       const offset = page * EconomyDatabase.EntriesPerPage
-      query += `LIMIT ${offset},${limit}`
+      query += ` LIMIT ${offset},${limit}`
 
       const queryResult = database.prepare<[...UserId[]], SavedHistory>(query).all(...userIds)
       const count =
@@ -166,11 +169,13 @@ export class EconomyDatabase {
   }
 
   public allHistory(page: number): HistoryResult {
+    assert.ok(page >= 0, 'page must be 0 or greater')
+
     const database = this.sqlManager.getDatabase()
     const transaction = database.transaction(() => {
       const limit = EconomyDatabase.EntriesPerPage
       const offset = page * EconomyDatabase.EntriesPerPage
-      const query = `SELECT * FROM "EconomyHistory" LIMIT ${offset}, ${limit}`
+      const query = `SELECT * FROM "EconomyHistory" ORDER BY createdAt DESC LIMIT ${offset}, ${limit}`
       const queryResult = database.prepare<[], SavedHistory>(query).all()
       const count = database.prepare<[], number>('SELECT COUNT(*) FROM "EconomyHistory"').pluck(true).get() ?? 0
       const contents = this.deserialize(queryResult)
