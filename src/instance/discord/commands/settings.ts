@@ -1653,7 +1653,7 @@ async function minecraftInstanceClear(
 
   try {
     const instanceConfig = application.core.minecraftSessions.getInstance(instanceName)
-    const deleteResults = application.core.minecraftSessions.clearCachedSessions(instanceName)
+    const deleteResults = application.core.minecraftSessions.clearAllSessions(instanceName)
     embed.color = Color.Good
 
     if (instanceConfig === undefined) {
