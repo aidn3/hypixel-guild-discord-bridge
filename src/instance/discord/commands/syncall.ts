@@ -50,6 +50,7 @@ export default {
     setIntervalAsync(
       () =>
         singletonTask.add(async () => {
+          if (abortController.signal.aborted) return
           const currentUpdate = createProgress(progress, 'update')
           if (lastUpdate !== currentUpdate) {
             await interaction.editReply(currentUpdate)
