@@ -94,7 +94,7 @@ export class MinecraftManager extends Instance {
     for (const instance of instances) {
       assert.ok(this.instances.delete(instance))
       this.minecraftBots.delete(instance)
-      instance.destroy()
+      instance.destroy('Manual user instance removal')
     }
     result.instanceRemoved += instances.length
 

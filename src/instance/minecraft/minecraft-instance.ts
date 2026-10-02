@@ -4,7 +4,7 @@ import { setImmediate } from 'node:timers/promises'
 import { createClient, states } from 'minecraft-protocol'
 
 import type Application from '../../application.js'
-import type { ChannelType, InstanceStatus } from '../../common/application-event.js'
+import type { ChannelType } from '../../common/application-event.js'
 import {
   InstanceMessageType,
   InstanceReactiveType,
@@ -14,7 +14,6 @@ import {
 import { ConnectableInstance, Status } from '../../common/connectable-instance.js'
 import type { DisplayableInstance } from '../../common/instance.js'
 import type { MinecraftInstanceConfig } from '../../core/minecraft/sessions-manager.js'
-import type { MinecraftStatusEntry } from '../../features/minecraft-status/minecraft-status.js'
 import Duration from '../../utility/duration.js'
 import type { Timeout } from '../../utility/timeout.js'
 
@@ -157,12 +156,13 @@ export default class MinecraftInstance extends ConnectableInstance implements Di
   }
 
   async displayName(): Promise<string> {
-    const guildName = await this.guildManager
+    const defaultName = this.config.name
+    if (this.currentStatus() !== Status.Connected) return defaultName
+
+    return await this.guildManager
       .list()
       .then((guild) => guild.name)
-      .catch(() => undefined)
-
-    return guildName ?? this.config.name
+      .catch(() => defaultName)
   }
 
   override async signal(type: InstanceSignalType): Promise<void> {
@@ -185,17 +185,6 @@ export default class MinecraftInstance extends ConnectableInstance implements Di
     }
 
     return super.signal(type)
-  }
-
-  protected override async broadcastStatusEvent(event: InstanceStatus): Promise<void> {
-    // Directly add the entry into the database before broadcasting it,
-    // so listeners can query database for entire history directly after
-    // without worry if they ever wish to
-    assert.ok(event.instance instanceof MinecraftInstance)
-    const typedInstance = event as MinecraftStatusEntry
-    this.application.minecraftStatus.addStatus(typedInstance)
-
-    return super.broadcastStatusEvent(event)
   }
 
   public async acquireLimbo(): Promise<Timeout<void>> {

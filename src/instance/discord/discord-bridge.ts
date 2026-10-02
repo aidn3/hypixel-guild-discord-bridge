@@ -45,8 +45,6 @@ import { DiscordChatFormat } from '../../core/discord/discord-configurations.js'
 import { DiscordInstanceHistoryButtonType } from '../../features/minecraft-actions/button-database.js'
 import Duration from '../../utility/duration.js'
 import MinecraftRenderer from '../../utility/minecraft-renderer.js'
-// eslint-disable-next-line import/no-restricted-paths
-import MinecraftInstance from '../minecraft/minecraft-instance.js'
 
 import { BlockReaction, GuildMutedReaction, RepeatReaction } from './common/discord-config.js'
 import type MessageAssociation from './common/message-association.js'
@@ -86,23 +84,9 @@ export default class DiscordBridge extends Bridge<DiscordInstance> {
     )
   }
 
-  async onInstance(event: InstanceStatus): Promise<void> {
-    if (event.instance === this.clientInstance) return
-    if (!(event instanceof MinecraftInstance)) return
-
-    const config = this.application.core.discordConfigurations
-    const channels = new Set([
-      ...config.getPublicChannelIds(),
-      ...config.getOfficerChannelIds(),
-      ...config.getLoggerChannelIds()
-    ])
-
-    await this.application.minecraftStatus.updateDiscord(
-      this.clientInstance.getClient(),
-      this.messageAssociation,
-      channels,
-      event
-    )
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onInstance(event: InstanceStatus): void {
+    // do nothing
   }
 
   async onChat(event: ChatEvent): Promise<void> {

@@ -1,11 +1,10 @@
-import type { Client } from 'discord.js'
+import PromiseQueue from 'promise-queue'
 
 import type Application from '../../application.js'
 import type { InstanceStatus } from '../../common/application-event.js'
 import { Instance } from '../../common/instance.js'
 import type { SqliteManager } from '../../common/sqlite-manager.js'
-import type MessageAssociation from '../../instance/discord/common/message-association.js'
-import type MinecraftInstance from '../../instance/minecraft/minecraft-instance.js'
+import MinecraftInstance from '../../instance/minecraft/minecraft-instance.js'
 
 import { ButtonDatabase } from './button-database.js'
 import { DiscordHandler } from './discord-handler.js'
@@ -14,6 +13,8 @@ import { StatusDatabase } from './status-database.js'
 export type MinecraftStatusEntry = InstanceStatus & { instance: MinecraftInstance }
 
 export class MinecraftStatus extends Instance {
+  private readonly queue = new PromiseQueue(1)
+
   private readonly statusDatabase: StatusDatabase
   private readonly buttonDatabase: ButtonDatabase
   private readonly discordHandler: DiscordHandler
@@ -32,18 +33,37 @@ export class MinecraftStatus extends Instance {
       this.statusDatabase,
       this.buttonDatabase
     )
+
+    this.application.on('instanceStatus', async (event) => {
+      if (!(event.instance instanceof MinecraftInstance)) return
+      event.instance satisfies MinecraftInstance
+      const typedEvent = event as MinecraftStatusEntry
+      await this.queue
+        .add(() => this.updateStatus(typedEvent))
+        .catch(this.errorHandler.promiseCatch('handling Minecraft status logging'))
+    })
   }
 
-  public addStatus(status: MinecraftStatusEntry): void {
-    this.statusDatabase.add(status)
+  private async updateStatus(event: MinecraftStatusEntry): Promise<void> {
+    this.statusDatabase.add(event)
+
+    await this.updateDiscord(event)
   }
 
-  public async updateDiscord(
-    client: Client,
-    association: MessageAssociation,
-    channelIds: Set<string>,
-    event: MinecraftStatusEntry
-  ): Promise<void> {
+  private async updateDiscord(event: MinecraftStatusEntry): Promise<void> {
+    const client = this.application.discordInstance.getClient()
+    if (!client.isReady()) return
+
+    const configurations = this.application.core.discordConfigurations
+    const channelIds = new Set([
+      ...configurations.getPublicChannelIds(),
+      ...configurations.getOfficerChannelIds(),
+      ...configurations.getLoggerChannelIds()
+    ])
+    const association = this.application.discordInstance.getMessageAssociation()
+
+    this.logger.trace('start updating discord')
     await this.discordHandler.send(client, association, channelIds, event)
+    this.logger.trace('done updating discord')
   }
 }

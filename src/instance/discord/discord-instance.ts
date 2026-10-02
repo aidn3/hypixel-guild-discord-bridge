@@ -223,6 +223,10 @@ export default class DiscordInstance extends ConnectableInstance implements Disp
     return this.client
   }
 
+  public getMessageAssociation(): MessageAssociation {
+    return this.messageAssociation
+  }
+
   public getStaticConfig(): Readonly<StaticDiscordConfig> {
     return this.staticConfig
   }
