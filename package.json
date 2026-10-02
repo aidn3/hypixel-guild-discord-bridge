@@ -47,7 +47,7 @@
     "@isaacs/ttlcache": "^2.1.4",
     "@kolapsis/shm-sdk": "^1.1.0",
     "async-cache-dedupe": "^3.4.0",
-    "axios": "^1.16.1",
+    "axios": "^1.20.0",
     "bad-words": "3.0.4",
     "better-sqlite3": "^13.0.3",
     "bufferutil": "^4.0.1",
