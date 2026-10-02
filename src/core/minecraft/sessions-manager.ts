@@ -50,6 +50,21 @@ export class SessionsManager {
     return transaction()
   }
 
+  public clearAllSessions(instanceName: string): number {
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const statement = database.prepare('DELETE FROM "mojangSessions" WHERE name = ?')
+      const result = statement.run(instanceName).changes
+      if (result !== 0) {
+        this.logger.debug(`Deleted ${result} Minecraft sessions entries with the name=${instanceName}`)
+      }
+
+      return result
+    })
+
+    return transaction()
+  }
+
   public setSession(name: string, cacheName: string, value: Record<string, unknown>): void {
     const database = this.sqliteManager.getDatabase()
     const statement = database.prepare(
