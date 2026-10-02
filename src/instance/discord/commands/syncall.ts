@@ -107,8 +107,8 @@ function createProgress(progress: UpdateProgress, status: 'done' | 'update' | 'e
     result += `**Users processed:** (N/A)`
   }
 
-  result += `**Roles conditions processed:**: ${progress.processedRoles}\n`
-  result += `**Nicknames conditions processed:**: ${progress.processedNicknames}\n`
+  result += `**Roles conditions processed:** ${progress.processedRoles}\n`
+  result += `**Nicknames conditions processed:** ${progress.processedNicknames}\n`
 
   return result.trim()
 }
