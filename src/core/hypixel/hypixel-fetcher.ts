@@ -12,6 +12,7 @@ export class HypixelFetcher {
   private static readonly MaxRetries = 3
   private static readonly DefaultRetryCooldown = Duration.minutes(5) // current hypixel api resets ratelimit
   private static readonly GatewayRetry = Duration.seconds(5)
+  private static readonly ConnectionRetries = [Duration.seconds(5), Duration.seconds(30), Duration.minutes(1)]
 
   private readonly singleston
 
@@ -68,7 +69,7 @@ export class HypixelFetcher {
         return result.data
       } catch (error: unknown) {
         if (retry + 1 < maxRetries && error instanceof AxiosError) {
-          const shouldRetry = this.shouldRetryAfter(error)
+          const shouldRetry = this.shouldRetryAfter(error, retry)
           if (shouldRetry !== undefined) {
             await sleep(shouldRetry.toMilliseconds())
             continue
@@ -83,7 +84,16 @@ export class HypixelFetcher {
     assert.fail(`unknown state`)
   }
 
-  private shouldRetryAfter(error: AxiosError): Duration | undefined {
+  private shouldRetryAfter(error: AxiosError, currentRetry: number): Duration | undefined {
+    if (error.code !== undefined && ['ECONNRESET', 'EPIPE', 'ETIMEDOUT', 'ENOTFOUND'].includes(error.code)) {
+      return (
+        this.getRetryAfter(error) ??
+        HypixelFetcher.ConnectionRetries.at(currentRetry) ??
+        HypixelFetcher.ConnectionRetries.at(-1) ??
+        HypixelFetcher.GatewayRetry
+      )
+    }
+
     if (error.status === undefined) return this.getRetryAfter(error) ?? HypixelFetcher.DefaultRetryCooldown
     if (error.status >= 500 && error.status <= 599) return this.getRetryAfter(error) ?? HypixelFetcher.GatewayRetry
     if (error.status === 429) return this.getRetryAfter(error) ?? HypixelFetcher.DefaultRetryCooldown
