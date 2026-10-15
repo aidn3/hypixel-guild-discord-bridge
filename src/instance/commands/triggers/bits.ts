@@ -100,13 +100,34 @@ export default class Bits extends ChatCommandHandler {
   }
 
   private async updatePrices(): Promise<void> {
-    const response = await DefaultAxios.get<Record<string, number>>(
-      `https://api.eliteskyblock.com/resources/auctions/neu`
-    ).then((response) => response.data)
+    const [auctionResult, bazaarResult] = await Promise.allSettled([
+      DefaultAxios.get<Record<string, number>>(`https://api.eliteskyblock.com/resources/auctions/neu`).then(
+        (response) => response.data
+      ),
+      DefaultAxios.get<{ products: Record<string, { sellOrder: number }> }>(`https://api.eliteskyblock.com/resources/bazaar`).then(
+        (response) => response.data
+      )
+    ])
 
-    this.prices = Object.entries(response)
-      .filter(([itemId]) => Object.hasOwn(BitItem, itemId))
-      .map(([itemId, sellPrice]) => ({ itemId, sellPrice }))
+    if (auctionResult.status === 'rejected' && bazaarResult.status === 'rejected') {
+      throw new Error('Cannot update auction or bazaar prices.')
+    }
+
+    const pricesByItemId = new Map<string, number>()
+    if (auctionResult.status === 'fulfilled') {
+      for (const [itemId, sellPrice] of Object.entries(auctionResult.value)) {
+        if (Object.hasOwn(BitItem, itemId)) pricesByItemId.set(itemId, sellPrice)
+      }
+    }
+    if (bazaarResult.status === 'fulfilled') {
+      for (const [itemId, { sellOrder }] of Object.entries(bazaarResult.value.products)) {
+        const sellPrice = sellOrder
+        if (!Object.hasOwn(BitItem, itemId) || sellPrice <= (pricesByItemId.get(itemId) ?? 0)) continue
+        pricesByItemId.set(itemId, sellPrice)
+      }
+    }
+
+    this.prices = Array.from(pricesByItemId, ([itemId, sellPrice]) => ({ itemId, sellPrice }))
       .toSorted((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
       .slice(0, 5)
   }
