@@ -10,7 +10,6 @@ import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.j
 import Duration from '../../../utility/duration.js'
 import { shortenNumber } from '../../../utility/shared-utility.js'
 
-
 /* eslint-disable @typescript-eslint/naming-convention */
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
   GOD_POTION_2: { bitValue: 1500, prettyName: 'Godpot' },
@@ -69,7 +68,7 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
 
 export default class Bits extends ChatCommandHandler {
   private static readonly EntriesPerPage = 5
-  private static readonly UpdatePriceEvery = Duration.minutes(5).toMilliseconds()
+  private static readonly PriceCacheDuration = Duration.minutes(5).toMilliseconds()
   private lastPricesUpdateAt = 0
   private prices: { itemId: string; sellPrice: number }[] = []
 
@@ -89,7 +88,7 @@ export default class Bits extends ChatCommandHandler {
     if (!Number.isSafeInteger(page) || page <= 0) return `${context.username}, invalid page.`
 
     const currentTime = Date.now()
-    if (this.lastPricesUpdateAt + Bits.UpdatePriceEvery < currentTime) {
+    if (this.lastPricesUpdateAt + Bits.PriceCacheDuration < currentTime) {
       try {
         await this.updatePrices()
       } catch {
