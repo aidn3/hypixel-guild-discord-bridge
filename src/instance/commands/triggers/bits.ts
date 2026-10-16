@@ -7,6 +7,7 @@ import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import { shortenNumber } from '../../../utility/shared-utility.js'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
@@ -108,7 +109,7 @@ export default class Bits extends ChatCommandHandler {
     for (const [index, { itemId, sellPrice }] of pagePrices.entries()) {
       const itemDetails = BitItem[itemId]
       const rank = index + 1 + Bits.EntriesPerPage * (page - 1)
-      const coinsPerBit = Math.floor(sellPrice / itemDetails.bitValue).toLocaleString('en-US')
+      const coinsPerBit = shortenNumber(Math.floor(sellPrice / itemDetails.bitValue))
       response.push(`${rank}. ${itemDetails.prettyName} (${coinsPerBit} coins/bit)`)
     }
     return response.join('\n')
