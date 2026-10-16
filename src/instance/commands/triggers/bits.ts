@@ -108,7 +108,8 @@ export default class Bits extends ChatCommandHandler {
     for (const [index, { itemId, sellPrice }] of pagePrices.entries()) {
       const itemDetails = BitItem[itemId]
       const rank = index + 1 + Bits.EntriesPerPage * (page - 1)
-      response.push(`${rank}. ${itemDetails.prettyName} (${Math.floor(sellPrice / itemDetails.bitValue)} coins/bit)`)
+      const coinsPerBit = Math.floor(sellPrice / itemDetails.bitValue).toLocaleString('en-US')
+      response.push(`${rank}. ${itemDetails.prettyName} (${coinsPerBit} coins/bit)`)
     }
     return response.join('\n')
   }
