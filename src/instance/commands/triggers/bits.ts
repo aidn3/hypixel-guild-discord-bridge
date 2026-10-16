@@ -9,6 +9,8 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { shortenNumber } from '../../../utility/shared-utility.js'
 
+import Duration from 'src/utility/duration.js'
+
 /* eslint-disable @typescript-eslint/naming-convention */
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
   GOD_POTION_2: { bitValue: 1500, prettyName: 'Godpot' },
@@ -67,7 +69,7 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
 
 export default class Bits extends ChatCommandHandler {
   private static readonly EntriesPerPage = 5
-  private static readonly UpdatePriceEvery = 5 * 60 * 1000 // 5 minute
+  private static readonly UpdatePriceEvery = Duration.minutes(5).toMilliseconds()
   private lastPricesUpdateAt = 0
   private prices: { itemId: string; sellPrice: number }[] = []
 
