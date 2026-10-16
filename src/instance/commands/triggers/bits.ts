@@ -101,10 +101,7 @@ export default class Bits extends ChatCommandHandler {
     const totalPages = Math.ceil(this.prices.length / Bits.EntriesPerPage)
     if (page > totalPages) return `${context.username}, can only go up to page ${totalPages}`
 
-    const pagePrices = this.prices.slice(
-      Bits.EntriesPerPage * (page - 1),
-      Bits.EntriesPerPage * page
-    )
+    const pagePrices = this.prices.slice(Bits.EntriesPerPage * (page - 1), Bits.EntriesPerPage * page)
     const response = [`${context.username} (page ${page}/${totalPages}):`]
     for (const [index, { itemId, sellPrice }] of pagePrices.entries()) {
       const itemDetails = BitItem[itemId]
@@ -120,9 +117,9 @@ export default class Bits extends ChatCommandHandler {
       DefaultAxios.get<Record<string, number>>(`https://api.eliteskyblock.com/resources/auctions/neu`).then(
         (response) => response.data
       ),
-      DefaultAxios.get<{ products: Record<string, { sellOrder: number }> }>(`https://api.eliteskyblock.com/resources/bazaar`).then(
-        (response) => response.data
-      )
+      DefaultAxios.get<{ products: Record<string, { sellOrder: number }> }>(
+        `https://api.eliteskyblock.com/resources/bazaar`
+      ).then((response) => response.data)
     ])
 
     if (auctionResult.status === 'rejected' && bazaarResult.status === 'rejected') {
@@ -143,7 +140,8 @@ export default class Bits extends ChatCommandHandler {
       }
     }
 
-    this.prices = Array.from(pricesByItemId, ([itemId, sellPrice]) => ({ itemId, sellPrice }))
-      .toSorted((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
+    this.prices = Array.from(pricesByItemId, ([itemId, sellPrice]) => ({ itemId, sellPrice })).toSorted(
+      (a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue
+    )
   }
 }
