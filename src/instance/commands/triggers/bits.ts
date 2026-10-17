@@ -7,6 +7,7 @@ import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
 import Duration from '../../../utility/duration.js'
 import { shortenNumber } from '../../../utility/shared-utility.js'
 
@@ -67,6 +68,7 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
 /* eslint-enable @typescript-eslint/naming-convention */
 
 export default class Bits extends ChatCommandHandler {
+  private static readonly AuctionUrl = 'https://api.eliteskyblock.com/resources/auctions/neu'
   private static readonly EntriesPerPage = 5
   private static readonly PriceCacheDuration = Duration.minutes(5).toMilliseconds()
   private lastPricesUpdateAt = 0
@@ -90,7 +92,7 @@ export default class Bits extends ChatCommandHandler {
     const currentTime = Date.now()
     if (this.lastPricesUpdateAt + Bits.PriceCacheDuration < currentTime) {
       try {
-        await this.updatePrices()
+        await this.updatePrices(context.app.hypixelApi)
       } catch {
         return `${context.username}, cannot update prices.`
       }
@@ -113,28 +115,19 @@ export default class Bits extends ChatCommandHandler {
     return response.join('\n')
   }
 
-  private async updatePrices(): Promise<void> {
-    const [auctionResult, bazaarResult] = await Promise.all([
-      DefaultAxios.get<Record<string, number>>(`https://api.eliteskyblock.com/resources/auctions/neu`).then(
-        (response) => response.data
-      ),
-      DefaultAxios.get<{ products: Record<string, { sellOrder: number }> }>(
-        `https://api.eliteskyblock.com/resources/bazaar`
-      ).then((response) => response.data)
+  private async updatePrices(hypixelApi: Hypixel): Promise<void> {
+    const [auctionResult, bazaarProducts] = await Promise.all([
+      DefaultAxios.get<Record<string, number>>(Bits.AuctionUrl).then((response) => response.data),
+      hypixelApi.getSkyblockBazaar(Date.now())
     ])
 
-    const pricesByItemId = new Map<string, number>()
-    for (const [itemId, sellPrice] of Object.entries(auctionResult)) {
-      if (Object.hasOwn(BitItem, itemId)) pricesByItemId.set(itemId, sellPrice)
-    }
-    for (const [itemId, { sellOrder }] of Object.entries(bazaarResult.products)) {
-      const sellPrice = sellOrder
-      if (!Object.hasOwn(BitItem, itemId) || sellPrice <= (pricesByItemId.get(itemId) ?? 0)) continue
-      pricesByItemId.set(itemId, sellPrice)
-    }
-
-    this.prices = Array.from(pricesByItemId, ([itemId, sellPrice]) => ({ itemId, sellPrice })).toSorted(
-      (a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue
-    )
+    this.prices = Object.keys(BitItem)
+      .map((itemId) => {
+        const auctionPrice = Object.hasOwn(auctionResult, itemId) ? auctionResult[itemId] : 0
+        const bazaarPrice = Object.hasOwn(bazaarProducts, itemId) ? bazaarProducts[itemId].quick_status.buyPrice : 0
+        return { itemId, sellPrice: Math.max(auctionPrice, bazaarPrice) }
+      })
+      .filter(({ sellPrice }) => sellPrice > 0)
+      .toSorted((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
   }
 }
