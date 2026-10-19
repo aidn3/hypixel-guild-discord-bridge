@@ -7,6 +7,9 @@ import DefaultAxios from 'axios'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
+import Duration from '../../../utility/duration.js'
+import { shortenNumber } from '../../../utility/shared-utility.js'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
@@ -65,7 +68,9 @@ const BitItem: Record<string, { bitValue: number; prettyName: string }> = {
 /* eslint-enable @typescript-eslint/naming-convention */
 
 export default class Bits extends ChatCommandHandler {
-  private static readonly UpdatePriceEvery = 5 * 60 * 1000 // 5 minute
+  private static readonly AuctionUrl = 'https://api.eliteskyblock.com/resources/auctions/neu'
+  private static readonly EntriesPerPage = 5
+  private static readonly PriceCacheDuration = Duration.minutes(5).toMilliseconds()
   private lastPricesUpdateAt = 0
   private prices: { itemId: string; sellPrice: number }[] = []
 
@@ -75,39 +80,54 @@ export default class Bits extends ChatCommandHandler {
       id: 'bits',
       triggers: ['bits', 'bit'],
       description: 'Returns the best bit items to purchase for the most profit.',
-      example: `bits`
+      example: `bits [page]`
     })
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    const givenPage = context.args.at(0)
+    const page = givenPage === undefined ? 1 : /^\d+$/.test(givenPage) ? Number(givenPage) : Number.NaN
+    if (!Number.isSafeInteger(page) || page <= 0) return `${context.username}, invalid page.`
+
     const currentTime = Date.now()
-    if (this.lastPricesUpdateAt + Bits.UpdatePriceEvery < currentTime) {
+    if (this.lastPricesUpdateAt + Bits.PriceCacheDuration < currentTime) {
       try {
-        await this.updatePrices()
+        await this.updatePrices(context.app.hypixelApi)
       } catch {
         return `${context.username}, cannot update prices.`
       }
       this.lastPricesUpdateAt = currentTime
     }
 
-    let response = `${context.username}:\n`
-    let index = 0
-    for (const { itemId, sellPrice } of this.prices) {
+    if (this.prices.length === 0) return `${context.username}, no bit item prices are available.`
+
+    const totalPages = Math.ceil(this.prices.length / Bits.EntriesPerPage)
+    if (page > totalPages) return `${context.username}, can only go up to page ${totalPages}`
+
+    const pagePrices = this.prices.slice(Bits.EntriesPerPage * (page - 1), Bits.EntriesPerPage * page)
+    const response = [`${context.username} (page ${page}/${totalPages}):`]
+    for (const [index, { itemId, sellPrice }] of pagePrices.entries()) {
       const itemDetails = BitItem[itemId]
-      response += `${++index}. ${itemDetails.prettyName} (${Math.floor(sellPrice / itemDetails.bitValue)})\n`
+      const rank = index + 1 + Bits.EntriesPerPage * (page - 1)
+      const coinsPerBit = shortenNumber(Math.floor(sellPrice / itemDetails.bitValue))
+      response.push(`${rank}. ${itemDetails.prettyName} (${coinsPerBit} coins/bit)`)
     }
-    return response
+    return response.join('\n')
   }
 
-  private async updatePrices(): Promise<void> {
-    const response = await DefaultAxios.get<Record<string, number>>(
-      `https://api.eliteskyblock.com/resources/auctions/neu`
-    ).then((response) => response.data)
+  private async updatePrices(hypixelApi: Hypixel): Promise<void> {
+    const [auctionResult, bazaarProducts] = await Promise.all([
+      DefaultAxios.get<Record<string, number>>(Bits.AuctionUrl).then((response) => response.data),
+      hypixelApi.getSkyblockBazaar(Date.now())
+    ])
 
-    this.prices = Object.entries(response)
-      .filter(([itemId]) => Object.hasOwn(BitItem, itemId))
-      .map(([itemId, sellPrice]) => ({ itemId, sellPrice }))
+    this.prices = Object.keys(BitItem)
+      .map((itemId) => {
+        const auctionPrice = Object.hasOwn(auctionResult, itemId) ? auctionResult[itemId] : 0
+        const bazaarPrice = Object.hasOwn(bazaarProducts, itemId) ? bazaarProducts[itemId].quick_status.buyPrice : 0
+        return { itemId, sellPrice: Math.max(auctionPrice, bazaarPrice) }
+      })
+      .filter(({ sellPrice }) => sellPrice > 0)
       .toSorted((a, b) => b.sellPrice / BitItem[b.itemId].bitValue - a.sellPrice / BitItem[a.itemId].bitValue)
-      .slice(0, 5)
   }
 }
