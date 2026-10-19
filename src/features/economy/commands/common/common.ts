@@ -81,3 +81,7 @@ export async function inSameGuildToGameMute(
 export function economyOverflow(error: EconomyOverflow): string {
   return `Can not give ${error.user.displayName()} ${error.totalChange} since it will exceeds the max allowed funds limit ${error.maxAllowed}!`
 }
+
+export function minecraftRequired(context: ChatCommandContext): string {
+  return `${context.message.user.displayName()}, you must link your Minecraft account to use this.`
+}

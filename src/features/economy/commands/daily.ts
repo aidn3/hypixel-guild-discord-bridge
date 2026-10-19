@@ -6,7 +6,7 @@ import { EconomyDaily } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow } from './common/common.js'
+import { economyOverflow, minecraftRequired } from './common/common.js'
 
 export default class Daily extends ChatCommandHandler {
   constructor(
@@ -27,6 +27,8 @@ export default class Daily extends ChatCommandHandler {
   }
 
   override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     if (this.configuration.getDailyIngameOnly()) {
       return { platforms: [Platform.Minecraft] }
     }
