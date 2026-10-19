@@ -5,6 +5,7 @@ import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.j
 import type { Hypixel } from '../../../core/hypixel/hypixel.js'
 import Duration from '../../../utility/duration.js'
 import { shortenNumber } from '../../../utility/shared-utility.js'
+import { hypixelApiNotSet } from '../common/utility.js'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const CopperItem: Record<string, { copperValue: number; prettyName: string }> = {
@@ -76,7 +77,9 @@ export default class Copper extends ChatCommandHandler {
     const currentTime = Date.now()
     if (this.lastPricesUpdateAt + Copper.PriceCacheDuration < currentTime) {
       try {
-        await this.updatePrices(context.app.core.hypixelApi)
+        const hypixel = context.app.hypixel()
+        if (hypixel === undefined) return hypixelApiNotSet(context)
+        await this.updatePrices(hypixel)
       } catch {
         return `${context.username}, cannot update prices.`
       }
