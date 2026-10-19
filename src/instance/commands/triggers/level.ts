@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class Level extends ChatCommandHandler {
   constructor() {
@@ -21,7 +21,9 @@ export default class Level extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const profiles = await context.app.hypixelApi.getSkyblockProfiles(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const profiles = await hypixel.getSkyblockProfiles(uuid)
 
     if (!profiles) return playerNeverPlayedSkyblock(context, givenUsername)
     const profile = profiles.find((p) => p.selected) ?? profiles.at(0)

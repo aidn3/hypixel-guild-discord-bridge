@@ -19,7 +19,9 @@ export class SkyblockLevelResolver extends PlaceholderResolver {
     const uuid = context.user?.mojangProfile()?.id
     if (uuid === undefined) throw new CanNotResolve()
 
-    const profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) throw new CanNotResolve()
+    const profiles = await hypixel.getSkyblockProfiles(uuid, context.startTime)
     if (!profiles) throw new CanNotResolve()
 
     const highestExperience = profiles

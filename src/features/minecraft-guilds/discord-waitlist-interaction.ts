@@ -32,8 +32,9 @@ import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.j
 import type { MojangProfile } from '../../common/user.js'
 import type { ConditionResult, ConditionValue } from '../../core/conditions/common.js'
 import { ConditionResultType } from '../../core/conditions/common.js'
+import type { Hypixel } from '../../core/hypixel/hypixel.js'
 import { formatChatTriggerResponse } from '../../instance/discord/common/chattrigger-format.js'
-import { formatUser } from '../../instance/discord/common/commands-format.js'
+import { formatUser, noHypixelApiEmbed } from '../../instance/discord/common/commands-format.js'
 import { DefaultCommandFooter } from '../../instance/discord/common/discord-config.js'
 import LinkButtonsManager from '../../instance/discord/features/link-buttons-manager.js'
 import { interactivePaging } from '../../instance/discord/utility/discord-pager.js'
@@ -163,6 +164,12 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       .find((panel) => panel.messageId === interaction.message.id)
     if (panelConfiguration === undefined) return
 
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) {
+      await interaction.reply({ embeds: [noHypixelApiEmbed()], flags: MessageFlags.Ephemeral })
+      return
+    }
+
     const guildResult = await this.selectGuild(panelConfiguration, interaction)
     if (typeof guildResult === 'string') {
       await interaction.reply(guildResult)
@@ -174,7 +181,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
     await responseInteraction.deferReply({ flags: MessageFlags.Ephemeral })
     const linkedAlready = await this.application.core.verification.findByDiscord(interaction.user.id)
     if (linkedAlready !== undefined) {
-      await this.continueSigningUp(guildResult.response, selectedGuild)
+      await this.continueSigningUp(guildResult.response, hypixel, selectedGuild)
       return
     }
 
@@ -205,13 +212,13 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
 
       stopLinking = true
       void this.application.discordInstance.linkButtons
-        .showLinkingWizard(newInteraction, Date.now(), true)
+        .showLinkingWizard(hypixel, newInteraction, Date.now(), true)
         .then(async (result) => {
           if (result === undefined) {
             stopLinking = false
           } else {
             collector.stop()
-            await this.continueSigningUp(result.modal, selectedGuild)
+            await this.continueSigningUp(result.modal, hypixel, selectedGuild)
           }
         })
         .catch((error: unknown) => {
@@ -223,6 +230,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
 
   private async continueSigningUp(
     responseInteraction: ButtonInteraction | ModalSubmitInteraction,
+    hypixel: Hypixel,
     selectedGuild: MinecraftGuild
   ): Promise<void> {
     assert.ok(responseInteraction.inCachedGuild())
@@ -236,7 +244,7 @@ export class DiscordWaitlistInteraction extends SubInstance<MinecraftGuildsManag
       return
     }
 
-    const guild = await this.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+    const guild = await hypixel.getGuildByPlayer(mojangProfile.id)
     if (guild?._id === selectedGuild.id) {
       await responseInteraction.editReply({ content: 'You are already in this guild!' })
       return

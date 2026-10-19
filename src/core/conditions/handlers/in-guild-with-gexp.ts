@@ -14,7 +14,7 @@ import type {
   HandlerUser
 } from '../common.js'
 import { ConditionHandler, ConditionResultType } from '../common.js'
-import { formatPrimitiveValue } from '../utilities.js'
+import { formatPrimitiveValue, noHypixelKey } from '../utilities.js'
 
 export class InGuildWithGexp extends ConditionHandler<InGuildGexpOptions, number> {
   override getId(): string {
@@ -26,7 +26,8 @@ export class InGuildWithGexp extends ConditionHandler<InGuildGexpOptions, number
   }
 
   override async displayCondition(context: HandlerDisplayContext, options: InGuildGexpOptions): Promise<string> {
-    const guild = await context.application.hypixelApi.getGuildById(options.guildId)
+    const hypixel = context.application.hypixel()
+    const guild = await hypixel?.getGuildById(options.guildId)
     const guildName = guild?.name ?? options.guildId
 
     return context.application.i18n.t(($) => $['conditions.in-guild-with-gexp.description'], {
@@ -50,7 +51,9 @@ export class InGuildWithGexp extends ConditionHandler<InGuildGexpOptions, number
     }
     const uuid = mojangProfile.id
 
-    const guild = await context.application.hypixelApi.getGuildById(options.guildId, context.startTime)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).meetsCondition
+    const guild = await hypixel.getGuildById(options.guildId, context.startTime)
     if (guild === undefined) {
       return {
         type: ConditionResultType.Error,
@@ -125,7 +128,9 @@ export class InGuildWithGexp extends ConditionHandler<InGuildGexpOptions, number
     const days = rawOptions.days
     assert.ok(typeof days === 'number')
 
-    const guild = await context.application.hypixelApi.getGuildByName(guildName)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).createCondition
+    const guild = await hypixel.getGuildByName(guildName)
     if (guild === undefined) {
       return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.invalid-name'])
     }

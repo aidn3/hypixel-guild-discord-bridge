@@ -4,6 +4,7 @@ import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skybl
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -26,7 +27,9 @@ export default class ClassAverage extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, username)
     if (!uuid) return usernameNotExists(context, username)
 
-    const profile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const profile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!profile) return playerNeverPlayedSkyblock(context, username)
 
     const classes = profile.dungeons?.player_classes

@@ -108,7 +108,9 @@ export class AnonymousUser {
     if (botsUuid.length === 0) return permission
     if (!giveGuildMasterOfficer && helperRoles.length === 0) return permission
 
-    const guild = await this.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return permission
+    const guild = await hypixel.getGuildByPlayer(mojangProfile.id)
     if (guild === undefined) return permission
     if (!guild.members.some((guildMember) => botsUuid.includes(guildMember.uuid))) return permission
 

@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, usernameNotExists } from '../common/utility.js'
 
 export default class Gexp extends ChatCommandHandler {
   constructor() {
@@ -21,7 +21,9 @@ export default class Gexp extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const guild = await context.app.hypixelApi.getGuildByPlayer(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const guild = await hypixel.getGuildByPlayer(uuid)
     if (guild == undefined) return context.app.i18n.t(($) => $['commands.gexp.no-guild'], { username: givenUsername })
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)

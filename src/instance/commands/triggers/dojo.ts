@@ -3,6 +3,7 @@ import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.j
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverEnteredCrimson,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -25,7 +26,9 @@ export default class Dojo extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     if (selectedProfile.nether_island_player_data === undefined) {

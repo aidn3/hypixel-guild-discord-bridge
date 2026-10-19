@@ -19,6 +19,7 @@ import {
   SkyblockProfileOption,
   translateSkyblockProfileTypes
 } from '../common.js'
+import { noHypixelKey } from '../utilities.js'
 
 export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions, number> {
   override getId(): string {
@@ -50,7 +51,9 @@ export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions, 
     }
     const uuid = mojangProfile.id
 
-    const profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).meetsCondition
+    const profiles = await hypixel.getSkyblockProfiles(uuid, context.startTime)
     if (profiles === undefined || profiles.length === 0) {
       return {
         type: ConditionResultType.Error,
@@ -63,7 +66,7 @@ export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions, 
       const profileType = profile.game_mode ?? 'classic'
       if (!condition.profileTypes.includes(profileType)) continue
 
-      const museumData = await context.application.hypixelApi
+      const museumData = await hypixel
         .getSkyblockMuseum(profile.profile_id, context.startTime)
         .then((museum) => museum.members[uuid] as object)
 

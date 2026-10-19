@@ -7,6 +7,7 @@ import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skybl
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -29,10 +30,12 @@ export default class Catacombs extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const hypixelProfile = await context.app.hypixelApi.getPlayer(uuid)
+    const hypixelProfile = await hypixel.getPlayer(uuid)
     assert.ok(hypixelProfile !== undefined)
 
     const dungeons = selectedProfile.dungeons

@@ -1,9 +1,11 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   parseEncodedNbt,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -54,7 +56,9 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
 
     if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     if (selectedProfile.dungeons?.player_classes === undefined) {
@@ -87,7 +91,7 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     const dailyCompletedRuns = selectedProfile.dungeons.daily_runs?.completed_runs_count ?? 0
     const dailyRemainingRuns = Math.max(5 - dailyCompletedRuns, 0)
 
-    const globalBoost = await this.getGlobalBoost(context)
+    const globalBoost = await this.getGlobalBoost(hypixel)
 
     const floorNumber = Number(selectedFloor.replace('m', '')) as 1 | 2 | 3 | 4 | 5 | 6 | 7
     const currentRuns = selectedProfile.dungeons.dungeon_types.master_catacombs?.tier_completions?.[floorNumber] ?? 0
@@ -250,10 +254,10 @@ export default class RunsTillCatacombs extends ChatCommandHandler {
     return 0
   }
 
-  private async getGlobalBoost(context: ChatCommandContext): Promise<number> {
+  private async getGlobalBoost(hypixelApi: Hypixel): Promise<number> {
     let totalBoost = 0
 
-    const government = await context.app.hypixelApi.getSkyblockElection()
+    const government = await hypixelApi.getSkyblockElection()
     if (government.mayor.key === 'aura' || government.mayor.key === 'derpy') {
       totalBoost += 0.5
     }

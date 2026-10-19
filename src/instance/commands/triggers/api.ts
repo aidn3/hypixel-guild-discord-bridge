@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class Api extends ChatCommandHandler {
   constructor() {
@@ -19,7 +19,9 @@ export default class Api extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await context.app.hypixelApi
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await hypixel
       .getSkyblockProfiles(uuid)
       .then((profiles) => profiles?.find((profile) => profile.selected) ?? profiles?.at(0))
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
@@ -32,7 +34,7 @@ export default class Api extends ChatCommandHandler {
       `Inventory ${'inventory' in member ? 'ON' : 'OFF'}`
     )
 
-    const museum = await context.app.hypixelApi.getSkyblockMuseum(selectedProfile.profile_id)
+    const museum = await hypixel.getSkyblockMuseum(selectedProfile.profile_id)
     if (Object.entries(museum.members).length === 0) {
       parts.push(`Museum N/A`)
     } else {

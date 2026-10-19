@@ -1,8 +1,9 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { MessageFlags, SlashCommandBuilder } from 'discord.js'
 
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
+import { noHypixelApiEmbed } from '../common/commands-format.js'
 
 export default {
   getCommandBuilder: () =>
@@ -17,13 +18,19 @@ export default {
 
   handler: async function (context) {
     const interaction = context.interaction
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) {
+      await interaction.reply({ embeds: [noHypixelApiEmbed()], flags: MessageFlags.Ephemeral })
+      return
+    }
+
     await interaction.deferReply()
 
     const manager = context.application.discordInstance.linkButtons
     const username: string = context.interaction.options.getString('username', true)
     const startTime = Date.now()
 
-    const linkResult = await manager.tryLinking(interaction, startTime, username)
+    const linkResult = await manager.tryLinking(hypixel, interaction, startTime, username)
     if (!linkResult) return
 
     const syncResult = await manager.forceSync(interaction, startTime)

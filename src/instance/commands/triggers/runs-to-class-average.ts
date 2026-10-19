@@ -4,9 +4,11 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock.js'
 import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skyblock.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   parseEncodedNbt,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
@@ -61,7 +63,9 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     if (!(selectedFloor in FloorsBaseExp)) return `Invalid floor selected: ${selectedFloor}`
     const xpPerRun = FloorsBaseExp[selectedFloor as keyof typeof FloorsBaseExp]
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     if (selectedProfile.dungeons?.player_classes === undefined) {
@@ -73,7 +77,7 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     const hecatombBoost = await this.getHecatacombBoost(selectedProfile)
     const classBoosts = this.getClassBoosts(selectedProfile)
     const profileBoosts = scarfShardsBoost + scarfAccessoryBoost + hecatombBoost
-    const globalBoost = await this.getGlobalBoost(context)
+    const globalBoost = await this.getGlobalBoost(hypixel)
     let totalRuns = 0
     const floorBoost = this.getFloorBoost(selectedProfile, selectedFloor as keyof typeof FloorsBaseExp, totalRuns)
 
@@ -136,10 +140,10 @@ export default class RunsToClassAverage extends ChatCommandHandler {
     )
   }
 
-  private async getGlobalBoost(context: ChatCommandContext): Promise<number> {
+  private async getGlobalBoost(hypixelApi: Hypixel): Promise<number> {
     let totalBoost = 0
 
-    const government = await context.app.hypixelApi.getSkyblockElection()
+    const government = await hypixelApi.getSkyblockElection()
     if (government.mayor.key === 'aura') {
       totalBoost += 0.5
     } else if (government.mayor.key === 'derpy') {

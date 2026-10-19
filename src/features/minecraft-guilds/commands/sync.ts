@@ -6,7 +6,7 @@ import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../com
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
-import { usernameNotExists } from '../../../instance/commands/common/utility.js'
+import { hypixelApiNotSet, usernameNotExists } from '../../../instance/commands/common/utility.js'
 import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
 import Duration from '../../../utility/duration.js'
 import { formatTime } from '../../../utility/shared-utility.js'
@@ -35,6 +35,9 @@ export default class Sync extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+
     const currentTime = Date.now()
     const target = await this.resolveUser(context)
     if (typeof target === 'string') return target
@@ -52,7 +55,7 @@ export default class Sync extends ChatCommandHandler {
       }
     }
 
-    const guild = await context.app.hypixelApi.getGuildByPlayer(targetProfile.id, currentTime)
+    const guild = await hypixel.getGuildByPlayer(targetProfile.id, currentTime)
     if (guild === undefined) return `${targetProfile.name} is not in a guild.`
     const guildMember = guild.members.find((member) => member.uuid === targetProfile.id)
     assert.ok(guildMember !== undefined)

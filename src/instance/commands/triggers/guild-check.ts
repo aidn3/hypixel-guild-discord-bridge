@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import { hypixelApiNotSet } from '../common/utility.js'
 
 export default class GuildCheck extends ChatCommandHandler {
   constructor() {
@@ -23,7 +24,9 @@ export default class GuildCheck extends ChatCommandHandler {
         continue
       }
 
-      const guild = await context.app.hypixelApi.getGuildByPlayer(mojangProfile.id)
+      const hypixel = context.app.hypixel()
+      if (hypixel === undefined) return hypixelApiNotSet(context)
+      const guild = await hypixel.getGuildByPlayer(mojangProfile.id)
       if (guild == undefined) {
         result.push(`${mojangProfile.name} not in guild`)
         continue

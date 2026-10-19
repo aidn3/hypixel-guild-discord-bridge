@@ -20,7 +20,8 @@ import { Instance } from '../../common/instance.js'
 import type { SqliteManager } from '../../common/sqlite-manager.js'
 import type { MojangProfile, User } from '../../common/user.js'
 import { ConditionResultType } from '../../core/conditions/common.js'
-import type { HypixelGuild } from '../../core/hypixel/hypixel-guild.js'
+import type { HypixelGuild, HypixelGuildRank } from '../../core/hypixel/hypixel-guild.js'
+import type { Hypixel } from '../../core/hypixel/hypixel.js'
 import type { GuildFetch } from '../../instance/minecraft/guild-manager.js'
 import { GuildInviteStatus } from '../../instance/minecraft/guild-manager.js'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance.js'
@@ -135,12 +136,15 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
   }
 
   private async autoRegisterGuilds(): Promise<void> {
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
+
     const instances = this.application.minecraftManager.getAllInstances()
     const allSavedGuilds = this.database.allGuilds()
 
     const tasks: Promise<void>[] = []
     for (const instance of instances) {
-      const task = this.autoRegisterGuild(allSavedGuilds, instance).catch(
+      const task = this.autoRegisterGuild(hypixel, allSavedGuilds, instance).catch(
         this.errorHandler.promiseCatch('auto registering an in-game guild')
       )
 
@@ -191,10 +195,13 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
   private async handleJoin(event: GuildPlayerEvent): Promise<void> {
     if (event.type !== GuildPlayerEventType.Join) return
 
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
+
     const instance = this.application.minecraftManager.getAllInstances().find((instance) => instance === event.instance)
     if (instance === undefined) return
 
-    const savedGuild = await this.findSavedGuildFromInstance(instance)
+    const savedGuild = await this.findSavedGuildFromInstance(hypixel, instance)
     if (savedGuild === undefined) return
 
     const waitlist = this.database.getWaitlistStatus(savedGuild.id)
@@ -209,7 +216,11 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
     }
   }
 
-  private async autoRegisterGuild(allSavedGuilds: MinecraftGuild[], instance: MinecraftInstance): Promise<void> {
+  private async autoRegisterGuild(
+    hypixel: Hypixel,
+    allSavedGuilds: MinecraftGuild[],
+    instance: MinecraftInstance
+  ): Promise<void> {
     if (instance.currentStatus() !== Status.Connected) return
 
     const guildListResult = await instance.guildManager.list(Duration.minutes(5)).catch(() => undefined)
@@ -226,7 +237,7 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
       this.logger.error('Tried to auto register an in-game guild but can not find the bot UUID')
       return
     }
-    const hypixelGuild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
+    const hypixelGuild = await hypixel.getGuildByPlayer(botUuid)
     if (hypixelGuild === undefined) return // probably the account left and guildListResult cache is outdated
 
     this.database.initGuild(hypixelGuild)
@@ -235,13 +246,16 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
   private async handleJoinRequest(event: GuildPlayerEvent): Promise<void> {
     if (event.type !== GuildPlayerEventType.Request) return
 
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
+
     const banned = event.user.activePunishments().longestPunishment(PunishmentType.Ban)
     if (banned !== undefined) return
 
     const instance = this.application.minecraftManager.getAllInstances().find((instance) => instance === event.instance)
     if (instance === undefined) return
 
-    const savedGuild = await this.findSavedGuildFromInstance(instance)
+    const savedGuild = await this.findSavedGuildFromInstance(hypixel, instance)
     if (savedGuild === undefined) return
     if (!savedGuild.acceptJoinRequests) return
 
@@ -265,7 +279,10 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
     )
   }
 
-  private async findSavedGuildFromInstance(instance: MinecraftInstance): Promise<MinecraftGuild | undefined> {
+  private async findSavedGuildFromInstance(
+    hypixel: Hypixel,
+    instance: MinecraftInstance
+  ): Promise<MinecraftGuild | undefined> {
     if (instance.currentStatus() !== Status.Connected) return
     const guildListResult = await instance.guildManager.list()
 
@@ -280,7 +297,7 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
     const botUuid = instance.uuid()
     if (botUuid === undefined) return
 
-    const hypixelGuild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
+    const hypixelGuild = await hypixel.getGuildByPlayer(botUuid)
     if (hypixelGuild === undefined) return
 
     savedGuild = allSavedGuilds.find((guild) => guild.id === hypixelGuild._id)
@@ -574,6 +591,9 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
   }
 
   private async autoMigrateGuilds(): Promise<void> {
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
+
     const toMigrateGuilds = this.application.core.migrationConfigurations.getAddGuildDefaultRank()
     if (toMigrateGuilds.length === 0) return
 
@@ -599,7 +619,7 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
         continue
       }
 
-      const guild = await this.application.hypixelApi.getGuildById(toMigrateGuild)
+      const guild = await hypixel.getGuildById(toMigrateGuild)
       if (guild === undefined) {
         this.logger.warn(
           `Tried migrating guild name=${savedGuild.name},id=${savedGuild.id} but could not be found on Hypixel. `
@@ -607,7 +627,7 @@ export class MinecraftGuildsManager extends Instance implements DisplayableInsta
         save(index)
         continue
       }
-      const defaultRank = guild.ranks.find((rank) => rank.default)
+      const defaultRank: HypixelGuildRank | undefined = guild.ranks.find((rank) => rank.default)
       assert.ok(defaultRank !== undefined)
 
       const updatedGuild = this.database.initGuild(guild)

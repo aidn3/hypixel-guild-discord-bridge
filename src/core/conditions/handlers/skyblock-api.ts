@@ -6,6 +6,7 @@ import type {
   SkyblockProfileOptionType
 } from '../common.js'
 import { ConditionHandler, ConditionResultType } from '../common.js'
+import { noHypixelKey } from '../utilities.js'
 
 export class SkyblockApi extends ConditionHandler<SkyblockLevelOptions, boolean> {
   override getId(): string {
@@ -33,7 +34,9 @@ export class SkyblockApi extends ConditionHandler<SkyblockLevelOptions, boolean>
     }
     const uuid = mojangProfile.id
 
-    const profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).meetsCondition
+    const profiles = await hypixel.getSkyblockProfiles(uuid, context.startTime)
     if (profiles === undefined || profiles.length === 0) {
       return {
         type: ConditionResultType.Error,
@@ -84,7 +87,7 @@ export class SkyblockApi extends ConditionHandler<SkyblockLevelOptions, boolean>
         }
       }
 
-      const museum = await context.application.hypixelApi.getSkyblockMuseum(profile.profile_id)
+      const museum = await hypixel.getSkyblockMuseum(profile.profile_id)
       if (!(uuid in museum.members)) {
         return {
           type: ConditionResultType.Error,

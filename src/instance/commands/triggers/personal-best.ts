@@ -9,6 +9,7 @@ import { formatTime } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -35,7 +36,9 @@ export default class PersonalBest extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const skyblockProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const skyblockProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!skyblockProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeon = skyblockProfile.dungeons?.dungeon_types

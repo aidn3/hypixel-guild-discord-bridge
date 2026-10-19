@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class OverflowSkills extends ChatCommandHandler {
   constructor() {
@@ -22,14 +22,16 @@ export default class OverflowSkills extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const profiles = await context.app.hypixelApi.getSkyblockProfiles(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const profiles = await hypixel.getSkyblockProfiles(uuid)
     if (!profiles || profiles.length === 0) return playerNeverPlayedSkyblock(context, givenUsername)
     const memberProfile = profiles.find((p) => p.selected) ?? profiles.at(0)
     assert.ok(memberProfile !== undefined)
 
     const profile = memberProfile.members[uuid]
 
-    const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
+    const skillsResponse = await hypixel.getSkyblockSkills()
     const skills = skillsResponse.skills
     const totalSocialExperience = Object.values(memberProfile.members) // Social level is the sum of all coop members
       .map((profile) => profile.player_data?.experience?.SKILL_SOCIAL ?? 0)

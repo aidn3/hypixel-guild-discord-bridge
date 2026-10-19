@@ -33,6 +33,7 @@ import { DiscordTemporarilyInteractions } from './discord/discord-temporarily-in
 import { DiscordUserMessage } from './discord/discord-user-message.js'
 import { DiscordLinkButton } from './discord/link-button.js'
 import { UserConditions } from './discord/user-conditions.js'
+import { HypixelApiFail, HypixelFailType } from './hypixel/hypixel-fetcher.js'
 import { Hypixel } from './hypixel/hypixel.js'
 import { initializeHypixelDatabase } from './hypixel/initialize-hypixel.js'
 import { initializeCoreDatabase } from './initialize-database.js'
@@ -116,9 +117,10 @@ export class Core extends Instance {
     initializeCoreDatabase(this.application, this.sqliteManager, sqliteName)
 
     const hypixelName = 'hypixel.sqlite'
+    const hypixelLogger = Logger.getLogger('Hypixel-API')
     this.hypixelManager = new SqliteManager(
       application,
-      Logger.getLogger('Hypixel-API'),
+      hypixelLogger,
       application.memoryOnly ? undefined : application.getConfigFilePath(hypixelName)
     )
     initializeHypixelDatabase(this.hypixelManager, hypixelName)
@@ -187,6 +189,14 @@ export class Core extends Instance {
       this.errorHandler,
       this.abortController.signal
     )
+
+    void this.hypixelApi.getLeaderboards(Date.now()).catch((error: unknown) => {
+      if (error instanceof HypixelApiFail && error.type === HypixelFailType.Authentication) {
+        hypixelLogger.warn('Invalid Hypixel API key. Some functionalities will be limited.')
+      } else {
+        this.errorHandler.error('checking Hypixel API key validity', error)
+      }
+    })
   }
 
   public completeUsername(query: string, limit: number): string[] {

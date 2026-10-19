@@ -48,6 +48,7 @@
   "conditions.format.false": "False",
   "conditions.format.number": "{{value, number}}",
   "conditions.format.from-greater-than-to": "\"from\" {{from, number}} can not be greater than \"to\" {{to, number}}{{value, number}}",
+  "conditions.error.no-hypixel-api-key": "No Hypixel API key to resolve.",
 
   "conditions.in-guild-with-gexp.title": "In Guild with GEXP",
   "conditions.in-guild-with-gexp.description": "In Guild {{guildName}} with {{gexp, number}} GEXP in {{days, number}} days",
@@ -258,6 +259,7 @@
   "commands.error.username-not-exists": "Invalid username! (given: {{username}}).",
   "commands.error.never-joined-hypixel": "{{username}} has never played on Hypixel before.",
   "commands.error.never-joined-skyblock": "{{username}} has never played SkyBlock before.",
+  "commands.error.hypixel-api-not-set": "{{username}}, Hypixel API key is not set. Contact admin for help.",
   "commands.dojo.none": "{{username}} has never played Skyblock Dojo before?",
   "commands.dojo.response": "{{username}} Dojo: \nTotal {{total, number}}\n - Force {{force, number}}\n - Stamina {{stamina, number}}\n - Mastery {{mastery, number}}\n - Discipline {{discipline, number}}\n - Swiftness {{swiftness, number}}\n - Control {{control, number}}\n - Tenacity {{tenacity, number}}",
   "commands.garden.no-garden": "{{username}} never went to the garden.",

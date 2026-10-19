@@ -33,6 +33,18 @@ Make an application for a key and wait for its activation.
 
 For Discord bot, check [This page of a guide by DiscordJS](https://discordjs.guide/legacy/preparations/app-setup).
 
+## What happens if no valid Hypixel API key is set
+
+Hypixel API key is optional for application core services including the ability to forward messages and executing commands.
+However, not providing a valid Hypixel API key will limit some quality of life features such as:
+
+- [Chat commands](./COMMANDS.md#chat-commands) such as `!level`, `!bedwars`, etc
+- Creating, managing, and evaluating Discord roles that are related to Hypixel in-game stats via the Discord slash command `/conditions`. E.g. Give certain role if player is in a Hypixel guild.
+- Not resolving custom messages with placeholders that contain Hypixel-related text
+- Guild related features such as the entirety of [Guild System Management](#how-to-enable-and-manage-in-game-guild-system), Discord slash command `/leaderboards` for a specific guild, etc
+- Skyblock reminders such as Dark auction only enabled when Scorpius mayor is elected
+- Permissions related to in-game guild ranks
+
 ## What permissions do I need to give to the application
 
 Check [this file](./PERMISSIONS.md) for all the up-to-date details.

@@ -10,6 +10,7 @@ import Duration from '../../../utility/duration.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility.js'
@@ -44,7 +45,9 @@ export default class Bestiary extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
     const bestiary = selectedProfile.bestiary
     if (bestiary === undefined) return `${givenUsername} has never killed on this profile.`

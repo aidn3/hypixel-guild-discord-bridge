@@ -13,7 +13,7 @@ import type {
   HandlerUser
 } from '../common.js'
 import { ConditionHandler, ConditionResultType, SkyblockProfileOption } from '../common.js'
-import { formatPrimitiveValue } from '../utilities.js'
+import { formatPrimitiveValue, noHypixelKey } from '../utilities.js'
 
 export class SkyblockType extends ConditionHandler<SkyblockLevelOptions, string> {
   override getId(): string {
@@ -58,7 +58,9 @@ export class SkyblockType extends ConditionHandler<SkyblockLevelOptions, string>
       }
     }
 
-    const profiles = await context.application.hypixelApi.getSkyblockProfiles(mojangProfile.id, context.startTime)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).meetsCondition
+    const profiles = await hypixel.getSkyblockProfiles(mojangProfile.id, context.startTime)
     if (!profiles) {
       return {
         type: ConditionResultType.Error,

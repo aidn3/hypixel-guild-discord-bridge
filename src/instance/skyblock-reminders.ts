@@ -39,7 +39,9 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
 
         if ([51, 54].includes(currentMinute)) {
           if (darkAuctionType === DarkAuctionReminderCondition.Scorpius) {
-            const election = await this.application.hypixelApi.getSkyblockElection()
+            const hypixel = this.application.hypixel()
+            if (hypixel === undefined) return
+            const election = await hypixel.getSkyblockElection()
             const isScorpius = election.mayor.key === 'scorpius'
             if (!isScorpius) return
           } else {

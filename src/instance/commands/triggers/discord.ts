@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
+import { hypixelApiNotSet, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
 
 export default class Discord extends ChatCommandHandler {
   constructor() {
@@ -29,7 +29,9 @@ export default class Discord extends ChatCommandHandler {
       return `${mojangProfile.name} has linked to ${discordProfile.id}`
     }
 
-    const player = await context.app.hypixelApi.getPlayer(mojangProfile.id)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const player = await hypixel.getPlayer(mojangProfile.id)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     const discordSocial = player.socialMedia?.links.DISCORD

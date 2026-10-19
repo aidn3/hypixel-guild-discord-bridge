@@ -22,6 +22,7 @@ import { getDungeonLevelWithOverflow } from '../../../core/hypixel/hypixel-skybl
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility.js'
@@ -235,10 +236,12 @@ export default class Weight extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
-    const skillsResponse = await context.app.hypixelApi.getSkyblockSkills()
+    const skillsResponse = await hypixel.getSkyblockSkills()
     const senitherWeight = this.calculateSenitherWeight(this.createWeightProfile(selectedProfile, skillsResponse))
     const farmingWeight = await this.getFarmingWeight(uuid)
     const lilyWeight = this.calculateLilyWeight(selectedProfile).total
