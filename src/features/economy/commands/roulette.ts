@@ -4,7 +4,7 @@ import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.j
 import { EconomyRussianRoulette } from '../economy-constants.js'
 import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow } from './common/common.js'
+import { economyOverflow, minecraftRequired } from './common/common.js'
 
 export default class Roulette extends ChatCommandHandler {
   private countSinceLastLose = 0
@@ -19,7 +19,9 @@ export default class Roulette extends ChatCommandHandler {
     })
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { platforms: [Platform.Minecraft], sources: [ChannelType.Public] }
   }
 

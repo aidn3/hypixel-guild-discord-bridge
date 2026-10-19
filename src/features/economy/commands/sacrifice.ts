@@ -1,11 +1,12 @@
-import type { ChatCommandContext } from '../../../common/commands.js'
+import { ChannelType } from '../../../common/application-event.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { EconomyConfigurations } from '../economy-configurations.js'
 import { EconomySacrifice } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, resolveAmount, resolveDifferentTarget } from './common/common.js'
+import { economyOverflow, minecraftRequired, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
 export default class Sacrifice extends ChatCommandHandler {
   constructor(
@@ -19,6 +20,12 @@ export default class Sacrifice extends ChatCommandHandler {
       description: 'troll another user by reducing their aura',
       example: `troll %s 100`
     })
+  }
+
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
+    return { sources: [ChannelType.Public] }
   }
 
   async handler(context: ChatCommandContext): Promise<string> {

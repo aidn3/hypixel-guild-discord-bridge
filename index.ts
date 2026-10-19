@@ -105,7 +105,10 @@ function startShutdown(signal: string) {
       Logger.debug('Shutting down application')
       void app
         .shutdown()
-        .then(() => gracefullyExitProcess(0))
+        .then(() => {
+          Logger.info('Finished shutting down application. Good bye.')
+          return gracefullyExitProcess(0)
+        })
         .catch(() => {
           process.exit(1)
         })

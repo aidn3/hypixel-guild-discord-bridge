@@ -5,7 +5,7 @@ import { EconomyAirstrike } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, inSameGuildToGameMute, resolveDifferentTarget } from './common/common.js'
+import { economyOverflow, inSameGuildToGameMute, minecraftRequired, resolveDifferentTarget } from './common/common.js'
 
 export default class Airstrike extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
@@ -22,7 +22,9 @@ export default class Airstrike extends ChatCommandHandler {
     return { type: CooldownType.User, duration: EconomyAirstrike.cooldown }
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { sources: [ChannelType.Public] }
   }
 

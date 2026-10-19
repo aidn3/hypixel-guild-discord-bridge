@@ -56,7 +56,9 @@ export function resolveAmount(context: ChatCommandContext, givenAmount: string |
   }
 
   try {
-    return parseNumberWithSuffice(givenAmount)
+    const amount = parseNumberWithSuffice(givenAmount)
+    if (amount !== Math.floor(amount)) return `${context.message.user.displayName()}, amount must be a whole number!`
+    return amount
   } catch {
     return `${context.message.user.displayName()}, amount must be a valid number!`
   }
@@ -85,4 +87,8 @@ export async function inSameGuildToGameMute(
 
 export function economyOverflow(error: EconomyOverflow): string {
   return `Can not give ${error.user.displayName()} ${error.totalChange} since it will exceeds the max allowed funds limit ${error.maxAllowed}!`
+}
+
+export function minecraftRequired(context: ChatCommandContext): string {
+  return `${context.message.user.displayName()}, you must link your Minecraft account to use this.`
 }

@@ -5,7 +5,7 @@ import type { EconomyConfigurations } from '../economy-configurations.js'
 import { EconomyGlaze } from '../economy-constants.js'
 import { type EconomyDatabase, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { resolveDifferentTarget } from './common/common.js'
+import { minecraftRequired, resolveDifferentTarget } from './common/common.js'
 
 export default class Glaze extends ChatCommandHandler {
   constructor(
@@ -25,7 +25,9 @@ export default class Glaze extends ChatCommandHandler {
     return { type: CooldownType.User, duration: EconomyGlaze.cooldown }
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { sources: [ChannelType.Public] }
   }
 
