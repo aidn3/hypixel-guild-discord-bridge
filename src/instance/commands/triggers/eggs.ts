@@ -73,6 +73,6 @@ export default class Eggs extends ChatCommandHandler {
       }
     }
 
-    return `${givenUsername} has collected ${totalEggs} chocolate eggs and unlocked ${mythicEggs} mythics and ${divineEggs} divines for a total of ${uniqueEggs}/517 rabbits`
+    return `${givenUsername} has collected ${totalEggs} chocolate eggs and unlocked ${mythicEggs} mythics and ${divineEggs} divines for a total of ${uniqueEggs}/579 rabbits`
   }
 }
