@@ -15,13 +15,17 @@ export default class Current extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const givenUsername = context.args[0] ?? context.username
+    const givenUsername = context.args.at(0)
 
-    const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
-    if (profile == undefined) return usernameNotExists(context, givenUsername)
+    let targetUser = context.message.user
+    if (givenUsername !== undefined) {
+      const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
+      if (profile == undefined) return usernameNotExists(context, givenUsername)
 
-    const user = await context.app.core.initializeMinecraftUser(profile, { guild: undefined })
-    const value = this.database.getValue(user)
-    return `${user.displayName()} has ${value.toLocaleString('en-US')} aura.`
+      targetUser = await context.app.core.initializeMinecraftUser(profile, { guild: undefined })
+    }
+
+    const value = this.database.getValue(targetUser)
+    return `${targetUser.displayName()} has ${value.toLocaleString('en-US')} aura.`
   }
 }
