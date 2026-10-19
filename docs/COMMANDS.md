@@ -44,6 +44,7 @@ A shorter version can also be used: `!- rtca`
 | `!coinflip`       | Flip a coin                                                                        |
 | `!collection`     | Returns a player's SkyBlock collection stats                                       |
 | `!contests`       | Show current and future Jacob contests                                             |
+| `!copper`         | Returns the best copper items to purchase for the most profit.                     |
 | `!counting`       | Start a counting chain event                                                       |
 | `!currentdungeon` | Returns a player's last dungeon run                                                |
 | `!currentkuudra`  | Returns a player's last kuudra run                                                 |

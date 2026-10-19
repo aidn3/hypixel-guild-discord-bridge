@@ -92,7 +92,7 @@ export default class Bits extends ChatCommandHandler {
     const currentTime = Date.now()
     if (this.lastPricesUpdateAt + Bits.PriceCacheDuration < currentTime) {
       try {
-        await this.updatePrices(context.app.hypixelApi)
+        await this.updatePrices(context.app.core.hypixelApi)
       } catch {
         return `${context.username}, cannot update prices.`
       }

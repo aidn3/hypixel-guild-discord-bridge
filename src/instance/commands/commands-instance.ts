@@ -50,6 +50,7 @@ import Chocolate from './triggers/chocolate.js'
 import ClassAverage from './triggers/classaverage.js'
 import Collection from './triggers/collection.js'
 import Contests from './triggers/contests.js'
+import Copper from './triggers/copper.js'
 import CopsAndCrims from './triggers/cops-and-crims.js'
 import CountingChain from './triggers/counting-chain.js'
 import CurrentDungeon from './triggers/current-dungeon.js'
@@ -175,6 +176,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Coinflip(),
       new Collection(),
       new Contests(),
+      new Copper(),
       new CopsAndCrims(),
       new Command67(),
       new CountingChain(),
