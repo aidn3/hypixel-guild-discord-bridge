@@ -90,6 +90,10 @@ export class Core extends Instance {
   public readonly languageConfigurations: LanguageConfigurations
   public readonly adminConfigurations: AdminConfigurations
   public readonly spontaneousEventsConfigurations: SpontaneousEventsConfigurations
+  /**
+   * This is object must NOT be accessed directly. Use {@link Application#hypixel()} instead
+   * @internal
+   */
   public readonly hypixelApi: Hypixel
   public readonly urchinApi: Urchin | undefined
   public readonly conditonsRegistry: ConditionsRegistry
