@@ -51,7 +51,9 @@ export function resolveAmount(context: ChatCommandContext, givenAmount: string |
   if (givenAmount === undefined) return 'You must specify an amount'
 
   try {
-    return parseNumberWithSuffice(givenAmount)
+    const amount = parseNumberWithSuffice(givenAmount)
+    if (amount !== Math.floor(amount)) return `${context.message.user.displayName()}, amount must be a whole number!`
+    return amount
   } catch {
     return `${context.message.user.displayName()}, amount must be a valid number!`
   }
