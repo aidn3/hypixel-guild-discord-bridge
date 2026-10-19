@@ -18,6 +18,12 @@ export default {
     await interaction.deferReply()
 
     const count = context.application.core.verification.invalidate({ discordId: interaction.user.id })
-    await (count > 0 ? interaction.editReply('Successfully unlinked!') : interaction.editReply('Nothing to unlink!'))
+    await context.application.discordInstance.linkButtons.forceSync(interaction, Date.now())
+
+    if (count <= 0) {
+      await interaction.editReply('Nothing to unlink!')
+      return
+    }
+    await interaction.editReply('Successfully unlinked!')
   }
 } satisfies DiscordCommandHandler
