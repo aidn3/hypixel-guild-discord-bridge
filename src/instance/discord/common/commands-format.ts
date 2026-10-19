@@ -31,6 +31,19 @@ export function formatInvalidUsername(givenUsername: string): APIEmbed {
   }
 }
 
+export function noHypixelApiEmbed(): APIEmbed {
+  return {
+    title: 'No Hypixel API Key',
+    color: Color.Bad,
+    description:
+      `Application has not been configured with a valid Hypixel API key.` +
+      `\nThis is not detrimental to the application's basic functionalities.` +
+      `\nHowever, some Quality of Life features such as this one will not be available.` +
+      `\n\nContact the hosting provider or an admin to configure this.`,
+    footer: { text: DefaultCommandFooter }
+  }
+}
+
 export function formatUser(user: AnonymousUser): string {
   const mojangProfile = user.mojangProfile()
   const discordProfile = user.discordProfile()

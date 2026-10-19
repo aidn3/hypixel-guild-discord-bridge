@@ -7,6 +7,7 @@ import { shortenNumber } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedSkyblock,
   usernameNotExists
 } from '../common/utility.js'
@@ -28,7 +29,9 @@ export default class Sacks extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const entries = selectedProfile.inventory?.sacks_counts ?? {}
@@ -36,8 +39,8 @@ export default class Sacks extends ChatCommandHandler {
     let bazaarTotalValue = 0
     let npcTotalValue = 0
     if (Object.entries(entries).length > 0) {
-      const npcProducts = await context.app.hypixelApi.getSkyblockItems()
-      const bazaarProducts = await context.app.hypixelApi.getSkyblockBazaar()
+      const npcProducts = await hypixel.getSkyblockItems()
+      const bazaarProducts = await hypixel.getSkyblockBazaar()
       const skyhelperPrices = await getPrices()
 
       for (const [name, count] of Object.entries(entries)) {

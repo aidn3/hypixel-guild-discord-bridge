@@ -5,6 +5,8 @@ import { SlashCommandBuilder } from 'discord.js'
 import { Permission } from '../../../common/application-event.js'
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
+import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild.js'
+import { noHypixelApiEmbed } from '../common/commands-format.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
 
 import { Messages30Days, Online30Days, Points30Days } from './create-leaderboard.js'
@@ -35,10 +37,16 @@ export default {
 
     const type = context.interaction.options.getString('type', true)
     const guildName = context.interaction.options.getString('guild-name') ?? undefined
-    let guildId: string | undefined
+    let guild: HypixelGuild | undefined
     if (guildName !== undefined) {
-      guildId = await context.application.hypixelApi.getGuildByName(guildName).then((guild) => guild?._id)
-      if (guildId === undefined) {
+      const hypixel = context.application.hypixel()
+      if (hypixel === undefined) {
+        await context.interaction.editReply({ embeds: [noHypixelApiEmbed()] })
+        return
+      }
+
+      guild = await hypixel.getGuildByName(guildName)
+      if (guild === undefined) {
         await context.interaction.editReply('No such guild.')
         return
       }
@@ -50,7 +58,7 @@ export default {
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage,
-          guildId: guildId,
+          guild: guild,
           user: context.user
         })
       })
@@ -63,7 +71,7 @@ export default {
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage,
-          guildId: guildId,
+          guild: guild,
           user: context.user
         })
       })
@@ -76,7 +84,7 @@ export default {
           addFooter: true,
           addLastUpdateAt: false,
           page: requestedPage,
-          guildId: guildId,
+          guild: guild,
           user: context.user
         })
       })

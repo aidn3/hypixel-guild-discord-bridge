@@ -47,7 +47,7 @@ import { gracefullyExitProcess, sleep } from './utility/shared-utility.js'
 export default class Application extends Emittery<ApplicationEvents> {
   private static readonly BackupMaxLife = Duration.days(60)
 
-  public readonly hypixelApi: Hypixel
+  private readonly hypixelApi: Hypixel
   public readonly mojangApi: MojangApi
   public readonly urchinApi: Urchin | undefined
 
@@ -158,6 +158,10 @@ export default class Application extends Emittery<ApplicationEvents> {
         await fsAsync.rm(filePath)
       }
     }
+  }
+
+  public hypixel(): Hypixel | undefined {
+    return this.hypixelApi.valid() ? this.hypixelApi : undefined
   }
 
   public getConfigFilePath(filename: string): string {

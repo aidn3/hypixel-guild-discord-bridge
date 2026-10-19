@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { capitalize, formatTime } from '../../../utility/shared-utility.js'
-import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
 
 export default class Status extends ChatCommandHandler {
   constructor() {
@@ -21,9 +21,11 @@ export default class Status extends ChatCommandHandler {
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
     const currentTime = Date.now()
-    const session = await context.app.hypixelApi.getPlayerStatus(uuid, currentTime)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const session = await hypixel.getPlayerStatus(uuid, currentTime)
     if (!session.online) {
-      const player = await context.app.hypixelApi.getPlayer(uuid, currentTime)
+      const player = await hypixel.getPlayer(uuid, currentTime)
       if (player === undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
       if ('lastLogout' in player) {

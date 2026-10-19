@@ -6,7 +6,7 @@
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, usernameNotExists } from '../common/utility.js'
 
 export default class Bingo extends ChatCommandHandler {
   constructor() {
@@ -25,8 +25,10 @@ export default class Bingo extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid === undefined) return usernameNotExists(context, givenUsername)
 
-    const bingoResources = await context.app.hypixelApi.getSkyblockBingoResources()
-    const bingo = await context.app.hypixelApi.getPlayerBingo(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const bingoResources = await hypixel.getSkyblockBingoResources()
+    const bingo = await hypixel.getPlayerBingo(uuid)
 
     const events = bingo.events ?? []
 

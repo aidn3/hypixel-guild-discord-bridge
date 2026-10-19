@@ -6,6 +6,7 @@ import PromiseQueue from 'promise-queue'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
+import { hypixelApiNotSet } from '../common/utility.js'
 
 interface RssData {
   rss: {
@@ -52,7 +53,9 @@ export default class News extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const news = await context.app.hypixelApi.getSkyblockNews()
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const news = await hypixel.getSkyblockNews()
     if (news.items.length === 0) return context.app.i18n.t(($) => $['commands.news.none'])
 
     const items = await this.singleton.add(() => this.getPatchnotes())

@@ -13,7 +13,7 @@ import type {
   HandlerUser
 } from '../common.js'
 import { ConditionHandler, ConditionResultType } from '../common.js'
-import { formatPrimitiveValue } from '../utilities.js'
+import { formatPrimitiveValue, noHypixelKey } from '../utilities.js'
 
 export class InGuild extends ConditionHandler<InGuildOptions, boolean> {
   override getId(): string {
@@ -25,7 +25,14 @@ export class InGuild extends ConditionHandler<InGuildOptions, boolean> {
   }
 
   override async displayCondition(context: HandlerDisplayContext, options: InGuildOptions): Promise<string> {
-    const guild = await context.application.hypixelApi.getGuildById(options.guildId)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) {
+      return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.formatted'], {
+        guildName: options.guildId
+      })
+    }
+
+    const guild = await hypixel.getGuildById(options.guildId)
     if (guild === undefined) {
       return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.formatted-invalid'])
     }
@@ -49,7 +56,9 @@ export class InGuild extends ConditionHandler<InGuildOptions, boolean> {
     }
     const uuid = mojangProfile.id
 
-    const guild = await context.application.hypixelApi.getGuildById(options.guildId, context.startTime)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).meetsCondition
+    const guild = await hypixel.getGuildById(options.guildId, context.startTime)
     if (guild === undefined) {
       return {
         type: ConditionResultType.Error,
@@ -85,7 +94,9 @@ export class InGuild extends ConditionHandler<InGuildOptions, boolean> {
     const guildName = rawOptions.guildName
     assert.ok(typeof guildName === 'string')
 
-    const guild = await context.application.hypixelApi.getGuildByName(guildName)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).createCondition
+    const guild = await hypixel.getGuildByName(guildName)
     if (guild === undefined) {
       return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.invalid-name'])
     }

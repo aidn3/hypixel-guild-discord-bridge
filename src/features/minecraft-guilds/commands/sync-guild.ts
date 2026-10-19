@@ -6,6 +6,8 @@ import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../com
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser } from '../../../common/user.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
+import { hypixelApiNotSet } from '../../../instance/commands/common/utility.js'
 import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
 import Duration from '../../../utility/duration.js'
 import { searchObjects } from '../../../utility/shared-utility.js'
@@ -32,6 +34,9 @@ export default class SyncGuild extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+
     const savedGuilds = this.database.allGuilds()
     if (savedGuilds.length === 0) return `${context.username}, no guild registered.`
 
@@ -39,13 +44,17 @@ export default class SyncGuild extends ChatCommandHandler {
       return `${context.username}, command is already running.`
     }
 
-    return await this.singleton.add(() => this.tryResolveAndSync(context, savedGuilds))
+    return await this.singleton.add(() => this.tryResolveAndSync(context, hypixel, savedGuilds))
   }
 
-  private async tryResolveAndSync(context: ChatCommandContext, savedGuilds: MinecraftGuild[]): Promise<string> {
+  private async tryResolveAndSync(
+    context: ChatCommandContext,
+    hypixel: Hypixel,
+    savedGuilds: MinecraftGuild[]
+  ): Promise<string> {
     if (savedGuilds.length === 1) {
       const savedGuild = savedGuilds[0]
-      return this.syncGuild(context, savedGuild)
+      return this.syncGuild(context, hypixel, savedGuild)
     }
 
     const query = context.args
@@ -59,16 +68,16 @@ export default class SyncGuild extends ChatCommandHandler {
 
     const savedGuild = searchObjects(query, savedGuilds, (guild) => guild.name).at(0)
     if (savedGuild !== undefined) {
-      return this.syncGuild(context, savedGuild)
+      return this.syncGuild(context, hypixel, savedGuild)
     }
 
     return `${context.username}, unknown guild: ${query}`
   }
 
-  private async syncGuild(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
+  private async syncGuild(context: ChatCommandContext, hypixel: Hypixel, savedGuild: MinecraftGuild): Promise<string> {
     const currentTime = Date.now()
 
-    const guild = await context.app.hypixelApi.getGuildById(savedGuild.id, currentTime)
+    const guild = await hypixel.getGuildById(savedGuild.id, currentTime)
     if (guild === undefined) return `Unknown guild ${savedGuild.name}.`
 
     const instance = await findInstanceByGuild(context.app, savedGuild)

@@ -5,6 +5,8 @@ import { ComponentType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder }
 
 import type { DiscordCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin } from '../../../common/commands.js'
+import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild.js'
+import { noHypixelApiEmbed } from '../common/commands-format.js'
 import type { LeaderboardResult } from '../features/leaderboard.js'
 
 export const Messages30Days = { name: 'Top Messages (30 days)', value: 'messages30Days' }
@@ -37,16 +39,22 @@ export default {
 
     const type = context.interaction.options.getString('type', true)
     const guildName = context.interaction.options.getString('guild-name') ?? undefined
-    let guildId: string | undefined
+    let guild: HypixelGuild | undefined
     if (guildName !== undefined) {
-      guildId = await context.application.hypixelApi.getGuildByName(guildName).then((guild) => guild?._id)
-      if (guildId === undefined) {
+      const hypixel = context.application.hypixel()
+      if (hypixel === undefined) {
+        await context.interaction.editReply({ embeds: [noHypixelApiEmbed()] })
+        return
+      }
+
+      guild = await hypixel.getGuildByName(guildName)
+      if (guild === undefined) {
         await context.interaction.editReply('No such guild.')
         return
       }
     }
 
-    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guildId: guildId, user: undefined }
+    const parameters = { addFooter: false, addLastUpdateAt: true, page: 0, guild: guild, user: undefined }
     let leaderboard: LeaderboardResult | undefined
     let leaderboardType: 'messages30Days' | 'online30Days' | 'points30Days' | undefined
 
@@ -80,7 +88,7 @@ export default {
       messageId: messageId,
       channelId: channel.id,
       type: leaderboardType,
-      guildId: guildId,
+      guildId: guild?._id,
       createdAt: Date.now(),
       updatedAt: Date.now()
     })

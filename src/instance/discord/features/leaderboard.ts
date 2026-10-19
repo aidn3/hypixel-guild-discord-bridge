@@ -14,6 +14,7 @@ import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild.js'
 import Duration from '../../../utility/duration.js'
 import { setIntervalAsync } from '../../../utility/scheduling.js'
 import { formatTime } from '../../../utility/shared-utility.js'
+import { noHypixelApiEmbed } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type DiscordInstance from '../discord-instance.js'
 import { DefaultTimeout, interactivePaging } from '../utility/discord-pager.js'
@@ -23,7 +24,6 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
   private static readonly CheckUpdateEvery = Duration.minutes(1)
   private static readonly UpdateEvery = Duration.minutes(30)
   private static readonly MyPositionId = 'my-position'
-  private static readonly GuildDisbandedError = new Error('Hypixel guild not found. Probably disbanded.')
 
   constructor(
     application: Application,
@@ -66,6 +66,21 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
       return
     }
 
+    let guild: HypixelGuild | undefined
+    if (leaderboardConfig.guildId !== undefined) {
+      const hypixel = this.application.hypixel()
+      if (hypixel === undefined) {
+        await interaction.editReply({ embeds: [noHypixelApiEmbed()] })
+        return
+      }
+
+      guild = await hypixel.getGuildById(leaderboardConfig.guildId)
+      if (guild === undefined) {
+        await interaction.editReply({ content: 'This leaderboard is of a guild that is disbanded :(' })
+        return
+      }
+    }
+
     const identifier = this.clientInstance.profileByUser(
       interaction.user,
       interaction.inCachedGuild() ? interaction.member : undefined
@@ -81,20 +96,20 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
     switch (leaderboardConfig.type) {
       case 'messages30Days': {
         await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, async (requestedPage) => {
-          return await this.getMessage30Days({ ...DefaultOptions, page: requestedPage })
+          return await this.getMessage30Days({ ...DefaultOptions, page: requestedPage, guild })
         })
         return
       }
 
       case 'online30Days': {
         await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, async (requestedPage) => {
-          return await this.getOnline30Days({ ...DefaultOptions, page: requestedPage })
+          return await this.getOnline30Days({ ...DefaultOptions, page: requestedPage, guild })
         })
         return
       }
       case 'points30Days': {
         await interactivePaging(interaction, 0, DefaultTimeout, this.errorHandler, async (requestedPage) => {
-          return await this.getPoints30Days({ ...DefaultOptions, page: requestedPage })
+          return await this.getPoints30Days({ ...DefaultOptions, page: requestedPage, guild })
         })
         return
       }
@@ -123,23 +138,39 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
       if (entry.updatedAt + Leaderboard.UpdateEvery.toMilliseconds() > Date.now()) continue
       this.logger.debug(`Updating leaderboard ${JSON.stringify(entry)}`)
 
+      let guild: HypixelGuild | undefined
+      if (entry.guildId !== undefined) {
+        const hypixel = this.application.hypixel()
+        if (hypixel === undefined) {
+          this.logger.debug('Can not update this leaderboard due to not Hypixel API key present')
+          continue
+        }
+
+        guild = await hypixel.getGuildById(entry.guildId)
+        if (guild === undefined) {
+          this.logger.error(`Guild has been disbanded? Removing the entry from leaderboard: ${entry.guildId}`)
+          toDelete.push(entry.messageId)
+          continue
+        }
+      }
+
       try {
         let cachedResult: LeaderboardResult | undefined
         switch (entry.type) {
           case 'messages30Days': {
             cachedResult = cache.get('messages30Days')
-            cachedResult ??= await this.getMessage30Days({ ...DefaultOptions, guildId: entry.guildId })
+            cachedResult ??= await this.getMessage30Days({ ...DefaultOptions, guild })
             break
           }
 
           case 'online30Days': {
             cachedResult = cache.get('online30Days')
-            cachedResult ??= await this.getOnline30Days({ ...DefaultOptions, guildId: entry.guildId })
+            cachedResult ??= await this.getOnline30Days({ ...DefaultOptions, guild })
             break
           }
           case 'points30Days': {
             cachedResult = cache.get('points30Days')
-            cachedResult ??= await this.getPoints30Days({ ...DefaultOptions, guildId: entry.guildId })
+            cachedResult ??= await this.getPoints30Days({ ...DefaultOptions, guild })
             break
           }
           default: {
@@ -158,12 +189,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
           toUpdate.push({ messageId: entry.messageId, updatedAt: Date.now() })
         }
       } catch (error: unknown) {
-        if (error === Leaderboard.GuildDisbandedError) {
-          this.logger.error(`Guild has been disbanded? Removing the entry from leaderboard: ${entry.guildId}`)
-          toDelete.push(entry.messageId)
-        } else {
-          this.logger.error(error)
-        }
+        this.logger.error(error)
       }
     }
 
@@ -222,16 +248,17 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
     }
   }
 
-  public async getMessage30Days(option: LeaderboardOptions): Promise<LeaderboardResult> {
+  public async getMessage30Days(option: LeaderboardOptionsActive): Promise<LeaderboardResult> {
     let leaderboard = this.application.core.scoresManager.getMessages30Days()
     let result = ''
 
-    if (option.guildId !== undefined) {
-      const guild = await this.application.hypixelApi.getGuildById(option.guildId)
-      if (guild === undefined) throw Leaderboard.GuildDisbandedError
-
-      leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({ uuid: uuid, discordId: undefined, count: 0 }))
-      result += `Guild: **${escapeMarkdown(guild.name)}**\n`
+    if (option.guild !== undefined) {
+      leaderboard = this.limitToGuild(leaderboard, option.guild, (uuid) => ({
+        uuid: uuid,
+        discordId: undefined,
+        count: 0
+      }))
+      result += `Guild: **${escapeMarkdown(option.guild.name)}**\n`
     }
 
     const total =
@@ -258,19 +285,17 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
     }
   }
 
-  public async getOnline30Days(option: LeaderboardOptions): Promise<LeaderboardResult> {
+  public async getOnline30Days(option: LeaderboardOptionsActive): Promise<LeaderboardResult> {
     let leaderboard = this.application.core.scoresManager.getOnline30Days()
     let result = ''
 
-    if (option.guildId !== undefined) {
-      const guild = await this.application.hypixelApi.getGuildById(option.guildId)
-      if (guild === undefined) throw Leaderboard.GuildDisbandedError
-      leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
+    if (option.guild !== undefined) {
+      leaderboard = this.limitToGuild(leaderboard, option.guild, (uuid) => ({
         uuid: uuid,
         discordId: undefined,
         totalTime: 0
       }))
-      result += `Guild: **${escapeMarkdown(guild.name)}**\n`
+      result += `Guild: **${escapeMarkdown(option.guild.name)}**\n`
     }
 
     const total =
@@ -298,14 +323,12 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
     }
   }
 
-  public async getPoints30Days(option: LeaderboardOptions): Promise<LeaderboardResult> {
+  public async getPoints30Days(option: LeaderboardOptionsActive): Promise<LeaderboardResult> {
     let leaderboard = this.application.core.scoresManager.getPoints30Days()
     let result = ''
 
-    if (option.guildId !== undefined) {
-      const guild = await this.application.hypixelApi.getGuildById(option.guildId)
-      if (guild === undefined) throw Leaderboard.GuildDisbandedError
-      leaderboard = this.limitToGuild(leaderboard, guild, (uuid) => ({
+    if (option.guild !== undefined) {
+      leaderboard = this.limitToGuild(leaderboard, option.guild, (uuid) => ({
         uuid: uuid,
         discordId: undefined,
         total: 0,
@@ -313,7 +336,7 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
         chat: 0,
         online: 0
       }))
-      result += `Guild: **${escapeMarkdown(guild.name)}**\n`
+      result += `Guild: **${escapeMarkdown(option.guild.name)}**\n`
     }
     const total =
       leaderboard.length === 0
@@ -482,3 +505,5 @@ interface LeaderboardFormatEntry {
   uuid: string
   discordId: string | undefined
 }
+
+export type LeaderboardOptionsActive = Omit<LeaderboardOptions, 'guildId'> & { guild: HypixelGuild | undefined }

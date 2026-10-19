@@ -10,6 +10,7 @@ import type EventHelper from '../../common/event-helper.js'
 import SubInstance from '../../common/sub-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
 import type { HypixelGuild } from '../../core/hypixel/hypixel-guild.js'
+import type { Hypixel } from '../../core/hypixel/hypixel.js'
 import type MinecraftInstance from '../../instance/minecraft/minecraft-instance.js'
 import Duration from '../../utility/duration.js'
 import { setIntervalAsync } from '../../utility/scheduling.js'
@@ -49,18 +50,20 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
   }
 
   private async checkAllGuildRanks(): Promise<void> {
-    const savedGuilds = this.database.allGuilds()
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
 
+    const savedGuilds = this.database.allGuilds()
     for (const savedGuild of savedGuilds) {
       try {
-        await this.checkGuildRanks(savedGuild)
+        await this.checkGuildRanks(hypixel, savedGuild)
       } catch (error: unknown) {
         this.errorHandler.error(`Checking guild rank for id=${savedGuild.id},name=${savedGuild.name}`, error)
       }
     }
   }
 
-  private async checkGuildRanks(savedGuild: MinecraftGuild): Promise<void> {
+  private async checkGuildRanks(hypixel: Hypixel, savedGuild: MinecraftGuild): Promise<void> {
     const savedRanks = new Set(savedGuild.roles.map((role) => role.name))
 
     const instance = await findInstanceByGuild(this.application, savedGuild)
@@ -80,7 +83,7 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
       )
       this.logger.debug(`Updating name=${savedGuild.name},id=${savedGuild.id} guild`)
 
-      const guild = await this.application.hypixelApi.getGuildById(savedGuild.id)
+      const guild = await hypixel.getGuildById(savedGuild.id)
       if (guild === undefined) {
         this.logger.error(
           `Tried fetching guild name=${savedGuild.name},id=${savedGuild.id} but returned empty. guild disbanded??`
@@ -94,8 +97,10 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
   }
 
   private async updateGuild(): Promise<void> {
-    const savedGuilds = this.database.allGuilds()
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
 
+    const savedGuilds = this.database.allGuilds()
     for (const savedGuild of savedGuilds) {
       const currentTime = Date.now()
       if (
@@ -104,7 +109,7 @@ export class AutoGuildSync extends SubInstance<MinecraftGuildsManager, Client> {
       ) {
         this.logger.debug(`Updating name=${savedGuild.name},id=${savedGuild.id} guild`)
 
-        const guild = await this.application.hypixelApi.getGuildById(savedGuild.id)
+        const guild = await hypixel.getGuildById(savedGuild.id)
         if (guild === undefined) {
           this.logger.error(
             `Tried fetching guild name=${savedGuild.name},id=${savedGuild.id} but returned empty. guild disbanded??`

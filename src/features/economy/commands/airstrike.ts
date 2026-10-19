@@ -5,7 +5,7 @@ import { EconomyAirstrike } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, inSameGuild, resolveDifferentTarget } from './common/common.js'
+import { economyOverflow, inSameGuildToGameMute, resolveDifferentTarget } from './common/common.js'
 
 export default class Airstrike extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
@@ -33,7 +33,7 @@ export default class Airstrike extends ChatCommandHandler {
       return targetUser
     }
 
-    const sameGuildError = await inSameGuild(context, targetUser)
+    const sameGuildError = await inSameGuildToGameMute(context, targetUser)
     if (typeof sameGuildError === 'string') {
       context.resetCooldown()
       return sameGuildError

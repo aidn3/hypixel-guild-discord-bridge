@@ -8,7 +8,7 @@ import { ProfileNetworthCalculator } from 'skyhelper-networth'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { shortenNumber } from '../../../utility/shared-utility.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class Networth extends ChatCommandHandler {
   constructor() {
@@ -26,14 +26,16 @@ export default class Networth extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await context.app.hypixelApi
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await hypixel
       .getSkyblockProfiles(uuid)
       .then((profiles) => profiles?.find((p) => p.selected) ?? profiles?.at(0))
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     let museumData: object | undefined
     try {
-      museumData = await context.app.hypixelApi
+      museumData = await hypixel
         .getSkyblockMuseum(selectedProfile.profile_id)
         .then((museum) => museum.members[uuid] as object)
     } catch {

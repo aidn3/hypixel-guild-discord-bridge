@@ -6,6 +6,7 @@ import MinecraftRenderer from '../../../utility/minecraft-renderer.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   parseEncodedNbt,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -32,7 +33,9 @@ export default class Equipments extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const armorRaw = selectedProfile.inventory?.equipment_contents?.data

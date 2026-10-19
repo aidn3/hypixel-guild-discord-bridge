@@ -10,7 +10,7 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
 import { formatTime } from '../../../utility/shared-utility.js'
-import { getUuidIfExists, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, usernameNotExists } from '../common/utility.js'
 
 export default class Guild extends ChatCommandHandler {
   constructor() {
@@ -29,7 +29,9 @@ export default class Guild extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const guild = await context.app.hypixelApi.getGuildByPlayer(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const guild = await hypixel.getGuildByPlayer(uuid)
     if (guild == undefined) return `${givenUsername} is not in a guild.`
 
     const member = guild.members.find((m: { uuid: string }) => m.uuid === uuid)
