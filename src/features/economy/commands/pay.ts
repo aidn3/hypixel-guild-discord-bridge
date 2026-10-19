@@ -3,7 +3,7 @@ import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements }
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { EconomyPay } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
-import { EconomyReason } from '../economy-database.js'
+import { EconomyOverflow, EconomyReason } from '../economy-database.js'
 
 import { economyOverflow, minecraftRequired, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
@@ -55,20 +55,29 @@ export default class Pay extends ChatCommandHandler {
     const taxedAmount = Math.floor((tax / 100) * amount)
     const totalAmount = amount + taxedAmount
 
-    const result = this.database.transaction((transaction) => {
-      const responsibleAccount = transaction.getAccount(responsibleUser)
-      const responsibleBalance = responsibleAccount.total()
-      const targetAccount = transaction.getAccount(targetUser)
-      if (responsibleBalance < totalAmount) {
+    try {
+      const result = this.database.transaction((transaction) => {
+        const responsibleAccount = transaction.getAccount(responsibleUser)
+        const responsibleBalance = responsibleAccount.total()
+        const targetAccount = transaction.getAccount(targetUser)
+        if (responsibleBalance < totalAmount) {
+          context.resetCooldown()
+          return `${responsibleUser.displayName()}, you need ${totalAmount - responsibleBalance} more aura to do this!`
+        }
+
+        responsibleAccount.decrease(totalAmount, { reason: EconomyReason.UserPayTo, byUser: targetId })
+        targetAccount.increase(amount, { reason: EconomyReason.UserPayFrom, byUser: responsibleId })
+      })
+      if (result !== undefined) return result
+
+      return `${targetUser.displayName()} has been paid ${amount.toLocaleString('en-US')} aura by ${responsibleUser.displayName()}!`
+    } catch (error: unknown) {
+      if (error instanceof EconomyOverflow) {
         context.resetCooldown()
-        return `${responsibleUser.displayName()}, you need ${totalAmount - responsibleBalance} more aura to do this!`
+        return economyOverflow(error)
       }
 
-      responsibleAccount.decrease(totalAmount, { reason: EconomyReason.UserPayTo, byUser: targetId })
-      targetAccount.increase(amount, { reason: EconomyReason.UserPayFrom, byUser: responsibleId })
-    })
-    if (result !== undefined) return result
-
-    return `${targetUser.displayName()} has been paid ${amount.toLocaleString('en-US')} aura by ${responsibleUser.displayName()}!`
+      throw error
+    }
   }
 }
