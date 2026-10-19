@@ -153,7 +153,7 @@ A shorter version can also be used: `!- rtca`
 | `$leaderboard` | Returns aura leaderboard                                                           |
 | `$mute`        | Mute a random online person for 5 minutes for no good reason                       |
 | `$nuke`        | Mute a random maximum of 4 to 8 online guild members for 3 minutes each            |
-| `$pay`         | Give another player aura. You will be charged a 20% tax on top of the amount sent. |
+| `$pay`         | Give another player aura. You will be charged a 40% tax on top of the amount sent. |
 | `$rob`         | rob another user's aura with high chance of backfiring                             |
 | `$roulette`    | Try your luck for aura or a 15 minute mute                                         |
 | `$set`         | set a player aura                                                                  |

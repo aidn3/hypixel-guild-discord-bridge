@@ -37,7 +37,7 @@ export const EconomyEventWin = { amount: 10 }
 
 export const EconomySacrifice = { tax: 2 }
 
-export const EconomyPay = { cooldown: Duration.seconds(5), tax: 20 }
+export const EconomyPay = { cooldown: Duration.seconds(5), tax: 40 }
 
 export const EconomyRob = { risk: 2, cooldown: Duration.minutes(1), winChance: 0.35 }
 
