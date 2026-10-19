@@ -37,7 +37,7 @@ export class SkyblockReminders extends Instance implements DisplayableInstance {
         lastHourCheck = currentHour
         lastMinuteCheck = currentMinute
 
-        if ([51, 54].includes(currentMinute)) {
+        if ([50, 54].includes(currentMinute)) {
           if (darkAuctionType === DarkAuctionReminderCondition.Scorpius) {
             const hypixel = this.application.hypixel()
             if (hypixel === undefined) return
