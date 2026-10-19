@@ -1,6 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class Garden extends ChatCommandHandler {
   constructor() {
@@ -19,7 +19,9 @@ export default class Garden extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const profile = await context.app.hypixelApi.getSkyblockProfiles(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const profile = await hypixel.getSkyblockProfiles(uuid)
     const selectedProfile = profile?.find((profile) => profile.selected) ?? profile?.at(0)
     if (selectedProfile === undefined) return playerNeverPlayedSkyblock(context, givenUsername)
 
@@ -34,7 +36,7 @@ export default class Garden extends ChatCommandHandler {
     //  Till they are updated in the source, the feature will be left out.
     //  Source: https://wiki.hypixel.net/Garden
 
-    const garden = await context.app.hypixelApi.getSkyblockGarden(selectedProfile.profile_id)
+    const garden = await hypixel.getSkyblockGarden(selectedProfile.profile_id)
     if (garden === undefined) {
       return context.app.i18n.t(($) => $['commands.garden.no-garden'], { username: givenUsername })
     }

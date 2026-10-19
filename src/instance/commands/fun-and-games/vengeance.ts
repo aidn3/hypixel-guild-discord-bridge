@@ -5,32 +5,6 @@ import Duration from '../../../utility/duration.js'
 import { usernameNotExists } from '../common/utility.js'
 
 export default class Vengeance extends ChatCommandHandler {
-  public static readonly LossMessages = [
-    '{username} tried to blast {target} but failed epically and ended up blasting themself!',
-    '{username} unlucky, wrong choice.',
-    '{username}, this is what you get for trying to blast {target}!',
-    '{username} died',
-    '{username} tried to mute {target} but got muted instead, haha!',
-    '{username} better luck next time. Or not...',
-    '{username} was punished for trying to mute {target}',
-    '{username}, aya, are you still trying to mute {target}? How petty.'
-  ]
-
-  public static readonly DrawMessages = [
-    '{username} Click. Click. Click. It is empty!',
-    '{username}, remind me what the plan was again?',
-    '{username}, I forgot to take vengeance.',
-    '{username}, I was supposed to take vengeance against {target} but I changed my mind :P',
-    '{username} tried to kill {target} but they dodged every bullet like Neo!'
-  ]
-
-  public static readonly WinMessages = [
-    '{username} is Batman!',
-    '{target} survival was never an option',
-    '{username}, I am Agent 47. The job is done.',
-    '{target}? Dead? That was the only possible outcome.'
-  ]
-
   private static readonly MuteDuration = Duration.minutes(5)
 
   private countSinceLastWin = 0
@@ -80,7 +54,11 @@ export default class Vengeance extends ChatCommandHandler {
         )
       }
 
-      messages = context.app.core.languageConfigurations.getCommandVengeanceWin()
+      messages = context.app.i18n.t(($) => $['commands.vengeance.win'], {
+        returnObjects: true,
+        username: context.message.user.displayName(),
+        target: targetUser.displayName()
+      })
     } else if (this.lose()) {
       if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
         await context.message.user.mute(
@@ -92,10 +70,18 @@ export default class Vengeance extends ChatCommandHandler {
       }
 
       this.countSinceLastWin++
-      messages = context.app.core.languageConfigurations.getCommandVengeanceLose()
+      messages = context.app.i18n.t(($) => $['commands.vengeance.lose'], {
+        returnObjects: true,
+        username: context.message.user.displayName(),
+        target: targetUser.displayName()
+      })
     } else {
       this.countSinceLastWin++
-      messages = context.app.core.languageConfigurations.getCommandVengeanceDraw()
+      messages = context.app.i18n.t(($) => $['commands.vengeance.draw'], {
+        returnObjects: true,
+        username: context.message.user.displayName(),
+        target: targetUser.displayName()
+      })
     }
 
     return messages[Math.floor(Math.random() * messages.length)]

@@ -1,10 +1,18 @@
 import DefaultAxios from 'axios'
 
 import type { MinecraftConfigurations } from '../../../core/minecraft/minecraft-configurations.js'
+import Duration from '../../../utility/duration.js'
 import { HypixelLink } from '../common/common.js'
 import { stufEncode } from '../common/stuf.js'
 
 export class LinksSanitizer {
+  private static readonly WhitelistedDomains = [
+    'discord.com',
+    'cdn.discordapp.com',
+    'media.discordapp.net',
+    'tenor.com',
+    'media1.tenor.com'
+  ]
   constructor(private readonly config: MinecraftConfigurations) {}
 
   public async process(message: string): Promise<string> {
@@ -48,7 +56,16 @@ export class LinksSanitizer {
         continue
       }
 
-      const response = await DefaultAxios.head(part).catch(() => undefined)
+      // "host" used instead of "hostname" to ensure default port as well
+      if (!LinksSanitizer.WhitelistedDomains.includes(new URL(part).host)) {
+        newMessage.push('(link)')
+        continue
+      }
+
+      const response = await DefaultAxios.head(part, {
+        timeout: Duration.seconds(10).toMilliseconds(),
+        maxRedirects: 5
+      }).catch(() => undefined)
       if (response === undefined) {
         newMessage.push('(link)')
         continue

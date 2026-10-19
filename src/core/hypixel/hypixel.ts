@@ -8,7 +8,7 @@ import type { HypixelSuccessResponse } from './hypixel-api.js'
 import { HypixelCache } from './hypixel-cache.js'
 import { HypixelDatabase } from './hypixel-database.js'
 import type { ApiEntry, ApiEntryWithOption } from './hypixel-fetcher.js'
-import { HypixelFetcher } from './hypixel-fetcher.js'
+import { HypixelApiFail, HypixelFailType, HypixelFetcher } from './hypixel-fetcher.js'
 import type { HypixelGuild, HypixelGuildResponse } from './hypixel-guild.js'
 import type { HypixelLeaderboards, HypixelLeaderboardsResponse } from './hypixel-leaderboards.js'
 import type { HypixelPlayer, HypixelPlayerResponse } from './hypixel-player.js'
@@ -58,9 +58,15 @@ export class Hypixel {
   private readonly database: HypixelDatabase
   private readonly cache: HypixelCache = new HypixelCache()
 
+  private validKey = true
+
   constructor(key: string, sqliteManager: SqliteManager, logger: Logger) {
     this.fetcher = new HypixelFetcher(Hypixel.ApiPath, key)
     this.database = new HypixelDatabase(sqliteManager, logger)
+  }
+
+  public valid(): boolean {
+    return this.validKey
   }
 
   public async getSkyblockProfiles(playerUuid: string, since?: number): Promise<SkyblockProfile[] | undefined> {
@@ -212,13 +218,21 @@ export class Hypixel {
       return databaseCached.content
     }
 
-    const freshResponse = await this.fetcher.fetch<T>(request)
-    const currentTime = Date.now()
-    const requests = cacheRequests === undefined ? [request] : cacheRequests(freshResponse)
-    this.database.add(requests, currentTime, freshResponse)
-    this.cache.add(requests, currentTime, freshResponse)
+    try {
+      const freshResponse = await this.fetcher.fetch<T>(request)
+      const currentTime = Date.now()
+      const requests = cacheRequests === undefined ? [request] : cacheRequests(freshResponse)
+      this.database.add(requests, currentTime, freshResponse)
+      this.cache.add(requests, currentTime, freshResponse)
 
-    return freshResponse
+      return freshResponse
+    } catch (error: unknown) {
+      if (error instanceof HypixelApiFail && error.type === HypixelFailType.Authentication) {
+        this.validKey = false
+      }
+
+      throw error
+    }
   }
 
   private createGuildCacheEntries(original: ApiEntryWithOption, response: HypixelGuildResponse): ApiEntryWithOption[] {

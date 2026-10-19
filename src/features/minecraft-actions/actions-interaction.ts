@@ -51,6 +51,14 @@ export class ActionsInteraction extends SubInstance<MinecraftActionButtons, void
         await this.invitedToGuild(interaction, entry)
         break
       }
+      case DiscordInstanceHistoryButtonType.RequestToJoinGuild: {
+        await this.requestToJoinGuild(interaction, entry)
+        break
+      }
+      default: {
+        entry.type satisfies never
+        assert.fail(`unknown entry type: ${JSON.stringify(entry)}`)
+      }
     }
   }
 

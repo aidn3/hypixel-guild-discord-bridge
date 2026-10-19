@@ -3,15 +3,16 @@ import assert from 'node:assert'
 import { TTLCache } from '@isaacs/ttlcache'
 
 import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
-import { usernameNotExists } from '../../../instance/commands/common/utility.js'
+import { hypixelApiNotSet, usernameNotExists } from '../../../instance/commands/common/utility.js'
+import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
 import Duration from '../../../utility/duration.js'
 import { formatTime } from '../../../utility/shared-utility.js'
 import type { Database } from '../database.js'
 
-import { resolveGuildRank } from './utlity.js'
+import { findInstanceByGuild, resolveGuildRank } from './utlity.js'
 
 export default class Sync extends ChatCommandHandler {
   private readonly cooldowns = new TTLCache<MojangProfile['id'], { createdAt: number }>({
@@ -29,10 +30,13 @@ export default class Sync extends ChatCommandHandler {
     })
   }
 
+  override requirements(): ChatCommandRequirements | string {
+    return { sources: [ChannelType.Public, ChannelType.Officer] }
+  }
+
   async handler(context: ChatCommandContext): Promise<string> {
-    if (context.message.channelType !== ChannelType.Public && context.message.channelType !== ChannelType.Officer) {
-      return 'Command can only be used in public and officer channels.'
-    }
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
 
     const currentTime = Date.now()
     const target = await this.resolveUser(context)
@@ -51,13 +55,18 @@ export default class Sync extends ChatCommandHandler {
       }
     }
 
-    const guild = await context.app.hypixelApi.getGuildByPlayer(targetProfile.id, currentTime)
+    const guild = await hypixel.getGuildByPlayer(targetProfile.id, currentTime)
     if (guild === undefined) return `${targetProfile.name} is not in a guild.`
     const guildMember = guild.members.find((member) => member.uuid === targetProfile.id)
     assert.ok(guildMember !== undefined)
 
     const savedGuild = this.database.allGuilds().find((savedGuild) => savedGuild.id === guild._id)
     if (savedGuild === undefined) return `${targetProfile.name} is in an outside guild: ${guild.name}.`
+
+    const instance = await findInstanceByGuild(context.app, savedGuild)
+    if (instance === undefined) {
+      return 'No Minecraft instance connected with that guild to sync.'
+    }
 
     const resolvedRank = await resolveGuildRank(
       context.app,
@@ -83,24 +92,19 @@ export default class Sync extends ChatCommandHandler {
         return `${targetProfile.name} already at the lowest rank.`
       }
 
-      await this.setRank(context, targetProfile.id, defaultRank)
+      await this.setRank(instance, targetProfile.id, defaultRank)
       return `${targetProfile.name} does not meet any of the higher ranks requirements.`
     }
 
     if (guildMember.rank === undefined || guildMember.rank !== resolvedRank.rank) {
-      await this.setRank(context, targetProfile.id, resolvedRank.rank)
+      await this.setRank(instance, targetProfile.id, resolvedRank.rank)
     }
 
     return `${targetProfile.name}: ${resolvedRank.rank} - ${resolvedRank.condition}`
   }
 
-  private async setRank(context: ChatCommandContext, uuid: string, rank: string): Promise<void> {
-    await context.app.sendMinecraft(
-      context.app.minecraftManager.getAllInstances(),
-      MinecraftSendChatPriority.High,
-      undefined,
-      `/guild setrank ${uuid} ${rank}`
-    )
+  private async setRank(instance: MinecraftInstance, uuid: string, rank: string): Promise<void> {
+    await instance.send(`/guild setrank ${uuid} ${rank}`, MinecraftSendChatPriority.High, undefined)
   }
 
   private async resolveUser(context: ChatCommandContext): Promise<MinecraftUser | string> {

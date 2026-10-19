@@ -3,42 +3,25 @@ import assert from 'node:assert'
 import type { TFunction } from 'i18next'
 
 import type { MojangProfile } from '../../common/user.js'
-import type { HypixelPlayer } from '../hypixel/hypixel-player.js'
-import type { SkyblockMember, SkyblockProfile } from '../hypixel/hypixel-skyblock.js'
+import type { SkyblockMember } from '../hypixel/hypixel-skyblock.js'
+import type { Hypixel } from '../hypixel/hypixel.js'
 
-import type { ConditionValue, HandlerOperationContext, HandlerUser, SkyblockProfileOptionType } from './common.js'
-
-export async function checkSkyblockEntireProfiles(
-  context: HandlerOperationContext,
-  handlerUser: HandlerUser,
-  checker: (profile: SkyblockProfile) => boolean
-): Promise<boolean> {
-  const mojangProfile = handlerUser.user.mojangProfile()
-  if (mojangProfile === undefined) return false
-  const uuid = mojangProfile.id
-  let profiles: SkyblockProfile[] | undefined
-
-  try {
-    profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
-    if (profiles === undefined) return false
-  } catch {
-    return false
-  }
-
-  for (const skyblockProfile of profiles) {
-    if (checker(skyblockProfile)) return true
-  }
-
-  return false
-}
+import type {
+  ConditionFailureResult,
+  ConditionValue,
+  HandlerOperationContext,
+  SkyblockProfileOptionType
+} from './common.js'
+import { ConditionResultType } from './common.js'
 
 export async function getSkyblockUserProfiles(
   context: HandlerOperationContext,
+  hypixel: Hypixel,
   mojangProfile: MojangProfile,
   allowedProfiles: SkyblockProfileOptionType['profileTypes']
 ): Promise<SkyblockMember[]> {
   const uuid = mojangProfile.id
-  const profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
+  const profiles = await hypixel.getSkyblockProfiles(uuid, context.startTime)
   if (profiles === undefined) return []
 
   const result = []
@@ -52,49 +35,6 @@ export async function getSkyblockUserProfiles(
   return result
 }
 
-export async function checkHypixelProfile(
-  context: HandlerOperationContext,
-  handlerUser: HandlerUser,
-  checker: (player: HypixelPlayer) => boolean
-): Promise<boolean> {
-  const mojangProfile = handlerUser.user.mojangProfile()
-  if (mojangProfile === undefined) return false
-  const uuid = mojangProfile.id
-  let player: HypixelPlayer | undefined
-
-  try {
-    player = await context.application.hypixelApi.getPlayer(uuid, context.startTime)
-    if (player === undefined) return false
-  } catch {
-    return false
-  }
-
-  return checker(player)
-}
-export async function checkHypixelGuild(
-  context: HandlerOperationContext,
-  handlerUser: HandlerUser,
-  checker: (profile: SkyblockMember) => boolean
-): Promise<boolean> {
-  const mojangProfile = handlerUser.user.mojangProfile()
-  if (mojangProfile === undefined) return false
-  const uuid = mojangProfile.id
-  let profiles: SkyblockProfile[] | undefined
-
-  try {
-    profiles = await context.application.hypixelApi.getSkyblockProfiles(uuid, context.startTime)
-    if (profiles === undefined) return false
-  } catch {
-    return false
-  }
-
-  for (const skyblockProfile of profiles) {
-    if (checker(skyblockProfile.members[mojangProfile.id])) return true
-  }
-
-  return false
-}
-
 export function formatPrimitiveValue(t: TFunction, value: ConditionValue): string {
   if (typeof value === 'string') return value
   else if (typeof value === 'boolean') {
@@ -106,5 +46,15 @@ export function formatPrimitiveValue(t: TFunction, value: ConditionValue): strin
     value satisfies never
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     assert.fail(`Unknown value type: ${value}`)
+  }
+}
+
+export function noHypixelKey(t: TFunction): { meetsCondition: ConditionFailureResult; createCondition: string } {
+  return {
+    createCondition: t(($) => $['conditions.error.no-hypixel-api-key']),
+    meetsCondition: {
+      type: ConditionResultType.Error,
+      reason: t(($) => $['conditions.error.no-hypixel-api-key'])
+    }
   }
 }

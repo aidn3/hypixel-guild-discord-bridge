@@ -2,7 +2,8 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
 
 export default class Buildbattle extends ChatCommandHandler {
   private static readonly Titles = [
@@ -44,7 +45,10 @@ export default class Buildbattle extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const player = await context.app.hypixelApi.getPlayer(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+
+    const player = await hypixel.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     const stat = player.stats?.BuildBattle
@@ -54,7 +58,7 @@ export default class Buildbattle extends ChatCommandHandler {
 
     const score = stat.score ?? 0
     const wins = stat.wins ?? 0
-    const title = await this.getTitle(context, uuid, score)
+    const title = await this.getTitle(hypixel, uuid, score)
 
     return context.app.i18n.t(($) => $['commands.buildbattle.response'], {
       username: givenUsername,
@@ -64,9 +68,9 @@ export default class Buildbattle extends ChatCommandHandler {
     })
   }
 
-  private async getTitle(context: ChatCommandContext, uuid: string, score: number): Promise<string> {
+  private async getTitle(hypixelApi: Hypixel, uuid: string, score: number): Promise<string> {
     // Check if they deserve the special leaderboard title
-    const leaderboards = await context.app.hypixelApi.getLeaderboards()
+    const leaderboards = await hypixelApi.getLeaderboards()
 
     const buildBattleLeaderboard = leaderboards.BUILD_BATTLE.find((leaderboard) => leaderboard.path === 'score')
     assert.ok(buildBattleLeaderboard !== undefined)

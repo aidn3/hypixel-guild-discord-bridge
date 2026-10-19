@@ -12,8 +12,9 @@ import type UnexpectedErrorHandler from '../../../common/unexpected-error-handle
 import type { MojangProfile } from '../../../common/user.js'
 import { HypixelApiFail, HypixelFailType } from '../../../core/hypixel/hypixel-fetcher.js'
 import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
 import Duration from '../../../utility/duration.js'
-import { formatInvalidUsername } from '../common/commands-format.js'
+import { formatInvalidUsername, noHypixelApiEmbed } from '../common/commands-format.js'
 import { DefaultCommandFooter } from '../common/discord-config.js'
 import type { UpdateContext, UpdateProgress } from '../conditions/common.js'
 import type DiscordInstance from '../discord-instance.js'
@@ -49,10 +50,16 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
     const isLinkButton = this.application.core.discordLinkButton.getButton(interaction.message.id)
     if (!isLinkButton) return
 
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) {
+      await interaction.reply({ embeds: [noHypixelApiEmbed()], flags: MessageFlags.Ephemeral })
+      return
+    }
+
     const startTime = Date.now()
     const linkedAlready = await this.application.core.verification.findByDiscord(interaction.user.id)
     if (linkedAlready === undefined) {
-      const result = await this.showLinkingWizard(interaction, startTime, true)
+      const result = await this.showLinkingWizard(hypixel, interaction, startTime, true)
       if (result === undefined) return
 
       await result.modal.editReply('linked and synced!')
@@ -66,6 +73,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
   }
 
   public async showLinkingWizard(
+    hypixel: Hypixel,
     interaction: ButtonInteraction,
     startTime: number,
     sync: boolean
@@ -95,7 +103,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
     await modalData.deferReply({ flags: MessageFlags.Ephemeral })
 
     const username = modalData.fields.getTextInputValue('username')
-    const linkResult = await this.tryLinking(modalData, startTime, username)
+    const linkResult = await this.tryLinking(hypixel, modalData, startTime, username)
     if (linkResult === undefined) return
 
     if (sync) {
@@ -107,6 +115,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
   }
 
   public async tryLinking(
+    hypixel: Hypixel,
     interaction: ButtonInteraction | CommandInteraction | ModalSubmitInteraction,
     startTime: number,
     username: string
@@ -119,7 +128,7 @@ export default class LinkButtonsManager extends SubInstance<DiscordInstance, Cli
 
     let player: HypixelPlayer | undefined
     try {
-      player = await this.application.hypixelApi.getPlayer(mojangProfile.id, startTime)
+      player = await hypixel.getPlayer(mojangProfile.id, startTime)
     } catch (error: unknown) {
       if (error instanceof HypixelApiFail && error.type === HypixelFailType.Throttle) {
         this.errorHandler.error('fetching Hypixel player data for /link', error)

@@ -18,7 +18,14 @@ export class MojangApi {
     this.mojangDatabase = new MojangDatabase(this.sqliteManager)
   }
 
+  /**
+   * resolve username to UUID
+   * @param username player name to resolve
+   * @throws InvalidMojangUsername if invalid username
+   */
   async profileByUsername(username: string): Promise<MojangProfile> {
+    this.assertValidUsername(username)
+
     const cachedResult = this.mojangDatabase.profileByUsername(username)
     if (cachedResult) return cachedResult
 
@@ -97,7 +104,7 @@ export class MojangApi {
           }
         })
         .catch(() => {
-          for (const username of usernames) {
+          for (const username of usernamesChunk) {
             result.set(username, undefined)
           }
         })
@@ -152,6 +159,10 @@ export class MojangApi {
     this.cache(result)
     return result
   }
+
+  private assertValidUsername(username: string): void {
+    if (!/^\w{1,16}$/g.test(username)) throw new InvalidMojangUsername(username)
+  }
 }
 
 class MojangDatabase {
@@ -192,5 +203,11 @@ class MojangDatabase {
     )
     return select.get({ uuid: uuid, createdAt: Math.floor((Date.now() - MojangDatabase.MaxAge) / 1000) }) as
       MojangProfile | undefined
+  }
+}
+
+export class InvalidMojangUsername extends Error {
+  constructor(public readonly username: string) {
+    super()
   }
 }

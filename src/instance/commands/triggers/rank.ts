@@ -2,7 +2,7 @@ import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { HypixelPlayer } from '../../../core/hypixel/hypixel-player.js'
 import { formatTime } from '../../../utility/shared-utility.js'
-import { getUuidIfExists, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
+import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedHypixel, usernameNotExists } from '../common/utility.js'
 
 export default class Rank extends ChatCommandHandler {
   constructor() {
@@ -21,7 +21,9 @@ export default class Rank extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const player = await context.app.hypixelApi.getPlayer(uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const player = await hypixel.getPlayer(uuid)
     if (player == undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
     if (player.rank === 'STAFF' || player.rank === 'YOUTUBER' || player.monthlyPackageRank === 'SUPERSTAR')

@@ -1,7 +1,7 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { SkyblockMember } from '../../../core/hypixel/hypixel-skyblock.js'
-import { getSelectedSkyblockProfile, getUuidIfExists, usernameNotExists } from '../common/utility.js'
+import { getSelectedSkyblockProfile, getUuidIfExists, hypixelApiNotSet, usernameNotExists } from '../common/utility.js'
 
 export default class HeartOfTheMountain extends ChatCommandHandler {
   constructor() {
@@ -20,7 +20,9 @@ export default class HeartOfTheMountain extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     const stats = selectedProfile?.mining_core
     if (stats === undefined) {
       return context.app.i18n.t(($) => $['commands.hotm.none'], { username: givenUsername })

@@ -1,9 +1,9 @@
 import { ChannelType } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import type { EventContext } from '../../../features/spontaneous-events/common.js'
+import { startCountingChain } from '../../../features/spontaneous-events/events/counting-chain.js'
 import Duration from '../../../utility/duration.js'
-import type { EventContext } from '../../spontaneous-events/common.js'
-import { startCountingChain } from '../../spontaneous-events/events/counting-chain.js'
 
 export default class CountingChain extends ChatCommandHandler {
   constructor() {

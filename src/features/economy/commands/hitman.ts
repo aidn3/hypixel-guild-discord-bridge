@@ -8,7 +8,7 @@ import { EconomyHitman } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyReason } from '../economy-database.js'
 
-import { inSameGuild, resolveAmount, resolveDifferentTarget } from './common/common.js'
+import { inSameGuildToGameMute, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
 export default class Hitman extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
@@ -47,7 +47,7 @@ export default class Hitman extends ChatCommandHandler {
       return `${context.username}, amount must be between ${EconomyHitman.min} and ${EconomyHitman.max} aura.`
     }
 
-    const sameGuildError = await inSameGuild(context, targetUser)
+    const sameGuildError = await inSameGuildToGameMute(context, targetUser)
     if (typeof sameGuildError === 'string') {
       context.resetCooldown()
       return sameGuildError

@@ -1,9 +1,12 @@
+import DefaultAxios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 import NodeCache from 'node-cache'
+import PromiseQueue from 'promise-queue'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
+import { hypixelApiNotSet } from '../common/utility.js'
 
 interface RssData {
   rss: {
@@ -18,6 +21,7 @@ interface RssData {
 }
 
 export default class News extends ChatCommandHandler {
+  private readonly singleton = new PromiseQueue(1)
   private readonly cache = new NodeCache({ stdTTL: Duration.minutes(5).toMilliseconds() })
 
   constructor() {
@@ -34,11 +38,13 @@ export default class News extends ChatCommandHandler {
     const cached = this.cache.get<RssData['rss']['channel']['item']>('patchnotes')
     if (cached) return cached
 
-    const response = await fetch('https://hypixel.net/forums/skyblock-patch-notes.158/index.rss?order=post_date')
-    const xml = await response.text()
+    const response = await DefaultAxios.get<string>(
+      'https://hypixel.net/forums/skyblock-patch-notes.158/index.rss?order=post_date',
+      { maxBodyLength: 5 * 1024 * 1024 }
+    )
 
     const parser = new XMLParser({ ignoreAttributes: false })
-    const patchnotesData: RssData = parser.parse(xml) as RssData
+    const patchnotesData: RssData = parser.parse(response.data) as RssData
 
     const items = patchnotesData.rss.channel.item
 
@@ -47,10 +53,12 @@ export default class News extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const news = await context.app.hypixelApi.getSkyblockNews()
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const news = await hypixel.getSkyblockNews()
     if (news.items.length === 0) return context.app.i18n.t(($) => $['commands.news.none'])
 
-    const items = await this.getPatchnotes()
+    const items = await this.singleton.add(() => this.getPatchnotes())
     const patchnotes = items[0]
 
     const update = news.items[0]

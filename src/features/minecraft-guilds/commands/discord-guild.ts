@@ -33,6 +33,7 @@ import type { MinecraftAnonymousUser, MojangProfile } from '../../../common/user
 import type { ConditionResult, ConditionValue, HandlerDisplayContext } from '../../../core/conditions/common.js'
 import { ConditionResultType } from '../../../core/conditions/common.js'
 import type { HypixelGuild } from '../../../core/hypixel/hypixel-guild.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
 import {
   addConditionCommand,
   type CommandConditionHandler,
@@ -44,7 +45,11 @@ import {
   listConditionCommand,
   removeConditionCommand
 } from '../../../instance/discord/common/commands-conditions.js'
-import { formatInvalidUsername, formatUser } from '../../../instance/discord/common/commands-format.js'
+import {
+  formatInvalidUsername,
+  formatUser,
+  noHypixelApiEmbed
+} from '../../../instance/discord/common/commands-format.js'
 import { DefaultCommandFooter } from '../../../instance/discord/common/discord-config.js'
 import { interactivePaging } from '../../../instance/discord/utility/discord-pager.js'
 import type { ModalResult } from '../../../instance/discord/utility/modal-options.js'
@@ -167,12 +172,18 @@ export async function discordGuildCommandHandler(
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ) {
+  const hypixel = context.application.hypixel()
+  if (hypixel === undefined) {
+    await context.interaction.reply({ embeds: [noHypixelApiEmbed()], flags: MessageFlags.Ephemeral })
+    return
+  }
+
   const interaction = context.interaction
   const groupCommand = interaction.options.getSubcommandGroup() ?? undefined
   const subCommand = interaction.options.getSubcommand()
 
   if (groupCommand === undefined && subCommand === 'register') {
-    await handleRegister(context, database)
+    await handleRegister(context, hypixel, database)
   } else if (groupCommand === undefined && subCommand === 'unregister') {
     await handleUnregister(context, database, waitlistInteraction)
   } else if (groupCommand === undefined && subCommand === 'settings') {
@@ -192,7 +203,7 @@ export async function discordGuildCommandHandler(
   } else if (groupCommand === 'waitlist' && subCommand === 'list') {
     await handleWaitlistList(context, database, waitlistInteraction)
   } else if (groupCommand === 'waitlist' && subCommand === 'add') {
-    await handleWaitlistAdd(context, database, waitlistInteraction)
+    await handleWaitlistAdd(context, hypixel, database, waitlistInteraction)
   } else if (groupCommand === 'waitlist' && subCommand === 'remove') {
     await handleWaitlistRemove(context, database, waitlistInteraction)
   } else if (groupCommand === 'waitlist' && subCommand === 'create-panel') {
@@ -204,7 +215,7 @@ export async function discordGuildCommandHandler(
   } else if (groupCommand === 'stay-conditions' && subCommand === 'remove') {
     await handleStayConditionRemove(context, database)
   } else if (groupCommand === undefined && subCommand === 'purge') {
-    await handlePurge(context, database)
+    await handlePurge(context, hypixel, database)
   } else {
     throw new Error('No such command flow found')
   }
@@ -323,13 +334,17 @@ export async function discordGuildAutocomplete(
   }
 }
 
-async function handleRegister(context: DiscordCommandContext<CommandOrigin.Bridge>, database: Database): Promise<void> {
+async function handleRegister(
+  context: DiscordCommandContext<CommandOrigin.Bridge>,
+  hypixel: Hypixel,
+  database: Database
+): Promise<void> {
   const interaction = context.interaction
   assert.ok(interaction.inGuild())
   await interaction.deferReply()
 
   const name = interaction.options.getString('name', true).trim()
-  const guild = await context.application.hypixelApi.getGuildByName(name)
+  const guild = await hypixel.getGuildByName(name)
   if (guild === undefined) {
     await interaction.editReply({
       embeds: [
@@ -827,6 +842,7 @@ async function handleWaitlistList(
 
 async function handleWaitlistAdd(
   context: DiscordCommandContext<CommandOrigin.Bridge>,
+  hypixel: Hypixel,
   database: Database,
   waitlistInteraction: DiscordWaitlistInteraction
 ): Promise<void> {
@@ -847,7 +863,7 @@ async function handleWaitlistAdd(
     return
   }
 
-  const guild = await context.application.hypixelApi.getGuildByPlayer(mojangProfile.id)
+  const guild = await hypixel.getGuildByPlayer(mojangProfile.id)
   if (guild?._id === savedGuild.id) {
     await interaction.editReply({ content: `${escapeMarkdown(mojangProfile.name)} already in this guild!` })
     return
@@ -1103,6 +1119,7 @@ async function handleStayConditionRemove(
 
 async function handlePurge(
   context: Readonly<DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.None>>,
+  hypixel: Hypixel,
   database: Database
 ): Promise<void> {
   const interaction = context.interaction
@@ -1118,7 +1135,7 @@ async function handlePurge(
 
   let hypixelGuild: HypixelGuild | undefined
   try {
-    hypixelGuild = await context.application.hypixelApi.getGuildById(savedGuild.id)
+    hypixelGuild = await hypixel.getGuildById(savedGuild.id)
   } catch (error: unknown) {
     context.errorHandler.error('fetching hypixel guild', error)
     await interaction.editReply({

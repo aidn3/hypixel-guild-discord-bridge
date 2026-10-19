@@ -41,6 +41,17 @@ export class GuildManager extends SubInstance<MinecraftInstance, void> {
         case GuildPlayerEventType.Joined: {
           this.guildData = undefined
           this.motdData = undefined
+          break
+        }
+
+        case GuildPlayerEventType.Kick:
+        case GuildPlayerEventType.Leave:
+        case GuildPlayerEventType.Join:
+        case GuildPlayerEventType.Promote:
+        case GuildPlayerEventType.Demote:
+        case GuildPlayerEventType.Online:
+        case GuildPlayerEventType.Offline: {
+          this.guildData = undefined
         }
       }
     })
@@ -212,17 +223,21 @@ export class GuildManager extends SubInstance<MinecraftInstance, void> {
       }
     }
 
-    this.application.on('minecraftChat', chatListener)
-    await instance.send(`/guild list`, MinecraftSendChatPriority.High, undefined)
-    timeout.refresh()
-    const error = await timeout.wait()
-    this.application.off('minecraftChat', chatListener)
-    if (error) throw error
-    if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild listing data')
+    try {
+      this.application.on('minecraftChat', chatListener)
+      await instance.send(`/guild list`, MinecraftSendChatPriority.High, undefined)
+      timeout.refresh()
+      const error = await timeout.wait()
+      this.application.off('minecraftChat', chatListener)
+      if (error) throw error
+      if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild listing data')
 
-    assert.ok(guild.name.length > 0, 'Could not detect any guild name somehow')
-    assert.ok(guild.members.length > 0, 'Could not detect any members at all??')
-    return Object.freeze(guild)
+      assert.ok(guild.name.length > 0, 'Could not detect any guild name somehow')
+      assert.ok(guild.members.length > 0, 'Could not detect any members at all??')
+      return Object.freeze(guild)
+    } finally {
+      this.application.off('minecraftChat', chatListener)
+    }
   }
 
   private async motdNow(): Promise<Readonly<GuildMOTD>> {
@@ -267,23 +282,27 @@ export class GuildManager extends SubInstance<MinecraftInstance, void> {
       }
     }
 
-    this.application.on('minecraftChat', chatListener)
-    await instance.send(`/guild motd preview`, MinecraftSendChatPriority.High, undefined)
-    timeout.refresh()
-    const error = await timeout.wait()
-    this.application.off('minecraftChat', chatListener)
-    if (error) throw error
-    if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild motd data')
+    try {
+      this.application.on('minecraftChat', chatListener)
+      await instance.send(`/guild motd preview`, MinecraftSendChatPriority.High, undefined)
+      timeout.refresh()
+      const error = await timeout.wait()
+      this.application.off('minecraftChat', chatListener)
+      if (error) throw error
+      if (timeout.timedOut()) throw new GuildManagerError('Timed out before fully fetching guild motd data')
 
-    if (lines.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      assert.ok(header !== undefined)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      assert.ok(footer !== undefined)
-      motd.lines = { type: 'exists', header: header, footer: footer, content: lines }
+      if (lines.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        assert.ok(header !== undefined)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        assert.ok(footer !== undefined)
+        motd.lines = { type: 'exists', header: header, footer: footer, content: lines }
+      }
+
+      return Object.freeze(motd)
+    } finally {
+      this.application.off('minecraftChat', chatListener)
     }
-
-    return Object.freeze(motd)
   }
 
   private async inviteNow(username: string): Promise<GuildInviteStatus> {
@@ -329,15 +348,19 @@ export class GuildManager extends SubInstance<MinecraftInstance, void> {
       }
     }
 
-    this.application.on('minecraftChat', chatListener)
-    await instance.send(`/guild invite ${username}`, MinecraftSendChatPriority.High, undefined)
-    timeout.refresh()
-    const result = await timeout.wait()
-    this.application.off('minecraftChat', chatListener)
-    if (timeout.timedOut()) throw new GuildManagerError(`Timed out before while trying to invite ${username}`)
-    assert.ok(result !== undefined)
+    try {
+      this.application.on('minecraftChat', chatListener)
+      await instance.send(`/guild invite ${username}`, MinecraftSendChatPriority.High, undefined)
+      timeout.refresh()
+      const result = await timeout.wait()
+      this.application.off('minecraftChat', chatListener)
+      if (timeout.timedOut()) throw new GuildManagerError(`Timed out before while trying to invite ${username}`)
+      assert.ok(result !== undefined)
 
-    return result
+      return result
+    } finally {
+      this.application.off('minecraftChat', chatListener)
+    }
   }
 }
 

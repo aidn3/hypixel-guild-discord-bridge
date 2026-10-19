@@ -191,10 +191,20 @@ export class CommandsHeat {
     const common = { expire: CommandsHeat.ActionExpiresAfter, warnEvery: CommandsHeat.WarnEvery }
     switch (type) {
       case HeatType.Mute: {
-        return { ...common, ...CommandsHeat.resolveLimits(this.moderationConfig.getMutesPerDay()) }
+        return {
+          ...common,
+          ...CommandsHeat.resolveLimits(
+            this.moderationConfig.getHeatPunishment() ? this.moderationConfig.getMutesPerDay() : 0
+          )
+        }
       }
       case HeatType.Kick: {
-        return { ...common, ...CommandsHeat.resolveLimits(this.moderationConfig.getKicksPerDay()) }
+        return {
+          ...common,
+          ...CommandsHeat.resolveLimits(
+            this.moderationConfig.getHeatPunishment() ? this.moderationConfig.getKicksPerDay() : 0
+          )
+        }
       }
     }
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

@@ -1,10 +1,11 @@
 import { escapeMarkdown, SlashCommandBuilder } from 'discord.js'
 
-import { Permission } from '../../../common/application-event.js'
+import { Permission, PunishmentType } from '../../../common/application-event.js'
 import type { DiscordBridgeCommandHandler } from '../../../common/commands.js'
 import { CommandOrigin, OptionMinecraftInstance } from '../../../common/commands.js'
 import { checkChatTriggers, InviteAcceptChat } from '../../../utility/chat-triggers.js'
 import { formatChatTriggerResponse } from '../common/chattrigger-format.js'
+import { formatInvalidUsername, formatUser } from '../common/commands-format.js'
 
 export default {
   getCommandBuilder: () =>
@@ -22,8 +23,28 @@ export default {
     await context.interaction.deferReply()
 
     const username: string = context.interaction.options.getString('username', true)
-    const command = `/g invite ${username}`
 
+    const mojangProfile = await context.application.mojangApi.profileByUsername(username).catch(() => undefined)
+    if (mojangProfile === undefined) {
+      await context.interaction.editReply({ embeds: [formatInvalidUsername(username)] })
+      return
+    }
+
+    const user = await context.application.core.initializeMinecraftUser(mojangProfile, {
+      guild: context.interaction.guild ?? undefined
+    })
+
+    const punishments = user.activePunishments().longestPunishment(PunishmentType.Ban)
+    if (punishments !== undefined) {
+      await context.interaction.editReply(
+        `${formatUser(user)} is banned.` +
+          `\n**Expires:** <t:${Math.floor(punishments.till / 1000)}:R>` +
+          `\n**Reason:** ${escapeMarkdown(punishments.reason)}`
+      )
+      return
+    }
+
+    const command = `/g invite ${username}`
     const instance = context.minecraftInstance
     const result = await checkChatTriggers(context.application, InviteAcceptChat, [instance], command, username)
     const formatted = formatChatTriggerResponse(result, `Invite ${escapeMarkdown(username)}`)

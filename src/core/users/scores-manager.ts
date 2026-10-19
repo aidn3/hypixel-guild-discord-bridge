@@ -167,12 +167,15 @@ export default class ScoresManager extends SubInstance<Core, void> {
   }
 
   private async fetchGuilds(): Promise<void> {
+    const hypixel = this.application.hypixel()
+    if (hypixel === undefined) return
+
     for (const instance of this.application.minecraftManager.getAllInstances()) {
       const botUuid = instance.uuid()
       if (botUuid === undefined) continue
       this.logger.trace(`Fetching guild members for bot uuid ${botUuid}`)
 
-      const guild = await this.application.hypixelApi.getGuildByPlayer(botUuid)
+      const guild = await hypixel.getGuildByPlayer(botUuid)
       if (guild === undefined) continue
       const timeframes: Timeframe[] = []
       const currentTimestamp = Date.now()

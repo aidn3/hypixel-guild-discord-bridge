@@ -106,7 +106,7 @@ export default {
       context.application,
       context.errorHandler,
       context.application.mojangApi,
-      context.application.hypixelApi,
+      context.application.hypixel(),
       onlyOnline
     )
 
@@ -136,7 +136,7 @@ async function listMembers(
   app: Application,
   errorHandler: UnexpectedErrorHandler,
   mojangApi: MojangApi,
-  hypixelApi: Hypixel,
+  hypixelApi: Hypixel | undefined,
   onlyOnline: boolean
 ): Promise<Map<string, string[]>> {
   const guildsLookup = await getGuilds(app, errorHandler)
@@ -212,13 +212,14 @@ async function listMembers(
  */
 async function look(
   mojangProfiles: Map<string, string>,
-  hypixelApi: Hypixel,
+  hypixelApi: Hypixel | undefined,
   errorHandler: UnexpectedErrorHandler
 ): Promise<Map<string, HypixelPlayerStatus>> {
   const result = new Map<string, HypixelPlayerStatus>()
 
   const tasks: Promise<unknown>[] = []
   for (const [username, uuid] of mojangProfiles) {
+    if (hypixelApi === undefined) continue
     tasks.push(
       hypixelApi
         .getPlayerStatus(uuid)

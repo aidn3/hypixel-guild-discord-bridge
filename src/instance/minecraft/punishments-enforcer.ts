@@ -65,7 +65,9 @@ export default class PunishmentsEnforcer extends SubInstance<MinecraftManager, v
 
     const userUuid: string | undefined = event.user.mojangProfile()?.id
     if (userUuid === undefined) return
-    await this.unmute(userUuid)
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (event.type === PunishmentType.Mute || event.type === PunishmentType.Ban) await this.unmute(userUuid)
   }
 
   private async onGuildPlayer(event: GuildPlayerEvent): Promise<void> {

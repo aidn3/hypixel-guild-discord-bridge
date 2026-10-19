@@ -106,6 +106,9 @@ export function initializeCoreDatabase(application: Application, sqliteManager: 
   sqliteManager.registerMigrator((database) => {
     migrateFrom31to32(database)
   })
+  sqliteManager.registerMigrator((database) => {
+    migrateFrom32to33(database)
+  })
 
   sqliteManager.migrate(name)
 }
@@ -1251,6 +1254,108 @@ function migrateFrom30to31(database: Database): void {
 
 function migrateFrom31to32(database: Database): void {
   database.exec("DELETE FROM configurations WHERE category = 'commands' AND name = 'usernameHistory';")
+}
+
+function migrateFrom32to33(database: Database): void {
+  database.exec('ALTER TABLE "mojangSessions" RENAME TO "mojangSessions_old"')
+  database.exec(
+    'CREATE TABLE "mojangSessions" (' +
+      '  name TEXT COLLATE NOCASE NOT NULL REFERENCES mojangInstances(name) ON DELETE CASCADE ON UPDATE CASCADE,' +
+      '  cacheName TEXT NOT NULL,' +
+      '  value TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(name, cacheName)' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "mojangSessions" SELECT * FROM "mojangSessions_old"')
+  database.exec('DROP TABLE "mojangSessions_old"')
+
+  database.exec('ALTER TABLE "minecraftStatusHistory" RENAME TO "minecraftStatusHistory_old"')
+  database.exec(
+    'CREATE TABLE "minecraftStatusHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name) ON DELETE CASCADE ON UPDATE CASCADE,' +
+      '  fromStatus TEXT NOT NULL,' +
+      '  toStatus TEXT NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "minecraftStatusHistory" SELECT * FROM "minecraftStatusHistory_old"')
+  database.exec('DROP TABLE "minecraftStatusHistory_old"')
+
+  database.exec('ALTER TABLE "minecraftMessageHistory" RENAME TO "minecraftMessageHistory_old"')
+  database.exec(
+    'CREATE TABLE "minecraftMessageHistory" (' +
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name) ON DELETE CASCADE ON UPDATE CASCADE,' +
+      '  type TEXT NOT NULL,' +
+      '  value TEXT DEFAULT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "minecraftMessageHistory" SELECT * FROM "minecraftMessageHistory_old"')
+  database.exec('DROP TABLE "minecraftMessageHistory_old"')
+
+  database.exec('ALTER TABLE "discordMinecraftStatusButton" RENAME TO "discordMinecraftStatusButton_old"')
+  database.exec(
+    'CREATE TABLE "discordMinecraftStatusButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name) ON DELETE CASCADE ON UPDATE CASCADE,' +
+      '  type TEXT NOT NULL,' +
+      '  startTime INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  endTime INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "discordMinecraftStatusButton" SELECT * FROM "discordMinecraftStatusButton_old"')
+  database.exec('DROP TABLE "discordMinecraftStatusButton_old"')
+
+  database.exec('ALTER TABLE "discordMinecraftStatusLastButton" RENAME TO "discordMinecraftStatusLastButton_old"')
+  database.exec(
+    'CREATE TABLE "discordMinecraftStatusLastButton" (' +
+      '  messageId TEXT NOT NULL,' +
+      '  channelId TEXT NOT NULL,' +
+      '  name TEXT NOT NULL COLLATE NOCASE REFERENCES mojangInstances(name) ON DELETE CASCADE ON UPDATE CASCADE,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(channelId, name)' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "discordMinecraftStatusLastButton" SELECT * FROM "discordMinecraftStatusLastButton_old"')
+  database.exec('DROP TABLE "discordMinecraftStatusLastButton_old"')
+
+  database.exec('ALTER TABLE "links" RENAME TO "links_old"')
+  database.exec(
+    'CREATE TABLE IF NOT EXISTS "links" (' +
+      '  uuid TEXT UNIQUE NOT NULL,' +
+      '  discordId TEXT UNIQUE NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch()),' +
+      '  PRIMARY KEY(uuid, discordId)' +
+      ' )'
+  )
+  database.exec('INSERT INTO "links" SELECT * FROM "links_old"')
+  database.exec('DROP TABLE "links_old"')
+
+  database.exec('ALTER TABLE "discordUserUpdate" RENAME TO "discordUserUpdate_old"')
+  database.exec(
+    'CREATE TABLE "discordUserUpdate" (' +
+      '  guildId TEXT NOT NULL,' +
+      '  userId TEXT NOT NULL,' +
+      '  lastUpdateAt INTEGER NOT NULL,' +
+      '  PRIMARY KEY(guildId, userId)' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "discordUserUpdate" SELECT * FROM "discordUserUpdate_old"')
+  database.exec('DROP TABLE "discordUserUpdate_old"')
+
+  database.exec('ALTER TABLE "discordLinkButton" RENAME TO "discordLinkButton_old"')
+  database.exec(
+    'CREATE TABLE "discordLinkButton" (' +
+      '  messageId TEXT PRIMARY KEY NOT NULL,' +
+      '  createdAt INTEGER NOT NULL DEFAULT (unixepoch())' +
+      ' ) STRICT'
+  )
+  database.exec('INSERT INTO "discordLinkButton" SELECT * FROM "discordLinkButton_old"')
+  database.exec('DROP TABLE "discordLinkButton_old"')
 }
 
 function findIdentifier(identifiers: string[]): { originInstance: string; userId: string } | undefined {

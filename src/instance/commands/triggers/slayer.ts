@@ -6,6 +6,7 @@ import { capitalize } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedSkyblock,
   playerNeverPlayedSlayers,
   usernameNotExists
@@ -39,7 +40,9 @@ export default class Slayer extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const slayerBosses = selectedProfile.slayer?.slayer_bosses

@@ -3,7 +3,7 @@ import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.j
 import type { EconomyConfigurations } from '../economy-configurations.js'
 import { EconomySacrifice } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
-import { EconomyNotEnough, EconomyOverflow, EconomyReason } from '../economy-database.js'
+import { EconomyOverflow, EconomyReason } from '../economy-database.js'
 
 import { economyOverflow, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
@@ -38,41 +38,51 @@ export default class Sacrifice extends ChatCommandHandler {
     const responsibleId = context.app.core.users.resolveUserId(responsibleUser.getUserIdentifier())
     const targetId = context.app.core.users.resolveUserId(targetUser.getUserIdentifier())
 
-    class NothingGiven extends Error {}
+    class NotEnoughFunds extends Error {
+      constructor(public readonly total: number) {
+        super()
+      }
+    }
     class AlreadyZero extends Error {}
+    class TargetNotEnough extends Error {
+      constructor(public readonly total: number) {
+        super()
+      }
+    }
 
     try {
-      const amounts = this.database.transaction((context) => {
+      const taxedAmount = this.database.transaction((context) => {
         const responsibleAccount = context.getAccount(responsibleUser)
-        const targetAmount = context.getAccount(targetUser)
-        const targetTotal = targetAmount.total()
+        const targetAccount = context.getAccount(targetUser)
+        const responsibleAmount = responsibleAccount.total()
+        const targetTotal = targetAccount.total()
 
         if (targetTotal <= 0) throw new AlreadyZero()
-        const amountBeforeTax = Math.min(targetTotal, amount)
+        if (targetTotal < amount) throw new TargetNotEnough(targetTotal)
 
         const tax = EconomySacrifice.tax
-        const taxedAmount = Math.floor((1 - tax / 100) * amountBeforeTax)
-        if (taxedAmount <= 0) throw new NothingGiven()
+        const taxedAmount = Math.ceil(tax * amount)
+        if (responsibleAmount < taxedAmount) throw new NotEnoughFunds(responsibleAmount)
 
-        responsibleAccount.decrease(amountBeforeTax, { reason: EconomyReason.SacrificeFrom, byUser: targetId })
-        targetAmount.decrease(taxedAmount, { reason: EconomyReason.SacrificeTo, byUser: responsibleId })
-        return { taxedAmount, amountBeforeTax }
+        responsibleAccount.decrease(taxedAmount, { reason: EconomyReason.SacrificeFrom, byUser: targetId })
+        targetAccount.decrease(amount, { reason: EconomyReason.SacrificeTo, byUser: responsibleId })
+        return taxedAmount
       })
 
-      return `${context.username}, -${amounts.amountBeforeTax.toLocaleString('en-US')} aura but ${targetUser.displayName()} -${amounts.taxedAmount.toLocaleString('en-US')}!`
+      return `${context.username}, -${taxedAmount.toLocaleString('en-US')} aura but ${targetUser.displayName()} -${amount.toLocaleString('en-US')}!`
     } catch (error: unknown) {
-      if (error instanceof EconomyNotEnough) {
-        context.resetCooldown()
-        return `${responsibleUser.displayName()}, not enough funds to sacrifice that much!`
-      } else if (error instanceof EconomyOverflow) {
+      if (error instanceof EconomyOverflow) {
         context.resetCooldown()
         return economyOverflow(error)
-      } else if (error instanceof NothingGiven) {
+      } else if (error instanceof NotEnoughFunds) {
         context.resetCooldown()
-        return `${responsibleUser.displayName()}, you need to use more funds due to the high tax percentage!`
+        return `${responsibleUser.displayName()}, you only have ${error.total.toLocaleString('en-US')} aura.`
+      } else if (error instanceof TargetNotEnough) {
+        context.resetCooldown()
+        return `${targetUser.displayName()} you only has ${error.total.toLocaleString('en-US')} aura.`
       } else if (error instanceof AlreadyZero) {
         context.resetCooldown()
-        return `${targetUser.displayName()} funds are empty!`
+        return `${targetUser.displayName()} does not have any aura left!`
       }
 
       throw error

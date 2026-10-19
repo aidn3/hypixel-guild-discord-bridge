@@ -53,6 +53,12 @@ export function playerNeverPlayedSkyblock(context: ChatCommandContext, username:
   return context.app.i18n.t(($) => $['commands.error.never-joined-skyblock'], { username: username })
 }
 
+export function hypixelApiNotSet(context: ChatCommandContext): string {
+  return context.app.i18n.t(($) => $['commands.error.hypixel-api-not-set'], {
+    username: context.message.user.displayName()
+  })
+}
+
 export function playerNeverPlayedDungeons(username: string): string {
   return `${username} has never played dungeons before?`
 }

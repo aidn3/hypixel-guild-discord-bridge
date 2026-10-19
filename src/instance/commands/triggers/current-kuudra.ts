@@ -6,6 +6,7 @@ import { capitalize, formatTime } from '../../../utility/shared-utility.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
+  hypixelApiNotSet,
   playerNeverPlayedDungeons,
   playerNeverPlayedSkyblock,
   usernameNotExists
@@ -30,7 +31,9 @@ export default class CurrentKuudra extends ChatCommandHandler {
     const uuid = await getUuidIfExists(context.app.mojangApi, givenUsername)
     if (uuid == undefined) return usernameNotExists(context, givenUsername)
 
-    const selectedProfile = await getSelectedSkyblockProfile(context.app.hypixelApi, uuid)
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const selectedProfile = await getSelectedSkyblockProfile(hypixel, uuid)
     if (!selectedProfile) return playerNeverPlayedSkyblock(context, givenUsername)
 
     const dungeons = selectedProfile.dungeons
@@ -58,9 +61,10 @@ export default class CurrentKuudra extends ChatCommandHandler {
     }
     assert.ok(foundPlayer)
 
+    const currentTime = Date.now()
     message +=
-      lastRun.completion_ts + CurrentKuudra.ShowTimeAfter < Date.now()
-        ? ` was last seen ${formatTime(Date.now() - lastRun.completion_ts)} ago`
+      lastRun.completion_ts + CurrentKuudra.ShowTimeAfter < currentTime
+        ? ` was last seen ${formatTime(currentTime - lastRun.completion_ts)} ago`
         : ` is`
 
     message += ` playing ${floorDisplayName} `

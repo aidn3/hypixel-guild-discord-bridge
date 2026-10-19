@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import { hypixelApiNotSet } from '../common/utility.js'
 
 export default class Mayor extends ChatCommandHandler {
   constructor() {
@@ -13,7 +14,9 @@ export default class Mayor extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    const government = await context.app.hypixelApi.getSkyblockElection()
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+    const government = await hypixel.getSkyblockElection()
 
     let message = `Elected Mayor: `
     message += `${government.mayor.name} (${government.mayor.perks.map((perk) => perk.name).join(', ')})`

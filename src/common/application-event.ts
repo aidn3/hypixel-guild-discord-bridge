@@ -315,6 +315,10 @@ export interface PunishmentForgive extends InformEvent {
    * The user to forgive
    */
   readonly user: User
+  /**
+   * Type of punishment that has been forgiven
+   */
+  readonly type: PunishmentType
 }
 
 export enum PunishmentType {

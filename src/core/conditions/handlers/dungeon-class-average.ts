@@ -17,7 +17,7 @@ import {
   SkyblockProfileOption,
   translateSkyblockProfileTypes
 } from '../common.js'
-import { formatPrimitiveValue, getSkyblockUserProfiles } from '../utilities.js'
+import { formatPrimitiveValue, getSkyblockUserProfiles, noHypixelKey } from '../utilities.js'
 
 export class DungeonsClassAverage extends ConditionHandler<DungeonsClassAverageOptions, number> {
   override getId(): string {
@@ -49,7 +49,9 @@ export class DungeonsClassAverage extends ConditionHandler<DungeonsClassAverageO
       }
     }
 
-    const profiles = await getSkyblockUserProfiles(context, mojangProfile, condition.profileTypes)
+    const hypixel = context.application.hypixel()
+    if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).meetsCondition
+    const profiles = await getSkyblockUserProfiles(context, hypixel, mojangProfile, condition.profileTypes)
     if (profiles.length === 0) {
       return {
         type: ConditionResultType.Error,

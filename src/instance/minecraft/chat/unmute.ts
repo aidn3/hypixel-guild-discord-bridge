@@ -4,8 +4,7 @@ import type { MinecraftChatContext, MinecraftChatMessage } from '../common/chat-
 
 export default {
   onChat: async function (context: MinecraftChatContext): Promise<void> {
-    const regex =
-      /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) has unmuted (?:\[[+A-Z]{1,10}] ){0,3}(the guild chat!|\w{3,32})/g
+    const regex = /^(?:\[[+A-Z]{1,10}] ){0,3}(\w{3,32}) has unmuted (?:\[[+A-Z]{1,10}] ){0,3}(the guild chat|\w{3,32})/g
 
     const match = regex.exec(context.message)
     if (match != undefined) {
@@ -32,7 +31,7 @@ export default {
       )
 
       if (responsible !== context.clientInstance.username() && targetUser !== undefined) {
-        await targetUser.forgive(context.eventHelper.fillBaseEvent())
+        await targetUser.forgiveMute(context.eventHelper.fillBaseEvent())
       }
 
       await context.application.emit('guildPlayer', {

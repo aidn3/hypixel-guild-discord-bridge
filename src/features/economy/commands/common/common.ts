@@ -62,10 +62,20 @@ export function resolveAmount(context: ChatCommandContext, givenAmount: string |
   }
 }
 
-export async function inSameGuild(context: ChatCommandContext, user: MinecraftUser): Promise<string | undefined> {
+export async function inSameGuildToGameMute(
+  context: ChatCommandContext,
+  user: MinecraftUser
+): Promise<string | undefined> {
+  const hypixel = context.app.hypixel()
+  /*
+   * Allow implicit execution if no way to verify this.
+   * It is not critical to ensure the target is on the same guild.
+   */
+  if (hypixel === undefined) return undefined
+
   const profile = user.mojangProfile()
 
-  const guild = await context.app.hypixelApi.getGuildByPlayer(profile.id)
+  const guild = await hypixel.getGuildByPlayer(profile.id)
   const botUuids = new Set(context.app.minecraftManager.getMinecraftBots().map((bot) => bot.uuid))
   if (!guild?.members.some((member) => botUuids.has(member.uuid))) {
     context.resetCooldown()

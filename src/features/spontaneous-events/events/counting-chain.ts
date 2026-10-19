@@ -66,14 +66,15 @@ export async function startCountingChain(
       timeout.refresh()
     }
   }
+  try {
+    context.application.on('chat', listener)
+    await context.broadcastMessage(`Start counting chain from 1 to infinity!`, Color.Good)
+    timeout.refresh()
 
-  context.application.on('chat', listener)
-  await context.broadcastMessage(`Start counting chain from 1 to infinity!`, Color.Good)
-  timeout.refresh()
-
-  await timeout.wait()
-  context.application.off('chat', listener)
-
+    await timeout.wait()
+  } finally {
+    context.application.off('chat', listener)
+  }
   if (beforeLast === undefined || lastUser === undefined) {
     return { message: `Never mind the counting chain :(`, color: Color.Info, eventResult: { type: 'ended' } }
   } else {

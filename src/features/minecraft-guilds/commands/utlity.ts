@@ -1,9 +1,11 @@
 import assert from 'node:assert'
 
 import type Application from '../../../application.js'
+import { Status } from '../../../common/connectable-instance.js'
 import type { MinecraftUser } from '../../../common/user.js'
 import { ConditionResultType } from '../../../core/conditions/common.js'
 import type { HypixelGuild, HypixelGuildMember } from '../../../core/hypixel/hypixel-guild.js'
+import type MinecraftInstance from '../../../instance/minecraft/minecraft-instance.js'
 import type { Database, MinecraftGuild, MinecraftGuildRole } from '../database.js'
 
 export async function resolveGuildRank(
@@ -65,4 +67,22 @@ export async function resolveGuildRank(
   }
 
   return 'no-rank'
+}
+
+export async function findInstanceByGuild(
+  application: Application,
+  savedGuild: MinecraftGuild
+): Promise<MinecraftInstance | undefined> {
+  const instances = application.minecraftManager.getAllInstances()
+  for (const instance of instances) {
+    if (instance.currentStatus() !== Status.Connected) continue
+    const guildListResult = await instance.guildManager.list().catch(() => undefined)
+    if (guildListResult === undefined) continue
+
+    if (guildListResult.name.toLowerCase().trim() === savedGuild.name.toLowerCase().trim()) {
+      return instance
+    }
+  }
+
+  return undefined
 }

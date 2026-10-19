@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+import DefaultAxios from 'axios'
 import { satisfies } from 'compare-versions'
 import { DiscordjsError, DiscordjsErrorCodes } from 'discord.js'
 import type { Configuration } from 'log4js'
@@ -14,6 +15,7 @@ import Application from './src/application.js'
 import { loadApplicationConfig } from './src/configuration-parser.js'
 import { loadI18 } from './src/i18next.js'
 import DefaultLogConfigurations from './src/log4js-config.json' with { type: 'json' }
+import Duration from './src/utility/duration.js'
 import { gracefullyExitProcess } from './src/utility/shared-utility.js'
 
 const RequiredNodeVersion = PackageJson.engines.node
@@ -33,13 +35,19 @@ if (!satisfies(ActualNodeVersion, RequiredNodeVersion)) {
 const IsTestRun = process.argv.includes('test-run')
 
 const RootDirectory = import.meta.dirname
+
 const ConfigsDirectory = path.resolve(RootDirectory, 'config')
-fs.mkdirSync(ConfigsDirectory, { recursive: true })
+fs.mkdirSync(ConfigsDirectory, { recursive: true, mode: 0o700 })
+fs.chmodSync(ConfigsDirectory, 0o700)
+
+const LogsDirectory = path.resolve(RootDirectory, 'logs')
+fs.mkdirSync(LogsDirectory, { recursive: true, mode: 0o700 })
+fs.chmodSync(LogsDirectory, 0o700)
 
 const LoggerConfigName = 'log4js-config.json'
 const LoggerPath = path.join(ConfigsDirectory, LoggerConfigName)
 if (!fs.existsSync(LoggerPath)) {
-  fs.writeFileSync(LoggerPath, JSON.stringify(DefaultLogConfigurations, undefined, 2))
+  fs.writeFileSync(LoggerPath, JSON.stringify(DefaultLogConfigurations, undefined, 2), { flush: true, mode: 0o600 })
 }
 const LoggerConfig = JSON.parse(fs.readFileSync(LoggerPath, 'utf8')) as Configuration
 const Logger = Logger4js.configure(LoggerConfig).getLogger('Main')
@@ -50,6 +58,11 @@ process.on('uncaughtException', function (error) {
   Logger.fatal(error)
   process.exitCode = 1
 })
+
+DefaultAxios.defaults.headers.common['User-Agent'] =
+  `${PackageJson.name}/${PackageJson.version} (${PackageJson.repository.url})`
+DefaultAxios.defaults.timeout = Duration.seconds(30).toMilliseconds()
+DefaultAxios.defaults.maxRedirects = 10
 
 const File = process.argv[2] ?? './config.yaml'
 if (!fs.existsSync(File) && !IsTestRun) {

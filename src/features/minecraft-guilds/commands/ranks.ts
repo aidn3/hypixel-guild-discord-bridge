@@ -1,5 +1,7 @@
 import type { ChatCommandContext, ChatCommandCooldown } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
+import type { Hypixel } from '../../../core/hypixel/hypixel.js'
+import { hypixelApiNotSet } from '../../../instance/commands/common/utility.js'
 import Duration from '../../../utility/duration.js'
 import { searchObjects } from '../../../utility/shared-utility.js'
 import type { Database, MinecraftGuild } from '../database.js'
@@ -21,12 +23,15 @@ export default class Ranks extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
+    const hypixel = context.app.hypixel()
+    if (hypixel === undefined) return hypixelApiNotSet(context)
+
     const savedGuilds = this.database.allGuilds()
     if (savedGuilds.length === 0) return `${context.username}, no guild registered.`
 
     if (savedGuilds.length === 1) {
       const savedGuild = savedGuilds[0]
-      return this.formatRanks(context, savedGuild)
+      return this.formatRanks(context, hypixel, savedGuild)
     }
 
     const query = context.args
@@ -40,14 +45,18 @@ export default class Ranks extends ChatCommandHandler {
 
     const savedGuild = searchObjects(query, savedGuilds, (guild) => guild.name).at(0)
     if (savedGuild !== undefined) {
-      return this.formatRanks(context, savedGuild)
+      return this.formatRanks(context, hypixel, savedGuild)
     }
 
     return `${context.username}, unknown guild: ${query}`
   }
 
-  private async formatRanks(context: ChatCommandContext, savedGuild: MinecraftGuild): Promise<string> {
-    const hypixelGuild = await context.app.hypixelApi.getGuildById(savedGuild.id)
+  private async formatRanks(
+    context: ChatCommandContext,
+    hypixel: Hypixel,
+    savedGuild: MinecraftGuild
+  ): Promise<string> {
+    const hypixelGuild = await hypixel.getGuildById(savedGuild.id)
     if (hypixelGuild === undefined) return `Guild ${savedGuild.name} disbanded??`
 
     const registry = context.app.core.conditonsRegistry

@@ -47,12 +47,16 @@ export async function startQuickMath(
     if (guess === math.answer) timeout.resolve(event)
   }
 
-  context.application.on('chat', listener)
-  await context.broadcastMessage(`Quick Math: ${math.expression}`, Color.Good)
-  timeout.refresh()
+  let result: ChatEvent | undefined = undefined
+  try {
+    context.application.on('chat', listener)
+    await context.broadcastMessage(`Quick Math: ${math.expression}`, Color.Good)
+    timeout.refresh()
 
-  const result = await timeout.wait()
-  context.application.off('chat', listener)
+    result = await timeout.wait()
+  } finally {
+    context.application.off('chat', listener)
+  }
 
   // eslint-disable-next-line unicorn/prefer-ternary
   if (result === undefined) {
