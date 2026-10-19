@@ -5,7 +5,7 @@ import { EconomyPay } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyReason } from '../economy-database.js'
 
-import { resolveAmount, resolveDifferentTarget } from './common/common.js'
+import { economyOverflow, minecraftRequired, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const tax = EconomyPay.tax
@@ -25,16 +25,14 @@ export default class Pay extends ChatCommandHandler {
     return { type: CooldownType.User, duration: EconomyPay.cooldown }
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { sources: [ChannelType.Public] }
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
     const responsibleUser = context.message.user
-    if (!responsibleUser.verified()) {
-      context.resetCooldown()
-      return `${responsibleUser.displayName()}, you must be linked to use this command!`
-    }
 
     const givenUsername = context.args.at(0)
     const targetUser = await resolveDifferentTarget(context, givenUsername)

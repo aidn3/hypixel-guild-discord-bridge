@@ -50,11 +50,6 @@ export async function resolveTarget(
 export function resolveAmount(context: ChatCommandContext, givenAmount: string | undefined): number | string {
   if (givenAmount === undefined) return 'You must specify an amount'
 
-  if (!Number.isInteger(Number(givenAmount))) {
-    context.resetCooldown()
-    return `${context.message.user.displayName()}, amount must be an integer!`
-  }
-
   try {
     const amount = parseNumberWithSuffice(givenAmount)
     if (amount !== Math.floor(amount)) return `${context.message.user.displayName()}, amount must be a whole number!`
