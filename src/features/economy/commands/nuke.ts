@@ -5,6 +5,8 @@ import type { MojangProfile } from '../../../common/user.js'
 import { EconomyNuke } from '../economy-constants.js'
 import { type EconomyDatabase, EconomyNotEnough, EconomyReason } from '../economy-database.js'
 
+import { minecraftRequired } from './common/common.js'
+
 export class Nuke extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
     super({
@@ -16,7 +18,9 @@ export class Nuke extends ChatCommandHandler {
     })
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { platforms: [Platform.Minecraft], sources: [ChannelType.Public] }
   }
 

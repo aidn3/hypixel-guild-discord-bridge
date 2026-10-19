@@ -242,6 +242,18 @@ async function formatReason(
       const user = await formatUserId(context, entry.userId)
       return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} won an event`
     }
+    case EconomyReason.MigrateTo: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} sent merged/consolidated account to ${byUser}`
+    }
+    case EconomyReason.MigrateFrom: {
+      const amount = formatAmount(entry.change)
+      const user = await formatUserId(context, entry.userId)
+      const byUser = await formatUserId(context, entry.byUser)
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} received merged/consolidated account from ${byUser}`
+    }
     case EconomyReason.SacrificeFrom: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)

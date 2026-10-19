@@ -5,7 +5,7 @@ import { EconomyRob } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyOverflow, EconomyReason } from '../economy-database.js'
 
-import { economyOverflow, resolveAmount, resolveDifferentTarget } from './common/common.js'
+import { economyOverflow, minecraftRequired, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
 export default class Rob extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
@@ -18,7 +18,9 @@ export default class Rob extends ChatCommandHandler {
     })
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { sources: [ChannelType.Public] }
   }
 

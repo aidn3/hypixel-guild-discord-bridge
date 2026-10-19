@@ -4,6 +4,7 @@ import type { Database } from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type { UserId } from '../../common/application-event.js'
+import { Platform } from '../../common/application-event.js'
 import type { SqliteManager } from '../../common/sqlite-manager.js'
 import type { AnonymousUser } from '../../common/user.js'
 import type { Verification } from '../../core/users/verification.js'
@@ -241,6 +242,7 @@ export class EconomyTransaction {
     const definedAccount = this.alreadyDefinedUsers.get(user)
     if (definedAccount !== undefined) return definedAccount as UserEconomy<T>
 
+    const userIdentifiers = user.allIdentifiers()
     const userIds = this.users.resolveAllUserId(user)
     for (const userId of userIds) {
       assert.strictEqual(this.definedUserId.has(userId), false, `userId ${userId} already defined in another user`)
@@ -256,7 +258,25 @@ export class EconomyTransaction {
       accounts.set(userId, value)
     }
 
-    const newUserAccountManager = new UserEconomy(this.database, this, user, primaryAccount, accounts)
+    /*
+     * Force migrate accounts to Minecraft if there is a linked Mojang profile.
+     * This is to unify the usage of accounts across instances by anchoring them on Mojang profiles.
+     */
+    let minecraftAccount: UserId | undefined
+    const migrateAccounts = new Set<UserId>()
+    for (const [index, userIdentifier] of userIdentifiers.entries()) {
+      if (userIdentifier.originInstance === Platform.Minecraft) {
+        minecraftAccount ??= userIds[index]
+      } else {
+        migrateAccounts.add(userIds[index])
+      }
+    }
+
+    const newUserAccountManager =
+      minecraftAccount === undefined
+        ? new UserEconomy(this.database, this, user, primaryAccount, accounts, new Set<UserId>())
+        : new UserEconomy(this.database, this, user, minecraftAccount, accounts, migrateAccounts)
+
     for (const userId of userIds) {
       this.definedUserId.set(userId, newUserAccountManager)
     }
@@ -309,9 +329,11 @@ export class UserEconomy<T extends AnonymousUser> {
     private readonly transaction: EconomyTransaction,
     private readonly user: T,
     private primaryAccount: UserId,
-    private accounts = new Map<UserId, number>()
+    private accounts = new Map<UserId, number>(),
+    migrateAccounts: Set<UserId>
   ) {
     this.normalizeNumbers()
+    this.migrateAccounts(migrateAccounts)
   }
 
   public appleChanges(): number {
@@ -543,6 +565,41 @@ export class UserEconomy<T extends AnonymousUser> {
       }
     }
   }
+
+  private migrateAccounts(accounts: Set<UserId>): void {
+    let primaryAmount = this.accounts.get(this.primaryAccount) ?? 0
+    let changed = false
+
+    for (const account of accounts) {
+      const amount = this.accounts.get(account)
+      if (amount === undefined) continue
+      if (amount <= 0) continue
+
+      primaryAmount += amount
+      this.changes.add(account)
+      this.accounts.set(account, 0)
+      changed = true
+
+      this.newHistory.push({
+        change: amount,
+        userId: this.primaryAccount,
+        byUser: account,
+        reason: EconomyReason.MigrateFrom
+      })
+      this.newHistory.push({
+        change: -amount,
+        userId: account,
+        byUser: this.primaryAccount,
+        reason: EconomyReason.MigrateTo
+      })
+    }
+
+    if (changed) {
+      const newAmount = Math.min(primaryAmount, UserEconomy.MaxFunds)
+      this.accounts.set(this.primaryAccount, newAmount)
+      this.changes.add(this.primaryAccount)
+    }
+  }
 }
 
 export interface HistoryResult {
@@ -589,7 +646,9 @@ export enum EconomyReason {
   Nuke = 'nuke',
   Hitman = 'hitman',
 
-  DailyReward = 'dailyReward'
+  DailyReward = 'dailyReward',
+  MigrateTo = 'migrateTo',
+  MigrateFrom = 'migrateFrom'
 }
 
 export class EconomyNotEnough<T extends AnonymousUser> extends Error {

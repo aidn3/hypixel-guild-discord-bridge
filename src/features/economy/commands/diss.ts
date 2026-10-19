@@ -6,7 +6,7 @@ import { EconomyDiss } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyReason } from '../economy-database.js'
 
-import { resolveDifferentTarget } from './common/common.js'
+import { minecraftRequired, resolveDifferentTarget } from './common/common.js'
 
 export default class Diss extends ChatCommandHandler {
   constructor(
@@ -26,7 +26,9 @@ export default class Diss extends ChatCommandHandler {
     return { type: CooldownType.User, duration: EconomyDiss.cooldown }
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { sources: [ChannelType.Public] }
   }
 

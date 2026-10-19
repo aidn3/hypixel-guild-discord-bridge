@@ -8,7 +8,7 @@ import { EconomyHitman } from '../economy-constants.js'
 import type { EconomyDatabase } from '../economy-database.js'
 import { EconomyReason } from '../economy-database.js'
 
-import { inSameGuildToGameMute, resolveAmount, resolveDifferentTarget } from './common/common.js'
+import { inSameGuildToGameMute, minecraftRequired, resolveAmount, resolveDifferentTarget } from './common/common.js'
 
 export default class Hitman extends ChatCommandHandler {
   constructor(private readonly database: EconomyDatabase) {
@@ -25,7 +25,9 @@ export default class Hitman extends ChatCommandHandler {
     return { type: CooldownType.User, duration: EconomyHitman.cooldown }
   }
 
-  override requirements(): ChatCommandRequirements | string {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
+    if (!context.message.user.isMojangUser()) return minecraftRequired(context)
+
     return { sources: [ChannelType.Public] }
   }
 
