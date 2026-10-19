@@ -14,6 +14,7 @@ import Hitman from './commands/hitman.js'
 import Leaderboard from './commands/leaderboard.js'
 import Mute from './commands/mute.js'
 import { Nuke } from './commands/nuke.js'
+import Pay from './commands/pay.js'
 import Rob from './commands/rob.js'
 import Roulette from './commands/roulette.js'
 import Sacrifice from './commands/sacrifice.js'
@@ -41,6 +42,7 @@ export class Economy extends Instance {
 
     this.application.registerChatCommand(new Current(this.database))
     this.application.registerChatCommand(new Give(this.database, this.configuration))
+    this.application.registerChatCommand(new Pay(this.database))
     this.application.registerChatCommand(new Take(this.database, this.configuration))
     this.application.registerChatCommand(new Set(this.database, this.configuration))
     this.application.registerChatCommand(new Airstrike(this.database))
