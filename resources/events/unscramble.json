@@ -132,31 +132,7 @@
       ],
       "hint": "Food"
     },
-    {
-      "unscramble": [
-        "Dog",
-        "Cat",
-        "Bird",
-        "Horse",
-        "Rabbit",
-        "Mouse",
-        "Snake",
-        "Fox",
-        "Wolf",
-        "Deer",
-        "Falcon",
-        "Eagle",
-        "Hawk",
-        "Pig",
-        "Cow",
-        "Sheep",
-        "Chicken",
-        "Parrot",
-        "Owl",
-        "Polar Bear"
-      ],
-      "hint": "Land animal"
-    },
+   
     {
       "unscramble": [
         "Fish",
@@ -175,6 +151,37 @@
         "Anglerfish"
       ],
       "hint": "Aquatic animal"
+    },
+ {
+      "unscramble": [
+        "Pigeon", 
+        "Penguin", 
+        "Falcon",
+        "Eagle",
+        "Hawk", 
+        "Chicken",
+        "Parrot",
+        "Owl" 
+      ],
+      "hint": "Bird"
+    },
+ {
+      "unscramble": [
+        "Dog",
+        "Cat",
+        "Horse",
+        "Rabbit",
+        "Mouse",
+        "Snake",
+        "Fox",
+        "Wolf",
+        "Deer", 
+        "Pig",
+        "Cow",
+        "Sheep",
+        "Polar Bear"
+      ],
+      "hint": "Land animal"
     },
     {
       "unscramble": ["Sun", "Moon", "Star", "Earth", "Meteor", "Comet", "Planet", "Galaxy", "Rocket", "Satellite"],
