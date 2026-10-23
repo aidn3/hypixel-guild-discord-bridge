@@ -21,7 +21,9 @@
     "test:compile": "npx tsc --noEmit",
     "test:run": "node --import tsx/esm index.ts test-run",
     "bundle:build": "npx rollup --config rollup.config.js",
-    "bundle:test-run": "node -C ./build ./build/bundle.js test-run",
+    "bundle:test-run": "node -C ./build ./build/bundle.mjs test-run",
+    "executable:build": "npm run bundle:build && cd build && npm ci --omit=dev --ignore-scripts && zip -q -r vfs.zip *.md LICENSE node_modules && node --build-sea ../sea-config.json",
+    "executable:test-run": "npm run executable:build && chmod +x ./hypixel-guild-discord-bridge && ./hypixel-guild-discord-bridge",
     "validate": "npm install && npm run generate-code && npm run generate-docs && npm run lint:fix && npm run test:compile && npm run lint:coverage && npm run test:run && npm run bundle:build && npm run bundle:test-run"
   },
   "license": "MIT",

@@ -1,0 +1,8 @@
+{
+  "main": "bundle.mjs",
+  "mainFormat": "module",
+  "useVfs": true,
+  "vfsArchive": "vfs.zip",
+  "execArgv": ["--no-warnings", "--no-deprecation"],
+  "output": "hypixel-guild-discord-bridge"
+}
