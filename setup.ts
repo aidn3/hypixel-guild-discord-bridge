@@ -8,6 +8,7 @@ import type { Logger } from 'log4js'
 import Yaml from 'yaml'
 
 import type { ApplicationConfig } from './src/application-config.js'
+import { Assets } from './src/load-assets.js'
 
 if (import.meta.main && !RollupUsed) {
   const logger = console
@@ -30,8 +31,7 @@ export async function startCreateConfigurations(logger: Console | Logger): Promi
   const configurationsPath = path.join(rootDirectory, 'config.yaml')
   const configurations = getExistingConfigurations(configurationsPath)
 
-  const examplePath = path.join(rootDirectory, 'config_example.yaml')
-  const exampleRaw = fs.readFileSync(examplePath, 'utf8')
+  const exampleRaw = Assets.configurationExample.toString('utf8')
   const example = Yaml.parse(exampleRaw) as ApplicationConfig
 
   const newConfigurations = await createConfig(example, configurations ?? {})
