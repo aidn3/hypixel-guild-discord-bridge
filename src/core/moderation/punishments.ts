@@ -1,11 +1,10 @@
 import assert from 'node:assert'
 
-import type Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type Application from '../../application.js'
 import type { BasePunishment, PunishmentType } from '../../common/application-event.js'
-import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { SqliteManager, TypedDatabase as Database } from '../../common/sqlite-manager.js'
 import type { User, UserIdentifier } from '../../common/user.js'
 
 export type SavedPunishment = BasePunishment & UserIdentifier & SavedPunishmentMetadata
@@ -156,7 +155,7 @@ export default class Punishments {
    * Get all punishments if no identifiers set, otherwise, get the user punishments with the supplied identifiers
    */
   private getPunishments(
-    database: Database.Database,
+    database: Database,
     identifiers: UserIdentifier[],
     onlyActive: boolean,
     offset: number,
