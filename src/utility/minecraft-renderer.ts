@@ -7,12 +7,22 @@
 import assert from 'node:assert'
 import process from 'node:process'
 
-import { createCanvas, registerFont } from 'canvas'
+import type { createCanvas as createCanvasType } from '@napi-rs/canvas'
 
-registerFont('./resources/fonts/minecraft-regular.ttf', { family: 'Minecraft' })
-registerFont('./resources/fonts/minecraft-bold.otf', { family: 'MinecraftBold' })
-registerFont('./resources/fonts/minecraft-italic.otf', { family: 'MinecraftItalic' })
-registerFont('./resources/fonts/minecraft-unicode.ttf', { family: 'MinecraftUnicode' })
+let createCanvas: typeof createCanvasType | undefined
+try {
+  const canvas = await import('@napi-rs/canvas')
+  createCanvas = canvas.createCanvas
+
+  canvas.GlobalFonts.register(Assets.minecraftFontDefault, 'Minecraft')
+  canvas.GlobalFonts.register(Assets.minecraftFontBold, 'MinecraftBold')
+  canvas.GlobalFonts.register(Assets.minecraftFontItalic, 'MinecraftItalic')
+  canvas.GlobalFonts.register(Assets.minecraftFontUnicode, 'MinecraftUnicode')
+} catch {
+  // do nothing
+}
+
+import { Assets } from '../load-assets.js'
 
 class MinecraftRenderer {
   private static readonly RgbaColor: Record<string, string> = {
@@ -40,6 +50,8 @@ class MinecraftRenderer {
   private readonly sizeMultiplier = 0.87
 
   public renderSupported(): boolean {
+    if (createCanvas === undefined) return false
+
     // BUG: image renderer (PANGO library compiled in C) has trouble recognizing fonts on Windows platforms.
     // running in on Windows will spit out errors on process level outside Node.js control
     if (process.platform === 'win32') return false
@@ -50,6 +62,7 @@ class MinecraftRenderer {
   }
 
   public renderLore(itemName: string | undefined, lore: string[]): Buffer {
+    assert.ok(createCanvas)
     assert.strictEqual(this.renderSupported(), true, 'can not render minecraft images right now')
 
     if (itemName) lore.unshift(itemName)
@@ -85,10 +98,11 @@ class MinecraftRenderer {
       }
     }
 
-    return canvas.toBuffer()
+    return canvas.toBuffer('image/png')
   }
 
   public generateMessageImage(message: string): Buffer {
+    assert.ok(createCanvas)
     assert.strictEqual(this.renderSupported(), true, 'can not render minecraft images right now')
 
     const canvasHeight = this.getMessageHeight(message)
@@ -105,7 +119,7 @@ class MinecraftRenderer {
     context.shadowOffsetX = 4 * this.sizeMultiplier
     context.shadowOffsetY = 4 * this.sizeMultiplier
     context.shadowColor = '#131313'
-    context.antialias = 'none'
+    // context.antialias = 'none'
     context.font = `${(40 * this.sizeMultiplier).toFixed(0)}px Minecraft, MinecraftUnicode`
 
     let width = MinecraftRenderer.WidthMargin
@@ -123,10 +137,12 @@ class MinecraftRenderer {
       context.fillText(currentMessage, width, height)
       width += context.measureText(currentMessage).width
     }
-    return canvas.toBuffer()
+    return canvas.toBuffer('image/png')
   }
 
   private getLoreCanvasWidthAndHeight(lore: string[]): { width: number; height: number } {
+    assert.ok(createCanvas)
+
     const canvas = createCanvas(1, 1)
     const context = canvas.getContext('2d')
     context.font = '24px Minecraft'
@@ -143,6 +159,8 @@ class MinecraftRenderer {
   }
 
   private getMessageHeight(message: string): number {
+    assert.ok(createCanvas)
+
     const canvas = createCanvas(1, 1)
     const context = canvas.getContext('2d')
     const splitMessageSpace = message.split(' ')
