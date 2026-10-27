@@ -1,7 +1,16 @@
 {
   "entries": [
     {
-      "unscramble": ["Apple", "Banana", "Lemon", "Peach", "Mango", "Kiwi", "Plum", "Cherry"],
+      "unscramble": [
+        "Apple", 
+        "Banana", 
+        "Lemon", 
+        "Peach", 
+        "Mango", 
+        "Kiwi", 
+        "Plum", 
+        "Cherry"
+      ],
       "hint": "Fruit"
     },
     {
@@ -19,19 +28,47 @@
       "hint": "Berry"
     },
     {
-      "unscramble": ["Chair", "Couch", "Desk", "Shelf", "Table"],
+      "unscramble": [
+        "Chair", 
+        "Couch", 
+        "Desk", 
+        "Shelf", 
+        "Table"
+      ],
       "hint": "Furniture"
     },
     {
-      "unscramble": ["Blanket", "Curtain", "Lamp", "Mirror", "Pillow"],
+      "unscramble": [
+        "Blanket", 
+        "Curtain", 
+        "Lamp", 
+        "Mirror", 
+        "Pillow"
+      ],
       "hint": "Household items"
     },
     {
-      "unscramble": ["Window", "Door", "Floor", "Roof", "Stairs", "Attic"],
+      "unscramble": [
+        "Window", 
+        "Door", 
+        "Floor", 
+        "Roof", 
+        "Stairs", 
+        "Attic"
+      ],
       "hint": "Building feature"
     },
     {
-      "unscramble": ["Kitchen", "Bedroom", "Hallway", "Garage", "Balcony", "Basement", "Closet", "Bathroom"],
+      "unscramble": [
+        "Kitchen", 
+        "Bedroom", 
+        "Hallway", 
+        "Garage", 
+        "Balcony", 
+        "Basement", 
+        "Closet", 
+        "Bathroom"
+      ],
       "hint": "Household room or area"
     },
     {
@@ -153,7 +190,16 @@
       "hint": "Aquatic animal"
     },
     {
-      "unscramble": ["Pigeon", "Penguin", "Falcon", "Eagle", "Hawk", "Chicken", "Parrot", "Owl"],
+      "unscramble": [
+        "Pigeon", 
+        "Penguin", 
+        "Falcon", 
+        "Eagle", 
+        "Hawk", 
+        "Chicken", 
+        "Parrot", 
+        "Owl"
+      ],
       "hint": "Bird"
     },
     {
@@ -175,7 +221,18 @@
       "hint": "Land animal"
     },
     {
-      "unscramble": ["Sun", "Moon", "Star", "Earth", "Meteor", "Comet", "Planet", "Galaxy", "Rocket", "Satellite"],
+      "unscramble": [
+        "Sun", 
+        "Moon", 
+        "Star", 
+        "Earth", 
+        "Meteor", 
+        "Comet", 
+        "Planet", 
+        "Galaxy", 
+        "Rocket", 
+        "Satellite"
+      ],
       "hint": "Outer space"
     },
     {
@@ -217,23 +274,64 @@
       "hint": "Color"
     },
     {
-      "unscramble": ["Happy", "Sad", "Scared", "Brave", "Tired", "Sleepy", "Hungry", "Thirsty", "Excited"],
+      "unscramble": [
+        "Happy", 
+        "Sad", 
+        "Scared", 
+        "Brave", 
+        "Tired", 
+        "Sleepy", 
+        "Hungry", 
+        "Thirsty", 
+        "Excited"
+      ],
       "hint": "Emotion, mood, or feeling"
     },
     {
-      "unscramble": ["Run", "Walk", "Jump", "Swim", "Dance", "Climb"],
+      "unscramble": ["Run", 
+        "Walk", 
+        "Jump", 
+        "Swim", 
+        "Dance", 
+        "Climb"
+      ],
       "hint": "Movement action"
     },
     {
-      "unscramble": ["Read", "Write", "Draw", "Paint"],
+      "unscramble": [
+        "Read", 
+        "Write", 
+        "Draw", 
+        "Paint"
+      ],
       "hint": "Learning or creative activity"
     },
     {
-      "unscramble": ["Car", "Bike", "Bus", "Train", "Plane", "Boat", "Ship", "Truck", "Scooter", "Taxi"],
+      "unscramble": [
+        "Car", 
+        "Bike", 
+        "Bus", 
+        "Train", 
+        "Plane", 
+        "Boat", 
+        "Ship", 
+        "Truck", 
+        "Scooter", 
+        "Taxi"
+      ],
       "hint": "Transportation"
     },
     {
-      "unscramble": ["School", "Teacher", "Student", "Pencil", "Paper", "Eraser", "Ruler", "Textbook"],
+      "unscramble": [
+        "School", 
+        "Teacher", 
+        "Student", 
+        "Pencil", 
+        "Paper", 
+        "Eraser", 
+        "Ruler", 
+        "Textbook"
+      ],
       "hint": "Education"
     },
     {
@@ -276,15 +374,37 @@
       "hint": "Minecraft mob"
     },
     {
-      "unscramble": ["Armor", "Sword", "Bow", "Axe", "Pickaxe", "Shovel", "Hoe", "Shield"],
+      "unscramble": [
+        "Armor", 
+        "Sword", 
+        "Bow", 
+        "Axe", 
+        "Pickaxe", 
+        "Shovel", 
+        "Hoe", 
+        "Shield"
+      ],
       "hint": "Equipment or tool"
     },
     {
-      "unscramble": ["Overworld", "Nether", "End"],
+      "unscramble": [
+        "Overworld", 
+        "Nether", 
+        "End"
+      ],
       "hint": "Minecraft dimension"
     },
     {
-      "unscramble": ["Queue", "Match", "Round", "Team", "Solo", "Duo", "Trio", "Squad"],
+      "unscramble": [
+        "Queue", 
+        "Match", 
+        "Round", 
+        "Team", 
+        "Solo", 
+        "Duo", 
+        "Trio", 
+        "Squad"
+      ],
       "hint": "Matchmaking term"
     },
     {
@@ -420,11 +540,24 @@
       "hint": "Minecraft block or item"
     },
     {
-      "unscramble": ["Holiday", "Halloween", "Christmas", "Easter", "Summer", "Winter", "Spring", "Autumn"],
+      "unscramble": [
+        "Holiday", 
+        "Halloween", 
+        "Christmas", 
+        "Easter", 
+        "Summer", 
+        "Winter", 
+        "Spring", 
+        "Autumn"
+      ],
       "hint": "Time of year"
     },
     {
-      "unscramble": ["Fireworks", "Event", "Festival"],
+      "unscramble": [
+        "Fireworks", 
+        "Event", 
+        "Festival"
+      ],
       "hint": "Special occasion"
     },
     {
@@ -832,7 +965,17 @@
       "hint": "Ghost"
     },
     {
-      "unscramble": ["Village", "Castle", "Kingdom", "Tower", "Dungeon", "Fortress", "Temple", "Ruins", "Palace"],
+      "unscramble": [
+        "Village", 
+        "Castle", 
+        "Kingdom", 
+        "Tower", 
+        "Dungeon", 
+        "Fortress", 
+        "Temple", 
+        "Ruins", 
+        "Palace"
+      ],
       "hint": "Fantasy place"
     },
     {
