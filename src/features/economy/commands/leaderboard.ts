@@ -22,7 +22,7 @@ export default class Leaderboard extends ChatCommandHandler {
     let page = 1
     if (givenPage !== undefined) {
       const resolvedAmount = resolveAmount(context, givenPage)
-      if (typeof resolvedAmount === 'string' || resolvedAmount <= 0) return `${context.username}, invalid page.`
+      if (typeof resolvedAmount === 'string') return `${context.username}, invalid page.`
       page = resolvedAmount
     }
 
