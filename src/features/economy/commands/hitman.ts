@@ -46,7 +46,7 @@ export default class Hitman extends ChatCommandHandler {
 
     if (amount < EconomyHitman.min || amount > EconomyHitman.max) {
       context.resetCooldown()
-      return `${context.username}, amount must be between ${EconomyHitman.min} and ${EconomyHitman.max} aura.`
+      return `${context.username}, the amount must be between ${EconomyHitman.min.toLocaleString('en-US')} and ${EconomyHitman.max.toLocaleString('en-US')} aura.`
     }
 
     const sameGuildError = await inSameGuildToGameMute(context, targetUser)
@@ -63,7 +63,11 @@ export default class Hitman extends ChatCommandHandler {
       const total = account.total()
       if (total < amount) {
         context.resetCooldown()
-        return `${responsibleUser.displayName()}, you need ${amount - total} more aura to use this!`
+        return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+          username: responsibleUser.displayName(),
+          amount: amount - total,
+          cost: amount
+        })
       }
 
       account.decrease(amount, { reason: EconomyReason.Hitman, byUser: targetId })

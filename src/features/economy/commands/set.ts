@@ -53,6 +53,6 @@ export default class Set extends ChatCommandHandler {
       else throw error
     }
 
-    return `${targetUser.displayName()} aura has been set to ${amount.toLocaleString('en-US')}.`
+    return `${targetUser.displayName()}'s aura has been set to ${amount.toLocaleString('en-US')}.`
   }
 }

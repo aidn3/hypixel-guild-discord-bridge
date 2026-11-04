@@ -25,7 +25,7 @@ export async function resolveTarget(
 ): Promise<string | MinecraftUser> {
   if (givenUsername === undefined) {
     context.resetCooldown()
-    return 'You must specify someone'
+    return 'You must specify someone.'
   }
 
   const userSender = context.message.user
@@ -35,7 +35,7 @@ export async function resolveTarget(
 
   if (givenUsername.toLowerCase() === 'everyone') {
     context.resetCooldown()
-    return `${context.username}, you use this on everyone!`
+    return `${context.username}, you can't use this on everyone!`
   }
 
   const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
@@ -48,14 +48,15 @@ export async function resolveTarget(
 }
 
 export function resolveAmount(context: ChatCommandContext, givenAmount: string | undefined): number | string {
-  if (givenAmount === undefined) return 'You must specify an amount'
+  if (givenAmount === undefined) return 'You must specify an amount.'
 
   try {
     const amount = parseNumberWithSuffice(givenAmount)
-    if (amount !== Math.floor(amount)) return `${context.message.user.displayName()}, amount must be a whole number!`
+    if (amount !== Math.floor(amount))
+      return `${context.message.user.displayName()}, the amount must be a whole number!`
     return amount
   } catch {
-    return `${context.message.user.displayName()}, amount must be a valid number!`
+    return `${context.message.user.displayName()}, the amount must be a valid number!`
   }
 }
 
@@ -81,7 +82,7 @@ export async function inSameGuildToGameMute(
 }
 
 export function economyOverflow(error: EconomyOverflow): string {
-  return `Can not give ${error.user.displayName()} ${error.totalChange} since it will exceeds the max allowed funds limit ${error.maxAllowed}!`
+  return `Cannot give ${error.user.displayName()} ${error.totalChange.toLocaleString('en-US')} aura since it would exceed the max allowed funds limit of ${error.maxAllowed.toLocaleString('en-US')}!`
 }
 
 export function minecraftRequired(context: ChatCommandContext): string {

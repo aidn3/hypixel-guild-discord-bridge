@@ -42,7 +42,9 @@ export default class Give extends ChatCommandHandler {
       return amount
     } else if (amount <= 0) {
       context.resetCooldown()
-      return `${context.message.user.displayName()}, amount must be at least 1!`
+      return context.app.i18n.t(($) => $['economy.amount-at-least-one'], {
+        username: context.message.user.displayName()
+      })
     }
 
     const responsibleId = context.app.core.users.resolveUserId(context.message.user.getUserIdentifier())

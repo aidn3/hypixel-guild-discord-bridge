@@ -28,14 +28,18 @@ export default class Roulette extends ChatCommandHandler {
   async handler(context: ChatCommandContext): Promise<string> {
     let gameResult: { survived: boolean; aura: number }
 
-    class NotEnoughFunds extends Error {}
+    class NotEnoughFunds extends Error {
+      constructor(public readonly total: number) {
+        super()
+      }
+    }
     try {
       const user = context.message.user
       gameResult = this.database.transaction((context) => {
         const responsibleAccount = context.getAccount(user)
         const targetAmount = context.getAccount(user)
         const targetTotal = targetAmount.total()
-        if (targetTotal < EconomyRussianRoulette.lose) throw new NotEnoughFunds()
+        if (targetTotal < EconomyRussianRoulette.lose) throw new NotEnoughFunds(targetTotal)
 
         const survived = this.survived()
 
@@ -49,7 +53,13 @@ export default class Roulette extends ChatCommandHandler {
       })
     } catch (error: unknown) {
       context.resetCooldown()
-      if (error instanceof NotEnoughFunds) return `${context.username}, not enough funds to use this command!`
+      if (error instanceof NotEnoughFunds) {
+        return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+          username: context.username,
+          amount: EconomyRussianRoulette.lose - error.total,
+          cost: EconomyRussianRoulette.lose
+        })
+      }
       if (error instanceof EconomyOverflow) return economyOverflow(error)
       throw error
     }
@@ -61,7 +71,7 @@ export default class Roulette extends ChatCommandHandler {
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,
           muteDuration,
-          'Lost in RussianRoulette game'
+          'Lost a game of Russian Roulette'
         )
       }
     }

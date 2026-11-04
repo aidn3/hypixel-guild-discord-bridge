@@ -27,7 +27,7 @@ export default class Leaderboard extends ChatCommandHandler {
     }
 
     const leaderboard = await this.database.getLeaderboard()
-    if (leaderboard.size === 0) return `${context.username}, no one has any aura to display`
+    if (leaderboard.size === 0) return `${context.username}, no one has any aura to display.`
 
     const sortedLeaderboard = leaderboard
       .entries()
@@ -36,7 +36,7 @@ export default class Leaderboard extends ChatCommandHandler {
       .toSorted((a, b) => b.value - a.value)
       .slice(Leaderboard.EntriesPerPage * (page - 1), Leaderboard.EntriesPerPage * page)
     if (sortedLeaderboard.length === 0) {
-      return `${context.username}, can only go up to page ${Math.ceil(leaderboard.size / Leaderboard.EntriesPerPage)}`
+      return `${context.username}, you can only go up to page ${Math.ceil(leaderboard.size / Leaderboard.EntriesPerPage)}.`
     }
 
     const result: string[] = []

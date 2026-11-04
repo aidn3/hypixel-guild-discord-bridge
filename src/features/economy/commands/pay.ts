@@ -47,7 +47,9 @@ export default class Pay extends ChatCommandHandler {
       return amount
     } else if (amount <= 0) {
       context.resetCooldown()
-      return `${responsibleUser.displayName()}, amount must be at least 1!`
+      return context.app.i18n.t(($) => $['economy.amount-at-least-one'], {
+        username: responsibleUser.displayName()
+      })
     }
 
     const responsibleId = context.app.core.users.resolveUserId(responsibleUser.getUserIdentifier())
@@ -62,7 +64,11 @@ export default class Pay extends ChatCommandHandler {
         const targetAccount = transaction.getAccount(targetUser)
         if (responsibleBalance < totalAmount) {
           context.resetCooldown()
-          return `${responsibleUser.displayName()}, you need ${totalAmount - responsibleBalance} more aura to do this!`
+          return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+            username: responsibleUser.displayName(),
+            amount: totalAmount - responsibleBalance,
+            cost: totalAmount
+          })
         }
 
         responsibleAccount.decrease(totalAmount, { reason: EconomyReason.UserPayTo, byUser: targetId })
