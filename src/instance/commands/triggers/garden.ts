@@ -43,11 +43,39 @@ export default class Garden extends ChatCommandHandler {
 
     const totalVisitors = Object.values(garden.commission_data.completed).reduce((a, b) => a + b)
     const uniqueVisitors = Object.values(garden.commission_data.completed).filter((entry) => entry > 0).length
+    const copper = selectedProfile.members[uuid].garden_player_data?.copper ?? 0
+    const gardenLevel = this.getGardenLevel(garden.garden_experience)
     return context.app.i18n.t(($) => $['commands.garden.response'], {
       username: givenUsername,
+      level: gardenLevel,
+      copper,
       totalKilledPests: totalKilledPests,
       totalVisitors: totalVisitors,
       uniqueVisitors: uniqueVisitors
     })
+  }
+
+  private getGardenLevel(experience: number): number {
+    const experienceTable = [
+      0, 70, 140, 280, 520, 1120, 2620, 4620, 7120, 10_120, 20_120, 30_120, 40_120, 50_120, 60_120
+    ]
+    const overflowPerLevel = 10_000
+    const maxBaseExperience = 60_120
+
+    let level = 1
+    for (const [index, requiredXp] of experienceTable.entries()) {
+      if (experience >= requiredXp) {
+        level = index + 1
+      } else {
+        break
+      }
+    }
+
+    if (experience > maxBaseExperience) {
+      const overflowExperience = experience - maxBaseExperience
+      level += Math.floor(overflowExperience / overflowPerLevel)
+    }
+
+    return level
   }
 }
