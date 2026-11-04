@@ -45,11 +45,6 @@ export default class Pay extends ChatCommandHandler {
     if (typeof amount === 'string') {
       context.resetCooldown()
       return amount
-    } else if (amount <= 0) {
-      context.resetCooldown()
-      return context.app.i18n.t(($) => $['economy.amount-at-least-one'], {
-        username: responsibleUser.displayName()
-      })
     }
 
     const responsibleId = context.app.core.users.resolveUserId(responsibleUser.getUserIdentifier())

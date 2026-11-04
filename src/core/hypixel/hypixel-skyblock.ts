@@ -188,6 +188,9 @@ export interface SkyblockMember {
     }
     mineshafts_entered?: number
   }
+  garden_player_data?: {
+    copper?: number
+  }
   foraging?: {
     starlyn?: {
       personal_bests?: {

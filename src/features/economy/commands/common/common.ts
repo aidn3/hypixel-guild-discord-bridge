@@ -47,13 +47,13 @@ export async function resolveTarget(
   return await context.app.core.initializeMinecraftUser(profile, { guild: undefined })
 }
 
-export function resolveAmount(context: ChatCommandContext, givenAmount: string | undefined): number | string {
-  if (givenAmount === undefined) return 'You must specify an amount.'
+export function resolveAmount(context: ChatCommandContext, givenAmount: string | undefined, min = 1): number | string {
+  if (givenAmount === undefined) return 'You must specify an amount'
 
   try {
     const amount = parseNumberWithSuffice(givenAmount)
-    if (amount !== Math.floor(amount))
-      return `${context.message.user.displayName()}, the amount must be a whole number!`
+    if (amount !== Math.floor(amount)) return `${context.message.user.displayName()}, amount must be a whole number!`
+    if (amount < min) return `${context.message.user.displayName()}, amount must be at least ${min}!`
     return amount
   } catch {
     return `${context.message.user.displayName()}, the amount must be a valid number!`
