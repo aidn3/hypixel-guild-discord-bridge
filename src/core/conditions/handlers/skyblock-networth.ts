@@ -137,7 +137,7 @@ export class SkyblockNetworth extends ConditionHandler<SkyblockNetworthOptions, 
     if (suffice === 'k') return 1000
     if (suffice === 'm') return 1_000_000
     if (suffice === 'b') return 1_000_000_000
-    if (suffice === 't') return 1_000_000_000
+    if (suffice === 't') return 1_000_000_000_000
 
     return 1
   }
