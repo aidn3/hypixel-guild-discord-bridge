@@ -54,7 +54,10 @@ export default class Take extends ChatCommandHandler {
       return `Took ${amount.toLocaleString('en-US')} aura from ${targetUser.displayName()}. ${newAmount.toLocaleString('en-US')} aura left!`
     } catch (error: unknown) {
       if (error instanceof EconomyNotEnough) {
-        return `${targetUser.displayName()} only has ${error.current.toLocaleString('en-US')}.`
+        return context.app.i18n.t(($) => $['economy.only-has'], {
+          targetUsername: targetUser.displayName(),
+          auraBalance: error.current
+        })
       } else if (error instanceof EconomyOverflow) {
         return economyOverflow(error)
       }

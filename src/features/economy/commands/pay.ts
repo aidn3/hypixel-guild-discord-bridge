@@ -59,7 +59,11 @@ export default class Pay extends ChatCommandHandler {
         const targetAccount = transaction.getAccount(targetUser)
         if (responsibleBalance < totalAmount) {
           context.resetCooldown()
-          return `${responsibleUser.displayName()}, you need ${totalAmount - responsibleBalance} more aura to do this!`
+          return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+            username: responsibleUser.displayName(),
+            amount: totalAmount - responsibleBalance,
+            cost: totalAmount
+          })
         }
 
         responsibleAccount.decrease(totalAmount, { reason: EconomyReason.UserPayTo, byUser: targetId })

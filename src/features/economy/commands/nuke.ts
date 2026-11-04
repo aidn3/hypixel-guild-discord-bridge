@@ -37,7 +37,11 @@ export class Nuke extends ChatCommandHandler {
     } catch (error: unknown) {
       if (error instanceof EconomyNotEnough) {
         context.resetCooldown()
-        return `${context.message.user.displayName()}, need ${EconomyNuke.amount} aura to use this!`
+        return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+          username: context.message.user.displayName(),
+          amount: EconomyNuke.amount - error.current,
+          cost: EconomyNuke.amount
+        })
       }
       throw error
     }

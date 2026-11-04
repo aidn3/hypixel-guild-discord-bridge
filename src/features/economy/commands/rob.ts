@@ -54,22 +54,25 @@ export default class Rob extends ChatCommandHandler {
         const riskedAmount = amount * EconomyRob.risk
         if (responsibleTotal < riskedAmount) {
           context.resetCooldown()
-          return `${responsibleUser.displayName()}, you need at least ${riskedAmount} to try to rob ${amount}!`
+          return `${responsibleUser.displayName()}, you need at least ${riskedAmount.toLocaleString('en-US')} aura to try to rob ${amount.toLocaleString('en-US')} aura!`
         }
 
         const targetTotal = targetAccount.total()
         if (targetTotal < amount) {
           context.resetCooldown()
-          return `${targetUser.displayName()}, only has ${targetTotal}!`
+          return context.app.i18n.t(($) => $['economy.only-has'], {
+            targetUsername: targetUser.displayName(),
+            auraBalance: targetTotal
+          })
         }
 
         if (Math.random() < EconomyRob.winChance) {
           responsibleAccount.increase(amount, { reason: EconomyReason.RobberSuccess, byUser: targetId })
           targetAccount.decrease(amount, { reason: EconomyReason.Robbed, byUser: responsibleId })
-          return `${responsibleUser.displayName()}, stole ${amount} from ${targetUser.displayName()}!`
+          return `${responsibleUser.displayName()} stole ${amount.toLocaleString('en-US')} aura from ${targetUser.displayName()}!`
         } else {
           responsibleAccount.decrease(riskedAmount, { reason: EconomyReason.RobberFail, byUser: targetId })
-          return `${responsibleUser.displayName()}, got caught trying to steal from ${targetUser.displayName()} and lost ${riskedAmount}!`
+          return `${responsibleUser.displayName()} got caught trying to steal from ${targetUser.displayName()} and lost ${riskedAmount.toLocaleString('en-US')} aura!`
         }
       })
     } catch (error: unknown) {

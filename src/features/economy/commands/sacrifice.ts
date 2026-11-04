@@ -76,17 +76,25 @@ export default class Sacrifice extends ChatCommandHandler {
         return taxedAmount
       })
 
-      return `${context.username}, -${taxedAmount.toLocaleString('en-US')} aura but ${targetUser.displayName()} -${amount.toLocaleString('en-US')}!`
+      return `${context.username}, -${taxedAmount.toLocaleString('en-US')} aura, but ${targetUser.displayName()} -${amount.toLocaleString('en-US')} aura!`
     } catch (error: unknown) {
       if (error instanceof EconomyOverflow) {
         context.resetCooldown()
         return economyOverflow(error)
       } else if (error instanceof NotEnoughFunds) {
         context.resetCooldown()
-        return `${responsibleUser.displayName()}, you only have ${error.total.toLocaleString('en-US')} aura.`
+        const cost = Math.ceil(EconomySacrifice.tax * amount)
+        return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+          username: responsibleUser.displayName(),
+          amount: cost - error.total,
+          cost
+        })
       } else if (error instanceof TargetNotEnough) {
         context.resetCooldown()
-        return `${targetUser.displayName()} you only has ${error.total.toLocaleString('en-US')} aura.`
+        return context.app.i18n.t(($) => $['economy.only-has'], {
+          targetUsername: targetUser.displayName(),
+          auraBalance: error.total
+        })
       } else if (error instanceof AlreadyZero) {
         context.resetCooldown()
         return `${targetUser.displayName()} does not have any aura left!`
