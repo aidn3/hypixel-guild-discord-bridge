@@ -57,6 +57,14 @@ export default class Pay extends ChatCommandHandler {
         const responsibleAccount = transaction.getAccount(responsibleUser)
         const responsibleBalance = responsibleAccount.total()
         const targetAccount = transaction.getAccount(targetUser)
+        const targetBalance = targetAccount.total()
+
+        if (targetBalance < 1 && !targetUser.verified()) {
+          // Guards against username typos so aura isn't paid to the wrong player.
+          context.resetCooldown()
+          return `${targetUser.displayName()} can't be paid. They must have at least 1 aura or be linked to the bridge.`
+        }
+
         if (responsibleBalance < totalAmount) {
           context.resetCooldown()
           return context.app.i18n.t(($) => $['economy.need-more-aura'], {
