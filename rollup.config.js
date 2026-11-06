@@ -2,15 +2,17 @@ import fs from 'node:fs'
 
 import json from '@rollup/plugin-json'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
+import replace from '@rollup/plugin-replace'
 import typescript from '@rollup/plugin-typescript'
 import copy from 'rollup-plugin-copy'
 
 import PackageJSON from './package.json' with { type: 'json' }
+import { Assets } from './src/load-assets.ts'
 
 export default {
   input: './index.ts',
   output: {
-    file: './build/bundle.js',
+    file: './build/bundle.mjs',
     format: 'esm',
     banner: generateHeader()
   },
@@ -21,16 +23,18 @@ export default {
     typescript({ tsconfig: './tsconfig.json', sourceMap: false }),
     copy({
       targets: [
-        { src: 'resources/fonts', dest: 'build/resources/fonts' },
-        { src: 'resources/*', dest: 'build/resources/' },
-        { src: 'config_example.yaml', dest: 'build/' },
         { src: 'LICENSE', dest: 'build/' },
         { src: 'package*', dest: 'build/' },
         { src: '*.md', dest: 'build/' },
-        { src: 'docs', dest: 'build/' },
-        { src: 'start.sh', dest: 'build/' },
-        { src: 'setup-and-start.bat', dest: 'build/' }
+        { src: 'docs', dest: 'build/' }
       ]
+    }),
+    replace({
+      preventAssignment: true,
+      values: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        'BundledAssets.blob': JSON.stringify(generateAssets())
+      }
     })
   ]
 }
@@ -66,4 +70,21 @@ function generateGlobalOptions() {
   let code = ''
   code += '\nconst RollupUsed = true;'
   return code
+}
+
+function generateAssets() {
+  /**
+   *
+   * @type {Record<string, string>}
+   */
+  const toBundleAssets = {}
+  /**
+   *
+   * @type {[string, Buffer][]}
+   */
+  const entries = Object.entries(Assets)
+  for (const [key, buffer] of entries) {
+    toBundleAssets[key] = buffer.toString('base64')
+  }
+  return toBundleAssets
 }

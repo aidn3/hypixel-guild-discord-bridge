@@ -1,7 +1,6 @@
-import type Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
-import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { SqliteManager, TypedDatabase as Database } from '../../common/sqlite-manager.js'
 import type { User, UserIdentifier } from '../../common/user.js'
 import Duration from '../../utility/duration.js'
 
@@ -99,7 +98,7 @@ export class CommandsHeat {
     return transaction()
   }
 
-  private addEntries(database: Database.Database, heatActions: HeatAction[]): void {
+  private addEntries(database: Database, heatActions: HeatAction[]): void {
     const insert = database.prepare(
       'INSERT INTO "heatsCommands" (originInstance, userId, type, createdAt) VALUES (?, ?, ?, ?)'
     )
@@ -114,12 +113,7 @@ export class CommandsHeat {
     }
   }
 
-  private getUserHeats(
-    database: Database.Database,
-    currentTime: number,
-    identifiers: UserIdentifier[],
-    type: HeatType
-  ): number {
+  private getUserHeats(database: Database, currentTime: number, identifiers: UserIdentifier[], type: HeatType): number {
     let query = 'SELECT COUNT(*) FROM "heatsCommands" WHERE '
     const parameters: unknown[] = []
 
@@ -144,12 +138,7 @@ export class CommandsHeat {
     return database.prepare(query).pluck(true).get(parameters) as number
   }
 
-  private warned(
-    database: Database.Database,
-    currentTime: number,
-    identifiers: UserIdentifier[],
-    type: HeatType
-  ): boolean {
+  private warned(database: Database, currentTime: number, identifiers: UserIdentifier[], type: HeatType): boolean {
     let query = 'SELECT IFNULL(MAX(warnedAt), 0) FROM "heatsCommandsWarnings" WHERE '
     const parameters: unknown[] = []
 
@@ -175,12 +164,7 @@ export class CommandsHeat {
     return lastWarning * 1000 + CommandsHeat.WarnEvery.toMilliseconds() > currentTime
   }
 
-  private setLastWarning(
-    database: Database.Database,
-    timestamp: number,
-    identifier: UserIdentifier,
-    type: HeatType
-  ): void {
+  private setLastWarning(database: Database, timestamp: number, identifier: UserIdentifier, type: HeatType): void {
     const replace = database.prepare(
       'INSERT OR REPLACE INTO "heatsCommandsWarnings" (originInstance, userId, type, warnedAt) VALUES(?, ?, ?, ?)'
     )
