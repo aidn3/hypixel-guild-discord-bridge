@@ -125,7 +125,8 @@ export default class Leaderboard extends SubInstance<DiscordInstance, Client> {
 
   private async updateLeaderboards(): Promise<void> {
     const client = this.clientInstance.getClient()
-    assert.ok(client.isReady())
+    // skip this cycle while discord is still logging in or reconnecting
+    if (!client.isReady()) return
 
     const DefaultOptions = { addFooter: false, addLastUpdateAt: true, page: 0, user: undefined }
 
