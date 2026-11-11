@@ -157,7 +157,7 @@ export class Core extends Instance {
 
     this.moderationConfiguration = new ModerationConfigurations(this.configurationsManager)
     this.mojangApi = new MojangApi(this.sqliteManager)
-    this.hypixelApi = new Hypixel(hypixelApiKey, this.hypixelManager, this.logger)
+    this.hypixelApi = new Hypixel(hypixelApiKey, this.hypixelManager, hypixelLogger)
     this.urchinApi = urchinApiKey === undefined ? undefined : new Urchin(urchinApiKey, this.logger)
 
     this.profanity = new Profanity(this.sqliteManager, this.moderationConfiguration)
