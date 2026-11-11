@@ -2,6 +2,7 @@ import assert from 'node:assert'
 
 import { createCache } from 'async-cache-dedupe'
 import axios, { AxiosError } from 'axios'
+import type { Logger } from 'log4js'
 
 import Duration from '../../utility/duration.js'
 import { sleep } from '../../utility/shared-utility.js'
@@ -17,15 +18,24 @@ export class HypixelFetcher {
   private readonly singleston
 
   constructor(
+    private readonly logger: Logger,
     private readonly baseUrl: string,
     private readonly key: string
   ) {
-    this.singleston = createCache().define('fetchHypixel', (request: ApiEntry) => this.retriableFetch(request))
+    this.singleston = createCache().define(
+      'fetchHypixel',
+      (option: { request: ApiEntry; validate: (result: unknown) => boolean }) => {
+        return this.retriableFetch(option.request, option.validate)
+      }
+    )
   }
 
-  public async fetch<T extends HypixelSuccessResponse>(request: ApiEntry): Promise<T> {
+  public async fetch<T extends HypixelSuccessResponse>(
+    request: ApiEntry,
+    validate: (result: T) => boolean
+  ): Promise<T> {
     try {
-      return (await this.singleston.fetchHypixel(request)) as T
+      return (await this.singleston.fetchHypixel({ request, validate: validate as (result: unknown) => boolean })) as T
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         const hypixelError = (error as AxiosError<HypixelFailResponse>).response?.data
@@ -51,7 +61,10 @@ export class HypixelFetcher {
     }
   }
 
-  private async retriableFetch<T extends HypixelSuccessResponse>(request: ApiEntry): Promise<T> {
+  private async retriableFetch<T extends HypixelSuccessResponse>(
+    request: ApiEntry,
+    validate: (result: T) => boolean
+  ): Promise<T> {
     const parameters = this.parameterize(request)
 
     const maxRetries = HypixelFetcher.MaxRetries
@@ -66,6 +79,8 @@ export class HypixelFetcher {
 
         assert.ok(result.status === 200)
         assert.strictEqual(result.data.success, true)
+        assert.ok(validate(result.data))
+
         return result.data
       } catch (error: unknown) {
         if (retry + 1 < maxRetries && error instanceof AxiosError) {
@@ -74,6 +89,8 @@ export class HypixelFetcher {
             await sleep(shouldRetry.toMilliseconds())
             continue
           }
+        } else {
+          this.logger.warn(`failed too many times. Throwing error for ${JSON.stringify(request)}`)
         }
 
         throw error

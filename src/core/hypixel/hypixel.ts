@@ -60,8 +60,15 @@ export class Hypixel {
 
   private validKey = true
 
-  constructor(key: string, sqliteManager: SqliteManager, logger: Logger) {
-    this.fetcher = new HypixelFetcher(Hypixel.ApiPath, key)
+  constructor(
+    key: string,
+    sqliteManager: SqliteManager,
+    private readonly logger: Logger
+  ) {
+    logger.trace('initiating fetcher interface')
+    this.fetcher = new HypixelFetcher(logger, Hypixel.ApiPath, key)
+
+    logger.trace('initiating database interface')
     this.database = new HypixelDatabase(sqliteManager, logger)
   }
 
@@ -71,7 +78,7 @@ export class Hypixel {
 
   public async getSkyblockProfiles(playerUuid: string, since?: number): Promise<SkyblockProfile[] | undefined> {
     const request = { path: Hypixel.SkyblockProfilePath, key: 'uuid', value: playerUuid } satisfies ApiEntry
-    const response = await this.resolveAndFetch<SkyblockProfilesResponse>(request, since)
+    const response = await this.resolveAndFetch<SkyblockProfilesResponse>(request, () => true, since)
     return response.profiles ?? undefined
   }
 
@@ -87,7 +94,7 @@ export class Hypixel {
      */
     let response: GardenResponse
     try {
-      response = await this.resolveAndFetch<GardenResponse>(request, since)
+      response = await this.resolveAndFetch<GardenResponse>(request, () => true, since)
     } catch (error: unknown) {
       if (error instanceof AxiosError && error.status === 404) {
         response = { success: true, garden: undefined }
@@ -104,79 +111,88 @@ export class Hypixel {
     since?: number
   ): Promise<SkyblockMuseumResponse> {
     const request = { path: Hypixel.SkyblockMuseumPath, key: 'profile', value: profileId } satisfies ApiEntry
-    const response = await this.resolveAndFetch<SkyblockMuseumResponse>(request, since)
+    const response = await this.resolveAndFetch<SkyblockMuseumResponse>(request, () => true, since)
     return response
   }
 
   public async getSkyblockElection(since?: number): Promise<MayorResponse> {
     const request = { path: Hypixel.SkyblockElectionPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<MayorResponse>(request, since)
+    const response = await this.resolveAndFetch<MayorResponse>(request, () => true, since)
     return response
   }
 
   public async getSkyblockNews(since?: number): Promise<NewsResponse> {
     const request = { path: Hypixel.SkyblockNewsPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<NewsResponse>(request, since)
+    const response = await this.resolveAndFetch<NewsResponse>(request, () => true, since)
     return response
   }
 
   public async getSkyblockBingoResources(since?: number): Promise<SkyblockBingoResourcesResponse> {
     const request = { path: Hypixel.SkyblockBingoResourcesPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<SkyblockBingoResourcesResponse>(request, since)
+    const response = await this.resolveAndFetch<SkyblockBingoResourcesResponse>(request, () => true, since)
     return response
   }
 
   public async getLeaderboards(since?: number): Promise<HypixelLeaderboards> {
     const request = { path: Hypixel.LeaderboardsPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelLeaderboardsResponse>(request, since)
+    const response = await this.resolveAndFetch<HypixelLeaderboardsResponse>(request, () => true, since)
     return response.leaderboards
   }
 
   public async getSkyblockSkills(since?: number): Promise<HypixelSkyblockSkillsResponse> {
     const request = { path: Hypixel.SkyblockSkillsPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelSkyblockSkillsResponse>(request, since)
+    const response = await this.resolveAndFetch<HypixelSkyblockSkillsResponse>(request, () => true, since)
     return response
   }
 
   public async getSkyblockBazaar(since?: number): Promise<Bazaar['products']> {
     const request = { path: Hypixel.SkyblockBazaarPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<Bazaar>(request, since)
+    const response = await this.resolveAndFetch<Bazaar>(request, () => true, since)
     return response.products
   }
 
   public async getGuildByPlayer(playerUuid: string, since?: number): Promise<HypixelGuild | undefined> {
     const request = { path: Hypixel.GuildPath, key: 'player', value: playerUuid } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
-      this.createGuildCacheEntries(request, response)
+    const response = await this.resolveAndFetch<HypixelGuildResponse>(
+      request,
+      () => true,
+      since,
+      (response) => this.createGuildCacheEntries(request, response)
     )
     return response.guild ?? undefined
   }
 
   public async getGuildByName(guildName: string, since?: number): Promise<HypixelGuild | undefined> {
     const request = { path: Hypixel.GuildPath, key: 'name', value: guildName } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
-      this.createGuildCacheEntries(request, response)
+    const response = await this.resolveAndFetch<HypixelGuildResponse>(
+      request,
+      () => true,
+      since,
+      (response) => this.createGuildCacheEntries(request, response)
     )
     return response.guild ?? undefined
   }
 
   public async getGuildById(guildId: HypixelGuild['_id'], since?: number): Promise<HypixelGuild | undefined> {
     const request = { path: Hypixel.GuildPath, key: 'id', value: guildId } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelGuildResponse>(request, since, (response) =>
-      this.createGuildCacheEntries(request, response)
+    const response = await this.resolveAndFetch<HypixelGuildResponse>(
+      request,
+      () => true,
+      since,
+      (response) => this.createGuildCacheEntries(request, response)
     )
     return response.guild ?? undefined
   }
 
   public async getPlayer(playerUuid: string, since?: number): Promise<HypixelPlayer | undefined> {
     const request = { path: Hypixel.PlayerPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelPlayerResponse>(request, since)
+    const response = await this.resolveAndFetch<HypixelPlayerResponse>(request, () => true, since)
     return response.player ?? undefined
   }
 
   public async getPlayerStatus(playerUuid: string, since?: number): Promise<HypixelPlayerStatus> {
     const request = { path: Hypixel.PlayerStatusPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
-    const response = await this.resolveAndFetch<HypixelPlayerStatusResponse>(request, since)
+    const response = await this.resolveAndFetch<HypixelPlayerStatusResponse>(request, () => true, since)
     return response.session
   }
 
@@ -184,7 +200,7 @@ export class Hypixel {
     const request = { path: Hypixel.SkyblockBingoPath, key: 'uuid', value: playerUuid } satisfies ApiEntry
     let response: SkyblockBingoResponse
     try {
-      response = await this.resolveAndFetch<SkyblockBingoResponse>(request, since)
+      response = await this.resolveAndFetch<SkyblockBingoResponse>(request, () => true, since)
     } catch (error: unknown) {
       if (error instanceof AxiosError && error.status === 404) {
         response = { success: true, events: [] }
@@ -197,29 +213,47 @@ export class Hypixel {
 
   public async getSkyblockItems(since?: number): Promise<SkyblockItems> {
     const request = { path: Hypixel.SkyblockItemsPath } satisfies ApiEntry
-    const response = await this.resolveAndFetch<SkyblockItems>(request, since)
+    const response = await this.resolveAndFetch<SkyblockItems>(request, () => true, since)
     return response
   }
 
   private async resolveAndFetch<T extends HypixelSuccessResponse>(
     request: ApiEntry,
+    validate: (result: T) => boolean,
     since?: number,
     cacheRequests?: (result: T) => ApiEntry[]
   ): Promise<T> {
+    this.logger.trace(
+      `fetching:` +
+        ` ${JSON.stringify(request)},` +
+        ` since=${since === undefined ? undefined : new Date(since).toISOString()}`
+    )
+
     const defaultSince = Date.now() - Hypixel.DefaultCache.toMilliseconds()
 
     const memoryCached = this.cache.get<T>(request, since ?? defaultSince)
-    if (memoryCached !== undefined) return memoryCached
+    if (memoryCached !== undefined) {
+      this.logger.trace(`memory cache hit for: ${JSON.stringify(request)}`)
+      return memoryCached
+    }
 
     const databaseCached = this.database.retrieve<T>(request, since ?? defaultSince)
     if (databaseCached !== undefined) {
-      const requests = cacheRequests === undefined ? [request] : cacheRequests(databaseCached.content)
-      this.cache.add(requests, databaseCached.createdAt, databaseCached.content)
-      return databaseCached.content
+      this.logger.trace(`database cache hit for: ${JSON.stringify(request)}`)
+
+      if (validate(databaseCached.content)) {
+        const requests = cacheRequests === undefined ? [request] : cacheRequests(databaseCached.content)
+        this.cache.add(requests, databaseCached.createdAt, databaseCached.content)
+        return databaseCached.content
+      } else {
+        this.logger.warn('database saved cache result contains corrupted data?? fetching live result...')
+      }
     }
 
     try {
-      const freshResponse = await this.fetcher.fetch<T>(request)
+      this.logger.trace(`fetching live results for: ${JSON.stringify(request)}`)
+
+      const freshResponse = await this.fetcher.fetch<T>(request, validate)
       const currentTime = Date.now()
       const requests = cacheRequests === undefined ? [request] : cacheRequests(freshResponse)
       this.database.add(requests, currentTime, freshResponse)
