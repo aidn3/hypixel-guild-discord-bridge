@@ -132,7 +132,7 @@
       ],
       "hint": "Food"
     },
-   
+
     {
       "unscramble": [
         "Fish",
@@ -152,20 +152,11 @@
       ],
       "hint": "Aquatic animal"
     },
- {
-      "unscramble": [
-        "Pigeon", 
-        "Penguin", 
-        "Falcon",
-        "Eagle",
-        "Hawk", 
-        "Chicken",
-        "Parrot",
-        "Owl" 
-      ],
+    {
+      "unscramble": ["Pigeon", "Penguin", "Falcon", "Eagle", "Hawk", "Chicken", "Parrot", "Owl"],
       "hint": "Bird"
     },
- {
+    {
       "unscramble": [
         "Dog",
         "Cat",
@@ -175,7 +166,7 @@
         "Snake",
         "Fox",
         "Wolf",
-        "Deer", 
+        "Deer",
         "Pig",
         "Cow",
         "Sheep",
