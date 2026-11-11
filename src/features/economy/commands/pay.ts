@@ -45,9 +45,6 @@ export default class Pay extends ChatCommandHandler {
     if (typeof amount === 'string') {
       context.resetCooldown()
       return amount
-    } else if (amount <= 0) {
-      context.resetCooldown()
-      return `${responsibleUser.displayName()}, amount must be at least 1!`
     }
 
     const responsibleId = context.app.core.users.resolveUserId(responsibleUser.getUserIdentifier())
@@ -60,9 +57,21 @@ export default class Pay extends ChatCommandHandler {
         const responsibleAccount = transaction.getAccount(responsibleUser)
         const responsibleBalance = responsibleAccount.total()
         const targetAccount = transaction.getAccount(targetUser)
+        const targetBalance = targetAccount.total()
+
+        if (targetBalance < 1 && !targetUser.verified()) {
+          // Guards against username typos so aura isn't paid to the wrong player.
+          context.resetCooldown()
+          return `${targetUser.displayName()} can't be paid. They must have at least 1 aura or be linked to the bridge.`
+        }
+
         if (responsibleBalance < totalAmount) {
           context.resetCooldown()
-          return `${responsibleUser.displayName()}, you need ${totalAmount - responsibleBalance} more aura to do this!`
+          return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+            username: responsibleUser.displayName(),
+            amount: totalAmount - responsibleBalance,
+            cost: totalAmount
+          })
         }
 
         responsibleAccount.decrease(totalAmount, { reason: EconomyReason.UserPayTo, byUser: targetId })

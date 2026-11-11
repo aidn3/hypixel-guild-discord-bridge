@@ -34,7 +34,7 @@ export default class Mute extends ChatCommandHandler {
     const targetUser = await this.selectUser(context, usernames)
     if (targetUser === undefined) {
       context.resetCooldown()
-      return 'No username to randomly mute??'
+      return 'There is no one online to randomly mute!'
     }
 
     const responsibleUser = context.message.user
@@ -48,7 +48,11 @@ export default class Mute extends ChatCommandHandler {
     } catch (error: unknown) {
       if (error instanceof EconomyNotEnough) {
         context.resetCooldown()
-        return `${context.message.user.displayName()}, need ${EconomyMute.amount} aura to use this!`
+        return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+          username: context.message.user.displayName(),
+          amount: EconomyMute.amount - error.current,
+          cost: EconomyMute.amount
+        })
       }
       throw error
     }

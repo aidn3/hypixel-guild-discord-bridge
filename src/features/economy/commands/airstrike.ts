@@ -53,7 +53,11 @@ export default class Airstrike extends ChatCommandHandler {
     } catch (error: unknown) {
       if (error instanceof EconomyNotEnough) {
         context.resetCooldown()
-        return `${context.message.user.displayName()}, need ${EconomyAirstrike.amount} aura to use this!`
+        return context.app.i18n.t(($) => $['economy.need-more-aura'], {
+          username: context.message.user.displayName(),
+          amount: EconomyAirstrike.amount - error.current,
+          cost: EconomyAirstrike.amount
+        })
       } else if (error instanceof EconomyOverflow) {
         return economyOverflow(error)
       }

@@ -45,6 +45,7 @@ import Bowspleef from './triggers/bowspleef.js'
 import Buildbattle from './triggers/buildbattle.js'
 import Calculate from './triggers/calculate.js'
 import Catacombs from './triggers/catacombs.js'
+import Catfacts from './triggers/catfacts.js'
 import Chocobits from './triggers/chocobits.js'
 import Chocolate from './triggers/chocolate.js'
 import ClassAverage from './triggers/classaverage.js'
@@ -170,6 +171,7 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
       new Bowspleef(),
       new Calculate(),
       new Catacombs(),
+      new Catfacts(),
       new Chocobits(),
       new Chocolate(),
       new ClassAverage(),

@@ -140,7 +140,7 @@ async function handleDiscordHistory(
       return {
         totalPages: history.totalPages,
         embed: {
-          title: `${user.displayName()} Economy History`,
+          title: `${user.displayName()}'s Economy History`,
           description: result.length === 0 ? `_Nothing to show_` : result
         }
       }
@@ -184,7 +184,7 @@ async function handleMinecraftHistory(
       return {
         totalPages: history.totalPages,
         embed: {
-          title: `${user.displayName()} Economy History`,
+          title: `${user.displayName()}'s Economy History`,
           description: result.length === 0 ? `_Nothing to show_` : result
         }
       }
@@ -241,13 +241,13 @@ async function formatReason(
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} paid ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} paid ${byUser}`
     }
     case EconomyReason.UserPayFrom: {
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `${amount} ${user} was paid by ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} was paid by ${byUser}`
     }
     case EconomyReason.WonSpontaneousEvent: {
       const amount = formatAmount(entry.change)
@@ -311,7 +311,7 @@ async function formatReason(
       const amount = formatAmount(entry.change)
       const user = await formatUserId(context, entry.userId)
       const byUser = await formatUserId(context, entry.byUser)
-      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} failed robbing ${byUser}`
+      return `<t:${Math.floor(entry.createdAt / 1000)}> ${amount} ${user} failed to rob ${byUser}`
     }
     case EconomyReason.Robbed: {
       const amount = formatAmount(entry.change)

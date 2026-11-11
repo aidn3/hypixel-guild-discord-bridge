@@ -40,9 +40,6 @@ export default class Take extends ChatCommandHandler {
     if (typeof amount === 'string') {
       context.resetCooldown()
       return amount
-    } else if (amount <= 0) {
-      context.resetCooldown()
-      return `${context.message.user.displayName()}, amount must be at least 1!`
     }
 
     const responsibleId = context.app.core.users.resolveUserId(context.message.user.getUserIdentifier())
@@ -57,7 +54,10 @@ export default class Take extends ChatCommandHandler {
       return `Took ${amount.toLocaleString('en-US')} aura from ${targetUser.displayName()}. ${newAmount.toLocaleString('en-US')} aura left!`
     } catch (error: unknown) {
       if (error instanceof EconomyNotEnough) {
-        return `${targetUser.displayName()} only has ${error.current.toLocaleString('en-US')}.`
+        return context.app.i18n.t(($) => $['economy.only-has'], {
+          targetUsername: targetUser.displayName(),
+          auraBalance: error.current
+        })
       } else if (error instanceof EconomyOverflow) {
         return economyOverflow(error)
       }

@@ -38,6 +38,7 @@ A shorter version can also be used: `!- rtca`
 | `!cac`            | Returns a player's Cops and Crims stats                                            |
 | `!calculate`      | A basic calculator                                                                 |
 | `!catacombs`      | Returns a player's catacombs level                                                 |
+| `!catfact`        | display a random cat fact                                                          |
 | `!chocobits`      | Returns a player's chocobits                                                       |
 | `!chocolate`      | Returns a player's SkyBlock easter eggs chocolate stats                            |
 | `!classavg`       | Returns a player's class average                                                   |

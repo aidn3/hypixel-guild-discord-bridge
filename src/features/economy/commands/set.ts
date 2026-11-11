@@ -36,7 +36,7 @@ export default class Set extends ChatCommandHandler {
       return targetUser
     }
 
-    const amount = resolveAmount(context, context.args.at(1))
+    const amount = resolveAmount(context, context.args.at(1), 0)
     if (typeof amount === 'string') {
       context.resetCooldown()
       return amount
@@ -53,6 +53,6 @@ export default class Set extends ChatCommandHandler {
       else throw error
     }
 
-    return `${targetUser.displayName()} aura has been set to ${amount.toLocaleString('en-US')}.`
+    return `${targetUser.displayName()}'s aura has been set to ${amount.toLocaleString('en-US')}.`
   }
 }
