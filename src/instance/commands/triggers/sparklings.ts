@@ -13,7 +13,7 @@ export default class Sparklings extends ChatCommandHandler {
     super({
       type: ChatCommandGroup.General,
       id: 'sparklings',
-      triggers: ['sparkling', 'sparklings', 'shinys', 'shinies', 'shiny'],
+      triggers: ['sparkling', 'sparklings', 'shinys', 'shinies', 'shiny', 'spark'],
       description: 'Returns caught sparkling critters',
       example: `sparkling %s`
     })
