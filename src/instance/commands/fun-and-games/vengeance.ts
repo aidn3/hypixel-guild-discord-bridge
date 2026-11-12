@@ -1,4 +1,4 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
@@ -45,7 +45,7 @@ export default class Vengeance extends ChatCommandHandler {
     // 47% to lose.
     // 49% to draw.
     if (this.won()) {
-      if ((await targetUser.permission()) < Permission.Helper && !(await targetUser.immune())) {
+      if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
         await targetUser.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,
@@ -60,7 +60,7 @@ export default class Vengeance extends ChatCommandHandler {
         target: targetUser.displayName()
       })
     } else if (this.lose()) {
-      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+      if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
         await context.message.user.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,

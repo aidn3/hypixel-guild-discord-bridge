@@ -82,8 +82,8 @@ export class DiscordHandler extends SubInstance<MinecraftStatus, void> {
     const identifier = this.application.discordInstance.profileByUser(interaction.user, interaction.member ?? undefined)
     const user = await this.application.core.initializeDiscordUser(identifier)
 
-    const permission = await user.permission()
-    if (permission < DiscordHandler.PermissionToView) {
+    const hasPermission = await user.hasPermission(DiscordHandler.PermissionToView)
+    if (!hasPermission) {
       await interaction.editReply({
         content: translateNoPermission(this.application, DiscordHandler.PermissionToView),
         allowedMentions: { parse: [] }

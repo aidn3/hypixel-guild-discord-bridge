@@ -1,4 +1,4 @@
-import { ChannelType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import { EconomyAirstrike } from '../economy-constants.js'
@@ -65,7 +65,7 @@ export default class Airstrike extends ChatCommandHandler {
       throw error
     }
 
-    if ((await targetUser.permission()) < Permission.Helper && !(await targetUser.immune())) {
+    if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
       await targetUser.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,

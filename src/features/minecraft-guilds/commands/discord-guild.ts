@@ -1279,8 +1279,8 @@ async function handlePurge(
     const handlerUser = {
       user: await context.application.core.initializeMinecraftUser(profile, {})
     }
-    const permission = await handlerUser.user.permission()
-    if (permission >= Permission.Helper) continue
+    const isStaff = await handlerUser.user.isStaff()
+    if (isStaff) continue
 
     let metConditionsCount = 0
 

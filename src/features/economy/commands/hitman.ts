@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import { ChannelType, Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
@@ -78,7 +78,7 @@ export default class Hitman extends ChatCommandHandler {
     assert.ok(seconds >= 60) // Hypixel minimum time
     const muteDuration = Duration.seconds(seconds)
 
-    if ((await targetUser.permission()) < Permission.Helper && !(await targetUser.immune())) {
+    if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
       await targetUser.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,

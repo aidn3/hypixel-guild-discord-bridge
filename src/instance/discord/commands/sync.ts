@@ -32,8 +32,8 @@ export default {
     const optionalUser = interaction.options.getUser('user') ?? undefined
     let guildMember: GuildMember
 
-    if (optionalUser) {
-      if (context.permission < Permission.Helper) {
+    if (optionalUser && optionalUser.id !== interaction.user.id) {
+      if (!(await context.user.hasPermission(Permission.Helper))) {
         await context.showPermissionDenied(Permission.Helper)
         return
       }

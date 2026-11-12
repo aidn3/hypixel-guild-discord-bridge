@@ -175,10 +175,8 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
           return
         }
 
-        const userPermission = await user.permission()
-        if (userPermission < command.permission) return
-
-        const context = this.fillContext(interaction, user, await user.permission())
+        if (!(await user.hasPermission(command.permission))) return
+        const context = this.fillContext(interaction, user)
         await command.autoComplete(context)
         break
       }
@@ -191,16 +189,15 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
 
         // permission managed by discord-side's integration
 
-        const context = this.fillContext(interaction, user, await user.permission())
+        const context = this.fillContext(interaction, user)
         await command.autoComplete(context)
         break
       }
 
       case CommandOrigin.Private: {
-        const userPermission = await user.permission()
-        if (userPermission < command.permission) return
+        if (!(await user.hasPermission(command.permission))) return
 
-        const context = this.fillContext(interaction, user, await user.permission())
+        const context = this.fillContext(interaction, user)
         await command.autoComplete(context)
         break
       }
@@ -290,8 +287,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     const identifier = this.clientInstance.profileByUser(interaction.user, undefined)
     const user = await this.application.core.initializeDiscordUser(identifier)
 
-    const permission = await user.permission()
-    if (permission < command.permission) {
+    if (!(await user.hasPermission(command.permission))) {
       this.logger.debug('No permission to execute this command')
       assert.ok(command.permission !== Permission.Anyone)
       await interaction.reply({
@@ -302,7 +298,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
       return
     }
 
-    const baseContext = this.fillContext(interaction, user, permission)
+    const baseContext = this.fillContext(interaction, user)
     const context: DiscordCommandContext<CommandOrigin.Private> = { ...baseContext, minecraftInstance: undefined }
 
     await command.handler(context)
@@ -315,7 +311,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     const identifier = this.clientInstance.profileByUser(interaction.user, interaction.member)
     const user = await this.application.core.initializeDiscordUser(identifier)
 
-    const baseContext = this.fillContext(interaction, user, await user.permission())
+    const baseContext = this.fillContext(interaction, user)
     const context: DiscordCommandContext<CommandOrigin.Guild> = { ...baseContext, minecraftInstance: undefined }
 
     await command.handler(context)
@@ -328,8 +324,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
     const identifier = this.clientInstance.profileByUser(interaction.user, interaction.member)
     const user = await this.application.core.initializeDiscordUser(identifier)
 
-    const permission = await user.permission()
-    if (permission < command.permission) {
+    if (!(await user.hasPermission(command.permission))) {
       this.logger.debug('No permission to execute this command')
       assert.ok(command.permission !== Permission.Anyone)
       await interaction.reply({
@@ -365,7 +360,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
 
     switch (command.addMinecraftInstancesToOptions) {
       case OptionMinecraftInstance.None: {
-        const baseContext = this.fillContext(interaction, user, permission)
+        const baseContext = this.fillContext(interaction, user)
         const context: DiscordCommandContext<CommandOrigin.Bridge> = { ...baseContext, minecraftInstance: undefined }
         await command.handler(context)
         break
@@ -408,7 +403,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
           modifiedInteraction = Object.assign(modalResult, { options: interaction.options })
         }
 
-        const baseContext = this.fillContext(modifiedInteraction, user, permission)
+        const baseContext = this.fillContext(modifiedInteraction, user)
         const context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.RequireOne> = {
           ...baseContext,
           minecraftInstance: targetInstance
@@ -418,7 +413,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
         break
       }
       case OptionMinecraftInstance.RequireAll: {
-        const baseContext = this.fillContext(interaction, user, permission)
+        const baseContext = this.fillContext(interaction, user)
         const context: DiscordCommandContext<CommandOrigin.Bridge, OptionMinecraftInstance.RequireAll> = {
           ...baseContext,
           minecraftInstance: instances
@@ -435,7 +430,7 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
   private fillContext<
     I extends ChatInputCommandInteraction | AutocompleteInteraction | ModalSubmitInteraction,
     U extends User
-  >(interaction: I, user: U, userPermission: Permission) {
+  >(interaction: I, user: U) {
     return {
       application: this.application,
       eventHelper: this.eventHelper,
@@ -444,7 +439,6 @@ export class CommandManager extends SubInstance<DiscordInstance, Client> {
       user: user,
 
       interaction: interaction,
-      permission: userPermission,
       t: this.application.i18n.t,
 
       allCommands: [...this.commands.values()],

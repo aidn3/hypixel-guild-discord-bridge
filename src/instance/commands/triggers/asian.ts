@@ -1,5 +1,5 @@
 import type { ChatEvent } from '../../../common/application-event.js'
-import { Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
@@ -40,7 +40,7 @@ export default class Asian extends ChatCommandHandler {
     if (result === math.answer) {
       return context.app.i18n.t(($) => $['commands.asian.correct'])
     } else {
-      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+      if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
         await context.message.user.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,

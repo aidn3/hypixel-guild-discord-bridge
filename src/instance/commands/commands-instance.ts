@@ -395,11 +395,11 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
 
     // Disabled commands can only be used by officers and admins, regular users cannot use them
     const commandEnabled = this.database.initAndGet(command.id).enabled
-    const userPermission = await event.user.permission()
     if (
       !commandEnabled &&
-      (userPermission === Permission.Anyone ||
-        (userPermission === Permission.Helper && !this.commandsConfigurations.getAllowHelperToggle()))
+      !(await event.user.hasPermission(
+        this.commandsConfigurations.getAllowHelperToggle() ? Permission.Helper : Permission.Officer
+      ))
     ) {
       return
     }
@@ -484,10 +484,12 @@ export class CommandsInstance extends Instance implements DisplayableInstance {
     context: ChatCommandContext
   ): Promise<string | undefined> {
     if (requirements.permission !== undefined) {
-      const userPermission = await context.message.user.permission()
-      if (requirements.permission === Permission.BridgeAdmin && userPermission < Permission.BridgeAdmin) {
+      if (
+        requirements.permission === Permission.BridgeAdmin &&
+        !(await context.message.user.hasPermission(Permission.BridgeAdmin))
+      ) {
         return context.app.i18n.t(($) => $['commands.error.must-be-admin'], { username: context.username })
-      } else if (userPermission < requirements.permission) {
+      } else if (!(await context.message.user.hasPermission(requirements.permission))) {
         return `${context.username}, you do not have permission to execute this command.`
       }
     }

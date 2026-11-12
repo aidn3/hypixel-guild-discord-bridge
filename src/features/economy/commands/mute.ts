@@ -1,4 +1,4 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import type { MinecraftUser } from '../../../common/user.js'
@@ -100,7 +100,7 @@ export default class Mute extends ChatCommandHandler {
       const profile = await context.app.mojangApi.profileByUsername(username)
       const user = await context.app.core.initializeMinecraftUser(profile, {})
 
-      if ((await user.permission()) >= Permission.Helper || (await user.immune())) {
+      if ((await context.message.user.isStaff()) || !(await context.message.user.immune())) {
         continue
       }
 

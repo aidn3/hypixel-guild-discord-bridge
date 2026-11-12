@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import { TTLCache } from '@isaacs/ttlcache'
 
-import { ChannelType, MinecraftSendChatPriority, Permission } from '../../../common/application-event.js'
+import { ChannelType, MinecraftSendChatPriority } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import type { MinecraftUser, MojangProfile } from '../../../common/user.js'
@@ -43,7 +43,7 @@ export default class Sync extends ChatCommandHandler {
     if (typeof target === 'string') return target
     const targetProfile = target.mojangProfile()
 
-    if ((await context.message.user.permission()) === Permission.Anyone) {
+    if (!(await context.message.user.isStaff())) {
       const identifier = context.message.user.getUserIdentifier()
       const id = `${identifier.originInstance}:${identifier.userId}`
       const cooldownResult = this.cooldowns.get(id)
@@ -124,8 +124,9 @@ export default class Sync extends ChatCommandHandler {
       return originUser
     }
 
-    const permission = await originUser.permission()
-    if (permission === Permission.Anyone) return 'You can only use this command on yourself unless you are staff!'
+    if (!(await originUser.isStaff())) {
+      return 'You can only use this command on yourself unless you are staff!'
+    }
 
     const profile = await context.app.mojangApi.profileByUsername(givenUsername).catch(() => undefined)
     if (profile === undefined) return usernameNotExists(context, givenUsername)
