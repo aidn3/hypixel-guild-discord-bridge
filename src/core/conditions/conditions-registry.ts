@@ -11,6 +11,7 @@ import { InGuild } from './handlers/in-guild.js'
 import { KuudraCollection } from './handlers/kuudra-collection.js'
 import { Linked } from './handlers/linked.js'
 import { NotLinked } from './handlers/not-linked.js'
+import { SentMessages } from './handlers/sent-messages.js'
 import { SkyblockApi } from './handlers/skyblock-api.js'
 import { SkyblockBlazeLevel } from './handlers/skyblock-blaze-slayer-level.js'
 import { SkyblockEndermanLevel } from './handlers/skyblock-enderman-slayer-level.js'
@@ -29,6 +30,7 @@ export class ConditionsRegistry {
   constructor() {
     this.registerHandler(new Linked())
     this.registerHandler(new NotLinked())
+    this.registerHandler(new SentMessages())
     this.registerHandler(new HasDiscordRole())
     this.registerHandler(new InDiscordServer())
     this.registerHandler(new SkyblockLevel())
