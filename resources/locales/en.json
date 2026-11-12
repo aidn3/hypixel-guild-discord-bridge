@@ -172,6 +172,8 @@
 
   "discord.conditions.handler.farming-level.title": "Farming Level",
   "discord.conditions.handler.farming-level.formatted": "{{profileTypes}} Farming Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.mining-level.title": "Mining Level",
+  "discord.conditions.handler.mining-level.formatted": "{{profileTypes}} Mining Level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
