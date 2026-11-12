@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock.js'
+import { getSkillLevel, getSkills } from '../../../core/hypixel/hypixel-skyblock.js'
 import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class Skills extends ChatCommandHandler {
@@ -44,62 +44,24 @@ export default class Skills extends ChatCommandHandler {
     const farmingCap = profile.jacobs_contest?.perks?.farming_level_cap ?? 0
     const tamingCap = profile.pets_data?.pet_care?.pet_types_sacrificed?.length ?? 0
 
-    const farming = this.getLevel(skills.FARMING, profile.player_data.experience.SKILL_FARMING ?? 0)
-    const mining = this.getLevel(skills.MINING, profile.player_data.experience.SKILL_MINING ?? 0)
-    const combat = this.getLevel(skills.COMBAT, profile.player_data.experience.SKILL_COMBAT ?? 0)
-    const foraging = this.getLevel(skills.FORAGING, profile.player_data.experience.SKILL_FORAGING ?? 0)
-    const fishing = this.getLevel(skills.FISHING, profile.player_data.experience.SKILL_FISHING ?? 0)
-    const enchanting = this.getLevel(skills.ENCHANTING, profile.player_data.experience.SKILL_ENCHANTING ?? 0)
-    const alchemy = this.getLevel(skills.ALCHEMY, profile.player_data.experience.SKILL_ALCHEMY ?? 0)
-    const carpentry = this.getLevel(skills.CARPENTRY, profile.player_data.experience.SKILL_CARPENTRY ?? 0)
-    const runecrafting = this.getLevel(skills.RUNECRAFTING, profile.player_data.experience.SKILL_RUNECRAFTING ?? 0)
-    const social = this.getLevel(skills.SOCIAL, totalSocialExperience)
-    const taming = this.getLevel(skills.TAMING, profile.player_data.experience.SKILL_TAMING ?? 0)
-    const hunting = this.getLevel(skills.HUNTING, profile.player_data.experience.SKILL_HUNTING ?? 0)
-
-    const totalLevels =
-      farming + mining + combat + foraging + fishing + enchanting + alchemy + carpentry + taming + hunting
-
-    /*
-     * Skills count may change in the future. This keeps it updated.
-     * "Social" and "Runecrafting" skills are ignored since they are cosmetic only.
-     */
-    const officialSkillsCount = Object.keys(skillsResponse.skills).length - 2
-    const average = totalLevels / officialSkillsCount
+    const calculatedSkills = getSkills(skills, profile)
 
     return context.app.i18n.t(($) => $['commands.skills.response'], {
       username: givenUsername,
-      average: average,
+      average: calculatedSkills.average.capped,
 
-      farming: Math.min(farming, 50 + farmingCap),
-      mining: mining,
-      combat: combat,
-      foraging: foraging,
-      fishing: fishing,
-      enchanting: enchanting,
-      alchemy: alchemy,
-      carpentry: carpentry,
-      runecrafting: runecrafting,
-      social: social,
-      taming: Math.min(taming, 50 + tamingCap),
-      hunting: hunting
+      farming: Math.min(calculatedSkills.farming.capped, 50 + farmingCap),
+      mining: calculatedSkills.mining.capped,
+      combat: calculatedSkills.combat.capped,
+      foraging: calculatedSkills.foraging.capped,
+      fishing: calculatedSkills.fishing.capped,
+      enchanting: calculatedSkills.enchanting.capped,
+      alchemy: calculatedSkills.alchemy.capped,
+      carpentry: calculatedSkills.carpentry.capped,
+      runecrafting: calculatedSkills.runecrafting.capped,
+      social: getSkillLevel(skills.SOCIAL, totalSocialExperience),
+      taming: Math.min(calculatedSkills.taming.capped, 50 + tamingCap),
+      hunting: calculatedSkills.hunting.capped
     })
-  }
-
-  private getLevel(skill: HypixelSkyblockSkill, experience: number): number {
-    const xpRequired = skill.levels.map((level) => level.totalExpRequired)
-    const index = xpRequired.findLastIndex((level) => level <= experience)
-
-    if (index === -1) {
-      return experience / xpRequired[0]
-    } else if (index === xpRequired.length - 1) {
-      return xpRequired.length
-    } else {
-      let level = index + 1
-      const remainingExperience = experience - xpRequired[index]
-      const experienceRequiredNextLevel = xpRequired[index + 1] - xpRequired[index]
-      level += remainingExperience / experienceRequiredNextLevel
-      return level
-    }
   }
 }

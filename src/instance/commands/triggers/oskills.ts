@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
-import type { HypixelSkyblockSkill } from '../../../core/hypixel/hypixel-skyblock.js'
+import { getSkillLevelUncapped, getSkills } from '../../../core/hypixel/hypixel-skyblock.js'
 import { getUuidIfExists, hypixelApiNotSet, playerNeverPlayedSkyblock, usernameNotExists } from '../common/utility.js'
 
 export default class OverflowSkills extends ChatCommandHandler {
@@ -37,94 +37,25 @@ export default class OverflowSkills extends ChatCommandHandler {
       .map((profile) => profile.player_data?.experience?.SKILL_SOCIAL ?? 0)
       .reduce((a, b) => a + b, 0)
 
-    const farming = this.getLevel(skills.COMBAT, skills.FARMING, profile.player_data?.experience?.SKILL_FARMING ?? 0)
-    const mining = this.getLevel(skills.COMBAT, skills.MINING, profile.player_data?.experience?.SKILL_MINING ?? 0)
-    const combat = this.getLevel(skills.COMBAT, skills.COMBAT, profile.player_data?.experience?.SKILL_COMBAT ?? 0)
-    const foraging = this.getLevel(skills.COMBAT, skills.FORAGING, profile.player_data?.experience?.SKILL_FORAGING ?? 0)
-    const fishing = this.getLevel(skills.COMBAT, skills.FISHING, profile.player_data?.experience?.SKILL_FISHING ?? 0)
-    const enchanting = this.getLevel(
-      skills.COMBAT,
-      skills.ENCHANTING,
-      profile.player_data?.experience?.SKILL_ENCHANTING ?? 0
-    )
-    const alchemy = this.getLevel(skills.COMBAT, skills.ALCHEMY, profile.player_data?.experience?.SKILL_ALCHEMY ?? 0)
-    const carpentry = this.getLevel(
-      skills.COMBAT,
-      skills.CARPENTRY,
-      profile.player_data?.experience?.SKILL_CARPENTRY ?? 0
-    )
-    const runecrafting = this.getLevel(
-      skills.COMBAT,
-      skills.RUNECRAFTING,
-      profile.player_data?.experience?.SKILL_RUNECRAFTING ?? 0
-    )
-    const social = this.getLevel(skills.COMBAT, skills.SOCIAL, totalSocialExperience)
-    const taming = this.getLevel(skills.COMBAT, skills.TAMING, profile.player_data?.experience?.SKILL_TAMING ?? 0)
-    const hunting = this.getLevel(skills.COMBAT, skills.HUNTING, profile.player_data?.experience?.SKILL_HUNTING ?? 0)
-
-    const totalLevels =
-      farming + mining + combat + foraging + fishing + enchanting + alchemy + carpentry + taming + hunting
-
-    /*
-     * Skills count may change in the future. This keeps it updated.
-     * "Social" and "Runecrafting" skills are ignored since they are cosmetic only.
-     */
-    const officialSkillsCount = Object.keys(skillsResponse.skills).length - 2
-    const average = totalLevels / officialSkillsCount
+    const calculatedSkills = getSkills(skills, profile)
+    const social = getSkillLevelUncapped(skills.COMBAT, skills.SOCIAL, totalSocialExperience)
 
     return context.app.i18n.t(($) => $['commands.oskills.response'], {
       username: givenUsername,
-      average: average,
+      average: calculatedSkills.average.uncapped,
 
-      farming: farming,
-      mining: mining,
-      combat: combat,
-      foraging: foraging,
-      fishing: fishing,
-      enchanting: enchanting,
-      alchemy: alchemy,
-      carpentry: carpentry,
-      runecrafting: runecrafting,
+      farming: calculatedSkills.farming.uncapped,
+      mining: calculatedSkills.mining.uncapped,
+      combat: calculatedSkills.combat.uncapped,
+      foraging: calculatedSkills.foraging.uncapped,
+      fishing: calculatedSkills.fishing.uncapped,
+      enchanting: calculatedSkills.enchanting.uncapped,
+      alchemy: calculatedSkills.alchemy.uncapped,
+      carpentry: calculatedSkills.carpentry.uncapped,
+      runecrafting: calculatedSkills.runecrafting.uncapped,
       social: social,
-      taming: taming,
-      hunting: hunting
+      taming: calculatedSkills.taming.uncapped,
+      hunting: calculatedSkills.hunting.uncapped
     })
-  }
-  /*
-   * Alternative leveling is required since some skills are capped
-   * and need to supplement their levels with another
-   * that has the required levels data.
-   *
-   * It isn't perfect, but it will give a more precise approximation to the uncapped level.
-   */
-  private getLevel(alternativeSkill: HypixelSkyblockSkill, skill: HypixelSkyblockSkill, experience: number): number {
-    const levelingTable = skill.levels.map((level, index, array) =>
-      index === 0 ? level.totalExpRequired : level.totalExpRequired - array[index - 1].totalExpRequired
-    )
-    const alternativeLevelingTable = alternativeSkill.levels.map((level, index, array) =>
-      index === 0 ? level.totalExpRequired : level.totalExpRequired - array[index - 1].totalExpRequired
-    )
-
-    let level = 0
-    let nextLevelExperience = levelingTable[level]
-    let skillOverflowSlope = 600_000
-
-    while (experience >= nextLevelExperience) {
-      level++
-      experience -= nextLevelExperience
-
-      if (level >= levelingTable.length) {
-        if (level < alternativeLevelingTable.length) {
-          nextLevelExperience = alternativeLevelingTable[level]
-        } else {
-          nextLevelExperience += skillOverflowSlope
-          if (level % 10 === 0 && level != 60) skillOverflowSlope *= 2
-        }
-      } else {
-        nextLevelExperience = levelingTable[level]
-      }
-    }
-
-    return level + experience / nextLevelExperience
   }
 }

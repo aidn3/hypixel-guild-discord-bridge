@@ -592,3 +592,148 @@ export function getSlayerLevel(
   }
   return level
 }
+
+export function getSkills(skills: HypixelSkyblockSkills, profile: SkyblockMember) {
+  const experience = profile.player_data?.experience
+
+  /*
+   * Skills count may change in the future. This keeps it updated.
+   * "Social" and "Runecrafting" skills are ignored since they are cosmetic only.
+   */
+  const officialSkillsCount = Object.keys(skills).length - 2
+
+  const resultSkills = {
+    farming: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.FARMING, experience?.SKILL_FARMING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.FARMING, experience?.SKILL_FARMING ?? 0)
+    },
+    mining: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.MINING, experience?.SKILL_MINING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.MINING, experience?.SKILL_MINING ?? 0)
+    },
+    combat: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.COMBAT, experience?.SKILL_COMBAT ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.COMBAT, experience?.SKILL_COMBAT ?? 0)
+    },
+    foraging: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.FORAGING, experience?.SKILL_FORAGING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.FORAGING, experience?.SKILL_FORAGING ?? 0)
+    },
+    fishing: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.FISHING, experience?.SKILL_FISHING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.FISHING, experience?.SKILL_FISHING ?? 0)
+    },
+    enchanting: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.ENCHANTING, experience?.SKILL_ENCHANTING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.ENCHANTING, experience?.SKILL_ENCHANTING ?? 0)
+    },
+    alchemy: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.ALCHEMY, experience?.SKILL_ALCHEMY ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.ALCHEMY, experience?.SKILL_ALCHEMY ?? 0)
+    },
+    carpentry: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.CARPENTRY, experience?.SKILL_CARPENTRY ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.CARPENTRY, experience?.SKILL_CARPENTRY ?? 0)
+    },
+    runecrafting: {
+      cosmetic: true,
+      capped: getSkillLevel(skills.RUNECRAFTING, experience?.SKILL_RUNECRAFTING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.RUNECRAFTING, experience?.SKILL_RUNECRAFTING ?? 0)
+    },
+    taming: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.TAMING, experience?.SKILL_TAMING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.TAMING, experience?.SKILL_TAMING ?? 0)
+    },
+    hunting: {
+      cosmetic: false,
+      capped: getSkillLevel(skills.HUNTING, experience?.SKILL_HUNTING ?? 0),
+      uncapped: getSkillLevelUncapped(skills.COMBAT, skills.HUNTING, experience?.SKILL_HUNTING ?? 0)
+    }
+  }
+
+  const totalCappedLevels = Object.values(resultSkills)
+    .filter((skill) => !skill.cosmetic)
+    .map((skill) => skill.capped)
+    .reduce((a, b) => a + b, 0)
+
+  const totalUncappedLevels = Object.values(resultSkills)
+    .filter((skill) => !skill.cosmetic)
+    .map((skill) => skill.uncapped)
+    .reduce((a, b) => a + b, 0)
+
+  return {
+    ...resultSkills,
+    average: {
+      capped: totalCappedLevels / officialSkillsCount,
+      uncapped: totalUncappedLevels / officialSkillsCount
+    }
+  }
+}
+
+export function getSkillLevel(skill: HypixelSkyblockSkill, experience: number): number {
+  const xpRequired = skill.levels.map((level) => level.totalExpRequired)
+  const index = xpRequired.findLastIndex((level) => level <= experience)
+
+  if (index === -1) {
+    return experience / xpRequired[0]
+  } else if (index === xpRequired.length - 1) {
+    return xpRequired.length
+  } else {
+    let level = index + 1
+    const remainingExperience = experience - xpRequired[index]
+    const experienceRequiredNextLevel = xpRequired[index + 1] - xpRequired[index]
+    level += remainingExperience / experienceRequiredNextLevel
+    return level
+  }
+}
+
+/*
+ * Alternative leveling is required since some skills are capped
+ * and need to supplement their levels with another
+ * that has the required levels data.
+ *
+ * It isn't perfect, but it will give a more precise approximation to the uncapped level.
+ */
+export function getSkillLevelUncapped(
+  alternativeSkill: HypixelSkyblockSkill,
+  skill: HypixelSkyblockSkill,
+  experience: number
+): number {
+  const levelingTable = skill.levels.map((level, index, array) =>
+    index === 0 ? level.totalExpRequired : level.totalExpRequired - array[index - 1].totalExpRequired
+  )
+  const alternativeLevelingTable = alternativeSkill.levels.map((level, index, array) =>
+    index === 0 ? level.totalExpRequired : level.totalExpRequired - array[index - 1].totalExpRequired
+  )
+
+  let level = 0
+  let nextLevelExperience = levelingTable[level]
+  let skillOverflowSlope = 600_000
+
+  while (experience >= nextLevelExperience) {
+    level++
+    experience -= nextLevelExperience
+
+    if (level >= levelingTable.length) {
+      if (level < alternativeLevelingTable.length) {
+        nextLevelExperience = alternativeLevelingTable[level]
+      } else {
+        nextLevelExperience += skillOverflowSlope
+        if (level % 10 === 0 && level != 60) skillOverflowSlope *= 2
+      }
+    } else {
+      nextLevelExperience = levelingTable[level]
+    }
+  }
+
+  return level + experience / nextLevelExperience
+}
