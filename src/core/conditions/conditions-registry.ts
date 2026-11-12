@@ -4,6 +4,7 @@ import { DungeonsClassAverage } from './handlers/dungeon-class-average.js'
 import { HasDiscordRole } from './handlers/has-discord-role.js'
 import { InDiscordServer } from './handlers/in-discord-server.js'
 import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master.js'
+import { InGuildForDuration } from './handlers/in-guild-for-duration.js'
 import { InGuildWithGexp } from './handlers/in-guild-with-gexp.js'
 import { InGuildWithRank } from './handlers/in-guild-with-rank.js'
 import { InGuild } from './handlers/in-guild.js'
@@ -47,6 +48,7 @@ export class ConditionsRegistry {
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
     this.registerHandler(new InGuildWithGexp())
+    this.registerHandler(new InGuildForDuration())
     this.registerHandler(new InGuildAsGuildmaster())
   }
 
