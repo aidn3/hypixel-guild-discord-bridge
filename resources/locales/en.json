@@ -170,6 +170,9 @@
   "discord.conditions.handler.blaze-level.title": "Blaze Level",
   "discord.conditions.handler.blaze-level.formatted": "{{profileTypes}} Blaze Level {{fromLevel, number}} to {{toLevel, number}}",
 
+  "discord.conditions.handler.farming-level.title": "Farming Level",
+  "discord.conditions.handler.farming-level.formatted": "{{profileTypes}} Farming Level {{fromLevel, number}} to {{toLevel, number}}",
+
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
   "discord.conditions.handler.in-guild.formatted-invalid": "In guild (not possible to determine).",

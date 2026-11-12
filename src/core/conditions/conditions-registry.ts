@@ -15,6 +15,7 @@ import { SentMessages } from './handlers/sent-messages.js'
 import { SkyblockApi } from './handlers/skyblock-api.js'
 import { SkyblockBlazeLevel } from './handlers/skyblock-blaze-slayer-level.js'
 import { SkyblockEndermanLevel } from './handlers/skyblock-enderman-slayer-level.js'
+import { SkyblockFarmingLevel } from './handlers/skyblock-farming-level.js'
 import { SkyblockLevel } from './handlers/skyblock-level.js'
 import { SkyblockNetworth } from './handlers/skyblock-networth.js'
 import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level.js'
@@ -40,6 +41,7 @@ export class ConditionsRegistry {
     this.registerHandler(new KuudraCollection())
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())
+    this.registerHandler(new SkyblockFarmingLevel())
     this.registerHandler(new SkyblockTotalSlayerXp())
     this.registerHandler(new SkyblockRevenantLevel())
     this.registerHandler(new SkyblockTarantulaLevel())
