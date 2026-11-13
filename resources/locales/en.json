@@ -188,6 +188,8 @@
   "discord.conditions.handler.carpentry-level.formatted": "{{profileTypes}} Carpentry Level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.taming-level.title": "Taming Level",
   "discord.conditions.handler.taming-level.formatted": "{{profileTypes}} Taming Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.hunting-level.title": "Hunting Level",
+  "discord.conditions.handler.hunting-level.formatted": "{{profileTypes}} Hunting Level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
