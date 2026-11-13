@@ -14,6 +14,7 @@ import { NotLinked } from './handlers/not-linked.js'
 import { SentMessages } from './handlers/sent-messages.js'
 import { SkyblockAlchemyLevel } from './handlers/skyblock-alchemy-level.js'
 import { SkyblockApi } from './handlers/skyblock-api.js'
+import { SkyblockAverageLevel } from './handlers/skyblock-average-level.js'
 import { SkyblockBlazeLevel } from './handlers/skyblock-blaze-slayer-level.js'
 import { SkyblockCarpentryLevel } from './handlers/skyblock-carpentry-level.js'
 import { SkyblockCombatLevel } from './handlers/skyblock-combat-level.js'
@@ -60,6 +61,7 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockCarpentryLevel())
     this.registerHandler(new SkyblockTamingLevel())
     this.registerHandler(new SkyblockHuntingLevel())
+    this.registerHandler(new SkyblockAverageLevel())
     this.registerHandler(new SkyblockTotalSlayerXp())
     this.registerHandler(new SkyblockRevenantLevel())
     this.registerHandler(new SkyblockTarantulaLevel())
