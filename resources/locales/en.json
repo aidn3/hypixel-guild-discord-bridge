@@ -178,6 +178,8 @@
   "discord.conditions.handler.combat-level.formatted": "{{profileTypes}} Combat Level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.foraging-level.title": "Foraging Level",
   "discord.conditions.handler.foraging-level.formatted": "{{profileTypes}} Foraging Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.fishing-level.title": "Fishing Level",
+  "discord.conditions.handler.fishing-level.formatted": "{{profileTypes}} Fishing Level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",

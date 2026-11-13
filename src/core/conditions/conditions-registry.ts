@@ -17,6 +17,7 @@ import { SkyblockBlazeLevel } from './handlers/skyblock-blaze-slayer-level.js'
 import { SkyblockCombatLevel } from './handlers/skyblock-combat-level.js'
 import { SkyblockEndermanLevel } from './handlers/skyblock-enderman-slayer-level.js'
 import { SkyblockFarmingLevel } from './handlers/skyblock-farming-level.js'
+import { SkyblockFishingLevel } from './handlers/skyblock-fishing-level.js'
 import { SkyblockForagingLevel } from './handlers/skyblock-foraging-level.js'
 import { SkyblockLevel } from './handlers/skyblock-level.js'
 import { SkyblockMiningLevel } from './handlers/skyblock-mining-level.js'
@@ -48,6 +49,7 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockMiningLevel())
     this.registerHandler(new SkyblockCombatLevel())
     this.registerHandler(new SkyblockForagingLevel())
+    this.registerHandler(new SkyblockFishingLevel())
     this.registerHandler(new SkyblockTotalSlayerXp())
     this.registerHandler(new SkyblockRevenantLevel())
     this.registerHandler(new SkyblockTarantulaLevel())
