@@ -20,7 +20,7 @@ import { formatPrimitiveValue, getSkyblockUserProfiles, noHypixelKey } from '../
 
 export class SkyblockCarpentryLevel extends ConditionHandler<ConditionOptions, number> {
   override getId(): string {
-    return 'skyblock-alchemy-level'
+    return 'skyblock-carpentry-level'
   }
 
   override getDisplayName(context: HandlerContext): string {
