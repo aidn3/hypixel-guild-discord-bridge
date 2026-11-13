@@ -182,6 +182,8 @@
   "discord.conditions.handler.fishing-level.formatted": "{{profileTypes}} Fishing Level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.enchanting-level.title": "Enchanting Level",
   "discord.conditions.handler.enchanting-level.formatted": "{{profileTypes}} Enchanting Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.alchemy-level.title": "Alchemy Level",
+  "discord.conditions.handler.alchemy-level.formatted": "{{profileTypes}} Alchemy Level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
