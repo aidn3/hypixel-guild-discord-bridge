@@ -24,6 +24,11 @@ import { SkyblockFarmingLevel } from './handlers/skyblock-farming-level.js'
 import { SkyblockFishingLevel } from './handlers/skyblock-fishing-level.js'
 import { SkyblockForagingLevel } from './handlers/skyblock-foraging-level.js'
 import { SkyblockHuntingLevel } from './handlers/skyblock-hunting-level.js'
+import { KuudraBasic } from './handlers/skyblock-kuudra-basic.js'
+import { KuudraBurning } from './handlers/skyblock-kuudra-burning.js'
+import { KuudraFiery } from './handlers/skyblock-kuudra-fiery.js'
+import { KuudraHot } from './handlers/skyblock-kuudra-hot.js'
+import { KuudraInfernal } from './handlers/skyblock-kuudra-infernal.js'
 import { SkyblockLevel } from './handlers/skyblock-level.js'
 import { SkyblockMiningLevel } from './handlers/skyblock-mining-level.js'
 import { SkyblockNetworth } from './handlers/skyblock-networth.js'
@@ -49,6 +54,11 @@ export class ConditionsRegistry {
     this.registerHandler(new CatacombsLevel())
     this.registerHandler(new DungeonsClassAverage())
     this.registerHandler(new KuudraCollection())
+    this.registerHandler(new KuudraBasic())
+    this.registerHandler(new KuudraHot())
+    this.registerHandler(new KuudraBurning())
+    this.registerHandler(new KuudraFiery())
+    this.registerHandler(new KuudraInfernal())
     this.registerHandler(new SkyblockNetworth())
     this.registerHandler(new SkyblockApi())
     this.registerHandler(new SkyblockFarmingLevel())
