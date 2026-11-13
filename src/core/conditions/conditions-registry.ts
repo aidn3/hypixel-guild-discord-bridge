@@ -30,6 +30,7 @@ import { KuudraFiery } from './handlers/skyblock-kuudra-fiery.js'
 import { KuudraHot } from './handlers/skyblock-kuudra-hot.js'
 import { KuudraInfernal } from './handlers/skyblock-kuudra-infernal.js'
 import { SkyblockLevel } from './handlers/skyblock-level.js'
+import { SkyblockMaxAccessoryPower } from './handlers/skyblock-max-accessory-power.js'
 import { SkyblockMiningLevel } from './handlers/skyblock-mining-level.js'
 import { SkyblockNetworth } from './handlers/skyblock-networth.js'
 import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level.js'
@@ -50,6 +51,7 @@ export class ConditionsRegistry {
     this.registerHandler(new HasDiscordRole())
     this.registerHandler(new InDiscordServer())
     this.registerHandler(new SkyblockLevel())
+    this.registerHandler(new SkyblockMaxAccessoryPower())
     this.registerHandler(new SkyblockType())
     this.registerHandler(new CatacombsLevel())
     this.registerHandler(new DungeonsClassAverage())
