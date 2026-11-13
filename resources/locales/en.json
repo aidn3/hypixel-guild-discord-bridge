@@ -176,6 +176,8 @@
   "discord.conditions.handler.mining-level.formatted": "{{profileTypes}} Mining Level {{fromLevel, number}} to {{toLevel, number}}",
   "discord.conditions.handler.combat-level.title": "Combat Level",
   "discord.conditions.handler.combat-level.formatted": "{{profileTypes}} Combat Level {{fromLevel, number}} to {{toLevel, number}}",
+  "discord.conditions.handler.foraging-level.title": "Foraging Level",
+  "discord.conditions.handler.foraging-level.formatted": "{{profileTypes}} Foraging Level {{fromLevel, number}} to {{toLevel, number}}",
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
