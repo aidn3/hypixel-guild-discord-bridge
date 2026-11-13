@@ -2,6 +2,14 @@ import type { ConditionHandler, ConditionOption, ConditionValue } from './common
 import { CatacombsLevel } from './handlers/catacombs-level.js'
 import { DungeonsClassAverage } from './handlers/dungeon-class-average.js'
 import { HasDiscordRole } from './handlers/has-discord-role.js'
+import { HypixelRankMvp } from './handlers/hypixel-rank-mvp.js'
+import { HypixelRankMvpPlus } from './handlers/hypixel-rank-mvpplus.js'
+import { HypixelRankMvpPlusPlus } from './handlers/hypixel-rank-mvpplusplus.js'
+import { HypixelRankNone } from './handlers/hypixel-rank-none.js'
+import { HypixelRankStaff } from './handlers/hypixel-rank-staff.js'
+import { HypixelRankVip } from './handlers/hypixel-rank-vip.js'
+import { HypixelRankVipPlus } from './handlers/hypixel-rank-vipplus.js'
+import { HypixelRankYoutuber } from './handlers/hypixel-rank-youtuber.js'
 import { InDiscordServer } from './handlers/in-discord-server.js'
 import { InGuildAsGuildmaster } from './handlers/in-guild-as-guild-master.js'
 import { InGuildForDuration } from './handlers/in-guild-for-duration.js'
@@ -86,6 +94,14 @@ export class ConditionsRegistry {
     this.registerHandler(new InGuildWithGexp())
     this.registerHandler(new InGuildForDuration())
     this.registerHandler(new InGuildAsGuildmaster())
+    this.registerHandler(new HypixelRankNone())
+    this.registerHandler(new HypixelRankVip())
+    this.registerHandler(new HypixelRankVipPlus())
+    this.registerHandler(new HypixelRankMvp())
+    this.registerHandler(new HypixelRankMvpPlus())
+    this.registerHandler(new HypixelRankMvpPlusPlus())
+    this.registerHandler(new HypixelRankYoutuber())
+    this.registerHandler(new HypixelRankStaff())
   }
 
   public allHandlers(): ConditionHandler<ConditionOption, ConditionValue>[] {
