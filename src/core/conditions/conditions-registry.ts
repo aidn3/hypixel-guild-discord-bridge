@@ -26,6 +26,7 @@ import { SkyblockLevel } from './handlers/skyblock-level.js'
 import { SkyblockMiningLevel } from './handlers/skyblock-mining-level.js'
 import { SkyblockNetworth } from './handlers/skyblock-networth.js'
 import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level.js'
+import { SkyblockTamingLevel } from './handlers/skyblock-taming-level.js'
 import { SkyblockTotalSlayerXp } from './handlers/skyblock-total-slayer-xp.js'
 import { SkyblockType } from './handlers/skyblock-type.js'
 import { SkyblockVampireLevel } from './handlers/skyblock-vampire-slayer-level.js'
@@ -56,6 +57,7 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockEnchantingLevel())
     this.registerHandler(new SkyblockAlchemyLevel())
     this.registerHandler(new SkyblockCarpentryLevel())
+    this.registerHandler(new SkyblockTamingLevel())
     this.registerHandler(new SkyblockTotalSlayerXp())
     this.registerHandler(new SkyblockRevenantLevel())
     this.registerHandler(new SkyblockTarantulaLevel())
