@@ -206,6 +206,15 @@
   "discord.conditions.handler.average-level.title": "Skills Average Level",
   "discord.conditions.handler.average-level.formatted": "{{profileTypes}} Skills Average Level {{fromLevel, number}} to {{toLevel, number}}",
 
+  "discord.conditions.handler.skyblock-trophy-fish-bronze.title": "Bronze Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-bronze.formatted": "{{profileTypes}} Bronze Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-silver.title": "Silver Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-silver.formatted": "{{profileTypes}} Silver Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-gold.title": "Gold Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-gold.formatted": "{{profileTypes}} Gold Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-diamond.title": "Diamond Trophy Fish",
+  "discord.conditions.handler.skyblock-trophy-fish-diamond.formatted": "{{profileTypes}} Diamond Trophy Fish",
+
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
 

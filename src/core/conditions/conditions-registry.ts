@@ -45,6 +45,10 @@ import { SkyblockNetworth } from './handlers/skyblock-networth.js'
 import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level.js'
 import { SkyblockTamingLevel } from './handlers/skyblock-taming-level.js'
 import { SkyblockTotalSlayerXp } from './handlers/skyblock-total-slayer-xp.js'
+import { SkyblockTrophyFishBronze } from './handlers/skyblock-trophy-fish-bronze.js'
+import { SkyblockTrophyFishDiamond } from './handlers/skyblock-trophy-fish-diamond.js'
+import { SkyblockTrophyFishGold } from './handlers/skyblock-trophy-fish-gold.js'
+import { SkyblockTrophyFishSilver } from './handlers/skyblock-trophy-fish-silver.js'
 import { SkyblockType } from './handlers/skyblock-type.js'
 import { SkyblockVampireLevel } from './handlers/skyblock-vampire-slayer-level.js'
 import { SkyblockSvenLevel } from './handlers/skyblock-wolf-slayer-level.js'
@@ -90,6 +94,10 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockEndermanLevel())
     this.registerHandler(new SkyblockBlazeLevel())
     this.registerHandler(new SkyblockVampireLevel())
+    this.registerHandler(new SkyblockTrophyFishBronze())
+    this.registerHandler(new SkyblockTrophyFishSilver())
+    this.registerHandler(new SkyblockTrophyFishGold())
+    this.registerHandler(new SkyblockTrophyFishDiamond())
     this.registerHandler(new SkyblockGuildTopLevel())
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())

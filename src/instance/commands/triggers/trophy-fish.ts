@@ -1,5 +1,6 @@
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
+import { TotalUniqueTrophyFish } from '../../../core/hypixel/hypixel-skyblock.js'
 import {
   getSelectedSkyblockProfile,
   getUuidIfExists,
@@ -16,8 +17,6 @@ enum Rarities {
 }
 
 export default class TrophyFish extends ChatCommandHandler {
-  private static readonly UniqueFish = 18
-
   constructor() {
     super({
       type: ChatCommandGroup.General,
@@ -59,7 +58,7 @@ export default class TrophyFish extends ChatCommandHandler {
 
     const formatted = Object.keys(Rarities)
       .filter((displayRarity) => progress.has(displayRarity))
-      .map((displayRarity) => `${displayRarity} ${progress.get(displayRarity)}/${TrophyFish.UniqueFish}`)
+      .map((displayRarity) => `${displayRarity} ${progress.get(displayRarity)}/${TotalUniqueTrophyFish}`)
 
     return `${givenUsername} trophy fishing: Total ${total} - ${formatted.join(' - ')}`
   }

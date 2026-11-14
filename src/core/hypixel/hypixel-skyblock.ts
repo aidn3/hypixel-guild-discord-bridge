@@ -737,3 +737,5 @@ export function getSkillLevelUncapped(
 
   return level + experience / nextLevelExperience
 }
+
+export const TotalUniqueTrophyFish = 18
