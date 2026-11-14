@@ -234,8 +234,7 @@
   "discord.conditions.handler.in-guild-as-guildmaster.title": "In Guild As The Guild Master",
   "discord.conditions.handler.in-guild-as-guildmaster.formatted": "In guild {{guildName}} as the guild master",
   "discord.conditions.handler.in-guild-for-duration.title": "In Guild For A Duration",
-  "discord.conditions.handler.in-guild-for-duration.formatted_one": "In guild {{guildName}} for {{days, number}} day",
-  "discord.conditions.handler.in-guild-for-duration.formatted_other": "In guild {{guildName}} for {{days, number}} days",
+  "discord.conditions.handler.in-guild-for-duration.formatted": "In guild {{guildName}} from {{fromDays, number}} to {{toDays, number}} day(s)",
 
   "discord.conditions.handler.skyblock-guild-top-level.title": "Top Skyblock Level In Guild With A Specific Rank",
   "discord.conditions.handler.skyblock-guild-top-level.formatted": "Top {{topCount}} Skyblock Level In guild {{guildName}} with rank(s) {{guildRanks, list}}",

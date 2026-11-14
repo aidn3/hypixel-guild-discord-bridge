@@ -30,8 +30,8 @@ export class InGuildForDuration extends ConditionHandler<InGuildOptions, number>
     if (hypixel === undefined) {
       return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild-for-duration.formatted'], {
         guildName: options.guildId,
-        days: options.days,
-        count: options.days
+        fromDays: options.fromDays,
+        toDays: options.toDays
       })
     }
 
@@ -42,8 +42,8 @@ export class InGuildForDuration extends ConditionHandler<InGuildOptions, number>
 
     return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild-for-duration.formatted'], {
       guildName: guild.name,
-      days: options.days,
-      count: options.days
+      fromDays: options.fromDays,
+      toDays: options.toDays
     })
   }
 
@@ -80,7 +80,10 @@ export class InGuildForDuration extends ConditionHandler<InGuildOptions, number>
 
     const inGuildDays = (Date.now() - guildMember.joined) / Duration.days(1).toMilliseconds()
     return {
-      type: inGuildDays >= options.days ? ConditionResultType.Pass : ConditionResultType.Fail,
+      type:
+        inGuildDays >= options.fromDays && inGuildDays <= options.toDays
+          ? ConditionResultType.Pass
+          : ConditionResultType.Fail,
       value: inGuildDays,
       valueFormatted: formatPrimitiveValue(context.application.i18n.t, Math.floor(inGuildDays))
     }
@@ -98,8 +101,15 @@ export class InGuildForDuration extends ConditionHandler<InGuildOptions, number>
       },
       {
         type: OptionType.Number,
-        name: 'Days',
-        key: 'days',
+        name: 'From Days',
+        key: 'fromDays',
+        max: Number.MAX_SAFE_INTEGER,
+        min: 0
+      },
+      {
+        type: OptionType.Number,
+        name: 'To Days',
+        key: 'toDays',
         max: Number.MAX_SAFE_INTEGER,
         min: 1
       }
@@ -113,8 +123,10 @@ export class InGuildForDuration extends ConditionHandler<InGuildOptions, number>
     const guildName = rawOptions.guildName
     assert.ok(typeof guildName === 'string')
 
-    const days = rawOptions.days
-    assert.ok(typeof days === 'number')
+    const fromDays = rawOptions.fromDays
+    assert.ok(typeof fromDays === 'number')
+    const toDays = rawOptions.toDays
+    assert.ok(typeof toDays === 'number')
 
     const hypixel = context.application.hypixel()
     if (hypixel === undefined) return noHypixelKey(context.application.i18n.t).createCondition
@@ -123,9 +135,9 @@ export class InGuildForDuration extends ConditionHandler<InGuildOptions, number>
       return context.application.i18n.t(($) => $['discord.conditions.handler.in-guild.invalid-name'])
     }
 
-    return { guildId: guild._id, days: days }
+    return { guildId: guild._id, fromDays: fromDays, toDays: toDays }
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type InGuildOptions = { guildId: string; days: number }
+export type InGuildOptions = { guildId: string; fromDays: number; toDays: number }
