@@ -28,7 +28,7 @@ export default class Status extends ChatCommandHandler {
       const player = await hypixel.getPlayer(uuid, currentTime)
       if (player === undefined) return playerNeverPlayedHypixel(context, givenUsername)
 
-      if ('lastLogout' in player) {
+      if (player.lastLogout) {
         return context.app.i18n.t(($) => $['commands.status.last-online'], {
           username: givenUsername,
           time: formatTime(Date.now() - player.lastLogout)

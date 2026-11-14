@@ -10,6 +10,7 @@ import type EventHelper from '../../common/event-helper.js'
 import type { SqliteManager } from '../../common/sqlite-manager.js'
 import SubInstance from '../../common/sub-instance.js'
 import type UnexpectedErrorHandler from '../../common/unexpected-error-handler.js'
+import type { UserIdentifier } from '../../common/user.js'
 import Duration from '../../utility/duration.js'
 import { setIntervalAsync } from '../../utility/scheduling.js'
 import type { Core } from '../core.js'
@@ -89,6 +90,14 @@ export default class ScoresManager extends SubInstance<Core, void> {
       delay: ScoresManager.FetchMembersEvery,
       errorHandler: this.errorHandler.promiseCatch('fetching and adding members')
     })
+  }
+
+  public getMessagesByUser(
+    identifiers: UserIdentifier[],
+    fromTimestamp: number,
+    toTimestamp: number
+  ): { timestamp: number; count: number }[] {
+    return this.database.getMessagesByUser(identifiers, fromTimestamp, toTimestamp)
   }
 
   public getMessages30Days(): TotalMessagesLeaderboard[] {
@@ -286,6 +295,44 @@ class ScoreDatabase {
     )
     const result = insert.run({ user: uuid, timestamp: Math.floor(timestamp / 1000) })
     assert.ok(result.changes > 0, 'Nothing changed even when inserted?')
+  }
+
+  public getMessagesByUser(
+    identifiers: UserIdentifier[],
+    from: number,
+    to: number
+  ): { timestamp: number; count: number }[] {
+    if (identifiers.length <= 0) return []
+
+    const database = this.sqliteManager.getDatabase()
+    const transaction = database.transaction(() => {
+      const result: { timestamp: number; count: number }[] = []
+
+      const minecraftIdentifiers = identifiers
+        .filter((identifier) => identifier.originInstance === Platform.Minecraft)
+        .map((identifier) => identifier.userId)
+      if (minecraftIdentifiers.length > 0) {
+        const query = `SELECT timestamp, count FROM "MinecraftMessages" WHERE user IN (${minecraftIdentifiers.map(() => '?').join(',')}) AND timestamp BETWEEN ? AND ?`
+        const selectMinecraft = database.prepare<[...unknown[]], (typeof result)[number]>(query)
+        const queryResult = selectMinecraft.all(...minecraftIdentifiers, Math.floor(to / 1000), Math.floor(from / 1000))
+        result.push(...queryResult)
+      }
+
+      const discordIdentifiers = identifiers
+        .filter((identifier) => identifier.originInstance === Platform.Discord)
+        .map((identifier) => identifier.userId)
+      if (discordIdentifiers.length > 0) {
+        const query = `SELECT timestamp, count FROM "DiscordMessages" WHERE user IN (${discordIdentifiers.map(() => '?').join(',')}) AND timestamp BETWEEN ? AND ?`
+        const selectDiscord = database.prepare<[...unknown[]], (typeof result)[number]>(query)
+        const queryResult = selectDiscord.all(...discordIdentifiers, Math.floor(to / 1000), Math.floor(from / 1000))
+        result.push(...queryResult)
+      }
+
+      result.sort((a, b) => b.timestamp - a.timestamp)
+      return result
+    })
+
+    return transaction()
   }
 
   public getMinecraftMessages(

@@ -7,7 +7,7 @@ export interface HypixelPlayerResponse extends HypixelSuccessResponse {
 }
 
 export interface HypixelPlayer {
-  lastLogout: number
+  lastLogout?: number
   networkExp?: number
   socialMedia?: { links: { DISCORD?: string } }
   stats?: HypixelPlayerStats
@@ -49,7 +49,6 @@ export interface HypixelPlayerStats {
     kills?: number
     shots_fired?: number
     bombs_planted?: number
-    game_plays?: number
     headshot_kills?: number
     bombs_defused?: number
     game_wins?: number
@@ -68,4 +67,27 @@ export interface HypixelPlayerStats {
 
 export interface HypixelPlayerAchievements {
   skyblock_treasure_hunter?: number
+}
+
+export function getPlayerRank(player: HypixelPlayer): HypixelPlayerRank {
+  if (player.rank === 'STAFF') return HypixelPlayerRank.Staff
+  if (player.rank === 'YOUTUBER') return HypixelPlayerRank.Youtuber
+  if (player.monthlyPackageRank === 'SUPERSTAR') return HypixelPlayerRank.MvpPlusPlus
+  if (player.newPackageRank === 'MVP_PLUS') return HypixelPlayerRank.MvpPlus
+  if (player.newPackageRank === 'MVP') return HypixelPlayerRank.Mvp
+  if (player.newPackageRank === 'VIP_PLUS') return HypixelPlayerRank.VipPlus
+  if (player.newPackageRank === 'VIP') return HypixelPlayerRank.Vip
+  if (player.newPackageRank === 'NONE') return HypixelPlayerRank.None
+  return HypixelPlayerRank.None
+}
+
+export enum HypixelPlayerRank {
+  Staff = 'Staff',
+  Youtuber = 'YouTuber',
+  MvpPlusPlus = 'MVP++',
+  MvpPlus = 'MVP+',
+  Mvp = 'MVP',
+  VipPlus = 'VIP+',
+  Vip = 'VIP',
+  None = 'none'
 }
