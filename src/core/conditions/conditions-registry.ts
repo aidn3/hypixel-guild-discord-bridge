@@ -2,6 +2,7 @@ import type { ConditionHandler, ConditionOption, ConditionValue } from './common
 import { CatacombsLevel } from './handlers/catacombs-level.js'
 import { DungeonsClassAverage } from './handlers/dungeon-class-average.js'
 import { HasDiscordRole } from './handlers/has-discord-role.js'
+import { HypixelOfflineForDuration } from './handlers/hypixel-offline-for-duration.js'
 import { HypixelRankMvp } from './handlers/hypixel-rank-mvp.js'
 import { HypixelRankMvpPlus } from './handlers/hypixel-rank-mvpplus.js'
 import { HypixelRankMvpPlusPlus } from './handlers/hypixel-rank-mvpplusplus.js'
@@ -114,6 +115,7 @@ export class ConditionsRegistry {
     this.registerHandler(new InGuildWithGexp())
     this.registerHandler(new InGuildForDuration())
     this.registerHandler(new InGuildAsGuildmaster())
+    this.registerHandler(new HypixelOfflineForDuration())
     this.registerHandler(new HypixelRankNone())
     this.registerHandler(new HypixelRankVip())
     this.registerHandler(new HypixelRankVipPlus())

@@ -31,6 +31,7 @@
   "conditions.format.no-discord-linked": "Discord not linked",
   "conditions.format.never-played-skyblock": "never played skyblock",
   "conditions.format.never-played-hypixel": "never played Hypixel",
+  "conditions.format.user-api-disabled": "User API disabled",
   "conditions.format.guild-disbanded": "Guild disbanded",
   "conditions.format.discord-server-deleted": "Discord server deleted?",
   "conditions.format.discord-server-not-found": "Could not find the Discord server",
@@ -229,6 +230,9 @@
 
   "discord.conditions.handler.in-guild.title": "In Guild",
   "discord.conditions.handler.in-guild.formatted": "In guild {{guildName}}",
+
+  "discord.conditions.handler.hypixel-offline-for-duration.title": "Off Hypixel Duration",
+  "discord.conditions.handler.hypixel-offline-for-duration.formatted": "Off Hypixel for {{fromDays, number}} to {{toDays, number}} day(s)",
 
   "discord.conditions.handler.hypixel-rank-staff.title": "Hypixel Staff Rank",
   "discord.conditions.handler.hypixel-rank-staff.formatted": "Has Hypixel Staff Rank",

@@ -7,7 +7,7 @@ export interface HypixelPlayerResponse extends HypixelSuccessResponse {
 }
 
 export interface HypixelPlayer {
-  lastLogout: number
+  lastLogout?: number
   networkExp?: number
   socialMedia?: { links: { DISCORD?: string } }
   stats?: HypixelPlayerStats
