@@ -31,6 +31,7 @@ import { SkyblockEndermanLevel } from './handlers/skyblock-enderman-slayer-level
 import { SkyblockFarmingLevel } from './handlers/skyblock-farming-level.js'
 import { SkyblockFishingLevel } from './handlers/skyblock-fishing-level.js'
 import { SkyblockForagingLevel } from './handlers/skyblock-foraging-level.js'
+import { SkyblockGuildTopLevel } from './handlers/skyblock-guild-top-level.js'
 import { SkyblockHuntingLevel } from './handlers/skyblock-hunting-level.js'
 import { KuudraBasic } from './handlers/skyblock-kuudra-basic.js'
 import { KuudraBurning } from './handlers/skyblock-kuudra-burning.js'
@@ -89,6 +90,7 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockEndermanLevel())
     this.registerHandler(new SkyblockBlazeLevel())
     this.registerHandler(new SkyblockVampireLevel())
+    this.registerHandler(new SkyblockGuildTopLevel())
     this.registerHandler(new InGuild())
     this.registerHandler(new InGuildWithRank())
     this.registerHandler(new InGuildWithGexp())
