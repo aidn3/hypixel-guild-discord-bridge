@@ -73,29 +73,58 @@ export class AnonymousUser {
     return this.userDiscord
   }
 
-  public async permission(): Promise<Permission> {
-    let permission = Permission.Anyone
+  public hasPermission(requiredPermission: Permission): Promise<boolean> | boolean {
+    if (requiredPermission === Permission.Anyone) return true
 
     const discordProfile = this.discordProfile()
     if (discordProfile !== undefined) {
       const discordPermission = discordProfile.permission
-      if (discordPermission > permission) permission = discordPermission
+      if (discordPermission >= requiredPermission) return true
+    }
+
+    if (this.isMinecraftBridgeAdmin() && requiredPermission <= Permission.BridgeAdmin) {
+      return true
     }
 
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {
-      const configurations = this.application.core.minecraftConfigurations
-      const adminUuid = configurations.getAdminMojangUuid()
-      if (adminUuid.length > 0 && mojangProfile.id.toLowerCase() === adminUuid.toLowerCase()) {
-        const minecraftPermission = Permission.BridgeAdmin
-        if (minecraftPermission > permission) permission = minecraftPermission
-      }
-
-      const guildPermission = await this.getMinecraftPermission(mojangProfile)
-      if (guildPermission > permission) permission = guildPermission
+      return this.getMinecraftPermission(mojangProfile).then((guildPermission) => guildPermission >= requiredPermission)
     }
 
-    return permission
+    return false
+  }
+
+  public isStaff(): Promise<boolean> | boolean {
+    return this.hasPermission(Permission.Helper)
+  }
+
+  public async hasHigherPermissionThan(targetUser: AnonymousUser): Promise<boolean> {
+    const userPermission = await this.resolvePermissions()
+    const targetPermission = await targetUser.resolvePermissions()
+    return userPermission > targetPermission
+  }
+
+  private async resolvePermissions(): Promise<Permission> {
+    const mojangProfile = this.mojangProfile()
+
+    const permissions = [
+      Permission.Anyone,
+      this.discordProfile()?.permission,
+      this.isMinecraftBridgeAdmin() ? Permission.BridgeAdmin : undefined,
+      mojangProfile === undefined ? undefined : await this.getMinecraftPermission(mojangProfile)
+    ]
+
+    // eslint-disable-next-line unicorn/no-array-reduce
+    return permissions.filter((permission) => permission !== undefined).reduce((a, b) => Math.max(a, b))
+  }
+
+  private isMinecraftBridgeAdmin(): boolean {
+    const mojangProfile = this.mojangProfile()
+    if (mojangProfile === undefined) return false
+
+    const configurations = this.application.core.minecraftConfigurations
+    const adminUuid = configurations.getAdminMojangUuid()
+    return adminUuid.length > 0 && mojangProfile.id.toLowerCase() === adminUuid.toLowerCase()
   }
 
   private async getMinecraftPermission(mojangProfile: MojangProfile): Promise<Permission> {
@@ -143,8 +172,8 @@ export class AnonymousUser {
   }
 
   public async immune(): Promise<boolean> {
-    const currentPermission = await this.permission()
-    if (currentPermission === Permission.BridgeAdmin || currentPermission === Permission.ApplicationAdmin) return true
+    const isAdmin = await this.hasPermission(Permission.BridgeAdmin)
+    if (isAdmin) return true
 
     const mojangProfile = this.mojangProfile()
     if (mojangProfile !== undefined) {

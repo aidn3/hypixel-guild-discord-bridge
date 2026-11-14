@@ -154,7 +154,7 @@ export default {
       )
       const responsible = await context.application.core.initializeDiscordUser(responsibleProfile)
 
-      if (context.permission < Permission.Officer) {
+      if (!(await context.user.hasPermission(Permission.Officer))) {
         await context.showPermissionDenied(Permission.Officer)
         return
       }
@@ -203,7 +203,7 @@ export default {
 
     switch (groupCommand) {
       case 'ban': {
-        if (context.permission < Permission.Officer) {
+        if (!(await context.user.hasPermission(Permission.Officer))) {
           await context.showPermissionDenied(Permission.Officer)
           return
         }
@@ -214,7 +214,7 @@ export default {
         return
       }
       case 'unban': {
-        if (context.permission < Permission.Officer) {
+        if (!(await context.user.hasPermission(Permission.Officer))) {
           await context.showPermissionDenied(Permission.Officer)
           return
         }
@@ -233,7 +233,7 @@ export default {
         return
       }
       case 'kick': {
-        if (context.permission < Permission.Officer) {
+        if (!(await context.user.hasPermission(Permission.Officer))) {
           await context.showPermissionDenied(Permission.Officer)
           return
         }
@@ -270,9 +270,7 @@ async function handleBan(
   duration: Duration,
   reason: string
 ): Promise<void> {
-  const responsiblePermission = await responsible.permission()
-  const targetPermission = await target.permission()
-  if (targetPermission >= responsiblePermission) {
+  if (!(await responsible.hasHigherPermissionThan(target))) {
     await context.interaction.editReply({
       content: `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`,
       allowedMentions: { parse: [] }
@@ -306,9 +304,7 @@ async function handleMute(
   duration: Duration,
   reason: string
 ): Promise<void> {
-  const responsiblePermission = await responsible.permission()
-  const targetPermission = await target.permission()
-  if (targetPermission >= responsiblePermission) {
+  if (!(await responsible.hasHigherPermissionThan(target))) {
     await context.interaction.editReply({
       content: `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`,
       allowedMentions: { parse: [] }
@@ -346,9 +342,7 @@ async function handleKick(
   target: User,
   reason: string
 ): Promise<void> {
-  const responsiblePermission = await responsible.permission()
-  const targetPermission = await target.permission()
-  if (targetPermission >= responsiblePermission) {
+  if (!(await responsible.hasHigherPermissionThan(target))) {
     await context.interaction.editReply({
       content: `You can not punish ${formatUser(target)} since they have equal or greater authority than you.`,
       allowedMentions: { parse: [] }

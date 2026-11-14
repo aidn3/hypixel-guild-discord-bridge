@@ -64,8 +64,8 @@ export class ActionsInteraction extends SubInstance<MinecraftActionButtons, void
 
   private async invitedToGuild(interaction: ButtonInteraction, entry: DiscordPersistentInstance): Promise<void> {
     const user = await this.getUser(interaction)
-    const userPermission = await user.permission()
-    if (userPermission < Permission.Helper) {
+    const hasPermission = await user.hasPermission(Permission.Helper)
+    if (!hasPermission) {
       await interaction.reply({
         content: translateNoPermission(this.application, Permission.Helper),
         flags: MessageFlags.Ephemeral
@@ -92,8 +92,8 @@ export class ActionsInteraction extends SubInstance<MinecraftActionButtons, void
 
   private async requestToJoinGuild(interaction: ButtonInteraction, entry: DiscordPersistentInstance): Promise<void> {
     const user = await this.getUser(interaction)
-    const userPermission = await user.permission()
-    if (userPermission < Permission.Helper) {
+    const hasPermission = await user.hasPermission(Permission.Helper)
+    if (!hasPermission) {
       await interaction.reply({
         content: translateNoPermission(this.application, Permission.Helper),
         flags: MessageFlags.Ephemeral

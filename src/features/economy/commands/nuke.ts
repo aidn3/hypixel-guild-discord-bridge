@@ -1,4 +1,4 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandCooldown, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler, CooldownType } from '../../../common/commands.js'
 import type { MojangProfile } from '../../../common/user.js'
@@ -66,7 +66,7 @@ export class Nuke extends ChatCommandHandler {
       const userProfile: MojangProfile = { id, name }
       const user = await context.app.core.initializeMinecraftUser(userProfile, {})
       const self = user.equalsUser(context.message.user)
-      const staff = (await user.permission()) >= Permission.Helper
+      const staff = await user.isStaff()
       const immune = await user.immune()
 
       if (self || staff || immune) {

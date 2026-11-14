@@ -1,5 +1,5 @@
 import { Permission } from '../../../common/application-event.js'
-import type { ChatCommandContext } from '../../../common/commands.js'
+import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 
 export default class Toggle extends ChatCommandHandler {
@@ -13,16 +13,12 @@ export default class Toggle extends ChatCommandHandler {
     })
   }
 
-  async handler(context: ChatCommandContext): Promise<string> {
+  override requirements(context: ChatCommandContext): ChatCommandRequirements | string {
     const config = context.app.commandsInstance.commandsConfigurations
-    const userPermission = await context.message.user.permission()
-    if (
-      userPermission < Permission.Helper ||
-      (userPermission === Permission.Helper && !config.getAllowHelperToggle())
-    ) {
-      return `${context.username}, Command can only be executed in officer chat or by the bridge admin`
-    }
+    return { permission: config.getAllowHelperToggle() ? Permission.Helper : Permission.Officer }
+  }
 
+  handler(context: ChatCommandContext): string {
     if (context.args.length <= 0) {
       return this.getExample(context.commandPrefix)
     }

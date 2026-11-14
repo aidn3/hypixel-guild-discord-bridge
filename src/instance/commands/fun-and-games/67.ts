@@ -1,4 +1,4 @@
-import { Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import Duration from '../../../utility/duration.js'
@@ -15,7 +15,7 @@ export default class Command67 extends ChatCommandHandler {
   }
 
   async handler(context: ChatCommandContext): Promise<string> {
-    if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+    if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
       await context.message.user.mute(
         context.eventHelper.fillBaseEvent(),
         PunishmentPurpose.Game,

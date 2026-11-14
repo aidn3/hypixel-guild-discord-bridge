@@ -187,7 +187,6 @@ interface BaseDiscordContext<Origin extends CommandOrigin> {
   logger: Logger
   t: TFunction
 
-  permission: Permission
   //bridgeId: Origin extends CommandOrigin.Bridge ? BridgeId : BridgeId | undefined
   user: OriginDecider<Origin, AnonymousUser, AnonymousUser, DiscordUser>
   errorHandler: UnexpectedErrorHandler

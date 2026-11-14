@@ -1,4 +1,4 @@
-import { ChannelType, Permission, Platform, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Platform, PunishmentPurpose } from '../../../common/application-event.js'
 import type { ChatCommandContext, ChatCommandRequirements } from '../../../common/commands.js'
 import { ChatCommandGroup, ChatCommandHandler } from '../../../common/commands.js'
 import { EconomyRussianRoulette } from '../economy-constants.js'
@@ -66,7 +66,7 @@ export default class Roulette extends ChatCommandHandler {
 
     if (!gameResult.survived) {
       const muteDuration = EconomyRussianRoulette.mute
-      if ((await context.message.user.permission()) < Permission.Helper && !(await context.message.user.immune())) {
+      if (!(await context.message.user.isStaff()) && !(await context.message.user.immune())) {
         await context.message.user.mute(
           context.eventHelper.fillBaseEvent(),
           PunishmentPurpose.Game,

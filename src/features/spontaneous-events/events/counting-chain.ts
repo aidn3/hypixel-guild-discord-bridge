@@ -1,5 +1,5 @@
 import type { ChatEvent } from '../../../common/application-event.js'
-import { ChannelType, Color, Permission, PunishmentPurpose } from '../../../common/application-event.js'
+import { ChannelType, Color, PunishmentPurpose } from '../../../common/application-event.js'
 import type { User } from '../../../common/user.js'
 import { SpontaneousEventsNames } from '../../../core/spontanmous-events-configurations.js'
 import Duration from '../../../utility/duration.js'
@@ -78,7 +78,7 @@ export async function startCountingChain(
   if (beforeLast === undefined || lastUser === undefined) {
     return { message: `Never mind the counting chain :(`, color: Color.Info, eventResult: { type: 'ended' } }
   } else {
-    if ((await beforeLast.permission()) < Permission.Helper && !(await beforeLast.immune())) {
+    if (!(await beforeLast.isStaff()) && !(await beforeLast.immune())) {
       const muteOnFail = context.application.core.spontaneousEventsConfigurations.getMuteOnFail()
       if (muteOnFail) {
         await beforeLast.mute(
