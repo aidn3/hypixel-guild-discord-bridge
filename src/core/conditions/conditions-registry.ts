@@ -22,7 +22,9 @@ import { NotLinked } from './handlers/not-linked.js'
 import { SentMessages } from './handlers/sent-messages.js'
 import { SkyblockAlchemyLevel } from './handlers/skyblock-alchemy-level.js'
 import { SkyblockApi } from './handlers/skyblock-api.js'
+import { SkyblockArcherLevel } from './handlers/skyblock-archer-level.js'
 import { SkyblockAverageLevel } from './handlers/skyblock-average-level.js'
+import { SkyblockBerserkLevel } from './handlers/skyblock-berserk-level.js'
 import { SkyblockBlazeLevel } from './handlers/skyblock-blaze-slayer-level.js'
 import { SkyblockCarpentryLevel } from './handlers/skyblock-carpentry-level.js'
 import { SkyblockCombatLevel } from './handlers/skyblock-combat-level.js'
@@ -32,6 +34,7 @@ import { SkyblockFarmingLevel } from './handlers/skyblock-farming-level.js'
 import { SkyblockFishingLevel } from './handlers/skyblock-fishing-level.js'
 import { SkyblockForagingLevel } from './handlers/skyblock-foraging-level.js'
 import { SkyblockGuildTopLevel } from './handlers/skyblock-guild-top-level.js'
+import { SkyblockHealerLevel } from './handlers/skyblock-healer-level.js'
 import { SkyblockHuntingLevel } from './handlers/skyblock-hunting-level.js'
 import { KuudraBasic } from './handlers/skyblock-kuudra-basic.js'
 import { KuudraBurning } from './handlers/skyblock-kuudra-burning.js'
@@ -39,11 +42,13 @@ import { KuudraFiery } from './handlers/skyblock-kuudra-fiery.js'
 import { KuudraHot } from './handlers/skyblock-kuudra-hot.js'
 import { KuudraInfernal } from './handlers/skyblock-kuudra-infernal.js'
 import { SkyblockLevel } from './handlers/skyblock-level.js'
+import { SkyblockMageLevel } from './handlers/skyblock-mage-level.js'
 import { SkyblockMaxAccessoryPower } from './handlers/skyblock-max-accessory-power.js'
 import { SkyblockMiningLevel } from './handlers/skyblock-mining-level.js'
 import { SkyblockNetworth } from './handlers/skyblock-networth.js'
 import { SkyblockTarantulaLevel } from './handlers/skyblock-spider-slayer-level.js'
 import { SkyblockTamingLevel } from './handlers/skyblock-taming-level.js'
+import { SkyblockTankLevel } from './handlers/skyblock-tank-level.js'
 import { SkyblockTotalSlayerXp } from './handlers/skyblock-total-slayer-xp.js'
 import { SkyblockTrophyFishBronze } from './handlers/skyblock-trophy-fish-bronze.js'
 import { SkyblockTrophyFishDiamond } from './handlers/skyblock-trophy-fish-diamond.js'
@@ -67,6 +72,11 @@ export class ConditionsRegistry {
     this.registerHandler(new SkyblockMaxAccessoryPower())
     this.registerHandler(new SkyblockType())
     this.registerHandler(new CatacombsLevel())
+    this.registerHandler(new SkyblockHealerLevel())
+    this.registerHandler(new SkyblockBerserkLevel())
+    this.registerHandler(new SkyblockMageLevel())
+    this.registerHandler(new SkyblockArcherLevel())
+    this.registerHandler(new SkyblockTankLevel())
     this.registerHandler(new DungeonsClassAverage())
     this.registerHandler(new KuudraCollection())
     this.registerHandler(new KuudraBasic())
