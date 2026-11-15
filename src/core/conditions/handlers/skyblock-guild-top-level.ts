@@ -89,6 +89,15 @@ export class SkyblockGuildTopLevel extends ConditionHandler<InGuildOptions, numb
 
     const resolvedMembers: { uuid: string; experience: number }[] = []
     for (const member of guild.members.toSorted((a, b) => a.joined - b.joined)) {
+      const currentMemberRank = member.rank ?? guild.ranks.find((rank) => rank.default)?.name ?? 'N/A'
+      if (
+        !options.whitelistedGuildRanks
+          .map((rank) => rank.trim().toLowerCase())
+          .includes(currentMemberRank.toLowerCase())
+      ) {
+        continue
+      }
+
       const skyblock = await hypixel.getSkyblockProfiles(member.uuid, context.startTime)
       if (skyblock === undefined) {
         resolvedMembers.push({ uuid: member.uuid, experience: 0 })
@@ -131,7 +140,8 @@ export class SkyblockGuildTopLevel extends ConditionHandler<InGuildOptions, numb
         type: OptionType.Text,
         style: InputStyle.Short,
         name: 'Guild Rank(s)',
-        description: 'separated by a comma, example: "Member, Trusted, Staff"',
+        description:
+          'Whitelisted ranks to include in the overall checking. separated by a comma, example: "Member, Trusted, Staff"',
         key: 'whitelistedGuildRanks',
         max: 150,
         min: 1
