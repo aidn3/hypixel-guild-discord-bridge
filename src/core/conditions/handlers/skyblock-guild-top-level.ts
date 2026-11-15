@@ -140,7 +140,8 @@ export class SkyblockGuildTopLevel extends ConditionHandler<InGuildOptions, numb
         type: OptionType.Text,
         style: InputStyle.Short,
         name: 'Guild Rank(s)',
-        description: 'separated by a comma, example: "Member, Trusted, Staff"',
+        description:
+          'Whitelisted ranks to include in the overall checking. separated by a comma, example: "Member, Trusted, Staff"',
         key: 'whitelistedGuildRanks',
         max: 150,
         min: 1
