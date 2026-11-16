@@ -1,4 +1,4 @@
-FROM node:lts-bookworm
+FROM node:26-bookworm
 LABEL authors="aidn5, HyxonQz"
 ENV NODE_ENV=production
 

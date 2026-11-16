@@ -1,7 +1,10 @@
 import assert from 'node:assert'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import process from 'node:process'
+
+createRequire(import.meta.filename)
 
 import DefaultAxios from 'axios'
 import { satisfies } from 'compare-versions'
@@ -36,11 +39,11 @@ const IsTestRun = process.argv.includes('test-run')
 
 const RootDirectory = import.meta.dirname
 
-const ConfigsDirectory = path.resolve(RootDirectory, 'config')
+const ConfigsDirectory = path.resolve('config')
 fs.mkdirSync(ConfigsDirectory, { recursive: true, mode: 0o700 })
 fs.chmodSync(ConfigsDirectory, 0o700)
 
-const LogsDirectory = path.resolve(RootDirectory, 'logs')
+const LogsDirectory = path.resolve('logs')
 fs.mkdirSync(LogsDirectory, { recursive: true, mode: 0o700 })
 fs.chmodSync(LogsDirectory, 0o700)
 

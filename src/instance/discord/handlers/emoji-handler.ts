@@ -1,5 +1,4 @@
 import { hash } from 'node:crypto'
-import fs from 'node:fs/promises'
 
 import type { ApplicationEmojiManager, Client } from 'discord.js'
 
@@ -24,7 +23,7 @@ export default class EmojiHandler extends SubInstance<DiscordInstance, Client> {
 
     for (const emoji of AllEmojis) {
       this.logger.trace(`Checking emoji ${emoji.name}`)
-      const imageData = await fs.readFile(emoji.path)
+      const imageData = emoji.asset
       const imageHash = hash('sha256', imageData, 'hex')
       const registeredEmoji = registeredEmojis.find((existingEmoji) => existingEmoji.name === emoji.name)
       const savedEmoji = savedEmojis.find((savedEmoji) => savedEmoji.name === emoji.name)
@@ -51,7 +50,7 @@ export default class EmojiHandler extends SubInstance<DiscordInstance, Client> {
         await manager.delete(registeredEmoji)
       }
 
-      this.logger.info(`Registering emoji=${emoji.path} under the name ${emoji.name}`)
+      this.logger.info(`Registering emoji=${imageHash} under the name ${emoji.name}`)
       await manager.create({ name: emoji.name, attachment: imageData })
 
       toSaveEmojis.push({ name: emoji.name, hash: imageHash })

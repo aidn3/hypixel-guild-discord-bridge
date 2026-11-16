@@ -21,7 +21,8 @@ export default [
       './build',
       '**/*-ti.ts',
       'package-lock.json',
-      'eslint.config.mjs'
+      'eslint.config.mjs',
+      'rollup.config.js'
     ]
   },
   { plugins: { 'esm-import': esmImport } },

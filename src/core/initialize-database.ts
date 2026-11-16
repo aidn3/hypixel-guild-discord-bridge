@@ -3,11 +3,10 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import type { Database } from 'better-sqlite3'
 import type { Logger, Logger as Logger4Js } from 'log4js'
 
 import type Application from '../application.js'
-import type { SqliteManager } from '../common/sqlite-manager.js'
+import type { SqliteManager, TypedDatabase as Database } from '../common/sqlite-manager.js'
 
 export function initializeCoreDatabase(application: Application, sqliteManager: SqliteManager, name: string): void {
   sqliteManager.registerMigrator((database, logger, postCleanupActions, newlyCreated) => {

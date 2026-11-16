@@ -1,8 +1,9 @@
 import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
+import type { SQLInputValue, StatementSync } from 'node:sqlite'
+import { DatabaseSync as Database } from 'node:sqlite'
 
-import Database from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type Application from '../application.js'
@@ -13,7 +14,8 @@ export class SqliteManager {
   private static readonly CleanEvery = Duration.hours(3)
 
   private readonly configFilePath: string | undefined
-  private readonly database: Database.Database
+  private readonly database: Database
+  private readonly compatibilityLayer: TypedDatabase
   private readonly newlyCreated: boolean
 
   private closed = false
@@ -32,7 +34,7 @@ export class SqliteManager {
 
     if (this.configFilePath === undefined) {
       this.newlyCreated = true
-      this.database = new Database()
+      this.database = new Database(':memory:')
     } else {
       application.addShutdownListener(() => {
         this.close()
@@ -41,9 +43,11 @@ export class SqliteManager {
       this.newlyCreated = !fs.existsSync(this.configFilePath)
 
       this.database = new Database(this.configFilePath)
-      this.database.pragma('journal_mode = WAL')
-      this.database.pragma('foreign_keys = ON')
+      this.database.exec('pragma journal_mode = WAL')
+      this.database.exec('pragma foreign_keys = ON')
     }
+
+    this.compatibilityLayer = new TypedDatabase(this.database)
 
     this.cleanInterval = setInterval(() => {
       this.clean()
@@ -76,16 +80,20 @@ export class SqliteManager {
     function integrityCheck(type: 'quick' | 'full') {
       logger.trace(`Performing ${type} database integrity check`)
 
-      const integrityCheck = database.pragma(type === 'quick' ? 'quick_check' : 'integrity_check', { simple: true })
+      const integrityCheck = database
+        .prepare<[], string>(type === 'quick' ? 'pragma quick_check' : 'pragma integrity_check')
+        .pluck(true)
+        .get()
       assert.strictEqual(integrityCheck, 'ok', 'Database integrity has been violated?')
 
-      const foreignKeyCheck = database.pragma('foreign_key') as unknown[]
+      const foreignKeyCheck = database.prepare('pragma foreign_key').all()
       if (foreignKeyCheck.length > 0) throw new ForeignKeyViolation(foreignKeyCheck)
     }
 
     const transaction = database.transaction(() => {
       const newlyCreated = this.isNewlyCreated()
-      let currentVersion = database.pragma('user_version', { simple: true }) as number
+
+      let currentVersion = database.prepare<[], number>('pragma user_version').pluck(true).get() ?? 0
       if (!newlyCreated) integrityCheck('full')
 
       let finished = false
@@ -99,7 +107,7 @@ export class SqliteManager {
           migrator(database, this.logger, postCleanupActions, newlyCreated)
 
           integrityCheck('quick')
-          database.pragma(`user_version = ${newVersion}`)
+          database.exec(`pragma user_version = ${newVersion}`)
           currentVersion = newVersion
           changed = true
           continue
@@ -145,15 +153,17 @@ export class SqliteManager {
     return this.closed
   }
 
-  public getDatabase(): Database.Database {
+  public getDatabase(): TypedDatabase {
     assert.ok(!this.isClosed(), 'Database is closed')
-    return this.database
+    return this.compatibilityLayer
   }
 
   public backup(destination: string): void {
     assert.ok(this.configFilePath !== undefined, 'Can not backup since the database in memory only')
+    assert.ok(fs.existsSync(this.configFilePath))
+    assert.ok(fs.statSync(this.configFilePath).isFile())
 
-    const snapshot = new Database(this.configFilePath, { readonly: true, fileMustExist: true })
+    const snapshot = new Database(this.configFilePath, { readOnly: true })
     snapshot.prepare(`VACUUM INTO ?`).run(path.normalize(destination))
     snapshot.close()
 
@@ -185,7 +195,7 @@ export class SqliteManager {
 }
 
 export type Migrator = (
-  database: Database.Database,
+  database: TypedDatabase,
   logger: Logger,
   postCleanupActions: (() => void)[],
   newlyCreated: boolean
@@ -196,3 +206,88 @@ export class ForeignKeyViolation extends Error {
     super('Database foreign key integrity check failed')
   }
 }
+
+/* eslint-disable @typescript-eslint/naming-convention */
+export class TypedDatabase {
+  constructor(private readonly database: Database) {}
+
+  public prepare<Parameters extends [...unknown[]] = [...unknown[]], Result = unknown>(
+    query: string
+  ): TypedStatement<Parameters, Result> {
+    const statement = this.database.prepare(query)
+    return new TypedStatement<Parameters, Result>(statement)
+  }
+  public exec(query: string): void {
+    this.database.exec(query)
+  }
+
+  public transaction<T>(callback: () => T): () => T {
+    return () => {
+      const SavepointName = 'database_savepoint'
+      const database = this.database
+
+      let startedTransaction = false
+      try {
+        if (database.isTransaction) {
+          database.exec(`SAVEPOINT ${SavepointName}`)
+        } else {
+          database.exec('BEGIN TRANSACTION')
+          startedTransaction = true
+        }
+
+        const result = callback()
+
+        if (startedTransaction) {
+          database.exec('COMMIT TRANSACTION')
+        } else {
+          database.exec(`RELEASE SAVEPOINT ${SavepointName}`)
+        }
+
+        return result
+      } catch (error: unknown) {
+        if (startedTransaction) {
+          database.exec('ROLLBACK TRANSACTION')
+        } else {
+          database.exec(`ROLLBACK TO ${SavepointName}`)
+        }
+
+        throw error
+      }
+    }
+  }
+}
+
+export class TypedStatement<Parameters extends [...unknown[]], Result> {
+  private pluckEnabled = false
+  constructor(private readonly statement: StatementSync) {}
+
+  public pluck(enabled: boolean): this {
+    this.pluckEnabled = enabled
+    return this
+  }
+
+  public run(...parameters: Parameters): TypedStatementResultingChanges {
+    const result = this.statement.run(...(parameters as SQLInputValue[]))
+    return { changes: result.changes as number, lastInsertRowid: result.lastInsertRowid }
+  }
+
+  public get(...parameters: Parameters): Result | undefined {
+    const result = this.statement.get(...(parameters as SQLInputValue[]))
+    if (result === undefined) return undefined
+
+    if (this.pluckEnabled) return Object.values(result).at(0) as Result
+    return result as Result
+  }
+  public all(...parameters: Parameters): Result[] {
+    const result = this.statement.all(...(parameters as SQLInputValue[]))
+
+    if (this.pluckEnabled) return result.map((row) => Object.values(row).at(0) as Result)
+    return result as Result[]
+  }
+}
+
+interface TypedStatementResultingChanges {
+  changes: number
+  lastInsertRowid: number | bigint
+}
+/* eslint-enable @typescript-eslint/naming-convention */

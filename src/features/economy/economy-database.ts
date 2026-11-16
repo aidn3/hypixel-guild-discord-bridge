@@ -1,11 +1,10 @@
 import assert from 'node:assert'
 
-import type { Database } from 'better-sqlite3'
 import type { Logger } from 'log4js'
 
 import type { UserId } from '../../common/application-event.js'
 import { Platform } from '../../common/application-event.js'
-import type { SqliteManager } from '../../common/sqlite-manager.js'
+import type { SqliteManager, TypedDatabase as Database } from '../../common/sqlite-manager.js'
 import type { AnonymousUser } from '../../common/user.js'
 import type { Verification } from '../../core/users/verification.js'
 import type { Users } from '../../core/users.js'
